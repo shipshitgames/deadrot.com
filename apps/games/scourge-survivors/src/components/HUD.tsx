@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import type { HUDState } from '../game/types'
 import type { ScoreEntry, Settings, ShopState } from '../game/storage'
 import { SHOP_UPGRADES, SURVIVOR_CLASSES, SURVIVOR_CLASS_IDS, SURVIVOR_RUN_GOAL_TIME, shopCost, type SurvivorClassId } from '../game/data/survivors'
@@ -46,6 +46,7 @@ const STAT_VALUE = 'ssg-stat-value'
 const MENU_HEADING = 'ssg-section-heading'
 const STAT_SUB = 'ssg-stat-sub'
 const MENU_HERO_STYLE = { '--scourge-menu-hero': `url(${menuHero})` } as CSSProperties
+const DRAFT_PRESS_MAX_AGE_MS = 1200
 const AVATAR_PREVIEWS: Record<PlayerAvatarId, string> = {
   ranger: playerRangerPreview,
   heavy: playerHeavyPreview,
@@ -616,6 +617,31 @@ function LevelUpDraft({
   onReroll: () => void
   onBanish: (id: string) => void
 }) {
+  const draftPressRef = useRef<{ action: string; at: number } | null>(null)
+  const armDraftAction = (action: string, event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.button !== 0) return
+    draftPressRef.current = { action, at: window.performance.now() }
+  }
+  const consumeDraftAction = (action: string, event: ReactMouseEvent<HTMLButtonElement>) => {
+    if (event.detail === 0) {
+      draftPressRef.current = null
+      return true
+    }
+    const press = draftPressRef.current
+    draftPressRef.current = null
+    return !!press && press.action === action && window.performance.now() - press.at <= DRAFT_PRESS_MAX_AGE_MS
+  }
+  const runDraftAction = (action: string, event: ReactMouseEvent<HTMLButtonElement>, callback: () => void) => {
+    // The level-up overlay can appear while the player is still holding fire; require
+    // a fresh press that started on this draft button before accepting the click.
+    if (!consumeDraftAction(action, event)) {
+      event.preventDefault()
+      event.stopPropagation()
+      return
+    }
+    callback()
+  }
+
   return (
     <div className={`${OVERLAY} cursor-default`}>
       <div className="ssg-menu-kicker mb-[10px]">Level {state.level} — choose an upgrade</div>
@@ -631,7 +657,11 @@ function LevelUpDraft({
                   : ''
               }`}
             >
-              <button type="button" onClick={() => onPick(c.id)}>
+              <button
+                type="button"
+                onPointerDown={(event) => armDraftAction(`pick:${c.id}`, event)}
+                onClick={(event) => runDraftAction(`pick:${c.id}`, event, () => onPick(c.id))}
+              >
                 <span className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-[6px] border border-white/15 bg-black/45 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]">
                   <PixelIcon id={c.icon} size={42} label={c.name} />
                 </span>
@@ -651,7 +681,8 @@ function LevelUpDraft({
               <button
                 type="button"
                 title="Banish — remove from this run's pool"
-                onClick={() => onBanish(c.id)}
+                onPointerDown={(event) => armDraftAction(`banish:${c.id}`, event)}
+                onClick={(event) => runDraftAction(`banish:${c.id}`, event, () => onBanish(c.id))}
                 className="pointer-events-auto cursor-pointer absolute -top-2 -right-2 w-7 h-7 rounded-full bg-black/70 border border-white/25 text-white/70 text-[14px] leading-none flex items-center justify-center hover:bg-[#c1121f] hover:text-white hover:border-[#c1121f]"
               >
                 <PixelIcon id="banish" size={16} label="Banish" />
@@ -664,7 +695,8 @@ function LevelUpDraft({
         <button
           type="button"
           disabled={state.rerolls <= 0}
-          onClick={onReroll}
+          onPointerDown={(event) => armDraftAction('reroll', event)}
+          onClick={(event) => runDraftAction('reroll', event, onReroll)}
           className="pointer-events-auto cursor-pointer text-[14px] font-bold rounded-lg px-4 py-2 border border-[#ff6a00]/45 text-[#e9e3d6] transition-colors hover:bg-[#ff6a00]/15 hover:border-[#ff6a00] disabled:opacity-40 disabled:cursor-default"
         >
           <IconText icon="reroll" size={16}>Re-roll ({state.rerolls})</IconText>
