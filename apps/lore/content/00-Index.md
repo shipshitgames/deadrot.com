@@ -53,4 +53,4 @@ Start here, follow the links, open the graph view.
 - [[Tuning-Fork]] — passive Choir-listening rig; ranges repeaters so a node can be severed *(draft)*
 
 ## Compendium
-Characters · Locations ([[Ashgate]], [[The-Spire]], [[The-Pyre-Gate]], [[Ash-Reach]], [[Rustmarch]], [[The-Hollow-Lanes]], [[The-Skyhook]], [[The-Maw]], [[Cinder-Flats]] (incl. [[The-Rothulk]]), [[Perdition]]) · Bestiary · Tech — scaffold new entries from `Templates/`.
+Characters · Locations ([[Ashgate]], [[The-Spire]], [[The-Pyre-Gate]], [[Ash-Reach]], [[Rustmarch]], [[The-Hollow-Lanes]], [[Holdout-Nine|Holdout Nine]], [[The-Skyhook]], [[The-Maw]], [[Cinder-Flats]] (incl. [[The-Rothulk]]), [[Perdition]]) · Bestiary · Tech — scaffold new entries from `Templates/`.
