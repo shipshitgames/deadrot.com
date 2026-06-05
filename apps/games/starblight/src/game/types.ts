@@ -2,7 +2,7 @@ import type * as THREE from 'three'
 import type { EnemyType } from './constants'
 import type { UpgradeId } from './upgrades'
 
-export type GamePhase = 'title' | 'playing' | 'levelup' | 'gameover' | 'victory'
+export type GamePhase = 'title' | 'playing' | 'paused' | 'levelup' | 'gameover' | 'victory'
 
 // --- HUD snapshot -----------------------------------------------------------
 // Public, serializable state the HUD adapter consumes each frame.

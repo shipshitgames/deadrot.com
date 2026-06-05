@@ -2,9 +2,46 @@ import * as THREE from 'three'
 import { COLORS, CONSTANTS, ENEMIES, SPITTER, WORLD, type EnemyType } from '../game/constants'
 import type { Bullet, Enemy, EnemyBullet, Gem, Particle } from '../game/types'
 import type { RenderSystem } from './RenderSystem'
+import orbitalBreachCarrierUrl from '../assets/sprites/runtime/orbital-breach-carrier.webp'
+import playerInterceptorUrl from '../assets/sprites/runtime/player-interceptor.webp'
+import salvageShardUrl from '../assets/sprites/runtime/salvage-shard.webp'
+import scourgeEliteUrl from '../assets/sprites/runtime/scourge-elite.webp'
+import scourgeGruntUrl from '../assets/sprites/runtime/scourge-grunt.webp'
+import scourgeSpitterUrl from '../assets/sprites/runtime/scourge-spitter.webp'
+import scourgeSwarmlingUrl from '../assets/sprites/runtime/scourge-swarmling.webp'
+import scourgeWeaverUrl from '../assets/sprites/runtime/scourge-weaver.webp'
 
 const TAU = Math.PI * 2
 const HIT_FLASH = 0.09
+
+type SpriteKey =
+  | 'player'
+  | 'grunt'
+  | 'swarmling'
+  | 'weaver'
+  | 'spitter'
+  | 'elite'
+  | 'boss'
+  | 'salvage'
+
+const SPRITE_SPECS: Record<SpriteKey, { url: string; aspect: number }> = {
+  player: { url: playerInterceptorUrl, aspect: 116 / 132 },
+  grunt: { url: scourgeGruntUrl, aspect: 75 / 114 },
+  swarmling: { url: scourgeSwarmlingUrl, aspect: 40 / 94 },
+  weaver: { url: scourgeWeaverUrl, aspect: 125 / 108 },
+  spitter: { url: scourgeSpitterUrl, aspect: 96 / 114 },
+  elite: { url: scourgeEliteUrl, aspect: 109 / 148 },
+  boss: { url: orbitalBreachCarrierUrl, aspect: 114 / 196 },
+  salvage: { url: salvageShardUrl, aspect: 38 / 60 },
+}
+
+const ENEMY_SPRITES: Record<EnemyType, SpriteKey> = {
+  grunt: 'grunt',
+  swarmling: 'swarmling',
+  weaver: 'weaver',
+  spitter: 'spitter',
+  elite: 'elite',
+}
 
 function clamp(v: number, lo: number, hi: number): number {
   return v < lo ? lo : v > hi ? hi : v
@@ -13,6 +50,18 @@ function lerpAngle(a: number, b: number, t: number): number {
   let d = ((b - a + Math.PI) % TAU) - Math.PI
   if (d < -Math.PI) d += TAU
   return a + d * t
+}
+function loadSpriteTexture(key: SpriteKey): THREE.Texture {
+  const tex = new THREE.TextureLoader().load(SPRITE_SPECS[key].url)
+  tex.colorSpace = THREE.SRGBColorSpace
+  tex.magFilter = THREE.NearestFilter
+  tex.minFilter = THREE.NearestFilter
+  tex.generateMipmaps = false
+  tex.anisotropy = 1
+  return tex
+}
+function spritePlane(key: SpriteKey, height: number): THREE.PlaneGeometry {
+  return new THREE.PlaneGeometry(height * SPRITE_SPECS[key].aspect, height)
 }
 
 // Owns every in-world entity: the ship (mouse-flight motion), the Scourge
@@ -35,18 +84,29 @@ export class EntitySystem {
   private boltMat = new THREE.MeshBasicMaterial({ color: COLORS.hellfire })
   private enemyBoltGeom = new THREE.SphereGeometry(0.5, 8, 8)
   private enemyBoltMat = new THREE.MeshBasicMaterial({ color: COLORS.toxic })
-  private gemGeom = new THREE.OctahedronGeometry(0.42)
-  // Salvage reads as reward, not threat — toxic-green is the Scourge's alone.
-  private gemMat = new THREE.MeshBasicMaterial({ color: COLORS.ember, transparent: true })
-  private gemBigMat = new THREE.MeshBasicMaterial({ color: COLORS.bone, transparent: true })
+  private readonly spriteTextures: Record<SpriteKey, THREE.Texture> = {
+    player: loadSpriteTexture('player'),
+    grunt: loadSpriteTexture('grunt'),
+    swarmling: loadSpriteTexture('swarmling'),
+    weaver: loadSpriteTexture('weaver'),
+    spitter: loadSpriteTexture('spitter'),
+    elite: loadSpriteTexture('elite'),
+    boss: loadSpriteTexture('boss'),
+    salvage: loadSpriteTexture('salvage'),
+  }
+  private shipGeom = spritePlane('player', CONSTANTS.player.height)
+  private gemGeom = spritePlane('salvage', 1)
+  private gemMat = this.spriteMaterial('salvage')
+  private gemBigMat = this.spriteMaterial('salvage')
   private particleGeom = new THREE.BoxGeometry(0.42, 0.42, 0.42)
   private trailGeom = new THREE.PlaneGeometry(0.9, 0.9)
 
-  private enemyGeom: Record<EnemyDef['geom'], THREE.BufferGeometry> = {
-    cube: new THREE.BoxGeometry(1, 1, 1),
-    tetra: new THREE.TetrahedronGeometry(0.72),
-    octa: new THREE.OctahedronGeometry(0.72),
-    icosa: new THREE.IcosahedronGeometry(0.7),
+  private enemyGeom: Record<EnemyType, THREE.PlaneGeometry> = {
+    grunt: spritePlane('grunt', ENEMIES.grunt.size * 1.65),
+    swarmling: spritePlane('swarmling', ENEMIES.swarmling.size * 1.65),
+    weaver: spritePlane('weaver', ENEMIES.weaver.size * 1.65),
+    spitter: spritePlane('spitter', ENEMIES.spitter.size * 1.65),
+    elite: spritePlane('elite', ENEMIES.elite.size * 1.65),
   }
 
   // free-lists (reuse meshes instead of churning allocations)
@@ -62,34 +122,8 @@ export class EntitySystem {
 
   buildShip() {
     const g = new THREE.Group()
-    const p = CONSTANTS.player
-
-    // Bone hull (a forward-pointing arrow built from a 4-sided cone).
-    const hull = new THREE.Mesh(
-      new THREE.ConeGeometry(p.width * 0.55, p.height, 4),
-      new THREE.MeshBasicMaterial({ color: COLORS.bone }),
-    )
-    hull.rotation.z = Math.PI / 2
-    hull.rotation.x = Math.PI / 2
+    const hull = new THREE.Mesh(this.shipGeom, this.spriteMaterial('player'))
     g.add(hull)
-
-    // Hellfire engine glow at the tail.
-    const engine = new THREE.Mesh(
-      new THREE.BoxGeometry(0.9, 0.6, 0.4),
-      new THREE.MeshBasicMaterial({ color: COLORS.hellfire }),
-    )
-    engine.position.y = -p.height * 0.45
-    g.add(engine)
-
-    // Two blood wing-tips.
-    for (const sx of [-1, 1]) {
-      const wing = new THREE.Mesh(
-        new THREE.BoxGeometry(0.7, 0.7, 0.3),
-        new THREE.MeshBasicMaterial({ color: COLORS.blood }),
-      )
-      wing.position.set(sx * p.width * 0.55, -p.height * 0.2, 0)
-      g.add(wing)
-    }
 
     g.position.set(0, 0, 0)
     this.ship = g
@@ -206,10 +240,11 @@ export class EntitySystem {
   spawnEnemy(type: EnemyType, x: number, y: number, hpMul: number, speedMul: number): Enemy {
     const def = ENEMIES[type]
     const isElite = type === 'elite'
-    const { mesh, mat } = this.acquireEnemy(type, def)
+    const { mesh, mat } = this.acquireEnemy(type)
     mesh.position.set(x, y, 0)
-    mesh.scale.setScalar(def.size)
-    mat.color.setHex(COLORS.toxic)
+    mesh.rotation.set(0, 0, 0)
+    mesh.scale.setScalar(1)
+    mat.color.setHex(0xffffff)
     mat.opacity = 1
 
     const maxHealth = def.baseHP * hpMul * (isElite ? CONSTANTS.director.eliteHpMul : 1)
@@ -239,25 +274,9 @@ export class EntitySystem {
   /** THE BLIGHT-MAW: a bespoke big enemy the Game steers (skips chase AI), but
    *  takes damage through the normal weapon/bolt paths. */
   spawnBoss(x: number, y: number, hp: number, contactDmg: number, size: number): Enemy {
-    const mat = new THREE.MeshBasicMaterial({ color: COLORS.toxic, transparent: true })
-    const mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 0), mat)
+    const mat = this.spriteMaterial('boss')
+    const mesh = new THREE.Mesh(spritePlane('boss', size * 2.2), mat)
     mesh.position.set(x, y, 0)
-    mesh.scale.setScalar(size)
-    // Dark iron shell + orbiting tendril nodes for menace.
-    const shell = new THREE.Mesh(
-      new THREE.IcosahedronGeometry(1.15, 0),
-      new THREE.MeshBasicMaterial({ color: COLORS.iron, wireframe: true }),
-    )
-    mesh.add(shell)
-    for (let i = 0; i < 6; i++) {
-      const node = new THREE.Mesh(
-        new THREE.OctahedronGeometry(0.28),
-        new THREE.MeshBasicMaterial({ color: COLORS.toxicHot }),
-      )
-      const a = (i / 6) * TAU
-      node.position.set(Math.cos(a) * 1.4, Math.sin(a) * 1.4, 0)
-      mesh.add(node)
-    }
     this.render.add(mesh)
     const boss: Enemy = {
       mesh,
@@ -289,15 +308,18 @@ export class EntitySystem {
       if (e.dead) continue
       // The boss is steered by the Game; it only needs flash/pulse here.
       if (e.boss) {
+        const dx = sx - e.mesh.position.x
+        const dy = sy - e.mesh.position.y
+        e.mesh.rotation.z = Math.atan2(dy, dx) + Math.PI / 2
         if (e.flash > 0) {
           e.flash = Math.max(0, e.flash - dt)
-          const t = e.flash / HIT_FLASH
-          e.material.color.setHex(COLORS.toxic).lerp(BONE, t)
+          const t = clamp(e.flash / HIT_FLASH, 0, 1)
+          e.material.color.setHex(0xffffff).lerp(BONE, t)
         } else {
           const pulse = 0.5 + 0.5 * Math.sin(time * 2 + e.phase)
-          e.material.color.setHex(COLORS.toxic).lerp(BLOOD_HOT, pulse * 0.5)
+          e.material.color.setHex(0xffffff)
+          e.material.opacity = 0.94 + pulse * 0.06
         }
-        e.mesh.rotation.z += dt * 0.4
         continue
       }
       const def = ENEMIES[e.type]
@@ -343,16 +365,15 @@ export class EntitySystem {
         if (Math.abs(e.vy) < 0.05) e.vy = 0
       }
 
-      // Spin for life; pulse toxic; overlay hit-flash.
-      e.mesh.rotation.z += dt * 1.5
-      e.mesh.rotation.x += dt * 0.8
+      e.mesh.rotation.z = Math.atan2(uy, ux) + Math.PI / 2
       if (e.flash > 0) {
         e.flash = Math.max(0, e.flash - dt)
-        const t = e.flash / HIT_FLASH
-        e.material.color.setHex(COLORS.toxic).lerp(BONE, t)
+        const t = clamp(e.flash / HIT_FLASH, 0, 1)
+        e.material.color.setHex(0xffffff).lerp(BONE, t)
       } else {
         const pulse = 0.5 + 0.5 * Math.sin(time * 3 + e.phase)
-        e.material.color.setHex(COLORS.toxic).lerp(TOXIC_HOT, pulse * 0.4)
+        e.material.color.setHex(0xffffff)
+        e.material.opacity = 0.93 + pulse * 0.07
       }
     }
   }
@@ -721,15 +742,15 @@ export class EntitySystem {
     this.particlePool.push({ mesh: m, mat: m.material as THREE.MeshBasicMaterial })
   }
 
-  private acquireEnemy(type: EnemyType, def: EnemyDef): { mesh: THREE.Mesh; mat: THREE.MeshBasicMaterial } {
+  private acquireEnemy(type: EnemyType): { mesh: THREE.Mesh; mat: THREE.MeshBasicMaterial } {
     const pool = (this.enemyPool[type] ??= [])
     const slot = pool.pop()
     if (slot) {
       slot.mesh.visible = true
       return slot
     }
-    const mat = new THREE.MeshBasicMaterial({ color: COLORS.toxic, transparent: true })
-    const mesh = new THREE.Mesh(this.enemyGeom[def.geom], mat)
+    const mat = this.spriteMaterial(ENEMY_SPRITES[type])
+    const mesh = new THREE.Mesh(this.enemyGeom[type], mat)
     this.render.add(mesh)
     return { mesh, mat }
   }
@@ -780,16 +801,24 @@ export class EntitySystem {
     this.particleGeom.dispose()
     this.trailGeom.dispose()
     for (const g of Object.values(this.enemyGeom)) g.dispose()
+    for (const t of Object.values(this.spriteTextures)) t.dispose()
     this.boltMat.dispose()
     this.enemyBoltMat.dispose()
     this.gemMat.dispose()
     this.gemBigMat.dispose()
   }
-}
 
-type EnemyDef = (typeof ENEMIES)[EnemyType]
+  private spriteMaterial(key: SpriteKey): THREE.MeshBasicMaterial {
+    return new THREE.MeshBasicMaterial({
+      map: this.spriteTextures[key],
+      color: 0xffffff,
+      transparent: true,
+      alphaTest: 0.08,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    })
+  }
+}
 
 // Scratch colors (avoid `new THREE.Color` in hot loops).
 const BONE = new THREE.Color(COLORS.bone)
-const TOXIC_HOT = new THREE.Color(COLORS.toxicHot)
-const BLOOD_HOT = new THREE.Color(COLORS.bloodHot)
