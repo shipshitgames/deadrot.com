@@ -74,13 +74,16 @@ export interface Universe {
 }
 
 // Deploy + status metadata (lives here, not in the lore vault).
+const GAME_SOURCE_ROOT = "https://github.com/shipshitgames/deadrot.com/tree/master/apps/games";
+const gameSource = (slug: string) => `${GAME_SOURCE_ROOT}/${slug}`;
+
 const GAME_META: Record<string, { repo?: string; demo?: string; status: GameStatus }> = {
-  "scourge-survivors": { repo: "https://github.com/shipshitgames/scourge-survivors", demo: "/scourge-survivors/", status: "PLAYABLE" },
-  deadlane: { repo: "https://github.com/shipshitgames/deadlane", demo: "/deadlane/", status: "PLAYABLE" },
-  pactfall: { repo: "https://github.com/shipshitgames/pactfall", demo: "/pactfall/", status: "PLAYABLE" },
-  starblight: { repo: "https://github.com/shipshitgames/starblight", demo: "/starblight/", status: "PLAYABLE" },
-  redline: { repo: "https://github.com/shipshitgames/redline", demo: "/redline/", status: "PLAYABLE" },
-  rothulk: { repo: "https://github.com/shipshitgames/rothulk", demo: "/rothulk/", status: "PLAYABLE" },
+  "scourge-survivors": { repo: gameSource("scourge-survivors"), demo: "/scourge-survivors/", status: "PLAYABLE" },
+  deadlane: { repo: gameSource("deadlane"), demo: "/deadlane/", status: "PLAYABLE" },
+  pactfall: { repo: gameSource("pactfall"), demo: "/pactfall/", status: "PLAYABLE" },
+  starblight: { repo: gameSource("starblight"), demo: "/starblight/", status: "PLAYABLE" },
+  redline: { repo: gameSource("redline"), demo: "/redline/", status: "PLAYABLE" },
+  rothulk: { repo: gameSource("rothulk"), demo: "/rothulk/", status: "PLAYABLE" },
   "zero-day": { status: "CONCEPT" },
 };
 

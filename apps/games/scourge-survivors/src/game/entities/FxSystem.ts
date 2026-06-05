@@ -1,0 +1,371 @@
+import * as THREE from 'three'
+import type { GameContext } from '../context'
+import type { GameSystems } from '../systems'
+import type { Pop, Tracer } from '../data/internalTypes'
+
+const CORPSE_PART_SOFT_CAP = 72
+const CORPSE_PART_HARD_CAP = 96
+const CORPSE_PART_FADE_SECONDS = 1.35
+const CORPSE_PART_GRAVITY = 18
+const CORPSE_PART_COLORS = [0x4b0611, 0x6f0718, 0x9f1024, 0x2b1718, 0x3d241b]
+
+interface CorpsePart {
+  mesh: THREE.Mesh
+  age: number
+  ttl: number
+  vel: THREE.Vector3
+  spin: THREE.Vector3
+  baseOpacity: number
+}
+
+/** Transient visual FX: bullet tracers, death pops, muzzle-flash decay, teardown. */
+export class FxSystem {
+  tracers: Tracer[] = []
+  pops: Pop[] = []
+  corpseParts: CorpsePart[] = []
+
+  constructor(private ctx: GameContext, private sys: GameSystems) {}
+
+  addTracer(from: THREE.Vector3, to: THREE.Vector3) {
+    const geo = new THREE.BufferGeometry().setFromPoints([from, to])
+    const mat = new THREE.LineBasicMaterial({ color: 0xfff1b5, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false })
+    const line = new THREE.Line(geo, mat)
+    this.ctx.scene.add(line)
+    this.tracers.push({ line, age: 0, ttl: 0.07 })
+  }
+
+  spawnDeathPop(pos: THREE.Vector3, color: number, scale: number) {
+    const mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.5 * scale, 12, 12),
+      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false }),
+    )
+    mesh.position.copy(pos)
+    mesh.position.y = 1.0 * scale
+    this.ctx.scene.add(mesh)
+    this.pops.push({ mesh, age: 0, ttl: 0.35 })
+
+    // A fast, bright outward gut-burst ring for a punchier "splat" read.
+    const ring = new THREE.Mesh(
+      new THREE.SphereGeometry(0.4 * scale, 12, 8),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false }),
+    )
+    ring.position.copy(mesh.position)
+    this.ctx.scene.add(ring)
+    this.pops.push({ mesh: ring, age: 0, ttl: 0.18 })
+  }
+
+  /** Brief blood spurt for a non-lethal hit. Headshots throw a brighter, taller burst. */
+  spawnBloodHit(pos: THREE.Vector3, headshot = false) {
+    const count = headshot ? 8 : 4
+    for (let i = 0; i < count; i++) {
+      const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(headshot ? 0.075 : 0.055, 6, 4),
+        new THREE.MeshBasicMaterial({
+          color: i % 3 === 0 ? 0xff2d55 : 0x9f1024,
+          transparent: true,
+          opacity: 0.86,
+          depthWrite: false,
+        }),
+      )
+      mesh.position.copy(pos)
+      const a = Math.random() * Math.PI * 2
+      const speed = (headshot ? 3.6 : 2.4) + Math.random() * 2.2
+      this.ctx.scene.add(mesh)
+      this.pops.push({
+        mesh,
+        age: 0,
+        ttl: 0.22 + Math.random() * 0.18,
+        vel: new THREE.Vector3(Math.cos(a) * speed, 1.5 + Math.random() * (headshot ? 3.4 : 1.6), Math.sin(a) * speed),
+        baseScale: 0.7,
+        growth: headshot ? 0.7 : 0.35,
+      })
+    }
+  }
+
+  /** Death FX: hot pop, blood spray, short-lived floor splatter, and chunky leftovers. */
+  spawnEnemyDeath(pos: THREE.Vector3, opts: { headshot?: boolean; elite?: boolean; scale?: number; color?: number } = {}) {
+    const scale = opts.scale ?? (opts.elite ? 1.8 : 1)
+    const color = opts.color ?? (opts.elite ? 0xff2d55 : 0xc1121f)
+    this.spawnDeathPop(pos, color, opts.elite ? scale * 1.15 : scale)
+    this.spawnCorpseParts(pos, { headshot: opts.headshot, elite: opts.elite, scale })
+
+    const count = opts.elite ? 28 : opts.headshot ? 18 : 11
+    const origin = pos.clone()
+    origin.y = opts.headshot ? 1.75 * scale : 1.05 * scale
+    for (let i = 0; i < count; i++) {
+      const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry((0.055 + Math.random() * 0.055) * (opts.elite ? 1.2 : 1), 6, 4),
+        new THREE.MeshBasicMaterial({
+          color: i % 4 === 0 ? 0xff415f : i % 3 === 0 ? 0x5b0614 : 0xb11226,
+          transparent: true,
+          opacity: 0.92,
+          depthWrite: false,
+        }),
+      )
+      mesh.position.copy(origin)
+      mesh.position.x += (Math.random() * 2 - 1) * 0.25 * scale
+      mesh.position.z += (Math.random() * 2 - 1) * 0.25 * scale
+      const a = Math.random() * Math.PI * 2
+      const speed = (opts.elite ? 5.8 : opts.headshot ? 4.4 : 3.0) + Math.random() * 3.0
+      this.ctx.scene.add(mesh)
+      this.pops.push({
+        mesh,
+        age: 0,
+        ttl: 0.38 + Math.random() * (opts.elite ? 0.45 : 0.28),
+        vel: new THREE.Vector3(Math.cos(a) * speed, 2.2 + Math.random() * (opts.elite ? 5.5 : 3.2), Math.sin(a) * speed),
+        baseScale: 0.75,
+        growth: opts.elite ? 1.0 : 0.55,
+      })
+    }
+
+    const splats = opts.elite ? 4 : opts.headshot ? 3 : 2
+    for (let i = 0; i < splats; i++) {
+      const mesh = new THREE.Mesh(
+        new THREE.CircleGeometry(0.5 + Math.random() * 0.45, 14),
+        new THREE.MeshBasicMaterial({
+          color: i % 2 ? 0x6f0718 : 0xa70f24,
+          transparent: true,
+          opacity: opts.elite ? 0.44 : 0.34,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+        }),
+      )
+      mesh.rotation.x = -Math.PI / 2
+      mesh.rotation.z = Math.random() * Math.PI
+      mesh.position.set(
+        pos.x + (Math.random() * 2 - 1) * 0.7 * scale,
+        0.025,
+        pos.z + (Math.random() * 2 - 1) * 0.7 * scale,
+      )
+      mesh.scale.setScalar(0.001)
+      this.ctx.scene.add(mesh)
+      this.pops.push({
+        mesh,
+        age: 0,
+        ttl: 5.5 + Math.random() * 2.5,
+        baseScale: 0.08,
+        growth: opts.elite ? 2.4 : 1.35,
+        floor: true,
+      })
+    }
+  }
+
+  private spawnCorpseParts(pos: THREE.Vector3, opts: { headshot?: boolean; elite?: boolean; scale: number }) {
+    const scale = Math.max(0.72, opts.scale)
+    const count = opts.elite ? 12 : opts.headshot ? 5 : 3
+    const originY = opts.headshot ? 1.45 * scale : 1.05 * scale
+
+    for (let i = 0; i < count; i++) {
+      const mesh = new THREE.Mesh(
+        this.makeCorpsePartGeometry(scale, !!opts.elite),
+        new THREE.MeshStandardMaterial({
+          color: CORPSE_PART_COLORS[Math.floor(Math.random() * CORPSE_PART_COLORS.length)],
+          roughness: 0.88,
+          metalness: 0.02,
+          transparent: true,
+          opacity: opts.elite ? 0.94 : 0.86,
+        }),
+      )
+
+      mesh.position.set(
+        pos.x + (Math.random() * 2 - 1) * 0.22 * scale,
+        originY + Math.random() * 0.35 * scale,
+        pos.z + (Math.random() * 2 - 1) * 0.22 * scale,
+      )
+      mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI)
+      mesh.castShadow = true
+      mesh.receiveShadow = true
+      this.ctx.scene.add(mesh)
+
+      const a = Math.random() * Math.PI * 2
+      const speed = (opts.elite ? 5.3 : opts.headshot ? 4.0 : 3.0) + Math.random() * 2.4
+      this.corpseParts.push({
+        mesh,
+        age: 0,
+        ttl: (opts.elite ? 28 : 19) + Math.random() * 7,
+        vel: new THREE.Vector3(Math.cos(a) * speed, 2.4 + Math.random() * (opts.elite ? 3.8 : 2.2), Math.sin(a) * speed),
+        spin: new THREE.Vector3(
+          (Math.random() * 2 - 1) * 9,
+          (Math.random() * 2 - 1) * 9,
+          (Math.random() * 2 - 1) * 9,
+        ),
+        baseOpacity: opts.elite ? 0.94 : 0.86,
+      })
+    }
+
+    this.enforceCorpsePartBudget()
+  }
+
+  private makeCorpsePartGeometry(scale: number, elite: boolean): THREE.BufferGeometry {
+    const size = scale * (elite ? 1.22 : 1)
+    const roll = Math.random()
+    if (roll < 0.34) {
+      return new THREE.BoxGeometry(
+        (0.12 + Math.random() * 0.1) * size,
+        (0.1 + Math.random() * 0.08) * size,
+        (0.36 + Math.random() * 0.26) * size,
+      )
+    }
+    if (roll < 0.68) return new THREE.DodecahedronGeometry((0.13 + Math.random() * 0.1) * size, 0)
+    return new THREE.SphereGeometry((0.12 + Math.random() * 0.09) * size, 7, 5)
+  }
+
+  private enforceCorpsePartBudget() {
+    while (this.corpseParts.length > CORPSE_PART_HARD_CAP) this.removeCorpsePart(0)
+    const overflow = this.corpseParts.length - CORPSE_PART_SOFT_CAP
+    if (overflow <= 0) return
+
+    for (let i = 0; i < overflow; i++) {
+      const part = this.corpseParts[i]
+      part.age = Math.max(part.age, part.ttl - CORPSE_PART_FADE_SECONDS)
+    }
+  }
+
+  private removeCorpsePart(index: number) {
+    const part = this.corpseParts[index]
+    if (!part) return
+    this.ctx.scene.remove(part.mesh)
+    part.mesh.geometry.dispose()
+    const mat = part.mesh.material
+    if (Array.isArray(mat)) mat.forEach((m) => m.dispose())
+    else mat.dispose()
+    this.corpseParts.splice(index, 1)
+  }
+
+  /** Tiny bright spark at a bullet impact point (enemy or wall). Cheap, per-hit. */
+  spawnImpactSpark(pos: THREE.Vector3, color: number) {
+    const mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.13, 8, 6),
+      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false }),
+    )
+    mesh.position.copy(pos)
+    this.ctx.scene.add(mesh)
+    this.pops.push({ mesh, age: 0, ttl: 0.12 })
+  }
+
+  // ---- camera juice: trauma-based screenshake + recoil kick + hitstop ----
+  /** Add screenshake trauma (0..1, clamped). Magnitude in render scales trauma². */
+  addShake(amount: number) {
+    this.ctx.shakeTrauma = Math.min(1, this.ctx.shakeTrauma + amount)
+  }
+
+  /** Kick the view pitch up by `amount` radians; springs back in updateEffects. */
+  addRecoil(amount: number) {
+    this.ctx.camRecoil += amount
+  }
+
+  /** Freeze the sim for `seconds` (tiny — reads as a punch, not lag). */
+  hitstop(seconds: number) {
+    if (seconds > this.ctx.hitstopTimer) this.ctx.hitstopTimer = seconds
+  }
+
+  /** Register a kill toward the rolling kill-streak combo. */
+  registerKill(): number {
+    this.ctx.combo++
+    this.ctx.comboTimer = 2.6
+    if (this.ctx.combo > this.ctx.comboBest) this.ctx.comboBest = this.ctx.combo
+    return this.ctx.combo
+  }
+
+  updateEffects(delta: number) {
+    // Decay camera juice + combo timer (runs every frame, in or out of play).
+    if (this.ctx.shakeTrauma > 0) this.ctx.shakeTrauma = Math.max(0, this.ctx.shakeTrauma - delta * 1.9)
+    if (this.ctx.camRecoil !== 0) this.ctx.camRecoil -= this.ctx.camRecoil * Math.min(1, delta * 16)
+    if (this.ctx.comboTimer > 0) {
+      this.ctx.comboTimer -= delta
+      if (this.ctx.comboTimer <= 0) this.ctx.combo = 0
+    }
+
+    if (this.ctx.muzzleTimer > 0) {
+      this.ctx.muzzleTimer -= delta
+      this.ctx.muzzleLight.intensity = Math.max(0, this.ctx.muzzleLight.intensity - delta * 160)
+      if (this.ctx.muzzleTimer <= 0) {
+        this.ctx.muzzleFlash.visible = false
+        this.ctx.muzzleLight.intensity = 0
+      }
+    }
+    for (let i = this.tracers.length - 1; i >= 0; i--) {
+      const t = this.tracers[i]
+      t.age += delta
+      const k = 1 - t.age / t.ttl
+      ;(t.line.material as THREE.LineBasicMaterial).opacity = Math.max(0, k * 0.9)
+      if (t.age >= t.ttl) {
+        this.ctx.scene.remove(t.line)
+        t.line.geometry.dispose()
+        ;(t.line.material as THREE.Material).dispose()
+        this.tracers.splice(i, 1)
+      }
+    }
+    for (let i = this.pops.length - 1; i >= 0; i--) {
+      const p = this.pops[i]
+      p.age += delta
+      if (p.vel) {
+        p.mesh.position.addScaledVector(p.vel, delta)
+        p.vel.y -= 12 * delta
+        if (p.mesh.position.y < 0.04) {
+          p.mesh.position.y = 0.04
+          p.vel.multiplyScalar(0.35)
+          p.vel.y = 0
+        }
+      }
+      if (p.spin) {
+        p.mesh.rotation.x += p.spin.x * delta
+        p.mesh.rotation.y += p.spin.y * delta
+        p.mesh.rotation.z += p.spin.z * delta
+      }
+      const k = p.age / p.ttl
+      p.mesh.scale.setScalar((p.baseScale ?? 0.4) + k * (p.growth ?? 3.0))
+      ;(p.mesh.material as THREE.MeshBasicMaterial).opacity = Math.max(0, (p.floor ? 0.38 : 0.9) * (1 - k))
+      if (p.age >= p.ttl) {
+        this.ctx.scene.remove(p.mesh)
+        p.mesh.geometry.dispose()
+        ;(p.mesh.material as THREE.Material).dispose()
+        this.pops.splice(i, 1)
+      }
+    }
+    for (let i = this.corpseParts.length - 1; i >= 0; i--) {
+      const part = this.corpseParts[i]
+      part.age += delta
+      part.mesh.position.addScaledVector(part.vel, delta)
+      part.vel.y -= CORPSE_PART_GRAVITY * delta
+
+      if (part.mesh.position.y <= 0.075) {
+        part.mesh.position.y = 0.075
+        if (Math.abs(part.vel.y) > 1.1) part.vel.y *= -0.14
+        else part.vel.y = 0
+        const drag = Math.max(0, 1 - delta * 5.6)
+        part.vel.x *= drag
+        part.vel.z *= drag
+      }
+
+      if (Math.abs(part.vel.y) > 0.02 || Math.hypot(part.vel.x, part.vel.z) > 0.035) {
+        part.mesh.rotation.x += part.spin.x * delta
+        part.mesh.rotation.y += part.spin.y * delta
+        part.mesh.rotation.z += part.spin.z * delta
+      }
+
+      const fadeStart = Math.max(0, part.ttl - CORPSE_PART_FADE_SECONDS)
+      const fade = Math.max(0, Math.min(1, (part.age - fadeStart) / CORPSE_PART_FADE_SECONDS))
+      ;(part.mesh.material as THREE.MeshStandardMaterial).opacity = part.baseOpacity * (1 - fade)
+      if (part.age >= part.ttl) this.removeCorpsePart(i)
+    }
+  }
+
+  clearTransientFx() {
+    for (const t of this.tracers) {
+      this.ctx.scene.remove(t.line)
+      t.line.geometry.dispose()
+      ;(t.line.material as THREE.Material).dispose()
+    }
+    this.tracers = []
+    for (const p of this.pops) {
+      this.ctx.scene.remove(p.mesh)
+      p.mesh.geometry.dispose()
+      ;(p.mesh.material as THREE.Material).dispose()
+    }
+    this.pops = []
+    while (this.corpseParts.length) this.removeCorpsePart(this.corpseParts.length - 1)
+    this.sys.projectiles.clearProjectiles()
+    while (this.sys.pickups.pickups.length) this.sys.pickups.removePickup(this.sys.pickups.pickups.length - 1)
+  }
+}

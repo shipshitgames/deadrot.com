@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Lane icon</title>
+  <desc id="desc">A fortified route line between two holdout nodes.</desc>
+  <rect width="128" height="128" fill="#0a0a0a"/>
+  <path d="M24 92 48 66 79 60 104 36" fill="none" stroke="#34343c" stroke-width="18" stroke-linecap="square" stroke-linejoin="miter"/>
+  <path d="M24 92 48 66 79 60 104 36" fill="none" stroke="#e9e3d6" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter"/>
+  <circle cx="24" cy="92" r="13" fill="#121214" stroke="#ff6a00" stroke-width="5"/>
+  <circle cx="104" cy="36" r="13" fill="#121214" stroke="#c1121f" stroke-width="5"/>
+  <path d="M53 40h22M53 88h22" stroke="#8a4b2a" stroke-width="6" stroke-linecap="square"/>
+</svg>

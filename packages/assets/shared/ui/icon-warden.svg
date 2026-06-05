@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Warden icon</title>
+  <desc id="desc">A gunmetal shield and wall-bar faction mark with rust and bone accents.</desc>
+  <rect width="128" height="128" fill="#0a0a0a"/>
+  <path d="M22 24h84v38c0 29-17 47-42 57-25-10-42-28-42-57Z" fill="#121214" stroke="#34343c" stroke-width="8" stroke-linejoin="miter"/>
+  <path d="M36 43h56M36 61h56M36 79h56" stroke="#e9e3d6" stroke-width="8" stroke-linecap="square"/>
+  <path d="M64 25v78" stroke="#8a4b2a" stroke-width="6"/>
+  <path d="M28 30h72" stroke="#ff6a00" stroke-width="3" opacity=".75"/>
+</svg>

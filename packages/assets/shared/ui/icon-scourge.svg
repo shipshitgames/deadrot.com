@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Scourge icon</title>
+  <desc id="desc">A toxic breach core surrounded by parasite tendrils and bone hooks.</desc>
+  <rect width="128" height="128" fill="#0a0a0a"/>
+  <circle cx="64" cy="64" r="16" fill="#8bdc1f"/>
+  <circle cx="64" cy="64" r="27" fill="none" stroke="#34343c" stroke-width="8"/>
+  <path d="M64 14c11 24-6 27-2 50M114 64c-24 11-27-6-50-2M64 114c-11-24 6-27 2-50M14 64c24-11 27 6 50 2" fill="none" stroke="#c1121f" stroke-width="8" stroke-linecap="square"/>
+  <path d="M36 22 52 48M92 22 76 48M36 106 52 80M92 106 76 80" stroke="#e9e3d6" stroke-width="6" stroke-linecap="square"/>
+</svg>

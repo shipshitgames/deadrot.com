@@ -1,0 +1,347 @@
+/* ==========================================================================
+   REDLINE — DOOM-grade HUD. Blood on gunmetal. No neon.
+   Palette pulled from apps/lore/content/DESIGN.md.
+   ========================================================================== */
+
+:root {
+  --void: #0a0a0a;
+  --coal: #121214;
+  --iron: #1e1e22;
+  --gunmetal: #34343c;
+  --blood: #c1121f;
+  --blood-hot: #ff2a18;
+  --hellfire: #ff6a00;
+  --rust: #8a4b2a;
+  --bone: #e9e3d6;
+  --ash: #9b958a;
+  --toxic: #8bdc1f;
+
+  --ember-glow: 0 0 0 1px rgba(255, 106, 0, 0.35), 0 0 26px -6px rgba(193, 18, 31, 0.65);
+
+  --font-display: "Oswald", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--void);
+  color: var(--bone);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+#scene {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---- Speed-lines: streaks that intensify with velocity --------------------- */
+#speedlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 22px,
+      rgba(255, 106, 0, 0.16) 22px,
+      rgba(255, 106, 0, 0.16) 24px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 60px,
+      rgba(233, 227, 214, 0.08) 60px,
+      rgba(233, 227, 214, 0.08) 62px
+    );
+  -webkit-mask-image: radial-gradient(ellipse 60% 90% at 50% 50%, transparent 28%, #000 78%);
+  mask-image: radial-gradient(ellipse 60% 90% at 50% 50%, transparent 28%, #000 78%);
+  transition: opacity 0.12s linear;
+}
+
+/* ---- Stagger / boost full-screen flash ------------------------------------- */
+#flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(193, 18, 31, 0.55), transparent 70%);
+}
+
+/* ---- Dark vignette for grit ------------------------------------------------ */
+#vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 75% 75% at 50% 48%, transparent 55%, rgba(0, 0, 0, 0.72) 100%);
+}
+
+/* ==========================================================================
+   HUD
+   ========================================================================== */
+#hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  padding: clamp(12px, 2.4vw, 28px);
+  z-index: 10;
+}
+
+.hud-corner {
+  position: absolute;
+  padding: 8px 12px;
+  background: linear-gradient(180deg, rgba(18, 18, 20, 0.82), rgba(10, 10, 10, 0.5));
+  border: 1px solid var(--gunmetal);
+  border-left-width: 3px;
+  border-left-color: var(--hellfire);
+}
+
+.hud-tl { top: clamp(12px, 2.4vw, 28px); left: clamp(12px, 2.4vw, 28px); }
+.hud-tr { top: clamp(12px, 2.4vw, 28px); right: clamp(12px, 2.4vw, 28px); text-align: right; border-left-width: 1px; border-right-width: 3px; border-right-color: var(--hellfire); }
+.hud-bl { bottom: clamp(12px, 2.4vw, 28px); left: clamp(12px, 2.4vw, 28px); }
+.hud-br { bottom: clamp(12px, 2.4vw, 28px); right: clamp(12px, 2.4vw, 28px); text-align: right; border-left-width: 1px; border-right-width: 3px; border-right-color: var(--hellfire); }
+
+.hud-label {
+  font-size: clamp(9px, 1.1vw, 12px);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+
+.hud-value {
+  font-size: clamp(22px, 3.4vw, 40px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--bone);
+}
+
+.hud-value.mono { font-family: var(--font-mono); font-weight: 500; }
+
+.hud-unit {
+  font-size: 0.42em;
+  color: var(--ash);
+  margin-left: 3px;
+  letter-spacing: 0.06em;
+}
+
+.hud-sub {
+  margin-top: 2px;
+  font-size: clamp(9px, 1.1vw, 12px);
+  letter-spacing: 0.14em;
+  color: var(--hellfire);
+  text-transform: uppercase;
+}
+
+/* Speed value heats up when fast (toggled from JS) */
+.hud-value.is-hot { color: var(--hellfire); text-shadow: 0 0 14px rgba(255, 106, 0, 0.5); }
+.hud-value.is-redline { color: var(--blood-hot); text-shadow: 0 0 16px rgba(255, 42, 24, 0.7); }
+
+/* status word states */
+#hud-status.s-run { color: var(--bone); }
+#hud-status.s-air { color: var(--hellfire); }
+#hud-status.s-dash { color: var(--toxic); }
+#hud-status.s-hit { color: var(--blood-hot); }
+#hud-status.s-done { color: var(--hellfire); }
+
+/* ---- Progress bar ---------------------------------------------------------- */
+#progress {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(12px, 2.4vw, 28px);
+  transform: translateX(-50%);
+  width: min(46vw, 520px);
+  height: 8px;
+  background: var(--iron);
+  border: 1px solid var(--gunmetal);
+}
+
+#progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--blood), var(--hellfire));
+  box-shadow: var(--ember-glow);
+  transition: width 0.08s linear;
+}
+
+#progress-beacon {
+  position: absolute;
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: var(--hellfire);
+  text-shadow: 0 0 10px rgba(255, 106, 0, 0.8);
+}
+
+/* ==========================================================================
+   OVERLAY (start / win / dead)
+   ========================================================================== */
+#overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 40%, rgba(10, 10, 10, 0.72), rgba(10, 10, 10, 0.94));
+  backdrop-filter: blur(2px);
+  transition: opacity 0.25s ease;
+}
+
+#overlay.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#overlay-card {
+  pointer-events: auto;
+  width: min(92vw, 460px);
+  padding: clamp(20px, 4vw, 40px);
+  background: var(--coal);
+  border: 1px solid var(--gunmetal);
+  border-top: 3px solid var(--blood);
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.9);
+  text-align: center;
+}
+
+#overlay-kicker {
+  font-size: 12px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--hellfire);
+}
+
+#overlay-title {
+  margin: 6px 0 14px;
+  font-size: clamp(48px, 12vw, 92px);
+  font-weight: 700;
+  line-height: 0.86;
+  letter-spacing: -0.02em;
+  color: var(--bone);
+  text-shadow: 0 0 30px rgba(193, 18, 31, 0.45);
+}
+
+#overlay-title .accent { color: var(--blood); }
+
+#overlay-body {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ash);
+  letter-spacing: 0.02em;
+  margin-bottom: 18px;
+}
+
+#overlay-controls {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 14px;
+  margin: 0 auto 22px;
+  max-width: 380px;
+  text-align: left;
+}
+
+#overlay-controls li {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ash);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 3px 7px;
+  background: var(--iron);
+  border: 1px solid var(--gunmetal);
+  border-bottom-width: 2px;
+  color: var(--bone);
+  white-space: nowrap;
+  min-width: 38px;
+  text-align: center;
+}
+
+.btn-primary {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone);
+  background: var(--blood);
+  border: 0;
+  padding: 12px 36px;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, background 0.15s ease, transform 0.06s ease;
+}
+
+.btn-primary:hover {
+  background: var(--blood-hot);
+  box-shadow: var(--ember-glow);
+}
+
+.btn-primary:active { transform: translateY(1px); }
+
+/* Stat block injected on win/dead screens */
+#overlay-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 0 0 22px;
+}
+
+#overlay-stats .stat {
+  border: 1px solid var(--gunmetal);
+  padding: 10px 6px;
+}
+
+#overlay-stats .stat .k {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+
+#overlay-stats .stat .v {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--bone);
+  margin-top: 4px;
+}
+
+#overlay-stats .stat .v.gold { color: var(--hellfire); }
+
+@media (max-width: 480px) {
+  #progress { width: 70vw; }
+  #overlay-controls { grid-template-columns: 1fr; }
+}

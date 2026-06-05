@@ -15,3 +15,7 @@ out/
 # git worktrees created by the /worktree skill
 .worktrees/
 .vercel
+
+# Local source archives generated while preparing runtime assets.
+packages/assets/sources/
+packages/assets/**/sources/

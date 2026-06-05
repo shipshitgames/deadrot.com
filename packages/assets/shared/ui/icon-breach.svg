@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Breach icon</title>
+  <desc id="desc">A cracked toxic breach ring with hellfire stress lines.</desc>
+  <rect width="128" height="128" fill="#0a0a0a"/>
+  <circle cx="64" cy="64" r="42" fill="none" stroke="#34343c" stroke-width="10"/>
+  <path d="M64 22v26l18-16M64 106V80L46 96M22 64h27L34 47M106 64H79l15 17" fill="none" stroke="#ff6a00" stroke-width="7" stroke-linecap="square" stroke-linejoin="miter"/>
+  <circle cx="64" cy="64" r="17" fill="#8bdc1f"/>
+  <circle cx="64" cy="64" r="7" fill="#0a0a0a"/>
+</svg>

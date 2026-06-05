@@ -159,11 +159,11 @@ const appSurfaces: {
     title: "Public Site And Docs",
     href: "/",
     description:
-      "The games.shipshit.dev surface: studio home, game gallery, universe pages, bestiary, characters, and this public docs route.",
+      "The deadrot.com surface: studio home, game gallery, universe pages, bestiary, characters, and this public docs route.",
   },
   {
     icon: RadioTower,
-    path: "apps/warline",
+    path: "apps/games/warline",
     title: "Warline",
     href: "/warline/",
     description:

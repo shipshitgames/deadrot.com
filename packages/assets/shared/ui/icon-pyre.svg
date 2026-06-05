@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Pyre icon</title>
+  <desc id="desc">A blood-red wedge and hellfire flame faction mark on a dark field.</desc>
+  <rect width="128" height="128" fill="#0a0a0a"/>
+  <path d="M64 10 102 112 64 92 26 112Z" fill="#121214" stroke="#ff6a00" stroke-width="6" stroke-linejoin="miter"/>
+  <path d="M64 24 81 79 64 70 47 79Z" fill="#c1121f"/>
+  <path d="M64 36c11 14 13 25 0 42-13-17-11-28 0-42Z" fill="#ff6a00"/>
+  <path d="M64 78v35" stroke="#e9e3d6" stroke-width="6" stroke-linecap="square"/>
+</svg>

@@ -47,7 +47,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/shipshitgames/shipshitgames.git",
+    "url": "git+https://github.com/shipshitgames/deadrotcom.git",
     "directory": "packages/ui"
   }
 }

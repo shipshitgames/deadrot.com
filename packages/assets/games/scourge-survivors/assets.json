@@ -1,0 +1,956 @@
+{
+  "sprites": {
+    "enemy-melee": {
+      "type": "sprite",
+      "filter": "nearest",
+      "views": {
+        "front": {
+          "path": "games/scourge-survivors/enemies/scourge/host-grunt/front.webp",
+          "dimensions": [
+            100,
+            124
+          ],
+          "scale": [
+            1.55,
+            2.42
+          ]
+        },
+        "side": {
+          "path": "games/scourge-survivors/enemies/scourge/host-grunt/side.webp",
+          "dimensions": [
+            97,
+            124
+          ],
+          "scale": [
+            1.28,
+            2.38
+          ]
+        },
+        "back": {
+          "path": "games/scourge-survivors/enemies/scourge/host-grunt/back.webp",
+          "dimensions": [
+            95,
+            124
+          ],
+          "scale": [
+            1.5,
+            2.4
+          ]
+        }
+      },
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "built-in image_gen",
+        "date": "2026-06-05",
+        "kind": "AI generated 2D Scourge melee host sprite sheet",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "enemy-ranged": {
+      "type": "sprite",
+      "filter": "nearest",
+      "views": {
+        "front": {
+          "path": "games/scourge-survivors/enemies/scourge/spitter-host/front.webp",
+          "dimensions": [
+            108,
+            124
+          ],
+          "scale": [
+            1.5,
+            2.14
+          ]
+        },
+        "side": {
+          "path": "games/scourge-survivors/enemies/scourge/spitter-host/side.webp",
+          "dimensions": [
+            114,
+            124
+          ],
+          "scale": [
+            1.55,
+            2.1
+          ]
+        },
+        "back": {
+          "path": "games/scourge-survivors/enemies/scourge/spitter-host/back.webp",
+          "dimensions": [
+            111,
+            124
+          ],
+          "scale": [
+            1.48,
+            2.12
+          ]
+        }
+      },
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "built-in image_gen",
+        "date": "2026-06-05",
+        "kind": "AI generated 2D Scourge ranged spitter sprite sheet",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "enemy-flying": {
+      "type": "sprite",
+      "filter": "nearest",
+      "views": {
+        "front": {
+          "path": "games/scourge-survivors/enemies/scourge/winged-host/front.webp",
+          "dimensions": [
+            83,
+            116
+          ],
+          "scale": [
+            1.52,
+            2.15
+          ]
+        },
+        "side": {
+          "path": "games/scourge-survivors/enemies/scourge/winged-host/side.webp",
+          "dimensions": [
+            67,
+            116
+          ],
+          "scale": [
+            1.21,
+            2.16
+          ]
+        },
+        "back": {
+          "path": "games/scourge-survivors/enemies/scourge/winged-host/back.webp",
+          "dimensions": [
+            84,
+            116
+          ],
+          "scale": [
+            1.54,
+            2.12
+          ]
+        }
+      },
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "built-in image_gen",
+        "date": "2026-06-05",
+        "kind": "AI generated 2D flying Scourge sprite sheet",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "boss": {
+      "type": "sprite",
+      "filter": "nearest",
+      "views": {
+        "front": {
+          "path": "games/scourge-survivors/enemies/scourge/breach-boss/front.webp",
+          "dimensions": [
+            97,
+            156
+          ],
+          "scale": [
+            2.03,
+            3.32
+          ]
+        },
+        "side": {
+          "path": "games/scourge-survivors/enemies/scourge/breach-boss/side.webp",
+          "dimensions": [
+            79,
+            156
+          ],
+          "scale": [
+            1.6,
+            3.3
+          ]
+        },
+        "back": {
+          "path": "games/scourge-survivors/enemies/scourge/breach-boss/back.webp",
+          "dimensions": [
+            99,
+            156
+          ],
+          "scale": [
+            2.02,
+            3.22
+          ]
+        }
+      },
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "built-in image_gen",
+        "date": "2026-06-05",
+        "kind": "AI generated 2D Scourge boss sprite sheet",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-pistol": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/pistol.webp",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.9,
+        0.6
+      ],
+      "weapon": {
+        "offset": [
+          -0.14,
+          0.16,
+          0
+        ],
+        "muzzle": [
+          -0.25,
+          0.31,
+          -0.1
+        ],
+        "flashScale": 0.24
+      },
+      "license": {
+        "tool": "built-in image_gen",
+        "plan": "Codex built-in",
+        "date": "2026-06-05",
+        "kind": "generated 2D first-person weapon sprite",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-sniper": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/sniper.webp",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.54,
+        0.81
+      ],
+      "weapon": {
+        "offset": [
+          0.02,
+          -0.02,
+          0
+        ],
+        "muzzle": [
+          -0.2,
+          0.3,
+          -0.1
+        ],
+        "flashScale": 0.32
+      },
+      "license": {
+        "tool": "built-in image_gen",
+        "plan": "Codex built-in",
+        "date": "2026-06-05",
+        "kind": "generated 2D first-person sniper sprite",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-smg": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/smg.webp",
+      "dimensions": [
+        1023,
+        1537
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.6,
+        0.9
+      ],
+      "weapon": {
+        "offset": [
+          -0.03,
+          0.02,
+          0
+        ],
+        "muzzle": [
+          -0.23,
+          0.18,
+          -0.1
+        ],
+        "flashScale": 0.2
+      },
+      "license": {
+        "tool": "built-in image_gen",
+        "plan": "Codex built-in",
+        "date": "2026-06-04",
+        "kind": "generated 2D first-person weapon sprite",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-shotgun": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/shotgun.webp",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.88,
+        0.59
+      ],
+      "weapon": {
+        "offset": [
+          0.02,
+          -0.04,
+          0
+        ],
+        "muzzle": [
+          -0.25,
+          0.19,
+          -0.1
+        ],
+        "flashScale": 0.42
+      },
+      "license": {
+        "tool": "built-in image_gen",
+        "plan": "Codex built-in",
+        "date": "2026-06-04",
+        "kind": "generated 2D first-person weapon sprite",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-cannon": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/cannon.webp",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.62,
+        0.93
+      ],
+      "weapon": {
+        "offset": [
+          0.04,
+          -0.08,
+          0
+        ],
+        "muzzle": [
+          -0.2,
+          0.3,
+          -0.1
+        ],
+        "flashScale": 0.54
+      },
+      "license": {
+        "tool": "built-in image_gen",
+        "plan": "Codex built-in",
+        "date": "2026-06-04",
+        "kind": "generated 2D first-person weapon sprite",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "muzzle-flash-pyre": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/fx/pyre/muzzle-flash.webp",
+      "dimensions": [
+        256,
+        256
+      ],
+      "anchor": [
+        0.68,
+        0.36
+      ],
+      "filter": "nearest",
+      "scale": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "built-in image_gen",
+        "plan": "Codex built-in",
+        "date": "2026-06-04",
+        "kind": "generated 2D VFX sprite",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "projectile-enemy": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/projectiles/scourge/enemy-spit.webp",
+      "dimensions": [
+        253,
+        256
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "scale": [
+        0.58,
+        0.58
+      ],
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "generated 2D projectile sprite",
+        "scope": "project prototype"
+      }
+    },
+    "projectile-boss": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/projectiles/scourge/boss-barrage.webp",
+      "dimensions": [
+        288,
+        242
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "scale": [
+        0.9,
+        0.9
+      ],
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "generated 2D projectile sprite",
+        "scope": "project prototype"
+      }
+    },
+    "pickup-health": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/pickups/health/blood-vial.webp",
+      "dimensions": [
+        64,
+        64
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.74,
+        0.74
+      ],
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "built-in image_gen",
+        "date": "2026-06-05",
+        "kind": "AI generated 2D blood-vial pickup sprite",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "pickup-ammo": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/pickups/ammo/bone-cache.webp",
+      "dimensions": [
+        64,
+        64
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.78,
+        0.78
+      ],
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "built-in image_gen",
+        "date": "2026-06-05",
+        "kind": "AI generated 2D bone-ammo pickup sprite",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "pickup-damage": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/pickups/bonus/damage-boost.webp",
+      "dimensions": [
+        64,
+        64
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.78,
+        0.78
+      ],
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "built-in image_gen",
+        "date": "2026-06-05",
+        "kind": "AI generated 2D blood-rage bonus pickup sprite",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "pickup-dual": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/pickups/bonus/dual-wield.webp",
+      "dimensions": [
+        64,
+        64
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.84,
+        0.84
+      ],
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "built-in image_gen",
+        "date": "2026-06-05",
+        "kind": "AI generated 2D dual blood-energy pickup sprite",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "pickup-xp-blood": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/pickups/xp/scourge-ichor.webp",
+      "dimensions": [
+        64,
+        64
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.58,
+        0.58
+      ],
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "built-in image_gen",
+        "date": "2026-06-05",
+        "kind": "AI generated 2D Scourge ichor XP pickup sprite",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "player-ranger": {
+      "type": "sprite",
+      "views": {
+        "front": {
+          "path": "games/scourge-survivors/players/pyre/ranger/front.webp",
+          "dimensions": [
+            329,
+            640
+          ],
+          "scale": [
+            1.32,
+            2.34
+          ]
+        },
+        "side": {
+          "path": "games/scourge-survivors/players/pyre/ranger/side.webp",
+          "dimensions": [
+            420,
+            640
+          ],
+          "scale": [
+            1.54,
+            2.34
+          ]
+        },
+        "back": {
+          "path": "games/scourge-survivors/players/pyre/ranger/back.webp",
+          "dimensions": [
+            339,
+            640
+          ],
+          "scale": [
+            1.34,
+            2.34
+          ]
+        }
+      },
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "generated 2D player sprite",
+        "scope": "project prototype"
+      }
+    },
+    "player-heavy": {
+      "type": "sprite",
+      "views": {
+        "front": {
+          "path": "games/scourge-survivors/players/pyre/bulwark/front.webp",
+          "dimensions": [
+            422,
+            704
+          ],
+          "scale": [
+            1.55,
+            2.48
+          ]
+        },
+        "side": {
+          "path": "games/scourge-survivors/players/pyre/bulwark/side.webp",
+          "dimensions": [
+            542,
+            704
+          ],
+          "scale": [
+            1.82,
+            2.48
+          ]
+        },
+        "back": {
+          "path": "games/scourge-survivors/players/pyre/bulwark/back.webp",
+          "dimensions": [
+            435,
+            704
+          ],
+          "scale": [
+            1.56,
+            2.48
+          ]
+        }
+      },
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "generated 2D player sprite",
+        "scope": "project prototype"
+      }
+    },
+    "player-scout": {
+      "type": "sprite",
+      "views": {
+        "front": {
+          "path": "games/scourge-survivors/players/pyre/vector/front.webp",
+          "dimensions": [
+            281,
+            640
+          ],
+          "scale": [
+            1.14,
+            2.26
+          ]
+        },
+        "side": {
+          "path": "games/scourge-survivors/players/pyre/vector/side.webp",
+          "dimensions": [
+            511,
+            640
+          ],
+          "scale": [
+            1.64,
+            2.26
+          ]
+        },
+        "back": {
+          "path": "games/scourge-survivors/players/pyre/vector/back.webp",
+          "dimensions": [
+            309,
+            640
+          ],
+          "scale": [
+            1.14,
+            2.26
+          ]
+        }
+      },
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "generated 2D player sprite",
+        "scope": "project prototype"
+      }
+    },
+    "player-medic": {
+      "type": "sprite",
+      "views": {
+        "front": {
+          "path": "games/scourge-survivors/players/pyre/patch/front.webp",
+          "dimensions": [
+            281,
+            640
+          ],
+          "scale": [
+            1.18,
+            2.32
+          ]
+        },
+        "side": {
+          "path": "games/scourge-survivors/players/pyre/patch/side.webp",
+          "dimensions": [
+            471,
+            640
+          ],
+          "scale": [
+            1.7,
+            2.32
+          ]
+        },
+        "back": {
+          "path": "games/scourge-survivors/players/pyre/patch/back.webp",
+          "dimensions": [
+            354,
+            640
+          ],
+          "scale": [
+            1.2,
+            2.32
+          ]
+        }
+      },
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "generated 2D player sprite",
+        "scope": "project prototype"
+      }
+    }
+  },
+  "textures": {
+    "arena-floor": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/generic/floor.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        11.5,
+        11.5
+      ],
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "generated tiling texture",
+        "scope": "project prototype"
+      }
+    },
+    "arena-wall": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/generic/wall.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        16,
+        1
+      ],
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "generated tiling texture",
+        "scope": "project prototype"
+      }
+    },
+    "arena-block": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/generic/block.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "generated tiling texture",
+        "scope": "project prototype"
+      }
+    },
+    "arena-column": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/generic/column.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        1,
+        3
+      ],
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "generated tiling texture",
+        "scope": "project prototype"
+      }
+    }
+  },
+  "audio": {
+    "music-ash-reactor": {
+      "type": "audio",
+      "path": "games/scourge-survivors/audio/music/ash-reactor.webm",
+      "category": "music",
+      "duration": 234.567,
+      "volume": 0.55,
+      "loop": true,
+      "license": {
+        "tool": "Suno",
+        "plan": "unknown",
+        "date": "2026-06-04",
+        "kind": "AI music bed",
+        "scope": "placeholder; confirm commercial rights before public release"
+      }
+    },
+    "music-blood-circuit-ascension": {
+      "type": "audio",
+      "path": "games/scourge-survivors/audio/music/blood-circuit-ascension.webm",
+      "category": "music",
+      "duration": 122.008,
+      "volume": 0.55,
+      "loop": true,
+      "license": {
+        "tool": "Suno",
+        "plan": "unknown",
+        "date": "2026-06-04",
+        "kind": "AI music bed",
+        "scope": "placeholder; confirm commercial rights before public release"
+      }
+    },
+    "sfx-sniper": {
+      "type": "audio",
+      "path": "games/scourge-survivors/audio/sfx/weapons/sniper.webm",
+      "category": "sfx",
+      "cue": "shootSniper",
+      "duration": 1.368,
+      "volume": 1,
+      "loop": false,
+      "license": {
+        "tool": "ElevenLabs SFX",
+        "plan": "unknown",
+        "date": "2026-06-04",
+        "kind": "AI weapon SFX",
+        "scope": "embedded in-game use"
+      }
+    },
+    "sfx-pistol-pyre": {
+      "type": "audio",
+      "path": "games/scourge-survivors/audio/sfx/weapons/pistol-pyre.webm",
+      "category": "sfx",
+      "cue": "shoot",
+      "duration": 0.248,
+      "volume": 1,
+      "loop": false,
+      "license": {
+        "tool": "Codex PCM synthesis",
+        "plan": "local",
+        "date": "2026-06-05",
+        "kind": "project-owned sidearm weapon SFX",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "sfx-smg-pyre": {
+      "type": "audio",
+      "path": "games/scourge-survivors/audio/sfx/weapons/smg-fire-pyre.webm",
+      "category": "sfx",
+      "cue": "shootSmg",
+      "duration": 0.128,
+      "volume": 1,
+      "loop": false,
+      "license": {
+        "tool": "ffmpeg synthesis",
+        "plan": "local",
+        "date": "2026-06-04",
+        "kind": "procedural placeholder weapon SFX",
+        "scope": "project-owned placeholder"
+      }
+    },
+    "sfx-shotgun": {
+      "type": "audio",
+      "path": "games/scourge-survivors/audio/sfx/weapons/shotgun.webm",
+      "category": "sfx",
+      "cue": "shootShotgun",
+      "duration": 1.368,
+      "volume": 1,
+      "loop": false,
+      "license": {
+        "tool": "ElevenLabs SFX",
+        "plan": "unknown",
+        "date": "2026-06-04",
+        "kind": "AI weapon SFX",
+        "scope": "embedded in-game use"
+      }
+    },
+    "sfx-cannon": {
+      "type": "audio",
+      "path": "games/scourge-survivors/audio/sfx/weapons/cannon.webm",
+      "category": "sfx",
+      "cue": "shootCannon",
+      "duration": 2.008,
+      "volume": 1,
+      "loop": false,
+      "license": {
+        "tool": "ElevenLabs SFX",
+        "plan": "unknown",
+        "date": "2026-06-04",
+        "kind": "AI weapon SFX",
+        "scope": "embedded in-game use"
+      }
+    },
+    "sfx-smg-legacy": {
+      "type": "audio",
+      "path": "games/scourge-survivors/audio/sfx/weapons/smg.webm",
+      "category": "sfx",
+      "duration": 1.368,
+      "volume": 1,
+      "loop": false,
+      "license": {
+        "tool": "ElevenLabs SFX",
+        "plan": "unknown",
+        "date": "2026-06-04",
+        "kind": "AI weapon SFX",
+        "scope": "legacy unused sample"
+      }
+    }
+  }
+}

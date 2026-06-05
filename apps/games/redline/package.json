@@ -1,0 +1,27 @@
+{
+  "name": "redline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Redline — a high-speed Pyre courier runner. Ship Shit Games.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deps:update": "bunx npm-check-updates -u --cooldown 3h --removeRange && bun install"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.16",
+    "@types/react-dom": "19.2.3",
+    "@types/three": "0.184.1",
+    "@vitejs/plugin-react": "6.0.2",
+    "typescript": "6.0.3",
+    "vite": "8.0.16"
+  },
+  "dependencies": {
+    "@shipshitgames/ui": "workspace:*",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "three": "0.184.0"
+  }
+}
