@@ -160,3 +160,27 @@ the provenance trail before assets are promoted into a game manifest.
 - Post-processing: captured `screenshot-hud-desktop-doom-pixel.png`, `screenshot-upgrade-desktop-doom-pixel.png`, and `screenshot-hud-mobile-doom-pixel.png`.
 - Notes: Pushed the restrained pixel pass back toward Doom after review. The current direction uses blood-red health/ammo, bone labels, black metal plates, compact weapon slots, Scourge-only toxic green, a small status face, minimal minimap/objective atom, center reticle, and low-right weapon/ammo card.
 - Decision: use this as the FPS HUD direction candidate for review before promotion into runtime components.
+
+## 2026-06-05 - game-og-cards - v01
+
+- Status: final website social assets.
+- Game: [[Scourge-Survivors]], [[Deadlane]], [[Pactfall]], [[Starblight]], [[Redline]], [[Rothulk]], [[Zero-Day]].
+- Faction: shared Scourge universe.
+- Character/role: game Open Graph cards.
+- View: 1200x630 social preview card.
+- Tool: existing built-in `image_gen` / `gpt-image-2` source art, composed with Sharp.
+- Plan: Codex built-in source art plus deterministic text overlay.
+- Kind: ai-key-art-derived social card.
+- Source output: shipped gallery thumbnails from `apps/web/public/images/games/*.webp` and `Art/Previs/2026-06-04-game-previs/zero-day-v01.png`.
+- Final asset:
+  - `apps/web/public/images/og/games/scourge-survivors.png`
+  - `apps/web/public/images/og/games/deadlane.png`
+  - `apps/web/public/images/og/games/pactfall.png`
+  - `apps/web/public/images/og/games/starblight.png`
+  - `apps/web/public/images/og/games/redline.png`
+  - `apps/web/public/images/og/games/rothulk.png`
+  - `apps/web/public/images/og/games/zero-day.png`
+- Prompt source: `Art/Prompt-Batches/2026-06-03-gallery-thumbnails-and-menu-ui.md`, `Art/Prompt-Batches/2026-06-04-game-previs.md`, and `Art/Prompt-Batches/2026-06-05-game-og-cards.md`.
+- Post-processing: generated a blurred/dimmed art backing, a right-side crisp art crop, and exact Deadrot/title/tagline/URL SVG text overlay at 1200x630.
+- Notes: `Zero Day` also received `apps/web/public/images/games/zero-day.webp` so the existing game gallery image path resolves.
+- Decision: wired into `/games/[slug]` metadata as Open Graph and Twitter `summary_large_image` cards.

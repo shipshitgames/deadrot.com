@@ -30,7 +30,31 @@ export async function generateMetadata({
   const { slug } = await params;
   const game = getGame(slug);
   if (!game) return {};
-  return { title: game.title, description: game.tagline };
+  const image = {
+    url: `/images/og/games/${game.slug}.png`,
+    width: 1200,
+    height: 630,
+    alt: `${game.title} - DEADROT`,
+  };
+
+  return {
+    title: game.title,
+    description: game.tagline,
+    openGraph: {
+      title: `${game.title} - DEADROT`,
+      description: game.tagline,
+      url: `/games/${game.slug}`,
+      siteName: "DEADROT",
+      type: "website",
+      images: [image],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${game.title} - DEADROT`,
+      description: game.tagline,
+      images: [image.url],
+    },
+  };
 }
 
 export default async function Page({
