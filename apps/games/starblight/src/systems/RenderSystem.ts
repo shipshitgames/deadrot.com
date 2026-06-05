@@ -159,7 +159,7 @@ export class RenderSystem {
     return new THREE.Points(geom, mat)
   }
 
-  // The quarantine perimeter: a toxic-green wireframe ring at the world border.
+  // The quarantine perimeter: Warden/Pyre containment chrome at the world border.
   private buildLattice() {
     const hw = WORLD.halfW
     const hh = WORLD.halfH
@@ -177,7 +177,7 @@ export class RenderSystem {
     for (let y = -hh + step; y < hh; y += step) push(-hw, y, hw, y)
     const geom = new THREE.BufferGeometry()
     geom.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3))
-    const mat = new THREE.LineBasicMaterial({ color: COLORS.toxic, transparent: true, opacity: 0.12 })
+    const mat = new THREE.LineBasicMaterial({ color: COLORS.gunmetal, transparent: true, opacity: 0.16 })
     const grid = new THREE.LineSegments(geom, mat)
     this.scene.add(grid)
     this.lattice.push(grid)
@@ -192,7 +192,7 @@ export class RenderSystem {
     pb(-hw, hh, -hw, -hh)
     const bgeom = new THREE.BufferGeometry()
     bgeom.setAttribute('position', new THREE.Float32BufferAttribute(border, 3))
-    const bmat = new THREE.LineBasicMaterial({ color: COLORS.toxic, transparent: true, opacity: 0.45 })
+    const bmat = new THREE.LineBasicMaterial({ color: COLORS.blood, transparent: true, opacity: 0.42 })
     const borderLines = new THREE.LineSegments(bgeom, bmat)
     this.scene.add(borderLines)
     this.lattice.push(borderLines)

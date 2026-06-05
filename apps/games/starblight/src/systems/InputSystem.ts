@@ -1,6 +1,6 @@
 // Input layer for the mouse-flight survivors. Tracks the cursor as NDC the Game
 // unprojects to a world aim-point; WASD/arrows are a unit fallback axis that
-// overrides the cursor; plus edge-triggered confirm + 1/2/3 draft-card picks.
+// overrides the cursor; plus edge-triggered confirm, pause, and 1/2/3 draft-card picks.
 export class InputSystem {
   // Latest cursor position in NDC [-1, 1]; held at the last in-bounds value when
   // the pointer leaves the canvas so the ship never bolts to a corner.
@@ -14,6 +14,7 @@ export class InputSystem {
   private right = false
 
   private confirmQueued = false
+  private pauseQueued = false
   private cardQueued = -1 // 1/2/3 -> 0/1/2, or -1
 
   constructor(private readonly canvas: HTMLCanvasElement) {}
@@ -44,6 +45,14 @@ export class InputSystem {
   consumeConfirm(): boolean {
     if (this.confirmQueued) {
       this.confirmQueued = false
+      return true
+    }
+    return false
+  }
+
+  consumePause(): boolean {
+    if (this.pauseQueued) {
+      this.pauseQueued = false
       return true
     }
     return false
@@ -103,6 +112,11 @@ export class InputSystem {
         break
       case 'Space':
         this.confirmQueued = true
+        e.preventDefault()
+        break
+      case 'Escape':
+      case 'KeyP':
+        this.pauseQueued = true
         e.preventDefault()
         break
     }

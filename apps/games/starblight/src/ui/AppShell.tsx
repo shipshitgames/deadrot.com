@@ -10,6 +10,9 @@ export function AppShell() {
           <div className="level-badge">LVL <span id="level" className="mono">1</span></div>
           <div className="xpbar"><div id="xp-fill" /></div>
           <div className="top-right">
+            <button id="pause-btn" className="pause-btn hidden" aria-label="Pause">
+              <span className="pause-glyph" aria-hidden="true"><i /><i /></span>
+            </button>
             <span id="salvage" className="mono">0</span>
             <span className="salvage-icon">{"\u25c6"}</span>
             <span id="kills" className="kills">0 kills</span>
@@ -42,6 +45,18 @@ export function AppShell() {
             </Button>
           </MenuPanel>
         </MenuScreen>
+
+        <div id="pause-menu" className="pause-menu hidden">
+          <MenuPanel className="pause-inner">
+            <h2 className="pause-title ssg-section-heading">PAUSED</h2>
+            <p id="pause-stats" className="pause-stats mono">0:00 - LVL 1 - 0 kills</p>
+            <div className="pause-actions">
+              <button id="pause-resume" className="menu-action primary">RESUME</button>
+              <button id="pause-restart" className="menu-action">RESTART RUN</button>
+              <button id="pause-title-btn" className="menu-action ghost">MAIN MENU</button>
+            </div>
+          </MenuPanel>
+        </div>
 
         <div id="draft" className="draft hidden">
           <MenuPanel className="draft-inner">
