@@ -365,12 +365,12 @@ test.describe("dev sandbox smoke", () => {
     expect(result.moveA.map((sample) => sample.kind)).toEqual(["boss", "flying", "melee", "ranged"]);
     expect(result.moveB.map((sample) => sample.kind)).toEqual(["boss", "flying", "melee", "ranged"]);
 
-    for (const [index, sample] of result.moveB.entries()) {
+    for (const sample of result.moveB) {
       expect(sample.src).toContain("/animations/scourge/");
     }
 
     for (const kind of ["boss", "flying", "melee", "ranged"] as const) {
-      const kindSamples = result.moveSamples.flatMap((samples) => samples).filter((sample) => sample.kind === kind);
+      const kindSamples = result.moveSamples.flat().filter((sample) => sample.kind === kind);
       expect(kindSamples.some((sample) => sample.state === "move")).toBe(true);
       const frames = new Set(kindSamples.map((sample) => sample.frame));
       expect(frames.size).toBeGreaterThan(1);

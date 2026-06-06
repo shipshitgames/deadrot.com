@@ -606,7 +606,7 @@ export class Enemy extends Agent {
     elapsed: number,
     dirX: number,
     dirZ: number,
-    dist: number,
+    _dist: number,
     playerPos: THREE.Vector3,
     tick: EnemyTick,
   ) {

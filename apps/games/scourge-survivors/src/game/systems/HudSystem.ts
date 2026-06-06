@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import type * as THREE from "three";
 import type { GameContext } from "../context";
 import type { GameSystems } from "../systems";
 import { audio } from "../../audio/AudioEngine";
