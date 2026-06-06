@@ -4,7 +4,7 @@ import type { HUDState } from '../game/types'
 import { MAP_PICKER } from '../game/data/maps'
 import { STARTING_WEAPON, WEAPON_ORDER, WEAPONS, type PickupKind, type WeaponId } from '../game/constants'
 import type { SandboxEnemyKind } from '../game/Game'
-import { RUNTIME_AUDIO_ASSET_URLS } from '../game/spriteAssets'
+import { RUNTIME_AUDIO_ASSET_URLS, RUNTIME_VISUAL_ASSET_URLS } from '../game/spriteAssets'
 
 import bossBack from '@shipshitgames/assets/games/scourge-survivors/enemies/scourge/breach-boss/back.webp'
 import bossFront from '@shipshitgames/assets/games/scourge-survivors/enemies/scourge/breach-boss/front.webp'
@@ -81,6 +81,8 @@ const WEAPON_IMAGES: Record<WeaponId, string> = {
   sniper: weaponSniper,
 }
 
+const ARENA_TEXTURE_ROLES = ['floor', 'wall', 'block', 'column', 'decal', 'prop'] as const
+
 const VISUAL_ASSETS: VisualAsset[] = [
   { id: 'weapon-pistol', label: 'Pistol', src: weaponPistol, kind: 'sprite' },
   { id: 'weapon-smg', label: 'SMG', src: weaponSmg, kind: 'sprite' },
@@ -122,6 +124,14 @@ const VISUAL_ASSETS: VisualAsset[] = [
   { id: 'arena-wall', label: 'Arena wall', src: arenaWall, kind: 'texture' },
   { id: 'arena-column', label: 'Arena column', src: arenaColumn, kind: 'texture' },
   { id: 'arena-block', label: 'Arena block', src: arenaBlock, kind: 'texture' },
+  ...MAP_PICKER.flatMap((map) =>
+    ARENA_TEXTURE_ROLES.map((role) => ({
+      id: `arena-${map.id}-${role}`,
+      label: `${map.name} ${role}`,
+      src: RUNTIME_VISUAL_ASSET_URLS[`arena-${map.id}-${role}`],
+      kind: 'texture' as const,
+    })),
+  ),
   { id: 'ui-hero-jpg', label: 'Menu hero jpg', src: menuHeroJpg, kind: 'ui' },
   { id: 'ui-hero-png', label: 'Menu hero png', src: menuHeroPng, kind: 'ui' },
   { id: 'ui-breach-jpg', label: 'Breach card jpg', src: menuCardBreach, kind: 'ui' },

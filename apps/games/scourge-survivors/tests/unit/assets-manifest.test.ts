@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import manifest from '@shipshitgames/assets/games/scourge-survivors/assets.json'
+import { CAMPAIGN_ORDER, MAPS } from '../../src/game/data/maps'
 
 type Manifest = typeof manifest
 type SpriteEntry = Manifest['sprites'][keyof Manifest['sprites']]
@@ -119,5 +120,32 @@ describe('asset manifest', () => {
       shootShotgun: 'sfx-shotgun',
       shootCannon: 'sfx-cannon',
     })
+  })
+
+  it('keeps every campaign arena backed by authored materials and environment dressing', () => {
+    const textureIds = new Set(Object.keys(manifest.textures))
+
+    for (const mapId of CAMPAIGN_ORDER) {
+      const map = MAPS[mapId]
+      const materialIds = Object.values(map.materials)
+
+      expect(new Set(materialIds).size, `${mapId} unique material roles`).toBe(materialIds.length)
+      for (const id of materialIds) {
+        expect(textureIds.has(id), `${mapId} material ${id}`).toBe(true)
+        expectExistingAsset(manifest.textures[id as keyof typeof manifest.textures].path)
+      }
+
+      expect(map.environment.silhouettes.length, `${mapId} distant silhouettes`).toBeGreaterThanOrEqual(3)
+      expect(map.environment.decals.length, `${mapId} floor decals`).toBeGreaterThanOrEqual(3)
+      expect(map.environment.props.length, `${mapId} arena props`).toBeGreaterThanOrEqual(4)
+      for (const decal of map.environment.decals) {
+        expect(textureIds.has(decal.texture), `${mapId} decal ${decal.texture}`).toBe(true)
+        expectExistingAsset(manifest.textures[decal.texture as keyof typeof manifest.textures].path)
+      }
+      for (const prop of map.environment.props) {
+        expect(textureIds.has(prop.texture), `${mapId} prop ${prop.texture}`).toBe(true)
+        expectExistingAsset(manifest.textures[prop.texture as keyof typeof manifest.textures].path)
+      }
+    }
   })
 })

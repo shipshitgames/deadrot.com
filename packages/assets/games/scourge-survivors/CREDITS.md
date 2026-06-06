@@ -1,5 +1,21 @@
 # Asset Credits
 
+## 2026-06-06 - authored breach-arena texture sets
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Role: map-specific floor, wall, block, column, decal, and prop sprite textures for Ashgate, the Hollow Lanes, the Maw, and Perdition.
+- Tool: deterministic local procedural texture generator plus `cwebp`.
+- Plan: Codex local generation.
+- Kind: generated seamless-ish 512x512 WebP tiling textures, floor decal plates, and transparent arena prop sprite plates.
+- Source note: generated from the material palettes and pattern recipe documented under `textures/arenas/README.md`.
+- Final assets:
+  - `textures/arenas/ashgate/{floor,wall,block,column,decal,prop}.webp`
+  - `textures/arenas/hollowlanes/{floor,wall,block,column,decal,prop}.webp`
+  - `textures/arenas/maw/{floor,wall,block,column,decal,prop}.webp`
+  - `textures/arenas/perdition/{floor,wall,block,column,decal,prop}.webp`
+- Notes: Replaces the tint-only map read with authored material lanes while keeping the current v1 arena collision footprint unchanged.
+
 ## 2026-06-04 - Press Start 2P font
 
 - Status: promoted into runtime.
