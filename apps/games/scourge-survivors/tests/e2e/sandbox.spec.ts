@@ -12,6 +12,13 @@ type HudSnapshot = {
   adsZoomLevels: number
 }
 
+type AnimationSample = {
+  kind: 'boss' | 'flying' | 'melee' | 'ranged'
+  frame: number
+  src: string
+  state: string
+}
+
 async function snapshot(page: Page): Promise<HudSnapshot> {
   return page.evaluate(() => (window as unknown as { __hudSnapshot: () => HudSnapshot }).__hudSnapshot())
 }
@@ -111,5 +118,90 @@ test.describe('dev sandbox smoke', () => {
     await expect.poll(() => snapshot(page).then((state) => state.enemiesAlive)).toBeGreaterThan(0)
 
     expect(consoleErrors).toEqual([])
+  })
+
+  test('cycles generated enemy movement and attack frames', async ({ page }) => {
+    await page.goto('/?sandbox=1')
+    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame)
+
+    const result = await page.evaluate(async () => {
+      type DevEnemy = {
+        alive: boolean
+        flying: boolean
+        isBoss: boolean
+        ranged: boolean
+        spriteAnimationFrame: number
+        spriteAnimationState: string
+        spriteMat: {
+          map?: {
+            image?: {
+              currentSrc?: string
+              src?: string
+            }
+          }
+        }
+        attackAnimationDuration: () => number
+        triggerSpriteAnimation: (animation: 'attack', duration: number) => void
+      }
+      type DevGame = {
+        clearSandboxActors: () => void
+        spawnSandboxEnemy: (kind: 'boss' | 'flying' | 'melee' | 'ranged', count?: number) => void
+        startSandbox: () => void
+        ctx: {
+          enemies: DevEnemy[]
+          status: string
+        }
+      }
+
+      const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame
+      const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms))
+      const sample = (): AnimationSample[] =>
+        game.ctx.enemies
+          .filter((enemy) => enemy.alive)
+          .map((enemy) => ({
+            kind: enemy.isBoss ? 'boss' : enemy.flying ? 'flying' : enemy.ranged ? 'ranged' : 'melee',
+            frame: enemy.spriteAnimationFrame,
+            src: enemy.spriteMat.map?.image?.currentSrc || enemy.spriteMat.map?.image?.src || '',
+            state: enemy.spriteAnimationState,
+          }))
+          .sort((a, b) => a.kind.localeCompare(b.kind))
+
+      game.startSandbox()
+      game.ctx.status = 'playing'
+      game.clearSandboxActors()
+      for (const kind of ['melee', 'ranged', 'flying', 'boss'] as const) {
+        game.spawnSandboxEnemy(kind, 1)
+      }
+      game.ctx.status = 'playing'
+
+      await wait(240)
+      const moveA = sample()
+      await wait(360)
+      const moveB = sample()
+      for (const enemy of game.ctx.enemies.filter((enemy) => enemy.alive)) {
+        enemy.triggerSpriteAnimation('attack', enemy.attackAnimationDuration())
+      }
+      await wait(320)
+      const attacking = sample()
+
+      return { moveA, moveB, attacking }
+    })
+
+    expect(result.moveA.map((sample) => sample.kind)).toEqual(['boss', 'flying', 'melee', 'ranged'])
+    expect(result.moveB.map((sample) => sample.kind)).toEqual(['boss', 'flying', 'melee', 'ranged'])
+
+    for (const [index, sample] of result.moveB.entries()) {
+      expect(sample.state).toBe('move')
+      expect(sample.src).toContain('/animations/scourge/')
+      expect(sample.frame).not.toBe(result.moveA[index]?.frame)
+    }
+
+    expect(Object.fromEntries(result.attacking.map((sample) => [sample.kind, sample.src]))).toMatchObject({
+      boss: expect.stringContaining('/breach-boss/barrage/'),
+      flying: expect.stringContaining('/winged-host/attack/'),
+      melee: expect.stringContaining('/host-grunt/slash/'),
+      ranged: expect.stringContaining('/spitter-host/spit/'),
+    })
+    expect(result.attacking.every((sample) => sample.state === 'attack')).toBe(true)
   })
 })

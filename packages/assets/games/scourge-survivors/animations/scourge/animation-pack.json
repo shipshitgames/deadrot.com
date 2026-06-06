@@ -1,0 +1,99 @@
+{
+  "version": "2026-06-05-v01",
+  "status": "generated-not-wired",
+  "tool": "built-in image_gen",
+  "model": "gpt-image-2",
+  "promptHistory": "apps/lore/content/Art/Prompt-Batches/2026-06-05-scourge-animation-pack.md",
+  "framesPerAction": 6,
+  "views": ["front", "side", "back"],
+  "entities": {
+    "host-grunt": {
+      "frameDimensions": [128, 128],
+      "colorLane": "blood-red melee brute, black sinew, bone sword blades, small toxic green core",
+      "physicsLane": "heavy grounded lurch, blade-weight drag, broad shoulder-driven slash",
+      "actions": {
+        "walk": {
+          "loop": true,
+          "fps": 8,
+          "pathTemplate": "animations/scourge/host-grunt/walk/{view}/frame-{frame}.webp"
+        },
+        "slash": {
+          "loop": false,
+          "fps": 12,
+          "pathTemplate": "animations/scourge/host-grunt/slash/{view}/frame-{frame}.webp"
+        },
+        "death": {
+          "loop": false,
+          "fps": 10,
+          "pathTemplate": "animations/scourge/host-grunt/death/{view}/frame-{frame}.webp"
+        }
+      }
+    },
+    "spitter-host": {
+      "frameDimensions": [128, 128],
+      "colorLane": "sickly chartreuse acid sacs and throat glow, ochre infected flesh, darker limbs",
+      "physicsLane": "twitchy ranged scuttle, elastic sac swelling, recoil after spit",
+      "actions": {
+        "walk": {
+          "loop": true,
+          "fps": 9,
+          "pathTemplate": "animations/scourge/spitter-host/walk/{view}/frame-{frame}.webp"
+        },
+        "spit": {
+          "loop": false,
+          "fps": 12,
+          "pathTemplate": "animations/scourge/spitter-host/spit/{view}/frame-{frame}.webp"
+        },
+        "death": {
+          "loop": false,
+          "fps": 10,
+          "pathTemplate": "animations/scourge/spitter-host/death/{view}/frame-{frame}.webp"
+        }
+      }
+    },
+    "winged-host": {
+      "frameDimensions": [128, 128],
+      "colorLane": "bruised violet wing membranes, red-black body, bone tips, small toxic green organs",
+      "physicsLane": "lightweight hover bob, fast wing-beat arcs, quick diving snap",
+      "actions": {
+        "fly": {
+          "loop": true,
+          "fps": 12,
+          "pathTemplate": "animations/scourge/winged-host/fly/{view}/frame-{frame}.webp"
+        },
+        "attack": {
+          "loop": false,
+          "fps": 12,
+          "pathTemplate": "animations/scourge/winged-host/attack/{view}/frame-{frame}.webp"
+        },
+        "death": {
+          "loop": false,
+          "fps": 10,
+          "pathTemplate": "animations/scourge/winged-host/death/{view}/frame-{frame}.webp"
+        }
+      }
+    },
+    "breach-boss": {
+      "frameDimensions": [128, 180],
+      "colorLane": "deep crimson-black boss mass, large bone skull plates, bright toxic green cores, orange hell-rim accents",
+      "physicsLane": "massive slow inertia, tendril lag, heavy torso compression",
+      "actions": {
+        "lurch": {
+          "loop": true,
+          "fps": 7,
+          "pathTemplate": "animations/scourge/breach-boss/lurch/{view}/frame-{frame}.webp"
+        },
+        "barrage": {
+          "loop": false,
+          "fps": 10,
+          "pathTemplate": "animations/scourge/breach-boss/barrage/{view}/frame-{frame}.webp"
+        },
+        "death": {
+          "loop": false,
+          "fps": 8,
+          "pathTemplate": "animations/scourge/breach-boss/death/{view}/frame-{frame}.webp"
+        }
+      }
+    }
+  }
+}

@@ -113,7 +113,7 @@ the provenance trail before assets are promoted into a game manifest.
 ## 2026-06-04 - website-portrait-placeholders - v01
 
 - Status: draft assets plus website integration.
-- Game: `games.shipshit.dev` website.
+- Game: `deadrot.com` website.
 - Faction: Pyre, Wardens, Scourge.
 - Character/role: all missing character and bestiary card placeholders.
 - View: square website portrait plate.
@@ -184,3 +184,45 @@ the provenance trail before assets are promoted into a game manifest.
 - Post-processing: generated a blurred/dimmed art backing, a right-side crisp art crop, and exact Deadrot/title/tagline/URL SVG text overlay at 1200x630.
 - Notes: `Zero Day` also received `apps/web/public/images/games/zero-day.webp` so the existing game gallery image path resolves.
 - Decision: wired into `/games/[slug]` metadata as Open Graph and Twitter `summary_large_image` cards.
+
+## 2026-06-05 - locked-scourge-melee-and-boss-runtime-refresh - v01
+
+- Status: promoted into runtime.
+- Game: [[Scourge-Survivors]].
+- Faction: [[Scourge]].
+- Character/role: Swarm Ripper / Host Grunt melee foe and Breach-Boss.
+- View: front / side / back runtime billboard sprites.
+- Tool: built-in `image_gen` / `gpt-image-2`.
+- Plan: Codex built-in.
+- Kind: ai-2d-sprite runtime refresh.
+- Source output:
+  - `/Users/decod3rslabs/.codex/generated_images/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_0470aa91021088af016a22ed9b2b6c819197f8d4b4b0ac3443.png`
+  - `/Users/decod3rslabs/.codex/generated_images/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_0470aa91021088af016a22ee1ffd2c8191bc6029fcddaa27ad.png`
+- Workspace draft: `packages/assets/games/scourge-survivors/sources/drafts/sprites/2026-06-05-locked-runtime-refresh/`.
+- Final asset:
+  - `packages/assets/games/scourge-survivors/enemies/scourge/host-grunt/{front,side,back}.webp`
+  - `packages/assets/games/scourge-survivors/enemies/scourge/breach-boss/{front,side,back}.webp`
+- Prompt source: `Art/style-bakeoff/run-d2.sh`, `Art/style-refs/scourge-survivors.webp`, and direct review that melee foes need body-grown swords and the boss was being cut in-game.
+- Post-processing: copied source sheets into the asset package; sliced three equal cells; removed sampled magenta key with ffmpeg `colorkey`; nearest-neighbor downscaled; padded with alpha; encoded lossless WebP.
+- Notes: Melee now has sword-like bone blades grown from the forearms, not separate held weapons. Boss sprites have extra texture padding and reduced manifest sprite height so they stop filling/cutting the camera.
+- Decision: promoted to runtime and mirrored to website/public sprite copies plus shared entity preview plates.
+
+## 2026-06-05 - scourge-animation-pack - v01
+
+- Status: generated, not yet wired into runtime.
+- Game: [[Scourge-Survivors]].
+- Faction: [[Scourge]].
+- Character/role: Host Grunt, Spitter Host, Winged Host, Breach-Boss.
+- View: front / side / back animation frames.
+- Tool: built-in `image_gen` / `gpt-image-2`.
+- Plan: Codex built-in.
+- Kind: ai-2d-animation-sprite-sheet.
+- Workspace final:
+  - `packages/assets/games/scourge-survivors/animations/scourge/host-grunt/`
+  - `packages/assets/games/scourge-survivors/animations/scourge/spitter-host/`
+  - `packages/assets/games/scourge-survivors/animations/scourge/winged-host/`
+  - `packages/assets/games/scourge-survivors/animations/scourge/breach-boss/`
+- Prompt source: `Art/Prompt-Batches/2026-06-05-scourge-animation-pack.md`.
+- Post-processing: generated 3x6 action sheets; copied originals into action `source/sheet.png`; split into six frames per view; removed `#ff00ff` chroma key; nearest-neighbor downscaled; alpha padded; encoded lossless WebP.
+- Notes: The pack establishes enemy readability lanes: blood-red heavy melee, chartreuse acid ranged, purple-wing lightweight flyer, and deep crimson-black massive boss.
+- Decision: keep as an animation asset pack and wire into the renderer in a follow-up implementation pass. First spitter walk frames and first winged fly frames were also promoted into the current runtime static sprites so the color lanes are immediately visible in-game.
