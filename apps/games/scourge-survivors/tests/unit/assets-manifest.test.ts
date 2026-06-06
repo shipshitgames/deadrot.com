@@ -1,7 +1,9 @@
-import { existsSync, statSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import animationManifest from "@shipshitgames/assets/games/scourge-survivors/animations/scourge/animation-pack.json";
 import manifest from "@shipshitgames/assets/games/scourge-survivors/assets.json";
 import { CAMPAIGN_ORDER, MAPS } from "../../src/game/data/maps";
 
@@ -15,6 +17,32 @@ function expectExistingAsset(path: string) {
   const fullPath = join(assetsRoot, path);
   expect(existsSync(fullPath), path).toBe(true);
   expect(statSync(fullPath).size, path).toBeGreaterThan(0);
+}
+
+function scourgeEnemySpritePaths() {
+  const paths: string[] = [];
+  const enemySpriteIds = ["enemy-melee", "enemy-ranged", "enemy-flying", "boss"] as const;
+
+  for (const id of enemySpriteIds) {
+    for (const view of Object.values(manifest.sprites[id].views)) paths.push(view.path);
+  }
+
+  for (const entity of Object.values(animationManifest.entities) as Array<{
+    actions: Record<string, { pathTemplate: string }>;
+  }>) {
+    for (const action of Object.values(entity.actions)) {
+      for (const view of animationManifest.views) {
+        for (let frame = 0; frame < animationManifest.framesPerAction; frame += 1) {
+          const frameId = String(frame).padStart(2, "0");
+          paths.push(
+            `games/scourge-survivors/${action.pathTemplate.replace("{view}", view).replace("{frame}", frameId)}`,
+          );
+        }
+      }
+    }
+  }
+
+  return paths.sort();
 }
 
 describe("asset manifest", () => {
@@ -66,6 +94,22 @@ describe("asset manifest", () => {
         expect(view.dimensions[1], `${id} height`).toBeLessThanOrEqual(id === "boss" ? 180 : 128);
       }
     }
+  });
+
+  it("keeps Scourge enemy sprite cutouts on the cleaned alpha baseline", () => {
+    const hash = createHash("sha256");
+    const paths = scourgeEnemySpritePaths();
+
+    expect(paths).toHaveLength(228);
+
+    for (const path of paths) {
+      hash.update(path);
+      hash.update("\0");
+      hash.update(readFileSync(join(assetsRoot, path)));
+      hash.update("\0");
+    }
+
+    expect(hash.digest("hex")).toBe("3bd0c4b4e9d7cbb8370860c6c4329bd5acd4d3d2d20c9db1718ae11a7cc108cc");
   });
 
   it("defines weapon sprite metadata needed for first-person runtime placement", () => {
