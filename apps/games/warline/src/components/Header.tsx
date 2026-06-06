@@ -1,5 +1,6 @@
 import type { Summary, WorldState } from '@shipshitgames/warline'
 import type { WarlineStatus } from '../store'
+import { HelpTooltip } from './HelpTooltip'
 
 interface HeaderProps {
   state: WorldState
@@ -22,6 +23,11 @@ export function Header({ state, summary, status }: HeaderProps) {
           <h1 className="font-display text-2xl leading-none text-bone sm:text-3xl">
             WARLINE
           </h1>
+          <HelpTooltip label="Explain Warline" side="bottom">
+            Warline is the shared campaign front. Other games report victories
+            here, then this screen turns those results into territory, resource,
+            breach, and threat changes.
+          </HelpTooltip>
           <span className="font-display text-xs tracking-wide text-hellfire sm:text-sm">
             War for the Lanes
           </span>
@@ -36,15 +42,27 @@ export function Header({ state, summary, status }: HeaderProps) {
             <span>
               TICK <span className="text-bone">{state.tick}</span>
             </span>
+            <HelpTooltip label="Explain epoch and tick" side="bottom">
+              Epoch is the current war reset. Tick is the simulation step; each
+              tick lets breaches pump pressure, lanes spread pressure, defenses
+              decay, resources generate, and regions possibly fall.
+            </HelpTooltip>
           </div>
 
-          <span
-            className={`border-2 px-2 py-0.5 font-display text-xs tracking-wide ${statusColor(
-              status,
-            )}`}
-          >
-            {status}
-          </span>
+          <div className="flex items-center gap-1">
+            <span
+              className={`border-2 px-2 py-0.5 font-display text-xs tracking-wide ${statusColor(
+                status,
+              )}`}
+            >
+              {status}
+            </span>
+            <HelpTooltip label="Explain connection status" side="bottom">
+              LIVE means this client mirrors the shared PartyKit server. LOCAL
+              means the same simulation is running in this browser. CONNECTING
+              means it is trying to reach the shared front.
+            </HelpTooltip>
+          </div>
 
           <div className="flex items-center gap-2">
             <span className="font-display text-xs tracking-wide text-ash">
@@ -63,6 +81,11 @@ export function Header({ state, summary, status }: HeaderProps) {
               />
             </div>
             <span className="font-mono text-xs text-bone">{threat}</span>
+            <HelpTooltip label="Explain threat" side="bottom">
+              Threat is the pressure on human and neutral regions, plus active
+              breach intensity. High threat means the Scourge is closer to
+              flipping regions.
+            </HelpTooltip>
           </div>
         </div>
       </div>
