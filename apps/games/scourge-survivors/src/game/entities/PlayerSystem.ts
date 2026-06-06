@@ -21,6 +21,7 @@ import {
   WALL_THICKNESS,
   WEAPON_ORDER,
   WEAPONS,
+  BERSERK_MOVE_MULT,
   type WeaponId,
 } from '../constants'
 
@@ -55,7 +56,8 @@ export class PlayerSystem {
     const sprinting = this.ctx.wantsSprint && !crouched
     const stanceMul = crouched ? CROUCH_ACCEL_MULT : sprinting ? SPRINT_ACCEL_MULT : 1
     const adsMoveMul = 1 + (WEAPONS[this.ctx.activeWeapon].adsMoveMul - 1) * this.ctx.adsT
-    const accel = MOVE_ACCEL * this.ctx.statMoveMul * stanceMul * adsMoveMul
+    const berserkMoveMul = this.ctx.damageBoostTimer > 0 ? BERSERK_MOVE_MULT : 1
+    const accel = MOVE_ACCEL * this.ctx.statMoveMul * berserkMoveMul * stanceMul * adsMoveMul
     if (this.ctx.move.forward || this.ctx.move.back) this.ctx.velocity.z -= this.ctx._dir.z * accel * delta
     if (this.ctx.move.left || this.ctx.move.right) this.ctx.velocity.x -= this.ctx._dir.x * accel * delta
 

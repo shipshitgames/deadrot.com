@@ -61,6 +61,9 @@ export interface HUDState {
   weapons: { id: string; name: string; key: number; active: boolean }[]
   /** Remaining seconds of the damage-boost upgrade (0 when inactive). */
   damageBoost: number
+  /** Remaining seconds and normalized timer for berserk mode (0 when inactive). */
+  berserk: number
+  berserkFrac: number
   /** Remaining seconds of the dual-weapon pickup bonus (0 when inactive). */
   dualWeapon: number
   /** True while right-click ADS is held. */
