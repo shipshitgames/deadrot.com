@@ -1,4 +1,13 @@
-import { Button, MenuPanel, MenuScreen, MenuTitle } from "@shipshitgames/ui";
+import {
+  MainMenuAction,
+  MainMenuCopy,
+  MainMenuLayout,
+  MainMenuNav,
+  MainMenuScreen,
+  MainMenuStatus,
+  MainMenuTitle,
+  MenuKicker,
+} from "@shipshitgames/ui";
 
 export function AppShell() {
   return (
@@ -20,15 +29,22 @@ export function AppShell() {
           </div>
         </div>
 
-        <MenuScreen id="hud-banner" className="hidden">
-          <MenuPanel>
-            <MenuTitle id="banner-title">DEADLANE</MenuTitle>
-            <p id="banner-sub" />
-            <Button id="banner-btn" variant="primary" size="lg">
-              DEPLOY
-            </Button>
-          </MenuPanel>
-        </MenuScreen>
+        <MainMenuScreen id="hud-banner" className="hidden ssg-main-menu-screen--compact">
+          <MainMenuLayout>
+            <MainMenuCopy>
+              <MenuKicker>Scourge Lane Defense</MenuKicker>
+              <MainMenuTitle id="banner-title">DEADLANE</MainMenuTitle>
+              <p id="banner-sub" className="ssg-main-menu-subtitle" />
+              <MainMenuStatus>
+                <span>Build the kill corridor</span>
+                <span>Hold the base</span>
+              </MainMenuStatus>
+            </MainMenuCopy>
+            <MainMenuNav label="Command">
+              <MainMenuAction id="banner-btn" variant="primary" label="DEPLOY" meta="Start wave" />
+            </MainMenuNav>
+          </MainMenuLayout>
+        </MainMenuScreen>
 
         <div id="hud-hint">
           <span id="hint-text">CLICK A CELL TO BUILD (COST 50)</span>

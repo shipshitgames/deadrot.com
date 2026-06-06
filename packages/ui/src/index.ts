@@ -5,6 +5,15 @@ export { Card, CardTitle, CardBody } from "./Card";
 export type { CardProps } from "./Card";
 
 export {
+  MainMenuAction,
+  MainMenuCopy,
+  MainMenuLayout,
+  MainMenuNav,
+  MainMenuScreen,
+  MainMenuStatus,
+  MainMenuTitle,
+  MainMenuTitleLine,
+  MainMenuTopBar,
   MenuCard,
   MenuItem,
   MenuKicker,
@@ -14,7 +23,17 @@ export {
   MenuTitle,
   UpgradeCard,
 } from "./Menu";
-export type { DivProps, MenuCardProps, MenuItemProps, UpgradeCardProps } from "./Menu";
+export type {
+  DivProps,
+  MainMenuActionProps,
+  MainMenuNavProps,
+  MainMenuScreenProps,
+  MainMenuTitleLineProps,
+  MainMenuTopBarProps,
+  MenuCardProps,
+  MenuItemProps,
+  UpgradeCardProps,
+} from "./Menu";
 
 export { cn } from "./cn";
 export type { ClassValue } from "./cn";
