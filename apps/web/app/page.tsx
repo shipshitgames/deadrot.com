@@ -37,12 +37,19 @@ export default function Home() {
           style={{ imageRendering: "pixelated" }}
         />
         <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-void via-void/70 to-void/40" />
+        <div aria-hidden className="hero-particles" />
 
         <div className="relative z-10 flex flex-col items-center">
           <Eyebrow>A Ship Shit Games universe</Eyebrow>
-          <h1 className="mt-5 w-[min(760px,92vw)] sm:w-[min(860px,90vw)] md:w-[min(980px,86vw)]">
+          <h1 className="mt-5 w-[min(760px,94vw)] sm:w-[min(820px,90vw)] md:w-[min(880px,82vw)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/branding/deadrot-title.svg" alt="DEADROT" className="h-auto w-full" />
+            <img
+              src="/branding/deadrot-title-gpt-image-2.webp"
+              alt="DEADROT"
+              width={1120}
+              height={450}
+              className="h-auto w-full drop-shadow-[0_18px_34px_rgba(0,0,0,0.78)]"
+            />
           </h1>
           <p className="mt-7 max-w-xl text-lg leading-relaxed text-ash">
             We lost the sky. Now we burn it back. One brutal, blood-soaked universe —{" "}

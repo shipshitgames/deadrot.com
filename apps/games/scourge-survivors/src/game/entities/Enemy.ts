@@ -1,3 +1,4 @@
+import { Agent, type PlanarVec, type SteeringStrategy, type WorldBounds } from "@shipshitgames/engine";
 import * as THREE from "three";
 import {
   BOSS_BARRAGE_COUNT,
@@ -17,9 +18,10 @@ import {
   ENEMY_PROJECTILE_SPEED,
   ENEMY_RADIUS,
   ENEMY_SEPARATION,
-  ENEMY_SPEED_MIN,
   ENEMY_SPEED_MAX,
+  ENEMY_SPEED_MIN,
 } from "../constants";
+import { ENEMY_ARCHETYPES, type EnemyArchetypeId } from "../data/enemies";
 import {
   ENEMY_SPRITE_ANIMATION_META,
   ENEMY_SPRITE_ANIMATION_TEXTURES,
@@ -27,9 +29,7 @@ import {
   ENEMY_SPRITE_TEXTURES,
   type EnemySpriteAnimationState,
 } from "../spriteAssets";
-import { ENEMY_ARCHETYPES, type EnemyArchetypeId } from "../data/enemies";
-import { Agent, type WorldBounds, type SteeringStrategy, type PlanarVec } from "@shipshitgames/engine";
-import { chasePlayerStrategy } from "./ChasePlayerStrategy";
+import { chasePlayerStrategy, redirectBlockedRangedRetreat } from "./ChasePlayerStrategy";
 
 const HEALTHBAR_WIDTH = 0.95;
 type EnemySpriteKind = "melee" | "ranged" | "flying" | "boss";
@@ -496,6 +496,21 @@ export class Enemy extends Agent {
 
       // steering intent (chase / kite / strafe) added on top of separation
       this.steering.desiredVelocity(this, { dist, dirX, dirZ }, move);
+      if (this.retreating) {
+        const blocked = redirectBlockedRangedRetreat(
+          pos,
+          move,
+          { dirX, dirZ },
+          {
+            bounds,
+            delta,
+            margin: 1.5,
+            speed: this.speed,
+            strafeSign: this.strafeSign,
+          },
+        );
+        if (blocked) this.retreating = false;
+      }
     }
 
     const staggerMoveMul = this.staggerTimer > 0 ? (this.isBoss ? 0.72 : this.archetype === "tank" ? 0.48 : 0.18) : 1;

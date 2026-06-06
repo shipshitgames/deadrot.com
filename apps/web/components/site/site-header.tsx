@@ -38,7 +38,7 @@ export function SiteHeader() {
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link href="/" aria-label="DEADROT home" className="text-bone">
-          <DeadrotBrand textClassName="text-lg" />
+          <DeadrotBrand variant="target" imageClassName="h-9 w-9 sm:h-10 sm:w-10" />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">

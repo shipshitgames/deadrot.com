@@ -10,8 +10,8 @@ Codex/ChatGPT, with Socket covering package supply-chain checks.
   skipped.
 - Codex/ChatGPT reads `AGENTS.md` review guidance. Automatic review itself is
   enabled from ChatGPT/Codex settings, not from a repository file.
-- Socket CI runs from `.github/workflows/socket.yml` on same-repo PRs and pushes
-  to `master`, `develop`, and `staging`.
+- Socket supply-chain review is handled by the Socket Security GitHub App.
+  The app comments on dependency-manifest PRs and publishes its own GitHub check.
 
 ## Required External Setup
 
@@ -24,12 +24,10 @@ by committing files alone.
    `https://chatgpt.com/codex/settings/code-review`
 3. Install Socket Security on this repository:
    `https://github.com/apps/socket-security`
-4. Add the Socket Actions secret after creating a Socket CI/CD API key:
-   `SOCKET_SECURITY_API_KEY`
 
-For the Socket CI secret, use a repository or organization Actions secret. The
-workflow intentionally fails when the secret is missing so package security is
-not silently skipped on protected branches.
+No `SOCKET_SECURITY_API_KEY` Actions secret is required for the app-only setup.
+Only add a Socket CI/CD API token if we intentionally reintroduce a Socket CLI
+workflow later.
 
 ## Manual Review Triggers
 

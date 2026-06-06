@@ -1,5 +1,55 @@
-import type { PlanarVec, SteerView, SteeringStrategy } from "@shipshitgames/engine";
+import type { PlanarVec, SteeringStrategy, SteerView, WorldBounds } from "@shipshitgames/engine";
 import type { Enemy } from "./Enemy";
+
+const RANGED_INNER_BAND_OFFSET = 3.5;
+const RANGED_OUTER_BAND_OFFSET = 4.5;
+const RANGED_MIN_RETREAT_RANGE = 6;
+const RANGED_STRAFE_SPEED = 0.7;
+const RANGED_RETREAT_SPEED = 0.78;
+
+export function rangedEngagementBand(preferredRange: number): { inner: number; outer: number } {
+  return {
+    inner: Math.max(RANGED_MIN_RETREAT_RANGE, preferredRange - RANGED_INNER_BAND_OFFSET),
+    outer: preferredRange + RANGED_OUTER_BAND_OFFSET,
+  };
+}
+
+export function redirectBlockedRangedRetreat(
+  pos: { x: number; z: number },
+  move: PlanarVec,
+  view: Pick<SteerView, "dirX" | "dirZ">,
+  opts: {
+    bounds: WorldBounds;
+    delta: number;
+    margin: number;
+    speed: number;
+    strafeSign: number;
+  },
+): boolean {
+  const nextX = pos.x + move.x * opts.delta;
+  const nextZ = pos.z + move.z * opts.delta;
+  if (opts.bounds.containsXZ(nextX, nextZ, opts.margin)) return false;
+
+  const strafeX = -view.dirZ * opts.strafeSign * opts.speed * RANGED_STRAFE_SPEED;
+  const strafeZ = view.dirX * opts.strafeSign * opts.speed * RANGED_STRAFE_SPEED;
+  if (opts.bounds.containsXZ(pos.x + strafeX * opts.delta, pos.z + strafeZ * opts.delta, opts.margin)) {
+    move.x = strafeX;
+    move.z = strafeZ;
+    return true;
+  }
+
+  const flippedStrafeX = -strafeX;
+  const flippedStrafeZ = -strafeZ;
+  if (opts.bounds.containsXZ(pos.x + flippedStrafeX * opts.delta, pos.z + flippedStrafeZ * opts.delta, opts.margin)) {
+    move.x = flippedStrafeX;
+    move.z = flippedStrafeZ;
+    return true;
+  }
+
+  move.x = 0;
+  move.z = 0;
+  return true;
+}
 
 /**
  * The Scourge melee-chase / ranged-kite steering — the FPS half of the agent
@@ -15,18 +65,17 @@ class ChasePlayerStrategy implements SteeringStrategy<Enemy> {
     const { dist, dirX, dirZ } = view;
     e.retreating = false;
     if (e.ranged && !e.isBoss) {
-      // kite: hold preferred range, strafe around the player
-      if (dist > e.preferredRange + 1.5) {
+      const band = rangedEngagementBand(e.preferredRange);
+      if (dist > band.outer) {
         out.x += dirX * e.speed;
         out.z += dirZ * e.speed;
-      } else if (dist < e.preferredRange - 2) {
-        out.x -= dirX * e.speed * 0.8;
-        out.z -= dirZ * e.speed * 0.8;
+      } else if (dist < band.inner) {
+        out.x -= dirX * e.speed * RANGED_RETREAT_SPEED;
+        out.z -= dirZ * e.speed * RANGED_RETREAT_SPEED;
         e.retreating = true;
       } else {
-        // strafe perpendicular to the player direction
-        out.x += -dirZ * e.strafeSign * e.speed * 0.7;
-        out.z += dirX * e.strafeSign * e.speed * 0.7;
+        out.x += -dirZ * e.strafeSign * e.speed * RANGED_STRAFE_SPEED;
+        out.z += dirX * e.strafeSign * e.speed * RANGED_STRAFE_SPEED;
       }
     } else {
       const closing = dist > e.attackRange * 0.85 ? 1 : 0;
