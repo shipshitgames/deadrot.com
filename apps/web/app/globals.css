@@ -115,6 +115,58 @@
   background: radial-gradient(120% 90% at 50% 30%, transparent 40%, rgba(0, 0, 0, 0.75) 100%);
 }
 
+.hero-particles {
+  pointer-events: none;
+  position: absolute;
+  inset: -8% -4%;
+  z-index: 1;
+  overflow: hidden;
+  mix-blend-mode: screen;
+}
+
+.hero-particles::before,
+.hero-particles::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-repeat: repeat;
+  will-change: transform, opacity;
+}
+
+.hero-particles::before {
+  opacity: 0.48;
+  background-image:
+    radial-gradient(circle, rgba(255, 106, 0, 0.95) 0 1px, transparent 2px),
+    radial-gradient(circle, rgba(193, 18, 31, 0.7) 0 1px, transparent 2px),
+    radial-gradient(circle, rgba(233, 227, 214, 0.55) 0 1px, transparent 2px);
+  background-position:
+    18px 42px,
+    90px 130px,
+    144px 12px;
+  background-size:
+    170px 220px,
+    260px 290px,
+    340px 260px;
+  animation:
+    hero-particles-rise 16s linear infinite,
+    hero-particles-pulse 5.5s ease-in-out infinite;
+}
+
+.hero-particles::after {
+  opacity: 0.28;
+  background-image:
+    radial-gradient(circle, rgba(139, 220, 31, 0.65) 0 1px, transparent 2px),
+    radial-gradient(circle, rgba(255, 106, 0, 0.65) 0 1.5px, transparent 3px);
+  background-position:
+    52px 88px,
+    190px 42px;
+  background-size:
+    310px 240px,
+    420px 360px;
+  filter: blur(0.2px);
+  animation: hero-particles-drift 24s linear infinite;
+}
+
 .text-glow {
   text-shadow: 0 0 36px color-mix(in srgb, var(--page-accent) 45%, transparent);
 }
@@ -178,4 +230,39 @@
 }
 .animate-bob {
   animation: bob 2.4s ease-in-out infinite;
+}
+
+@keyframes hero-particles-rise {
+  0% {
+    transform: translate3d(0, 6%, 0);
+  }
+  100% {
+    transform: translate3d(2%, -10%, 0);
+  }
+}
+
+@keyframes hero-particles-drift {
+  0% {
+    transform: translate3d(0, 3%, 0);
+  }
+  100% {
+    transform: translate3d(-4%, -12%, 0);
+  }
+}
+
+@keyframes hero-particles-pulse {
+  0%,
+  100% {
+    opacity: 0.34;
+  }
+  50% {
+    opacity: 0.56;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-particles::before,
+  .hero-particles::after {
+    animation: none;
+  }
 }
