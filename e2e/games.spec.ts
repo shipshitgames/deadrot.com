@@ -134,11 +134,11 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
     async assertLoaded(page) {
       await expect(page.getByRole('heading', { name: 'The Front' })).toBeVisible()
       await expect(page.getByRole('heading', { name: 'Command' })).toBeVisible()
-      await expect(page.getByRole('heading', { name: 'Demo · Operation Feed' })).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'War Feed' })).toBeVisible()
       await expect(page.getByRole('img', { name: 'War map of the front' })).toBeVisible()
     },
     async exercise(page) {
-      await page.getByRole('button', { name: /Hold the Lane/i }).click()
+      await page.getByRole('button', { name: /^Hold the Lane\b/i }).click()
       await expect(page.locator('ol li').first()).toContainText('deadlane')
     },
   },
