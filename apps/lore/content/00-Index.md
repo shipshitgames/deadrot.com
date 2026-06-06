@@ -59,6 +59,7 @@ Start here, follow the links, open the graph view.
 
 ## Tech
 
+- [[Blackout-Nail]] — sacrificial severance spike; physically cuts a repeater path after a Fork finds it
 - [[Tuning-Fork]] — passive Choir-listening rig; ranges repeaters so a node can be severed _(draft)_
 
 ## Compendium
