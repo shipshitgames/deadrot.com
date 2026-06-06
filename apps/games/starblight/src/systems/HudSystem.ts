@@ -14,11 +14,17 @@ export class HudSystem {
   private intFill = byId('int-fill')
   private intText = byId('int-text')
   private buildTray = byId('build-tray')
+  private pauseBtn = byId('pause-btn') as HTMLButtonElement
   private banner = byId('banner')
   private bannerTitle = byId('banner-title')
   private bannerSub = byId('banner-sub')
   private bannerHint = byId('banner-hint')
   private bannerBtn = byId('banner-btn') as HTMLButtonElement
+  private pauseMenu = byId('pause-menu')
+  private pauseStats = byId('pause-stats')
+  private pauseResume = byId('pause-resume') as HTMLButtonElement
+  private pauseRestart = byId('pause-restart') as HTMLButtonElement
+  private pauseTitle = byId('pause-title-btn') as HTMLButtonElement
   private draft = byId('draft')
   private draftCards = byId('draft-cards')
   private flash = byId('flash')
@@ -31,16 +37,32 @@ export class HudSystem {
   private lastLevel = 1
 
   private readonly onBtnClick = () => this.onStart()
+  private readonly onPauseClick = () => this.onPause()
+  private readonly onResumeClick = () => this.onResume()
+  private readonly onRestartClick = () => this.onRestart()
+  private readonly onTitleClick = () => this.onTitle()
 
   constructor(
     private readonly onStart: () => void,
     private readonly onPick: (id: UpgradeId) => void,
+    private readonly onPause: () => void,
+    private readonly onResume: () => void,
+    private readonly onRestart: () => void,
+    private readonly onTitle: () => void,
   ) {
     this.bannerBtn.addEventListener('click', this.onBtnClick)
+    this.pauseBtn.addEventListener('click', this.onPauseClick)
+    this.pauseResume.addEventListener('click', this.onResumeClick)
+    this.pauseRestart.addEventListener('click', this.onRestartClick)
+    this.pauseTitle.addEventListener('click', this.onTitleClick)
   }
 
   dispose() {
     this.bannerBtn.removeEventListener('click', this.onBtnClick)
+    this.pauseBtn.removeEventListener('click', this.onPauseClick)
+    this.pauseResume.removeEventListener('click', this.onResumeClick)
+    this.pauseRestart.removeEventListener('click', this.onRestartClick)
+    this.pauseTitle.removeEventListener('click', this.onTitleClick)
     if (this.flashTimer) window.clearTimeout(this.flashTimer)
   }
 
@@ -62,6 +84,7 @@ export class HudSystem {
       this.salvageEl.textContent = s.gems.toLocaleString()
       this.killsEl.textContent = `${s.kills} kills`
       this.intText.textContent = `${s.integrity}/${s.maxIntegrity}`
+      this.pauseStats.textContent = `${fmtTime(s.timeSec)} - LVL ${s.level} - ${s.kills} kills`
       if (s.bossHp01 == null) {
         this.bossBar.classList.add('hidden')
       } else {
@@ -84,6 +107,7 @@ export class HudSystem {
     if (s.phase !== this.lastPhase) {
       this.lastPhase = s.phase
       this.renderBanner(s)
+      this.renderPause(s)
     }
 
     // Draft overlay.
@@ -157,6 +181,11 @@ export class HudSystem {
     } else {
       this.banner.classList.add('hidden')
     }
+  }
+
+  private renderPause(s: HudState) {
+    this.pauseBtn.classList.toggle('hidden', s.phase !== 'playing')
+    this.pauseMenu.classList.toggle('hidden', s.phase !== 'paused')
   }
 
   private flashTimer = 0

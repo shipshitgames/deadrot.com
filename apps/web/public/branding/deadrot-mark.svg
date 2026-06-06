@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">DEADROT DR breach mark</title>
+  <desc id="desc">A compact DR monogram inside a red breach ring and industrial frame.</desc>
+  <defs>
+    <filter id="ember" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="14" flood-color="#c1121f" flood-opacity="0.45"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#ff6a00" flood-opacity="0.35"/>
+    </filter>
+    <clipPath id="frame-clip">
+      <path d="M86 38h340l46 46v340l-46 46H86l-46-46V84z"/>
+    </clipPath>
+  </defs>
+  <rect width="512" height="512" fill="#0a0a0a"/>
+  <path d="M86 38h340l46 46v340l-46 46H86l-46-46V84z" fill="#121214" stroke="#34343c" stroke-width="14"/>
+  <g clip-path="url(#frame-clip)">
+    <circle cx="256" cy="256" r="166" fill="none" stroke="#c1121f" stroke-width="38" stroke-dasharray="104 28 44 34" opacity="0.92" filter="url(#ember)"/>
+    <circle cx="256" cy="256" r="205" fill="none" stroke="#e9e3d6" stroke-width="6" stroke-dasharray="72 24" opacity="0.72"/>
+    <path d="M105 247h61v18h-61zM346 247h61v18h-61zM247 105h18v61h-18zM247 346h18v61h-18z" fill="#8bdc1f"/>
+    <path d="M109 128h48v12h-36v32h-12zM403 128v44h-12v-32h-36v-12zM109 384h12v32h36v12h-48zM403 384v44h-48v-12h36v-32z" fill="#8bdc1f" opacity="0.74"/>
+  </g>
+  <g filter="url(#ember)">
+    <path fill="#e9e3d6" d="M139 145h79l48 48v114l-48 48h-79zm52 54v102h17l15-15v-70l-15-17z"/>
+    <path fill="#e9e3d6" d="M255 145h92l43 43v56l-33 33 48 78h-66l-40-69h-1v69h-43zm43 50v57h30l13-13v-31l-13-13z"/>
+    <path fill="#0a0a0a" d="M170 136l34 34-20 20-34-34zM290 116l31 31-19 19-31-31zM360 300l41 41-22 22-41-41zM210 323l31 31-19 19-31-31z"/>
+    <path fill="#c1121f" d="M139 355h53l-11 36-13-22-11 50-17-31-12 42zm174 0h61l-19 49-15-28-13 63-19-35-15 50z"/>
+    <path fill="#ff2a18" d="M228 353h26l-12 54zM388 351h20l-8 34z" opacity="0.9"/>
+  </g>
+</svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 260" role="img" aria-labelledby="title desc">
+  <title id="title">DEADROT wordmark</title>
+  <desc id="desc">A condensed DEADROT title mark with bone letters and blood-red rot damage.</desc>
+  <defs>
+    <filter id="glow" x="-8%" y="-16%" width="116%" height="132%">
+      <feDropShadow dx="0" dy="0" stdDeviation="14" flood-color="#c1121f" flood-opacity="0.42"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#ff6a00" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+  <rect width="1040" height="260" fill="none"/>
+  <g filter="url(#glow)">
+    <text x="18" y="184" fill="#e9e3d6" font-family="Impact, Haettenschweiler, 'Arial Narrow Bold', 'Arial Black', sans-serif" font-size="190" font-weight="900" letter-spacing="0">DEAD</text>
+    <text x="520" y="184" fill="#c1121f" font-family="Impact, Haettenschweiler, 'Arial Narrow Bold', 'Arial Black', sans-serif" font-size="190" font-weight="900" letter-spacing="0">ROT</text>
+    <path fill="#c1121f" d="M24 189h98l-21 44-15-25-14 52-19-33-19 49zm153 0h96l-18 39-20-24-14 58-19-41-19 50zm176 0h92l-21 52-16-27-18 56-18-40-16 43zm188 0h90l-22 45-15-28-14 58-19-43-18 52zm160 0h90l-16 38-18-22-15 59-19-38-18 47zm147 0h90l-19 48-15-24-16 61-19-40-18 42z"/>
+    <path fill="#0a0a0a" opacity="0.88" d="M108 32l39 39-21 21-39-39zM260 78l30 30-20 20-30-30zM443 40l38 38-22 22-38-38zM602 34l34 34-20 20-34-34zM754 71l42 42-24 24-42-42zM914 42l35 35-22 22-35-35z"/>
+    <path fill="#8bdc1f" d="M146 80h10v48h-10zM484 64h10v41h-10zM683 154h10v46h-10zM966 82h10v48h-10z"/>
+  </g>
+</svg>

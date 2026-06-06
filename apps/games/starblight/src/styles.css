@@ -64,6 +64,9 @@ body {
 .mono {
   font-family: var(--mono);
 }
+.hidden {
+  display: none !important;
+}
 .label {
   font-size: 12px;
   font-weight: 700;
@@ -108,8 +111,8 @@ body {
 #xp-fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, #5c9e10, var(--toxic));
-  box-shadow: 0 0 12px -2px rgba(139, 220, 31, 0.7);
+  background: linear-gradient(90deg, var(--blood), var(--hellfire), var(--ember));
+  box-shadow: 0 0 12px -2px rgba(255, 106, 0, 0.7);
   transition: width 90ms linear;
 }
 
@@ -119,12 +122,40 @@ body {
   gap: 8px;
   white-space: nowrap;
 }
+.pause-btn {
+  pointer-events: auto;
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  background: rgba(18, 18, 20, 0.86);
+  border: 1px solid var(--gunmetal);
+  border-radius: 2px;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+.pause-btn:hover {
+  background: var(--iron);
+  border-color: var(--blood-hot);
+  box-shadow: var(--glow);
+}
+.pause-glyph {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.pause-glyph i {
+  display: block;
+  width: 4px;
+  height: 14px;
+  background: var(--bone);
+}
 #salvage {
   font-size: 20px;
   color: var(--bone);
 }
 .salvage-icon {
-  color: var(--toxic);
+  color: var(--hellfire);
   font-size: 14px;
 }
 .kills {
@@ -322,6 +353,76 @@ body {
   display: none;
 }
 
+/* --- pause menu -------------------------------------------------------- */
+
+.pause-menu {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 8, 10, 0.7);
+  backdrop-filter: blur(2px);
+  pointer-events: auto;
+}
+.pause-inner {
+  width: min(440px, calc(100vw - 32px));
+  padding: 30px clamp(20px, 5vw, 44px);
+  text-align: center;
+  background: var(--coal);
+  border: 1px solid var(--gunmetal);
+  border-top: 3px solid var(--hellfire);
+}
+.pause-title {
+  font-size: clamp(34px, 8vw, 56px);
+  line-height: 0.95;
+  letter-spacing: 0.12em;
+  color: var(--bone);
+}
+.pause-stats {
+  margin-top: 12px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--ash);
+  text-transform: uppercase;
+}
+.pause-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
+}
+.menu-action {
+  pointer-events: auto;
+  cursor: pointer;
+  min-height: 44px;
+  padding: 10px 16px;
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--bone);
+  text-transform: uppercase;
+  background: var(--iron);
+  border: 1px solid var(--gunmetal);
+  border-radius: 2px;
+  transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+.menu-action:hover {
+  border-color: var(--blood-hot);
+  box-shadow: var(--glow);
+}
+.menu-action.primary {
+  background: var(--blood);
+  border-color: var(--blood);
+}
+.menu-action.primary:hover {
+  background: var(--blood-hot);
+}
+.menu-action.ghost {
+  color: var(--ash);
+  background: transparent;
+}
+
 /* --- draft overlay ------------------------------------------------------ */
 
 .draft {
@@ -378,8 +479,8 @@ body {
 }
 .card:hover {
   transform: translateY(-4px) scale(1.03);
-  border-color: var(--toxic);
-  box-shadow: 0 0 0 1px var(--toxic), 0 10px 40px -12px rgba(139, 220, 31, 0.45);
+  border-color: var(--blood-hot);
+  box-shadow: 0 0 0 1px var(--blood-hot), 0 10px 40px -12px rgba(255, 106, 0, 0.45);
 }
 .card-key {
   position: absolute;

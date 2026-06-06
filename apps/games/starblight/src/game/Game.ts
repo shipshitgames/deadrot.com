@@ -72,6 +72,10 @@ export class Game {
     this.hud = new HudSystem(
       () => this.startRun(),
       (id) => this.pickById(id),
+      () => this.pauseRun(),
+      () => this.resumeRun(),
+      () => this.startRun(),
+      () => this.returnToTitle(),
     )
   }
 
@@ -128,6 +132,50 @@ export class Game {
     this.emitHud()
   }
 
+  private pauseRun() {
+    if (this.phase !== 'playing') return
+    this.phase = 'paused'
+    this.emitHud()
+  }
+
+  private resumeRun() {
+    if (this.phase !== 'paused') return
+    this.phase = 'playing'
+    this.emitHud()
+  }
+
+  private returnToTitle() {
+    this.phase = 'title'
+    this.clock = 0
+    this.level = 1
+    this.currentXP = 0
+    this.pendingLevels = 0
+    this.kills = 0
+    this.salvage = 0
+    this.invuln = 0
+    this.vacuum = false
+    this.draft = null
+
+    this.levels = new Map()
+    this.recomputeStats()
+    this.integrity = this.stats.maxIntegrity
+
+    this.entities.clearEnemies()
+    this.entities.clearProjectiles()
+    this.entities.clearGems()
+    this.entities.clearParticles()
+    this.entities.resetShip()
+    this.weapons.reset()
+    this.render.resetFocus(0, 0)
+
+    this.boss = null
+    this.bossTriggered = false
+    this.spawnT = 0
+    this.eliteT = 0
+
+    this.emitHud()
+  }
+
   private recomputeStats() {
     this.stats = computeStats(this.levels, CONSTANTS.xp.baseMagnet, CONSTANTS.player.startIntegrity)
     if (this.integrity > this.stats.maxIntegrity) this.integrity = this.stats.maxIntegrity
@@ -143,6 +191,11 @@ export class Game {
     const dt = Math.min((now - this.prev) / 1000, CONSTANTS.maxDelta)
     this.prev = now
 
+    if (this.input.consumePause()) {
+      if (this.phase === 'playing') this.pauseRun()
+      else if (this.phase === 'paused') this.resumeRun()
+    }
+
     if (this.phase === 'playing') this.simulate(dt)
 
     // Camera follows the ship (also keeps the menu backdrop alive).
@@ -150,8 +203,10 @@ export class Game {
     this.render.render()
     this.emitHud()
 
-    // Menu confirm starts / restarts.
-    if ((this.phase === 'title' || this.phase === 'gameover' || this.phase === 'victory') && this.input.consumeConfirm()) {
+    // Menu confirm starts / restarts, or resumes from pause.
+    if (this.phase === 'paused' && this.input.consumeConfirm()) {
+      this.resumeRun()
+    } else if ((this.phase === 'title' || this.phase === 'gameover' || this.phase === 'victory') && this.input.consumeConfirm()) {
       this.startRun()
     } else {
       this.input.consumeConfirm()
