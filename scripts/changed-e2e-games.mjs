@@ -14,7 +14,8 @@ const base =
   process.env.GITHUB_BASE_SHA ??
   process.env.GITHUB_EVENT_BEFORE ??
   "origin/master";
-const head = flagValue("--head") ?? process.env.HEAD_SHA ?? process.env.GITHUB_HEAD_SHA ?? process.env.GITHUB_SHA ?? "HEAD";
+const head =
+  flagValue("--head") ?? process.env.HEAD_SHA ?? process.env.GITHUB_HEAD_SHA ?? process.env.GITHUB_SHA ?? "HEAD";
 
 const gameDirs = readdirSync(gamesRoot, { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
@@ -84,7 +85,10 @@ function runGit(gitArgs, required) {
 }
 
 function lines(value) {
-  return value.split("\n").map((line) => line.trim()).filter(Boolean);
+  return value
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
 }
 
 function markAffectedGames(file) {

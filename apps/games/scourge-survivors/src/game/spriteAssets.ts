@@ -237,19 +237,19 @@ export const ARENA_TEXTURE_REPEAT = {
   block: textureEntry("arena-block").repeat,
 } as const;
 
-const ARENA_TEXTURE_CACHE = new Map<string, THREE.Texture>()
+const ARENA_TEXTURE_CACHE = new Map<string, THREE.Texture>();
 
 export function arenaTexture(id: string): THREE.Texture {
-  let texture = ARENA_TEXTURE_CACHE.get(id)
+  let texture = ARENA_TEXTURE_CACHE.get(id);
   if (!texture) {
-    texture = loadTexture(id)
-    ARENA_TEXTURE_CACHE.set(id, texture)
+    texture = loadTexture(id);
+    ARENA_TEXTURE_CACHE.set(id, texture);
   }
-  return texture
+  return texture;
 }
 
 export function arenaTextureRepeat(id: string): [number, number] {
-  return textureEntry(id).repeat
+  return textureEntry(id).repeat;
 }
 
 export const RUNTIME_VISUAL_ASSET_URLS = Object.fromEntries([
