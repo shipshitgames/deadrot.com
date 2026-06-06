@@ -38,6 +38,7 @@ type SfxName =
   | 'land' // landing thud (Rothulk)
   | 'build' // tower placement thunk (Deadlane)
   | 'powerup' // ascending sparkle (Starblight / pickups)
+  | 'berserk' // blood-rage pickup activation
   | 'laser' // arcade pew (Starblight)
 
 type MusicMode = 'menu' | 'campaign' | 'survivors' | 'multiplayer'
@@ -370,6 +371,12 @@ export class AudioEngine {
         break
       case 'powerup':
         ;[440, 587, 740, 988].forEach((f, i) => this.zap(t + i * 0.06, 'triangle', f, f, 0.3, 0.2))
+        break
+      case 'berserk':
+        this.zap(t, 'sawtooth', 90 * p, 34 * p, 0.42, 0.34)
+        this.zap(t + 0.03, 'square', 220 * p, 620 * p, 0.24, 0.2)
+        this.noise(t, 0.26, 0.34, 620)
+        this.noise(t + 0.08, 0.18, 0.18, 1800)
         break
       case 'laser':
         this.zap(t, 'sawtooth', 1200 * p, 300 * p, 0.12, 0.18) // descending pew

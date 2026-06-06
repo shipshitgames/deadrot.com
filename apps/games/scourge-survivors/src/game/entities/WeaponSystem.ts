@@ -7,6 +7,8 @@ import {
   CANNON_SPLASH_DAMAGE,
   CANNON_SPLASH_RADIUS,
   ADS_LERP,
+  BERSERK_FIRE_RATE_MULT,
+  BERSERK_KNOCKBACK_MULT,
   CAMERA_BASE_FOV,
   DAMAGE_BOOST_MULT,
   HEADSHOT_MULTIPLIER,
@@ -188,7 +190,8 @@ export class WeaponSystem {
 
   /** Knife swing: always available (no ammo). Hits a frontal cluster of enemies. */
   doMelee() {
-    this.meleeCd = MELEE_COOLDOWN
+    const berserkMul = this.ctx.damageBoostTimer > 0 ? BERSERK_FIRE_RATE_MULT : 1
+    this.meleeCd = MELEE_COOLDOWN / berserkMul
     this.meleeAnim = 0.22
     audio.sfx('hit')
 
@@ -198,7 +201,8 @@ export class WeaponSystem {
     const dirZ = this.ctx._fwd.z / flen
     const px = this.ctx.camera.position.x
     const pz = this.ctx.camera.position.z
-    const dmgMul = this.ctx.statDamageMul
+    const dmgMul = (this.ctx.damageBoostTimer > 0 ? DAMAGE_BOOST_MULT : 1) * this.ctx.statDamageMul
+    const knockbackMul = this.ctx.damageBoostTimer > 0 ? BERSERK_KNOCKBACK_MULT : 1
     let hitAny = false
 
     for (const enemy of this.ctx.enemies) {
@@ -210,7 +214,7 @@ export class WeaponSystem {
       if (d > 0.0001 && (ex * dirX + ez * dirZ) / d < MELEE_ARC_DOT) continue
       const crit = this.ctx.statCrit > 0 && Math.random() < this.ctx.statCrit ? 2 : 1
       const dmg = MELEE_DAMAGE * dmgMul * crit
-      const res = enemy.takeDamage(dmg, false, MELEE_KNOCKBACK, dirX, dirZ)
+      const res = enemy.takeDamage(dmg, false, MELEE_KNOCKBACK * knockbackMul, dirX, dirZ)
       hitAny = true
       this.sys.hud.addDamageNumber(enemy.position.clone().setY(1.6), dmg, crit > 1 ? 'crit' : 'normal')
       this.sys.fx.spawnBloodHit(enemy.position.clone().setY(1.45), false)
@@ -238,17 +242,22 @@ export class WeaponSystem {
 
   shoot() {
     const spec = WEAPONS[this.ctx.activeWeapon]
+    const berserkActive = this.ctx.damageBoostTimer > 0
     this.ctx.ammo-- // magazine depletes in every mode (Survivors has infinite reserve, not infinite mag)
-    this.ctx.fireCooldown = spec.fireInterval / this.ctx.statFireRateMul
-    this.weaponRecoil = Math.min(0.16, this.weaponRecoil + (spec.pellets > 1 ? 0.12 : 0.05))
+    const fireRateMul = this.ctx.statFireRateMul * (berserkActive ? BERSERK_FIRE_RATE_MULT : 1)
+    this.ctx.fireCooldown = spec.fireInterval / fireRateMul
+    this.weaponRecoil = Math.min(berserkActive ? 0.2 : 0.16, this.weaponRecoil + (spec.pellets > 1 ? 0.12 : 0.05) * (berserkActive ? 1.18 : 1))
     audio.sfx(SHOOT_SFX[this.ctx.activeWeapon])
-    this.sys.fx.addShake(spec.shake)
+    this.sys.fx.addShake(spec.shake * (berserkActive ? 1.38 : 1))
     this.sys.fx.addRecoil(spec.kick)
 
     this.ctx.muzzleTimer = 0.05
     this.ctx.muzzleFlash.visible = true
     this.ctx.muzzleFlash.material.rotation = this.muzzleFlashBaseRotation + (Math.random() - 0.5) * 0.18
-    this.ctx.muzzleLight.intensity = 8
+    this.ctx.muzzleFlash.material.color.setHex(berserkActive ? 0xff2a18 : 0xffffff)
+    this.ctx.muzzleFlash.scale.setScalar(WEAPON_SPRITE_CONFIG[this.ctx.activeWeapon].flashScale * (berserkActive ? 1.22 : 1))
+    this.ctx.muzzleLight.color.setHex(berserkActive ? 0xff2a18 : 0xffcc66)
+    this.ctx.muzzleLight.intensity = berserkActive ? 13 : 8
 
     this.ctx.scene.updateMatrixWorld()
     this.ctx.camera.getWorldPosition(this.ctx._origin)
@@ -256,7 +265,8 @@ export class WeaponSystem {
     this.ctx._right.crossVectors(this.ctx._fwd, this.ctx._worldUp).normalize()
     this.ctx._up.crossVectors(this.ctx._right, this.ctx._fwd).normalize()
 
-    const dmgMult = (this.ctx.damageBoostTimer > 0 ? DAMAGE_BOOST_MULT : 1) * this.ctx.statDamageMul
+    const dmgMult = (berserkActive ? DAMAGE_BOOST_MULT : 1) * this.ctx.statDamageMul
+    const knockbackMul = berserkActive ? BERSERK_KNOCKBACK_MULT : 1
     const headshotMultiplier = spec.headshotMultiplier ?? HEADSHOT_MULTIPLIER
     const muzzleWorld = this.ctx.muzzleFlash.getWorldPosition(new THREE.Vector3())
     const pellets = spec.pellets + (this.ctx.survivors ? this.ctx.statMultishot : 0)
@@ -316,7 +326,7 @@ export class WeaponSystem {
             const headshot = ud.part === 'head'
             const crit = this.ctx.statCrit > 0 && Math.random() < this.ctx.statCrit ? 2 : 1
             const dmg = spec.damage * dmgMult * crit * (headshot ? headshotMultiplier : 1)
-            const res = ud.enemy.takeDamage(dmg, headshot, spec.knockback, kx, kz)
+            const res = ud.enemy.takeDamage(dmg, headshot, spec.knockback * knockbackMul, kx, kz)
             endPoint = h.point.clone()
             if (!res.blocked) {
               this.sys.hud.addDamageNumber(h.point, dmg, headshot ? 'head' : crit > 1 ? 'crit' : 'normal')
@@ -464,6 +474,9 @@ export class WeaponSystem {
     this.weaponRecoil = Math.max(0, this.weaponRecoil - delta * 0.5)
     this.magazine.position.y = this.magBaseY
     this.weaponSpriteMat.opacity = 1
+    const berserkActive = this.ctx.damageBoostTimer > 0
+    this.weaponSpriteMat.color.setHex(berserkActive ? 0xffd1c2 : 0xffffff)
+    this.ctx.muzzleFlash.material.color.setHex(berserkActive ? 0xff2a18 : 0xffffff)
 
     const moving = (this.ctx.move.forward || this.ctx.move.back || this.ctx.move.left || this.ctx.move.right) && this.ctx.canJump
     const crouched = this.ctx.wantsCrouch || this.ctx.stanceHeight < PLAYER_HEIGHT - 0.08
@@ -479,11 +492,15 @@ export class WeaponSystem {
     const adsY = WEAPON_VIEW_Y + 0.08 * ads
     const adsZ = WEAPON_VIEW_Z - 0.04 * ads
     this.weapon.position.set(
-      adsX + bobX * (1 - ads * 0.8),
-      adsY + bobY * (1 - ads * 0.8) - stanceDip,
+      adsX + bobX * (1 - ads * 0.8) + (berserkActive ? Math.sin(this.bobTime * 2.7) * 0.012 : 0),
+      adsY + bobY * (1 - ads * 0.8) - stanceDip + (berserkActive ? Math.cos(this.bobTime * 3.1) * 0.008 : 0),
       adsZ + this.weaponRecoil * (0.65 - ads * 0.28),
     )
-    this.weapon.rotation.set(-this.weaponRecoil * (1.45 - ads * 0.55), 0, this.weaponRecoil * 0.25)
+    this.weapon.rotation.set(
+      -this.weaponRecoil * (1.45 - ads * 0.55),
+      berserkActive ? Math.sin(this.bobTime * 2.2) * 0.035 : 0,
+      this.weaponRecoil * 0.25 + (berserkActive ? Math.cos(this.bobTime * 2.6) * 0.025 : 0),
+    )
   }
 
   private updateAds(delta: number) {
@@ -508,6 +525,7 @@ export class WeaponSystem {
       this.weapon.position.set(WEAPON_VIEW_X, WEAPON_VIEW_Y, WEAPON_VIEW_Z)
       this.weapon.rotation.set(0, 0, 0)
       this.weaponSpriteMat.opacity = 1
+      this.weaponSpriteMat.color.setHex(0xffffff)
       this.magazine.position.y = this.magBaseY
       this.ctx.aimingDownSights = false
       this.ctx.adsT = 0

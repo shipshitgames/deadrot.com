@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import type { GameContext } from '../context'
 import type { GameSystems } from '../systems'
 import { audio } from '../../audio/AudioEngine'
-import { RELOAD_TIME, TOTAL_WAVES, WEAPON_ORDER, WEAPONS } from '../constants'
+import { BERSERK_TIME, RELOAD_TIME, TOTAL_WAVES, WEAPON_ORDER, WEAPONS } from '../constants'
 import { EVOLUTIONS, SURVIVOR_CLASSES } from '../data/survivors'
 import type { HUDState } from '../types'
 
@@ -100,6 +100,8 @@ export class HudSystem {
       weapon: spec.name,
       weapons,
       damageBoost: Math.ceil(this.ctx.damageBoostTimer),
+      berserk: Math.ceil(this.ctx.damageBoostTimer),
+      berserkFrac: Math.max(0, Math.min(1, this.ctx.damageBoostTimer / BERSERK_TIME)),
       dualWeapon: Math.ceil(this.ctx.dualWeaponTimer),
       ads: this.ctx.aimingDownSights || this.ctx.adsT > 0.05,
       adsZoom: this.ctx.adsZoomIndex + 1,

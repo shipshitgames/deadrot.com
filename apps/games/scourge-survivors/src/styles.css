@@ -129,6 +129,59 @@
   }
 }
 
+@keyframes berserk-vignette-pulse {
+  0%,
+  100% {
+    opacity: 0.48;
+    filter: saturate(1.15) contrast(1.05);
+  }
+  35% {
+    opacity: 0.72;
+    filter: saturate(1.6) contrast(1.26);
+  }
+  66% {
+    opacity: 0.58;
+    filter: saturate(1.3) contrast(1.12);
+  }
+}
+
+@keyframes berserk-slash {
+  0% {
+    opacity: 0;
+    transform: translate3d(-18vw, 10vh, 0) rotate(-18deg) scaleX(0.45);
+  }
+  18% {
+    opacity: 0.78;
+    transform: translate3d(0, 0, 0) rotate(-18deg) scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(18vw, -8vh, 0) rotate(-18deg) scaleX(1.22);
+  }
+}
+
+@keyframes berserk-meter-pulse {
+  0%,
+  100% {
+    transform: translateX(-50%) scale(1);
+    box-shadow: 0 0 0 1px rgba(255, 42, 24, 0.22), 0 0 24px rgba(193, 18, 31, 0.48);
+  }
+  50% {
+    transform: translateX(-50%) scale(1.045);
+    box-shadow: 0 0 0 1px rgba(255, 209, 102, 0.38), 0 0 42px rgba(255, 42, 24, 0.74);
+  }
+}
+
+@keyframes berserk-crosshair {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.18) rotate(2deg);
+  }
+}
+
 @layer base {
   html,
   body,
@@ -386,6 +439,7 @@
 .game-root .scourge-combat-banner,
 .game-root .scourge-combat-toast,
 .game-root .scourge-damage-number,
+.game-root .scourge-berserk-meter,
 .game-root .scourge-damage-boost {
   font-family: var(--ssg-font-pixel);
   letter-spacing: 0;
@@ -420,6 +474,44 @@
     0 0 18px rgba(255, 106, 0, 0.85);
 }
 
+.game-root .scourge-crosshair {
+  z-index: 4;
+}
+
+.game-root .scourge-crosshair.is-berserk {
+  animation: berserk-crosshair 0.2s steps(2, end) infinite;
+}
+
+.game-root .scourge-berserk-vignette {
+  z-index: 1;
+  background:
+    radial-gradient(circle at 50% 54%, rgba(255, 42, 24, 0) 0 34%, rgba(255, 42, 24, 0.18) 58%, rgba(61, 0, 6, 0.64) 100%),
+    linear-gradient(90deg, rgba(193, 18, 31, 0.22), rgba(255, 106, 0, 0.08) 48%, rgba(193, 18, 31, 0.22));
+  mix-blend-mode: screen;
+  animation: berserk-vignette-pulse 0.34s steps(2, end) infinite;
+}
+
+.game-root .scourge-berserk-vignette__slash {
+  position: absolute;
+  left: -12vw;
+  top: 48%;
+  width: 124vw;
+  height: 26px;
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 42, 24, 0.12) 12%, rgba(255, 209, 102, 0.44) 48%, rgba(193, 18, 31, 0.58) 62%, transparent);
+  box-shadow: 0 0 18px rgba(255, 42, 24, 0.55);
+  transform-origin: center;
+  animation: berserk-slash 0.54s ease-out infinite;
+}
+
+.game-root .scourge-berserk-vignette__slash--b {
+  top: 34%;
+  height: 18px;
+  animation-delay: 0.17s;
+  animation-duration: 0.46s;
+  transform: rotate(19deg);
+}
+
 .game-root .scourge-combo-counter__label {
   display: inline-block;
   transform: translateY(-0.02em);
@@ -437,12 +529,120 @@
 }
 
 .game-root .scourge-damage-number {
+  z-index: 5;
+  min-width: 2.1ch;
+  color: #ff2a18;
+  font-size: 32px;
+  line-height: 1;
+  text-align: center;
   transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 7px rgba(255, 42, 24, 0.7));
+  text-shadow:
+    3px 0 0 rgba(5, 5, 5, 0.98),
+    0 3px 0 rgba(5, 5, 5, 0.98),
+    3px 3px 0 rgba(41, 0, 4, 0.96),
+    -2px 2px 0 rgba(91, 6, 18, 0.92),
+    0 0 18px rgba(255, 42, 24, 0.88);
+}
+
+.game-root .scourge-damage-number::before {
+  position: absolute;
+  z-index: -1;
+  inset: -8px -14px -10px;
+  content: "";
+  background:
+    radial-gradient(circle at 22% 62%, rgba(61, 0, 6, 0.72) 0 13%, transparent 14%),
+    radial-gradient(circle at 74% 28%, rgba(193, 18, 31, 0.62) 0 15%, transparent 16%),
+    radial-gradient(circle at 52% 76%, rgba(255, 42, 24, 0.5) 0 11%, transparent 12%);
+  opacity: 0.9;
+  transform: rotate(-5deg);
+}
+
+.game-root .scourge-damage-number::after {
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  width: 5px;
+  height: 13px;
+  content: "";
+  background: linear-gradient(180deg, rgba(255, 42, 24, 0.88), rgba(91, 6, 18, 0));
+  transform: translateX(-50%);
+}
+
+.game-root .scourge-damage-number--normal {
+  color: #ff2a18;
+  font-size: 32px;
+}
+
+.game-root .scourge-damage-number--crit {
+  color: #ff6a00;
+  font-size: 38px;
+  text-shadow:
+    3px 0 0 rgba(5, 5, 5, 0.98),
+    0 3px 0 rgba(5, 5, 5, 0.98),
+    3px 3px 0 rgba(61, 0, 4, 0.96),
+    0 0 22px rgba(255, 106, 0, 0.95);
+}
+
+.game-root .scourge-damage-number--head {
+  color: #ffd166;
+  font-size: 46px;
+  text-shadow:
+    4px 0 0 rgba(5, 5, 5, 0.98),
+    0 4px 0 rgba(5, 5, 5, 0.98),
+    4px 4px 0 rgba(91, 6, 18, 0.98),
+    0 0 26px rgba(255, 42, 24, 0.95),
+    0 0 10px rgba(255, 209, 102, 0.95);
+}
+
+.game-root .scourge-berserk-meter {
+  z-index: 6;
+  display: grid;
+  width: min(360px, calc(100vw - 36px));
+  gap: 6px;
+  padding: 8px 12px 9px;
+  color: #ffd166;
+  background:
+    linear-gradient(180deg, rgba(91, 6, 18, 0.82), rgba(5, 5, 5, 0.74)),
+    rgba(193, 18, 31, 0.22);
+  border: 1px solid rgba(255, 42, 24, 0.72);
+  border-left: 3px solid #ff2a18;
+  border-radius: 2px;
   text-shadow:
     2px 0 0 rgba(5, 5, 5, 0.96),
     0 2px 0 rgba(5, 5, 5, 0.96),
-    2px 2px 0 rgba(0, 0, 0, 0.88),
-    0 0 14px rgba(255, 42, 24, 0.74);
+    0 0 16px rgba(255, 42, 24, 0.9);
+  animation: berserk-meter-pulse 0.32s steps(2, end) infinite;
+}
+
+.game-root .scourge-berserk-meter__text {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.game-root .scourge-berserk-meter__text b {
+  color: #ff2a18;
+  font-size: 17px;
+}
+
+.game-root .scourge-berserk-meter__bar {
+  display: block;
+  height: 5px;
+  overflow: hidden;
+  background: rgba(5, 5, 5, 0.62);
+  border: 1px solid rgba(255, 209, 102, 0.22);
+}
+
+.game-root .scourge-berserk-meter__bar i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #ff2a18, #ff6a00, #ffd166);
+  box-shadow: 0 0 14px rgba(255, 42, 24, 0.84);
 }
 
 .game-root .scourge-damage-boost {
@@ -465,4 +665,19 @@
     font-size: 10px;
   }
 
+  .game-root .scourge-damage-number--normal {
+    font-size: 28px;
+  }
+
+  .game-root .scourge-damage-number--crit {
+    font-size: 33px;
+  }
+
+  .game-root .scourge-damage-number--head {
+    font-size: 38px;
+  }
+
+  .game-root .scourge-berserk-meter {
+    top: 112px;
+  }
 }

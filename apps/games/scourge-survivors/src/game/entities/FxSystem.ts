@@ -23,6 +23,7 @@ export class FxSystem {
   tracers: Tracer[] = []
   pops: Pop[] = []
   corpseParts: CorpsePart[] = []
+  private berserkParticleTimer = 0
 
   constructor(private ctx: GameContext, private sys: GameSystems) {}
 
@@ -243,6 +244,85 @@ export class FxSystem {
     this.pops.push({ mesh, age: 0, ttl: 0.12 })
   }
 
+  /** Blood-rage pickup hit: screen shake plus a hot ring and short-lived spray around the player. */
+  triggerBerserkBurst() {
+    const center = this.ctx.camera.position.clone()
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(0.7, 1.08, 56),
+      new THREE.MeshBasicMaterial({
+        color: 0xff2a18,
+        transparent: true,
+        opacity: 0.78,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      }),
+    )
+    ring.rotation.x = -Math.PI / 2
+    ring.position.set(center.x, 0.13, center.z)
+    ring.scale.setScalar(0.001)
+    this.ctx.scene.add(ring)
+    this.pops.push({ mesh: ring, age: 0, ttl: 0.46, baseScale: 0.18, growth: 11.5, floor: true })
+
+    for (let i = 0; i < 22; i++) {
+      const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(0.045 + Math.random() * 0.05, 6, 4),
+        new THREE.MeshBasicMaterial({
+          color: i % 4 === 0 ? 0xff8a3b : i % 3 === 0 ? 0x3d0006 : 0xc1121f,
+          transparent: true,
+          opacity: 0.92,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        }),
+      )
+      const a = Math.random() * Math.PI * 2
+      const r = 0.35 + Math.random() * 0.4
+      mesh.position.set(center.x + Math.cos(a) * r, 0.75 + Math.random() * 1.0, center.z + Math.sin(a) * r)
+      this.ctx.scene.add(mesh)
+      const speed = 3.8 + Math.random() * 4.6
+      this.pops.push({
+        mesh,
+        age: 0,
+        ttl: 0.42 + Math.random() * 0.28,
+        vel: new THREE.Vector3(Math.cos(a) * speed, 2.8 + Math.random() * 3.4, Math.sin(a) * speed),
+        baseScale: 0.72,
+        growth: 0.9,
+      })
+    }
+
+    this.addShake(0.46)
+    this.hitstop(0.045)
+  }
+
+  private spawnBerserkWake() {
+    const center = this.ctx.camera.position
+    const count = Math.random() < 0.45 ? 2 : 1
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * Math.PI * 2
+      const r = 0.48 + Math.random() * 0.55
+      const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(0.032 + Math.random() * 0.04, 5, 4),
+        new THREE.MeshBasicMaterial({
+          color: Math.random() < 0.28 ? 0xff6a00 : 0xc1121f,
+          transparent: true,
+          opacity: 0.74,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        }),
+      )
+      mesh.position.set(center.x + Math.cos(a) * r, 0.42 + Math.random() * 1.28, center.z + Math.sin(a) * r)
+      this.ctx.scene.add(mesh)
+      this.pops.push({
+        mesh,
+        age: 0,
+        ttl: 0.28 + Math.random() * 0.18,
+        vel: new THREE.Vector3(-Math.cos(a) * 0.65, 1.2 + Math.random() * 1.4, -Math.sin(a) * 0.65),
+        baseScale: 0.58,
+        growth: 1.1,
+      })
+    }
+  }
+
   // ---- camera juice: trauma-based screenshake + recoil kick + hitstop ----
   /** Add screenshake trauma (0..1, clamped). Magnitude in render scales trauma². */
   addShake(amount: number) {
@@ -269,6 +349,16 @@ export class FxSystem {
 
   updateEffects(delta: number) {
     // Decay camera juice + combo timer (runs every frame, in or out of play).
+    if (this.ctx.damageBoostTimer > 0 && this.ctx.status === 'playing') {
+      this.berserkParticleTimer -= delta
+      if (this.berserkParticleTimer <= 0) {
+        this.berserkParticleTimer = 0.055 + Math.random() * 0.045
+        this.spawnBerserkWake()
+      }
+      this.ctx.shakeTrauma = Math.min(1, this.ctx.shakeTrauma + delta * 0.035)
+    } else {
+      this.berserkParticleTimer = 0
+    }
     if (this.ctx.shakeTrauma > 0) this.ctx.shakeTrauma = Math.max(0, this.ctx.shakeTrauma - delta * 1.9)
     if (this.ctx.camRecoil !== 0) this.ctx.camRecoil -= this.ctx.camRecoil * Math.min(1, delta * 16)
     if (this.ctx.comboTimer > 0) {

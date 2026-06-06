@@ -161,8 +161,13 @@ export const PICKUP_DROP_CHANCE = 0.5 // chance a normal kill drops something
 export const PICKUP_RADIUS = 1.7 // walk within this to collect
 export const PICKUP_TTL = 16 // seconds before a drop despawns
 export const HEALTH_PICKUP_AMOUNT = 35
-export const DAMAGE_BOOST_MULT = 2
-export const DAMAGE_BOOST_TIME = 10
+export const BERSERK_DAMAGE_MULT = 2
+export const BERSERK_TIME = 10
+export const BERSERK_FIRE_RATE_MULT = 1.35
+export const BERSERK_MOVE_MULT = 1.16
+export const BERSERK_KNOCKBACK_MULT = 1.28
+export const DAMAGE_BOOST_MULT = BERSERK_DAMAGE_MULT
+export const DAMAGE_BOOST_TIME = BERSERK_TIME
 export const DUAL_WEAPON_TIME = 12
 
 // ---- Enemy ranged fire ----------------------------------------------------
