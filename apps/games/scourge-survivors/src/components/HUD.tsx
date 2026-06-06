@@ -1,23 +1,3 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type MouseEvent as ReactMouseEvent,
-  type PointerEvent as ReactPointerEvent,
-  type ReactNode,
-} from "react";
-import type { HUDState } from "../game/types";
-import type { ScoreEntry, Settings, ShopState } from "../game/storage";
-import {
-  SHOP_UPGRADES,
-  SURVIVOR_CLASSES,
-  SURVIVOR_CLASS_IDS,
-  SURVIVOR_RUN_GOAL_TIME,
-  shopCost,
-  type SurvivorClassId,
-} from "../game/data/survivors";
-import { PLAYER_AVATAR_OPTIONS, normalizePlayerAvatar, type PlayerAvatarId } from "../net/playerAvatars";
-import { PixelIcon, type PixelIconId } from "./PixelIcon";
 import playerHeavyPreview from "@shipshitgames/assets/games/scourge-survivors/players/pyre/bulwark/front.webp";
 import playerMedicPreview from "@shipshitgames/assets/games/scourge-survivors/players/pyre/patch/front.webp";
 import playerRangerPreview from "@shipshitgames/assets/games/scourge-survivors/players/pyre/ranger/front.webp";
@@ -36,7 +16,27 @@ import {
   MainMenuTitleLine,
   MainMenuTopBar,
 } from "@shipshitgames/ui";
+import {
+  type MouseEvent as ReactMouseEvent,
+  type ReactNode,
+  type PointerEvent as ReactPointerEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Switch } from "@/components/ui/switch";
+import {
+  SHOP_UPGRADES,
+  SURVIVOR_CLASS_IDS,
+  SURVIVOR_CLASSES,
+  SURVIVOR_RUN_GOAL_TIME,
+  type SurvivorClassId,
+  shopCost,
+} from "../game/data/survivors";
+import type { ScoreEntry, Settings, ShopState } from "../game/storage";
+import type { HUDState } from "../game/types";
+import { normalizePlayerAvatar, PLAYER_AVATAR_OPTIONS, type PlayerAvatarId } from "../net/playerAvatars";
+import { PixelIcon, type PixelIconId } from "./PixelIcon";
 
 interface Props {
   state: HUDState;
@@ -389,7 +389,7 @@ function SurvivorsPanel({
 
 function Scoreboard({ board, room, connected }: { board: HUDState["scoreboard"]; room: string; connected: boolean }) {
   return (
-    <div className="scourge-scoreboard absolute top-[96px] right-[18px] min-w-[190px] bg-[rgba(10,16,28,0.6)] border border-white/10 rounded-[10px] px-[10px] py-2 [font-variant-numeric:tabular-nums]">
+    <div className="scourge-scoreboard absolute top-[96px] right-[18px] min-w-[190px] border border-white/10 rounded-[10px] px-[10px] py-2 [font-variant-numeric:tabular-nums]">
       <div className="flex justify-between text-[12px] tracking-[0.06em] opacity-85 mb-[5px] pb-1 border-b border-white/10">
         <IconText icon="swords" size={14}>
           {room || "-"}
@@ -638,13 +638,13 @@ function SurvivorsHud({ state }: { state: HUDState }) {
       </div>
       {state.build.length > 0 && (
         <div
-          className="absolute top-[112px] left-1/2 -translate-x-1/2 flex gap-[6px] flex-wrap justify-center max-w-[70vw]"
+          className={`scourge-build-strip${state.berserk > 0 ? " is-berserk-offset" : ""} absolute top-[112px] left-1/2 -translate-x-1/2 flex gap-[6px] flex-wrap justify-center max-w-[70vw]`}
           aria-hidden
         >
           {state.build.map((b) => (
             <span
               key={b.id}
-              className={`inline-flex items-center gap-[3px] bg-black/40 border rounded-lg px-[7px] py-[2px] ${
+              className={`scourge-build-chip inline-flex items-center gap-[3px] border rounded-lg px-[7px] py-[2px] ${
                 b.evolved
                   ? "border-[#ffd166] text-[#ffd166] shadow-[0_0_14px_rgba(255,209,102,0.35)]"
                   : "border-white/[0.14]"
@@ -662,7 +662,7 @@ function SurvivorsHud({ state }: { state: HUDState }) {
         state.survivorDodge > 0 ||
         state.survivorGrace > 0) && (
         <div
-          className="absolute left-[18px] bottom-[86px] min-w-[190px] rounded-[10px] border border-white/10 bg-black/35 px-[10px] py-2"
+          className="scourge-survivor-defense absolute left-[18px] bottom-[86px] min-w-[190px] rounded-[10px] border border-white/10 px-[10px] py-2"
           aria-hidden
         >
           {state.survivorMaxShield > 0 && (
@@ -673,7 +673,7 @@ function SurvivorsHud({ state }: { state: HUDState }) {
                   {state.survivorShield}/{state.survivorMaxShield}
                 </span>
               </div>
-              <div className="h-[7px] overflow-hidden rounded bg-white/[0.12]">
+              <div className="scourge-defense-bar h-[7px] overflow-hidden rounded bg-white/[0.12]">
                 <div
                   className="h-full bg-[#e9e3d6] shadow-[0_0_10px_rgba(255,106,0,0.45)]"
                   style={{
@@ -1011,7 +1011,7 @@ export function HUD({
         ))}
 
       {berserkActive && (
-        <div className="scourge-berserk-meter absolute top-[130px] left-1/2 -translate-x-1/2" aria-hidden>
+        <div className="scourge-berserk-meter absolute top-[130px] left-1/2" aria-hidden>
           <span className="scourge-berserk-meter__text">
             <IconText icon="lightning" size={16}>
               BERSERK MODE
@@ -1025,7 +1025,7 @@ export function HUD({
       )}
       {playing && dualWeapon > 0 && (
         <div
-          className="scourge-dual-weapon absolute top-[166px] left-1/2 -translate-x-1/2 px-4 py-[6px] rounded-[18px] bg-[rgba(215,210,196,0.16)] border border-[rgba(215,210,196,0.55)] text-[#e7dfca] text-[13px] font-bold [text-shadow:0_0_10px_rgba(215,210,196,0.48)]"
+          className={`scourge-dual-weapon${berserkActive ? " is-berserk-offset" : ""} absolute top-[166px] left-1/2 -translate-x-1/2 px-4 py-[6px] rounded-[18px] border border-[rgba(215,210,196,0.55)] text-[#e7dfca] text-[13px] font-bold [text-shadow:0_0_10px_rgba(215,210,196,0.48)]`}
           aria-hidden
         >
           <IconText icon="swords" size={16}>
@@ -1037,7 +1037,9 @@ export function HUD({
       {playing && multiplayer && <Scoreboard board={scoreboard} room={room} connected={connected} />}
       {playing && survivors && <SurvivorsHud state={state} />}
 
-      <div className={`${HUD_CORNER} top-4 left-1/2 -translate-x-1/2 flex gap-[26px] items-center text-center`}>
+      <div
+        className={`${HUD_CORNER} scourge-top-stats top-4 left-1/2 -translate-x-1/2 flex flex-wrap gap-x-[22px] gap-y-[4px] items-center justify-center text-center`}
+      >
         <div>
           <div className={STAT_LABEL}>Time</div>
           <div className={`${STAT_VALUE} text-[30px]`}>{formatTime(time)}</div>
@@ -1113,10 +1115,10 @@ export function HUD({
         </div>
       )}
 
-      <div className={`${HUD_CORNER} left-[18px] bottom-[18px] min-w-[190px]`}>
+      <div className={`${HUD_CORNER} scourge-health-panel left-[18px] bottom-[18px] min-w-[190px]`}>
         <div className={STAT_LABEL}>Health</div>
         <div className="flex items-center gap-[10px]">
-          <div className="relative w-[150px] h-[14px] bg-white/[0.12] rounded-[7px] overflow-hidden">
+          <div className="scourge-health-bar relative w-[150px] h-[14px] bg-white/[0.12] rounded-[7px] overflow-hidden">
             <div
               className="absolute inset-0 rounded-[7px] [transition:width_0.15s_linear,background_0.2s_linear]"
               style={{ width: `${Math.max(0, healthFrac) * 100}%`, background: healthColor(healthFrac) }}
@@ -1126,7 +1128,7 @@ export function HUD({
         </div>
       </div>
 
-      <div className={`${HUD_CORNER} right-[18px] bottom-[18px] text-right min-w-[150px]`}>
+      <div className={`${HUD_CORNER} scourge-weapon-panel right-[18px] bottom-[18px] text-right min-w-[150px]`}>
         <div className="text-[13px] tracking-[0.12em] uppercase text-accent mb-[2px]">{weapon}</div>
         <div className="flex items-baseline justify-end gap-[6px]">
           <span className={`text-[30px] font-extrabold${ammo === 0 ? " text-danger" : ""}`}>{ammo}</span>
