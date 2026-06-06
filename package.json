@@ -16,6 +16,7 @@
     "e2e:docker": "scripts/run-e2e-docker.sh",
     "e2e:ui": "playwright test --ui",
     "e2e:report": "playwright show-report",
+    "board:hygiene": "node scripts/board-hygiene.mjs",
     "deploy:games:changed": "node scripts/deploy-changed-games.mjs",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
