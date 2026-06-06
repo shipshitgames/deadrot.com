@@ -371,15 +371,15 @@ function healthColor(frac: number): string {
   return '#ff6a00'
 }
 
-function Crosshair() {
-  const bar = 'absolute bg-white/85 shadow-[0_0_2px_rgba(0,0,0,0.8)]'
+function Crosshair({ berserk = false }: { berserk?: boolean }) {
+  const bar = `absolute ${berserk ? 'bg-[#ff2a18] shadow-[0_0_8px_rgba(255,42,24,0.95)]' : 'bg-white/85 shadow-[0_0_2px_rgba(0,0,0,0.8)]'}`
   return (
-    <div className="absolute top-1/2 left-1/2 w-[26px] h-[26px] -translate-x-1/2 -translate-y-1/2" aria-hidden>
+    <div className={`scourge-crosshair absolute top-1/2 left-1/2 w-[26px] h-[26px] -translate-x-1/2 -translate-y-1/2${berserk ? ' is-berserk' : ''}`} aria-hidden>
       <span className={`${bar} left-1/2 w-[2px] h-[8px] -translate-x-1/2 top-0`} />
       <span className={`${bar} left-1/2 w-[2px] h-[8px] -translate-x-1/2 bottom-0`} />
       <span className={`${bar} top-1/2 h-[2px] w-[8px] -translate-y-1/2 left-0`} />
       <span className={`${bar} top-1/2 h-[2px] w-[8px] -translate-y-1/2 right-0`} />
-      <span className="absolute top-1/2 left-1/2 w-[2px] h-[2px] rounded-full -translate-x-1/2 -translate-y-1/2 bg-accent" />
+      <span className={`absolute top-1/2 left-1/2 w-[2px] h-[2px] rounded-full -translate-x-1/2 -translate-y-1/2 ${berserk ? 'bg-[#ffd166]' : 'bg-accent'}`} />
     </div>
   )
 }
@@ -769,7 +769,8 @@ export function HUD({
     outcome,
     weapon,
     weapons,
-    damageBoost,
+    berserk,
+    berserkFrac,
     dualWeapon,
     ads,
     adsZoom,
@@ -812,6 +813,7 @@ export function HUD({
   }, [status])
   const healthFrac = playerHealth / maxPlayerHealth
   const playing = status === 'playing'
+  const berserkActive = playing && berserk > 0
   const bossLabel = bossShielded ? 'SHIELDED' : bossEnraged ? 'ENRAGED' : 'BOSS'
   const currentRun: ScoreEntry | null =
     status === 'gameover' && outcome
@@ -825,7 +827,13 @@ export function HUD({
   return (
     // `hud-paused` freezes every in-flight HUD animation except the pause overlay's own UI (see styles.css).
     <div className={`absolute inset-0 pointer-events-none z-10${status === 'paused' ? ' hud-paused' : ''}`}>
-      {playing && <Crosshair />}
+      {playing && <Crosshair berserk={berserkActive} />}
+      {berserkActive && (
+        <div className="scourge-berserk-vignette absolute inset-0 pointer-events-none" aria-hidden>
+          <span className="scourge-berserk-vignette__slash scourge-berserk-vignette__slash--a" />
+          <span className="scourge-berserk-vignette__slash scourge-berserk-vignette__slash--b" />
+        </div>
+      )}
       {playing && combo >= 3 && (
         <div
           key={`combo-${combo}`}
@@ -868,6 +876,8 @@ export function HUD({
           className={`scourge-combat-toast absolute bottom-[23%] left-1/2 text-[24px] font-extrabold opacity-0 whitespace-nowrap animate-toastpop ${
             toast.includes('HEADSHOT')
               ? 'text-[#ffd166] [text-shadow:0_0_18px_rgba(255,209,102,0.9),0_2px_8px_rgba(0,0,0,0.6)]'
+              : toast.includes('BERSERK')
+                ? 'text-[#ff2a18] [text-shadow:0_0_24px_rgba(255,42,24,0.96),0_2px_10px_rgba(0,0,0,0.78)]'
               : 'text-white [text-shadow:0_0_16px_rgba(255,106,0,0.72),0_2px_8px_rgba(0,0,0,0.6)]'
           }`}
           aria-hidden
@@ -880,13 +890,7 @@ export function HUD({
         damageNumbers.map((d) => (
           <div
             key={d.id}
-            className={`scourge-damage-number absolute pointer-events-none font-extrabold whitespace-nowrap animate-dmgnum [text-shadow:0_2px_6px_rgba(0,0,0,0.8)] ${
-              d.kind === 'head'
-                ? 'text-[#ffd166] text-[28px]'
-                : d.kind === 'crit'
-                  ? 'text-[#ff7a3c] text-[26px]'
-                  : 'text-white text-[20px]'
-            }`}
+            className={`scourge-damage-number scourge-damage-number--${d.kind} absolute pointer-events-none font-extrabold whitespace-nowrap animate-dmgnum`}
             style={{ left: `${d.x}%`, top: `${d.y}%` }}
             aria-hidden
           >
@@ -895,12 +899,18 @@ export function HUD({
           </div>
         ))}
 
-      {playing && damageBoost > 0 && (
+      {berserkActive && (
         <div
-          className="scourge-damage-boost absolute top-[130px] left-1/2 -translate-x-1/2 px-4 py-[6px] rounded-[18px] bg-[rgba(255,122,26,0.18)] border border-[rgba(255,122,26,0.6)] text-[#ffb56b] text-[13px] font-bold [text-shadow:0_0_10px_rgba(255,122,26,0.6)]"
+          className="scourge-berserk-meter absolute top-[130px] left-1/2 -translate-x-1/2"
           aria-hidden
         >
-          <IconText icon="lightning" size={16}>2x DAMAGE · {damageBoost}s</IconText>
+          <span className="scourge-berserk-meter__text">
+            <IconText icon="lightning" size={16}>BERSERK MODE</IconText>
+            <b>{berserk}s</b>
+          </span>
+          <span className="scourge-berserk-meter__bar">
+            <i style={{ width: `${Math.max(0, Math.min(1, berserkFrac)) * 100}%` }} />
+          </span>
         </div>
       )}
       {playing && dualWeapon > 0 && (

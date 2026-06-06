@@ -157,7 +157,10 @@ export class PickupsSystem {
       this.sys.hud.showToast('+ AMMO')
     } else if (kind === 'damage') {
       this.ctx.damageBoostTimer = DAMAGE_BOOST_TIME
-      this.sys.hud.showToast('2× DAMAGE')
+      this.sys.fx.triggerBerserkBurst()
+      this.sys.hud.announce('BERSERK')
+      this.sys.hud.showToast('BERSERK MODE')
+      audio.sfx('berserk')
     } else if (kind === 'dual') {
       this.ctx.dualWeaponTimer = DUAL_WEAPON_TIME
       this.sys.hud.showToast('DUAL WEAPON READY')

@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 const CI = Boolean(process.env.CI)
 
-const games = [
+const allGames = [
   { name: 'deadlane', port: 5174 },
   { name: 'pactfall', port: 5175 },
   { name: 'redline', port: 5176 },
@@ -11,6 +11,12 @@ const games = [
   { name: 'starblight', port: 5179 },
   { name: 'warline', port: 5180 },
 ] as const
+type GameName = (typeof allGames)[number]['name']
+
+const selectedGameNames = parseSelectedGameNames(process.env.E2E_GAME_SLUGS)
+const games = selectedGameNames.length
+  ? allGames.filter((game) => selectedGameNames.includes(game.name))
+  : allGames
 
 const viewports = [
   { name: 'desktop', device: devices['Desktop Chrome'] },
@@ -54,3 +60,14 @@ export default defineConfig({
     })),
   ),
 })
+
+function parseSelectedGameNames(value: string | undefined): GameName[] {
+  if (!value?.trim()) return []
+
+  const known = new Set<GameName>(allGames.map((game) => game.name))
+  const selected = value.split(',').map((entry) => entry.trim()).filter(Boolean)
+  const unknown = selected.filter((entry): entry is string => !known.has(entry as GameName))
+  if (unknown.length) throw new Error(`Unknown E2E_GAME_SLUGS entries: ${unknown.join(', ')}`)
+
+  return selected as GameName[]
+}

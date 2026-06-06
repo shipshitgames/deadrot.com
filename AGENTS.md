@@ -39,6 +39,20 @@ Scope: this entire `deadrotcom` repository.
   local editor state.
 - Inspect `git status` before edits and preserve unrelated user changes.
 
+## Review Guidelines
+
+- Treat security, package dependency changes, GitHub workflow permissions,
+  secret handling, and package boundary regressions as high-priority review
+  findings.
+- For `apps/games/*`, check gameplay clarity, visual feedback, deterministic
+  state updates, cleanup of timers/listeners, and frame-loop performance.
+- For `packages/*`, verify workspace dependency boundaries, public exports, and
+  compatibility with consuming apps.
+- For generated assets, verify outputs are preserved under `packages/assets`
+  and temporary cache/source leaks are not committed.
+- Prefer concrete file and line findings. Avoid style-only review noise unless
+  it affects CI, security, runtime behavior, or user-facing quality.
+
 ## Useful Commands
 
 - `bun install`

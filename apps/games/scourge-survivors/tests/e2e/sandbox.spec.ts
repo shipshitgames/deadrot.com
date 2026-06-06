@@ -6,6 +6,9 @@ type HudSnapshot = {
   weapon: string
   ammo: number
   enemiesAlive: number
+  damageBoost: number
+  berserk: number
+  berserkFrac: number
   dualWeapon: number
   ads: boolean
   adsZoom: number
@@ -200,6 +203,65 @@ test.describe('dev sandbox smoke', () => {
     }
 
     expect(consoleErrors).toEqual([])
+  })
+
+  test('damage pickup activates a bounded berserk state', async ({ page }) => {
+    await page.goto('/?sandbox=1')
+    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame)
+
+    await page.evaluate(() => {
+      type DevGame = {
+        startSandbox: () => void
+        ctx: {
+          status: string
+          damageBoostTimer: number
+        }
+        sys: {
+          hud: { emit: () => void }
+          pickups: { collectPickup: (kind: 'damage') => void }
+        }
+      }
+
+      const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame
+      game.startSandbox()
+      game.ctx.status = 'playing'
+      game.sys.pickups.collectPickup('damage')
+    })
+
+    await expect.poll(() => snapshot(page).then((state) => state.berserk)).toBe(10)
+    const active = await snapshot(page)
+    expect(active.damageBoost).toBe(10)
+    expect(active.berserkFrac).toBeGreaterThan(0.95)
+    expect(active.berserkFrac).toBeLessThanOrEqual(1)
+    await expect(page.locator('.scourge-berserk-meter').getByText(/BERSERK MODE/i)).toBeVisible()
+
+    await page.evaluate(() => {
+      type DevGame = {
+        ctx: { damageBoostTimer: number }
+        sys: {
+          pickups: { collectPickup: (kind: 'damage') => void }
+        }
+      }
+
+      const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame
+      game.ctx.damageBoostTimer = 2
+      game.sys.pickups.collectPickup('damage')
+    })
+
+    await expect.poll(() => snapshot(page).then((state) => state.berserk)).toBe(10)
+
+    await page.evaluate(() => {
+      type DevGame = {
+        ctx: { damageBoostTimer: number }
+        sys: { hud: { emit: () => void } }
+      }
+
+      const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame
+      game.ctx.damageBoostTimer = 0
+      game.sys.hud.emit()
+    })
+
+    await expect.poll(() => snapshot(page).then((state) => state.berserk)).toBe(0)
   })
 
   test('cycles generated enemy movement and attack frames', async ({ page }) => {
