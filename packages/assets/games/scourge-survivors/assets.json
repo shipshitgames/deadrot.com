@@ -7,34 +7,34 @@
         "front": {
           "path": "games/scourge-survivors/enemies/scourge/host-grunt/front.webp",
           "dimensions": [
-            100,
-            124
+            128,
+            128
           ],
           "scale": [
-            1.55,
-            2.42
+            1.82,
+            2.55
           ]
         },
         "side": {
           "path": "games/scourge-survivors/enemies/scourge/host-grunt/side.webp",
           "dimensions": [
-            97,
-            124
+            128,
+            128
           ],
           "scale": [
-            1.28,
-            2.38
+            1.75,
+            2.52
           ]
         },
         "back": {
           "path": "games/scourge-survivors/enemies/scourge/host-grunt/back.webp",
           "dimensions": [
-            95,
-            124
+            128,
+            128
           ],
           "scale": [
-            1.5,
-            2.4
+            1.82,
+            2.55
           ]
         }
       },
@@ -42,7 +42,7 @@
         "tool": "gpt-image-2",
         "plan": "built-in image_gen",
         "date": "2026-06-05",
-        "kind": "AI generated 2D Scourge melee host sprite sheet",
+        "kind": "AI generated 2D Scourge melee host sprite sheet with body-grown bone sword blades",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -53,8 +53,8 @@
         "front": {
           "path": "games/scourge-survivors/enemies/scourge/spitter-host/front.webp",
           "dimensions": [
-            108,
-            124
+            128,
+            128
           ],
           "scale": [
             1.5,
@@ -64,8 +64,8 @@
         "side": {
           "path": "games/scourge-survivors/enemies/scourge/spitter-host/side.webp",
           "dimensions": [
-            114,
-            124
+            128,
+            128
           ],
           "scale": [
             1.55,
@@ -75,8 +75,8 @@
         "back": {
           "path": "games/scourge-survivors/enemies/scourge/spitter-host/back.webp",
           "dimensions": [
-            111,
-            124
+            128,
+            128
           ],
           "scale": [
             1.48,
@@ -88,7 +88,7 @@
         "tool": "gpt-image-2",
         "plan": "built-in image_gen",
         "date": "2026-06-05",
-        "kind": "AI generated 2D Scourge ranged spitter sprite sheet",
+        "kind": "AI generated 2D Scourge ranged spitter sprite sheet, chartreuse acid readability lane",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -99,8 +99,8 @@
         "front": {
           "path": "games/scourge-survivors/enemies/scourge/winged-host/front.webp",
           "dimensions": [
-            83,
-            116
+            128,
+            128
           ],
           "scale": [
             1.52,
@@ -110,8 +110,8 @@
         "side": {
           "path": "games/scourge-survivors/enemies/scourge/winged-host/side.webp",
           "dimensions": [
-            67,
-            116
+            128,
+            128
           ],
           "scale": [
             1.21,
@@ -121,8 +121,8 @@
         "back": {
           "path": "games/scourge-survivors/enemies/scourge/winged-host/back.webp",
           "dimensions": [
-            84,
-            116
+            128,
+            128
           ],
           "scale": [
             1.54,
@@ -134,7 +134,7 @@
         "tool": "gpt-image-2",
         "plan": "built-in image_gen",
         "date": "2026-06-05",
-        "kind": "AI generated 2D flying Scourge sprite sheet",
+        "kind": "AI generated 2D flying Scourge sprite sheet, purple wing readability lane",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -145,34 +145,34 @@
         "front": {
           "path": "games/scourge-survivors/enemies/scourge/breach-boss/front.webp",
           "dimensions": [
-            97,
-            156
+            128,
+            180
           ],
           "scale": [
-            2.03,
-            3.32
+            2.45,
+            3.6
           ]
         },
         "side": {
           "path": "games/scourge-survivors/enemies/scourge/breach-boss/side.webp",
           "dimensions": [
-            79,
-            156
+            128,
+            180
           ],
           "scale": [
-            1.6,
-            3.3
+            2.45,
+            3.6
           ]
         },
         "back": {
           "path": "games/scourge-survivors/enemies/scourge/breach-boss/back.webp",
           "dimensions": [
-            99,
-            156
+            128,
+            180
           ],
           "scale": [
-            2.02,
-            3.22
+            2.45,
+            3.6
           ]
         }
       },

@@ -20,7 +20,13 @@ import {
   ENEMY_SPEED_MIN,
   ENEMY_SPEED_MAX,
 } from '../constants'
-import { ENEMY_SPRITE_SCALES, ENEMY_SPRITE_TEXTURES } from '../spriteAssets'
+import {
+  ENEMY_SPRITE_ANIMATION_META,
+  ENEMY_SPRITE_ANIMATION_TEXTURES,
+  ENEMY_SPRITE_SCALES,
+  ENEMY_SPRITE_TEXTURES,
+  type EnemySpriteAnimationState,
+} from '../spriteAssets'
 import { ENEMY_ARCHETYPES, type EnemyArchetypeId } from '../data/enemies'
 import { Agent, type WorldBounds, type SteeringStrategy, type PlanarVec } from '@shipshitgames/engine'
 import { chasePlayerStrategy } from './ChasePlayerStrategy'
@@ -140,6 +146,11 @@ export class Enemy extends Agent {
   private sprite: THREE.Sprite
   private spriteView: EnemySpriteView = 'front'
   private spriteFlip = 1
+  private spriteAnimationState: EnemySpriteAnimationState | 'static' = 'static'
+  private spriteAnimationFrame = 0
+  private spriteAnimationTime = 0
+  private forcedSpriteAnimation: EnemySpriteAnimationState | null = null
+  private forcedSpriteAnimationTimer = 0
   private muzzle = new THREE.Vector3()
 
   constructor() {
@@ -271,6 +282,11 @@ export class Enemy extends Agent {
     this.chargeWindup = 0
     this.chargeTimer = 0
     this.chargeCooldown = 1.1 + Math.random() * 1.2
+    this.spriteAnimationState = 'static'
+    this.spriteAnimationFrame = 0
+    this.spriteAnimationTime = 0
+    this.forcedSpriteAnimation = null
+    this.forcedSpriteAnimationTimer = 0
     this.knockX = 0
     this.knockZ = 0
     this.tellMesh.visible = false
@@ -292,9 +308,10 @@ export class Enemy extends Agent {
     return this.ranged ? 'ranged' : 'melee'
   }
 
-  private applySprite(view: EnemySpriteView = 'front', flip = 1, elapsed = 0, moving = false) {
+  private applySprite(view: EnemySpriteView = 'front', flip = 1, elapsed = 0, moving = false, delta = 0) {
     const kind = this.spriteKind()
-    const texture = ENEMY_SPRITE_TEXTURES[kind][view]
+    const animation = this.resolveSpriteAnimation(moving)
+    const texture = this.spriteTexture(kind, view, animation, delta)
 
     if (this.spriteMat.map !== texture) {
       this.spriteMat.map = texture
@@ -319,6 +336,60 @@ export class Enemy extends Agent {
     this.spriteMat.rotation = moving ? step * 0.035 * flip : 0
     this.sprite.scale.set(baseW * (1 + squash * 0.025) * flip * punch, baseH * (1 - squash * 0.035) * punch, 1)
     this.sprite.position.y = moving ? squash * 0.035 : 0
+  }
+
+  private resolveSpriteAnimation(moving: boolean): EnemySpriteAnimationState | 'static' {
+    if (this.forcedSpriteAnimation && this.forcedSpriteAnimationTimer > 0) return this.forcedSpriteAnimation
+    const kind = this.spriteKind()
+    if (kind === 'boss' || kind === 'flying') return 'move'
+    return moving ? 'move' : 'static'
+  }
+
+  private spriteTexture(
+    kind: EnemySpriteKind,
+    view: EnemySpriteView,
+    animation: EnemySpriteAnimationState | 'static',
+    delta: number,
+  ): THREE.Texture {
+    if (animation === 'static') {
+      this.spriteAnimationState = 'static'
+      this.spriteAnimationFrame = 0
+      this.spriteAnimationTime = 0
+      return ENEMY_SPRITE_TEXTURES[kind][view]
+    }
+
+    const meta = ENEMY_SPRITE_ANIMATION_META[kind][animation]
+    const frames = ENEMY_SPRITE_ANIMATION_TEXTURES[kind][animation][view]
+    if (this.spriteAnimationState !== animation) {
+      this.spriteAnimationState = animation
+      this.spriteAnimationFrame = 0
+      this.spriteAnimationTime = 0
+    } else {
+      this.spriteAnimationTime += delta
+      const frameTime = 1 / meta.fps
+      while (this.spriteAnimationTime >= frameTime) {
+        this.spriteAnimationTime -= frameTime
+        this.spriteAnimationFrame = meta.loop
+          ? (this.spriteAnimationFrame + 1) % meta.frameCount
+          : Math.min(meta.frameCount - 1, this.spriteAnimationFrame + 1)
+      }
+    }
+    return frames[Math.min(this.spriteAnimationFrame, frames.length - 1)] ?? ENEMY_SPRITE_TEXTURES[kind][view]
+  }
+
+  private triggerSpriteAnimation(animation: EnemySpriteAnimationState, duration: number) {
+    if (this.forcedSpriteAnimation !== animation || this.forcedSpriteAnimationTimer <= 0) {
+      this.spriteAnimationState = 'static'
+      this.spriteAnimationFrame = 0
+      this.spriteAnimationTime = 0
+    }
+    this.forcedSpriteAnimation = animation
+    this.forcedSpriteAnimationTimer = Math.max(this.forcedSpriteAnimationTimer, duration)
+  }
+
+  private attackAnimationDuration(): number {
+    const meta = ENEMY_SPRITE_ANIMATION_META[this.spriteKind()].attack
+    return meta.frameCount / meta.fps
   }
 
   private chooseSpriteFrame(moveX: number, moveZ: number, dirX: number, dirZ: number): { view: EnemySpriteView; flip: number } {
@@ -424,6 +495,10 @@ export class Enemy extends Agent {
     // knockback shove from being shot — decays fast so it reads as a flinch
     this.applyKnockback(delta)
     if (this.hitFlash > 0) this.hitFlash = Math.max(0, this.hitFlash - delta)
+    if (this.forcedSpriteAnimationTimer > 0) {
+      this.forcedSpriteAnimationTimer = Math.max(0, this.forcedSpriteAnimationTimer - delta)
+      if (this.forcedSpriteAnimationTimer <= 0) this.forcedSpriteAnimation = null
+    }
 
     bounds.clampXZ(pos, 1.5)
 
@@ -432,7 +507,7 @@ export class Enemy extends Agent {
       ? this.hoverHeight + Math.sin(elapsed * (this.speed * 1.25) + this.bobPhase) * 0.18
       : Math.abs(Math.sin(elapsed * (this.speed * 1.6) + this.bobPhase)) * 0.07
     const frame = this.chooseSpriteFrame(move.x, move.z, dirX, dirZ)
-    this.applySprite(frame.view, frame.flip, elapsed, Math.hypot(move.x, move.z) > 0.05)
+    this.applySprite(frame.view, frame.flip, elapsed, Math.hypot(move.x, move.z) > 0.05, delta)
     this.healthBarGroup.quaternion.copy(cameraQuat)
     this.updateTell(delta)
 
@@ -446,6 +521,7 @@ export class Enemy extends Agent {
       if (this.attackTimer <= 0) {
         tick.melee += this.attackDamage
         this.attackTimer = this.attackInterval
+        this.triggerSpriteAnimation('attack', this.attackAnimationDuration())
         this.eyeMat.emissiveIntensity = this.isBoss ? 7 : 4.5
       }
     }
@@ -466,6 +542,7 @@ export class Enemy extends Agent {
         this.fireTimer -= delta
         if (this.fireTimer <= 0) {
           this.telegraphTimer = this.isBoss ? 0.16 : 0.34
+          this.triggerSpriteAnimation('attack', this.attackAnimationDuration())
           this.eyeMat.emissiveIntensity = this.isBoss ? 7 : 5.6
         }
       }
@@ -532,6 +609,7 @@ export class Enemy extends Agent {
         this.shieldMesh.visible = true
       } else {
         // projectile barrage fanned around the player direction
+        this.triggerSpriteAnimation('attack', this.attackAnimationDuration())
         const base = Math.atan2(dirX, dirZ)
         const denom = Math.max(1, BOSS_BARRAGE_COUNT - 1)
         for (let i = 0; i < BOSS_BARRAGE_COUNT; i++) {

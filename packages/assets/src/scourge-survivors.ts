@@ -1,4 +1,5 @@
 import manifestData from "../games/scourge-survivors/assets.json" with { type: "json" };
+import animationManifestData from "../games/scourge-survivors/animations/scourge/animation-pack.json" with { type: "json" };
 
 export type Vec2 = [number, number];
 export type Vec3 = [number, number, number];
@@ -64,11 +65,39 @@ export interface ScourgeSurvivorsAssetManifest {
   audio: Record<string, AudioEntry>;
 }
 
+export interface AnimationActionEntry {
+  loop: boolean;
+  fps: number;
+  pathTemplate: string;
+}
+
+export interface AnimationEntityEntry {
+  frameDimensions: Vec2;
+  colorLane: string;
+  physicsLane: string;
+  actions: Record<string, AnimationActionEntry>;
+}
+
+export interface ScourgeSurvivorsAnimationManifest {
+  version: string;
+  status: string;
+  tool: string;
+  model: string;
+  promptHistory: string;
+  framesPerAction: number;
+  views: SpriteView[];
+  entities: Record<string, AnimationEntityEntry>;
+}
+
 export const SCOURGE_SURVIVORS_ASSET_MANIFEST =
   manifestData as unknown as ScourgeSurvivorsAssetManifest;
 
+export const SCOURGE_SURVIVORS_ANIMATION_MANIFEST =
+  animationManifestData as unknown as ScourgeSurvivorsAnimationManifest;
+
 const scourgeSurvivorsAssetModules = import.meta.glob<string>(
   [
+    "../games/scourge-survivors/animations/**/*.webp",
     "../games/scourge-survivors/players/**/*.webp",
     "../games/scourge-survivors/enemies/**/*.webp",
     "../games/scourge-survivors/weapons/**/*.webp",
@@ -138,6 +167,23 @@ export function scourgeSurvivorsSpriteScale(id: string, view?: SpriteView): Vec2
   }
   if (!entry.scale) throw new Error(`Scourge Survivors sprite asset ${id} has no direct scale`);
   return entry.scale;
+}
+
+export function scourgeSurvivorsAnimationFrameUrl(
+  entity: string,
+  action: string,
+  view: SpriteView,
+  frame: number,
+): string {
+  const entityEntry = SCOURGE_SURVIVORS_ANIMATION_MANIFEST.entities[entity];
+  if (!entityEntry) throw new Error(`Unknown Scourge Survivors animation entity: ${entity}`);
+  const actionEntry = entityEntry.actions[action];
+  if (!actionEntry) throw new Error(`Unknown Scourge Survivors animation action: ${entity}/${action}`);
+  const frameId = String(frame).padStart(2, "0");
+  const path = `games/scourge-survivors/${actionEntry.pathTemplate
+    .replace("{view}", view)
+    .replace("{frame}", frameId)}`;
+  return scourgeSurvivorsAssetUrl(path);
 }
 
 export const SCOURGE_SURVIVORS_PIXEL_ICON_IDS = [

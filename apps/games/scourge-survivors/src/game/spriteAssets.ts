@@ -2,7 +2,9 @@ import * as THREE from 'three'
 import type { WeaponId } from './constants'
 import type { PlayerAvatarId } from '../net/playerAvatars'
 import {
+  ANIMATION_MANIFEST,
   ASSET_MANIFEST,
+  animationFrameUrl,
   assetUrl,
   audioUrl,
   loadSpriteTexture,
@@ -15,12 +17,23 @@ import {
 
 type EnemySpriteKind = 'melee' | 'ranged' | 'flying' | 'boss'
 type EnemySpriteView = SpriteView
+export type EnemySpriteAnimationState = 'move' | 'attack'
 
 const ENEMY_SPRITE_IDS: Record<EnemySpriteKind, string> = {
   melee: 'enemy-melee',
   ranged: 'enemy-ranged',
   flying: 'enemy-flying',
   boss: 'boss',
+}
+
+const ENEMY_ANIMATION_CONFIG: Record<EnemySpriteKind, {
+  entity: string
+  actions: Record<EnemySpriteAnimationState, string>
+}> = {
+  melee: { entity: 'host-grunt', actions: { move: 'walk', attack: 'slash' } },
+  ranged: { entity: 'spitter-host', actions: { move: 'walk', attack: 'spit' } },
+  flying: { entity: 'winged-host', actions: { move: 'fly', attack: 'attack' } },
+  boss: { entity: 'breach-boss', actions: { move: 'lurch', attack: 'barrage' } },
 }
 
 const PLAYER_SPRITE_IDS: Record<PlayerAvatarId, string> = {
@@ -54,11 +67,69 @@ function scaleViews(id: string): Record<EnemySpriteView, [number, number]> {
   }
 }
 
+function loadEnemyAnimationTexture(entity: string, action: string, view: EnemySpriteView, frame: number): THREE.Texture {
+  const texture = new THREE.TextureLoader().load(animationFrameUrl(entity, action, view, frame))
+  texture.colorSpace = THREE.SRGBColorSpace
+  texture.minFilter = THREE.NearestFilter
+  texture.magFilter = THREE.NearestFilter
+  texture.generateMipmaps = false
+  texture.premultiplyAlpha = false
+  return texture
+}
+
+function animationFrameViews(entity: string, action: string): Record<EnemySpriteView, THREE.Texture[]> {
+  const frames = Array.from({ length: ANIMATION_MANIFEST.framesPerAction }, (_, frame) => frame)
+  return {
+    front: frames.map((frame) => loadEnemyAnimationTexture(entity, action, 'front', frame)),
+    side: frames.map((frame) => loadEnemyAnimationTexture(entity, action, 'side', frame)),
+    back: frames.map((frame) => loadEnemyAnimationTexture(entity, action, 'back', frame)),
+  }
+}
+
+function animationStateViews(kind: EnemySpriteKind): Record<EnemySpriteAnimationState, Record<EnemySpriteView, THREE.Texture[]>> {
+  const config = ENEMY_ANIMATION_CONFIG[kind]
+  return {
+    move: animationFrameViews(config.entity, config.actions.move),
+    attack: animationFrameViews(config.entity, config.actions.attack),
+  }
+}
+
+function animationStateMeta(kind: EnemySpriteKind): Record<EnemySpriteAnimationState, { fps: number; loop: boolean; frameCount: number }> {
+  const config = ENEMY_ANIMATION_CONFIG[kind]
+  const entity = ANIMATION_MANIFEST.entities[config.entity]
+  return {
+    move: {
+      fps: entity.actions[config.actions.move].fps,
+      loop: entity.actions[config.actions.move].loop,
+      frameCount: ANIMATION_MANIFEST.framesPerAction,
+    },
+    attack: {
+      fps: entity.actions[config.actions.attack].fps,
+      loop: entity.actions[config.actions.attack].loop,
+      frameCount: ANIMATION_MANIFEST.framesPerAction,
+    },
+  }
+}
+
 export const ENEMY_SPRITE_TEXTURES: Record<EnemySpriteKind, Record<EnemySpriteView, THREE.Texture>> = {
   melee: textureViews(ENEMY_SPRITE_IDS.melee),
   ranged: textureViews(ENEMY_SPRITE_IDS.ranged),
   flying: textureViews(ENEMY_SPRITE_IDS.flying),
   boss: textureViews(ENEMY_SPRITE_IDS.boss),
+}
+
+export const ENEMY_SPRITE_ANIMATION_TEXTURES: Record<EnemySpriteKind, Record<EnemySpriteAnimationState, Record<EnemySpriteView, THREE.Texture[]>>> = {
+  melee: animationStateViews('melee'),
+  ranged: animationStateViews('ranged'),
+  flying: animationStateViews('flying'),
+  boss: animationStateViews('boss'),
+}
+
+export const ENEMY_SPRITE_ANIMATION_META: Record<EnemySpriteKind, Record<EnemySpriteAnimationState, { fps: number; loop: boolean; frameCount: number }>> = {
+  melee: animationStateMeta('melee'),
+  ranged: animationStateMeta('ranged'),
+  flying: animationStateMeta('flying'),
+  boss: animationStateMeta('boss'),
 }
 
 export const ENEMY_SPRITE_SCALES: Record<EnemySpriteKind, Record<EnemySpriteView, [number, number]>> = {

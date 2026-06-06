@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import {
   SCOURGE_SURVIVORS_ASSET_MANIFEST,
+  SCOURGE_SURVIVORS_ANIMATION_MANIFEST,
+  scourgeSurvivorsAnimationFrameUrl,
   scourgeSurvivorsAssetUrl,
   scourgeSurvivorsAudioEntry,
   scourgeSurvivorsAudioUrl,
@@ -9,7 +11,10 @@ import {
   scourgeSurvivorsSpriteUrl,
   scourgeSurvivorsTextureEntry,
   type AudioEntry,
+  type AnimationActionEntry,
+  type AnimationEntityEntry,
   type LicenseRecord,
+  type ScourgeSurvivorsAnimationManifest,
   type ScourgeSurvivorsAssetManifest,
   type SpriteEntry,
   type SpriteFilter,
@@ -22,7 +27,10 @@ import {
 
 export type {
   AudioEntry,
+  AnimationActionEntry,
+  AnimationEntityEntry,
   LicenseRecord,
+  ScourgeSurvivorsAnimationManifest as AnimationManifest,
   ScourgeSurvivorsAssetManifest as AssetManifest,
   SpriteEntry,
   SpriteFilter,
@@ -34,6 +42,7 @@ export type {
 }
 
 export const ASSET_MANIFEST = SCOURGE_SURVIVORS_ASSET_MANIFEST
+export const ANIMATION_MANIFEST = SCOURGE_SURVIVORS_ANIMATION_MANIFEST
 
 export function assetUrl(path: string): string {
   return scourgeSurvivorsAssetUrl(path)
@@ -57,6 +66,10 @@ export function audioUrl(id: string): string {
 
 export function spriteUrl(id: string, view?: SpriteView): string {
   return scourgeSurvivorsSpriteUrl(id, view)
+}
+
+export function animationFrameUrl(entity: string, action: string, view: SpriteView, frame: number): string {
+  return scourgeSurvivorsAnimationFrameUrl(entity, action, view, frame)
 }
 
 export function spriteScale(id: string, view?: SpriteView): Vec2 {

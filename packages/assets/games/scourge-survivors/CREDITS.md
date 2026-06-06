@@ -56,6 +56,44 @@
 - Runtime note: the high-resolution sheets and cutouts stay in the draft folder as source masters; `assets.json` marks the enemy families with `filter: "nearest"` so the game displays the low-resolution textures without smoothing.
 - Notes: Replaces clean armored/mech enemies with Scourge host-takeover art and adds the flying enemy sprite family. The flying enemy explicitly avoids Starblight ship/craft silhouettes. Melee and ranged were regenerated with fresh `gpt-image-2` source sheets on 2026-06-05 so melee reads as a broad claw brute and ranged reads as a hunched toxic acid-spitter.
 
+## 2026-06-05 - locked Scourge melee and boss runtime refresh
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Faction / role: Scourge melee host and breach boss billboard sprites.
+- Tool: `gpt-image-2` via built-in `image_gen`.
+- Plan: Codex built-in.
+- Kind: generated 2D enemy sprite sheets in the locked medium-chunky pixel style.
+- Source outputs:
+  - `/Users/decod3rslabs/.codex/generated_images/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_0470aa91021088af016a22ed9b2b6c819197f8d4b4b0ac3443.png`
+  - `/Users/decod3rslabs/.codex/generated_images/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_0470aa91021088af016a22ee1ffd2c8191bc6029fcddaa27ad.png`
+- Workspace draft folder: `sources/drafts/sprites/2026-06-05-locked-runtime-refresh/`.
+- Final assets: `enemies/scourge/host-grunt/{front,side,back}.webp`, `enemies/scourge/breach-boss/{front,side,back}.webp`.
+- Prompt source: `apps/lore/content/Art/style-bakeoff/run-d2.sh`, `apps/lore/content/Art/style-refs/scourge-survivors.webp`, and user direction that melee foes need body-grown swords and the boss is getting cut in-game.
+- Post-processing: generated as three-view sheets on sampled magenta chroma-key, split into front/side/back cells, keyed with ffmpeg `colorkey`, nearest-neighbor downscaled, padded with alpha, and encoded lossless with `cwebp -lossless -exact`.
+- Runtime note: melee host sprites are now 128x128 with clear forearm-grown bone sword blades. Boss sprites are now padded 128x180 plates with corrected in-world sprite scale in `assets.json`, preventing the boss art from filling/cutting against the camera while keeping boss mass.
+- Notes: Website sprite mirrors and the shared entity preview plates for `scourge-swarm` and `breach-boss` were refreshed from these runtime sprites.
+
+## 2026-06-05 - Scourge enemy animation pack v01
+
+- Status: generated, not yet wired into runtime.
+- Game: Scourge Survivors.
+- Faction / role: Scourge host-grunt, spitter-host, winged-host, and breach-boss animation frames.
+- Tool: `gpt-image-2` via built-in `image_gen`.
+- Plan: Codex built-in.
+- Kind: generated 2D animation sprite sheets and extracted WebP frames.
+- Prompt source: `apps/lore/content/Art/Prompt-Batches/2026-06-05-scourge-animation-pack.md`.
+- Workspace assets: `animations/scourge/`.
+- Actions:
+  - `host-grunt`: `walk`, `slash`, `death`.
+  - `spitter-host`: `walk`, `spit`, `death`.
+  - `winged-host`: `fly`, `attack`, `death`.
+  - `breach-boss`: `lurch`, `barrage`, `death`.
+- Readability lanes: melee stays blood-red and heavy, spitter is acid chartreuse and twitchy, flyer has bruised purple membranes and hover physics, boss is deep crimson-black with heavy inertia.
+- Post-processing: generated 3x6 sheets, copied source sheets into each action folder, split into front/side/back six-frame strips, removed `#ff00ff` chroma key, nearest-neighbor downscaled, alpha padded, and encoded lossless with `cwebp -lossless -exact`.
+- Runtime note: non-boss frames are 128x128; boss frames are 128x180 to keep the boss crop/padding fix.
+- Promotion note: the first spitter walk frames and first winged fly frames were also promoted into the current runtime `spitter-host` and `winged-host` static sprites so the color lanes are visible in-game before the animation renderer is wired.
+
 ## 2026-06-05 - Scourge blood pickup sprite set
 
 - Status: promoted into runtime.
