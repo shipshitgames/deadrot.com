@@ -15,7 +15,6 @@ import {
   gameCharacters,
   gameCreatures,
   accentVars,
-  spriteUrl,
 } from "@/lib/content";
 
 export function generateStaticParams() {
@@ -68,36 +67,27 @@ export default async function Page({
 
   const faction = game.factionSlug ? getFaction(game.factionSlug) : undefined;
 
-  const art = [...gameCreatures(game), ...gameCharacters(game)].find(
-    (e) => e.spriteBase
-  );
-  const sprite = art ? spriteUrl(art.spriteBase) : null;
-
   const roster = gameCharacters(game);
   const foes = gameCreatures(game);
+  const gameImage = `/images/games/${game.slug}.webp`;
 
   return (
     <main style={accentVars(game.accent)}>
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden px-6 pt-32 pb-16">
+      <section className="relative flex min-h-[560px] items-center overflow-hidden px-6 pt-32 pb-16">
         <Backdrop />
-        {sprite ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={sprite}
-            alt=""
-            aria-hidden
-            className="pointer-events-none absolute right-0 top-1/2 hidden h-[80vh] max-h-[680px] -translate-y-1/2 object-contain opacity-50 saturate-150 drop-shadow-[0_0_90px_color-mix(in_srgb,var(--page-accent)_45%,transparent)] sm:block"
-          />
-        ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src="/sprites/boss.webp"
-            alt=""
-            aria-hidden
-            className="pointer-events-none absolute right-0 top-1/2 hidden h-[80vh] max-h-[680px] -translate-y-1/2 object-contain opacity-[0.08] sm:block"
-          />
-        )}
+        {/* Pixel game cover, shared with the /#games cards. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={gameImage}
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-65 saturate-125"
+          style={{ imageRendering: "pixelated" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-void via-void/75 to-void/25" />
+        <div className="absolute inset-0 bg-gradient-to-t from-void via-transparent to-void/60" />
+        <div className="vignette absolute inset-0" />
 
         <div className="relative z-10 mx-auto max-w-7xl">
           <Link
