@@ -42,9 +42,9 @@
       "factionSlug": "",
       "factionName": "The Pyre vs The Wardens",
       "accent": "blood",
-      "overview": "The Pyre and the Wardens have hated each other since the schism, and Pactfall is where they finally throw down — in sanctioned blood-arenas, fought over lanes, never as real war. Gory, fast, and hellfire-lit, it's the human rivalry made playable.",
+      "overview": "The current playable prototype tests the first arena slice: Pyre pressure, a Warden opponent, lane minions, and a neutral Scourge problem in the center. The design target is still the full human rivalry made playable — Pyre and Wardens settling doctrine grudges in sanctioned blood-arenas, fought over lanes, never as real war.",
       "features": [
-        { "title": "Pyre vs Wardens", "desc": "Pick your creed and prove it on the lanes — burn the source or hold the line, settled in the arena instead of the field." },
+        { "title": "Pyre vs Wardens", "desc": "Current build proves the arena pressure first; the target is hero play for both creeds once the loop earns the extra roster work." },
         { "title": "The Scourge twist", "desc": "Ignore the neutral horde in the center and it overruns both teams. A big enough surge can force a momentary truce — because humans always unite against it." },
         { "title": "Built on the run loop", "desc": "Escalating lane pressure, XP and blood drops, 1-of-3 drafts, build synergies, and boss-objective gates pulled straight from canon." }
       ],
@@ -59,10 +59,10 @@
       "factionSlug": "",
       "factionName": "The Pyre & The Wardens",
       "accent": "toxic",
-      "overview": "Starblight is Scourge contamination loose in orbit — spores, infected wreckage, living carrier-ships, and breach matter spreading through the void. You fly the orbital front, intercepting the rot before it ever touches the ground war below.",
+      "overview": "Starblight is Scourge contamination loose in orbit — spores, infected wreckage, living carrier-ships, and breach matter spreading through the void. The current playable prototype foregrounds a lone Warden interceptor; the design target expands that into Pyre and Warden pilot identities intercepting the rot before it touches the ground war below.",
       "features": [
-        { "title": "Clean, readable carnage", "desc": "Galaga-tight arcade shooting on the shared run loop: launch, survive escalating formations, stack weapon synergies, and kill the orbital boss." },
-        { "title": "Fly for either creed", "desc": "Pyre pilots burn breach matter aggressively before impact; Warden pilots shield orbital infrastructure and the lanes beneath it." },
+        { "title": "Clean, readable carnage", "desc": "Top-down mouse-flight survivors on the shared run loop: launch, survive escalating swarms, stack weapon synergies, and kill the orbital boss." },
+        { "title": "Two pilot creeds", "desc": "Current build proves the Warden-front prototype first; Pyre burn pilots and Warden defense pilots are the target roster." },
         { "title": "Parasite conquest in space", "desc": "Toxic-green breach organs, chitin over rusted hulls, living spore mines, and carrier-bosses grown around breach hearts." }
       ],
       "characterSlugs": ["pyre-interceptor-pilot", "warden-defense-pilot"],
@@ -76,7 +76,7 @@
       "factionSlug": "",
       "factionName": "The Pyre & The Wardens",
       "accent": "rust",
-      "overview": "When the Scourge cuts the lanes and chokes the comms between holdouts, the message still has to get through — so you carry it on foot, faster than the horde can close. Speed is survival. The Choir is always listening for the one thing still moving on the dead roads.",
+      "overview": "When the Scourge cuts the lanes and chokes the comms between holdouts, the message still has to get through — so you carry it on foot, faster than the horde can close. The current playable prototype follows a Pyre courier first; the full target adds the Warden courier identity once the speed loop is strong enough to carry both creeds.",
       "features": [
         { "title": "Speed beats omniscience", "desc": "The massed Scourge is near-omniscient, but its coordination has a tempo. Hold full redline and you outpace the swarm before it can cut you off." },
         { "title": "Lanes as racecourses", "desc": "Chain ramps, rail-grinds, and breach-debris boost pads through collapsing chokepoints to reach the next holdout before the gate closes." },
@@ -93,7 +93,7 @@
       "factionSlug": "the-pyre",
       "factionName": "The Pyre",
       "accent": "bone",
-      "overview": "A rothulk is a beached Scourge breach-ship grown into the ground — a mountain of rotting host-flesh and dead-world machinery with a heartbeat. You're a lone Pyre saboteur, and you're going to platform all the way up its spine to the breach-core and set it on fire.",
+      "overview": "A rothulk is a beached Scourge breach-ship grown into the ground — a mountain of rotting host-flesh and dead-world machinery with a heartbeat. The current playable prototype tests the lone Pyre saboteur climb first: platform up its spine, reach the breach-core, and set it on fire.",
       "features": [
         { "title": "The level is the enemy", "desc": "Ascend chambers of pulsing host-flesh, ride spore-geysers, and crush living platforms on the way to the heart that keeps the nest connected." },
         { "title": "Stay out of the light", "desc": "While the core is lit, the whole hulk knows where you are. Route around the Choir's massed clusters — the gaps between them are your path." },
@@ -131,7 +131,7 @@
       "playstyle": "Aggressive high-risk DPS and infiltration. Drop into the breach, push deeper room by room, and torch the Choir repeaters from the inside.",
       "rivalry": "We call the Wardens cowards who prolong the rot one wall at a time — and we'd be lying if we said they didn't hold the line for us every single time the swarm surges. The feud is real. It just gets settled in the arena at Pactfall, never in the field. When a breach opens, we stand together. That's the Pact.",
       "crestMotif": "an upward-pointing wedge wreathed in jagged flame tongues, a severed circular node-ring broken at the base, scorched edges bleeding into ember",
-      "gameSlugs": ["scourge-survivors", "pactfall"]
+      "gameSlugs": ["scourge-survivors", "pactfall", "starblight", "redline", "rothulk"]
     },
     {
       "slug": "the-wardens",
@@ -143,7 +143,7 @@
       "playstyle": "Defensive, economic, building. Place towers, fortify the chokepoints, and grind the swarm down through attrition before it ever reaches the line.",
       "rivalry": "We see the Pyre for what they are — reckless fanatics burning lives on suicide runs into breaches that reopen behind them. And we hold the line for them anyway, every time the Scourge surges. The grudge gets paid in the arena at Pactfall, not on the field. Whatever the feud, when a breach opens we stand together. That's the Pact.",
       "crestMotif": "a heavy interlocking gear-and-shield, three horizontal bars suggesting a layered wall, riveted gunmetal frame with corroded edges",
-      "gameSlugs": ["deadlane", "pactfall"]
+      "gameSlugs": ["deadlane", "pactfall", "starblight", "redline"]
     },
     {
       "slug": "the-listeners",
@@ -155,7 +155,7 @@
       "playstyle": "A narrative thread woven through missions rather than a fourth banner — heretics who drive the war's hardest questions from the inside.",
       "rivalry": "Heretics to the Pyre and the Wardens alike, protected by neither. We keep to the Pact in the field — when a breach opens we hold with everyone else — but we're tolerated, not trusted. Both sides would rather we didn't exist. We'd rather they were right. They aren't.",
       "crestMotif": "a concentric ring of broken arcs like a captured signal waveform, a single open eye at the center, thin acid-green linework on dark",
-      "gameSlugs": ["scourge-survivors", "deadlane", "pactfall"]
+      "gameSlugs": []
     }
   ],
   "characters": [
@@ -213,21 +213,21 @@
       "overview": "Somebody has to make the line hold, and that somebody is you. The Field Engineer is the Wardens' baseline builder, a practical technician working under fire with a tower-control rig and a harness full of clamps and repairs.\n\nNo glory, no heroics. Just put the towers up, keep them firing, and make sure the lane is still there when the Scourge arrives.",
       "gameplayRead": ["Compact utility silhouette", "Tower-control tablet, baton, or wrist rig", "Tool harness and repair clamps"],
       "visualMotifs": ["Gunmetal work armor", "Industrial yellow markings and bone stencils", "Ember-lit shield hardware", "Grease, scratches, weld scars, and field repairs"],
-      "appearsIn": ["deadlane", "pactfall"], "spriteBase": "portrait-field-engineer"
+      "appearsIn": ["deadlane"], "spriteBase": "portrait-field-engineer"
     },
     {
       "slug": "lane-gunner", "name": "Lane Gunner", "factionSlug": "the-wardens", "factionName": "The Wardens", "role": "Heavy defender", "tagline": "Stay planted and let the Scourge break itself on the line.", "accent": "rust",
       "overview": "Attrition is a strategy, and you are the strategy. The Lane Gunner is the Wardens' heavy ranged defender: broad stance, fed ammo belt, and a weapon that does not stop until the lane is clear.\n\nYou win by not moving. Brace, feed, fire, and let the horde grind itself into the dirt in front of you.",
       "gameplayRead": ["Broad, planted stance", "Heavy weapon with ammo feed", "Reinforced knee braces and shoulder plates"],
       "visualMotifs": ["Worn steel and gunmetal armor", "Industrial yellow hazard accents", "Ember targeting lamps", "Boxy, modular Warden shape language"],
-      "appearsIn": ["deadlane", "pactfall"], "spriteBase": "portrait-lane-gunner"
+      "appearsIn": ["deadlane"], "spriteBase": "portrait-lane-gunner"
     },
     {
       "slug": "wallwright", "name": "Wallwright", "factionSlug": "the-wardens", "factionName": "The Wardens", "role": "Shield and barricade specialist", "tagline": "Builds the last wall before a lane becomes a grave.", "accent": "rust",
       "overview": "When the line is about to fall, you're what's left between it and the dirt. The Wallwright is the Wardens' shield-and-barricade specialist, a builder-protector hauling heavy field hardware into the worst of it.\n\nShield emitter on the back, barricade anchors on the arms, and a slab of chest armor between the Scourge and everyone behind you. No paladins here, just a wall that fights back.",
       "gameplayRead": ["Square heavy silhouette", "Shield emitter backpack", "Deployable barricade anchors on arms or belt"],
       "visualMotifs": ["Slab chest armor", "Gunmetal and worn steel", "Industrial hazard stripes used sparingly", "Ember-lit field nodes"],
-      "appearsIn": ["deadlane", "pactfall"], "spriteBase": "portrait-wallwright"
+      "appearsIn": ["deadlane"], "spriteBase": "portrait-wallwright"
     },
     {
       "slug": "warden-artillerist", "name": "Warden Artillerist", "factionSlug": "the-wardens", "factionName": "The Wardens", "role": "Pactfall ranged artillery", "tagline": "Brings siege math into sanctioned arena combat.", "accent": "rust",
@@ -332,49 +332,49 @@
       "overview": "The endless, mutating horde that pours from the breaches. There is no general to kill, no head to cut off. The Scourge is a parasite with no native form of its own. It wears what it infects, consumes worlds to the bone, and jumps to the next when one runs dry. Not evil. Just hungry, and built without an off-switch. Every part of it knows what every other part knows, all at once, over a signal called the Choir. That is its strength and its only weakness: the Choir reaches only so far. Sever a node, kill its relays, push it past the edge, and the Scourge goes feral. Still lethal. But blind, dumb, instinct alone. Isolation is the only way anyone has ever survived it.",
       "gameplayRead": ["Toxic-green breach cores, black chitin, wet tissue, tendrils, and rupture seams unite every form.", "Silhouettes shift wildly by host race, but the parasite signature always reads.", "Swarm fodder to mow down, mutated elites that spike the pressure, and breach-bosses that hold the breach itself.", "Cut the Choir, go feral: the swarm loses coordination but never loses its teeth."],
       "visualMotifs": ["Toxic-green breach cores and parasite nodes", "Black chitin and wet consumed tissue", "Tendrils and rupture seams", "Host material being overwritten — flesh, metal, bone, fungus"],
-      "appearsIn": ["deadlane", "scourge-survivors", "starblight"], "spriteBase": "portrait-scourge"
+      "appearsIn": ["zero-day", "scourge-survivors", "deadlane", "pactfall", "starblight", "redline", "rothulk"], "spriteBase": "portrait-scourge"
     },
     {
       "slug": "swarm-ripper", "name": "Swarm Ripper", "tier": "swarm", "tagline": "It dies in one hit. There are forty more behind it.", "accent": "blood",
       "overview": "The fodder that floods the lanes and breach rooms — fast, hunched, all forward momentum and forearm blades. A Ripper rushes the nearest thing alive and tears at it with claws grown straight out of black chitin. One at a time, it's nothing. That's the point. The Scourge doesn't send one. It sends the wave, and the Ripper is the part that reaches you while you're still counting.",
       "gameplayRead": ["Rushes the closest target on sight, attacking with blade-like forearms.", "Dies fast but builds relentless pressure through sheer mass.", "Hunched-forward silhouette with clear claws reads instantly in a crowd.", "Small toxic-green breach organs glow under the chitin."],
       "visualMotifs": ["Black chitin", "Raw red muscle and wet gore", "Exposed sinew", "No human armor layout"],
-      "appearsIn": ["scourge-survivors", "deadlane"], "spriteBase": "enemy-melee"
+      "appearsIn": ["scourge-survivors", "deadlane", "redline"], "spriteBase": "enemy-melee"
     },
     {
       "slug": "swarm-spitter", "name": "Swarm Spitter", "tier": "swarm", "tagline": "It won't come to you. It'll just make standing still fatal.", "accent": "toxic",
       "overview": "The ranged half of the swarm — thinner, hungrier-looking, and it knows how to keep its distance. The Spitter turns infection into ammunition, hurling toxic projectiles from a swollen throat, a chest sac, or a fused arm-lance grown out of stolen tech. On its own it's a nuisance. Paired with a wave of Rippers, it's the reason you can't just hold a corner — it forces you to move, right into the claws.",
       "gameplayRead": ["Keeps its distance, firing toxic projectiles to flush you out of cover.", "Supports melee swarms by forcing constant repositioning.", "Thinner than a Ripper; the firing organ is the obvious tell.", "Toxic-green glow marks the threat source before it spits."],
       "visualMotifs": ["Chitin and raw sinew", "Distended firing sac or arm-lance", "Rusted stolen tech embedded in flesh", "Wet, parasitic surfaces"],
-      "appearsIn": ["scourge-survivors", "deadlane"], "spriteBase": "enemy-ranged"
+      "appearsIn": ["scourge-survivors", "deadlane", "rothulk"], "spriteBase": "enemy-ranged"
     },
     {
       "slug": "render", "name": "Render", "tier": "elite", "tagline": "It used to be a soldier. The parasite kept everything but the hesitation.", "accent": "blood",
       "overview": "A Render is what the Scourge makes when it finds a warrior worth keeping. The Chitin Warhosts were a shell-world fighting race — big, plated, born to break things — and the parasite kept all of it and threw away the parts that pause. It cracked the carapace, threaded itself through the gaps, and aimed the result at the nearest thing worth destroying. A gunner gets one clean look before it hits the wall: low, wide, moving faster than that much shell has any right to, green light bleeding from the seams. Nobody calls it by the name it used to have. On the line, it's just the part of the wave that gets there first.",
       "gameplayRead": ["Charges the nearest fortified position in a dead-straight line — no flanking, no hesitation, no ranged attack.", "Armored leading carapace eats your opening volley; breach nodes at the seams glow as a health cue.", "At half health it purges its restraint organelles and enrages — speed and ferocity spike, nodes burst, raw tissue runs blood-hot.", "Pure melee pressure that punishes standing still in any lane or breach room."],
       "visualMotifs": ["Thick black iridescent carapace cracked by seeping parasite growth", "Elongated bone-pale blade-claw forelimbs, serrated on the inner edge", "Parasite tissue bulging through shoulder joints and faceplate", "No eyes — sensory organs replaced by breach nodes"],
-      "appearsIn": ["scourge-survivors", "deadlane"], "spriteBase": "portrait-render"
+      "appearsIn": ["scourge-survivors", "deadlane", "redline"], "spriteBase": "portrait-render"
     },
     {
       "slug": "graft-breacher", "name": "Graft-Breacher", "tier": "elite", "tagline": "It walks past you to get to the wall. Then it shears the wall apart.", "accent": "rust",
       "overview": "A living siege engine grown through the frame of a conquered industrial machine — pistons, hull plating, hydraulic limbs, all rewired by parasite tissue. Whatever it was built to do is gone for good. What's left is a slow, armored melee wrecker that ignores soft targets entirely and tears through towers, walls, and barricades until nothing's standing. It's the close-range twin of the Rot-Engine: where that thing dissolves a fortification from range, the Graft-Breacher just walks up and rips it open.",
       "gameplayRead": ["Advances at a methodical pace while swarm units route around it to fill the gap it punches.", "Prioritizes structures over infantry — towers, walls, and barricades draw aggression first.", "A massive demolition-claw shears fortified material apart in two or three swings.", "Heavily armored from the front; the soft parasite mass on its back takes bonus damage, so flanking is the answer — but kill the demo arm and it erupts a staggering tendril burst."],
       "visualMotifs": ["Heavy machine frame consumed from within, metal seams split by chitin", "One oversized demolition-claw vs. a wet tendril cluster on the opposite limb", "Toxic-green nodes where the gauge panels used to be", "Rust and barely-legible warning-stripe paint under the growth"],
-      "appearsIn": ["deadlane", "scourge-survivors"], "spriteBase": "portrait-graft-breacher"
+      "appearsIn": ["deadlane", "scourge-survivors", "rothulk"], "spriteBase": "portrait-graft-breacher"
     },
     {
       "slug": "rot-engine", "name": "Rot-Engine", "tier": "elite", "tagline": "It plants its feet and melts your defenses from across the field.", "accent": "toxic",
       "overview": "The chassis of a conquered heavy machine, split at the welds and rebuilt by parasite tissue into a ranged corrosion siege unit. It walks to the edge of your range, plants, and holds — you won't stagger it, you won't knock it back. Then the bile lance opens up: a sustained jet of toxic-green corrosion from a sac fused into the engine cavity, eating through tower armor and fortification walls from a distance. It doesn't chase. It doesn't care about you. It just grinds your structures to slag until you're forced to leave cover and come to it. Often fielded with a Graft-Breacher — the Breacher opens the gap, the Rot-Engine keeps it open.",
       "gameplayRead": ["Plants at the edge of your tower line and holds; near-impossible to stagger or knock back.", "The bile lance corrodes armor and walls from standoff range — artillery, not a charger.", "Ignores infantry to keep grinding structures, forcing defenders out of cover into the swarm.", "The bile sac brightens before firing; concentrate fire to detonate it early and splash the Rippers around it."],
       "visualMotifs": ["Rusted industrial chassis split open at the seams and welds", "Swollen toxic-green bile sac visible through burst bodywork", "Wet organic ducts pulsing through axle joints and exhaust ports", "Hollow breached cockpit — no glass, no operator, something wet inside"],
-      "appearsIn": ["deadlane", "scourge-survivors"], "spriteBase": "portrait-rot-engine"
+      "appearsIn": ["deadlane", "scourge-survivors", "redline"], "spriteBase": "portrait-rot-engine"
     },
     {
       "slug": "breach-boss", "name": "Breach-Boss", "tier": "breach-boss", "tagline": "Not a bigger soldier. A monster grown around a wound in the world.", "accent": "hellfire",
       "overview": "A monstrous expression of the Scourge grown around a breach heart, holding a major breach or region by sheer mass. It comes at you with melee pressure and ranged barrages both, shields its core when you get close, and enrages when you wound it. This is no upscaled grunt — it's a huge, asymmetric war-body of wet chitin fused with rusted metal, crowned in horn and mandible, with a toxic-green heart burning in its chest. Kill the breach, kill the boss.",
       "gameplayRead": ["Holds a major breach or region as the encounter centerpiece.", "Combines melee pressure with ranged barrages.", "Shields around its core and enrages when wounded.", "Chest breach core and head stay readable in motion despite the scale."],
       "visualMotifs": ["Toxic-green breach heart in the chest", "Wet chitin fused with rusted metal", "Horn or mandible crown", "Asymmetry and parasite growth, never a larger soldier"],
-      "appearsIn": ["scourge-survivors", "deadlane"], "spriteBase": "boss"
+      "appearsIn": ["scourge-survivors", "deadlane", "rothulk"], "spriteBase": "boss"
     },
     {
       "slug": "scourge-fighter", "name": "Scourge Fighter", "tier": "swarm", "tagline": "A fighter craft that grew a heartbeat.", "accent": "rust",
@@ -402,7 +402,7 @@
       "overview": "The Scourge has no body of its own — only the worlds it has already eaten. Every unit shares the same parasite grammar, but the host underneath comes from somewhere different: a shell-world warrior race, a fungal colony, an industrial machine, an alien titan, a vacuum-adapted ship. Rot-Infested Flesh is the first read of the horde, humanoid bodies split open by growth. Chitin Warhosts bring hooked limbs and blade carapace. Mycelial Spore Hosts breathe out area denial. Machine-Graft Hosts turn stolen tech into living siege. Bone Titan Hosts rebuild megafauna into bosses. Voidship Hosts crossed the dark before the surface war ever began. Same parasite. Endless faces.",
       "gameplayRead": ["Toxic-green cores and parasite nodes are the constant across every host family.", "Host material — flesh, bone, armor, metal, fungus, hull, stone, alien anatomy — is always being overwritten, never replaced clean.", "Weapons grow out of the host's own body: claws, bone blades, throat sacs, arm-lances, spore vents.", "Any threat role can wear any host: a Ripper might be flesh in one game, chitin in another, a voidship in a third."],
       "visualMotifs": ["Asymmetry and invasive growth, never clean creature design", "Hard carapace, mandibles, and blade clusters on chitin hosts", "Bulging sacs and fibrous spore growth on mycelial hosts", "Metal as a shell grown through, not technology"],
-      "appearsIn": ["scourge-survivors", "deadlane", "starblight", "pactfall"], "spriteBase": "portrait-scourge-host-families"
+      "appearsIn": ["zero-day", "scourge-survivors", "deadlane", "starblight", "pactfall", "redline", "rothulk"], "spriteBase": "portrait-scourge-host-families"
     }
   ],
   "universe": {

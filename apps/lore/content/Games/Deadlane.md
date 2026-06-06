@@ -2,7 +2,7 @@
 genre: tower-defense (3D)
 repo: shipshitgames/deadlane
 faction: The Wardens
-status: confirmed
+status: playable prototype
 ---
 # Deadlane
 
@@ -27,3 +27,8 @@ tower/commander drafts, build synergies, and persistent meta-upgrades between de
 
 ## TODO
 - The lanes as named Locations + their hold / fall outcomes on the [[Timeline]].
+
+## Status
+Playable prototype — current build proves the Warden hold-the-lane verb first. The named
+defender roster, richer tower roles, and lane outcome history should expand from here rather
+than being treated as already complete.

@@ -1,15 +1,17 @@
 ---
 genre: MOBA (lane-based PvP)
 repo: shipshitgames/pactfall
-status: concept
+status: playable prototype
 ---
 # Pactfall
 
-**At a glance:** lane-based PvP MOBA · Pyre vs Wardens in sanctioned blood-arenas, with a neutral center Scourge that overruns both sides and can force a truce · play a [[The-Pyre|Pyre]] or [[The-Wardens|Warden]] hero · the human rivalry made playable where the Pact bends but must not break — a future PvP pillar feeding the [[War-for-the-Lanes]].
+**At a glance:** playable prototype / lane-based PvP design target · Pyre vs Wardens in sanctioned blood-arenas, with a neutral center Scourge that overruns both sides and can force a truce · current build tests a Pyre-vs-Warden arena slice; full target is [[The-Pyre|Pyre]] and [[The-Wardens|Warden]] hero play · the human rivalry made playable where the Pact bends but must not break — the target PvP pillar feeding the [[War-for-the-Lanes]].
 
-A PvP MOBA where [[The-Pyre]] and [[The-Wardens]] settle their rivalry — fought over
-**lanes** (the universe's signature ground), in sanctioned blood-arenas, **never as real
-war** (see [[Premise]] §The Pact). Gory, fast, hellfire-lit.
+The playable prototype tests the arena pressure first: a Pyre champion, a Warden opponent,
+lane minions, and a neutral Scourge problem in the center. The design target remains a PvP
+MOBA where [[The-Pyre]] and [[The-Wardens]] settle their rivalry — fought over **lanes** (the
+universe's signature ground), in sanctioned blood-arenas, **never as real war** (see
+[[Premise]] §The Pact). Gory, fast, hellfire-lit.
 
 ## The Scourge twist
 [[Scourge|The Scourge]] is the neutral threat in the center: ignore it and it overruns both
@@ -30,4 +32,6 @@ upgrade drafts, build synergies, neutral Scourge surges, and boss/objective gate
 - Neutral Scourge objective: [[Trucebreaker]].
 
 ## Status
-Concept — a future PvP pillar once the PvE games + `@shipshitgames/engine` are proven.
+Playable prototype — current build proves the readable arena/minion/neutral-Scourge loop, not
+the full hero roster or PvP contract. Roster, balance, and faction coverage are provisional
+until the PvP pillar is actually fun.
