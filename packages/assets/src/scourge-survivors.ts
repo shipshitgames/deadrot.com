@@ -1,5 +1,7 @@
 import manifestData from "../games/scourge-survivors/assets.json" with { type: "json" };
-import animationManifestData from "../games/scourge-survivors/animations/scourge/animation-pack.json" with { type: "json" };
+import animationManifestData from "../games/scourge-survivors/animations/scourge/animation-pack.json" with {
+  type: "json",
+};
 
 export type Vec2 = [number, number];
 export type Vec3 = [number, number, number];
@@ -89,8 +91,7 @@ export interface ScourgeSurvivorsAnimationManifest {
   entities: Record<string, AnimationEntityEntry>;
 }
 
-export const SCOURGE_SURVIVORS_ASSET_MANIFEST =
-  manifestData as unknown as ScourgeSurvivorsAssetManifest;
+export const SCOURGE_SURVIVORS_ASSET_MANIFEST = manifestData as unknown as ScourgeSurvivorsAssetManifest;
 
 export const SCOURGE_SURVIVORS_ANIMATION_MANIFEST =
   animationManifestData as unknown as ScourgeSurvivorsAnimationManifest;
@@ -234,8 +235,7 @@ export const SCOURGE_SURVIVORS_PIXEL_ICON_IDS = [
   "maw",
 ] as const;
 
-export type ScourgeSurvivorsPixelIconId =
-  (typeof SCOURGE_SURVIVORS_PIXEL_ICON_IDS)[number];
+export type ScourgeSurvivorsPixelIconId = (typeof SCOURGE_SURVIVORS_PIXEL_ICON_IDS)[number];
 
 export const SCOURGE_SURVIVORS_PIXEL_ICON_URLS = Object.fromEntries(
   SCOURGE_SURVIVORS_PIXEL_ICON_IDS.map((id) => [

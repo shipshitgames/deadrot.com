@@ -17,15 +17,21 @@ export function AppShell() {
         <div id="hud-top">
           <div className="stat ssg-hud-corner">
             <span className="stat-label ssg-stat-label">Gold</span>
-            <span className="stat-value ssg-stat-value" id="stat-gold">0</span>
+            <span className="stat-value ssg-stat-value" id="stat-gold">
+              0
+            </span>
           </div>
           <div className="stat ssg-hud-corner">
             <span className="stat-label ssg-stat-label">Wave</span>
-            <span className="stat-value ssg-stat-value" id="stat-wave">0 / 0</span>
+            <span className="stat-value ssg-stat-value" id="stat-wave">
+              0 / 0
+            </span>
           </div>
           <div className="stat ssg-hud-corner">
             <span className="stat-label ssg-stat-label">Base HP</span>
-            <span className="stat-value ssg-stat-value" id="stat-hp">0</span>
+            <span className="stat-value ssg-stat-value" id="stat-hp">
+              0
+            </span>
           </div>
         </div>
 

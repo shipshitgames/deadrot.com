@@ -28,7 +28,7 @@ export function EntityCard({
       style={accentVars(accent)}
       className={cn(
         "group relative flex h-56 flex-col justify-end overflow-hidden rounded-md border border-gunmetal bg-coal transition-all duration-300 hover:border-[var(--page-accent)] hover:shadow-[0_0_32px_-14px_var(--page-accent)]",
-        className
+        className,
       )}
     >
       <div aria-hidden className="absolute inset-0">
@@ -50,13 +50,9 @@ export function EntityCard({
 
       <div className="relative z-10 p-4">
         {kicker ? (
-          <p className="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-[var(--page-accent)]">
-            {kicker}
-          </p>
+          <p className="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-[var(--page-accent)]">{kicker}</p>
         ) : null}
-        <h3 className="font-display text-lg font-bold uppercase leading-tight tracking-tight text-bone">
-          {name}
-        </h3>
+        <h3 className="font-display text-lg font-bold uppercase leading-tight tracking-tight text-bone">{name}</h3>
         {tag ? <p className="text-xs text-ash">{tag}</p> : null}
       </div>
     </Link>

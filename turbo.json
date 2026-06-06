@@ -13,17 +13,14 @@
     "test:e2e": {
       "dependsOn": ["^build"],
       "cache": false,
-      "outputs": [
-        "playwright-report/**",
-        "test-results/**",
-        "../../.artifacts/e2e/**"
-      ]
+      "outputs": ["playwright-report/**", "test-results/**", "../../.artifacts/e2e/**"]
     },
     "lint": {
-      "dependsOn": ["^build"]
+      "outputs": []
     },
     "typecheck": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^typecheck"],
+      "outputs": []
     }
   }
 }

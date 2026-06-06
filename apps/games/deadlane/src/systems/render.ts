@@ -1,12 +1,6 @@
 import * as THREE from "three";
 import { CONSTANTS, COLORS } from "../constants";
-import {
-  cellToWorld,
-  isPathCell,
-  pathPoints,
-  basePoint,
-  boardSize,
-} from "../board";
+import { cellToWorld, isPathCell, pathPoints, basePoint, boardSize } from "../board";
 
 /**
  * RenderSystem owns the Three.js scene, camera, renderer, the static board art,
@@ -67,11 +61,7 @@ export class RenderSystem {
 
   private buildBoard(): void {
     const { cols, rows } = CONSTANTS.board;
-    const tileGeo = new THREE.BoxGeometry(
-      CONSTANTS.board.cell * 0.94,
-      0.3,
-      CONSTANTS.board.cell * 0.94,
-    );
+    const tileGeo = new THREE.BoxGeometry(CONSTANTS.board.cell * 0.94, 0.3, CONSTANTS.board.cell * 0.94);
     const buildMat = new THREE.MeshStandardMaterial({
       color: COLORS.iron,
       roughness: 0.95,
@@ -95,11 +85,7 @@ export class RenderSystem {
 
     // Base slab under everything for a grounded silhouette.
     const slab = new THREE.Mesh(
-      new THREE.BoxGeometry(
-        boardSize.worldWidth + 1.2,
-        0.5,
-        boardSize.worldDepth + 1.2,
-      ),
+      new THREE.BoxGeometry(boardSize.worldWidth + 1.2, 0.5, boardSize.worldDepth + 1.2),
       new THREE.MeshStandardMaterial({
         color: COLORS.coal,
         roughness: 1,
@@ -123,10 +109,7 @@ export class RenderSystem {
       const mid = a.clone().add(b).multiplyScalar(0.5);
       const len = a.distanceTo(b) + CONSTANTS.board.cell * 0.5;
       const horizontal = Math.abs(b.x - a.x) > Math.abs(b.z - a.z);
-      const geo = new THREE.PlaneGeometry(
-        horizontal ? len : 0.5,
-        horizontal ? 0.5 : len,
-      );
+      const geo = new THREE.PlaneGeometry(horizontal ? len : 0.5, horizontal ? 0.5 : len);
       const stripe = new THREE.Mesh(geo, mat);
       stripe.rotation.x = -Math.PI / 2;
       stripe.position.set(mid.x, 0.06, mid.z);
@@ -168,10 +151,7 @@ export class RenderSystem {
 
   private buildGroundPlane(): THREE.Mesh {
     const plane = new THREE.Mesh(
-      new THREE.PlaneGeometry(
-        boardSize.worldWidth,
-        boardSize.worldDepth,
-      ),
+      new THREE.PlaneGeometry(boardSize.worldWidth, boardSize.worldDepth),
       new THREE.MeshBasicMaterial({ visible: false }),
     );
     plane.rotation.x = -Math.PI / 2;
@@ -187,13 +167,7 @@ export class RenderSystem {
       opacity: 0.45,
       side: THREE.DoubleSide,
     });
-    const mesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(
-        CONSTANTS.board.cell * 0.9,
-        CONSTANTS.board.cell * 0.9,
-      ),
-      mat,
-    );
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(CONSTANTS.board.cell * 0.9, CONSTANTS.board.cell * 0.9), mat);
     mesh.rotation.x = -Math.PI / 2;
     mesh.position.y = 0.12;
     mesh.visible = false;

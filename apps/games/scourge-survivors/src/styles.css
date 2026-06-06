@@ -1,15 +1,15 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @font-face {
-  font-family: 'SSG Press Start';
+  font-family: "SSG Press Start";
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('@shipshitgames/assets/games/scourge-survivors/fonts/press-start-2p.ttf') format('truetype');
+  src: url("@shipshitgames/assets/games/scourge-survivors/fonts/press-start-2p.ttf") format("truetype");
 }
 
 :root {
-  --ssg-font-pixel: 'SSG Press Start', var(--ssg-font-mono, ui-monospace, monospace);
+  --ssg-font-pixel: "SSG Press Start", var(--ssg-font-mono, ui-monospace, monospace);
 }
 
 @theme {
@@ -321,8 +321,7 @@
     align-items: center;
     justify-content: center;
     padding: 88px clamp(18px, 5vw, 72px) 42px;
-    background:
-      linear-gradient(90deg, rgba(5, 5, 5, 0.72), rgba(5, 5, 5, 0.36), rgba(5, 5, 5, 0.72));
+    background: linear-gradient(90deg, rgba(5, 5, 5, 0.72), rgba(5, 5, 5, 0.36), rgba(5, 5, 5, 0.72));
   }
 
   .scourge-menu-content > div {
@@ -356,9 +355,7 @@
 
   .scourge-menu-content .ssg-panel,
   .scourge-menu-content .ssg-menu-card {
-    background:
-      linear-gradient(180deg, rgba(18, 18, 20, 0.88), rgba(5, 5, 6, 0.84)),
-      rgba(10, 10, 10, 0.42);
+    background: linear-gradient(180deg, rgba(18, 18, 20, 0.88), rgba(5, 5, 6, 0.84)), rgba(10, 10, 10, 0.42);
     backdrop-filter: blur(10px);
   }
 
@@ -391,7 +388,6 @@
   letter-spacing: 0;
   image-rendering: pixelated;
   -webkit-font-smoothing: none;
-  font-smooth: never;
 }
 
 .game-root .ssg-hud-corner,
@@ -464,5 +460,4 @@
     top: 116px;
     font-size: 10px;
   }
-
 }

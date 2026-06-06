@@ -79,12 +79,8 @@ export class EntitySystem {
 
   spawnCreep(state: GameState): void {
     const wave = Math.max(1, state.wave);
-    const hp =
-      CONSTANTS.creep.baseHp *
-      Math.pow(CONSTANTS.creep.hpGrowth, wave - 1);
-    const speed =
-      CONSTANTS.creep.baseSpeed *
-      Math.pow(CONSTANTS.creep.speedGrowth, wave - 1);
+    const hp = CONSTANTS.creep.baseHp * CONSTANTS.creep.hpGrowth ** (wave - 1);
+    const speed = CONSTANTS.creep.baseSpeed * CONSTANTS.creep.speedGrowth ** (wave - 1);
 
     const mesh = new THREE.Mesh(
       this.creepGeo,
@@ -180,11 +176,7 @@ export class EntitySystem {
     }
   }
 
-  private nearestCreep(
-    state: GameState,
-    tower: Tower,
-    rangeSq: number,
-  ): Creep | null {
+  private nearestCreep(state: GameState, tower: Tower, rangeSq: number): Creep | null {
     const origin = tower.mesh.position;
     let best: Creep | null = null;
     let bestD = Infinity;

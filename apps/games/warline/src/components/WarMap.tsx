@@ -1,75 +1,68 @@
-import { useState } from 'react'
-import type { KeyboardEvent } from 'react'
-import type { Faction, Region, WorldState } from '@shipshitgames/warline'
-import { breachById, regionById } from '@shipshitgames/warline'
-import { HelpTooltip } from './HelpTooltip'
+import { useState } from "react";
+import type { KeyboardEvent } from "react";
+import type { Faction, Region, WorldState } from "@shipshitgames/warline";
+import { breachById, regionById } from "@shipshitgames/warline";
+import { HelpTooltip } from "./HelpTooltip";
 
 interface WarMapProps {
-  state: WorldState
-  selectedId: string | null
-  onSelect: (id: string) => void
+  state: WorldState;
+  selectedId: string | null;
+  onSelect: (id: string) => void;
 }
 
 const FACTION_COLOR: Record<Faction, string> = {
-  wardens: '#c1121f',
-  pyre: '#ff6a00',
-  scourge: '#8bdc1f',
-  neutral: '#34343c',
-}
+  wardens: "#c1121f",
+  pyre: "#ff6a00",
+  scourge: "#8bdc1f",
+  neutral: "#34343c",
+};
 
 function laneStroke(control: Faction): string {
-  return FACTION_COLOR[control]
+  return FACTION_COLOR[control];
 }
 
 // Higher flow => thicker, more aggressively dashed lane (the Scourge surges).
 function laneWidth(flow: number): number {
-  return 0.4 + (flow / 100) * 1.4
+  return 0.4 + (flow / 100) * 1.4;
 }
 
 function laneDash(flow: number): string | undefined {
-  if (flow >= 60) return '2 1.5'
-  if (flow >= 40) return '3 2'
-  return undefined
+  if (flow >= 60) return "2 1.5";
+  if (flow >= 40) return "3 2";
+  return undefined;
 }
 
 function pressureHelp(pressure: number): string {
-  return `Pressure: ${Math.round(
-    pressure,
-  )} — Scourge corruption. At 100, human regions fall.`
+  return `Pressure: ${Math.round(pressure)} — Scourge corruption. At 100, human regions fall.`;
 }
 
 function defenseHelp(defense: number): string {
-  return `Defense: ${Math.round(
-    defense,
-  )} — fortification that slows pressure gain.`
+  return `Defense: ${Math.round(defense)} — fortification that slows pressure gain.`;
 }
 
 interface Hover {
-  x: number
-  y: number
-  title: string
-  lines: string[]
+  x: number;
+  y: number;
+  title: string;
+  lines: string[];
 }
 
 export function WarMap({ state, selectedId, onSelect }: WarMapProps) {
-  const [hover, setHover] = useState<Hover | null>(null)
+  const [hover, setHover] = useState<Hover | null>(null);
 
   return (
     <section className="relative border-2 border-gunmetal bg-coal">
       <div className="flex items-center justify-between border-b border-gunmetal px-3 py-2">
         <div className="flex items-center gap-1.5">
-          <h2 className="font-display text-sm tracking-wide text-bone">
-            The Front
-          </h2>
+          <h2 className="font-display text-sm tracking-wide text-bone">The Front</h2>
           <HelpTooltip label="Explain the front map" side="bottom">
-            This map is the campaign board. Click a region to target commands.
-            Region color shows controller, rings show pressure and breaches,
-            and lane thickness shows how strongly pressure travels.
+            This map is the campaign board. Click a region to target commands. Region color shows controller, rings show
+            pressure and breaches, and lane thickness shows how strongly pressure travels.
           </HelpTooltip>
         </div>
         <span className="font-mono text-[0.65rem] text-ash">
-          {state.regions.length} regions · {state.lanes.length} lanes ·{' '}
-          {state.breaches.filter((b) => b.active).length} active breaches
+          {state.regions.length} regions · {state.lanes.length} lanes · {state.breaches.filter((b) => b.active).length}{" "}
+          active breaches
         </span>
       </div>
 
@@ -77,7 +70,7 @@ export function WarMap({ state, selectedId, onSelect }: WarMapProps) {
         <svg
           viewBox="0 0 100 100"
           className="block w-full"
-          style={{ aspectRatio: '1 / 1', background: '#0a0a0a' }}
+          style={{ aspectRatio: "1 / 1", background: "#0a0a0a" }}
           role="img"
           aria-label="War map of the front"
         >
@@ -94,11 +87,11 @@ export function WarMap({ state, selectedId, onSelect }: WarMapProps) {
           {/* lanes */}
           <g>
             {state.lanes.map((lane) => {
-              const a = regionById(state, lane.from)
-              const b = regionById(state, lane.to)
-              if (!a || !b) return null
-              const midX = (a.x + b.x) / 2
-              const midY = (a.y + b.y) / 2
+              const a = regionById(state, lane.from);
+              const b = regionById(state, lane.to);
+              if (!a || !b) return null;
+              const midX = (a.x + b.x) / 2;
+              const midY = (a.y + b.y) / 2;
               return (
                 <line
                   key={lane.id}
@@ -118,9 +111,7 @@ export function WarMap({ state, selectedId, onSelect }: WarMapProps) {
                       title: lane.name,
                       lines: [
                         `Control: ${lane.control} — who dominates this route.`,
-                        `Flow: ${Math.round(
-                          lane.flow,
-                        )} — pressure spread strength.`,
+                        `Flow: ${Math.round(lane.flow)} — pressure spread strength.`,
                       ],
                     })
                   }
@@ -132,21 +123,17 @@ export function WarMap({ state, selectedId, onSelect }: WarMapProps) {
                       title: lane.name,
                       lines: [
                         `Control: ${lane.control} — who dominates this route.`,
-                        `Flow: ${Math.round(
-                          lane.flow,
-                        )} — pressure spread strength.`,
+                        `Flow: ${Math.round(lane.flow)} — pressure spread strength.`,
                       ],
                     })
                   }
                   onBlur={() => setHover(null)}
                   tabIndex={0}
                   role="img"
-                  aria-label={`${lane.name}. Controlled by ${
-                    lane.control
-                  }. Flow ${Math.round(lane.flow)}.`}
-                  style={{ cursor: 'help' }}
+                  aria-label={`${lane.name}. Controlled by ${lane.control}. Flow ${Math.round(lane.flow)}.`}
+                  style={{ cursor: "help" }}
                 />
-              )
+              );
             })}
           </g>
 
@@ -170,9 +157,7 @@ export function WarMap({ state, selectedId, onSelect }: WarMapProps) {
             className="pointer-events-none absolute z-10 max-w-[14rem] -translate-x-1/2 -translate-y-full border border-hellfire bg-void/95 px-2 py-1 shadow-[var(--shadow-ember)]"
             style={{ left: `${hover.x}%`, top: `${hover.y}%` }}
           >
-            <div className="font-display text-xs tracking-wide text-bone">
-              {hover.title}
-            </div>
+            <div className="font-display text-xs tracking-wide text-bone">{hover.title}</div>
             {hover.lines.map((line) => (
               <div key={line} className="font-mono text-[0.65rem] text-ash">
                 {line}
@@ -182,41 +167,33 @@ export function WarMap({ state, selectedId, onSelect }: WarMapProps) {
         )}
       </div>
     </section>
-  )
+  );
 }
 
 interface RegionNodeProps {
-  state: WorldState
-  region: Region
-  selected: boolean
-  onSelect: (id: string) => void
-  onHover: (h: Hover | null) => void
+  state: WorldState;
+  region: Region;
+  selected: boolean;
+  onSelect: (id: string) => void;
+  onHover: (h: Hover | null) => void;
 }
 
-function RegionNode({
-  state,
-  region,
-  selected,
-  onSelect,
-  onHover,
-}: RegionNodeProps) {
-  const fill = FACTION_COLOR[region.faction]
-  const isScourge = region.faction === 'scourge'
-  const isHidden = isScourge && !region.revealed
-  const radius = 3.4
-  const ringR = radius + 1.6
+function RegionNode({ state, region, selected, onSelect, onHover }: RegionNodeProps) {
+  const fill = FACTION_COLOR[region.faction];
+  const isScourge = region.faction === "scourge";
+  const isHidden = isScourge && !region.revealed;
+  const radius = 3.4;
+  const ringR = radius + 1.6;
   // Pressure heat ring — fraction of the circumference filled (red), like a gauge.
-  const pressure = Math.max(0, Math.min(100, region.pressure))
-  const circumference = 2 * Math.PI * ringR
-  const filled = (pressure / 100) * circumference
+  const pressure = Math.max(0, Math.min(100, region.pressure));
+  const circumference = 2 * Math.PI * ringR;
+  const filled = (pressure / 100) * circumference;
 
-  const breach = region.breachId
-    ? breachById(state, region.breachId)
-    : undefined
-  const breachActive = breach?.active ?? false
+  const breach = region.breachId ? breachById(state, region.breachId) : undefined;
+  const breachActive = breach?.active ?? false;
 
   const hoverLines = isHidden
-    ? ['Unknown — run Recon to reveal']
+    ? ["Unknown — run Recon to reveal"]
     : [
         `Faction: ${region.faction} — current controller.`,
         pressureHelp(region.pressure),
@@ -225,25 +202,25 @@ function RegionNode({
           ? [
               `Breach: ${breach.name} — Scourge spawn point.`,
               `Intensity: ${Math.round(breach.intensity)}${
-                breach.active ? '' : ' (sealed)'
+                breach.active ? "" : " (sealed)"
               } — how hard it pumps pressure.`,
             ]
           : []),
-      ]
+      ];
 
   function showHover() {
     onHover({
       x: region.x,
       y: region.y - radius - 4,
-      title: isHidden ? 'Unrevealed Sector' : region.name,
+      title: isHidden ? "Unrevealed Sector" : region.name,
       lines: hoverLines,
-    })
+    });
   }
 
   function handleKeyDown(e: KeyboardEvent<SVGGElement>) {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      onSelect(region.id)
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onSelect(region.id);
     }
   }
 
@@ -258,10 +235,8 @@ function RegionNode({
       tabIndex={0}
       role="button"
       aria-pressed={selected}
-      aria-label={`Select ${
-        isHidden ? 'unrevealed sector' : region.name
-      }. ${hoverLines.join(' ')}`}
-      style={{ cursor: 'pointer' }}
+      aria-label={`Select ${isHidden ? "unrevealed sector" : region.name}. ${hoverLines.join(" ")}`}
+      style={{ cursor: "pointer" }}
     >
       {/* pressure heat ring */}
       {!isHidden && pressure > 0 && (
@@ -289,9 +264,9 @@ function RegionNode({
           stroke="#8bdc1f"
           strokeWidth={0.8}
           style={{
-            transformBox: 'fill-box',
-            transformOrigin: 'center',
-            animation: 'var(--animate-breachpulse)',
+            transformBox: "fill-box",
+            transformOrigin: "center",
+            animation: "var(--animate-breachpulse)",
           }}
         />
       )}
@@ -314,8 +289,8 @@ function RegionNode({
         cx={region.x}
         cy={region.y}
         r={radius}
-        fill={isHidden ? '#1e1e22' : fill}
-        stroke={selected ? '#e9e3d6' : '#0a0a0a'}
+        fill={isHidden ? "#1e1e22" : fill}
+        stroke={selected ? "#e9e3d6" : "#0a0a0a"}
         strokeWidth={selected ? 0.8 : 0.4}
       />
 
@@ -332,14 +307,7 @@ function RegionNode({
 
       {/* hidden marker */}
       {isHidden && (
-        <text
-          x={region.x}
-          y={region.y + 1.4}
-          textAnchor="middle"
-          fontSize={4}
-          fontFamily="monospace"
-          fill="#9b958a"
-        >
+        <text x={region.x} y={region.y + 1.4} textAnchor="middle" fontSize={4} fontFamily="monospace" fill="#9b958a">
           ?
         </text>
       )}
@@ -352,11 +320,11 @@ function RegionNode({
         fontSize={2.6}
         fontFamily="Oswald, sans-serif"
         fontWeight={700}
-        fill={isHidden ? '#9b958a' : '#e9e3d6'}
-        style={{ textTransform: 'uppercase', pointerEvents: 'none' }}
+        fill={isHidden ? "#9b958a" : "#e9e3d6"}
+        style={{ textTransform: "uppercase", pointerEvents: "none" }}
       >
-        {isHidden ? '???' : region.name}
+        {isHidden ? "???" : region.name}
       </text>
     </g>
-  )
+  );
 }

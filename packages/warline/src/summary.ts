@@ -16,8 +16,7 @@ export function summarize(state: WorldState): Summary {
   const regionsScourge = control.scourge;
   const regionsNeutral = control.neutral;
   const contested = regionsHuman + regionsScourge;
-  const frontControlPct =
-    contested > 0 ? (regionsHuman / contested) * 100 : 0;
+  const frontControlPct = contested > 0 ? (regionsHuman / contested) * 100 : 0;
 
   // threat: mean pressure over human+neutral regions, plus 0.3× mean active-breach intensity.
   let pressureSum = 0;

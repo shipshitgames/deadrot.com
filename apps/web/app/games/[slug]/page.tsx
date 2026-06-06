@@ -8,24 +8,13 @@ import { Eyebrow } from "@/components/site/eyebrow";
 import { Backdrop } from "@/components/site/atmosphere";
 import { StatusBadge } from "@/components/game/game-card";
 import { EntityCard } from "@/components/roster/entity-card";
-import {
-  games,
-  getGame,
-  getFaction,
-  gameCharacters,
-  gameCreatures,
-  accentVars,
-} from "@/lib/content";
+import { games, getGame, getFaction, gameCharacters, gameCreatures, accentVars } from "@/lib/content";
 
 export function generateStaticParams() {
   return games.map((g) => ({ slug: g.slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const game = getGame(slug);
   if (!game) return {};
@@ -56,11 +45,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const game = getGame(slug);
   if (!game) notFound();
@@ -102,9 +87,7 @@ export default async function Page({
             <h1 className="text-glow mt-4 font-display text-5xl font-bold uppercase leading-[0.85] tracking-tight text-bone sm:text-7xl">
               {game.title}
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ash">
-              {game.tagline}
-            </p>
+            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ash">{game.tagline}</p>
 
             <div className="mt-6 flex flex-wrap items-center gap-4">
               <StatusBadge status={game.status} />
@@ -116,28 +99,19 @@ export default async function Page({
                   Faction: {game.factionName}
                 </Link>
               ) : (
-                <span className="text-sm uppercase tracking-widest text-ash">
-                  {game.factionName}
-                </span>
+                <span className="text-sm uppercase tracking-widest text-ash">{game.factionName}</span>
               )}
             </div>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               {game.demo ? (
-                <Button
-                  asChild
-                  size="xl"
-                  className="font-display uppercase tracking-widest shadow-ember"
-                >
+                <Button asChild size="xl" className="font-display uppercase tracking-widest shadow-ember">
                   <a href={game.demo} target="_blank" rel="noreferrer">
                     Play Now
                   </a>
                 </Button>
               ) : (
-                <Badge
-                  variant="outline"
-                  className="border-gunmetal bg-iron font-display tracking-widest text-ash"
-                >
+                <Badge variant="outline" className="border-gunmetal bg-iron font-display tracking-widest text-ash">
                   Concept
                 </Badge>
               )}
@@ -185,16 +159,11 @@ export default async function Page({
             </h2>
             <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-3">
               {game.features.map((f) => (
-                <div
-                  key={f.title}
-                  className="rounded-md border border-gunmetal bg-coal p-6"
-                >
+                <div key={f.title} className="rounded-md border border-gunmetal bg-coal p-6">
                   <h3 className="font-display text-lg font-bold uppercase tracking-tight text-[var(--page-accent)]">
                     {f.title}
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ash">
-                    {f.desc}
-                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-ash">{f.desc}</p>
                 </div>
               ))}
             </div>

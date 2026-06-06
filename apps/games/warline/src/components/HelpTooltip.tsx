@@ -1,29 +1,24 @@
-import type { ReactNode } from 'react'
-import { useId } from 'react'
+import type { ReactNode } from "react";
+import { useId } from "react";
 
-type TooltipSide = 'top' | 'bottom' | 'left' | 'right'
+type TooltipSide = "top" | "bottom" | "left" | "right";
 
 interface HelpTooltipProps {
-  label: string
-  children: ReactNode
-  side?: TooltipSide
-  className?: string
+  label: string;
+  children: ReactNode;
+  side?: TooltipSide;
+  className?: string;
 }
 
 const SIDE_CLASS: Record<TooltipSide, string> = {
-  top: 'bottom-full left-1/2 mb-2 -translate-x-1/2',
-  bottom: 'left-1/2 top-full mt-2 -translate-x-1/2',
-  left: 'right-full top-1/2 mr-2 -translate-y-1/2',
-  right: 'left-full top-1/2 ml-2 -translate-y-1/2',
-}
+  top: "bottom-full left-1/2 mb-2 -translate-x-1/2",
+  bottom: "left-1/2 top-full mt-2 -translate-x-1/2",
+  left: "right-full top-1/2 mr-2 -translate-y-1/2",
+  right: "left-full top-1/2 ml-2 -translate-y-1/2",
+};
 
-export function HelpTooltip({
-  label,
-  children,
-  side = 'top',
-  className = '',
-}: HelpTooltipProps) {
-  const id = useId()
+export function HelpTooltip({ label, children, side = "top", className = "" }: HelpTooltipProps) {
+  const id = useId();
 
   return (
     <span className={`group relative inline-flex align-middle ${className}`}>
@@ -43,5 +38,5 @@ export function HelpTooltip({
         {children}
       </span>
     </span>
-  )
+  );
 }

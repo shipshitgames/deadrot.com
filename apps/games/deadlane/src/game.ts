@@ -24,20 +24,12 @@ export class Game {
   constructor(canvas: HTMLCanvasElement) {
     this.render = new RenderSystem(canvas);
     this.entities = new EntitySystem(this.render.scene);
-    this.input = new InputSystem(
-      canvas,
-      this.render.camera,
-      this.render.groundPlane,
-    );
+    this.input = new InputSystem(canvas, this.render.camera, this.render.groundPlane);
     this.hud = new HudSystem();
 
     this.hud.bannerBtn.addEventListener("click", () => this.onBannerClick());
 
-    this.hud.showBanner(
-      "DEADLANE",
-      "WARDENS — HOLD THE LANE. BUILD TOWERS. STOP THE SCOURGE.",
-      "DEPLOY",
-    );
+    this.hud.showBanner("DEADLANE", "WARDENS — HOLD THE LANE. BUILD TOWERS. STOP THE SCOURGE.", "DEPLOY");
     this.hud.update(this.state);
 
     requestAnimationFrame((t) => this.frame(t));
@@ -74,9 +66,7 @@ export class Game {
   private beginWave(): void {
     this.state.wave += 1;
     this.state.phase = "wave";
-    this.state.spawnQueue =
-      CONSTANTS.waves.baseCount +
-      (this.state.wave - 1) * CONSTANTS.waves.countGrowth;
+    this.state.spawnQueue = CONSTANTS.waves.baseCount + (this.state.wave - 1) * CONSTANTS.waves.countGrowth;
     this.state.spawnTimer = 0;
   }
 
@@ -156,11 +146,7 @@ export class Game {
     const hover = this.input.hover;
     const valid = InputSystem.isBuildable(hover, occupied);
 
-    this.render.setHover(
-      hover?.col ?? null,
-      hover?.row ?? null,
-      valid && s.gold >= CONSTANTS.economy.towerCost,
-    );
+    this.render.setHover(hover?.col ?? null, hover?.row ?? null, valid && s.gold >= CONSTANTS.economy.towerCost);
 
     const click = this.input.takeClick();
     if (click && InputSystem.isBuildable(click, occupied)) {
@@ -181,22 +167,14 @@ export class Game {
   private win(): void {
     if (this.state.phase === "won") return;
     this.state.phase = "won";
-    this.hud.showBanner(
-      "LINE HELD",
-      "THE SCOURGE IS SPENT. THE WARDENS STAND. WELL FOUGHT.",
-      "RUN IT BACK",
-    );
+    this.hud.showBanner("LINE HELD", "THE SCOURGE IS SPENT. THE WARDENS STAND. WELL FOUGHT.", "RUN IT BACK");
   }
 
   private lose(): void {
     if (this.state.phase === "lost") return;
     this.state.phase = "lost";
     this.entities.clear(this.state);
-    this.hud.showBanner(
-      "BREACH",
-      "THE BASE IS OVERRUN. THE LANE IS LOST.",
-      "TRY AGAIN",
-    );
+    this.hud.showBanner("BREACH", "THE BASE IS OVERRUN. THE LANE IS LOST.", "TRY AGAIN");
   }
 }
 

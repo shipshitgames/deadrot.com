@@ -1,8 +1,8 @@
-import * as THREE from 'three';
-import { COLORS, CONSTANTS, MARCH_DIR, type Team } from '../constants';
-import type { Entity } from '../types';
-import type { Game } from '../Game';
-import { makeChampion, makeMinion, makeScourge, makeBase } from '../factory';
+import * as THREE from "three";
+import { COLORS, CONSTANTS, MARCH_DIR, type Team } from "../constants";
+import type { Entity } from "../types";
+import type { Game } from "../Game";
+import { makeChampion, makeMinion, makeScourge, makeBase } from "../factory";
 
 // Owns every entity, the spawn cadence, movement, targeting, combat, and the
 // transient attack beams. This is where the core loop actually lives.
@@ -38,16 +38,16 @@ export class EntitySystem {
     this.scourgeRespawn = 0;
     this.championDown = { pyre: 0, warden: 0 };
 
-    this.champion = this.spawn(makeChampion('pyre'));
-    this.champion.pos.copy(this.championSpawnPos('pyre'));
+    this.champion = this.spawn(makeChampion("pyre"));
+    this.champion.pos.copy(this.championSpawnPos("pyre"));
 
-    this.enemyChampion = this.spawn(makeChampion('warden'));
-    this.enemyChampion.pos.copy(this.championSpawnPos('warden'));
+    this.enemyChampion = this.spawn(makeChampion("warden"));
+    this.enemyChampion.pos.copy(this.championSpawnPos("warden"));
 
-    this.friendlyBase = this.spawn(makeBase('pyre'));
+    this.friendlyBase = this.spawn(makeBase("pyre"));
     this.friendlyBase.pos.set(0, CONSTANTS.base.height / 2, CONSTANTS.base.friendlyZ);
 
-    this.enemyBase = this.spawn(makeBase('warden'));
+    this.enemyBase = this.spawn(makeBase("warden"));
     this.enemyBase.pos.set(0, CONSTANTS.base.height / 2, CONSTANTS.base.enemyZ);
 
     this.scourge = this.spawn(makeScourge());
@@ -66,7 +66,7 @@ export class EntitySystem {
   // Where each champion (re)deploys: just out in front of its own base.
   private championSpawnPos(team: Team): THREE.Vector3 {
     const y = CONSTANTS.champion.height / 2;
-    const z = team === 'pyre' ? CONSTANTS.champion.respawnZ : -CONSTANTS.champion.respawnZ;
+    const z = team === "pyre" ? CONSTANTS.champion.respawnZ : -CONSTANTS.champion.respawnZ;
     return new THREE.Vector3(0, y, z);
   }
 
@@ -90,7 +90,7 @@ export class EntitySystem {
   // ---- spawning -----------------------------------------------------------
 
   private tickSpawns(dt: number): void {
-    (['pyre', 'warden'] as Team[]).forEach((team) => {
+    (["pyre", "warden"] as Team[]).forEach((team) => {
       this.spawnTimers[team] -= dt;
       if (this.spawnTimers[team] <= 0) {
         this.spawnTimers[team] = CONSTANTS.minion.spawnInterval;
@@ -101,7 +101,7 @@ export class EntitySystem {
 
   private spawnMinion(team: Team, lateral: number): void {
     const m = this.spawn(makeMinion(team));
-    const fromZ = team === 'pyre' ? CONSTANTS.base.friendlyZ + 3 : CONSTANTS.base.enemyZ - 3;
+    const fromZ = team === "pyre" ? CONSTANTS.base.friendlyZ + 3 : CONSTANTS.base.enemyZ - 3;
     const offset = (lateral - (CONSTANTS.minion.waveSize - 1) / 2) * 1.6;
     m.pos.set(offset, CONSTANTS.minion.radius, fromZ);
   }
@@ -117,11 +117,11 @@ export class EntitySystem {
   }
 
   private tickChampionRespawns(dt: number): void {
-    (['pyre', 'warden'] as Team[]).forEach((team) => {
+    (["pyre", "warden"] as Team[]).forEach((team) => {
       if (this.championDown[team] <= 0) return;
       this.championDown[team] -= dt;
       if (this.championDown[team] <= 0) {
-        const c = team === 'pyre' ? this.champion : this.enemyChampion;
+        const c = team === "pyre" ? this.champion : this.enemyChampion;
         c.alive = true;
         c.hp = c.maxHp;
         c.cooldown = 0;
@@ -159,11 +159,7 @@ export class EntitySystem {
     c.pos.x = THREE.MathUtils.clamp(c.pos.x, -clamp, clamp);
     // Don't let the player walk back onto its own base (that would wall the camera);
     // retreatZ keeps the base safely behind the follow-cam.
-    c.pos.z = THREE.MathUtils.clamp(
-      c.pos.z,
-      CONSTANTS.champion.retreatZ,
-      CONSTANTS.base.enemyZ - 1,
-    );
+    c.pos.z = THREE.MathUtils.clamp(c.pos.z, CONSTANTS.champion.retreatZ, CONSTANTS.base.enemyZ - 1);
   }
 
   // Simple lane AI for the Warden champion: chase the nearest Pyre unit to
@@ -198,16 +194,12 @@ export class EntitySystem {
 
     const clamp = CONSTANTS.arena.laneClamp;
     c.pos.x = THREE.MathUtils.clamp(c.pos.x, -clamp, clamp);
-    c.pos.z = THREE.MathUtils.clamp(
-      c.pos.z,
-      CONSTANTS.base.friendlyZ - 1,
-      CONSTANTS.base.enemyZ - 1,
-    );
+    c.pos.z = THREE.MathUtils.clamp(c.pos.z, CONSTANTS.base.friendlyZ - 1, CONSTANTS.base.enemyZ - 1);
   }
 
   private moveMinions(dt: number): void {
     for (const m of this.all) {
-      if (m.kind !== 'minion' || !m.alive) continue;
+      if (m.kind !== "minion" || !m.alive) continue;
       const team = m.team as Team;
 
       // Hold position to fight a unit foe in range...
@@ -225,11 +217,11 @@ export class EntitySystem {
 
   private tickCombat(dt: number): void {
     for (const e of this.all) {
-      if (!e.alive || e.kind === 'base' || e.kind === 'scourge') continue;
+      if (!e.alive || e.kind === "base" || e.kind === "scourge") continue;
       e.cooldown = Math.max(0, e.cooldown - dt);
       if (e.cooldown > 0) continue;
 
-      if (e.kind === 'champion') {
+      if (e.kind === "champion") {
         const isPlayer = e === this.champion;
         const opposing = isPlayer ? this.enemyBase : this.friendlyBase;
         const target = this.acquireTarget(e, opposing, isPlayer);
@@ -241,7 +233,7 @@ export class EntitySystem {
           this.beam(e.pos, target.pos, color, 0.42, 1);
           e.cooldown = e.attackCooldown;
         }
-      } else if (e.kind === 'minion') {
+      } else if (e.kind === "minion") {
         const foe = this.nearestFoe(e, e.attackRange);
         if (foe) {
           this.damage(foe, e.attackDamage);
@@ -268,11 +260,7 @@ export class EntitySystem {
     const unit = this.nearestFoe(c, r);
     if (unit) return unit;
 
-    if (
-      scourgeEligible &&
-      this.scourge.alive &&
-      this.flatDist(c.pos, this.scourge.pos) <= r + this.scourge.radius
-    ) {
+    if (scourgeEligible && this.scourge.alive && this.flatDist(c.pos, this.scourge.pos) <= r + this.scourge.radius) {
       return this.scourge;
     }
 
@@ -290,7 +278,7 @@ export class EntitySystem {
     let bestD = range;
     for (const e of this.all) {
       if (!e.alive || e === self) continue;
-      if (e.kind !== 'minion' && e.kind !== 'champion') continue;
+      if (e.kind !== "minion" && e.kind !== "champion") continue;
       if (!this.areEnemies(self, e)) continue;
       const d = this.flatDist(self.pos, e.pos) - e.radius;
       if (d <= bestD) {
@@ -307,11 +295,11 @@ export class EntitySystem {
   }
 
   private opposingBase(team: Team): Entity {
-    return team === 'pyre' ? this.enemyBase : this.friendlyBase;
+    return team === "pyre" ? this.enemyBase : this.friendlyBase;
   }
 
   private areEnemies(a: Entity, b: Entity): boolean {
-    if (a.team === 'neutral' || b.team === 'neutral') return false;
+    if (a.team === "neutral" || b.team === "neutral") return false;
     return a.team !== b.team;
   }
 
@@ -324,7 +312,7 @@ export class EntitySystem {
   private kill(e: Entity): void {
     e.hp = 0;
 
-    if (e.kind === 'scourge') {
+    if (e.kind === "scourge") {
       // Slaying the Scourge grants the champion a temporary damage buff.
       e.alive = false;
       e.mesh.visible = false;
@@ -333,7 +321,7 @@ export class EntitySystem {
       return;
     }
 
-    if (e.kind === 'champion') {
+    if (e.kind === "champion") {
       // Champions go down and redeploy after a delay — death now has a cost.
       e.alive = false;
       e.mesh.visible = false;
@@ -359,10 +347,7 @@ export class EntitySystem {
     const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.95 });
     const mesh = new THREE.Mesh(geo, mat);
     mesh.position.copy(a).lerp(b, 0.5);
-    mesh.quaternion.setFromUnitVectors(
-      new THREE.Vector3(0, 1, 0),
-      b.clone().sub(a).normalize(),
-    );
+    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize());
     this.game.render.add(mesh);
     this.beams.push({ mesh, life, max: life });
   }
@@ -385,7 +370,7 @@ export class EntitySystem {
   // ---- bookkeeping --------------------------------------------------------
 
   private cull(): void {
-    const dead = this.all.filter((e) => !e.alive && e.kind === 'minion');
+    const dead = this.all.filter((e) => !e.alive && e.kind === "minion");
     for (const e of dead) {
       this.game.render.remove(e.mesh);
       this.disposeMesh(e.mesh);
@@ -398,8 +383,11 @@ export class EntitySystem {
       const m = o as THREE.Mesh;
       if (m.geometry) m.geometry.dispose();
       const mat = m.material as THREE.Material | THREE.Material[] | undefined;
-      if (Array.isArray(mat)) mat.forEach((x) => x.dispose());
-      else mat?.dispose();
+      if (Array.isArray(mat)) {
+        mat.forEach((x) => {
+          x.dispose();
+        });
+      } else mat?.dispose();
     });
   }
 

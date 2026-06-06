@@ -1,9 +1,9 @@
-import type * as THREE from 'three'
+import type * as THREE from "three";
 
 /** Accumulator for a planar (XZ) steering vector. */
 export interface PlanarVec {
-  x: number
-  z: number
+  x: number;
+  z: number;
 }
 
 /**
@@ -19,17 +19,17 @@ export interface PlanarVec {
  * with a different strategy + different visuals and zero copy-paste.
  */
 export abstract class Agent {
-  alive = false
+  alive = false;
   /** Proximity / collision radius (metres). */
-  radius = 0.5
+  radius = 0.5;
   /** Current planar move speed (units/s). */
-  speed = 1
+  speed = 1;
   /** Decaying knockback shove (units/s); applied + bled off each frame. */
-  knockX = 0
-  knockZ = 0
+  knockX = 0;
+  knockZ = 0;
 
   /** World transform of this agent's body — the subclass-owned render root's position. */
-  abstract get position(): THREE.Vector3
+  abstract get position(): THREE.Vector3;
 
   /**
    * Accumulate boids-style peer separation into `out` so agents don't perfectly
@@ -43,17 +43,17 @@ export abstract class Agent {
     out: PlanarVec,
     gapBonus?: (peer: P) => number,
   ): void {
-    const pos = this.position
+    const pos = this.position;
     for (const other of peers) {
-      if ((other as Agent) === this || !other.alive) continue
-      const ox = pos.x - other.position.x
-      const oz = pos.z - other.position.z
-      const od = Math.hypot(ox, oz)
-      const minGap = gap + (gapBonus ? gapBonus(other) : 0)
+      if ((other as Agent) === this || !other.alive) continue;
+      const ox = pos.x - other.position.x;
+      const oz = pos.z - other.position.z;
+      const od = Math.hypot(ox, oz);
+      const minGap = gap + (gapBonus ? gapBonus(other) : 0);
       if (od > 0.0001 && od < minGap) {
-        const push = (minGap - od) / minGap
-        out.x += (ox / od) * push
-        out.z += (oz / od) * push
+        const push = (minGap - od) / minGap;
+        out.x += (ox / od) * push;
+        out.z += (oz / od) * push;
       }
     }
   }
@@ -63,14 +63,14 @@ export abstract class Agent {
    * (default decay clears a hit's shove in a few frames). No-op when at rest.
    */
   protected applyKnockback(delta: number, decayRate = 9): void {
-    if (this.knockX === 0 && this.knockZ === 0) return
-    const pos = this.position
-    pos.x += this.knockX * delta
-    pos.z += this.knockZ * delta
-    const k = Math.max(0, 1 - delta * decayRate)
-    this.knockX *= k
-    this.knockZ *= k
-    if (Math.abs(this.knockX) < 0.02) this.knockX = 0
-    if (Math.abs(this.knockZ) < 0.02) this.knockZ = 0
+    if (this.knockX === 0 && this.knockZ === 0) return;
+    const pos = this.position;
+    pos.x += this.knockX * delta;
+    pos.z += this.knockZ * delta;
+    const k = Math.max(0, 1 - delta * decayRate);
+    this.knockX *= k;
+    this.knockZ *= k;
+    if (Math.abs(this.knockX) < 0.02) this.knockX = 0;
+    if (Math.abs(this.knockZ) < 0.02) this.knockZ = 0;
   }
 }

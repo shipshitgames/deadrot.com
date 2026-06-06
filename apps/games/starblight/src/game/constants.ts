@@ -26,25 +26,25 @@ export const COLORS = {
   ash: 0x9b958a,
   toxic: 0x8bdc1f, // the Scourge only
   toxicHot: 0xc6ff4a,
-} as const
+} as const;
 
 // Logical play-field — a large bounded square arena the camera flies across.
 // Canon: this arena is The Skyhook, the orbital ring/tether front of the war.
 export const WORLD = {
   // --- Canon metadata (see apps/lore/content/Locations/The-Skyhook.md, apps/lore/content/Maps.md) ---
-  name: 'The Skyhook — Orbital Ring',
-  loreId: 'skyhook',
-  front: 'orbital',
+  name: "The Skyhook — Orbital Ring",
+  loreId: "skyhook",
+  front: "orbital",
   // --- Geometry (PRESERVE EXACTLY — gameplay/camera depend on these) ------
   width: 200,
   height: 200,
   get halfW() {
-    return this.width / 2
+    return this.width / 2;
   },
   get halfH() {
-    return this.height / 2
+    return this.height / 2;
   },
-} as const
+} as const;
 
 export const CONSTANTS = {
   // --- Loop -------------------------------------------------------------
@@ -157,28 +157,28 @@ export const CONSTANTS = {
     nearSize: 0.42,
     farSize: 0.28,
   },
-} as const
+} as const;
 
 // --- Enemy archetypes (all toxic-green Scourge, distinct silhouettes) -------
-export type EnemyType = 'grunt' | 'swarmling' | 'weaver' | 'spitter' | 'elite'
+export type EnemyType = "grunt" | "swarmling" | "weaver" | "spitter" | "elite";
 
 export interface EnemyDef {
-  baseHP: number
-  gem: number
-  speed: number // world-units / sec at t=0
-  contactDmg: number
-  size: number
-  geom: 'cube' | 'tetra' | 'octa' | 'icosa'
-  behavior: 'chase' | 'weave' | 'spit'
+  baseHP: number;
+  gem: number;
+  speed: number; // world-units / sec at t=0
+  contactDmg: number;
+  size: number;
+  geom: "cube" | "tetra" | "octa" | "icosa";
+  behavior: "chase" | "weave" | "spit";
 }
 
 export const ENEMIES: Record<EnemyType, EnemyDef> = {
-  grunt: { baseHP: 3, gem: 1, speed: 6.5, contactDmg: 8, size: 1.9, geom: 'cube', behavior: 'chase' },
-  swarmling: { baseHP: 1, gem: 1, speed: 11, contactDmg: 5, size: 1.1, geom: 'tetra', behavior: 'chase' },
-  weaver: { baseHP: 2, gem: 2, speed: 8.5, contactDmg: 7, size: 1.4, geom: 'tetra', behavior: 'weave' },
-  spitter: { baseHP: 5, gem: 3, speed: 4.5, contactDmg: 9, size: 1.7, geom: 'octa', behavior: 'spit' },
-  elite: { baseHP: 3, gem: 25, speed: 3.6, contactDmg: 18, size: 3.4, geom: 'icosa', behavior: 'chase' },
-}
+  grunt: { baseHP: 3, gem: 1, speed: 6.5, contactDmg: 8, size: 1.9, geom: "cube", behavior: "chase" },
+  swarmling: { baseHP: 1, gem: 1, speed: 11, contactDmg: 5, size: 1.1, geom: "tetra", behavior: "chase" },
+  weaver: { baseHP: 2, gem: 2, speed: 8.5, contactDmg: 7, size: 1.4, geom: "tetra", behavior: "weave" },
+  spitter: { baseHP: 5, gem: 3, speed: 4.5, contactDmg: 9, size: 1.7, geom: "octa", behavior: "spit" },
+  elite: { baseHP: 3, gem: 25, speed: 3.6, contactDmg: 18, size: 3.4, geom: "icosa", behavior: "chase" },
+};
 
 // Spitter ranged behavior tunables (only ranged Scourge).
 export const SPITTER = {
@@ -186,4 +186,4 @@ export const SPITTER = {
   fireEvery: 2.4,
   bulletSpeed: 13,
   bulletDmg: 8,
-} as const
+} as const;

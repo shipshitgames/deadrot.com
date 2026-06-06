@@ -1,31 +1,31 @@
-import type { Faction, WarEvent } from '@shipshitgames/warline'
-import { HelpTooltip } from './HelpTooltip'
+import type { Faction, WarEvent } from "@shipshitgames/warline";
+import { HelpTooltip } from "./HelpTooltip";
 
 interface WarFeedProps {
-  feed: WarEvent[]
+  feed: WarEvent[];
 }
 
 const FACTION_DOT: Record<Faction, string> = {
-  wardens: '#c1121f',
-  pyre: '#ff6a00',
-  scourge: '#8bdc1f',
-  neutral: '#34343c',
-}
+  wardens: "#c1121f",
+  pyre: "#ff6a00",
+  scourge: "#8bdc1f",
+  neutral: "#34343c",
+};
 
 function kindAccent(event: WarEvent): string {
   switch (event.kind) {
-    case 'fall':
-      return 'text-blood-hot'
-    case 'seal':
-      return 'text-toxic'
-    case 'reset':
-      return 'text-hellfire'
-    case 'command':
-      return 'text-bone'
-    case 'system':
-      return 'text-ash'
+    case "fall":
+      return "text-blood-hot";
+    case "seal":
+      return "text-toxic";
+    case "reset":
+      return "text-hellfire";
+    case "command":
+      return "text-bone";
+    case "system":
+      return "text-ash";
     default:
-      return 'text-bone'
+      return "text-bone";
   }
 }
 
@@ -34,18 +34,13 @@ export function WarFeed({ feed }: WarFeedProps) {
     <section className="flex h-full flex-col border-2 border-gunmetal bg-coal">
       <div className="flex items-center justify-between border-b border-gunmetal px-3 py-2">
         <div className="flex items-center gap-1.5">
-          <h2 className="font-display text-sm tracking-wide text-bone">
-            War Feed
-          </h2>
+          <h2 className="font-display text-sm tracking-wide text-bone">War Feed</h2>
           <HelpTooltip label="Explain war feed" side="top">
-            This is the event log for the shared campaign. It records commands,
-            simulated operations, region falls, resets, and sealed breaches.
-            Newest events appear first.
+            This is the event log for the shared campaign. It records commands, simulated operations, region falls,
+            resets, and sealed breaches. Newest events appear first.
           </HelpTooltip>
         </div>
-        <span className="font-mono text-[0.65rem] text-ash">
-          {feed.length} events
-        </span>
+        <span className="font-mono text-[0.65rem] text-ash">{feed.length} events</span>
       </div>
 
       <ol className="flex-1 divide-y divide-iron overflow-y-auto">
@@ -63,18 +58,16 @@ export function WarFeed({ feed }: WarFeedProps) {
             <div className="min-w-0 flex-1">
               <p className={`text-xs leading-snug ${kindAccent(event)}`}>
                 {event.text}
-                {event.sealed && (
-                  <span className="ml-1 font-display text-toxic">[SEALED]</span>
-                )}
+                {event.sealed && <span className="ml-1 font-display text-toxic">[SEALED]</span>}
               </p>
               <span className="font-mono text-[0.6rem] text-ash">
                 t{event.t} · {event.kind}
-                {event.game ? ` · ${event.game}` : ''}
+                {event.game ? ` · ${event.game}` : ""}
               </span>
             </div>
           </li>
         ))}
       </ol>
     </section>
-  )
+  );
 }

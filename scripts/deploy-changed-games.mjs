@@ -101,7 +101,10 @@ function run(command, commandArgs, cwd) {
 }
 
 function lines(value) {
-  return value.split("\n").map((line) => line.trim()).filter(Boolean);
+  return value
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
 }
 
 function unique(values) {
@@ -157,10 +160,5 @@ function matchesSharedCode(file, name) {
 function isPackageCodeFile(rel) {
   if (rel === "package.json") return true;
   if (rel.startsWith("src/") || rel.startsWith("party/")) return true;
-  return [
-    "tsconfig.json",
-    "tsconfig.node.json",
-    "vite.config.ts",
-    "vitest.config.ts",
-  ].includes(rel);
+  return ["tsconfig.json", "tsconfig.node.json", "vite.config.ts", "vitest.config.ts"].includes(rel);
 }

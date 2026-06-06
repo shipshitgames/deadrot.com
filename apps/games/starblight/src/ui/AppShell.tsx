@@ -1,5 +1,4 @@
 import {
-  Button,
   MainMenuAction,
   MainMenuCopy,
   MainMenuLayout,
@@ -19,28 +18,50 @@ export function AppShell() {
 
       <div id="hud">
         <div className="hud-top">
-          <div className="level-badge">LVL <span id="level" className="mono">1</span></div>
-          <div className="xpbar"><div id="xp-fill" /></div>
+          <div className="level-badge">
+            LVL{" "}
+            <span id="level" className="mono">
+              1
+            </span>
+          </div>
+          <div className="xpbar">
+            <div id="xp-fill" />
+          </div>
           <div className="top-right">
-            <button id="pause-btn" className="pause-btn hidden" aria-label="Pause">
-              <span className="pause-glyph" aria-hidden="true"><i /><i /></span>
+            <button id="pause-btn" className="pause-btn hidden" aria-label="Pause" type="button">
+              <span className="pause-glyph" aria-hidden="true">
+                <i />
+                <i />
+              </span>
             </button>
-            <span id="salvage" className="mono">0</span>
+            <span id="salvage" className="mono">
+              0
+            </span>
             <span className="salvage-icon">{"\u25c6"}</span>
-            <span id="kills" className="kills">0 kills</span>
+            <span id="kills" className="kills">
+              0 kills
+            </span>
           </div>
         </div>
-        <div id="timer" className="mono">0:00</div>
+        <div id="timer" className="mono">
+          0:00
+        </div>
         <div id="boss-bar" className="hidden">
           <span className="boss-name">THE BLIGHT-MAW</span>
-          <div className="boss-track"><div id="boss-fill" /></div>
+          <div className="boss-track">
+            <div id="boss-fill" />
+          </div>
         </div>
 
         <div className="hud-bottomleft">
           <div className="intbar">
             <span className="label">Integrity</span>
-            <div className="int-track"><div id="int-fill" /></div>
-            <span id="int-text" className="mono">100/100</span>
+            <div className="int-track">
+              <div id="int-fill" />
+            </div>
+            <span id="int-text" className="mono">
+              100/100
+            </span>
           </div>
           <div id="build-tray" />
         </div>
@@ -71,11 +92,19 @@ export function AppShell() {
         <div id="pause-menu" className="pause-menu hidden">
           <MenuPanel className="pause-inner">
             <h2 className="pause-title ssg-section-heading">PAUSED</h2>
-            <p id="pause-stats" className="pause-stats mono">0:00 - LVL 1 - 0 kills</p>
+            <p id="pause-stats" className="pause-stats mono">
+              0:00 - LVL 1 - 0 kills
+            </p>
             <div className="pause-actions">
-              <button id="pause-resume" className="menu-action primary">RESUME</button>
-              <button id="pause-restart" className="menu-action">RESTART RUN</button>
-              <button id="pause-title-btn" className="menu-action ghost">MAIN MENU</button>
+              <button id="pause-resume" className="menu-action primary" type="button">
+                RESUME
+              </button>
+              <button id="pause-restart" className="menu-action" type="button">
+                RESTART RUN
+              </button>
+              <button id="pause-title-btn" className="menu-action ghost" type="button">
+                MAIN MENU
+              </button>
             </div>
           </MenuPanel>
         </div>
@@ -83,11 +112,19 @@ export function AppShell() {
         <div id="pause-menu" className="pause-menu hidden">
           <MenuPanel className="pause-inner">
             <h2 className="pause-title ssg-section-heading">PAUSED</h2>
-            <p id="pause-stats" className="pause-stats mono">0:00 - LVL 1 - 0 kills</p>
+            <p id="pause-stats" className="pause-stats mono">
+              0:00 - LVL 1 - 0 kills
+            </p>
             <div className="pause-actions">
-              <button id="pause-resume" className="menu-action primary">RESUME</button>
-              <button id="pause-restart" className="menu-action">RESTART RUN</button>
-              <button id="pause-title-btn" className="menu-action ghost">MAIN MENU</button>
+              <button id="pause-resume" className="menu-action primary" type="button">
+                RESUME
+              </button>
+              <button id="pause-restart" className="menu-action" type="button">
+                RESTART RUN
+              </button>
+              <button id="pause-title-btn" className="menu-action ghost" type="button">
+                MAIN MENU
+              </button>
             </div>
           </MenuPanel>
         </div>

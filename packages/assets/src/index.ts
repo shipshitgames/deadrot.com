@@ -12,13 +12,7 @@
 import catalogJson from "../assets-catalog.json" with { type: "json" };
 
 /** The six games in the shared Scourge universe. */
-export type GameSlug =
-  | "scourge-survivors"
-  | "deadlane"
-  | "pactfall"
-  | "starblight"
-  | "redline"
-  | "rothulk";
+export type GameSlug = "scourge-survivors" | "deadlane" | "pactfall" | "starblight" | "redline" | "rothulk";
 
 /** Ordered list of every game slug, for iteration/validation. */
 export const GAME_SLUGS: readonly GameSlug[] = [
@@ -40,13 +34,7 @@ export type Faction = "scourge" | "pyre" | "wardens" | "neutral";
  * Scourge host families from the lore Variation-Matrix — the conquered medium a
  * Scourge form visibly wears. `null` for non-Scourge entities.
  */
-export type HostFamily =
-  | "rot-flesh"
-  | "chitin"
-  | "mycelial"
-  | "machine-graft"
-  | "bone-titan"
-  | "voidship";
+export type HostFamily = "rot-flesh" | "chitin" | "mycelial" | "machine-graft" | "bone-titan" | "voidship";
 
 /**
  * Per-game variant paths for a canonical entity. Each game slug maps to the
@@ -144,11 +132,7 @@ export const catalog: AssetCatalog = catalogJson as unknown as AssetCatalog;
  *   regardless of the `game` argument.
  * - Returns `undefined` if no asset with `id` exists.
  */
-export function getAsset(
-  catalog: AssetCatalog,
-  id: string,
-  game?: GameSlug,
-): Asset | undefined {
+export function getAsset(catalog: AssetCatalog, id: string, game?: GameSlug): Asset | undefined {
   const entity = catalog.entities.find((e) => e.id === id);
   if (entity) {
     const path = game ? (entity.variants[game] ?? null) : null;

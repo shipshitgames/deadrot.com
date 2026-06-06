@@ -1,15 +1,15 @@
-import { CONSTANTS } from '../constants';
-import type { GameMode } from './types';
+import { CONSTANTS } from "../constants";
+import type { GameMode } from "./types";
 
 // Thin adapter over the React-rendered HUD shell. The game loop writes into
 // cached element refs instead of coupling gameplay state to React.
 export class Hud {
-  private lives = document.getElementById('hud-lives')!;
-  private hp = document.getElementById('hud-hp')!;
-  private obj = document.getElementById('hud-obj')!;
-  private progress = document.getElementById('hud-progress')!;
-  private embers = document.getElementById('hud-embers')!;
-  private toast = document.getElementById('toast')!;
+  private lives = document.getElementById("hud-lives")!;
+  private hp = document.getElementById("hud-hp")!;
+  private obj = document.getElementById("hud-obj")!;
+  private progress = document.getElementById("hud-progress")!;
+  private embers = document.getElementById("hud-embers")!;
+  private toast = document.getElementById("toast")!;
 
   private toastTimer = 0;
 
@@ -37,32 +37,32 @@ export class Hud {
 
   flashToast(text: string, ttl = 1.6) {
     this.toast.textContent = text;
-    this.toast.classList.add('show');
+    this.toast.classList.add("show");
     this.toastTimer = ttl;
   }
 
   showBigToast(mode: GameMode) {
-    if (mode === 'won') {
+    if (mode === "won") {
       this.toast.innerHTML =
         '<span class="big win">CORE IGNITED</span><span class="small">THE HULK BURNS &mdash; PRESS R TO RUN IT AGAIN</span>';
-    } else if (mode === 'gameover') {
+    } else if (mode === "gameover") {
       this.toast.innerHTML =
         '<span class="big dead">CONSUMED</span><span class="small">THE SCOURGE TAKES YOU &mdash; PRESS R TO RETRY</span>';
     }
-    this.toast.classList.add('show', 'persist');
+    this.toast.classList.add("show", "persist");
   }
 
   clearBigToast() {
-    this.toast.classList.remove('persist');
-    this.toast.classList.remove('show');
-    this.toast.textContent = '';
+    this.toast.classList.remove("persist");
+    this.toast.classList.remove("show");
+    this.toast.textContent = "";
   }
 
   update(dt: number) {
-    if (this.toast.classList.contains('persist')) return;
+    if (this.toast.classList.contains("persist")) return;
     if (this.toastTimer > 0) {
       this.toastTimer -= dt;
-      if (this.toastTimer <= 0) this.toast.classList.remove('show');
+      if (this.toastTimer <= 0) this.toast.classList.remove("show");
     }
   }
 }

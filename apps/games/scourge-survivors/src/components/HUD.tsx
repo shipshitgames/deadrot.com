@@ -1,14 +1,28 @@
-import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
-import type { HUDState } from '../game/types'
-import type { ScoreEntry, Settings, ShopState } from '../game/storage'
-import { SHOP_UPGRADES, SURVIVOR_CLASSES, SURVIVOR_CLASS_IDS, SURVIVOR_RUN_GOAL_TIME, shopCost, type SurvivorClassId } from '../game/data/survivors'
-import { PLAYER_AVATAR_OPTIONS, normalizePlayerAvatar, type PlayerAvatarId } from '../net/playerAvatars'
-import { PixelIcon, type PixelIconId } from './PixelIcon'
-import playerHeavyPreview from '@shipshitgames/assets/games/scourge-survivors/players/pyre/bulwark/front.webp'
-import playerMedicPreview from '@shipshitgames/assets/games/scourge-survivors/players/pyre/patch/front.webp'
-import playerRangerPreview from '@shipshitgames/assets/games/scourge-survivors/players/pyre/ranger/front.webp'
-import playerScoutPreview from '@shipshitgames/assets/games/scourge-survivors/players/pyre/vector/front.webp'
-import menuHero from '@shipshitgames/assets/games/scourge-survivors/ui/menu/scourge-hero.jpg'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from "react";
+import type { HUDState } from "../game/types";
+import type { ScoreEntry, Settings, ShopState } from "../game/storage";
+import {
+  SHOP_UPGRADES,
+  SURVIVOR_CLASSES,
+  SURVIVOR_CLASS_IDS,
+  SURVIVOR_RUN_GOAL_TIME,
+  shopCost,
+  type SurvivorClassId,
+} from "../game/data/survivors";
+import { PLAYER_AVATAR_OPTIONS, normalizePlayerAvatar, type PlayerAvatarId } from "../net/playerAvatars";
+import { PixelIcon, type PixelIconId } from "./PixelIcon";
+import playerHeavyPreview from "@shipshitgames/assets/games/scourge-survivors/players/pyre/bulwark/front.webp";
+import playerMedicPreview from "@shipshitgames/assets/games/scourge-survivors/players/pyre/patch/front.webp";
+import playerRangerPreview from "@shipshitgames/assets/games/scourge-survivors/players/pyre/ranger/front.webp";
+import playerScoutPreview from "@shipshitgames/assets/games/scourge-survivors/players/pyre/vector/front.webp";
+import menuHero from "@shipshitgames/assets/games/scourge-survivors/ui/menu/scourge-hero.jpg";
 import {
   Button,
   Card,
@@ -21,92 +35,90 @@ import {
   MainMenuTitle,
   MainMenuTitleLine,
   MainMenuTopBar,
-} from '@shipshitgames/ui'
-import { Switch } from '@/components/ui/switch'
+} from "@shipshitgames/ui";
+import { Switch } from "@/components/ui/switch";
 
 interface Props {
-  state: HUDState
-  scores: ScoreEntry[]
-  settings: Settings
-  onLock: () => void
-  onRestart: () => void
-  onToggleMusic: () => void
-  onToggleSfx: () => void
-  onClearScores: () => void
-  onStartMultiplayer: (name: string, room: string, avatar: PlayerAvatarId) => void
-  onLeaveRoom: () => void
-  onStartSurvivors: (classId?: SurvivorClassId) => void
-  onStartSandbox?: () => void
-  onPickUpgrade: (id: string) => void
-  onReroll: () => void
-  onBanish: (id: string) => void
-  onMenu: () => void
-  shop: ShopState
-  lastRunGold: number
-  onBuyShop: (id: string) => void
-  initialRoom: string
-  suppressMenu?: boolean
+  state: HUDState;
+  scores: ScoreEntry[];
+  settings: Settings;
+  onLock: () => void;
+  onRestart: () => void;
+  onToggleMusic: () => void;
+  onToggleSfx: () => void;
+  onClearScores: () => void;
+  onStartMultiplayer: (name: string, room: string, avatar: PlayerAvatarId) => void;
+  onLeaveRoom: () => void;
+  onStartSurvivors: (classId?: SurvivorClassId) => void;
+  onStartSandbox?: () => void;
+  onPickUpgrade: (id: string) => void;
+  onReroll: () => void;
+  onBanish: (id: string) => void;
+  onMenu: () => void;
+  shop: ShopState;
+  lastRunGold: number;
+  onBuyShop: (id: string) => void;
+  initialRoom: string;
+  suppressMenu?: boolean;
 }
 
 // ----------------------------------------------------------------- shared utility class strings
-const OVERLAY =
-  'ssg-menu-screen'
-const HUD_CORNER =
-  'ssg-hud-corner'
-const STAT_LABEL = 'ssg-stat-label'
-const STAT_VALUE = 'ssg-stat-value'
-const MENU_HEADING = 'ssg-section-heading'
-const STAT_SUB = 'ssg-stat-sub'
-const DRAFT_PRESS_MAX_AGE_MS = 1200
+const OVERLAY = "ssg-menu-screen";
+const HUD_CORNER = "ssg-hud-corner";
+const STAT_LABEL = "ssg-stat-label";
+const STAT_VALUE = "ssg-stat-value";
+const MENU_HEADING = "ssg-section-heading";
+const STAT_SUB = "ssg-stat-sub";
+const DRAFT_PRESS_MAX_AGE_MS = 1200;
 const AVATAR_PREVIEWS: Record<PlayerAvatarId, string> = {
   ranger: playerRangerPreview,
   heavy: playerHeavyPreview,
   scout: playerScoutPreview,
   medic: playerMedicPreview,
-}
+};
 
 function IconText({
   icon,
   children,
   size = 16,
-  className = '',
+  className = "",
 }: {
-  icon: PixelIconId
-  children: ReactNode
-  size?: number
-  className?: string
+  icon: PixelIconId;
+  children: ReactNode;
+  size?: number;
+  className?: string;
 }) {
   return (
     <span className={`inline-flex min-w-0 items-center justify-center gap-[6px] ${className}`}>
       <PixelIcon id={icon} size={size} />
       <span className="min-w-0">{children}</span>
     </span>
-  )
+  );
 }
 
 function roomShareUrl(room: string): string {
-  return `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(room)}`
+  return `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(room)}`;
 }
 
 function CopyLinkButton({ room }: { room: string }) {
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState(false);
   const copy = () => {
-    const url = roomShareUrl(room)
+    const url = roomShareUrl(room);
     const done = () => {
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 1600)
-    }
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    };
     try {
-      navigator.clipboard?.writeText(url).then(done, done)
+      navigator.clipboard?.writeText(url).then(done, done);
     } catch {
-      done()
+      done();
     }
-  }
+  };
   return (
     <Button type="button" variant="default" onClick={copy}>
       {copied ? <IconText icon="check">Copied!</IconText> : <IconText icon="link">Copy room link</IconText>}
     </Button>
-  )
+  );
 }
 
 function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => void }) {
@@ -117,29 +129,36 @@ function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => void })
     >
       <div className="flex justify-between items-center mb-[10px]">
         <span className="text-[14px] tracking-[0.08em] uppercase text-[#ffd166]">
-          <IconText icon="shop" size={18}>Survivors Upgrade Shop</IconText>
+          <IconText icon="shop" size={18}>
+            Survivors Upgrade Shop
+          </IconText>
         </span>
         <span className="text-[16px] font-extrabold text-[#ffd166]">
-          <IconText icon="gold" size={19}>{shop.gold.toLocaleString()}</IconText>
+          <IconText icon="gold" size={19}>
+            {shop.gold.toLocaleString()}
+          </IconText>
         </span>
       </div>
       <div className="grid grid-cols-2 gap-2">
         {SHOP_UPGRADES.map((u) => {
-          const tier = shop.tiers[u.id] ?? 0
-          const maxed = tier >= u.max
-          const cost = shopCost(u, tier)
-          const afford = shop.gold >= cost
+          const tier = shop.tiers[u.id] ?? 0;
+          const maxed = tier >= u.max;
+          const cost = shopCost(u, tier);
+          const afford = shop.gold >= cost;
           return (
             <Card
               key={u.id}
-              className={`flex items-center gap-[10px] bg-black/30 border-white/10 rounded-[9px] px-[10px] py-2 text-left${maxed ? ' opacity-70' : ''}`}
+              className={`flex items-center gap-[10px] bg-black/30 border-white/10 rounded-[9px] px-[10px] py-2 text-left${maxed ? " opacity-70" : ""}`}
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-[5px] border border-white/10 bg-black/30">
                 <PixelIcon id={u.icon} size={24} label={u.name} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-[14px] font-bold">
-                  {u.name} <span className="text-[11px] opacity-60 font-semibold">{tier}/{u.max}</span>
+                  {u.name}{" "}
+                  <span className="text-[11px] opacity-60 font-semibold">
+                    {tier}/{u.max}
+                  </span>
                 </div>
                 <div className="text-[11px] opacity-65 leading-[1.3]">{u.desc}</div>
               </div>
@@ -149,49 +168,71 @@ function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => void })
                 disabled={maxed || !afford}
                 onClick={() => onBuy(u.id)}
               >
-                {maxed ? 'MAX' : <IconText icon="gold" size={13}>{cost}</IconText>}
+                {maxed ? (
+                  "MAX"
+                ) : (
+                  <IconText icon="gold" size={13}>
+                    {cost}
+                  </IconText>
+                )}
               </button>
             </Card>
-          )
+          );
         })}
       </div>
       <div className="mt-[10px] text-[11px] opacity-60 text-center">
         Permanent — applies to every Survivors run. Earn gold by surviving.
       </div>
     </div>
-  )
+  );
 }
 
 function randomRoom(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  let s = ''
-  for (let i = 0; i < 4; i++) s += chars[Math.floor(Math.random() * chars.length)]
-  return `ARENA-${s}`
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let s = "";
+  for (let i = 0; i < 4; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return `ARENA-${s}`;
 }
 
-function MultiplayerPanel({ onStart, initialRoom }: { onStart: (name: string, room: string, avatar: PlayerAvatarId) => void; initialRoom: string }) {
-  const [name, setName] = useState(() => localStorage.getItem('scourge-survivors.name') || '')
-  const [room, setRoom] = useState(initialRoom || '')
-  const [avatar, setAvatar] = useState<PlayerAvatarId>(() => normalizePlayerAvatar(localStorage.getItem('scourge-survivors.avatar')))
+function MultiplayerPanel({
+  onStart,
+  initialRoom,
+}: {
+  onStart: (name: string, room: string, avatar: PlayerAvatarId) => void;
+  initialRoom: string;
+}) {
+  const [name, setName] = useState(() => localStorage.getItem("scourge-survivors.name") || "");
+  const [room, setRoom] = useState(initialRoom || "");
+  const [avatar, setAvatar] = useState<PlayerAvatarId>(() =>
+    normalizePlayerAvatar(localStorage.getItem("scourge-survivors.avatar")),
+  );
   const join = () => {
-    const n = name.trim() || 'Player'
-    const r = (room.trim() || randomRoom()).toUpperCase()
-    localStorage.setItem('scourge-survivors.name', n)
-    localStorage.setItem('scourge-survivors.avatar', avatar)
-    onStart(n, r, avatar)
-  }
+    const n = name.trim() || "Player";
+    const r = (room.trim() || randomRoom()).toUpperCase();
+    localStorage.setItem("scourge-survivors.name", n);
+    localStorage.setItem("scourge-survivors.avatar", avatar);
+    onStart(n, r, avatar);
+  };
   const input =
-    'pointer-events-auto text-[15px] text-fg bg-black/35 border border-white/20 rounded-lg px-3 py-[9px] min-w-[200px] focus:outline-none focus:border-accent'
+    "pointer-events-auto text-[15px] text-fg bg-black/35 border border-white/20 rounded-lg px-3 py-[9px] min-w-[200px] focus:outline-none focus:border-accent";
   return (
     <div
       className="pointer-events-auto mt-4 w-[min(700px,88vw)] bg-[rgba(255,77,109,0.06)] border border-[rgba(255,77,109,0.35)] rounded-[10px] px-5 py-4 text-center"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="text-[14px] tracking-[0.1em] uppercase text-[#ff8aa0] mb-[10px]">
-        <IconText icon="swords" size={18}>Online Rooms</IconText>
+        <IconText icon="swords" size={18}>
+          Online Rooms
+        </IconText>
       </div>
       <div className="flex gap-[10px] justify-center flex-wrap">
-        <input className={input} placeholder="Your name" maxLength={16} value={name} onChange={(e) => setName(e.target.value)} />
+        <input
+          className={input}
+          placeholder="Your name"
+          maxLength={16}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
         <input
           className={input}
           placeholder="Room code (blank = random)"
@@ -199,32 +240,36 @@ function MultiplayerPanel({ onStart, initialRoom }: { onStart: (name: string, ro
           value={room}
           onChange={(e) => setRoom(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') join()
+            if (e.key === "Enter") join();
           }}
         />
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-4">
         {PLAYER_AVATAR_OPTIONS.map((option) => {
-          const selected = avatar === option.id
+          const selected = avatar === option.id;
           return (
             <button
               key={option.id}
               type="button"
               className={`pointer-events-auto cursor-pointer flex min-h-[158px] flex-col items-center overflow-hidden rounded-lg border px-2.5 py-2.5 text-center transition-[border-color,background,transform,box-shadow] hover:-translate-y-px ${
                 selected
-                  ? 'border-accent bg-accent/15 shadow-[0_0_0_1px_rgba(255,106,0,0.18),0_10px_28px_-18px_rgba(255,106,0,0.9)]'
-                  : 'border-white/15 bg-black/25 hover:bg-white/10'
+                  ? "border-accent bg-accent/15 shadow-[0_0_0_1px_rgba(255,106,0,0.18),0_10px_28px_-18px_rgba(255,106,0,0.9)]"
+                  : "border-white/15 bg-black/25 hover:bg-white/10"
               }`}
               onClick={() => setAvatar(option.id)}
               aria-pressed={selected}
             >
               <span
                 className={`relative flex h-[108px] w-full items-end justify-center overflow-hidden rounded-md border bg-black/35 ${
-                  selected ? 'border-accent/60' : 'border-white/10'
+                  selected ? "border-accent/60" : "border-white/10"
                 }`}
               >
-                <span className={`absolute bottom-[8px] h-[24px] w-[74px] rounded-full blur-[10px] ${selected ? 'bg-accent/45' : 'bg-white/10'}`} />
-                <span className={`absolute bottom-[7px] h-[14px] w-[64px] rounded-full border ${selected ? 'border-accent/75' : 'border-white/15'}`} />
+                <span
+                  className={`absolute bottom-[8px] h-[24px] w-[74px] rounded-full blur-[10px] ${selected ? "bg-accent/45" : "bg-white/10"}`}
+                />
+                <span
+                  className={`absolute bottom-[7px] h-[14px] w-[64px] rounded-full border ${selected ? "border-accent/75" : "border-white/15"}`}
+                />
                 <img
                   src={AVATAR_PREVIEWS[option.id]}
                   alt=""
@@ -242,7 +287,7 @@ function MultiplayerPanel({ onStart, initialRoom }: { onStart: (name: string, ro
                 <small className="block text-[11px] opacity-65 leading-tight">{option.role}</small>
               </span>
             </button>
-          )
+          );
         })}
       </div>
       <button
@@ -250,11 +295,13 @@ function MultiplayerPanel({ onStart, initialRoom }: { onStart: (name: string, ro
         className="pointer-events-auto cursor-pointer mt-3 text-[18px] font-bold tracking-[0.04em] text-[#1a0608] bg-gradient-to-r from-[#ff4d6d] to-[#ff8a3c] rounded-[10px] px-[34px] py-[13px] shadow-[0_6px_22px_rgba(255,77,109,0.35)] transition-transform hover:-translate-y-px active:translate-y-px"
         onClick={join}
       >
-        <IconText icon="swords" size={19}>Join Room</IconText>
+        <IconText icon="swords" size={19}>
+          Join Room
+        </IconText>
       </button>
       <div className="mt-2 text-[12px] opacity-60">Share the room code so friends can join the same arena.</div>
     </div>
-  )
+  );
 }
 
 function SurvivorsPanel({
@@ -263,41 +310,43 @@ function SurvivorsPanel({
   onShop,
   onCoop,
 }: {
-  shop: ShopState
-  onStart: (classId: SurvivorClassId) => void
-  onShop: () => void
-  onCoop: () => void
+  shop: ShopState;
+  onStart: (classId: SurvivorClassId) => void;
+  onShop: () => void;
+  onCoop: () => void;
 }) {
   const [classId, setClassId] = useState<SurvivorClassId>(() => {
-    const saved = localStorage.getItem('scourge-survivors.survivorClass')
-    return SURVIVOR_CLASS_IDS.includes(saved as SurvivorClassId) ? (saved as SurvivorClassId) : 'ranger'
-  })
-  const selected = SURVIVOR_CLASSES[classId]
+    const saved = localStorage.getItem("scourge-survivors.survivorClass");
+    return SURVIVOR_CLASS_IDS.includes(saved as SurvivorClassId) ? (saved as SurvivorClassId) : "ranger";
+  });
+  const selected = SURVIVOR_CLASSES[classId];
   const launch = () => {
-    localStorage.setItem('scourge-survivors.survivorClass', classId)
-    onStart(classId)
-  }
+    localStorage.setItem("scourge-survivors.survivorClass", classId);
+    onStart(classId);
+  };
 
   return (
     <div className="pointer-events-auto w-[min(940px,92vw)]" onClick={(e) => e.stopPropagation()}>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
         {SURVIVOR_CLASS_IDS.map((id) => {
-          const cls = SURVIVOR_CLASSES[id]
-          const active = id === classId
+          const cls = SURVIVOR_CLASSES[id];
+          const active = id === classId;
           return (
             <button
               key={id}
               type="button"
               className={`pointer-events-auto cursor-pointer min-h-[238px] rounded-lg border bg-black/30 px-3 py-3 text-left transition-[border-color,background,transform,box-shadow] hover:-translate-y-px ${
                 active
-                  ? 'border-accent bg-accent/12 shadow-[0_0_0_1px_rgba(255,106,0,0.22),0_18px_44px_-28px_rgba(255,106,0,0.9)]'
-                  : 'border-white/15 hover:bg-white/10'
+                  ? "border-accent bg-accent/12 shadow-[0_0_0_1px_rgba(255,106,0,0.22),0_18px_44px_-28px_rgba(255,106,0,0.9)]"
+                  : "border-white/15 hover:bg-white/10"
               }`}
               onClick={() => setClassId(id)}
               aria-pressed={active}
             >
               <span className="relative mb-3 flex h-[128px] items-end justify-center overflow-hidden rounded-md border border-white/10 bg-black/35">
-                <span className={`absolute bottom-[8px] h-[20px] w-[78px] rounded-full blur-[10px] ${active ? 'bg-accent/45' : 'bg-white/10'}`} />
+                <span
+                  className={`absolute bottom-[8px] h-[20px] w-[78px] rounded-full blur-[10px] ${active ? "bg-accent/45" : "bg-white/10"}`}
+                />
                 <img
                   src={AVATAR_PREVIEWS[id]}
                   alt=""
@@ -312,7 +361,7 @@ function SurvivorsPanel({
               <span className="block text-[11px] font-bold uppercase tracking-[0.08em] text-[#ffb56b]">{cls.role}</span>
               <span className="mt-1 block text-[12px] leading-[1.35] opacity-70">{cls.desc}</span>
             </button>
-          )
+          );
         })}
       </div>
       <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_auto] md:items-center">
@@ -320,8 +369,8 @@ function SurvivorsPanel({
           <div className="text-[12px] uppercase tracking-[0.12em] text-[#ffb56b]">Selected</div>
           <div className="text-[22px] font-black tracking-[0.03em]">{selected.name}</div>
           <div className="text-[12px] opacity-65">
-            {Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}:{(SURVIVOR_RUN_GOAL_TIME % 60).toString().padStart(2, '0')} breach descent ·{' '}
-            {shop.gold.toLocaleString()} gold banked
+            {Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}:{(SURVIVOR_RUN_GOAL_TIME % 60).toString().padStart(2, "0")} breach
+            descent · {shop.gold.toLocaleString()} gold banked
           </div>
         </div>
         <Button type="button" variant="ghost" className="h-full min-h-[58px]" onClick={onShop}>
@@ -335,44 +384,54 @@ function SurvivorsPanel({
         Start Run
       </Button>
     </div>
-  )
+  );
 }
 
-function Scoreboard({ board, room, connected }: { board: HUDState['scoreboard']; room: string; connected: boolean }) {
+function Scoreboard({ board, room, connected }: { board: HUDState["scoreboard"]; room: string; connected: boolean }) {
   return (
     <div className="scourge-scoreboard absolute top-[96px] right-[18px] min-w-[190px] bg-[rgba(10,16,28,0.6)] border border-white/10 rounded-[10px] px-[10px] py-2 [font-variant-numeric:tabular-nums]">
       <div className="flex justify-between text-[12px] tracking-[0.06em] opacity-85 mb-[5px] pb-1 border-b border-white/10">
-        <IconText icon="swords" size={14}>{room || '-'}</IconText>
-        <span className={connected ? 'text-good' : 'text-warn'}>
-          <IconText icon={connected ? 'live' : 'offline'} size={10}>{connected ? 'live' : 'connecting'}</IconText>
+        <IconText icon="swords" size={14}>
+          {room || "-"}
+        </IconText>
+        <span className={connected ? "text-good" : "text-warn"}>
+          <IconText icon={connected ? "live" : "offline"} size={10}>
+            {connected ? "live" : "connecting"}
+          </IconText>
         </span>
       </div>
       {board.map((p) => (
-        <div key={p.id} className={`flex items-center gap-2 text-[13px] py-[2px]${p.you ? ' text-accent font-bold' : ''}`}>
-          <span className="flex-1 truncate">{p.name}{p.you ? ' (you)' : ''}</span>
+        <div
+          key={p.id}
+          className={`flex items-center gap-2 text-[13px] py-[2px]${p.you ? " text-accent font-bold" : ""}`}
+        >
+          <span className="flex-1 truncate">
+            {p.name}
+            {p.you ? " (you)" : ""}
+          </span>
           <span className="w-[30px] text-right opacity-70">{p.health}</span>
           <span className="w-[24px] text-right font-extrabold">{p.kills}</span>
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 function formatTime(seconds: number): string {
-  const s = Math.max(0, seconds)
-  const m = Math.floor(s / 60)
-  const r = s % 60
-  return `${m}:${r.toString().padStart(2, '0')}`
+  const s = Math.max(0, seconds);
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${m}:${r.toString().padStart(2, "0")}`;
 }
 
 function healthColor(frac: number): string {
-  if (frac <= 0.28) return '#c1121f'
-  if (frac <= 0.58) return '#ff2a18'
-  return '#ff6a00'
+  if (frac <= 0.28) return "#c1121f";
+  if (frac <= 0.58) return "#ff2a18";
+  return "#ff6a00";
 }
 
 function Crosshair() {
-  const bar = 'absolute bg-white/85 shadow-[0_0_2px_rgba(0,0,0,0.8)]'
+  const bar = "absolute bg-white/85 shadow-[0_0_2px_rgba(0,0,0,0.8)]";
   return (
     <div className="absolute top-1/2 left-1/2 w-[26px] h-[26px] -translate-x-1/2 -translate-y-1/2" aria-hidden>
       <span className={`${bar} left-1/2 w-[2px] h-[8px] -translate-x-1/2 top-0`} />
@@ -381,19 +440,19 @@ function Crosshair() {
       <span className={`${bar} top-1/2 h-[2px] w-[8px] -translate-y-1/2 right-0`} />
       <span className="absolute top-1/2 left-1/2 w-[2px] h-[2px] rounded-full -translate-x-1/2 -translate-y-1/2 bg-accent" />
     </div>
-  )
+  );
 }
 
-function HitMarker({ seq, variant }: { seq: number; variant: 'hit' | 'kill' | 'head' }) {
-  if (seq <= 0) return null
-  const anim = variant === 'kill' ? 'animate-hit-kill' : variant === 'head' ? 'animate-hit-head' : 'animate-hit'
+function HitMarker({ seq, variant }: { seq: number; variant: "hit" | "kill" | "head" }) {
+  if (seq <= 0) return null;
+  const anim = variant === "kill" ? "animate-hit-kill" : variant === "head" ? "animate-hit-head" : "animate-hit";
   const color =
-    variant === 'kill'
-      ? 'bg-danger'
-      : variant === 'head'
-        ? 'bg-[#ffd166] shadow-[0_0_6px_rgba(255,209,102,0.9)]'
-        : 'bg-white'
-  const bar = `absolute ${color}`
+    variant === "kill"
+      ? "bg-danger"
+      : variant === "head"
+        ? "bg-[#ffd166] shadow-[0_0_6px_rgba(255,209,102,0.9)]"
+        : "bg-white";
+  const bar = `absolute ${color}`;
   return (
     <div
       key={`${variant}-${seq}`}
@@ -405,11 +464,11 @@ function HitMarker({ seq, variant }: { seq: number; variant: 'hit' | 'kill' | 'h
       <span className={`${bar} top-1/2 h-[3px] w-[10px] -translate-y-1/2 left-0`} />
       <span className={`${bar} top-1/2 h-[3px] w-[10px] -translate-y-1/2 right-0`} />
     </div>
-  )
+  );
 }
 
-const RING_R = 22
-const RING_C = 2 * Math.PI * RING_R
+const RING_R = 22;
+const RING_C = 2 * Math.PI * RING_R;
 
 function ReloadRing({ progress }: { progress: number }) {
   return (
@@ -418,7 +477,8 @@ function ReloadRing({ progress }: { progress: number }) {
       viewBox="0 0 52 52"
       width="52"
       height="52"
-      aria-hidden
+      aria-hidden="true"
+      focusable="false"
     >
       <circle className="fill-none [stroke:rgba(255,255,255,0.18)] [stroke-width:3]" cx="26" cy="26" r={RING_R} />
       <circle
@@ -429,33 +489,37 @@ function ReloadRing({ progress }: { progress: number }) {
         style={{ strokeDasharray: RING_C, strokeDashoffset: RING_C * (1 - progress) }}
       />
     </svg>
-  )
+  );
 }
 
 function SettingsRow({
   settings,
   onToggleMusic,
   onToggleSfx,
-  className = 'mt-4',
+  className = "mt-4",
 }: {
-  settings: Settings
-  onToggleMusic: () => void
-  onToggleSfx: () => void
-  className?: string
+  settings: Settings;
+  onToggleMusic: () => void;
+  onToggleSfx: () => void;
+  className?: string;
 }) {
-  const row = 'ssg-settings-row text-[13px] tracking-[0.03em]'
+  const row = "ssg-settings-row text-[13px] tracking-[0.03em]";
   return (
     <div className={`flex gap-3 justify-center ${className}`} onClick={(e) => e.stopPropagation()}>
       <label className={row}>
-        <IconText icon="music" size={16}>Music</IconText>
+        <IconText icon="music" size={16}>
+          Music
+        </IconText>
         <Switch checked={settings.music} onCheckedChange={onToggleMusic} aria-label="Toggle music" />
       </label>
       <label className={row}>
-        <IconText icon="sfx" size={16}>SFX</IconText>
+        <IconText icon="sfx" size={16}>
+          SFX
+        </IconText>
         <Switch checked={settings.sfx} onCheckedChange={onToggleSfx} aria-label="Toggle sound effects" />
       </label>
     </div>
-  )
+  );
 }
 
 function Leaderboard({
@@ -463,12 +527,12 @@ function Leaderboard({
   highlight,
   onClear,
 }: {
-  scores: ScoreEntry[]
-  highlight?: ScoreEntry | null
-  onClear?: () => void
+  scores: ScoreEntry[];
+  highlight?: ScoreEntry | null;
+  onClear?: () => void;
 }) {
-  const th = 'text-[10px] tracking-[0.08em] uppercase opacity-50 text-right px-[6px] py-[2px] font-semibold'
-  const td = 'text-[14px] text-right px-[6px] py-[3px]'
+  const th = "text-[10px] tracking-[0.08em] uppercase opacity-50 text-right px-[6px] py-[2px] font-semibold";
+  const td = "text-[14px] text-right px-[6px] py-[3px]";
   return (
     <div
       className="pointer-events-auto min-w-[320px] bg-white/[0.04] border border-white/10 rounded-[10px] px-[14px] py-3"
@@ -476,7 +540,9 @@ function Leaderboard({
     >
       <div className="flex items-center justify-between mb-2">
         <span className="text-[14px] tracking-[0.1em] uppercase opacity-85">
-          <IconText icon="trophy" size={17}>Leaderboard</IconText>
+          <IconText icon="trophy" size={17}>
+            Leaderboard
+          </IconText>
         </span>
         {onClear && scores.length > 0 && (
           <button
@@ -509,42 +575,49 @@ function Leaderboard({
                 s.score === highlight.score &&
                 s.kills === highlight.kills &&
                 s.time === highlight.time &&
-                s.date === highlight.date
+                s.date === highlight.date;
               return (
-                <tr key={s.date + '-' + i} className={me ? 'bg-[rgba(255,106,0,0.14)] outline outline-1 outline-[rgba(255,106,0,0.36)]' : ''}>
+                <tr
+                  key={s.date + "-" + i}
+                  className={me ? "bg-[rgba(255,106,0,0.14)] outline outline-1 outline-[rgba(255,106,0,0.36)]" : ""}
+                >
                   <td className={`${td} !text-center`}>{i + 1}</td>
                   <td className={td}>{s.score.toLocaleString()}</td>
                   <td className={td}>{s.kills}</td>
                   <td className={td}>{s.headshots}</td>
                   <td className={td}>{formatTime(s.time)}</td>
-                  <td className={`${td} ${s.outcome === 'win' ? 'text-good font-bold' : 'text-[#aab4c2]'}`}>
-                    {s.outcome === 'win' ? 'WIN' : 'KO'}
+                  <td className={`${td} ${s.outcome === "win" ? "text-good font-bold" : "text-[#aab4c2]"}`}>
+                    {s.outcome === "win" ? "WIN" : "KO"}
                   </td>
                 </tr>
-              )
+              );
             })}
           </tbody>
         </table>
       )}
     </div>
-  )
+  );
 }
 
 function SurvivorsHud({ state }: { state: HUDState }) {
-  const frac = state.xpToNext > 0 ? state.xp / state.xpToNext : 0
+  const frac = state.xpToNext > 0 ? state.xp / state.xpToNext : 0;
   return (
     <>
       <div className="ssg-survivor-runline" aria-hidden>
         <div className="ssg-survivor-runline__meta">
           <span>
-            <IconText icon={state.survivorClassIcon} size={14}>{state.survivorClassName}</IconText>
+            <IconText icon={state.survivorClassIcon} size={14}>
+              {state.survivorClassName}
+            </IconText>
           </span>
-          <span>Breach {state.survivorChapter}/{state.survivorTotalChapters}</span>
+          <span>
+            Breach {state.survivorChapter}/{state.survivorTotalChapters}
+          </span>
           <span>{state.survivorChapterName}</span>
         </div>
         <div className="ssg-survivor-runline__chapters">
           {Array.from({ length: state.survivorTotalChapters }, (_, i) => (
-            <span key={i} className={i < state.survivorChapter ? 'is-active' : ''} />
+            <span key={i} className={i < state.survivorChapter ? "is-active" : ""} />
           ))}
         </div>
       </div>
@@ -552,22 +625,24 @@ function SurvivorsHud({ state }: { state: HUDState }) {
       <div className="ssg-survivor-xp" aria-hidden>
         <div className="ssg-survivor-xp__level">LV {state.level}</div>
         <div className="ssg-survivor-xp__track">
-          <div
-            className="ssg-survivor-xp__fill"
-            style={{ width: `${Math.max(0, Math.min(1, frac)) * 100}%` }}
-          />
+          <div className="ssg-survivor-xp__fill" style={{ width: `${Math.max(0, Math.min(1, frac)) * 100}%` }} />
         </div>
         <div className="ssg-survivor-xp__count">
           {state.xp}/{state.xpToNext}
         </div>
       </div>
       {state.build.length > 0 && (
-        <div className="absolute top-[112px] left-1/2 -translate-x-1/2 flex gap-[6px] flex-wrap justify-center max-w-[70vw]" aria-hidden>
+        <div
+          className="absolute top-[112px] left-1/2 -translate-x-1/2 flex gap-[6px] flex-wrap justify-center max-w-[70vw]"
+          aria-hidden
+        >
           {state.build.map((b) => (
             <span
               key={b.id}
               className={`inline-flex items-center gap-[3px] bg-black/40 border rounded-lg px-[7px] py-[2px] ${
-                b.evolved ? 'border-[#ffd166] text-[#ffd166] shadow-[0_0_14px_rgba(255,209,102,0.35)]' : 'border-white/[0.14]'
+                b.evolved
+                  ? "border-[#ffd166] text-[#ffd166] shadow-[0_0_14px_rgba(255,209,102,0.35)]"
+                  : "border-white/[0.14]"
               }`}
               title={b.name}
             >
@@ -577,18 +652,28 @@ function SurvivorsHud({ state }: { state: HUDState }) {
           ))}
         </div>
       )}
-      {(state.survivorMaxShield > 0 || state.survivorArmor > 0 || state.survivorDodge > 0 || state.survivorGrace > 0) && (
-        <div className="absolute left-[18px] bottom-[86px] min-w-[190px] rounded-[10px] border border-white/10 bg-black/35 px-[10px] py-2" aria-hidden>
+      {(state.survivorMaxShield > 0 ||
+        state.survivorArmor > 0 ||
+        state.survivorDodge > 0 ||
+        state.survivorGrace > 0) && (
+        <div
+          className="absolute left-[18px] bottom-[86px] min-w-[190px] rounded-[10px] border border-white/10 bg-black/35 px-[10px] py-2"
+          aria-hidden
+        >
           {state.survivorMaxShield > 0 && (
             <div className="mb-[6px]">
               <div className="mb-[3px] flex justify-between text-[10px] uppercase tracking-[0.1em] opacity-70">
                 <span>Shield</span>
-                <span>{state.survivorShield}/{state.survivorMaxShield}</span>
+                <span>
+                  {state.survivorShield}/{state.survivorMaxShield}
+                </span>
               </div>
               <div className="h-[7px] overflow-hidden rounded bg-white/[0.12]">
                 <div
                   className="h-full bg-[#e9e3d6] shadow-[0_0_10px_rgba(255,106,0,0.45)]"
-                  style={{ width: `${state.survivorMaxShield ? (state.survivorShield / state.survivorMaxShield) * 100 : 0}%` }}
+                  style={{
+                    width: `${state.survivorMaxShield ? (state.survivorShield / state.survivorMaxShield) * 100 : 0}%`,
+                  }}
                 />
               </div>
             </div>
@@ -614,7 +699,7 @@ function SurvivorsHud({ state }: { state: HUDState }) {
         </div>
       )}
     </>
-  )
+  );
 }
 
 function LevelUpDraft({
@@ -623,35 +708,35 @@ function LevelUpDraft({
   onReroll,
   onBanish,
 }: {
-  state: HUDState
-  onPick: (id: string) => void
-  onReroll: () => void
-  onBanish: (id: string) => void
+  state: HUDState;
+  onPick: (id: string) => void;
+  onReroll: () => void;
+  onBanish: (id: string) => void;
 }) {
-  const draftPressRef = useRef<{ action: string; at: number } | null>(null)
+  const draftPressRef = useRef<{ action: string; at: number } | null>(null);
   const armDraftAction = (action: string, event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (event.button !== 0) return
-    draftPressRef.current = { action, at: window.performance.now() }
-  }
+    if (event.button !== 0) return;
+    draftPressRef.current = { action, at: window.performance.now() };
+  };
   const consumeDraftAction = (action: string, event: ReactMouseEvent<HTMLButtonElement>) => {
     if (event.detail === 0) {
-      draftPressRef.current = null
-      return true
+      draftPressRef.current = null;
+      return true;
     }
-    const press = draftPressRef.current
-    draftPressRef.current = null
-    return !!press && press.action === action && window.performance.now() - press.at <= DRAFT_PRESS_MAX_AGE_MS
-  }
+    const press = draftPressRef.current;
+    draftPressRef.current = null;
+    return !!press && press.action === action && window.performance.now() - press.at <= DRAFT_PRESS_MAX_AGE_MS;
+  };
   const runDraftAction = (action: string, event: ReactMouseEvent<HTMLButtonElement>, callback: () => void) => {
     // The level-up overlay can appear while the player is still holding fire; require
     // a fresh press that started on this draft button before accepting the click.
     if (!consumeDraftAction(action, event)) {
-      event.preventDefault()
-      event.stopPropagation()
-      return
+      event.preventDefault();
+      event.stopPropagation();
+      return;
     }
-    callback()
-  }
+    callback();
+  };
 
   return (
     <div className={`${OVERLAY} cursor-default`}>
@@ -664,8 +749,8 @@ function LevelUpDraft({
               asChild
               className={`pointer-events-auto w-[min(260px,86vw)] cursor-pointer border-white/15 bg-black/45 px-4 py-4 text-center transition-[transform,border-color,background,box-shadow] hover:-translate-y-[2px] hover:bg-white/10 ${
                 c.golden
-                  ? '!border-[#ffd166] bg-[rgba(255,176,46,0.08)] shadow-[0_0_30px_-6px_rgba(255,176,46,0.75)]'
-                  : ''
+                  ? "!border-[#ffd166] bg-[rgba(255,176,46,0.08)] shadow-[0_0_30px_-6px_rgba(255,176,46,0.75)]"
+                  : ""
               }`}
             >
               <button
@@ -677,15 +762,19 @@ function LevelUpDraft({
                   <PixelIcon id={c.icon} size={42} label={c.name} />
                 </span>
                 <span className="block text-[18px] font-extrabold tracking-[0.03em] text-fg">{c.name}</span>
-                <span className={`mt-1 block text-[11px] font-extrabold uppercase tracking-[0.16em] ${c.golden ? 'text-[#ffd166]' : 'text-accent'}`}>
-                  {c.golden ? 'TRANSFORM' : c.level === 0 ? 'NEW' : `Lv ${c.level} -> ${c.level + 1}`}
+                <span
+                  className={`mt-1 block text-[11px] font-extrabold uppercase tracking-[0.16em] ${c.golden ? "text-[#ffd166]" : "text-accent"}`}
+                >
+                  {c.golden ? "TRANSFORM" : c.level === 0 ? "NEW" : `Lv ${c.level} -> ${c.level + 1}`}
                 </span>
                 <span className="mt-3 block text-[13px] leading-[1.35] opacity-70">{c.desc}</span>
-              {c.golden && (
-                <span className="mt-3 text-[11px] tracking-[0.2em] uppercase text-[#ffd166] font-bold">
-                  <IconText icon="evolution" size={15}>Evolution</IconText>
-                </span>
-              )}
+                {c.golden && (
+                  <span className="mt-3 text-[11px] tracking-[0.2em] uppercase text-[#ffd166] font-bold">
+                    <IconText icon="evolution" size={15}>
+                      Evolution
+                    </IconText>
+                  </span>
+                )}
               </button>
             </Card>
             {!c.golden && state.banishes > 0 && (
@@ -706,18 +795,22 @@ function LevelUpDraft({
         <button
           type="button"
           disabled={state.rerolls <= 0}
-          onPointerDown={(event) => armDraftAction('reroll', event)}
-          onClick={(event) => runDraftAction('reroll', event, onReroll)}
+          onPointerDown={(event) => armDraftAction("reroll", event)}
+          onClick={(event) => runDraftAction("reroll", event, onReroll)}
           className="pointer-events-auto cursor-pointer text-[14px] font-bold rounded-lg px-4 py-2 border border-[#ff6a00]/45 text-[#e9e3d6] transition-colors hover:bg-[#ff6a00]/15 hover:border-[#ff6a00] disabled:opacity-40 disabled:cursor-default"
         >
-          <IconText icon="reroll" size={16}>Re-roll ({state.rerolls})</IconText>
+          <IconText icon="reroll" size={16}>
+            Re-roll ({state.rerolls})
+          </IconText>
         </button>
         <span className="text-[12px] uppercase tracking-[0.1em] opacity-60">
-          <IconText icon="banish" size={14}>Banish available: {state.banishes}</IconText>
+          <IconText icon="banish" size={14}>
+            Banish available: {state.banishes}
+          </IconText>
         </span>
       </div>
     </div>
-  )
+  );
 }
 
 export function HUD({
@@ -788,43 +881,50 @@ export function HUD({
     room,
     scoreboard,
     survivors,
-  } = state
+  } = state;
 
-  type MenuScreen = 'home' | 'survivor' | 'multiplayer' | 'shop' | 'settings' | 'leaderboard'
-  const [menuScreen, setMenuScreen] = useState<MenuScreen>(initialRoom ? 'multiplayer' : 'home')
-  const [pausePanel, setPausePanel] = useState<'none' | 'settings' | 'controls'>('none')
-  const [gameOverPanel, setGameOverPanel] = useState<'summary' | 'shop'>('summary')
-  const firstMenuShow = useRef(true)
+  type MenuScreen = "home" | "survivor" | "multiplayer" | "shop" | "settings" | "leaderboard";
+  const [menuScreen, setMenuScreen] = useState<MenuScreen>(initialRoom ? "multiplayer" : "home");
+  const [pausePanel, setPausePanel] = useState<"none" | "settings" | "controls">("none");
+  const [gameOverPanel, setGameOverPanel] = useState<"summary" | "shop">("summary");
+  const firstMenuShow = useRef(true);
   // Reset to the root menu whenever the menu is (re)shown — but a shared
   // `?room=` link drops you straight on the join screen the first time.
   useEffect(() => {
-    if (status === 'pointerlock-needed') {
-      setMenuScreen(firstMenuShow.current && initialRoom ? 'multiplayer' : 'home')
-      firstMenuShow.current = false
+    if (status === "pointerlock-needed") {
+      setMenuScreen(firstMenuShow.current && initialRoom ? "multiplayer" : "home");
+      firstMenuShow.current = false;
     }
-  }, [status, initialRoom])
+  }, [status, initialRoom]);
   // Always reopen the pause menu on its root screen.
   useEffect(() => {
-    if (status !== 'paused') setPausePanel('none')
-  }, [status])
+    if (status !== "paused") setPausePanel("none");
+  }, [status]);
   useEffect(() => {
-    if (status !== 'gameover') setGameOverPanel('summary')
-  }, [status])
-  const healthFrac = playerHealth / maxPlayerHealth
-  const playing = status === 'playing'
-  const bossLabel = bossShielded ? 'SHIELDED' : bossEnraged ? 'ENRAGED' : 'BOSS'
+    if (status !== "gameover") setGameOverPanel("summary");
+  }, [status]);
+  const healthFrac = playerHealth / maxPlayerHealth;
+  const playing = status === "playing";
+  const bossLabel = bossShielded ? "SHIELDED" : bossEnraged ? "ENRAGED" : "BOSS";
   const currentRun: ScoreEntry | null =
-    status === 'gameover' && outcome
-      ? { score, kills, headshots, time, outcome, date: scores.find((s) => s.score === score && s.kills === kills && s.time === time)?.date ?? 0 }
-      : null
-  const showMainMenu = status === 'pointerlock-needed' && !suppressMenu && !survivors && !multiplayer
-  const showLockPrompt = status === 'pointerlock-needed' && !suppressMenu && (survivors || multiplayer)
+    status === "gameover" && outcome
+      ? {
+          score,
+          kills,
+          headshots,
+          time,
+          outcome,
+          date: scores.find((s) => s.score === score && s.kills === kills && s.time === time)?.date ?? 0,
+        }
+      : null;
+  const showMainMenu = status === "pointerlock-needed" && !suppressMenu && !survivors && !multiplayer;
+  const showLockPrompt = status === "pointerlock-needed" && !suppressMenu && (survivors || multiplayer);
 
-  const menuScreenWrap = 'flex flex-col items-center gap-2 mt-[14px] w-full'
+  const menuScreenWrap = "flex flex-col items-center gap-2 mt-[14px] w-full";
 
   return (
     // `hud-paused` freezes every in-flight HUD animation except the pause overlay's own UI (see styles.css).
-    <div className={`absolute inset-0 pointer-events-none z-10${status === 'paused' ? ' hud-paused' : ''}`}>
+    <div className={`absolute inset-0 pointer-events-none z-10${status === "paused" ? " hud-paused" : ""}`}>
       {playing && <Crosshair />}
       {playing && combo >= 3 && (
         <div
@@ -832,8 +932,8 @@ export function HUD({
           className="scourge-combo-counter absolute top-[38%] left-1/2 font-black tabular-nums leading-none pointer-events-none select-none animate-combopop"
           style={{
             fontSize: `${Math.min(26 + combo * 1.3, 60)}px`,
-            color: combo >= 25 ? '#ff2d55' : combo >= 12 ? '#ff6a00' : '#ffd166',
-            textShadow: '0 0 18px rgba(255,106,0,0.85), 0 2px 8px rgba(0,0,0,0.7)',
+            color: combo >= 25 ? "#ff2d55" : combo >= 12 ? "#ff6a00" : "#ffd166",
+            textShadow: "0 0 18px rgba(255,106,0,0.85), 0 2px 8px rgba(0,0,0,0.7)",
           }}
           aria-hidden
         >
@@ -853,7 +953,7 @@ export function HUD({
         />
       )}
 
-      {bannerSeq > 0 && status !== 'gameover' && (
+      {bannerSeq > 0 && status !== "gameover" && (
         <div
           key={`b-${bannerSeq}`}
           className="scourge-combat-banner absolute top-[26%] left-1/2 text-[64px] font-black text-white opacity-0 whitespace-nowrap animate-bannerpop [text-shadow:0_0_24px_rgba(255,106,0,0.72),0_4px_14px_rgba(0,0,0,0.6)]"
@@ -866,9 +966,9 @@ export function HUD({
         <div
           key={`t-${toastSeq}`}
           className={`scourge-combat-toast absolute bottom-[23%] left-1/2 text-[24px] font-extrabold opacity-0 whitespace-nowrap animate-toastpop ${
-            toast.includes('HEADSHOT')
-              ? 'text-[#ffd166] [text-shadow:0_0_18px_rgba(255,209,102,0.9),0_2px_8px_rgba(0,0,0,0.6)]'
-              : 'text-white [text-shadow:0_0_16px_rgba(255,106,0,0.72),0_2px_8px_rgba(0,0,0,0.6)]'
+            toast.includes("HEADSHOT")
+              ? "text-[#ffd166] [text-shadow:0_0_18px_rgba(255,209,102,0.9),0_2px_8px_rgba(0,0,0,0.6)]"
+              : "text-white [text-shadow:0_0_16px_rgba(255,106,0,0.72),0_2px_8px_rgba(0,0,0,0.6)]"
           }`}
           aria-hidden
         >
@@ -881,17 +981,23 @@ export function HUD({
           <div
             key={d.id}
             className={`scourge-damage-number absolute pointer-events-none font-extrabold whitespace-nowrap animate-dmgnum [text-shadow:0_2px_6px_rgba(0,0,0,0.8)] ${
-              d.kind === 'head'
-                ? 'text-[#ffd166] text-[28px]'
-                : d.kind === 'crit'
-                  ? 'text-[#ff7a3c] text-[26px]'
-                  : 'text-white text-[20px]'
+              d.kind === "head"
+                ? "text-[#ffd166] text-[28px]"
+                : d.kind === "crit"
+                  ? "text-[#ff7a3c] text-[26px]"
+                  : "text-white text-[20px]"
             }`}
             style={{ left: `${d.x}%`, top: `${d.y}%` }}
             aria-hidden
           >
             {d.amount}
-            {d.kind === 'head' ? '!' : d.kind === 'crit' ? <PixelIcon id="evolution" size={15} className="ml-[3px]" /> : ''}
+            {d.kind === "head" ? (
+              "!"
+            ) : d.kind === "crit" ? (
+              <PixelIcon id="evolution" size={15} className="ml-[3px]" />
+            ) : (
+              ""
+            )}
           </div>
         ))}
 
@@ -900,7 +1006,9 @@ export function HUD({
           className="scourge-damage-boost absolute top-[130px] left-1/2 -translate-x-1/2 px-4 py-[6px] rounded-[18px] bg-[rgba(255,122,26,0.18)] border border-[rgba(255,122,26,0.6)] text-[#ffb56b] text-[13px] font-bold [text-shadow:0_0_10px_rgba(255,122,26,0.6)]"
           aria-hidden
         >
-          <IconText icon="lightning" size={16}>2x DAMAGE · {damageBoost}s</IconText>
+          <IconText icon="lightning" size={16}>
+            2x DAMAGE · {damageBoost}s
+          </IconText>
         </div>
       )}
       {playing && dualWeapon > 0 && (
@@ -908,7 +1016,9 @@ export function HUD({
           className="scourge-dual-weapon absolute top-[166px] left-1/2 -translate-x-1/2 px-4 py-[6px] rounded-[18px] bg-[rgba(215,210,196,0.16)] border border-[rgba(215,210,196,0.55)] text-[#e7dfca] text-[13px] font-bold [text-shadow:0_0_10px_rgba(215,210,196,0.48)]"
           aria-hidden
         >
-          <IconText icon="swords" size={16}>DUAL WEAPON · {dualWeapon}s</IconText>
+          <IconText icon="swords" size={16}>
+            DUAL WEAPON · {dualWeapon}s
+          </IconText>
         </div>
       )}
 
@@ -932,8 +1042,8 @@ export function HUD({
         {!multiplayer && !survivors && (
           <div>
             <div className={STAT_LABEL}>Wave</div>
-            <div className={`${STAT_VALUE}${bossActive ? ' text-danger tracking-[0.1em] animate-bosspulse' : ''}`}>
-              {bossActive ? 'BOSS' : `${wave}/${totalWaves}`}
+            <div className={`${STAT_VALUE}${bossActive ? " text-danger tracking-[0.1em] animate-bosspulse" : ""}`}>
+              {bossActive ? "BOSS" : `${wave}/${totalWaves}`}
             </div>
           </div>
         )}
@@ -950,7 +1060,7 @@ export function HUD({
           </div>
         )}
         <div>
-          <div className={STAT_LABEL}>{multiplayer ? 'Frags' : 'Kills'}</div>
+          <div className={STAT_LABEL}>{multiplayer ? "Frags" : "Kills"}</div>
           <div className={STAT_VALUE}>{kills}</div>
         </div>
         <div>
@@ -970,10 +1080,10 @@ export function HUD({
           <div
             className={`scourge-boss-label text-[13px] mb-[5px] ${
               bossShielded
-                ? 'text-good [text-shadow:0_0_12px_rgba(139,220,31,0.75)]'
+                ? "text-good [text-shadow:0_0_12px_rgba(139,220,31,0.75)]"
                 : bossEnraged
-                  ? 'text-[#ff7a3c] [text-shadow:0_0_12px_rgba(255,122,60,0.9)]'
-                  : 'text-danger [text-shadow:0_0_10px_rgba(255,77,109,0.7)]'
+                  ? "text-[#ff7a3c] [text-shadow:0_0_12px_rgba(255,122,60,0.9)]"
+                  : "text-danger [text-shadow:0_0_10px_rgba(255,77,109,0.7)]"
             }`}
           >
             ◆ {bossLabel} ◆
@@ -982,8 +1092,8 @@ export function HUD({
             <div
               className={`absolute inset-0 w-full transition-[width] duration-[120ms] ease-linear ${
                 bossShielded
-                  ? 'bg-gradient-to-r from-good to-toxic shadow-[0_0_16px_rgba(139,220,31,0.75)]'
-                  : 'bg-gradient-to-r from-[#ff1f4f] to-[#ff7a3c] shadow-[0_0_14px_rgba(255,31,79,0.8)]'
+                  ? "bg-gradient-to-r from-good to-toxic shadow-[0_0_16px_rgba(139,220,31,0.75)]"
+                  : "bg-gradient-to-r from-[#ff1f4f] to-[#ff7a3c] shadow-[0_0_14px_rgba(255,31,79,0.8)]"
               }`}
               style={{ width: `${Math.max(0, bossHealthFrac) * 100}%` }}
             />
@@ -1007,20 +1117,26 @@ export function HUD({
       <div className={`${HUD_CORNER} right-[18px] bottom-[18px] text-right min-w-[150px]`}>
         <div className="text-[13px] tracking-[0.12em] uppercase text-accent mb-[2px]">{weapon}</div>
         <div className="flex items-baseline justify-end gap-[6px]">
-          <span className={`text-[30px] font-extrabold${ammo === 0 ? ' text-danger' : ''}`}>{ammo}</span>
-          <span className="text-[16px] opacity-70">/ {survivors ? '∞' : reserve}</span>
+          <span className={`text-[30px] font-extrabold${ammo === 0 ? " text-danger" : ""}`}>{ammo}</span>
+          <span className="text-[16px] opacity-70">/ {survivors ? "∞" : reserve}</span>
         </div>
-        {
-          (reloading ? (
-            <div className="mt-[6px] flex flex-col items-end gap-[3px] text-warn text-[12px] tracking-[0.08em] uppercase">
-              <div className="w-[120px] h-[5px] bg-white/[0.15] rounded-[3px] overflow-hidden">
-                <div className="h-full bg-warn rounded-[3px] transition-[width] duration-100 ease-linear" style={{ width: `${reloadProgress * 100}%` }} />
-              </div>
-              <span>Reloading…</span>
+        {reloading ? (
+          <div className="mt-[6px] flex flex-col items-end gap-[3px] text-warn text-[12px] tracking-[0.08em] uppercase">
+            <div className="w-[120px] h-[5px] bg-white/[0.15] rounded-[3px] overflow-hidden">
+              <div
+                className="h-full bg-warn rounded-[3px] transition-[width] duration-100 ease-linear"
+                style={{ width: `${reloadProgress * 100}%` }}
+              />
             </div>
-          ) : (
-            ammo === 0 && <div className="mt-[5px] text-danger text-[12px] tracking-[0.06em] uppercase animate-blink">Press R to reload</div>
-          ))}
+            <span>Reloading…</span>
+          </div>
+        ) : (
+          ammo === 0 && (
+            <div className="mt-[5px] text-danger text-[12px] tracking-[0.06em] uppercase animate-blink">
+              Press R to reload
+            </div>
+          )
+        )}
         {ads && adsZoomLevels > 1 && (
           <div className="mt-[6px] text-[11px] opacity-55 tracking-[0.04em]">
             Zoom {adsZoom}/{adsZoomLevels}
@@ -1032,7 +1148,9 @@ export function HUD({
               <span
                 key={w.id}
                 className={`text-[11px] px-[7px] py-[2px] rounded-[5px] border whitespace-nowrap ${
-                  w.active ? 'opacity-100 bg-[rgba(255,106,0,0.16)] border-[rgba(255,106,0,0.52)]' : 'opacity-70 bg-white/[0.08] border-white/[0.12]'
+                  w.active
+                    ? "opacity-100 bg-[rgba(255,106,0,0.16)] border-[rgba(255,106,0,0.52)]"
+                    : "opacity-70 bg-white/[0.08] border-white/[0.12]"
                 }`}
               >
                 <b className="text-accent mr-[2px]">{w.key}</b> {w.name}
@@ -1043,7 +1161,9 @@ export function HUD({
       </div>
 
       {/* Overlays */}
-      {status === 'levelup' && <LevelUpDraft state={state} onPick={onPickUpgrade} onReroll={onReroll} onBanish={onBanish} />}
+      {status === "levelup" && (
+        <LevelUpDraft state={state} onPick={onPickUpgrade} onReroll={onReroll} onBanish={onBanish} />
+      )}
 
       {showLockPrompt && (
         <button type="button" className="ssg-lock-prompt" onClick={onLock}>
@@ -1057,7 +1177,7 @@ export function HUD({
             Ashgate breach
           </MainMenuTopBar>
 
-          {menuScreen === 'home' ? (
+          {menuScreen === "home" ? (
             <MainMenuLayout>
               <MainMenuCopy>
                 <div className="ssg-menu-kicker">Ship Shit Games</div>
@@ -1067,7 +1187,7 @@ export function HUD({
                 </MainMenuTitle>
                 <MainMenuStatus>
                   <span>Pyre operator ready</span>
-                  <span>{scores.length === 0 ? 'No records' : `${scores.length} local records`}</span>
+                  <span>{scores.length === 0 ? "No records" : `${scores.length} local records`}</span>
                 </MainMenuStatus>
               </MainMenuCopy>
 
@@ -1075,43 +1195,67 @@ export function HUD({
                 <MainMenuAction
                   type="button"
                   variant="primary"
-                  label={<IconText icon="target" size={22}>Start Run</IconText>}
+                  label={
+                    <IconText icon="target" size={22}>
+                      Start Run
+                    </IconText>
+                  }
                   meta="Choose operator"
-                  onClick={() => setMenuScreen('survivor')}
+                  onClick={() => setMenuScreen("survivor")}
                 />
                 <MainMenuAction
                   type="button"
                   variant="shop"
-                  label={<IconText icon="shop" size={18}>Upgrades</IconText>}
+                  label={
+                    <IconText icon="shop" size={18}>
+                      Upgrades
+                    </IconText>
+                  }
                   meta={`${shop.gold.toLocaleString()} gold`}
-                  onClick={() => setMenuScreen('shop')}
+                  onClick={() => setMenuScreen("shop")}
                 />
                 <MainMenuAction
                   type="button"
                   variant="coop"
-                  label={<IconText icon="swords" size={18}>Co-op</IconText>}
+                  label={
+                    <IconText icon="swords" size={18}>
+                      Co-op
+                    </IconText>
+                  }
                   meta="Online rooms"
-                  onClick={() => setMenuScreen('multiplayer')}
+                  onClick={() => setMenuScreen("multiplayer")}
                 />
                 <MainMenuAction
                   type="button"
                   variant="records"
-                  label={<IconText icon="trophy" size={18}>Leaderboard</IconText>}
-                  meta={scores.length === 0 ? 'No records' : 'Local archive'}
-                  onClick={() => setMenuScreen('leaderboard')}
+                  label={
+                    <IconText icon="trophy" size={18}>
+                      Leaderboard
+                    </IconText>
+                  }
+                  meta={scores.length === 0 ? "No records" : "Local archive"}
+                  onClick={() => setMenuScreen("leaderboard")}
                 />
                 <MainMenuAction
                   type="button"
                   variant="settings"
-                  label={<IconText icon="settings" size={18}>Settings</IconText>}
+                  label={
+                    <IconText icon="settings" size={18}>
+                      Settings
+                    </IconText>
+                  }
                   meta="Audio"
-                  onClick={() => setMenuScreen('settings')}
+                  onClick={() => setMenuScreen("settings")}
                 />
                 {onStartSandbox && (
                   <MainMenuAction
                     type="button"
                     variant="dev"
-                    label={<IconText icon="gamepad" size={18}>Sandbox</IconText>}
+                    label={
+                      <IconText icon="gamepad" size={18}>
+                        Sandbox
+                      </IconText>
+                    }
                     meta="Dev lab"
                     onClick={onStartSandbox}
                   />
@@ -1120,71 +1264,113 @@ export function HUD({
             </MainMenuLayout>
           ) : (
             <div className="scourge-menu-content">
+              {menuScreen === "survivor" && (
+                <div className={menuScreenWrap}>
+                  <div className={MENU_HEADING}>Choose Operator</div>
+                  <SurvivorsPanel
+                    shop={shop}
+                    onStart={onStartSurvivors}
+                    onShop={() => setMenuScreen("shop")}
+                    onCoop={() => setMenuScreen("multiplayer")}
+                  />
+                  <Button
+                    type="button"
+                    variant="back"
+                    className="scourge-menu-back"
+                    onClick={() => setMenuScreen("home")}
+                  >
+                    ← Back
+                  </Button>
+                </div>
+              )}
 
-          {menuScreen === 'survivor' && (
-            <div className={menuScreenWrap}>
-              <div className={MENU_HEADING}>Choose Operator</div>
-              <SurvivorsPanel
-                shop={shop}
-                onStart={onStartSurvivors}
-                onShop={() => setMenuScreen('shop')}
-                onCoop={() => setMenuScreen('multiplayer')}
-              />
-              <Button type="button" variant="back" className="scourge-menu-back" onClick={() => setMenuScreen('home')}>← Back</Button>
-            </div>
-          )}
+              {menuScreen === "shop" && (
+                <div className={menuScreenWrap}>
+                  <div className={MENU_HEADING}>
+                    <IconText icon="shop" size={18}>
+                      Shop
+                    </IconText>
+                  </div>
+                  <Shop shop={shop} onBuy={onBuyShop} />
+                  <Button
+                    type="button"
+                    variant="back"
+                    className="w-[min(260px,80vw)] self-center mt-[14px]"
+                    onClick={() => setMenuScreen("home")}
+                  >
+                    ← Back
+                  </Button>
+                </div>
+              )}
 
-          {menuScreen === 'shop' && (
-            <div className={menuScreenWrap}>
-              <div className={MENU_HEADING}>
-                <IconText icon="shop" size={18}>Shop</IconText>
-              </div>
-              <Shop shop={shop} onBuy={onBuyShop} />
-              <Button type="button" variant="back" className="w-[min(260px,80vw)] self-center mt-[14px]" onClick={() => setMenuScreen('home')}>← Back</Button>
-            </div>
-          )}
+              {menuScreen === "multiplayer" && (
+                <div className={menuScreenWrap}>
+                  <div className={MENU_HEADING}>
+                    <IconText icon="swords" size={18}>
+                      Multiplayer
+                    </IconText>
+                  </div>
+                  <MultiplayerPanel onStart={onStartMultiplayer} initialRoom={initialRoom} />
+                  <Button
+                    type="button"
+                    variant="back"
+                    className="w-[min(260px,80vw)] self-center mt-[14px]"
+                    onClick={() => setMenuScreen("home")}
+                  >
+                    ← Back
+                  </Button>
+                </div>
+              )}
 
-          {menuScreen === 'multiplayer' && (
-            <div className={menuScreenWrap}>
-              <div className={MENU_HEADING}>
-                <IconText icon="swords" size={18}>Multiplayer</IconText>
-              </div>
-              <MultiplayerPanel onStart={onStartMultiplayer} initialRoom={initialRoom} />
-              <Button type="button" variant="back" className="w-[min(260px,80vw)] self-center mt-[14px]" onClick={() => setMenuScreen('home')}>← Back</Button>
-            </div>
-          )}
+              {menuScreen === "settings" && (
+                <div className={menuScreenWrap}>
+                  <div className={MENU_HEADING}>
+                    <IconText icon="settings" size={18}>
+                      Settings
+                    </IconText>
+                  </div>
+                  <SettingsRow settings={settings} onToggleMusic={onToggleMusic} onToggleSfx={onToggleSfx} />
+                  <Button
+                    type="button"
+                    variant="back"
+                    className="w-[min(260px,80vw)] self-center mt-[14px]"
+                    onClick={() => setMenuScreen("home")}
+                  >
+                    ← Back
+                  </Button>
+                </div>
+              )}
 
-          {menuScreen === 'settings' && (
-            <div className={menuScreenWrap}>
-              <div className={MENU_HEADING}>
-                <IconText icon="settings" size={18}>Settings</IconText>
-              </div>
-              <SettingsRow settings={settings} onToggleMusic={onToggleMusic} onToggleSfx={onToggleSfx} />
-              <Button type="button" variant="back" className="w-[min(260px,80vw)] self-center mt-[14px]" onClick={() => setMenuScreen('home')}>← Back</Button>
-            </div>
-          )}
-
-          {menuScreen === 'leaderboard' && (
-            <div className={menuScreenWrap}>
-              <div className={MENU_HEADING}>
-                <IconText icon="trophy" size={18}>Leaderboard</IconText>
-              </div>
-              <Leaderboard scores={scores} onClear={onClearScores} />
-              <Button type="button" variant="back" className="w-[min(260px,80vw)] self-center mt-[14px]" onClick={() => setMenuScreen('home')}>← Back</Button>
-            </div>
-          )}
+              {menuScreen === "leaderboard" && (
+                <div className={menuScreenWrap}>
+                  <div className={MENU_HEADING}>
+                    <IconText icon="trophy" size={18}>
+                      Leaderboard
+                    </IconText>
+                  </div>
+                  <Leaderboard scores={scores} onClear={onClearScores} />
+                  <Button
+                    type="button"
+                    variant="back"
+                    className="w-[min(260px,80vw)] self-center mt-[14px]"
+                    onClick={() => setMenuScreen("home")}
+                  >
+                    ← Back
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </MainMenuScreen>
       )}
 
-      {status === 'paused' && (
+      {status === "paused" && (
         <div className={OVERLAY} onClick={onLock}>
           <h2 className="m-0 mb-[18px] text-[30px] font-bold">Paused</h2>
           {multiplayer ? (
             <>
               <p className="my-1 opacity-85 text-[16px]">
-                Room <b>{room}</b> · {connected ? 'connected' : 'connecting...'} · Frags {kills}
+                Room <b>{room}</b> · {connected ? "connected" : "connecting..."} · Frags {kills}
               </p>
               <div
                 className="pause-ui pointer-events-auto my-[8px] w-[min(460px,86vw)] bg-[rgba(255,106,0,0.08)] border border-[rgba(255,106,0,0.32)] rounded-[10px] px-[14px] py-3 text-center"
@@ -1203,74 +1389,163 @@ export function HUD({
                     type="button"
                     variant="ghost"
                     onClick={(e) => {
-                      e.stopPropagation()
-                      onLeaveRoom()
+                      e.stopPropagation();
+                      onLeaveRoom();
                     }}
                   >
-                    <IconText icon="leave" size={16}>Leave Room</IconText>
+                    <IconText icon="leave" size={16}>
+                      Leave Room
+                    </IconText>
                   </Button>
                 </div>
               </div>
             </>
           ) : (
             <p className="my-1 opacity-85 text-[16px]">
-              Score {score.toLocaleString()} · Kills {kills} · {bossActive ? 'BOSS' : `Wave ${wave}/${totalWaves}`}
+              Score {score.toLocaleString()} · Kills {kills} · {bossActive ? "BOSS" : `Wave ${wave}/${totalWaves}`}
             </p>
           )}
-          <div className="pause-ui flex flex-col gap-[10px] mt-[22px] w-[min(340px,86vw)] pointer-events-auto" onClick={(e) => e.stopPropagation()}>
-            {pausePanel === 'none' && (
+          <div
+            className="pause-ui flex flex-col gap-[10px] mt-[22px] w-[min(340px,86vw)] pointer-events-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {pausePanel === "none" && (
               <>
-                <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel('settings')}>
-                  <IconText icon="settings" size={16}>Settings</IconText>
+                <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel("settings")}>
+                  <IconText icon="settings" size={16}>
+                    Settings
+                  </IconText>
                 </Button>
-                <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel('controls')}>
-                  <IconText icon="gamepad" size={16}>Controls</IconText>
+                <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel("controls")}>
+                  <IconText icon="gamepad" size={16}>
+                    Controls
+                  </IconText>
                 </Button>
                 <Button type="button" variant="ghost" className="w-full" onClick={onRestart}>
-                  <IconText icon="restart" size={16}>Restart Level</IconText>
+                  <IconText icon="restart" size={16}>
+                    Restart Level
+                  </IconText>
                 </Button>
                 <Button type="button" variant="default" className="w-full" onClick={onLock}>
-                  <IconText icon="resume" size={16}>Resume</IconText>
+                  <IconText icon="resume" size={16}>
+                    Resume
+                  </IconText>
                 </Button>
                 <Button type="button" variant="ghost" className="w-full" onClick={onMenu}>
-                  <IconText icon="leave" size={16}>Exit to Menu</IconText>
+                  <IconText icon="leave" size={16}>
+                    Exit to Menu
+                  </IconText>
                 </Button>
               </>
             )}
 
-            {pausePanel === 'settings' && (
+            {pausePanel === "settings" && (
               <>
                 <div className="text-[16px] font-extrabold tracking-[0.04em] text-center mb-[2px]">
-                  <IconText icon="settings" size={17}>Settings</IconText>
+                  <IconText icon="settings" size={17}>
+                    Settings
+                  </IconText>
                 </div>
-                <SettingsRow settings={settings} onToggleMusic={onToggleMusic} onToggleSfx={onToggleSfx} className="mt-0" />
-                <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel('none')}>
+                <SettingsRow
+                  settings={settings}
+                  onToggleMusic={onToggleMusic}
+                  onToggleSfx={onToggleSfx}
+                  className="mt-0"
+                />
+                <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel("none")}>
                   ← Back
                 </Button>
               </>
             )}
 
-            {pausePanel === 'controls' && (
+            {pausePanel === "controls" && (
               <>
                 <div className="text-[16px] font-extrabold tracking-[0.04em] text-center mb-[2px]">
-                  <IconText icon="gamepad" size={17}>Controls</IconText>
+                  <IconText icon="gamepad" size={17}>
+                    Controls
+                  </IconText>
                 </div>
                 <div className="flex flex-col gap-2 px-[18px] py-[14px] bg-white/[0.04] border border-white/[0.12] rounded-[10px] text-[14px] [&>div]:flex [&>div]:items-center [&>div]:gap-[10px] [&_span]:shrink-0 [&_span]:w-[110px] [&_span]:text-right [&_span]:opacity-85">
-                  <div><span><kbd>WASD</kbd></span> Move</div>
-                  <div><span><kbd>Mouse</kbd></span> Look</div>
-                  <div><span><kbd>L-Click</kbd></span> Fire</div>
-                  <div><span><kbd>R-Click</kbd></span> ADS</div>
-                  <div><span><kbd>Wheel</kbd></span> Weapon switch</div>
-                  <div><span><kbd>R-Click</kbd> + <kbd>Wheel</kbd></span> Scope zoom</div>
-                  <div><span><kbd>F</kbd> / <kbd>V</kbd></span> Melee</div>
-                  <div><span><kbd>1</kbd>–<kbd>5</kbd></span> Weapon</div>
-                  <div><span><kbd>Space</kbd></span> Jump</div>
-                  <div><span><kbd>Shift</kbd></span> Run</div>
-                  <div><span><kbd>Ctrl</kbd> / <kbd>C</kbd></span> Crouch</div>
-                  <div><span><kbd>R</kbd></span> Reload</div>
-                  <div><span><kbd>Esc</kbd></span> Pause / Resume</div>
+                  <div>
+                    <span>
+                      <kbd>WASD</kbd>
+                    </span>{" "}
+                    Move
+                  </div>
+                  <div>
+                    <span>
+                      <kbd>Mouse</kbd>
+                    </span>{" "}
+                    Look
+                  </div>
+                  <div>
+                    <span>
+                      <kbd>L-Click</kbd>
+                    </span>{" "}
+                    Fire
+                  </div>
+                  <div>
+                    <span>
+                      <kbd>R-Click</kbd>
+                    </span>{" "}
+                    ADS
+                  </div>
+                  <div>
+                    <span>
+                      <kbd>Wheel</kbd>
+                    </span>{" "}
+                    Weapon switch
+                  </div>
+                  <div>
+                    <span>
+                      <kbd>R-Click</kbd> + <kbd>Wheel</kbd>
+                    </span>{" "}
+                    Scope zoom
+                  </div>
+                  <div>
+                    <span>
+                      <kbd>F</kbd> / <kbd>V</kbd>
+                    </span>{" "}
+                    Melee
+                  </div>
+                  <div>
+                    <span>
+                      <kbd>1</kbd>–<kbd>5</kbd>
+                    </span>{" "}
+                    Weapon
+                  </div>
+                  <div>
+                    <span>
+                      <kbd>Space</kbd>
+                    </span>{" "}
+                    Jump
+                  </div>
+                  <div>
+                    <span>
+                      <kbd>Shift</kbd>
+                    </span>{" "}
+                    Run
+                  </div>
+                  <div>
+                    <span>
+                      <kbd>Ctrl</kbd> / <kbd>C</kbd>
+                    </span>{" "}
+                    Crouch
+                  </div>
+                  <div>
+                    <span>
+                      <kbd>R</kbd>
+                    </span>{" "}
+                    Reload
+                  </div>
+                  <div>
+                    <span>
+                      <kbd>Esc</kbd>
+                    </span>{" "}
+                    Pause / Resume
+                  </div>
                 </div>
-                <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel('none')}>
+                <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel("none")}>
                   ← Back
                 </Button>
               </>
@@ -1279,9 +1554,9 @@ export function HUD({
         </div>
       )}
 
-      {status === 'gameover' && (
+      {status === "gameover" && (
         <div className={`${OVERLAY} cursor-default`}>
-          {gameOverPanel === 'shop' && survivors ? (
+          {gameOverPanel === "shop" && survivors ? (
             <>
               <div className="tracking-[0.35em] text-[13px] opacity-60 uppercase mb-[10px]">Permanent upgrades</div>
               <h1 className="m-0 mb-[10px] text-[44px] tracking-[0.04em] bg-clip-text text-transparent bg-gradient-to-r from-[#ffd166] to-[#ff6a00]">
@@ -1289,14 +1564,20 @@ export function HUD({
               </h1>
               <Shop shop={shop} onBuy={onBuyShop} />
               <div className="flex gap-3 mt-4">
-                <Button variant="ghost" onClick={() => setGameOverPanel('summary')} type="button">
-                  <IconText icon="back" size={16}>Run Summary</IconText>
+                <Button variant="ghost" onClick={() => setGameOverPanel("summary")} type="button">
+                  <IconText icon="back" size={16}>
+                    Run Summary
+                  </IconText>
                 </Button>
                 <Button variant="default" onClick={onRestart} type="button">
-                  <IconText icon="restart" size={16}>Play Again</IconText>
+                  <IconText icon="restart" size={16}>
+                    Play Again
+                  </IconText>
                 </Button>
                 <Button variant="ghost" onClick={onMenu} type="button">
-                  <IconText icon="menu" size={16}>Main Menu</IconText>
+                  <IconText icon="menu" size={16}>
+                    Main Menu
+                  </IconText>
                 </Button>
               </div>
             </>
@@ -1304,19 +1585,19 @@ export function HUD({
             <>
               <div className="tracking-[0.5em] text-[13px] opacity-60 uppercase mb-[10px]">
                 {survivors
-                  ? outcome === 'win'
-                    ? 'Breach sealed — operator extracted'
-                    : 'Run lost — operator signal gone'
-                  : outcome === 'win'
-                    ? 'Boss defeated — you cleared the arena'
-                    : 'You were overrun'}
+                  ? outcome === "win"
+                    ? "Breach sealed — operator extracted"
+                    : "Run lost — operator signal gone"
+                  : outcome === "win"
+                    ? "Boss defeated — you cleared the arena"
+                    : "You were overrun"}
               </div>
               <h1
                 className={`m-0 mb-[6px] text-[52px] tracking-[0.04em] bg-clip-text text-transparent bg-gradient-to-r ${
-                  outcome === 'win' ? 'from-good to-[#b6ff8a]' : 'from-danger to-[#ff9a3c]'
+                  outcome === "win" ? "from-good to-[#b6ff8a]" : "from-danger to-[#ff9a3c]"
                 }`}
               >
-                {outcome === 'win' ? 'VICTORY' : 'GAME OVER'}
+                {outcome === "win" ? "VICTORY" : "GAME OVER"}
               </h1>
               {survivors && (
                 <div className="mb-[14px] w-[min(720px,92vw)] rounded-lg border border-white/10 bg-black/35 px-4 py-3">
@@ -1324,7 +1605,9 @@ export function HUD({
                     <div>
                       <div className={STAT_LABEL}>Operator</div>
                       <div className={`${STAT_VALUE} !text-[20px]`}>
-                        <IconText icon={state.survivorClassIcon} size={20}>{state.survivorClassName}</IconText>
+                        <IconText icon={state.survivorClassIcon} size={20}>
+                          {state.survivorClassName}
+                        </IconText>
                       </div>
                       <div className={STAT_SUB}>{state.survivorClassRole}</div>
                     </div>
@@ -1338,7 +1621,9 @@ export function HUD({
                     <div>
                       <div className={STAT_LABEL}>Level</div>
                       <div className={`${STAT_VALUE} !text-[20px]`}>{state.level}</div>
-                      <div className={STAT_SUB}>{state.survivorEvolved.length ? `${state.survivorEvolved.length} evolved` : 'no evolutions'}</div>
+                      <div className={STAT_SUB}>
+                        {state.survivorEvolved.length ? `${state.survivorEvolved.length} evolved` : "no evolutions"}
+                      </div>
                     </div>
                     <div>
                       <div className={STAT_LABEL}>Defense</div>
@@ -1351,7 +1636,10 @@ export function HUD({
                   {state.survivorEvolved.length > 0 && (
                     <div className="mt-3 flex flex-wrap justify-center gap-2">
                       {state.survivorEvolved.map((name) => (
-                        <span key={name} className="rounded-md border border-[#ffd166]/45 bg-[#ffd166]/10 px-2 py-1 text-[12px] font-bold uppercase tracking-[0.08em] text-[#ffd166]">
+                        <span
+                          key={name}
+                          className="rounded-md border border-[#ffd166]/45 bg-[#ffd166]/10 px-2 py-1 text-[12px] font-bold uppercase tracking-[0.08em] text-[#ffd166]"
+                        >
                           {name}
                         </span>
                       ))}
@@ -1363,7 +1651,7 @@ export function HUD({
                         <span
                           key={b.id}
                           className={`inline-flex items-center gap-[5px] rounded-md border px-2 py-1 text-[12px] ${
-                            b.evolved ? 'border-[#ffd166]/50 text-[#ffd166]' : 'border-white/15 text-white/75'
+                            b.evolved ? "border-[#ffd166]/50 text-[#ffd166]" : "border-white/15 text-white/75"
                           }`}
                           title={b.name}
                         >
@@ -1394,21 +1682,29 @@ export function HUD({
               </div>
               {survivors && lastRunGold > 0 && (
                 <div className="my-[6px] mb-[10px] text-[#ffd166] text-[16px] font-bold [text-shadow:0_0_12px_rgba(255,209,102,0.6)]">
-                  <IconText icon="gold" size={18}>+{lastRunGold.toLocaleString()} gold earned · spend it in the Shop</IconText>
+                  <IconText icon="gold" size={18}>
+                    +{lastRunGold.toLocaleString()} gold earned · spend it in the Shop
+                  </IconText>
                 </div>
               )}
               <Leaderboard scores={scores} highlight={currentRun} onClear={onClearScores} />
               <div className="flex gap-3 mt-4">
                 <Button variant="default" onClick={onRestart} type="button">
-                  <IconText icon="restart" size={16}>Play Again</IconText>
+                  <IconText icon="restart" size={16}>
+                    Play Again
+                  </IconText>
                 </Button>
                 {survivors && (
-                  <Button variant="ghost" onClick={() => setGameOverPanel('shop')} type="button">
-                    <IconText icon="shop" size={16}>Shop</IconText>
+                  <Button variant="ghost" onClick={() => setGameOverPanel("shop")} type="button">
+                    <IconText icon="shop" size={16}>
+                      Shop
+                    </IconText>
                   </Button>
                 )}
                 <Button variant="ghost" onClick={onMenu} type="button">
-                  <IconText icon="menu" size={16}>Main Menu</IconText>
+                  <IconText icon="menu" size={16}>
+                    Main Menu
+                  </IconText>
                 </Button>
               </div>
             </>
@@ -1417,5 +1713,5 @@ export function HUD({
         </div>
       )}
     </div>
-  )
+  );
 }

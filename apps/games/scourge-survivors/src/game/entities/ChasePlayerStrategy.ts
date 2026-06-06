@@ -1,5 +1,5 @@
-import type { PlanarVec, SteerView, SteeringStrategy } from '@shipshitgames/engine'
-import type { Enemy } from './Enemy'
+import type { PlanarVec, SteerView, SteeringStrategy } from "@shipshitgames/engine";
+import type { Enemy } from "./Enemy";
 
 /**
  * The Scourge melee-chase / ranged-kite steering — the FPS half of the agent
@@ -12,29 +12,29 @@ import type { Enemy } from './Enemy'
  */
 class ChasePlayerStrategy implements SteeringStrategy<Enemy> {
   desiredVelocity(e: Enemy, view: SteerView, out: PlanarVec): void {
-    const { dist, dirX, dirZ } = view
-    e.retreating = false
+    const { dist, dirX, dirZ } = view;
+    e.retreating = false;
     if (e.ranged && !e.isBoss) {
       // kite: hold preferred range, strafe around the player
       if (dist > e.preferredRange + 1.5) {
-        out.x += dirX * e.speed
-        out.z += dirZ * e.speed
+        out.x += dirX * e.speed;
+        out.z += dirZ * e.speed;
       } else if (dist < e.preferredRange - 2) {
-        out.x -= dirX * e.speed * 0.8
-        out.z -= dirZ * e.speed * 0.8
-        e.retreating = true
+        out.x -= dirX * e.speed * 0.8;
+        out.z -= dirZ * e.speed * 0.8;
+        e.retreating = true;
       } else {
         // strafe perpendicular to the player direction
-        out.x += -dirZ * e.strafeSign * e.speed * 0.7
-        out.z += dirX * e.strafeSign * e.speed * 0.7
+        out.x += -dirZ * e.strafeSign * e.speed * 0.7;
+        out.z += dirX * e.strafeSign * e.speed * 0.7;
       }
     } else {
-      const closing = dist > e.attackRange * 0.85 ? 1 : 0
-      out.x += dirX * e.speed * closing
-      out.z += dirZ * e.speed * closing
+      const closing = dist > e.attackRange * 0.85 ? 1 : 0;
+      out.x += dirX * e.speed * closing;
+      out.z += dirZ * e.speed * closing;
     }
   }
 }
 
 /** Shared stateless instance — every Scourge enemy steers the same way. */
-export const chasePlayerStrategy = new ChasePlayerStrategy()
+export const chasePlayerStrategy = new ChasePlayerStrategy();

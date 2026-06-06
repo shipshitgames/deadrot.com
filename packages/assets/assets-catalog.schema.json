@@ -24,14 +24,7 @@
   "definitions": {
     "gameSlug": {
       "type": "string",
-      "enum": [
-        "scourge-survivors",
-        "deadlane",
-        "pactfall",
-        "starblight",
-        "redline",
-        "rothulk"
-      ]
+      "enum": ["scourge-survivors", "deadlane", "pactfall", "starblight", "redline", "rothulk"]
     },
     "faction": {
       "type": "string",
@@ -42,14 +35,7 @@
       "oneOf": [
         {
           "type": "string",
-          "enum": [
-            "rot-flesh",
-            "chitin",
-            "mycelial",
-            "machine-graft",
-            "bone-titan",
-            "voidship"
-          ]
+          "enum": ["rot-flesh", "chitin", "mycelial", "machine-graft", "bone-titan", "voidship"]
         },
         { "type": "null" }
       ]
@@ -57,14 +43,7 @@
     "variants": {
       "type": "object",
       "description": "Per-game render paths (relative to this package). null = no render for that game.",
-      "required": [
-        "scourge-survivors",
-        "deadlane",
-        "pactfall",
-        "starblight",
-        "redline",
-        "rothulk"
-      ],
+      "required": ["scourge-survivors", "deadlane", "pactfall", "starblight", "redline", "rothulk"],
       "additionalProperties": false,
       "properties": {
         "scourge-survivors": { "type": ["string", "null"] },
@@ -77,17 +56,7 @@
     },
     "entity": {
       "type": "object",
-      "required": [
-        "id",
-        "kind",
-        "name",
-        "faction",
-        "hostFamily",
-        "canon",
-        "promptBase",
-        "games",
-        "variants"
-      ],
+      "required": ["id", "kind", "name", "faction", "hostFamily", "canon", "promptBase", "games", "variants"],
       "additionalProperties": false,
       "properties": {
         "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },

@@ -13,13 +13,7 @@ export type ResourceKind = "scrap" | "biomass" | "fuel" | "intel";
 export type ResourceBag = Record<ResourceKind, number>;
 
 // ---- games & operations ----
-export type GameSlug =
-  | "scourge-survivors"
-  | "deadlane"
-  | "pactfall"
-  | "starblight"
-  | "redline"
-  | "rothulk";
+export type GameSlug = "scourge-survivors" | "deadlane" | "pactfall" | "starblight" | "redline" | "rothulk";
 
 export type OperationKind =
   | "purge-breach" // scourge-survivors
@@ -64,14 +58,7 @@ export interface WarEvent {
   id: string; // caller-supplied unique id (server uses crypto/uuid; tests use a counter)
   t: number; // tick number
   at: number; // ms epoch
-  kind:
-    | OperationKind
-    | "command"
-    | "tick"
-    | "fall"
-    | "seal"
-    | "reset"
-    | "system";
+  kind: OperationKind | "command" | "tick" | "fall" | "seal" | "reset" | "system";
   faction: Faction;
   game?: GameSlug;
   text: string;
@@ -131,12 +118,7 @@ export interface Summary {
 
 export const SCHEMA_VERSION = 1;
 
-export const RESOURCE_KINDS: ResourceKind[] = [
-  "scrap",
-  "biomass",
-  "fuel",
-  "intel",
-];
+export const RESOURCE_KINDS: ResourceKind[] = ["scrap", "biomass", "fuel", "intel"];
 
 export const FEED_MAX = 60;
 export const TICK_MS = 15000; // server alarm + local store interval
@@ -159,10 +141,7 @@ export const TICK = {
   fallThreshold: 100, // human region falls to scourge at/above this pressure
 } as const;
 
-export const COMMAND_COSTS: Record<
-  CommandKind,
-  Partial<ResourceBag> & { army?: number }
-> = {
+export const COMMAND_COSTS: Record<CommandKind, Partial<ResourceBag> & { army?: number }> = {
   fortify: { scrap: 120, fuel: 40 },
   muster: { biomass: 80, scrap: 60 },
   deploy: { fuel: 60, army: 40 },

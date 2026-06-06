@@ -1,15 +1,10 @@
-import { CONSTANTS } from '../constants';
-import { Input } from './input';
-import { Renderer } from './render';
-import { Hud } from './hud';
-import { buildLevel } from './level';
-import {
-  aabbOverlap,
-  platformToAABB,
-  rectToAABB,
-  resolveAgainstSolids,
-} from './physics';
-import type { AABB, GameMode, LevelData } from './types';
+import { CONSTANTS } from "../constants";
+import { Input } from "./input";
+import { Renderer } from "./render";
+import { Hud } from "./hud";
+import { buildLevel } from "./level";
+import { aabbOverlap, platformToAABB, rectToAABB, resolveAgainstSolids } from "./physics";
+import type { AABB, GameMode, LevelData } from "./types";
 
 // The thin owner of shared state + systems. Runs the rAF loop with a clamped
 // delta and routes update/draw through the renderer, input, physics and HUD.
@@ -19,7 +14,7 @@ export class Game {
   private hud = new Hud();
 
   private level: LevelData = buildLevel();
-  private mode: GameMode = 'title';
+  private mode: GameMode = "title";
 
   // --- Hero state ----------------------------------------------------------
   private hx: number = CONSTANTS.HERO_SPAWN_X;
@@ -53,7 +48,7 @@ export class Game {
     this.renderer.buildHero();
     this.renderer.setHeroTransform(this.hx, this.hy, this.facing, 1);
     this.refreshHud();
-    this.hud.setObjective('REACH + IGNITE THE CORE');
+    this.hud.setObjective("REACH + IGNITE THE CORE");
   }
 
   start() {
@@ -63,9 +58,9 @@ export class Game {
   }
 
   beginRun() {
-    if (this.mode === 'playing') return;
+    if (this.mode === "playing") return;
     this.resetRun();
-    this.mode = 'playing';
+    this.mode = "playing";
   }
 
   // Full reset (new run from the title or after win/gameover via R).
@@ -78,7 +73,7 @@ export class Game {
     this.spawnX = CONSTANTS.HERO_SPAWN_X;
     this.spawnY = CONSTANTS.HERO_SPAWN_Y;
     this.hud.clearBigToast();
-    this.hud.setObjective('REACH + IGNITE THE CORE');
+    this.hud.setObjective("REACH + IGNITE THE CORE");
     this.respawnHero();
     this.refreshHud();
   }
@@ -112,19 +107,19 @@ export class Game {
     if (dt > CONSTANTS.MAX_DELTA) dt = CONSTANTS.MAX_DELTA; // clamp stutters
     this.elapsed += dt;
 
-    if (this.input.restartPressed && this.mode !== 'title') {
+    if (this.input.restartPressed && this.mode !== "title") {
       this.resetRun();
-      this.mode = 'playing';
+      this.mode = "playing";
     }
 
-    if (this.mode === 'playing') {
+    if (this.mode === "playing") {
       this.updatePlaying(dt);
-    } else if (this.mode === 'dead') {
+    } else if (this.mode === "dead") {
       this.updateDead(dt);
     }
 
     // Movers + decorative animation run in every non-title mode for life.
-    if (this.mode !== 'title') this.updateMovers(dt);
+    if (this.mode !== "title") this.updateMovers(dt);
 
     this.renderer.animate(this.elapsed, dt);
     this.renderer.updateCamera(this.hx, this.hy, this.level.width);
@@ -138,11 +133,11 @@ export class Game {
     this.respawnTimer -= dt;
     if (this.respawnTimer <= 0) {
       if (this.lives <= 0) {
-        this.mode = 'gameover';
-        this.hud.showBigToast('gameover');
+        this.mode = "gameover";
+        this.hud.showBigToast("gameover");
       } else {
         this.respawnHero();
-        this.mode = 'playing';
+        this.mode = "playing";
       }
     }
   }
@@ -199,7 +194,7 @@ export class Game {
     const solids: AABB[] = [];
     const solidIsMover: number[] = []; // mover index or -1
     for (const p of this.level.platforms) {
-      if (p.kind === 'slab') {
+      if (p.kind === "slab") {
         solids.push(platformToAABB(p));
         solidIsMover.push(-1);
       }
@@ -212,16 +207,7 @@ export class Game {
 
     const hw = CONSTANTS.HERO_WIDTH / 2;
     const hh = CONSTANTS.HERO_HEIGHT / 2;
-    const res = resolveAgainstSolids(
-      this.hx,
-      this.hy,
-      hw,
-      hh,
-      this.vx,
-      this.vy,
-      dt,
-      solids
-    );
+    const res = resolveAgainstSolids(this.hx, this.hy, hw, hh, this.vx, this.vy, dt, solids);
     this.hx = res.x;
     this.hy = res.y;
     this.vx = res.vx;
@@ -335,7 +321,7 @@ export class Game {
         s.popTimer = 0.3;
         this.vy = CONSTANTS.STOMP_BOUNCE;
         this.squash = 1.2;
-        this.hud.flashToast('SCOURGE POPPED', 0.8);
+        this.hud.flashToast("SCOURGE POPPED", 0.8);
       } else {
         this.damageHero(CONSTANTS.CONTACT_DAMAGE, s.x);
       }
@@ -381,8 +367,8 @@ export class Game {
       this.spawnX = cp.x;
       this.spawnY = cp.y + 1.5;
       this.renderer.setCheckpointReached();
-      this.hud.flashToast('CHECKPOINT SECURED', 1.4);
-      this.hud.setObjective('PUSH DEEPER // IGNITE THE CORE');
+      this.hud.flashToast("CHECKPOINT SECURED", 1.4);
+      this.hud.setObjective("PUSH DEEPER // IGNITE THE CORE");
     }
   }
 
@@ -391,10 +377,10 @@ export class Game {
     const core = this.level.core;
     if (Math.hypot(this.hx - core.x, this.hy - core.y) < 2.0) {
       core.ignited = true;
-      this.mode = 'won';
+      this.mode = "won";
       this.renderer.triggerFlash();
       this.hud.setProgress(1);
-      this.hud.showBigToast('won');
+      this.hud.showBigToast("won");
     }
   }
 
@@ -411,15 +397,15 @@ export class Game {
     // knockback away from the source
     const dir = this.hx >= fromX ? 1 : -1;
     this.vx = dir * CONSTANTS.MOVE_SPEED * 0.8;
-    this.hud.flashToast('INTEGRITY BREACHED', 0.9);
+    this.hud.flashToast("INTEGRITY BREACHED", 0.9);
     if (this.hp <= 0) this.killHero();
   }
 
   private killHero() {
-    if (this.mode !== 'playing') return;
+    if (this.mode !== "playing") return;
     this.lives -= 1;
     this.hp = CONSTANTS.MAX_HP;
-    this.mode = 'dead';
+    this.mode = "dead";
     this.respawnTimer = CONSTANTS.RESPAWN_DELAY;
     this.renderer.setHeroVisible(false);
     this.renderer.triggerFlash();

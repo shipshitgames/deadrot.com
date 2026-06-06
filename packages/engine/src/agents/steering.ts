@@ -1,4 +1,4 @@
-import type { Agent, PlanarVec } from './Agent'
+import type { Agent, PlanarVec } from "./Agent";
 
 /**
  * Per-frame steering context: where the steering target (usually the player /
@@ -7,10 +7,10 @@ import type { Agent, PlanarVec } from './Agent'
  */
 export interface SteerView {
   /** Planar distance to the steering target. */
-  dist: number
+  dist: number;
   /** Normalised planar direction from the agent to the target (0 if coincident). */
-  dirX: number
-  dirZ: number
+  dirX: number;
+  dirZ: number;
 }
 
 /**
@@ -22,5 +22,5 @@ export interface SteerView {
  */
 export interface SteeringStrategy<A extends Agent> {
   /** Add the desired planar velocity for `agent` (given `view`) into `out`. */
-  desiredVelocity(agent: A, view: SteerView, out: PlanarVec): void
+  desiredVelocity(agent: A, view: SteerView, out: PlanarVec): void;
 }
