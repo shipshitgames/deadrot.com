@@ -34,6 +34,7 @@ Start here, follow the links, open the graph view.
 - [[The-Pyre]] — offense; burn the source → Scourge Survivors
 - [[The-Wardens]] — defense; hold the line → Deadlane
 - [[The-Listeners]] — heresy; understand the Choir _(concept)_
+- [[The-Quiet-Rooms]] — Listener black-room practice; keep severed Choir nodes alive to study
 - [[The-Pact]] — field compact; Pyre/Warden rivalry stops the instant a breach opens
 
 ## Games (entries in the canon)
