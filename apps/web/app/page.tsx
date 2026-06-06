@@ -48,8 +48,13 @@ export default function Home() {
 
         <div className="relative z-10 flex flex-col items-center">
           <Eyebrow>A Ship Shit Games universe</Eyebrow>
-          <h1 className="text-glow mt-5 font-display text-7xl font-bold uppercase leading-[0.82] tracking-tight text-bone sm:text-8xl md:text-[9rem]">
-            Dead<span className="text-blood">rot</span>
+          <h1 className="mt-5 w-[min(760px,92vw)] sm:w-[min(860px,90vw)] md:w-[min(980px,86vw)]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/branding/deadrot-title.svg"
+              alt="DEADROT"
+              className="h-auto w-full"
+            />
           </h1>
           <p className="mt-7 max-w-xl text-lg leading-relaxed text-ash">
             We lost the sky. Now we burn it back. One brutal, blood-soaked universe —{" "}
