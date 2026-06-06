@@ -8,11 +8,11 @@ on:
       - master
   workflow_dispatch:
   schedule:
-    - cron: '0 9 * * 1'
+    - cron: "23 4 * * 1"
 
 jobs:
   games:
-    name: Game E2E
+    name: Cross-game Playwright
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
@@ -31,17 +31,38 @@ jobs:
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
 
-      - name: Run game E2E tests
-        run: bun run e2e
+      - name: Run cross-game E2E tests
+        run: bun run test:e2e
         env:
           CI: true
 
-      - name: Upload Playwright artifacts
+      - name: Upload cross-game Playwright artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: game-e2e-${{ github.run_id }}
+          name: cross-game-e2e-${{ github.run_id }}
           path: |
             playwright-report/
             test-results/
           retention-days: 7
+
+  docker-game-e2e:
+    name: Dockerized game E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Dockerized E2E
+        run: ./scripts/run-e2e-docker.sh
+
+      - name: Upload Dockerized Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-game-e2e-${{ github.run_id }}
+          path: .artifacts/e2e
+          if-no-files-found: ignore
+          retention-days: 14

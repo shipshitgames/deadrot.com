@@ -10,7 +10,7 @@ supersededBy: ../Style-Bible.md
 
 ## Scope
 
-- Fill all missing character and bestiary card placeholders on `games.shipshit.dev`.
+- Fill all missing character and bestiary card placeholders on `deadrot.com`.
 - Keep existing runtime sprites in place where they already exist.
 - Use draft portrait plates for website cards and dossier pages, not final gameplay sprites.
 

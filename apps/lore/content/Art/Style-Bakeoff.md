@@ -84,7 +84,7 @@ industrial arena lit by hellfire; a HUD with health / ammo / score in heavy
 uppercase; blood splatter and ember particles. **Full scene, all assets integrated.**
 
 **WEBSITE** — a website landing-page hero mockup for **SHIP SHIT GAMES** studio
-(games.shipshit.dev): a dark brutal games gallery — big uppercase Oswald headline,
+(deadrot.com): a dark brutal games gallery — big uppercase Oswald headline,
 a row of game cards with cover art, a blood-red **PLAY** button with an ember glow,
 gunmetal panels on a near-black page, a hero banner showing a Scourge breach.
 Desktop-browser web UI mockup.

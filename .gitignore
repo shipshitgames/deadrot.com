@@ -1,5 +1,6 @@
 node_modules/
 .turbo/
+.artifacts/
 *.tsbuildinfo
 next-env.d.ts
 .next/

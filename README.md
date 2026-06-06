@@ -28,7 +28,11 @@ bun install
 bun run dev        # hub on next dev
 bun run build
 bun run typecheck
+bun run e2e:docker # isolated Playwright E2E in Docker
 ```
+
+E2E artifacts are written to `.artifacts/e2e/`. See [docs/e2e.md](docs/e2e.md)
+for local UI mode, report viewing, and CI expectations.
 
 ## Deploy Games
 

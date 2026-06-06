@@ -80,6 +80,18 @@ export function AppShell() {
           </MenuPanel>
         </div>
 
+        <div id="pause-menu" className="pause-menu hidden">
+          <MenuPanel className="pause-inner">
+            <h2 className="pause-title ssg-section-heading">PAUSED</h2>
+            <p id="pause-stats" className="pause-stats mono">0:00 - LVL 1 - 0 kills</p>
+            <div className="pause-actions">
+              <button id="pause-resume" className="menu-action primary">RESUME</button>
+              <button id="pause-restart" className="menu-action">RESTART RUN</button>
+              <button id="pause-title-btn" className="menu-action ghost">MAIN MENU</button>
+            </div>
+          </MenuPanel>
+        </div>
+
         <div id="draft" className="draft hidden">
           <MenuPanel className="draft-inner">
             <h2 className="draft-head ssg-section-heading">CHOOSE AN UPGRADE</h2>
