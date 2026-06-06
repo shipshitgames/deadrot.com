@@ -60,7 +60,7 @@ export interface Enemy {
   vx: number // knockback drift
   vy: number
   knockbackImmune: boolean
-  boss: boolean // the BLIGHT-MAW: a big enemy the Game steers (skips chase AI)
+  boss: boolean // prototype Blight-Maw / Orbital Breach Carrier encounter
   dead: boolean
 }
 

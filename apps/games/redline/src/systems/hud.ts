@@ -124,19 +124,34 @@ export class Hud {
   showStart() {
     this.overlay.classList.remove("is-hidden");
     this.overlayCard.innerHTML = `
-      <div id="overlay-kicker" class="ssg-menu-kicker">Pyre Courier Run</div>
-      <h1 id="overlay-title" class="ssg-menu-title">RED<span class="accent">LINE</span></h1>
-      <p id="overlay-body">
-        Carry the cargo through the Scourge-rot lane to the BEACON. Beat the clock.
-        Hold to build speed, jump the creep spikes, roll under the arches, ride the embers.
-      </p>
-      <ul id="overlay-controls">
-        <li><kbd>HOLD →</kbd> Accelerate</li>
-        <li><kbd>SPACE</kbd> Jump</li>
-        <li><kbd>SHIFT</kbd> Roll / dash</li>
-        <li><kbd>R</kbd> Restart</li>
-      </ul>
-      <button id="overlay-btn" class="ssg-button ssg-button--primary ssg-button--lg">IGNITE</button>
+      <div class="ssg-main-menu-copy">
+        <div id="overlay-kicker" class="ssg-menu-kicker">Pyre Courier Run</div>
+        <h1 id="overlay-title" class="ssg-main-menu-title">
+          <span class="ssg-main-menu-title-line ssg-main-menu-title-line--bone">RED</span>
+          <span class="ssg-main-menu-title-line ssg-main-menu-title-line--hot">LINE</span>
+        </h1>
+        <p id="overlay-body" class="ssg-main-menu-subtitle">
+          Carry the cargo through the Scourge-rot lane to the BEACON. Beat the clock.
+          Hold to build speed, jump the creep spikes, roll under the arches, ride the embers.
+        </p>
+        <div class="ssg-main-menu-status">
+          <span>Courier ready</span>
+          <span>${this.best === null ? "No record" : `Best ${fmtTime(this.best)}`}</span>
+        </div>
+      </div>
+      <nav class="ssg-main-menu-nav" aria-label="Route">
+        <div class="ssg-main-menu-nav__label">Route</div>
+        <ul id="overlay-controls">
+          <li><kbd>HOLD →</kbd> Accelerate</li>
+          <li><kbd>SPACE</kbd> Jump</li>
+          <li><kbd>SHIFT</kbd> Roll / dash</li>
+          <li><kbd>R</kbd> Restart</li>
+        </ul>
+        <button id="overlay-btn" class="ssg-main-menu-action ssg-main-menu-action--primary">
+          <span class="ssg-main-menu-action__label"><span>IGNITE</span></span>
+          <span class="ssg-main-menu-action__meta">Run the lane</span>
+        </button>
+      </nav>
     `;
   }
 
@@ -144,24 +159,45 @@ export class Hud {
     this.overlay.classList.remove("is-hidden");
     const bestStr = this.best === null ? "--.--" : fmtTime(this.best);
     this.overlayCard.innerHTML = `
-      <div id="overlay-kicker" class="ssg-menu-kicker">${isRecord ? "New Personal Best" : "Delivery Complete"}</div>
-      <h1 id="overlay-title" class="ssg-menu-title" style="font-size:clamp(40px,9vw,72px)">${isRecord ? "RED<span class='accent'>LINED</span>" : "DELIVERED"}</h1>
-      <div id="overlay-stats">
-        <div class="stat"><span class="k">Time</span><span class="v ${isRecord ? "gold" : ""}">${fmtTime(time)}</span></div>
-        <div class="stat"><span class="k">Best</span><span class="v">${bestStr}</span></div>
-        <div class="stat"><span class="k">Embers</span><span class="v">${embers}</span></div>
+      <div class="ssg-main-menu-copy">
+        <div id="overlay-kicker" class="ssg-menu-kicker">${isRecord ? "New Personal Best" : "Delivery Complete"}</div>
+        <h1 id="overlay-title" class="ssg-main-menu-title" style="font-size:clamp(40px,9vw,72px)">${
+          isRecord ? "<span class='ssg-main-menu-title-line ssg-main-menu-title-line--bone'>RED</span><span class='ssg-main-menu-title-line ssg-main-menu-title-line--hot'>LINED</span>" : "DELIVERED"
+        }</h1>
       </div>
-      <button id="overlay-btn" class="ssg-button ssg-button--primary ssg-button--lg">RUN AGAIN</button>
+      <nav class="ssg-main-menu-nav" aria-label="Run summary">
+        <div class="ssg-main-menu-nav__label">Summary</div>
+        <div id="overlay-stats">
+          <div class="stat"><span class="k">Time</span><span class="v ${isRecord ? "gold" : ""}">${fmtTime(time)}</span></div>
+          <div class="stat"><span class="k">Best</span><span class="v">${bestStr}</span></div>
+          <div class="stat"><span class="k">Embers</span><span class="v">${embers}</span></div>
+        </div>
+        <button id="overlay-btn" class="ssg-main-menu-action ssg-main-menu-action--primary">
+          <span class="ssg-main-menu-action__label"><span>RUN AGAIN</span></span>
+          <span class="ssg-main-menu-action__meta">Beat the clock</span>
+        </button>
+      </nav>
     `;
   }
 
   showDead(reason: string) {
     this.overlay.classList.remove("is-hidden");
     this.overlayCard.innerHTML = `
-      <div id="overlay-kicker" class="ssg-menu-kicker">Run Failed</div>
-      <h1 id="overlay-title" class="ssg-menu-title" style="font-size:clamp(40px,9vw,72px)">DOWN<span class="accent">.</span></h1>
-      <p id="overlay-body">${reason}</p>
-      <button id="overlay-btn" class="ssg-button ssg-button--primary ssg-button--lg">RETRY</button>
+      <div class="ssg-main-menu-copy">
+        <div id="overlay-kicker" class="ssg-menu-kicker">Run Failed</div>
+        <h1 id="overlay-title" class="ssg-main-menu-title" style="font-size:clamp(40px,9vw,72px)">
+          <span class="ssg-main-menu-title-line ssg-main-menu-title-line--bone">DOWN</span>
+          <span class="ssg-main-menu-title-line ssg-main-menu-title-line--hot">.</span>
+        </h1>
+        <p id="overlay-body" class="ssg-main-menu-subtitle">${reason}</p>
+      </div>
+      <nav class="ssg-main-menu-nav" aria-label="Retry">
+        <div class="ssg-main-menu-nav__label">Route lost</div>
+        <button id="overlay-btn" class="ssg-main-menu-action ssg-main-menu-action--primary">
+          <span class="ssg-main-menu-action__label"><span>RETRY</span></span>
+          <span class="ssg-main-menu-action__meta">Run again</span>
+        </button>
+      </nav>
     `;
   }
 

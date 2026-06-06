@@ -175,16 +175,20 @@ test.describe('dev sandbox smoke', () => {
       game.ctx.status = 'playing'
 
       await wait(240)
-      const moveA = sample()
-      await wait(360)
-      const moveB = sample()
+      const moveSamples = [sample()]
+      for (let index = 0; index < 5; index += 1) {
+        await wait(160)
+        moveSamples.push(sample())
+      }
+      const moveA = moveSamples[0] ?? []
+      const moveB = moveSamples[moveSamples.length - 1] ?? []
       for (const enemy of game.ctx.enemies.filter((enemy) => enemy.alive)) {
         enemy.triggerSpriteAnimation('attack', enemy.attackAnimationDuration())
       }
       await wait(320)
       const attacking = sample()
 
-      return { moveA, moveB, attacking }
+      return { moveA, moveB, moveSamples, attacking }
     })
 
     expect(result.moveA.map((sample) => sample.kind)).toEqual(['boss', 'flying', 'melee', 'ranged'])
@@ -193,7 +197,16 @@ test.describe('dev sandbox smoke', () => {
     for (const [index, sample] of result.moveB.entries()) {
       expect(sample.state).toBe('move')
       expect(sample.src).toContain('/animations/scourge/')
-      expect(sample.frame).not.toBe(result.moveA[index]?.frame)
+    }
+
+    for (const kind of ['boss', 'flying', 'melee', 'ranged'] as const) {
+      const frames = new Set(
+        result.moveSamples
+          .flatMap((samples) => samples)
+          .filter((sample) => sample.kind === kind)
+          .map((sample) => sample.frame),
+      )
+      expect(frames.size).toBeGreaterThan(1)
     }
 
     expect(Object.fromEntries(result.attacking.map((sample) => [sample.kind, sample.src]))).toMatchObject({

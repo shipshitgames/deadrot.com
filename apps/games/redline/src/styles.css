@@ -204,10 +204,9 @@ body {
   position: absolute;
   inset: 0;
   z-index: 20;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(ellipse at 50% 40%, rgba(10, 10, 10, 0.72), rgba(10, 10, 10, 0.94));
+  background:
+    linear-gradient(90deg, rgba(5, 5, 5, 0.92), rgba(10, 10, 10, 0.68)),
+    repeating-linear-gradient(90deg, transparent 0 42px, rgba(255, 106, 0, 0.08) 42px 44px);
   backdrop-filter: blur(2px);
   transition: opacity 0.25s ease;
 }
@@ -219,13 +218,7 @@ body {
 
 #overlay-card {
   pointer-events: auto;
-  width: min(92vw, 460px);
-  padding: clamp(20px, 4vw, 40px);
-  background: var(--coal);
-  border: 1px solid var(--gunmetal);
-  border-top: 3px solid var(--blood);
-  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.9);
-  text-align: center;
+  width: 100%;
 }
 
 #overlay-kicker {
@@ -236,13 +229,8 @@ body {
 }
 
 #overlay-title {
-  margin: 6px 0 14px;
-  font-size: clamp(48px, 12vw, 92px);
-  font-weight: 700;
-  line-height: 0.86;
-  letter-spacing: -0.02em;
+  margin-top: 8px;
   color: var(--bone);
-  text-shadow: 0 0 30px rgba(193, 18, 31, 0.45);
 }
 
 #overlay-title .accent { color: var(--blood); }
@@ -251,17 +239,15 @@ body {
   font-size: 14px;
   line-height: 1.55;
   color: var(--ash);
-  letter-spacing: 0.02em;
-  margin-bottom: 18px;
+  margin-bottom: 0;
 }
 
 #overlay-controls {
   list-style: none;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px 14px;
-  margin: 0 auto 22px;
-  max-width: 380px;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin: 0 0 10px;
   text-align: left;
 }
 

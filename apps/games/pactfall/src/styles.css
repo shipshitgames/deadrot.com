@@ -189,14 +189,6 @@ body {
 }
 
 .banner {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  background: rgba(10, 10, 10, 0.72);
   text-align: center;
   /* Let clicks/taps fall through to the canvas so "CLICK TO REDEPLOY" works
      via the existing pointer handler instead of being swallowed by the overlay. */

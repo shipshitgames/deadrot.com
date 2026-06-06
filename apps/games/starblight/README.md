@@ -7,7 +7,8 @@ war — burning **Scourge** infection out of the sky before it falls. Steer with
 every weapon auto-aims and auto-fires, so both hands stay on flight. The Scourge converge from
 all sides, drop **salvage gems** when they die, and those gems pour into an XP bar. Each level
 hands you a **1-of-3 upgrade draft** — stack weapons and passives into overpowered combos and
-hold the line until **THE BLIGHT-MAW** descends.
+hold the line until **THE BLIGHT-MAW** descends. Blight-Maw is the current prototype boss label;
+the lore anchor remains the **Orbital Breach Carrier** until the encounter is reviewed.
 
 This is the studio's shared **[Survivors Loop](../../lore/content/Universe/Survivors-Loop.md)** expressed
 as an arcade flyer: escalating pressure → collect → draft → synergies → orbital boss. Built with
@@ -26,17 +27,18 @@ bone text — and toxic green is the Scourge's color alone.
 | `Enter` / `Space` | Engage / re-engage from a menu |
 
 HUD: a top **XP bar** + **level** + run **timer**; bottom-left **integrity** bar and your
-**build tray** of weapon/passive chips; the **BLIGHT-MAW** health bar drops in for the boss.
+**build tray** of weapon/passive chips; the prototype **BLIGHT-MAW** health bar drops in for
+the boss.
 
 ## The loop
 
 1. **Fly** through the swarm — you move at 22 u/s, grunts at ~6.5, so kiting is survival.
-2. **Auto-fire** thins the Scourge; kills drop toxic-green **salvage gems**.
+2. **Auto-fire** thins the Scourge; kills drop ember/bone **salvage gems**.
 3. Gems **funnel** to you (a gravity-well magnet) and fill the **XP bar**.
 4. Each level → **draft 1 of 3**: a new weapon, a weapon level-up, or a passive.
 5. **Stack combos** — drones + crit + speed becomes a melee blender; nova + damage + area
    becomes a screen-clearing Supernova; mines + wingmates + thrusters becomes a kill conveyor.
-6. Survive to **5:00** and burn **THE BLIGHT-MAW** through its three phases. Front held.
+6. Survive to **5:00** and burn the prototype **BLIGHT-MAW** through its three phases. Front held.
 
 ### Arsenal (drafted & stacked)
 

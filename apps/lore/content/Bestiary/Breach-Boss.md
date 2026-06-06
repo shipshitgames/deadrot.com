@@ -6,7 +6,7 @@ status: draft
 ---
 # Breach-Boss
 
-**At a glance:** [[Scourge]] breach boss · massive non-human war body grown around a toxic-green chest breach heart · holds a region with melee pressure and ranged barrages, shields its core and enrages when wounded · appears in [[Scourge-Survivors]] / [[Deadlane]].
+**At a glance:** [[Scourge]] breach boss · massive non-human war body grown around a toxic-green chest breach heart · holds a region with melee pressure and ranged barrages, shields its core and enrages when wounded · appears in [[Scourge-Survivors]] / [[Deadlane]] / [[Rothulk]].
 
 Monstrous Scourge expression grown around a breach heart.
 
@@ -37,3 +37,4 @@ fused rusted metal and wet chitin, massive arms, projectile vents, DOOM-like gor
 ## Appears In
 - [[Scourge-Survivors]]
 - [[Deadlane]]
+- [[Rothulk]]

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 320" role="img" aria-labelledby="title desc">
+  <title id="title">DEADROT logo lockup</title>
+  <desc id="desc">DEADROT wordmark paired with a DR breach mark.</desc>
+  <defs>
+    <filter id="ember" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="12" flood-color="#c1121f" flood-opacity="0.42"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#ff6a00" flood-opacity="0.3"/>
+    </filter>
+    <clipPath id="frame-clip">
+      <path d="M58 26h204l28 28v204l-28 28H58l-28-28V54z"/>
+    </clipPath>
+  </defs>
+  <rect width="1320" height="320" fill="none"/>
+  <g filter="url(#ember)">
+    <path d="M58 26h204l28 28v204l-28 28H58l-28-28V54z" fill="#121214" stroke="#34343c" stroke-width="9"/>
+    <g clip-path="url(#frame-clip)">
+      <circle cx="160" cy="160" r="100" fill="none" stroke="#c1121f" stroke-width="24" stroke-dasharray="62 18 28 22"/>
+      <circle cx="160" cy="160" r="122" fill="none" stroke="#e9e3d6" stroke-width="4" stroke-dasharray="42 16" opacity="0.7"/>
+      <path d="M70 154h37v12H70zM213 154h37v12h-37zM154 70h12v37h-12zM154 213h12v37h-12z" fill="#8bdc1f"/>
+    </g>
+    <path fill="#e9e3d6" d="M78 91h48l29 29v69l-29 29H78zm32 32v62h10l9-9v-42l-9-11z"/>
+    <path fill="#e9e3d6" d="M154 91h56l26 26v34l-20 20 29 47h-40l-24-42h-1v42h-26zm26 30v35h18l8-8v-19l-8-8z"/>
+    <path fill="#c1121f" d="M78 218h32l-7 22-8-13-7 30-10-19-8 26zm106 0h37l-11 30-10-17-8 38-12-22-9 30z"/>
+  </g>
+  <g transform="translate(332 30)" filter="url(#ember)">
+    <text x="0" y="194" fill="#e9e3d6" font-family="Impact, Haettenschweiler, 'Arial Narrow Bold', 'Arial Black', sans-serif" font-size="200" font-weight="900" letter-spacing="0">DEAD</text>
+    <text x="528" y="194" fill="#c1121f" font-family="Impact, Haettenschweiler, 'Arial Narrow Bold', 'Arial Black', sans-serif" font-size="200" font-weight="900" letter-spacing="0">ROT</text>
+    <path fill="#c1121f" d="M6 200h103l-22 47-16-27-15 55-20-35-20 52zm161 0h101l-19 42-21-25-15 61-20-43-20 53zm185 0h97l-22 55-17-29-19 59-19-42-17 46zm198 0h95l-23 48-16-30-15 61-20-45-19 55zm168 0h95l-17 40-19-23-16 62-20-40-19 50zm155 0h95l-20 51-16-26-17 64-20-42-19 45z"/>
+    <path fill="#0a0a0a" opacity="0.88" d="M114 34l41 41-22 22-41-41zM274 82l32 32-21 21-32-32zM466 42l40 40-23 23-40-40zM634 36l36 36-21 21-36-36zM794 74l44 44-25 25-44-44zM962 44l37 37-23 23-37-37z"/>
+    <path fill="#8bdc1f" d="M154 84h11v50h-11zM508 67h11v43h-11zM720 162h11v48h-11zM1014 86h11v50h-11z"/>
+  </g>
+</svg>

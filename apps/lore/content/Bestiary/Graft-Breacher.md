@@ -7,7 +7,7 @@ status: canon
 ---
 # Graft-Breacher
 
-**At a glance:** [[Scourge-Host-Families|Machine-Graft]] elite melee wrecker · slow armored siege engine that ignores infantry and shears through towers and walls · soft parasite back rewards flanking fire · appears in [[Deadlane]] / [[Scourge-Survivors]].
+**At a glance:** [[Scourge-Host-Families|Machine-Graft]] elite melee wrecker · slow armored siege engine that ignores infantry and shears through towers and walls · soft parasite back rewards flanking fire · appears in [[Deadlane]] / [[Scourge-Survivors]] / [[Rothulk]].
 
 A [[Scourge-Host-Families|Machine-Graft]] [[Scourge]] elite grown through the frame of a
 conquered industrial machine — pistons, hull plating, and hydraulic limbs rewired by parasite
@@ -69,3 +69,4 @@ and rust and gunmetal, no neon.
 
 - [[Deadlane]] — elite wave enemy; tower-breaker that must be prioritised or a lane collapses
 - [[Scourge-Survivors]] — heavy elite in breach rooms and mid-depth corridors; flanking is the intended counter
+- [[Rothulk]] — living route-seal / wall-breaker inside the bio-hulk climb; it turns the nest's machine-graft anatomy into moving terrain pressure

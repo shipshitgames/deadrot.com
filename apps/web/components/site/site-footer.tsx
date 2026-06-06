@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { DeadrotBrand } from "@/components/site/deadrot-brand";
+
 const LINKS: { label: string; href: string; ext?: boolean }[] = [
   { label: "Docs", href: "/docs" },
   { label: "Universe / Lore", href: "/universe" },
@@ -14,9 +16,7 @@ export function SiteFooter() {
   return (
     <footer className="relative z-10 border-t border-gunmetal/60 bg-void">
       <div className="mx-auto max-w-7xl px-6 py-12">
-        <div className="font-display text-2xl font-bold uppercase tracking-tight text-bone">
-          Dead<span className="text-blood">rot</span>
-        </div>
+        <DeadrotBrand markClassName="h-10 w-10" textClassName="text-2xl" />
         <p className="mt-2 max-w-md text-sm leading-relaxed text-ash">
           One blood-soaked universe — DOOM × Blizzard — forged live on the shipshitshow.
           A <a href="https://shipshitgames.com" className="text-bone underline decoration-gunmetal underline-offset-2 hover:decoration-blood">Ship Shit Games</a> universe.

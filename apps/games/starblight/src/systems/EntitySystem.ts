@@ -271,7 +271,8 @@ export class EntitySystem {
     return enemy
   }
 
-  /** THE BLIGHT-MAW: a bespoke big enemy the Game steers (skips chase AI), but
+  /** THE BLIGHT-MAW: prototype label for the Orbital Breach Carrier encounter.
+   *  A bespoke big enemy the Game steers (skips chase AI), but
    *  takes damage through the normal weapon/bolt paths. */
   spawnBoss(x: number, y: number, hp: number, contactDmg: number, size: number): Enemy {
     const mat = this.spriteMaterial('boss')

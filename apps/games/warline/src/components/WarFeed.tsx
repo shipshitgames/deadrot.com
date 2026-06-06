@@ -1,4 +1,5 @@
 import type { Faction, WarEvent } from '@shipshitgames/warline'
+import { HelpTooltip } from './HelpTooltip'
 
 interface WarFeedProps {
   feed: WarEvent[]
@@ -32,9 +33,16 @@ export function WarFeed({ feed }: WarFeedProps) {
   return (
     <section className="flex h-full flex-col border-2 border-gunmetal bg-coal">
       <div className="flex items-center justify-between border-b border-gunmetal px-3 py-2">
-        <h2 className="font-display text-sm tracking-wide text-bone">
-          War Feed
-        </h2>
+        <div className="flex items-center gap-1.5">
+          <h2 className="font-display text-sm tracking-wide text-bone">
+            War Feed
+          </h2>
+          <HelpTooltip label="Explain war feed" side="top">
+            This is the event log for the shared campaign. It records commands,
+            simulated operations, region falls, resets, and sealed breaches.
+            Newest events appear first.
+          </HelpTooltip>
+        </div>
         <span className="font-mono text-[0.65rem] text-ash">
           {feed.length} events
         </span>

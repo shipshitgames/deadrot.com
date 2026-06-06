@@ -2,7 +2,7 @@
 
 ## Scope
 
-- Six 16:9 gallery thumbnails for `games.shipshit.dev`.
+- Six 16:9 gallery thumbnails for `deadrot.com`.
 - Four Doom-inspired menu UI concept drafts for future in-game integration.
 
 ## Shared Art Rules

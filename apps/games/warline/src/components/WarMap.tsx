@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import type { KeyboardEvent } from 'react'
 import type { Faction, Region, WorldState } from '@shipshitgames/warline'
 import { breachById, regionById } from '@shipshitgames/warline'
+import { HelpTooltip } from './HelpTooltip'
 
 interface WarMapProps {
   state: WorldState
@@ -30,6 +32,18 @@ function laneDash(flow: number): string | undefined {
   return undefined
 }
 
+function pressureHelp(pressure: number): string {
+  return `Pressure: ${Math.round(
+    pressure,
+  )} — Scourge corruption. At 100, human regions fall.`
+}
+
+function defenseHelp(defense: number): string {
+  return `Defense: ${Math.round(
+    defense,
+  )} — fortification that slows pressure gain.`
+}
+
 interface Hover {
   x: number
   y: number
@@ -43,9 +57,16 @@ export function WarMap({ state, selectedId, onSelect }: WarMapProps) {
   return (
     <section className="relative border-2 border-gunmetal bg-coal">
       <div className="flex items-center justify-between border-b border-gunmetal px-3 py-2">
-        <h2 className="font-display text-sm tracking-wide text-bone">
-          The Front
-        </h2>
+        <div className="flex items-center gap-1.5">
+          <h2 className="font-display text-sm tracking-wide text-bone">
+            The Front
+          </h2>
+          <HelpTooltip label="Explain the front map" side="bottom">
+            This map is the campaign board. Click a region to target commands.
+            Region color shows controller, rings show pressure and breaches,
+            and lane thickness shows how strongly pressure travels.
+          </HelpTooltip>
+        </div>
         <span className="font-mono text-[0.65rem] text-ash">
           {state.regions.length} regions · {state.lanes.length} lanes ·{' '}
           {state.breaches.filter((b) => b.active).length} active breaches
@@ -96,12 +117,33 @@ export function WarMap({ state, selectedId, onSelect }: WarMapProps) {
                       y: midY,
                       title: lane.name,
                       lines: [
-                        `Control: ${lane.control}`,
-                        `Flow: ${Math.round(lane.flow)}`,
+                        `Control: ${lane.control} — who dominates this route.`,
+                        `Flow: ${Math.round(
+                          lane.flow,
+                        )} — pressure spread strength.`,
                       ],
                     })
                   }
                   onMouseLeave={() => setHover(null)}
+                  onFocus={() =>
+                    setHover({
+                      x: midX,
+                      y: midY,
+                      title: lane.name,
+                      lines: [
+                        `Control: ${lane.control} — who dominates this route.`,
+                        `Flow: ${Math.round(
+                          lane.flow,
+                        )} — pressure spread strength.`,
+                      ],
+                    })
+                  }
+                  onBlur={() => setHover(null)}
+                  tabIndex={0}
+                  role="img"
+                  aria-label={`${lane.name}. Controlled by ${
+                    lane.control
+                  }. Flow ${Math.round(lane.flow)}.`}
                   style={{ cursor: 'help' }}
                 />
               )
@@ -176,31 +218,49 @@ function RegionNode({
   const hoverLines = isHidden
     ? ['Unknown — run Recon to reveal']
     : [
-        `Faction: ${region.faction}`,
-        `Pressure: ${Math.round(region.pressure)}`,
-        `Defense: ${Math.round(region.defense)}`,
+        `Faction: ${region.faction} — current controller.`,
+        pressureHelp(region.pressure),
+        defenseHelp(region.defense),
         ...(breach
           ? [
-              `Breach: ${breach.name}`,
+              `Breach: ${breach.name} — Scourge spawn point.`,
               `Intensity: ${Math.round(breach.intensity)}${
                 breach.active ? '' : ' (sealed)'
-              }`,
+              } — how hard it pumps pressure.`,
             ]
           : []),
       ]
 
+  function showHover() {
+    onHover({
+      x: region.x,
+      y: region.y - radius - 4,
+      title: isHidden ? 'Unrevealed Sector' : region.name,
+      lines: hoverLines,
+    })
+  }
+
+  function handleKeyDown(e: KeyboardEvent<SVGGElement>) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onSelect(region.id)
+    }
+  }
+
   return (
     <g
       onClick={() => onSelect(region.id)}
-      onMouseEnter={() =>
-        onHover({
-          x: region.x,
-          y: region.y - radius - 4,
-          title: isHidden ? 'Unrevealed Sector' : region.name,
-          lines: hoverLines,
-        })
-      }
+      onMouseEnter={showHover}
       onMouseLeave={() => onHover(null)}
+      onFocus={showHover}
+      onBlur={() => onHover(null)}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="button"
+      aria-pressed={selected}
+      aria-label={`Select ${
+        isHidden ? 'unrevealed sector' : region.name
+      }. ${hoverLines.join(' ')}`}
       style={{ cursor: 'pointer' }}
     >
       {/* pressure heat ring */}

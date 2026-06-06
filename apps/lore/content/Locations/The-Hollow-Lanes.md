@@ -15,7 +15,7 @@ The Hollow Lanes are what's left of the roads after the Scourge took the comms. 
 
 What makes the Lanes *hollow* isn't the empty buildings. It's the jamming. The Scourge seeds the corridors with repeater-pylons — squat, dripping things rooted through the road — and inside their radius the Choir hears everything and routes the horde to meet you before you've decided to move. A courier learns to read the dead air. Where the static thickens, the swarm already knows you're coming.
 
-A Warden signals officer at Holdout Nine timed it once: from the moment a runner crossed into pylon range to the moment the lane closed behind them, the Choir needed about ninety seconds to wall both ends. Anything slower than ninety seconds doesn't come back. They don't post the figure. The runners worked it out on their own, the way you work out which ice holds your weight.
+A Warden signals officer at [[Holdout-Nine|Holdout Nine]] timed it once: from the moment a runner crossed into pylon range to the moment the lane closed behind them, the Choir needed about ninety seconds to wall both ends. Anything slower than ninety seconds doesn't come back. They don't post the figure. The runners worked it out on their own, the way you work out which ice holds your weight.
 
 Nobody holds the Hollow Lanes. You cross them, or you don't.
 

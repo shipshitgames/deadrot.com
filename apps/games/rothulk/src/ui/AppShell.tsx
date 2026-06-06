@@ -1,4 +1,14 @@
-import { Button, MenuKicker, MenuPanel, MenuScreen, MenuTitle } from "@shipshitgames/ui";
+import {
+  MainMenuAction,
+  MainMenuCopy,
+  MainMenuLayout,
+  MainMenuNav,
+  MainMenuScreen,
+  MainMenuStatus,
+  MainMenuTitle,
+  MainMenuTitleLine,
+  MenuKicker,
+} from "@shipshitgames/ui";
 
 export function AppShell() {
   return (
@@ -31,23 +41,33 @@ export function AppShell() {
         </div>
       </div>
 
-      <MenuScreen id="banner" className="banner">
-        <MenuPanel className="banner-inner">
-          <MenuTitle className="banner-title">ROTHULK</MenuTitle>
-          <MenuKicker className="banner-sub">
-            Run the rotting Scourge hulk. Stomp the horde. Ignite the breach-core.
-          </MenuKicker>
-          <p className="banner-keys">
-            <span><b>&larr; &rarr;</b> / <b>A D</b> MOVE</span>
-            <span><b>SPACE</b> / <b>W</b> / <b>&uarr;</b> JUMP &mdash; hold to leap higher</span>
-            <span><b>STOMP</b> from above to pop the Scourge</span>
-            <span><b>R</b> RESTART</span>
-          </p>
-          <Button id="start-btn" variant="primary" size="lg">
-            BREACH THE HULK
-          </Button>
-        </MenuPanel>
-      </MenuScreen>
+      <MainMenuScreen id="banner" className="banner">
+        <MainMenuLayout>
+          <MainMenuCopy>
+            <MenuKicker>Pyre Infiltration</MenuKicker>
+            <MainMenuTitle className="banner-title">
+              <MainMenuTitleLine>ROT</MainMenuTitleLine>
+              <MainMenuTitleLine tone="hot">HULK</MainMenuTitleLine>
+            </MainMenuTitle>
+            <MenuKicker className="banner-sub">
+              Run the rotting Scourge hulk. Stomp the horde. Ignite the breach-core.
+            </MenuKicker>
+            <MainMenuStatus>
+              <span>Boarding spike armed</span>
+              <span>Core below</span>
+            </MainMenuStatus>
+          </MainMenuCopy>
+          <MainMenuNav label="Controls">
+            <p className="banner-keys">
+              <span><b>&larr; &rarr;</b> / <b>A D</b> MOVE</span>
+              <span><b>SPACE</b> / <b>W</b> / <b>&uarr;</b> JUMP - hold to leap higher</span>
+              <span><b>STOMP</b> from above to pop the Scourge</span>
+              <span><b>R</b> RESTART</span>
+            </p>
+            <MainMenuAction id="start-btn" variant="primary" label="BREACH THE HULK" meta="Begin run" />
+          </MainMenuNav>
+        </MainMenuLayout>
+      </MainMenuScreen>
 
       <div id="toast" className="toast" />
     </>

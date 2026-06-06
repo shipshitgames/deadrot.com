@@ -2,7 +2,7 @@
 genre: first-person horde-survivors shooter (Vampire-Survivors × DOOM)
 repo: shipshitgames/scourge-survivors
 faction: The Pyre
-status: in development
+status: playable prototype
 ---
 # Scourge Survivors
 
@@ -34,3 +34,8 @@ Many breach-arenas with rooms and levels — each a chamber of the breach (see t
 ## Project
 The `games/scourge-survivors` folder is the working game project, focused on the Survivors
 core and expanding with more maps / levels / rooms.
+
+## Status
+Playable prototype in active development — the current build is the main proving ground for
+the shared survivors loop, breach descent, Pyre avatar roster, and Scourge pressure model.
+Content and tuning are still moving, but this is the flagship playable expression of the canon.

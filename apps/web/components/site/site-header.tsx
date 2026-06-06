@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 
+import { DeadrotBrand } from "@/components/site/deadrot-brand";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -38,9 +39,10 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link
           href="/"
-          className="font-display text-lg font-bold uppercase tracking-tight text-bone"
+          aria-label="DEADROT home"
+          className="text-bone"
         >
-          Dead<span className="text-blood">rot</span>
+          <DeadrotBrand textClassName="text-lg" />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">

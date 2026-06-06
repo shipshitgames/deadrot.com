@@ -1,4 +1,14 @@
-import { Button, MenuKicker, MenuPanel, MenuScreen, MenuTitle } from "@shipshitgames/ui";
+import {
+  MainMenuAction,
+  MainMenuCopy,
+  MainMenuLayout,
+  MainMenuNav,
+  MainMenuScreen,
+  MainMenuStatus,
+  MainMenuTitle,
+  MainMenuTitleLine,
+  MenuKicker,
+} from "@shipshitgames/ui";
 
 export function AppShell() {
   return (
@@ -37,24 +47,33 @@ export function AppShell() {
         </div>
       </div>
 
-      <MenuScreen id="overlay">
-        <MenuPanel id="overlay-card">
-          <MenuKicker id="overlay-kicker">Pyre Courier Run</MenuKicker>
-          <MenuTitle id="overlay-title">REDLINE</MenuTitle>
-          <p id="overlay-body">
-            Carry the cargo through the Scourge-rot lane to the BEACON. Beat the clock.
-          </p>
-          <ul id="overlay-controls">
-            <li><kbd>HOLD -&gt;</kbd> / <kbd>D</kbd> Accelerate</li>
-            <li><kbd>SPACE</kbd> / <kbd>UP</kbd> / <kbd>W</kbd> Jump</li>
-            <li><kbd>SHIFT</kbd> / <kbd>DOWN</kbd> / <kbd>S</kbd> Dash-roll</li>
-            <li><kbd>R</kbd> Restart</li>
-          </ul>
-          <Button id="overlay-btn" variant="primary" size="lg">
-            IGNITE
-          </Button>
-        </MenuPanel>
-      </MenuScreen>
+      <MainMenuScreen id="overlay">
+        <MainMenuLayout id="overlay-card">
+          <MainMenuCopy>
+            <MenuKicker id="overlay-kicker">Pyre Courier Run</MenuKicker>
+            <MainMenuTitle id="overlay-title">
+              <MainMenuTitleLine>RED</MainMenuTitleLine>
+              <MainMenuTitleLine tone="hot">LINE</MainMenuTitleLine>
+            </MainMenuTitle>
+            <p id="overlay-body" className="ssg-main-menu-subtitle">
+              Carry the cargo through the Scourge-rot lane to the BEACON. Beat the clock.
+            </p>
+            <MainMenuStatus>
+              <span>Courier ready</span>
+              <span>Best time armed</span>
+            </MainMenuStatus>
+          </MainMenuCopy>
+          <MainMenuNav label="Route">
+            <ul id="overlay-controls">
+              <li><kbd>HOLD -&gt;</kbd> / <kbd>D</kbd> Accelerate</li>
+              <li><kbd>SPACE</kbd> / <kbd>UP</kbd> / <kbd>W</kbd> Jump</li>
+              <li><kbd>SHIFT</kbd> / <kbd>DOWN</kbd> / <kbd>S</kbd> Dash-roll</li>
+              <li><kbd>R</kbd> Restart</li>
+            </ul>
+            <MainMenuAction id="overlay-btn" variant="primary" label="IGNITE" meta="Run the lane" />
+          </MainMenuNav>
+        </MainMenuLayout>
+      </MainMenuScreen>
     </>
   );
 }

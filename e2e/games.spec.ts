@@ -1,0 +1,230 @@
+import { expect, test, type Page } from '@playwright/test'
+
+type GameSlug =
+  | 'deadlane'
+  | 'pactfall'
+  | 'redline'
+  | 'rothulk'
+  | 'scourge-survivors'
+  | 'starblight'
+  | 'warline'
+
+interface GameSpec {
+  path: string
+  assertLoaded: (page: Page) => Promise<void>
+  exercise: (page: Page) => Promise<void>
+  canvasSelector?: string
+  ignoredConsoleErrors?: RegExp[]
+}
+
+const gameSpecs: Record<GameSlug, GameSpec> = {
+  deadlane: {
+    path: '/',
+    canvasSelector: '#scene',
+    async assertLoaded(page) {
+      await expect(page.getByText('Gold')).toBeVisible()
+      await expect(page.getByText('Wave')).toBeVisible()
+      await expect(page.getByText('Base HP')).toBeVisible()
+      await expect(page.getByRole('button', { name: 'DEPLOY' })).toBeVisible()
+    },
+    async exercise(page) {
+      await page.getByRole('button', { name: 'DEPLOY' }).click()
+      await expect(page.locator('#hud-banner')).toHaveClass(/hidden/)
+      await expect(page.locator('#hint-text')).toContainText(/CLICK A CELL TO BUILD|NOT ENOUGH GOLD/)
+    },
+  },
+  pactfall: {
+    path: '/',
+    canvasSelector: '#scene',
+    async assertLoaded(page) {
+      await expect(page.getByText('PYRE BASE')).toBeVisible()
+      await expect(page.getByText('WARDEN BASE')).toBeVisible()
+      await expect(page.getByText('SCOURGE BUFF')).toBeVisible()
+      await expect(page.locator('#arena-name')).not.toBeEmpty()
+    },
+    async exercise(page) {
+      const box = await page.locator('#scene').boundingBox()
+      expect(box).not.toBeNull()
+      await page.locator('#scene').dispatchEvent('pointerdown', {
+        bubbles: true,
+        button: 0,
+        clientX: Math.round((box?.x ?? 0) + (box?.width ?? 0) / 2),
+        clientY: Math.round((box?.y ?? 0) + (box?.height ?? 0) / 2),
+        isPrimary: true,
+        pointerId: 1,
+        pointerType: 'touch',
+      })
+      await expect(page.locator('#meter-hp .bar i')).toHaveAttribute('style', /width:/)
+    },
+  },
+  redline: {
+    path: '/',
+    canvasSelector: '#scene',
+    async assertLoaded(page) {
+      await expect(page.getByText('Pyre Courier Run')).toBeVisible()
+      await expect(page.getByRole('button', { name: 'IGNITE' })).toBeVisible()
+      await expect(page.locator('#hud-speed')).toBeVisible()
+      await expect(page.locator('#hud-dist')).toBeVisible()
+    },
+    async exercise(page) {
+      await page.getByRole('button', { name: 'IGNITE' }).click()
+      await expect(page.locator('#overlay')).toHaveClass(/is-hidden/)
+      await page.keyboard.down('ArrowRight')
+      await page.waitForTimeout(250)
+      await page.keyboard.up('ArrowRight')
+      await expect.poll(() => page.locator('#hud-time').textContent()).not.toBe('0.00')
+    },
+  },
+  rothulk: {
+    path: '/',
+    canvasSelector: '#scene',
+    async assertLoaded(page) {
+      await expect(page.getByText('ROTHULK')).toBeVisible()
+      await expect(page.getByRole('button', { name: 'BREACH THE HULK' })).toBeVisible()
+      await expect(page.locator('#hud-lives')).toHaveText('x3')
+    },
+    async exercise(page) {
+      await page.getByRole('button', { name: 'BREACH THE HULK' }).click()
+      await expect(page.locator('#banner')).toHaveClass(/hidden/)
+      await expect(page.locator('#hud-obj')).toContainText('REACH')
+    },
+  },
+  'scourge-survivors': {
+    path: '/?sandbox=1',
+    canvasSelector: '[data-testid="game-canvas"]',
+    async assertLoaded(page) {
+      await expect(page.getByText('Scourge Labs')).toBeVisible()
+      await expect(page.getByTestId('game-canvas')).toBeVisible()
+      await page.waitForFunction(() => {
+        const win = window as unknown as { __fpsGame?: unknown; __hudSnapshot?: () => unknown }
+        return Boolean(win.__fpsGame && win.__hudSnapshot)
+      })
+    },
+    async exercise(page) {
+      const snapshot = await page.evaluate(() => {
+        return (window as unknown as { __hudSnapshot: () => { sandbox: boolean; status: string } }).__hudSnapshot()
+      })
+      expect(snapshot).toMatchObject({
+        sandbox: true,
+        status: 'pointerlock-needed',
+      })
+      await page.getByRole('button', { name: /runtime assets/i }).click()
+      await expect(page.locator('figcaption').filter({ hasText: /^Pistol$/ })).toBeVisible()
+      await expect(page.locator('figcaption').filter({ hasText: /^Boss front$/ })).toBeVisible()
+    },
+  },
+  starblight: {
+    path: '/',
+    canvasSelector: '#scene',
+    async assertLoaded(page) {
+      await expect(page.getByText('STARBLIGHT')).toBeVisible()
+      await expect(page.getByRole('button', { name: 'ENGAGE' })).toBeVisible()
+      await expect(page.locator('#int-text')).toContainText('100/100')
+    },
+    async exercise(page) {
+      await page.getByRole('button', { name: 'ENGAGE' }).click()
+      await expect(page.locator('#banner')).toHaveClass(/hidden/)
+      await expect(page.locator('#level')).toHaveText('1')
+      await expect(page.locator('#kills')).toContainText('0 kills')
+    },
+  },
+  warline: {
+    path: '/',
+    ignoredConsoleErrors: [/WebSocket connection to .*localhost:1999/i],
+    async assertLoaded(page) {
+      await expect(page.getByRole('heading', { name: 'The Front' })).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'Command' })).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'War Feed' })).toBeVisible()
+      await expect(page.getByRole('img', { name: 'War map of the front' })).toBeVisible()
+    },
+    async exercise(page) {
+      await page.getByRole('button', { name: /^Hold the Lane\b/i }).click()
+      await expect(page.locator('ol li').first()).toContainText('deadlane')
+    },
+  },
+}
+
+test('boots and responds to core controls', async ({ page }, testInfo) => {
+  const slug = gameSlugFromProject(testInfo.project.name)
+  const spec = gameSpecs[slug]
+  expect(spec, `No E2E game spec found for project ${slug}`).toBeTruthy()
+
+  const consoleErrors: string[] = []
+  const pageErrors: string[] = []
+  page.on('console', (message) => {
+    if (message.type() === 'error') consoleErrors.push(message.text())
+  })
+  page.on('pageerror', (error) => pageErrors.push(String(error)))
+
+  await page.goto(spec.path)
+  await spec.assertLoaded(page)
+
+  if (spec.canvasSelector) {
+    await expectCanvasToRender(page, spec.canvasSelector)
+  }
+  await expectNoBrokenImages(page)
+
+  await spec.exercise(page)
+
+  const ignored = spec.ignoredConsoleErrors ?? []
+  const unexpectedConsoleErrors = consoleErrors.filter(
+    (message) => !ignored.some((pattern) => pattern.test(message)),
+  )
+  expect(pageErrors).toEqual([])
+  expect(unexpectedConsoleErrors).toEqual([])
+})
+
+function gameSlugFromProject(projectName: string): GameSlug {
+  return projectName.split(':')[0] as GameSlug
+}
+
+async function expectCanvasToRender(page: Page, selector: string) {
+  const canvas = page.locator(selector).first()
+  await expect(canvas).toBeVisible()
+  await expect.poll(async () => {
+    const image = await canvas.screenshot()
+    const dataUrl = `data:image/png;base64,${image.toString('base64')}`
+    return page.evaluate(async (src) => {
+      const image = new Image()
+      image.src = src
+      await image.decode()
+
+      const probe = document.createElement('canvas')
+      probe.width = 64
+      probe.height = Math.max(1, Math.round((image.height / image.width) * probe.width))
+      const context = probe.getContext('2d', { willReadFrequently: true })
+      if (!context) return false
+
+      context.drawImage(image, 0, 0, probe.width, probe.height)
+      const data = context.getImageData(0, 0, probe.width, probe.height).data
+      let painted = 0
+      let varied = 0
+      let firstIntensity: number | null = null
+
+      for (let index = 0; index < data.length; index += 4) {
+        const red = data[index] ?? 0
+        const green = data[index + 1] ?? 0
+        const blue = data[index + 2] ?? 0
+        const alpha = data[index + 3] ?? 0
+        const intensity = red + green + blue
+
+        if (alpha > 0 && intensity > 8) {
+          painted += 1
+          firstIntensity ??= intensity
+          if (Math.abs(intensity - firstIntensity) > 10) varied += 1
+        }
+      }
+
+      return painted > 80 && varied > 10
+    }, dataUrl)
+  }).toBe(true)
+}
+
+async function expectNoBrokenImages(page: Page) {
+  const brokenImages = await page.$$eval('img', (images) =>
+    images
+      .filter((image) => !image.complete || image.naturalWidth === 0 || image.naturalHeight === 0)
+      .map((image) => image.currentSrc || image.src),
+  )
+  expect(brokenImages).toEqual([])
+}

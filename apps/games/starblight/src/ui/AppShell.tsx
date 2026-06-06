@@ -1,4 +1,16 @@
-import { Button, MenuKicker, MenuPanel, MenuScreen, MenuTitle } from "@shipshitgames/ui";
+import {
+  Button,
+  MainMenuAction,
+  MainMenuCopy,
+  MainMenuLayout,
+  MainMenuNav,
+  MainMenuScreen,
+  MainMenuStatus,
+  MainMenuTitle,
+  MainMenuTitleLine,
+  MenuKicker,
+  MenuPanel,
+} from "@shipshitgames/ui";
 
 export function AppShell() {
   return (
@@ -33,18 +45,40 @@ export function AppShell() {
           <div id="build-tray" />
         </div>
 
-        <MenuScreen id="banner" className="banner">
-          <MenuPanel className="banner-inner">
-            <MenuTitle id="banner-title">STARBLIGHT</MenuTitle>
-            <MenuKicker id="banner-sub">THE ORBITAL FRONT</MenuKicker>
-            <p className="hint" id="banner-hint">
-              MOVE WITH THE MOUSE - weapons auto-fire - collect gems, draft upgrades, stack combos
-            </p>
-            <Button id="banner-btn" className="cta" variant="primary" size="lg">
-              ENGAGE
-            </Button>
+        <MainMenuScreen id="banner" className="banner">
+          <MainMenuLayout>
+            <MainMenuCopy>
+              <MenuKicker>Orbital Survivors Front</MenuKicker>
+              <MainMenuTitle id="banner-title">
+                <MainMenuTitleLine>STAR</MainMenuTitleLine>
+                <MainMenuTitleLine tone="hot">BLIGHT</MainMenuTitleLine>
+              </MainMenuTitle>
+              <MenuKicker id="banner-sub">THE ORBITAL FRONT</MenuKicker>
+              <p className="hint" id="banner-hint">
+                MOVE WITH THE MOUSE - weapons auto-fire - collect gems, draft upgrades, stack combos
+              </p>
+              <MainMenuStatus>
+                <span>Interceptor online</span>
+                <span>Draft systems hot</span>
+              </MainMenuStatus>
+            </MainMenuCopy>
+            <MainMenuNav label="Launch">
+              <MainMenuAction id="banner-btn" variant="primary" label="ENGAGE" meta="Start sortie" />
+            </MainMenuNav>
+          </MainMenuLayout>
+        </MainMenuScreen>
+
+        <div id="pause-menu" className="pause-menu hidden">
+          <MenuPanel className="pause-inner">
+            <h2 className="pause-title ssg-section-heading">PAUSED</h2>
+            <p id="pause-stats" className="pause-stats mono">0:00 - LVL 1 - 0 kills</p>
+            <div className="pause-actions">
+              <button id="pause-resume" className="menu-action primary">RESUME</button>
+              <button id="pause-restart" className="menu-action">RESTART RUN</button>
+              <button id="pause-title-btn" className="menu-action ghost">MAIN MENU</button>
+            </div>
           </MenuPanel>
-        </MenuScreen>
+        </div>
 
         <div id="pause-menu" className="pause-menu hidden">
           <MenuPanel className="pause-inner">

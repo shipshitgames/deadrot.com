@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import type { HUDState } from '../game/types'
 import type { ScoreEntry, Settings, ShopState } from '../game/storage'
 import { SHOP_UPGRADES, SURVIVOR_CLASSES, SURVIVOR_CLASS_IDS, SURVIVOR_RUN_GOAL_TIME, shopCost, type SurvivorClassId } from '../game/data/survivors'
@@ -9,7 +9,19 @@ import playerMedicPreview from '@shipshitgames/assets/games/scourge-survivors/pl
 import playerRangerPreview from '@shipshitgames/assets/games/scourge-survivors/players/pyre/ranger/front.webp'
 import playerScoutPreview from '@shipshitgames/assets/games/scourge-survivors/players/pyre/vector/front.webp'
 import menuHero from '@shipshitgames/assets/games/scourge-survivors/ui/menu/scourge-hero.jpg'
-import { Button, Card } from '@shipshitgames/ui'
+import {
+  Button,
+  Card,
+  MainMenuAction,
+  MainMenuCopy,
+  MainMenuLayout,
+  MainMenuNav,
+  MainMenuScreen,
+  MainMenuStatus,
+  MainMenuTitle,
+  MainMenuTitleLine,
+  MainMenuTopBar,
+} from '@shipshitgames/ui'
 import { Switch } from '@/components/ui/switch'
 
 interface Props {
@@ -45,7 +57,6 @@ const STAT_LABEL = 'ssg-stat-label'
 const STAT_VALUE = 'ssg-stat-value'
 const MENU_HEADING = 'ssg-section-heading'
 const STAT_SUB = 'ssg-stat-sub'
-const MENU_HERO_STYLE = { '--scourge-menu-hero': `url(${menuHero})` } as CSSProperties
 const DRAFT_PRESS_MAX_AGE_MS = 1200
 const AVATAR_PREVIEWS: Record<PlayerAvatarId, string> = {
   ranger: playerRangerPreview,
@@ -1041,68 +1052,72 @@ export function HUD({
       )}
 
       {showMainMenu && (
-        <div className={`${OVERLAY} scourge-menu-overlay cursor-default overflow-y-auto`} style={MENU_HERO_STYLE}>
-          <div className="scourge-menu-topbar" aria-hidden>
-            <span className="scourge-menu-topbar__mark">SSG</span>
-            <span>Ashgate breach</span>
-            <span>{shop.gold.toLocaleString()} gold</span>
-          </div>
+        <MainMenuScreen className="cursor-default overflow-y-auto" backgroundImage={menuHero}>
+          <MainMenuTopBar mark="SSG" meta={`${shop.gold.toLocaleString()} gold`} aria-hidden>
+            Ashgate breach
+          </MainMenuTopBar>
 
           {menuScreen === 'home' ? (
-            <div className="scourge-title-home">
-              <div className="scourge-title-copy">
+            <MainMenuLayout>
+              <MainMenuCopy>
                 <div className="ssg-menu-kicker">Ship Shit Games</div>
-                <h1 className="ssg-menu-title scourge-menu-title">
-                  <span className="scourge-title-line scourge-title-line--scourge">SCOURGE</span>
-                  <span className="scourge-title-line scourge-title-line--survivors">SURVIVORS</span>
-                </h1>
-                <div className="scourge-title-status">
+                <MainMenuTitle className="ssg-main-menu-title--pixel">
+                  <MainMenuTitleLine>SCOURGE</MainMenuTitleLine>
+                  <MainMenuTitleLine tone="hot">SURVIVORS</MainMenuTitleLine>
+                </MainMenuTitle>
+                <MainMenuStatus>
                   <span>Pyre operator ready</span>
                   <span>{scores.length === 0 ? 'No records' : `${scores.length} local records`}</span>
-                </div>
-              </div>
+                </MainMenuStatus>
+              </MainMenuCopy>
 
-              <nav className="scourge-title-menu" aria-label="Main menu">
-                <button type="button" className="scourge-title-action scourge-title-action--primary" onClick={() => setMenuScreen('survivor')}>
-                  <span className="scourge-title-action__label">
-                    <IconText icon="target" size={22}>Start Run</IconText>
-                  </span>
-                  <span className="scourge-title-action__meta">Choose operator</span>
-                </button>
-                <button type="button" className="scourge-title-action scourge-title-action--shop" onClick={() => setMenuScreen('shop')}>
-                  <span className="scourge-title-action__label">
-                    <IconText icon="shop" size={18}>Upgrades</IconText>
-                  </span>
-                  <span className="scourge-title-action__meta">{shop.gold.toLocaleString()} gold</span>
-                </button>
-                <button type="button" className="scourge-title-action scourge-title-action--coop" onClick={() => setMenuScreen('multiplayer')}>
-                  <span className="scourge-title-action__label">
-                    <IconText icon="swords" size={18}>Co-op</IconText>
-                  </span>
-                  <span className="scourge-title-action__meta">Online rooms</span>
-                </button>
-                <button type="button" className="scourge-title-action scourge-title-action--records" onClick={() => setMenuScreen('leaderboard')}>
-                  <span className="scourge-title-action__label">
-                    <IconText icon="trophy" size={18}>Leaderboard</IconText>
-                  </span>
-                  <span className="scourge-title-action__meta">{scores.length === 0 ? 'No records' : 'Local archive'}</span>
-                </button>
-                <button type="button" className="scourge-title-action scourge-title-action--settings" onClick={() => setMenuScreen('settings')}>
-                  <span className="scourge-title-action__label">
-                    <IconText icon="settings" size={18}>Settings</IconText>
-                  </span>
-                  <span className="scourge-title-action__meta">Audio</span>
-                </button>
+              <MainMenuNav aria-label="Main menu">
+                <MainMenuAction
+                  type="button"
+                  variant="primary"
+                  label={<IconText icon="target" size={22}>Start Run</IconText>}
+                  meta="Choose operator"
+                  onClick={() => setMenuScreen('survivor')}
+                />
+                <MainMenuAction
+                  type="button"
+                  variant="shop"
+                  label={<IconText icon="shop" size={18}>Upgrades</IconText>}
+                  meta={`${shop.gold.toLocaleString()} gold`}
+                  onClick={() => setMenuScreen('shop')}
+                />
+                <MainMenuAction
+                  type="button"
+                  variant="coop"
+                  label={<IconText icon="swords" size={18}>Co-op</IconText>}
+                  meta="Online rooms"
+                  onClick={() => setMenuScreen('multiplayer')}
+                />
+                <MainMenuAction
+                  type="button"
+                  variant="records"
+                  label={<IconText icon="trophy" size={18}>Leaderboard</IconText>}
+                  meta={scores.length === 0 ? 'No records' : 'Local archive'}
+                  onClick={() => setMenuScreen('leaderboard')}
+                />
+                <MainMenuAction
+                  type="button"
+                  variant="settings"
+                  label={<IconText icon="settings" size={18}>Settings</IconText>}
+                  meta="Audio"
+                  onClick={() => setMenuScreen('settings')}
+                />
                 {onStartSandbox && (
-                  <button type="button" className="scourge-title-action scourge-title-action--dev" onClick={onStartSandbox}>
-                    <span className="scourge-title-action__label">
-                      <IconText icon="gamepad" size={18}>Sandbox</IconText>
-                    </span>
-                    <span className="scourge-title-action__meta">Dev lab</span>
-                  </button>
+                  <MainMenuAction
+                    type="button"
+                    variant="dev"
+                    label={<IconText icon="gamepad" size={18}>Sandbox</IconText>}
+                    meta="Dev lab"
+                    onClick={onStartSandbox}
+                  />
                 )}
-              </nav>
-            </div>
+              </MainMenuNav>
+            </MainMenuLayout>
           ) : (
             <div className="scourge-menu-content">
 
@@ -1160,7 +1175,7 @@ export function HUD({
           )}
             </div>
           )}
-        </div>
+        </MainMenuScreen>
       )}
 
       {status === 'paused' && (

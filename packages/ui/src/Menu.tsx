@@ -1,5 +1,6 @@
 import type {
   ButtonHTMLAttributes,
+  CSSProperties,
   HTMLAttributes,
   ReactNode,
 } from "react";
@@ -28,6 +29,155 @@ export function MenuTitle({
 
 export function MenuKicker({ className, ...props }: DivProps) {
   return <div className={cn("ssg-menu-kicker", className)} {...props} />;
+}
+
+export interface MainMenuScreenProps extends DivProps {
+  backgroundImage?: string;
+}
+
+export function MainMenuScreen({
+  backgroundImage,
+  className,
+  style,
+  ...props
+}: MainMenuScreenProps) {
+  const screenStyle = backgroundImage
+    ? ({
+        "--ssg-main-menu-image": `url(${backgroundImage})`,
+        ...style,
+      } as CSSProperties)
+    : style;
+
+  return (
+    <MenuScreen
+      className={cn("ssg-main-menu-screen", className)}
+      style={screenStyle}
+      {...props}
+    />
+  );
+}
+
+export interface MainMenuTopBarProps extends DivProps {
+  mark?: ReactNode;
+  meta?: ReactNode;
+}
+
+export function MainMenuTopBar({
+  className,
+  mark,
+  meta,
+  children,
+  ...props
+}: MainMenuTopBarProps) {
+  return (
+    <div className={cn("ssg-main-menu-topbar", className)} {...props}>
+      {mark && <span className="ssg-main-menu-topbar__mark">{mark}</span>}
+      {children && <span>{children}</span>}
+      {meta && <span>{meta}</span>}
+    </div>
+  );
+}
+
+export function MainMenuLayout({ className, ...props }: DivProps) {
+  return <div className={cn("ssg-main-menu-layout", className)} {...props} />;
+}
+
+export function MainMenuCopy({ className, ...props }: DivProps) {
+  return <div className={cn("ssg-main-menu-copy", className)} {...props} />;
+}
+
+export function MainMenuTitle({
+  className,
+  ...props
+}: HTMLAttributes<HTMLHeadingElement>) {
+  return <h1 className={cn("ssg-main-menu-title", className)} {...props} />;
+}
+
+export interface MainMenuTitleLineProps
+  extends HTMLAttributes<HTMLSpanElement> {
+  tone?: "bone" | "hot" | "ember";
+}
+
+export function MainMenuTitleLine({
+  className,
+  tone = "bone",
+  ...props
+}: MainMenuTitleLineProps) {
+  return (
+    <span
+      className={cn(
+        "ssg-main-menu-title-line",
+        `ssg-main-menu-title-line--${tone}`,
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function MainMenuStatus({ className, ...props }: DivProps) {
+  return <div className={cn("ssg-main-menu-status", className)} {...props} />;
+}
+
+export interface MainMenuNavProps extends HTMLAttributes<HTMLElement> {
+  label?: ReactNode;
+}
+
+export function MainMenuNav({
+  className,
+  label = "Main Menu",
+  children,
+  ...props
+}: MainMenuNavProps) {
+  return (
+    <nav className={cn("ssg-main-menu-nav", className)} {...props}>
+      {label && <div className="ssg-main-menu-nav__label">{label}</div>}
+      {children}
+    </nav>
+  );
+}
+
+export interface MainMenuActionProps
+  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "title"> {
+  icon?: ReactNode;
+  label: ReactNode;
+  meta?: ReactNode;
+  variant?:
+    | "default"
+    | "primary"
+    | "shop"
+    | "coop"
+    | "records"
+    | "settings"
+    | "dev";
+}
+
+export function MainMenuAction({
+  className,
+  icon,
+  label,
+  meta,
+  type = "button",
+  variant = "default",
+  ...props
+}: MainMenuActionProps) {
+  return (
+    <button
+      type={type}
+      className={cn(
+        "ssg-main-menu-action",
+        `ssg-main-menu-action--${variant}`,
+        className,
+      )}
+      {...props}
+    >
+      <span className="ssg-main-menu-action__label">
+        {icon && <span className="ssg-main-menu-action__icon">{icon}</span>}
+        <span>{label}</span>
+      </span>
+      {meta && <span className="ssg-main-menu-action__meta">{meta}</span>}
+    </button>
+  );
 }
 
 export interface MenuItemProps

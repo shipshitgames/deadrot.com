@@ -158,29 +158,35 @@ export class HudSystem {
 
     if (s.phase === 'title') {
       this.banner.classList.remove('hidden')
-      this.bannerTitle.textContent = 'STARBLIGHT'
+      this.bannerTitle.innerHTML =
+        '<span class="ssg-main-menu-title-line ssg-main-menu-title-line--bone">STAR</span><span class="ssg-main-menu-title-line ssg-main-menu-title-line--hot">BLIGHT</span>'
       this.bannerSub.textContent = 'THE ORBITAL FRONT'
       this.bannerHint.innerHTML =
         'MOVE WITH THE MOUSE &nbsp;&bull;&nbsp; weapons auto-fire &nbsp;&bull;&nbsp; collect gems, draft upgrades, stack combos'
-      this.bannerBtn.textContent = 'ENGAGE'
+      this.setBannerButton('ENGAGE', 'Start sortie')
       this.bannerBtn.classList.remove('hidden')
     } else if (s.phase === 'gameover') {
       this.banner.classList.remove('hidden')
       this.bannerTitle.textContent = 'OVERRUN'
       this.bannerSub.textContent = `t=${fmtTime(s.timeSec)} · LVL ${s.level} · ${s.kills} burned`
       this.bannerHint.innerHTML = 'The Scourge breached the line.'
-      this.bannerBtn.textContent = 'RE-ENGAGE'
+      this.setBannerButton('RE-ENGAGE', 'Retry run')
       this.bannerBtn.classList.remove('hidden')
     } else if (s.phase === 'victory') {
       this.banner.classList.remove('hidden')
       this.bannerTitle.textContent = 'FRONT HELD'
       this.bannerSub.textContent = `The Blight-Maw is burned · t=${fmtTime(s.timeSec)} · LVL ${s.level}`
       this.bannerHint.innerHTML = 'The orbital front holds — for now.'
-      this.bannerBtn.textContent = 'FLY AGAIN'
+      this.setBannerButton('FLY AGAIN', 'Launch again')
       this.bannerBtn.classList.remove('hidden')
     } else {
       this.banner.classList.add('hidden')
     }
+  }
+
+  private setBannerButton(label: string, meta: string) {
+    this.bannerBtn.innerHTML =
+      `<span class="ssg-main-menu-action__label"><span>${label}</span></span><span class="ssg-main-menu-action__meta">${meta}</span>`
   }
 
   private renderPause(s: HudState) {
