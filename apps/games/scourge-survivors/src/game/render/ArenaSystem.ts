@@ -1,15 +1,31 @@
 import * as THREE from 'three'
 import type { GameContext } from '../context'
 import type { GameSystems } from '../systems'
-import { ARENA_TEXTURE_REPEAT, ARENA_TEXTURES } from '../spriteAssets'
-import { type ArenaMap, type ObstacleMat } from '../data/maps'
+import { arenaTexture, arenaTextureRepeat } from '../spriteAssets'
+import { DEFAULT_ARENA_MATERIALS, type ArenaMap, type ObstacleMat } from '../data/maps'
 import { ARENA_HALF, PLAYER_HEIGHT, WALL_HEIGHT, WALL_THICKNESS } from '../constants'
 import { RectBounds } from '@shipshitgames/engine'
 
+export interface ArenaDebugSnapshot {
+  mapId: string
+  materialIds: Record<'floor' | 'wall' | 'block' | 'column', string>
+  environmentObjectCount: number
+  silhouetteCount: number
+  decalCount: number
+  propCount: number
+  solidMeshes: number
+  raycastTargets: number
+  obstacleBoxes: number
+}
+
 export class ArenaSystem {
-  arenaObjects: THREE.Mesh[] = []
+  arenaObjects: THREE.Object3D[] = []
   arenaMaterials: THREE.Material[] = []
   arenaTextures: THREE.Texture[] = []
+  private environmentObjectCount = 0
+  private silhouetteCount = 0
+  private decalCount = 0
+  private propCount = 0
 
   constructor(private ctx: GameContext, private sys: GameSystems) {}
 
@@ -18,7 +34,7 @@ export class ArenaSystem {
   clearArena() {
     for (const o of this.arenaObjects) {
       this.ctx.scene.remove(o)
-      o.geometry.dispose()
+      if (o instanceof THREE.Mesh) o.geometry.dispose()
     }
     for (const m of this.arenaMaterials) m.dispose()
     for (const t of this.arenaTextures) t.dispose()
@@ -31,6 +47,10 @@ export class ArenaSystem {
     this.arenaObjects = []
     this.arenaMaterials = []
     this.arenaTextures = []
+    this.environmentObjectCount = 0
+    this.silhouetteCount = 0
+    this.decalCount = 0
+    this.propCount = 0
     this.ctx.solidMeshes = []
     this.ctx.obstacleBoxes = []
   }
@@ -57,23 +77,25 @@ export class ArenaSystem {
     this.ctx.accentA.position.set(t.accentA.x, t.accentA.y, t.accentA.z)
     this.ctx.accentB.color.setHex(t.accentB.color)
     this.ctx.accentB.position.set(t.accentB.x, t.accentB.y, t.accentB.z)
+    this.buildDistantEnvironment(map)
 
     // --- materials ---
+    const textures = map.materials ?? DEFAULT_ARENA_MATERIALS
     const floorMat = new THREE.MeshStandardMaterial({
-      map: this.makeRepeatingTexture(ARENA_TEXTURES.floor, ARENA_TEXTURE_REPEAT.floor[0], ARENA_TEXTURE_REPEAT.floor[1]),
+      map: this.makeTexture(textures.floor),
       color: t.floorTint, roughness: 0.9, metalness: 0.08,
     })
     const wallMat = new THREE.MeshStandardMaterial({
-      map: this.makeRepeatingTexture(ARENA_TEXTURES.wall, ARENA_TEXTURE_REPEAT.wall[0], ARENA_TEXTURE_REPEAT.wall[1]),
+      map: this.makeTexture(textures.wall),
       color: t.wallTint, roughness: 0.65, metalness: 0.22,
     })
     const trimMat = new THREE.MeshStandardMaterial({ color: t.trim, emissive: t.trim, emissiveIntensity: 1.4 })
     const crateMat = new THREE.MeshStandardMaterial({
-      map: this.makeRepeatingTexture(ARENA_TEXTURES.block, ARENA_TEXTURE_REPEAT.block[0], ARENA_TEXTURE_REPEAT.block[1]),
+      map: this.makeTexture(textures.block),
       color: t.wallTint, roughness: 0.72, metalness: 0.24,
     })
     const pillarMat = new THREE.MeshStandardMaterial({
-      map: this.makeRepeatingTexture(ARENA_TEXTURES.column, ARENA_TEXTURE_REPEAT.column[0], ARENA_TEXTURE_REPEAT.column[1]),
+      map: this.makeTexture(textures.column),
       color: t.wallTint, roughness: 0.58, metalness: 0.32,
     })
     this.arenaMaterials.push(floorMat, wallMat, trimMat, crateMat, pillarMat)
@@ -139,6 +161,8 @@ export class ArenaSystem {
       // Elevated boxes are decorative silhouette — drawn + shootable, not colliders.
       if (!o.elevated) this.ctx.obstacleBoxes.push(new THREE.Box3().setFromObject(mesh))
     }
+    this.buildFloorDecals(map)
+    this.buildArenaProps(map)
 
     this.ctx.raycastTargets.push(...this.ctx.solidMeshes)
   }
@@ -151,6 +175,134 @@ export class ArenaSystem {
     // Centre spawns face into the arena (-Z); off-centre spawns face the origin.
     const centre = Math.abs(s.x) < 0.001 && Math.abs(s.z) < 0.001
     this.ctx.rig.placeAt(s.x, PLAYER_HEIGHT, s.z, centre ? 0 : -s.x, centre ? -10 : -s.z)
+  }
+
+  debugSnapshot(): ArenaDebugSnapshot {
+    const materialIds = this.ctx.currentMap.materials ?? DEFAULT_ARENA_MATERIALS
+    return {
+      mapId: this.ctx.currentMap.id,
+      materialIds,
+      environmentObjectCount: this.environmentObjectCount,
+      silhouetteCount: this.silhouetteCount,
+      decalCount: this.decalCount,
+      propCount: this.propCount,
+      solidMeshes: this.ctx.solidMeshes.length,
+      raycastTargets: this.ctx.raycastTargets.length,
+      obstacleBoxes: this.ctx.obstacleBoxes.length,
+    }
+  }
+
+  private buildDistantEnvironment(map: ArenaMap) {
+    const env = map.environment
+    const skyMat = new THREE.MeshBasicMaterial({
+      color: env.skyTop,
+      side: THREE.BackSide,
+      depthWrite: false,
+      fog: false,
+    })
+    const sky = new THREE.Mesh(new THREE.SphereGeometry(ARENA_HALF * 4.2, 32, 16), skyMat)
+    sky.renderOrder = -20
+    this.addEnvironmentMesh(sky, skyMat)
+
+    const hazeMat = new THREE.MeshBasicMaterial({
+      color: env.horizonHaze,
+      transparent: true,
+      opacity: env.horizonOpacity,
+      side: THREE.BackSide,
+      depthWrite: false,
+      fog: false,
+    })
+    const haze = new THREE.Mesh(new THREE.CylinderGeometry(ARENA_HALF * 2.25, ARENA_HALF * 2.25, 30, 48, 1, true), hazeMat)
+    haze.position.y = 12
+    haze.renderOrder = -18
+    this.addEnvironmentMesh(haze, hazeMat)
+
+    const horizonMat = new THREE.MeshBasicMaterial({
+      color: env.skyHorizon,
+      transparent: true,
+      opacity: 0.5,
+      side: THREE.BackSide,
+      depthWrite: false,
+      fog: false,
+    })
+    const horizon = new THREE.Mesh(new THREE.CylinderGeometry(ARENA_HALF * 2.18, ARENA_HALF * 2.18, 16, 48, 1, true), horizonMat)
+    horizon.position.y = 3.5
+    horizon.renderOrder = -19
+    this.addEnvironmentMesh(horizon, horizonMat)
+
+    for (const silhouette of env.silhouettes) {
+      const mat = new THREE.MeshBasicMaterial({
+        color: silhouette.color,
+        transparent: silhouette.opacity !== undefined && silhouette.opacity < 1,
+        opacity: silhouette.opacity ?? 1,
+        depthWrite: false,
+      })
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(silhouette.w, silhouette.h, silhouette.d), mat)
+      mesh.position.set(silhouette.x, silhouette.h / 2, silhouette.z)
+      mesh.renderOrder = -10
+      this.addEnvironmentMesh(mesh, mat)
+      this.silhouetteCount += 1
+    }
+  }
+
+  private buildFloorDecals(map: ArenaMap) {
+    for (const decal of map.environment.decals) {
+      const mat = new THREE.MeshBasicMaterial({
+        map: this.makeTexture(decal.texture),
+        color: decal.color ?? 0xffffff,
+        transparent: true,
+        opacity: decal.opacity ?? 0.22,
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -2,
+      })
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(decal.w, decal.d), mat)
+      mesh.rotation.x = -Math.PI / 2
+      mesh.rotation.z = decal.rotation ?? 0
+      mesh.position.set(decal.x, 0.018, decal.z)
+      mesh.renderOrder = 4
+      this.ctx.scene.add(mesh)
+      this.arenaObjects.push(mesh)
+      this.arenaMaterials.push(mat)
+      this.decalCount += 1
+      this.environmentObjectCount += 1
+    }
+  }
+
+  private buildArenaProps(map: ArenaMap) {
+    for (const prop of map.environment.props) {
+      const mat = new THREE.SpriteMaterial({
+        map: this.makeTexture(prop.texture),
+        color: prop.color ?? 0xffffff,
+        transparent: true,
+        opacity: prop.opacity ?? 0.86,
+        alphaTest: 0.12,
+        depthWrite: false,
+        fog: true,
+        toneMapped: false,
+      })
+      const sprite = new THREE.Sprite(mat)
+      sprite.position.set(prop.x, prop.y ?? prop.h / 2, prop.z)
+      sprite.scale.set(prop.w, prop.h, 1)
+      sprite.renderOrder = 6
+      this.ctx.scene.add(sprite)
+      this.arenaObjects.push(sprite)
+      this.arenaMaterials.push(mat)
+      this.propCount += 1
+      this.environmentObjectCount += 1
+    }
+  }
+
+  private addEnvironmentMesh(mesh: THREE.Mesh, material: THREE.Material) {
+    this.ctx.scene.add(mesh)
+    this.arenaObjects.push(mesh)
+    this.arenaMaterials.push(material)
+    this.environmentObjectCount += 1
+  }
+
+  private makeTexture(id: string): THREE.Texture {
+    const repeat = arenaTextureRepeat(id)
+    return this.makeRepeatingTexture(arenaTexture(id), repeat[0], repeat[1])
   }
 
   makeRepeatingTexture(source: THREE.Texture, repeatX: number, repeatY: number): THREE.Texture {

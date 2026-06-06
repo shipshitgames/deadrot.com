@@ -7,7 +7,7 @@ import { DEFAULT_MAP_ID, getMap } from './data/maps'
 import type { SurvivorClassId } from './data/survivors'
 import { ENEMY_ARCHETYPES } from './data/enemies'
 import { RenderSystem } from './render/RenderSystem'
-import { ArenaSystem } from './render/ArenaSystem'
+import { ArenaSystem, type ArenaDebugSnapshot } from './render/ArenaSystem'
 import { PlayerSystem } from './entities/PlayerSystem'
 import { WeaponSystem } from './entities/WeaponSystem'
 import { ProjectilesSystem } from './entities/ProjectilesSystem'
@@ -188,6 +188,10 @@ export class Game {
     this.ctx.status = 'pointerlock-needed'
     this.sys.hud.announce('SANDBOX')
     this.sys.hud.emit()
+  }
+
+  arenaDebugSnapshot(): ArenaDebugSnapshot {
+    return this.sys.arena.debugSnapshot()
   }
 
   setSandboxWeapon(id: WeaponId) {

@@ -824,6 +824,510 @@
         "kind": "generated tiling texture",
         "scope": "project prototype"
       }
+    },
+    "arena-ashgate-floor": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/ashgate/floor.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        11.5,
+        11.5
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific tiling floor texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-ashgate-wall": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/ashgate/wall.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        16,
+        1
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific tiling wall texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-ashgate-block": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/ashgate/block.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific tiling block texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-ashgate-column": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/ashgate/column.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        1,
+        3
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific tiling column texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-ashgate-decal": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/ashgate/decal.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific floor decal texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-hollowlanes-floor": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/hollowlanes/floor.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        11.5,
+        11.5
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific tiling floor texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-hollowlanes-wall": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/hollowlanes/wall.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        16,
+        1
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific tiling wall texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-hollowlanes-block": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/hollowlanes/block.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific tiling block texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-hollowlanes-column": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/hollowlanes/column.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        1,
+        3
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific tiling column texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-hollowlanes-decal": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/hollowlanes/decal.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific floor decal texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-maw-floor": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/maw/floor.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        11.5,
+        11.5
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific tiling floor texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-maw-wall": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/maw/wall.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        16,
+        1
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific tiling wall texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-maw-block": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/maw/block.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific tiling block texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-maw-column": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/maw/column.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        1,
+        3
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific tiling column texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-maw-decal": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/maw/decal.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific floor decal texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-perdition-floor": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/perdition/floor.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        11.5,
+        11.5
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific tiling floor texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-perdition-wall": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/perdition/wall.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        16,
+        1
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific tiling wall texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-perdition-block": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/perdition/block.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific tiling block texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-perdition-column": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/perdition/column.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        1,
+        3
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific tiling column texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-perdition-decal": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/perdition/decal.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "repeat",
+      "repeat": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "procedural texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific floor decal texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-ashgate-prop": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/ashgate/prop.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "clamp",
+      "repeat": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "procedural sprite texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific arena prop sprite texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-hollowlanes-prop": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/hollowlanes/prop.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "clamp",
+      "repeat": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "procedural sprite texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific arena prop sprite texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-maw-prop": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/maw/prop.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "clamp",
+      "repeat": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "procedural sprite texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific arena prop sprite texture",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "arena-perdition-prop": {
+      "type": "texture",
+      "path": "games/scourge-survivors/textures/arenas/perdition/prop.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colorSpace": "srgb",
+      "wrap": "clamp",
+      "repeat": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "procedural sprite texture generator",
+        "plan": "Codex local deterministic generation",
+        "date": "2026-06-06",
+        "kind": "generated map-specific arena prop sprite texture",
+        "scope": "Scourge Survivors runtime"
+      }
     }
   },
   "audio": {

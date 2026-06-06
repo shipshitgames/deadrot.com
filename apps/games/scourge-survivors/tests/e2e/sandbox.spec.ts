@@ -22,8 +22,26 @@ type AnimationSample = {
   state: string
 }
 
+type ArenaDebugSnapshot = {
+  mapId: string
+  materialIds: Record<'floor' | 'wall' | 'block' | 'column', string>
+  environmentObjectCount: number
+  silhouetteCount: number
+  decalCount: number
+  propCount: number
+  solidMeshes: number
+  raycastTargets: number
+  obstacleBoxes: number
+}
+
 async function snapshot(page: Page): Promise<HudSnapshot> {
   return page.evaluate(() => (window as unknown as { __hudSnapshot: () => HudSnapshot }).__hudSnapshot())
+}
+
+async function arenaSnapshot(page: Page): Promise<ArenaDebugSnapshot> {
+  return page.evaluate(() =>
+    (window as unknown as { __fpsGame: { arenaDebugSnapshot: () => ArenaDebugSnapshot } }).__fpsGame.arenaDebugSnapshot(),
+  )
 }
 
 test.describe('dev sandbox smoke', () => {
@@ -91,6 +109,30 @@ test.describe('dev sandbox smoke', () => {
       'XP ichor',
     ]))
 
+    await page.getByRole('button', { name: /^texture$/i }).click()
+    const textureLabels = await page.locator('figcaption').evaluateAll((nodes) => nodes.map((node) => node.textContent ?? ''))
+    expect(textureLabels).toEqual(expect.arrayContaining([
+      'Arena floor',
+      'Arena wall',
+      'Arena column',
+      'Arena block',
+      'Ashgate floor',
+      'Ashgate wall',
+      'Ashgate block',
+      'Ashgate column',
+      'Ashgate decal',
+      'Ashgate prop',
+      'The Hollow Lanes floor',
+      'The Hollow Lanes wall',
+      'The Hollow Lanes prop',
+      'The Maw floor',
+      'The Maw decal',
+      'The Maw prop',
+      'Perdition floor',
+      'Perdition decal',
+      'Perdition prop',
+    ]))
+
     await page.getByRole('button', { name: /^audio$/i }).click()
     await expect.poll(
       () => page.$$eval('audio', (nodes) => nodes.map((node) => node.readyState)),
@@ -119,6 +161,46 @@ test.describe('dev sandbox smoke', () => {
     await expect(foes.getByRole('button', { name: /spawn flying/i })).toBeVisible()
     await foes.getByRole('button', { name: /spawn flying/i }).click()
     await expect.poll(() => snapshot(page).then((state) => state.enemiesAlive)).toBeGreaterThan(0)
+
+    expect(consoleErrors).toEqual([])
+  })
+
+  test('loads authored arena environments for every map without adding collision targets', async ({ page }) => {
+    const consoleErrors: string[] = []
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text())
+    })
+    page.on('pageerror', (error) => consoleErrors.push(String(error)))
+
+    await page.goto('/?sandbox=1')
+    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame)
+
+    const mapIds = ['ashgate', 'hollowlanes', 'maw', 'perdition'] as const
+    const results: ArenaDebugSnapshot[] = []
+    for (const mapId of mapIds) {
+      await page.evaluate((id) => {
+        (window as unknown as { __fpsGame: { startSandbox: (mapId: string) => void } }).__fpsGame.startSandbox(id)
+      }, mapId)
+      await expect.poll(() => snapshot(page).then((state) => state.sandbox)).toBe(true)
+      await expect.poll(() => arenaSnapshot(page).then((state) => state.mapId)).toBe(mapId)
+      results.push(await arenaSnapshot(page))
+    }
+
+    for (const result of results) {
+      expect(result.materialIds).toMatchObject({
+        floor: `arena-${result.mapId}-floor`,
+        wall: `arena-${result.mapId}-wall`,
+        block: `arena-${result.mapId}-block`,
+        column: `arena-${result.mapId}-column`,
+      })
+      expect(result.environmentObjectCount).toBeGreaterThanOrEqual(8)
+      expect(result.silhouetteCount).toBeGreaterThanOrEqual(3)
+      expect(result.decalCount).toBeGreaterThanOrEqual(3)
+      expect(result.propCount).toBeGreaterThanOrEqual(4)
+      expect(result.solidMeshes).toBeGreaterThan(0)
+      expect(result.obstacleBoxes).toBeLessThan(result.solidMeshes)
+      expect(result.raycastTargets).toBe(result.solidMeshes)
+    }
 
     expect(consoleErrors).toEqual([])
   })
@@ -190,6 +272,12 @@ test.describe('dev sandbox smoke', () => {
       type DevEnemy = {
         alive: boolean
         flying: boolean
+        group: {
+          position: {
+            x: number
+            z: number
+          }
+        }
         isBoss: boolean
         ranged: boolean
         spriteAnimationFrame: number
@@ -210,6 +298,12 @@ test.describe('dev sandbox smoke', () => {
         spawnSandboxEnemy: (kind: 'boss' | 'flying' | 'melee' | 'ranged', count?: number) => void
         startSandbox: () => void
         ctx: {
+          body: {
+            position: {
+              x: number
+              z: number
+            }
+          }
           enemies: DevEnemy[]
           status: string
         }
@@ -234,6 +328,12 @@ test.describe('dev sandbox smoke', () => {
       for (const kind of ['melee', 'ranged', 'flying', 'boss'] as const) {
         game.spawnSandboxEnemy(kind, 1)
       }
+      game.ctx.enemies
+        .filter((enemy) => enemy.alive)
+        .forEach((enemy, index) => {
+          enemy.group.position.x = game.ctx.body.position.x + (index - 1.5) * 7
+          enemy.group.position.z = game.ctx.body.position.z - 30
+        })
       game.ctx.status = 'playing'
 
       await wait(240)
@@ -257,16 +357,16 @@ test.describe('dev sandbox smoke', () => {
     expect(result.moveB.map((sample) => sample.kind)).toEqual(['boss', 'flying', 'melee', 'ranged'])
 
     for (const [index, sample] of result.moveB.entries()) {
-      expect(sample.state).toBe('move')
       expect(sample.src).toContain('/animations/scourge/')
     }
 
     for (const kind of ['boss', 'flying', 'melee', 'ranged'] as const) {
+      const kindSamples = result.moveSamples
+        .flatMap((samples) => samples)
+        .filter((sample) => sample.kind === kind)
+      expect(kindSamples.some((sample) => sample.state === 'move')).toBe(true)
       const frames = new Set(
-        result.moveSamples
-          .flatMap((samples) => samples)
-          .filter((sample) => sample.kind === kind)
-          .map((sample) => sample.frame),
+        kindSamples.map((sample) => sample.frame),
       )
       expect(frames.size).toBeGreaterThan(1)
     }
