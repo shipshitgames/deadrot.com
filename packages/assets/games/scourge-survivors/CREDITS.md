@@ -1,5 +1,21 @@
 # Asset Credits
 
+## 2026-06-06 - authored breach-arena texture sets
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Role: map-specific floor, wall, block, column, decal, and prop sprite textures for Ashgate, the Hollow Lanes, the Maw, and Perdition.
+- Tool: deterministic local procedural texture generator plus `cwebp`.
+- Plan: Codex local generation.
+- Kind: generated seamless-ish 512x512 WebP tiling textures, floor decal plates, and transparent arena prop sprite plates.
+- Source note: generated from the material palettes and pattern recipe documented under `textures/arenas/README.md`.
+- Final assets:
+  - `textures/arenas/ashgate/{floor,wall,block,column,decal,prop}.webp`
+  - `textures/arenas/hollowlanes/{floor,wall,block,column,decal,prop}.webp`
+  - `textures/arenas/maw/{floor,wall,block,column,decal,prop}.webp`
+  - `textures/arenas/perdition/{floor,wall,block,column,decal,prop}.webp`
+- Notes: Replaces the tint-only map read with authored material lanes while keeping the current v1 arena collision footprint unchanged.
+
 ## 2026-06-04 - Press Start 2P font
 
 - Status: promoted into runtime.
@@ -76,7 +92,7 @@
 
 ## 2026-06-05 - Scourge enemy animation pack v01
 
-- Status: generated, not yet wired into runtime.
+- Status: generated and wired into runtime.
 - Game: Scourge Survivors.
 - Faction / role: Scourge host-grunt, spitter-host, winged-host, and breach-boss animation frames.
 - Tool: `gpt-image-2` via built-in `image_gen`.
@@ -93,6 +109,22 @@
 - Post-processing: generated 3x6 sheets, copied source sheets into each action folder, split into front/side/back six-frame strips, removed `#ff00ff` chroma key, nearest-neighbor downscaled, alpha padded, and encoded lossless with `cwebp -lossless -exact`.
 - Runtime note: non-boss frames are 128x128; boss frames are 128x180 to keep the boss crop/padding fix.
 - Promotion note: the first spitter walk frames and first winged fly frames were also promoted into the current runtime `spitter-host` and `winged-host` static sprites so the color lanes are visible in-game before the animation renderer is wired.
+
+## 2026-06-06 - Winged host green-key regeneration
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Faction / role: Scourge winged-host static and animation frames.
+- Tool: `gpt-image-2` via built-in `image_gen`.
+- Kind: regenerated 2D animation sprite sheets on flat `#00ff00` chroma-key backgrounds.
+- Source outputs:
+  - `/Users/decod3rslabs/.codex/generated_images/019e9c96-23f7-7883-a5d9-fa73fe4ca167/ig_0b32ccf368593783016a2408866ae08191b69a47a9f1b4a2b3.png`
+  - `/Users/decod3rslabs/.codex/generated_images/019e9c96-23f7-7883-a5d9-fa73fe4ca167/ig_0b32ccf368593783016a2409e1f880819180319ad68be9d57a.png`
+  - `/Users/decod3rslabs/.codex/generated_images/019e9c96-23f7-7883-a5d9-fa73fe4ca167/ig_0b32ccf368593783016a240a39531881919a7bca0fb13e96ec.png`
+- Workspace source sheets: `animations/scourge/winged-host/{fly,attack,death}/source/sheet.png`.
+- Final assets: `enemies/scourge/winged-host/{front,side,back}.webp`, `animations/scourge/winged-host/**/frame-*.webp`.
+- Post-processing: split 3x6 sheets, square-padded each cell, keyed only the green background, hardened alpha, removed visible green key pixels, filled transparent RGB from neighboring foreground pixels, and encoded lossless WebP with `cwebp -lossless -exact`.
+- Runtime note: winged-host frames stay as 128x128 transparent square plates so animation anchors, billboard scale, and wing-motion negative space remain stable. Bruised purple is retained as the flyer wing readability lane; purple, white, and green are not retained as rectangular matte/borders.
 
 ## 2026-06-05 - Scourge blood pickup sprite set
 

@@ -13,8 +13,35 @@ on:
     - cron: "23 4 * * 1"
 
 jobs:
+  affected-games:
+    name: Detect affected games
+    runs-on: ubuntu-latest
+    outputs:
+      game_slugs: ${{ steps.detect.outputs.game_slugs }}
+      count: ${{ steps.detect.outputs.count }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect game E2E candidates
+        id: detect
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            node scripts/changed-e2e-games.mjs \
+              --base "${{ github.event.pull_request.base.sha }}" \
+              --head "${{ github.event.pull_request.head.sha }}"
+          else
+            node scripts/changed-e2e-games.mjs --all
+          fi
+
   games:
     name: Cross-game Playwright
+    needs: affected-games
+    if: needs.affected-games.outputs.count != '0'
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
@@ -37,6 +64,7 @@ jobs:
         run: bun run test:e2e
         env:
           CI: true
+          E2E_GAME_SLUGS: ${{ needs.affected-games.outputs.game_slugs }}
 
       - name: Upload cross-game Playwright artifacts
         if: always()
@@ -50,6 +78,8 @@ jobs:
 
   docker-game-e2e:
     name: Dockerized game E2E
+    needs: affected-games
+    if: needs.affected-games.outputs.count != '0'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -59,6 +89,8 @@ jobs:
 
       - name: Run Dockerized E2E
         run: ./scripts/run-e2e-docker.sh
+        env:
+          E2E_GAME_SLUGS: ${{ needs.affected-games.outputs.game_slugs }}
 
       - name: Upload Dockerized Playwright artifacts
         if: always()

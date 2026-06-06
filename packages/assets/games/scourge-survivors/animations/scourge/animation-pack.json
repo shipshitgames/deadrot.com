@@ -1,6 +1,6 @@
 {
   "version": "2026-06-05-v01",
-  "status": "generated-not-wired",
+  "status": "generated-wired",
   "tool": "built-in image_gen",
   "model": "gpt-image-2",
   "promptHistory": "apps/lore/content/Art/Prompt-Batches/2026-06-05-scourge-animation-pack.md",
@@ -53,7 +53,7 @@
     },
     "winged-host": {
       "frameDimensions": [128, 128],
-      "colorLane": "bruised violet wing membranes, red-black body, bone tips, small toxic green organs",
+      "colorLane": "bruised violet wing membranes, red-black body, bone tips, amber organ glow; green is reserved for keyed source backgrounds",
       "physicsLane": "lightweight hover bob, fast wing-beat arcs, quick diving snap",
       "actions": {
         "fly": {

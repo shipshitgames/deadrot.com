@@ -67,6 +67,8 @@ const INITIAL_STATE: HUDState = {
   weapon: WEAPONS[STARTING_WEAPON].name,
   weapons: [{ id: STARTING_WEAPON, name: WEAPONS[STARTING_WEAPON].name, key: 1, active: true }],
   damageBoost: 0,
+  berserk: 0,
+  berserkFrac: 0,
   dualWeapon: 0,
   ads: false,
   adsZoom: 1,
