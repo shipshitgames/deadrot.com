@@ -11,6 +11,8 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
+    "e2e": "turbo run test:e2e",
+    "e2e:docker": "scripts/run-e2e-docker.sh",
     "deploy:games:changed": "node scripts/deploy-changed-games.mjs",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",

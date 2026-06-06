@@ -1,0 +1,32 @@
+name: Game E2E
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+  schedule:
+    - cron: "23 4 * * 1"
+
+jobs:
+  game-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Dockerized E2E
+        run: ./scripts/run-e2e-docker.sh
+
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-e2e-artifacts
+          path: .artifacts/e2e
+          if-no-files-found: ignore
+          retention-days: 14
