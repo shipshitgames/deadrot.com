@@ -15,6 +15,7 @@ docker build \
 docker run --rm \
   --env CI=1 \
   --env TURBO_TELEMETRY_DISABLED=1 \
+  --env E2E_GAME_SLUGS="${E2E_GAME_SLUGS:-}" \
   --env PLAYWRIGHT_HTML_REPORT=/work/.artifacts/e2e/playwright-report \
   --env PLAYWRIGHT_TEST_OUTPUT_DIR=/work/.artifacts/e2e/test-results \
   --volume "${ARTIFACT_DIR}:/work/.artifacts/e2e" \
