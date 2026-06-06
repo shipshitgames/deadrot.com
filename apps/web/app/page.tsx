@@ -97,8 +97,8 @@ export default function Home() {
             Games in the Universe
           </h2>
           <p className="mt-3 max-w-2xl text-ash">
-            Each one a standalone game and a chapter of the same war. All
-            open-source. All playable in your browser.
+            Standalone games and prototypes in one war. Some are playable now,
+            some are still design targets, and all of them feed the same canon.
           </p>
           <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {gallery.map((g) => (
@@ -121,11 +121,11 @@ export default function Home() {
             War for the Lanes
           </h2>
           <p className="mt-5 max-w-2xl leading-relaxed text-ash">
-            One shared planet front. The Pyre and the Wardens hold the line under the Pact while
-            the <span className="text-toxic">Scourge</span> pours from the breaches. Every game is
-            an <span className="text-hellfire">operation</span> — purge a breach, hold a lane, run
-            the convoy — that credits the living war. Build holdouts, raise the Pact Army, push the
-            front.
+            One shared planet front in playable prototype form. The Pyre and the Wardens hold the
+            line under the Pact while the <span className="text-toxic">Scourge</span> pours from the
+            breaches. Every game can report an <span className="text-hellfire">operation</span> —
+            purge a breach, hold a lane, run the convoy — that credits the living war. Spend
+            resources, fortify regions, recon dark sectors, and see whether the front moves.
           </p>
           <div className="mt-10">
             <Button

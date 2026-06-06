@@ -81,7 +81,7 @@ const gameState: Record<
   },
   pactfall: {
     state:
-      "Public browser build exists, while lore still treats it as the future PvP pillar to prove after the PvE base is strong.",
+      "Playable prototype. Current build tests the arena/minion/neutral-Scourge loop first; the full PvP hero pillar is still the design target.",
     canonRole:
       "The Pyre and Wardens settle doctrine grudges in sanctioned arenas. The Pact bends, but it must not break.",
     warline:
@@ -97,7 +97,7 @@ const gameState: Record<
   },
   redline: {
     state:
-      "Public browser build exists, with lore framing it as a concept pillar for the courier front of the war.",
+      "Playable prototype. Current build focuses on a Pyre courier first; Warden courier expression remains part of the design target.",
     canonRole:
       "Speed beats omniscience: couriers outrun the Choir's prediction tempo to keep severed holdouts talking.",
     warline:
@@ -105,7 +105,7 @@ const gameState: Record<
   },
   rothulk: {
     state:
-      "Public browser build exists, with lore framing it as a concept pillar for Pyre infiltration platforming.",
+      "Playable prototype. Current build tests the Pyre saboteur climb and breach-core ignition loop before the full enemy ecology is locked.",
     canonRole:
       "A saboteur climbs a beached Scourge breach-ship, reaches the breach-core, ignites it, and severs the local node.",
     warline:
@@ -167,7 +167,7 @@ const appSurfaces: {
     title: "Warline",
     href: "/warline/",
     description:
-      "The persistent War for the Lanes strategy hub. Every game reports operations into one shared front.",
+      "The playable strategy-lite War for the Lanes campaign layer. Every game can report operations into one shared front.",
   },
   {
     icon: Wrench,

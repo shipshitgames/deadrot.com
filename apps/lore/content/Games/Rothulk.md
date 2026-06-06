@@ -2,11 +2,11 @@
 genre: infiltration platformer (Mario-like)
 repo: shipshitgames/rothulk
 faction: The Pyre
-status: concept
+status: playable prototype
 ---
 # Rothulk
 
-**At a glance:** infiltration platformer (Mario-like) · climb a living [[Scourge]] bio-hulk to its breach-core, ignite it, sever the local node · lone [[The-Pyre|Pyre]] saboteur · the [[CANON]] §6 win condition as a level — node isolation from the inside, the Pyre creed made playable.
+**At a glance:** playable prototype / infiltration platformer (Mario-like) · climb a living [[Scourge]] bio-hulk to its breach-core, ignite it, sever the local node · current build tests the lone [[The-Pyre|Pyre]] saboteur climb · the [[CANON]] §6 win condition as a level — node isolation from the inside, the Pyre creed made playable.
 
 *Burn it from the inside.* A lone [[The-Pyre|Pyre]] saboteur platforms up through a living
 [[Scourge]] **bio-hulk** — a crashed [[Cosmology|breach-ship]] grown into the ground — to
@@ -48,6 +48,7 @@ your path.
 - Shared Scourge pressure: [[Graft-Breacher]], [[Swarm-Spitter]], [[Breach-Boss]].
 
 ## Status
-Concept — a vibe-codeable platforming pillar that makes the universe's core weakness, **node
-isolation by killing the repeaters from the inside**, into the whole game verb. Shares
+Playable prototype — current build tests the platforming/sabotage verb with generic Scourge
+pressure. Named enemy variants, richer hulk ecology, and final roster expression are
+provisional until the climb, core-ignite, and escape loop prove themselves. Shares
 [[Scourge|horde]], [[Cosmology|rules]], [[Timeline]], and the [[Style-Bible|look]].

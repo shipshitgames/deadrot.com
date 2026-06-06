@@ -58,6 +58,10 @@ The Scourge in orbit should look like parasite conquest wearing space debris:
 toxic-green breach organs, chitin over rusted hulls, raw tissue in broken engines, living
 spore mines, and carrier-bosses grown around breach hearts.
 
+Current prototype boss copy uses **THE BLIGHT-MAW** as an in-run boss label. Until reviewed in
+play, treat that as a provisional alias or encounter name for [[Orbital-Breach-Carrier]], not a
+separate locked bestiary entry.
+
 ## First Sprite Roster
 - Human pilot identities: [[Pyre-Interceptor-Pilot]], [[Warden-Defense-Pilot]].
 - Scourge craft: [[Scourge-Fighter]], [[Orbital-Breach-Carrier]].
@@ -66,4 +70,6 @@ spore mines, and carrier-bosses grown around breach hearts.
 
 Playable prototype (top-down mouse-flight survivors, live on Vercel). Next: lock the visual
 style (M0), then execute the momentum-flight pilot pivot above. A clean, vibe-codeable arcade
-pillar that expands the war beyond the surface without locking the main world to Earth.
+pillar that expands the war beyond the surface without locking the main world to Earth. The
+current build foregrounds a lone Warden interceptor; full Pyre/Warden pilot expression remains
+the design target, not proof that both sides are fully playable yet.

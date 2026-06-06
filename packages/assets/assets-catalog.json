@@ -14,12 +14,12 @@
       "games": [
         "scourge-survivors",
         "deadlane",
-        "pactfall"
+        "redline"
       ],
       "variants": {
         "scourge-survivors": "entities/scourge-swarm/scourge-survivors.webp",
         "deadlane": "entities/scourge-swarm/deadlane.webp",
-        "pactfall": "entities/scourge-swarm/pactfall.webp",
+        "pactfall": null,
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -35,7 +35,8 @@
       "promptBase": "Scourge ranged creature with thin predatory silhouette, distended toxic-green firing sac or bio-industrial arm lance, black chitin, raw sinew, rusted tech fragments embedded in flesh.",
       "games": [
         "scourge-survivors",
-        "deadlane"
+        "deadlane",
+        "rothulk"
       ],
       "variants": {
         "scourge-survivors": "entities/scourge-spitter/scourge-survivors.webp",
@@ -57,12 +58,12 @@
       "games": [
         "scourge-survivors",
         "deadlane",
-        "pactfall"
+        "redline"
       ],
       "variants": {
         "scourge-survivors": "entities/scourge-elite/scourge-survivors.webp",
         "deadlane": "entities/scourge-elite/deadlane.webp",
-        "pactfall": "entities/scourge-elite/pactfall.webp",
+        "pactfall": null,
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -78,7 +79,8 @@
       "promptBase": "Scourge elite industrial walker frame overtaken by parasite, black chitin threading through riveted metal joints, one massive demolition-claw fused with bone-sinew, toxic-green breach cores at former control panels, asymmetric tendril mass opposite.",
       "games": [
         "scourge-survivors",
-        "deadlane"
+        "deadlane",
+        "rothulk"
       ],
       "variants": {
         "scourge-survivors": "entities/graft-breacher/scourge-survivors.webp",
@@ -99,7 +101,8 @@
       "promptBase": "Scourge elite siege unit with rusted industrial machine chassis infested by parasite, black chitin over burst metal hull, toxic-green bile sac swollen inside engine cavity, organic tendrils pulsing through joints, hollow breached cockpit.",
       "games": [
         "scourge-survivors",
-        "deadlane"
+        "deadlane",
+        "redline"
       ],
       "variants": {
         "scourge-survivors": "entities/rot-engine/scourge-survivors.webp",
@@ -121,12 +124,12 @@
       "games": [
         "scourge-survivors",
         "deadlane",
-        "pactfall"
+        "rothulk"
       ],
       "variants": {
         "scourge-survivors": "entities/breach-boss/scourge-survivors.webp",
         "deadlane": "entities/breach-boss/deadlane.webp",
-        "pactfall": "entities/breach-boss/pactfall.webp",
+        "pactfall": null,
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -201,13 +204,12 @@
       "canon": "Baseline Pyre Purger operating rifle-first at medium armor and balanced speed for breach descent.",
       "promptBase": "Pyre human Purger, medium armor, rifle, scorched gunmetal, bone ceramic, furnace visor, hellfire orange heat lines, high contrast gunmetal and blood",
       "games": [
-        "scourge-survivors",
-        "pactfall"
+        "scourge-survivors"
       ],
       "variants": {
         "scourge-survivors": "entities/pyre-ranger/scourge-survivors.webp",
         "deadlane": null,
-        "pactfall": "entities/pyre-ranger/pactfall.webp",
+        "pactfall": null,
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -222,13 +224,12 @@
       "canon": "Heavy Pyre Purger built to stand in breach pressure longer than anyone, running heavy cannon or shotgun.",
       "promptBase": "Pyre heavy Purger, broad slab armor, rotary shotgun or cannon, furnace vents, scorched gunmetal, cracked bone plates, hellfire light",
       "games": [
-        "scourge-survivors",
-        "pactfall"
+        "scourge-survivors"
       ],
       "variants": {
         "scourge-survivors": "entities/pyre-bulwark/scourge-survivors.webp",
         "deadlane": null,
-        "pactfall": "entities/pyre-bulwark/pactfall.webp",
+        "pactfall": null,
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -243,13 +244,12 @@
       "canon": "Fast Pyre scout breaching to mark infiltration points and kiting swarms with sensor rig and grapnel.",
       "promptBase": "Pyre scout Purger, slim fast armor, compact SMG, breach-marker sensors, scorched black suit, ember visor, blood and rust",
       "games": [
-        "scourge-survivors",
-        "pactfall"
+        "scourge-survivors"
       ],
       "variants": {
         "scourge-survivors": "entities/pyre-vector/scourge-survivors.webp",
         "deadlane": null,
-        "pactfall": "entities/pyre-vector/pactfall.webp",
+        "pactfall": null,
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -264,13 +264,12 @@
       "canon": "Pyre support operator cauterizing field damage faster than breach pressure can inflict it, using injector tubes and heat-seal tools.",
       "promptBase": "Pyre support Purger, scorched cauterizer medic rig, injector tubes, bone plates, furnace visor, ember medical heat glow, grimy industrial",
       "games": [
-        "scourge-survivors",
-        "pactfall"
+        "scourge-survivors"
       ],
       "variants": {
         "scourge-survivors": "entities/pyre-patch/scourge-survivors.webp",
         "deadlane": null,
-        "pactfall": "entities/pyre-patch/pactfall.webp",
+        "pactfall": null,
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -345,13 +344,12 @@
       "canon": "Warden builder who turns broken ground into defendable lanes, deploying tower-control rigs and repair harnesses under fire.",
       "promptBase": "Warden field engineer, practical armored technician, square modular plates, tool harness, tower-control rig, gunmetal, industrial yellow, bone stencils, ember hardware",
       "games": [
-        "deadlane",
-        "pactfall"
+        "deadlane"
       ],
       "variants": {
         "scourge-survivors": null,
         "deadlane": "entities/warden-field-engineer/deadlane.webp",
-        "pactfall": "entities/warden-field-engineer/pactfall.webp",
+        "pactfall": null,
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -366,13 +364,12 @@
       "canon": "Warden heavy gunner who wins by staying planted while the Scourge breaks itself against attrition firepower and reinforced stance.",
       "promptBase": "Warden lane gunner, heavy stabilized weapon, ammo feed pack, planted stance, gunmetal armor, hazard yellow, ember targeting lamps, square modular silhouette",
       "games": [
-        "deadlane",
-        "pactfall"
+        "deadlane"
       ],
       "variants": {
         "scourge-survivors": null,
         "deadlane": "entities/warden-lane-gunner/deadlane.webp",
-        "pactfall": "entities/warden-lane-gunner/pactfall.webp",
+        "pactfall": null,
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -387,13 +384,12 @@
       "canon": "Warden specialist who builds the last wall before a lane becomes a grave, deploying shield emitters and barricade anchors.",
       "promptBase": "Warden Wallwright, shield emitter backpack, deployable barricade anchors, slab armor, gunmetal, worn steel, hazard stripes, ember field nodes, gritty industrial",
       "games": [
-        "deadlane",
-        "pactfall"
+        "deadlane"
       ],
       "variants": {
         "scourge-survivors": null,
         "deadlane": "entities/warden-wallwright/deadlane.webp",
-        "pactfall": "entities/warden-wallwright/pactfall.webp",
+        "pactfall": null,
         "starblight": null,
         "redline": null,
         "rothulk": null

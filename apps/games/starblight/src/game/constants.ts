@@ -105,7 +105,8 @@ export const CONSTANTS = {
     ringPad: 4, // spawn ring sits this far beyond the camera view
   },
 
-  // --- Orbital boss: THE BLIGHT-MAW -------------------------------------
+  // --- Orbital boss prototype label: THE BLIGHT-MAW ---------------------
+  // Lore anchor remains the Orbital Breach Carrier until this encounter is reviewed.
   boss: {
     spawnAt: 180, // seconds into the run the boss warps in
     baseHP: 2400,

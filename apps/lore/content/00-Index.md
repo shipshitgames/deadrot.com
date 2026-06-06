@@ -12,7 +12,7 @@ Start here, follow the links, open the graph view.
 - [[Timeline]] — the chronology
 - [[Style-Bible]] — visual + tonal canon (feeds the asset pipeline)
 - [[Survivors-Loop]] — shared run / draft / upgrade loop
-- [[War-for-the-Lanes]] — the persistent / MMO north star
+- [[War-for-the-Lanes]] — persistent war map + strategy-lite campaign layer
 - [[Maps]] — the cross-game map registry (canon geography ↔ each game's maps)
 - [[Vault-Conventions]] — writing conventions for vault entries _(active)_
 
@@ -39,12 +39,13 @@ Start here, follow the links, open the graph view.
 ## Games (entries in the canon)
 
 - [[Zero-Day]] — _the night we lost the sky_ (first-contact space shooter; the origin) — concept
-- [[Scourge-Survivors]] — _survive the swarm_ (first-person horde-survivors shooter)
-- [[Deadlane]] — _hold the lane_ (3D tower defense)
-- [[Pactfall]] — _test the Pact_ (Pyre vs Wardens MOBA) — concept
-- [[Starblight]] — _burn the orbital infection_ (arcade pilot shooter) — concept
-- [[Redline]] — _outrun the Choir_ (high-speed courier platformer) — concept
-- [[Rothulk]] — _burn it from the inside_ (infiltration platformer) — concept
+- [[Scourge-Survivors]] — _survive the swarm_ (first-person horde-survivors shooter) — playable prototype
+- [[Deadlane]] — _hold the lane_ (3D tower defense) — playable prototype
+- [[Pactfall]] — _test the Pact_ (Pyre vs Wardens MOBA) — playable prototype
+- [[Starblight]] — _burn the orbital infection_ (arcade pilot shooter) — playable prototype
+- [[Redline]] — _outrun the Choir_ (high-speed courier platformer) — playable prototype
+- [[Rothulk]] — _burn it from the inside_ (infiltration platformer) — playable prototype
+- [[Warline]] — _manage the front_ (strategy-lite campaign layer) — playable prototype
 
 ## First Roster
 
