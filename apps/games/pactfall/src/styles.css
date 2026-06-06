@@ -9,7 +9,7 @@
   --bone: #e9e3d6;
   --ash: #9b958a;
   --toxic: #8bdc1f;
-  --display: 'Oswald', 'Arial Narrow', 'Helvetica Neue', sans-serif;
+  --display: "Oswald", "Arial Narrow", "Helvetica Neue", sans-serif;
 }
 
 * {
@@ -159,7 +159,9 @@ body {
 
 .buff--on {
   border-color: var(--toxic);
-  box-shadow: 0 0 0 1px rgba(139, 220, 31, 0.4), 0 0 26px -6px rgba(139, 220, 31, 0.8);
+  box-shadow:
+    0 0 0 1px rgba(139, 220, 31, 0.4),
+    0 0 26px -6px rgba(139, 220, 31, 0.8);
   animation: buffpulse 0.9s ease-in-out infinite;
 }
 
@@ -170,10 +172,14 @@ body {
 @keyframes buffpulse {
   0%,
   100% {
-    box-shadow: 0 0 0 1px rgba(139, 220, 31, 0.4), 0 0 26px -6px rgba(139, 220, 31, 0.8);
+    box-shadow:
+      0 0 0 1px rgba(139, 220, 31, 0.4),
+      0 0 26px -6px rgba(139, 220, 31, 0.8);
   }
   50% {
-    box-shadow: 0 0 0 1px rgba(139, 220, 31, 0.7), 0 0 38px -4px rgba(139, 220, 31, 1);
+    box-shadow:
+      0 0 0 1px rgba(139, 220, 31, 0.7),
+      0 0 38px -4px rgba(139, 220, 31, 1);
   }
 }
 
@@ -215,7 +221,7 @@ body {
 
 /* Brand stamp */
 #hud::after {
-  content: 'PACTFALL \2014 SHIP SHIT GAMES';
+  content: "PACTFALL \2014 SHIP SHIT GAMES";
   position: absolute;
   top: 16px;
   left: 18px;

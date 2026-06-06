@@ -1,15 +1,15 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @font-face {
-  font-family: 'SSG Press Start';
+  font-family: "SSG Press Start";
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('@shipshitgames/assets/games/scourge-survivors/fonts/press-start-2p.ttf') format('truetype');
+  src: url("@shipshitgames/assets/games/scourge-survivors/fonts/press-start-2p.ttf") format("truetype");
 }
 
 :root {
-  --ssg-font-pixel: 'SSG Press Start', var(--ssg-font-mono, ui-monospace, monospace);
+  --ssg-font-pixel: "SSG Press Start", var(--ssg-font-mono, ui-monospace, monospace);
 }
 
 @theme {
@@ -164,11 +164,15 @@
   0%,
   100% {
     transform: translateX(-50%) scale(1);
-    box-shadow: 0 0 0 1px rgba(255, 42, 24, 0.22), 0 0 24px rgba(193, 18, 31, 0.48);
+    box-shadow:
+      0 0 0 1px rgba(255, 42, 24, 0.22),
+      0 0 24px rgba(193, 18, 31, 0.48);
   }
   50% {
     transform: translateX(-50%) scale(1.045);
-    box-shadow: 0 0 0 1px rgba(255, 209, 102, 0.38), 0 0 42px rgba(255, 42, 24, 0.74);
+    box-shadow:
+      0 0 0 1px rgba(255, 209, 102, 0.38),
+      0 0 42px rgba(255, 42, 24, 0.74);
   }
 }
 
@@ -374,8 +378,7 @@
     align-items: center;
     justify-content: center;
     padding: 88px clamp(18px, 5vw, 72px) 42px;
-    background:
-      linear-gradient(90deg, rgba(5, 5, 5, 0.72), rgba(5, 5, 5, 0.36), rgba(5, 5, 5, 0.72));
+    background: linear-gradient(90deg, rgba(5, 5, 5, 0.72), rgba(5, 5, 5, 0.36), rgba(5, 5, 5, 0.72));
   }
 
   .scourge-menu-content > div {
@@ -409,9 +412,7 @@
 
   .scourge-menu-content .ssg-panel,
   .scourge-menu-content .ssg-menu-card {
-    background:
-      linear-gradient(180deg, rgba(18, 18, 20, 0.88), rgba(5, 5, 6, 0.84)),
-      rgba(10, 10, 10, 0.42);
+    background: linear-gradient(180deg, rgba(18, 18, 20, 0.88), rgba(5, 5, 6, 0.84)), rgba(10, 10, 10, 0.42);
     backdrop-filter: blur(10px);
   }
 
@@ -445,7 +446,6 @@
   letter-spacing: 0;
   image-rendering: pixelated;
   -webkit-font-smoothing: none;
-  font-smooth: never;
 }
 
 .game-root .ssg-hud-corner,
@@ -485,7 +485,12 @@
 .game-root .scourge-berserk-vignette {
   z-index: 1;
   background:
-    radial-gradient(circle at 50% 54%, rgba(255, 42, 24, 0) 0 34%, rgba(255, 42, 24, 0.18) 58%, rgba(61, 0, 6, 0.64) 100%),
+    radial-gradient(
+      circle at 50% 54%,
+      rgba(255, 42, 24, 0) 0 34%,
+      rgba(255, 42, 24, 0.18) 58%,
+      rgba(61, 0, 6, 0.64) 100%
+    ),
     linear-gradient(90deg, rgba(193, 18, 31, 0.22), rgba(255, 106, 0, 0.08) 48%, rgba(193, 18, 31, 0.22));
   mix-blend-mode: screen;
   animation: berserk-vignette-pulse 0.34s steps(2, end) infinite;
@@ -497,8 +502,14 @@
   top: 48%;
   width: 124vw;
   height: 26px;
-  background:
-    linear-gradient(90deg, transparent, rgba(255, 42, 24, 0.12) 12%, rgba(255, 209, 102, 0.44) 48%, rgba(193, 18, 31, 0.58) 62%, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 42, 24, 0.12) 12%,
+    rgba(255, 209, 102, 0.44) 48%,
+    rgba(193, 18, 31, 0.58) 62%,
+    transparent
+  );
   box-shadow: 0 0 18px rgba(255, 42, 24, 0.55);
   transform-origin: center;
   animation: berserk-slash 0.54s ease-out infinite;
@@ -602,9 +613,7 @@
   gap: 6px;
   padding: 8px 12px 9px;
   color: #ffd166;
-  background:
-    linear-gradient(180deg, rgba(91, 6, 18, 0.82), rgba(5, 5, 5, 0.74)),
-    rgba(193, 18, 31, 0.22);
+  background: linear-gradient(180deg, rgba(91, 6, 18, 0.82), rgba(5, 5, 5, 0.74)), rgba(193, 18, 31, 0.22);
   border: 1px solid rgba(255, 42, 24, 0.72);
   border-left: 3px solid #ff2a18;
   border-radius: 2px;

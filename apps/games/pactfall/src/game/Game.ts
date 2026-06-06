@@ -1,9 +1,9 @@
-import { CONSTANTS } from './constants';
-import type { Phase } from './types';
-import { RenderSystem } from './systems/RenderSystem';
-import { InputSystem } from './systems/InputSystem';
-import { EntitySystem } from './systems/EntitySystem';
-import { HudSystem } from './systems/HudSystem';
+import { CONSTANTS } from "./constants";
+import type { Phase } from "./types";
+import { RenderSystem } from "./systems/RenderSystem";
+import { InputSystem } from "./systems/InputSystem";
+import { EntitySystem } from "./systems/EntitySystem";
+import { HudSystem } from "./systems/HudSystem";
 
 // Thin owner of shared state. It wires the systems together, runs the clamped
 // rAF loop, and exposes a tiny amount of game state the systems mutate.
@@ -14,7 +14,7 @@ export class Game {
   readonly hud: HudSystem;
 
   // Shared run state
-  phase: Phase = 'playing';
+  phase: Phase = "playing";
   buffTime = 0; // seconds of champion damage buff remaining
   elapsed = 0;
 
@@ -31,7 +31,7 @@ export class Game {
     // Click / R to redeploy once the match has resolved. Returns true when it
     // actually redeployed, so a redeploy click isn't also read as a move order.
     this.input.onRestart = () => {
-      if (this.phase === 'playing') return false;
+      if (this.phase === "playing") return false;
       this.reset();
       return true;
     };
@@ -40,7 +40,7 @@ export class Game {
   }
 
   reset(): void {
-    this.phase = 'playing';
+    this.phase = "playing";
     this.buffTime = 0;
     this.elapsed = 0;
     this.entities.reset();
@@ -63,11 +63,11 @@ export class Game {
   }
 
   win(): void {
-    if (this.phase === 'playing') this.phase = 'won';
+    if (this.phase === "playing") this.phase = "won";
   }
 
   lose(): void {
-    if (this.phase === 'playing') this.phase = 'lost';
+    if (this.phase === "playing") this.phase = "lost";
   }
 
   private frame(now: number): void {
@@ -87,7 +87,7 @@ export class Game {
   private update(dt: number): void {
     this.render.update(dt);
 
-    if (this.phase === 'playing') {
+    if (this.phase === "playing") {
       this.elapsed += dt;
       if (this.buffTime > 0) this.buffTime = Math.max(0, this.buffTime - dt);
       this.entities.update(dt);

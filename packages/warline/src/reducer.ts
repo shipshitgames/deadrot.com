@@ -5,16 +5,7 @@
  * treated as frozen. No Date.now() inside — callers pass `now`.
  */
 
-import type {
-  Breach,
-  Faction,
-  Lane,
-  OperationResult,
-  Region,
-  ResourceBag,
-  WarEvent,
-  WorldState,
-} from "./types";
+import type { Breach, Faction, Lane, OperationResult, Region, ResourceBag, WarEvent, WorldState } from "./types";
 import { ECON, FEED_MAX, TICK } from "./types";
 import { clamp, createInitialWorld } from "./map";
 import { GAME_OPERATIONS } from "./operations";
@@ -44,8 +35,7 @@ export function makeEventId(state: WorldState, now: number): string {
  */
 export function magnitude(result: OperationResult): number {
   const base = result.outcome === "victory" ? 1 : 0.35;
-  const scale =
-    0.6 + (Math.min(Math.max(result.score, 0), 4000) / 4000) * 0.8;
+  const scale = 0.6 + (Math.min(Math.max(result.score, 0), 4000) / 4000) * 0.8;
   return base * scale;
 }
 
@@ -109,10 +99,7 @@ function highestPressureRegion(state: WorldState): Region | undefined {
   return best;
 }
 
-function laneEndpoints(
-  state: WorldState,
-  lane: Lane,
-): { a: Region | undefined; b: Region | undefined } {
+function laneEndpoints(state: WorldState, lane: Lane): { a: Region | undefined; b: Region | undefined } {
   return {
     a: state.regions.find((r) => r.id === lane.from),
     b: state.regions.find((r) => r.id === lane.to),
@@ -125,9 +112,7 @@ function bestHoldLane(state: WorldState): Lane | undefined {
   for (const lane of state.lanes) {
     if (lane.control !== "scourge" && lane.control !== "neutral") continue;
     const { a, b } = laneEndpoints(state, lane);
-    const bordersHuman =
-      (a !== undefined && isHuman(a.faction)) ||
-      (b !== undefined && isHuman(b.faction));
+    const bordersHuman = (a !== undefined && isHuman(a.faction)) || (b !== undefined && isHuman(b.faction));
     if (!bordersHuman) continue;
     if (!best || lane.flow > best.flow) best = lane;
   }
@@ -135,10 +120,7 @@ function bestHoldLane(state: WorldState): Lane | undefined {
 }
 
 /** A neutral region adjacent to `faction`'s territory. */
-function contestableRegion(
-  state: WorldState,
-  faction: Faction,
-): Region | undefined {
+function contestableRegion(state: WorldState, faction: Faction): Region | undefined {
   for (const r of state.regions) {
     if (r.faction !== "neutral") continue;
     const adjacentToFaction = state.lanes.some((lane) => {
@@ -162,11 +144,7 @@ function contestableRegion(
  * `targetId` else the per-game default rule, applies the effect, clamps, credits
  * resources, and pushes a newest-first WarEvent.
  */
-export function applyOperation(
-  state: WorldState,
-  result: OperationResult,
-  now: number,
-): ApplyResult {
+export function applyOperation(state: WorldState, result: OperationResult, now: number): ApplyResult {
   const next = cloneWorld(state);
   const m = magnitude(result);
   const victory = result.outcome === "victory";
@@ -177,12 +155,9 @@ export function applyOperation(
 
   // Explicit target lookups (may be undefined; default rules below fall back).
   const targetId = result.targetId;
-  const findRegion = (id?: string) =>
-    id ? next.regions.find((r) => r.id === id) : undefined;
-  const findLane = (id?: string) =>
-    id ? next.lanes.find((l) => l.id === id) : undefined;
-  const findBreach = (id?: string) =>
-    id ? next.breaches.find((b) => b.id === id) : undefined;
+  const findRegion = (id?: string) => (id ? next.regions.find((r) => r.id === id) : undefined);
+  const findLane = (id?: string) => (id ? next.lanes.find((l) => l.id === id) : undefined);
+  const findBreach = (id?: string) => (id ? next.breaches.find((b) => b.id === id) : undefined);
 
   switch (meta.kind) {
     case "purge-breach": {
@@ -225,9 +200,7 @@ export function applyOperation(
         } else {
           lane.flow += 8;
         }
-        text = victory
-          ? `${result.faction} held ${lane.name}.`
-          : `${result.faction} lost ground on ${lane.name}.`;
+        text = victory ? `${result.faction} held ${lane.name}.` : `${result.faction} lost ground on ${lane.name}.`;
       } else {
         text = `${result.faction} had no lane to hold.`;
       }
@@ -235,8 +208,7 @@ export function applyOperation(
     }
 
     case "contest-territory": {
-      const region =
-        findRegion(targetId) ?? contestableRegion(next, result.faction);
+      const region = findRegion(targetId) ?? contestableRegion(next, result.faction);
       if (region && victory) {
         region.faction = result.faction;
         region.revealed = true;
@@ -342,8 +314,7 @@ export function tick(state: WorldState, now: number): WorldState {
       if (region) {
         const sabFactor = b.sabotaged > 0 ? 0.5 : 1;
         const mitigate = 1 - region.defense / TICK.defenseMitigate;
-        region.pressure +=
-          b.intensity * TICK.breachToPressure * sabFactor * mitigate;
+        region.pressure += b.intensity * TICK.breachToPressure * sabFactor * mitigate;
       }
       const regenFactor = b.sabotaged > 0 ? 0 : 1;
       b.intensity += TICK.intensityRegen * regenFactor;

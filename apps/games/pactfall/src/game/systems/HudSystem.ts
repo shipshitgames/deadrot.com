@@ -1,5 +1,5 @@
-import { CONSTANTS } from '../constants';
-import type { Game } from '../Game';
+import { CONSTANTS } from "../constants";
+import type { Game } from "../Game";
 
 // HUD adapter. React renders the shell; this system reads game state each frame
 // and writes into cached element refs so the game loop stays independent.
@@ -13,16 +13,16 @@ export class HudSystem {
   private readonly bannerTitle: HTMLElement;
 
   constructor(root: HTMLElement) {
-    this.elBaseFriendly = this.req(root, '#meter-base-friendly .bar i');
-    this.elBaseEnemy = this.req(root, '#meter-base-enemy .bar i');
-    this.elHp = this.req(root, '#meter-hp .bar i');
-    this.buff = this.req(root, '#buff');
-    this.buffTime = this.req(root, '#buff .buff-time');
-    this.banner = this.req(root, '#banner');
-    this.bannerTitle = this.req(root, '#banner .banner-title');
+    this.elBaseFriendly = this.req(root, "#meter-base-friendly .bar i");
+    this.elBaseEnemy = this.req(root, "#meter-base-enemy .bar i");
+    this.elHp = this.req(root, "#meter-hp .bar i");
+    this.buff = this.req(root, "#buff");
+    this.buffTime = this.req(root, "#buff .buff-time");
+    this.banner = this.req(root, "#banner");
+    this.bannerTitle = this.req(root, "#banner .banner-title");
 
     // Static canon label — the arena district these duels are sanctioned in.
-    const arenaName = root.querySelector('#arena-name');
+    const arenaName = root.querySelector("#arena-name");
     if (arenaName) arenaName.textContent = CONSTANTS.arena.name;
   }
 
@@ -40,17 +40,17 @@ export class HudSystem {
     this.setBar(this.elBaseEnemy, ent.enemyBase.hp, CONSTANTS.base.maxHp);
 
     if (game.buffed) {
-      this.buff.classList.remove('buff--off');
-      this.buff.classList.add('buff--on');
+      this.buff.classList.remove("buff--off");
+      this.buff.classList.add("buff--on");
       this.buffTime.textContent = `${game.buffTime.toFixed(1)}s`;
     } else {
-      this.buff.classList.add('buff--off');
-      this.buff.classList.remove('buff--on');
-      this.buffTime.textContent = '—';
+      this.buff.classList.add("buff--off");
+      this.buff.classList.remove("buff--on");
+      this.buffTime.textContent = "—";
     }
 
-    if (game.phase === 'won') this.setBanner('VICTORY — WARDEN BASE FALLS');
-    else if (game.phase === 'lost') this.setBanner('DEFEAT — THE PYRE IS EXTINGUISHED');
+    if (game.phase === "won") this.setBanner("VICTORY — WARDEN BASE FALLS");
+    else if (game.phase === "lost") this.setBanner("DEFEAT — THE PYRE IS EXTINGUISHED");
   }
 
   private setBar(fill: HTMLElement, hp: number, max: number): void {
@@ -60,10 +60,10 @@ export class HudSystem {
 
   setBanner(title: string | null): void {
     if (!title) {
-      this.banner.classList.add('banner--hidden');
+      this.banner.classList.add("banner--hidden");
       return;
     }
     this.bannerTitle.textContent = title;
-    this.banner.classList.remove('banner--hidden');
+    this.banner.classList.remove("banner--hidden");
   }
 }

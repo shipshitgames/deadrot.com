@@ -6,13 +6,7 @@ import { Backdrop } from "@/components/site/atmosphere";
 import { GameCard } from "@/components/game/game-card";
 import { FactionCrest } from "@/components/faction/faction-crest";
 import { Waitlist } from "@/components/site/waitlist";
-import {
-  accentVars,
-  factions,
-  games,
-  universe,
-  type GameStatus,
-} from "@/lib/content";
+import { accentVars, factions, games, universe, type GameStatus } from "@/lib/content";
 
 const WATCH = "https://youtube.com/@shipshitshow";
 const STATUS_RANK: Record<GameStatus, number> = {
@@ -22,9 +16,7 @@ const STATUS_RANK: Record<GameStatus, number> = {
 };
 
 export default function Home() {
-  const gallery = [...games].sort(
-    (a, b) => STATUS_RANK[a.status] - STATUS_RANK[b.status]
-  );
+  const gallery = [...games].sort((a, b) => STATUS_RANK[a.status] - STATUS_RANK[b.status]);
   const premiseLead = universe.premise.split("\n\n")[0];
 
   return (
@@ -50,23 +42,15 @@ export default function Home() {
           <Eyebrow>A Ship Shit Games universe</Eyebrow>
           <h1 className="mt-5 w-[min(760px,92vw)] sm:w-[min(860px,90vw)] md:w-[min(980px,86vw)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/branding/deadrot-title.svg"
-              alt="DEADROT"
-              className="h-auto w-full"
-            />
+            <img src="/branding/deadrot-title.svg" alt="DEADROT" className="h-auto w-full" />
           </h1>
           <p className="mt-7 max-w-xl text-lg leading-relaxed text-ash">
             We lost the sky. Now we burn it back. One brutal, blood-soaked universe —{" "}
-            <span className="text-bone">DOOM's gore with Blizzard's cohesion.</span>{" "}
-            Every map, monster, and sprite forged live on stream.
+            <span className="text-bone">DOOM's gore with Blizzard's cohesion.</span> Every map, monster, and sprite
+            forged live on stream.
           </p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <Button
-              asChild
-              size="xl"
-              className="font-display uppercase tracking-widest shadow-ember"
-            >
+            <Button asChild size="xl" className="font-display uppercase tracking-widest shadow-ember">
               <a href="#games">Enter the War</a>
             </Button>
             <Button
@@ -102,8 +86,8 @@ export default function Home() {
             Games in the Universe
           </h2>
           <p className="mt-3 max-w-2xl text-ash">
-            Standalone games and prototypes in one war. Some are playable now,
-            some are still design targets, and all of them feed the same canon.
+            Standalone games and prototypes in one war. Some are playable now, some are still design targets, and all of
+            them feed the same canon.
           </p>
           <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {gallery.map((g) => (
@@ -126,18 +110,14 @@ export default function Home() {
             War for the Lanes
           </h2>
           <p className="mt-5 max-w-2xl leading-relaxed text-ash">
-            One shared planet front in playable prototype form. The Pyre and the Wardens hold the
-            line under the Pact while the <span className="text-toxic">Scourge</span> pours from the
-            breaches. Every game can report an <span className="text-hellfire">operation</span> —
-            purge a breach, hold a lane, run the convoy — that credits the living war. Spend
-            resources, fortify regions, recon dark sectors, and see whether the front moves.
+            One shared planet front in playable prototype form. The Pyre and the Wardens hold the line under the Pact
+            while the <span className="text-toxic">Scourge</span> pours from the breaches. Every game can report an{" "}
+            <span className="text-hellfire">operation</span> — purge a breach, hold a lane, run the convoy — that
+            credits the living war. Spend resources, fortify regions, recon dark sectors, and see whether the front
+            moves.
           </p>
           <div className="mt-10">
-            <Button
-              asChild
-              size="xl"
-              className="font-display uppercase tracking-widest shadow-ember"
-            >
+            <Button asChild size="xl" className="font-display uppercase tracking-widest shadow-ember">
               <a href="/warline/">Enter Warline →</a>
             </Button>
           </div>
@@ -145,10 +125,7 @@ export default function Home() {
       </section>
 
       {/* ── UNIVERSE ─────────────────────────────────────────────────────── */}
-      <section
-        style={accentVars("toxic")}
-        className="relative overflow-hidden border-t border-gunmetal/40 px-6 py-24"
-      >
+      <section style={accentVars("toxic")} className="relative overflow-hidden border-t border-gunmetal/40 px-6 py-24">
         <Backdrop />
         <div className="relative z-10 mx-auto max-w-7xl">
           <Eyebrow>One Canon</Eyebrow>
@@ -159,10 +136,7 @@ export default function Home() {
 
           <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {universe.pillars.map((p) => (
-              <div
-                key={p.title}
-                className="rounded-md border border-gunmetal bg-coal/60 p-5"
-              >
+              <div key={p.title} className="rounded-md border border-gunmetal bg-coal/60 p-5">
                 <h3 className="font-display text-lg font-bold uppercase tracking-tight text-[var(--page-accent)]">
                   {p.title}
                 </h3>
@@ -184,18 +158,14 @@ export default function Home() {
       </section>
 
       {/* ── FACTIONS ─────────────────────────────────────────────────────── */}
-      <section
-        id="factions"
-        className="relative scroll-mt-16 border-t border-gunmetal/40 px-6 py-24"
-      >
+      <section id="factions" className="relative scroll-mt-16 border-t border-gunmetal/40 px-6 py-24">
         <div className="mx-auto max-w-7xl">
           <Eyebrow className="text-blood">Choose a Side</Eyebrow>
           <h2 className="mt-3 font-display text-4xl font-bold uppercase tracking-tight text-bone sm:text-5xl">
             The Factions
           </h2>
           <p className="mt-3 max-w-2xl text-ash">
-            Bound by the Pact, divided by doctrine. Burn the source, hold the line,
-            or listen to the dark.
+            Bound by the Pact, divided by doctrine. Burn the source, hold the line, or listen to the dark.
           </p>
           <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-3">
             {factions.map((f) => (
@@ -211,15 +181,9 @@ export default function Home() {
                 />
                 <div className="relative z-10">
                   <FactionCrest accent={f.accent} className="h-12 w-12" />
-                  <h3 className="mt-4 font-display text-2xl font-bold uppercase tracking-tight text-bone">
-                    {f.name}
-                  </h3>
-                  <p className="mt-1 text-xs uppercase tracking-widest text-[var(--page-accent)]">
-                    {f.doctrine}
-                  </p>
-                  <p className="mt-4 text-sm leading-relaxed text-ash">
-                    {f.tagline}
-                  </p>
+                  <h3 className="mt-4 font-display text-2xl font-bold uppercase tracking-tight text-bone">{f.name}</h3>
+                  <p className="mt-1 text-xs uppercase tracking-widest text-[var(--page-accent)]">{f.doctrine}</p>
+                  <p className="mt-4 text-sm leading-relaxed text-ash">{f.tagline}</p>
                 </div>
               </Link>
             ))}
@@ -239,8 +203,7 @@ export default function Home() {
             Be first through the breach
           </h2>
           <p className="mt-5 max-w-xl leading-relaxed text-ash">
-            New games, new horrors, and the persistent war. Join the waitlist for launch
-            news — no spam, just the war.
+            New games, new horrors, and the persistent war. Join the waitlist for launch news — no spam, just the war.
           </p>
           <div className="relative mt-9 w-full">
             <Waitlist />

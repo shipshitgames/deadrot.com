@@ -5,14 +5,7 @@
  * against COMMAND_COSTS, deduct, apply effect, push a `command` event.
  */
 
-import type {
-  Command,
-  CommandKind,
-  Region,
-  ResourceKind,
-  WarEvent,
-  WorldState,
-} from "./types";
+import type { Command, CommandKind, Region, ResourceKind, WarEvent, WorldState } from "./types";
 import { COMMAND_COSTS, COMMAND_EFFECT, FEED_MAX } from "./types";
 import { clamp } from "./map";
 import { makeEventId } from "./reducer";
@@ -76,11 +69,7 @@ function isHuman(faction: Region["faction"]): boolean {
  * Apply a build / muster / deploy / recon command (spec §6). Returns
  * `{ ok:false, state }` (state unchanged) on shortfall or invalid target.
  */
-export function applyCommand(
-  state: WorldState,
-  cmd: Command,
-  now: number,
-): CommandResult {
+export function applyCommand(state: WorldState, cmd: Command, now: number): CommandResult {
   if (!canAfford(state, cmd.kind)) {
     return { ok: false, state, error: "insufficient resources" };
   }
@@ -98,16 +87,8 @@ export function applyCommand(
         return { ok: false, state, error: "region not human-controlled" };
       }
       deduct(next, cmd.kind);
-      region.defense = clamp(
-        region.defense + COMMAND_EFFECT.fortifyDefense,
-        0,
-        100,
-      );
-      region.pressure = clamp(
-        region.pressure + COMMAND_EFFECT.fortifyPressure,
-        0,
-        100,
-      );
+      region.defense = clamp(region.defense + COMMAND_EFFECT.fortifyDefense, 0, 100);
+      region.pressure = clamp(region.pressure + COMMAND_EFFECT.fortifyPressure, 0, 100);
       text = `${cmd.faction} fortified ${region.name}.`;
       break;
     }
@@ -125,15 +106,8 @@ export function applyCommand(
         return { ok: false, state, error: "no such region" };
       }
       deduct(next, cmd.kind);
-      region.pressure = clamp(
-        region.pressure + COMMAND_EFFECT.deployPressure,
-        0,
-        100,
-      );
-      if (
-        region.faction === "scourge" &&
-        region.pressure <= COMMAND_EFFECT.deployFlipAtPressure
-      ) {
+      region.pressure = clamp(region.pressure + COMMAND_EFFECT.deployPressure, 0, 100);
+      if (region.faction === "scourge" && region.pressure <= COMMAND_EFFECT.deployFlipAtPressure) {
         region.faction = cmd.faction;
         region.defense = COMMAND_EFFECT.deployCaptureDefense;
         region.revealed = true;

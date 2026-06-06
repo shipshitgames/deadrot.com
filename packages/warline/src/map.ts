@@ -17,11 +17,59 @@ const REGION_SEED: Region[] = [
   { id: "pyregate", name: "The Pyre Gate", faction: "pyre", pressure: 10, defense: 45, x: 12, y: 76, revealed: true },
   { id: "ashreach", name: "Ash Reach", faction: "pyre", pressure: 18, defense: 35, x: 30, y: 78, revealed: true },
   { id: "rustmarch", name: "Rustmarch", faction: "neutral", pressure: 38, defense: 18, x: 44, y: 32, revealed: true },
-  { id: "hollowlanes", name: "The Hollow Lanes", faction: "neutral", pressure: 46, defense: 14, x: 48, y: 60, revealed: true },
-  { id: "skyhook", name: "The Skyhook (Orbital Ring)", faction: "neutral", pressure: 30, defense: 20, x: 56, y: 12, revealed: true },
-  { id: "maw", name: "The Maw", faction: "scourge", pressure: 92, defense: 0, x: 82, y: 28, breachId: "breach-primus", revealed: false },
-  { id: "cinder", name: "Cinder Flats", faction: "scourge", pressure: 84, defense: 0, x: 86, y: 60, breachId: "breach-cinder", revealed: false },
-  { id: "perdition", name: "Perdition", faction: "scourge", pressure: 96, defense: 0, x: 74, y: 82, breachId: "breach-perdition", revealed: false },
+  {
+    id: "hollowlanes",
+    name: "The Hollow Lanes",
+    faction: "neutral",
+    pressure: 46,
+    defense: 14,
+    x: 48,
+    y: 60,
+    revealed: true,
+  },
+  {
+    id: "skyhook",
+    name: "The Skyhook (Orbital Ring)",
+    faction: "neutral",
+    pressure: 30,
+    defense: 20,
+    x: 56,
+    y: 12,
+    revealed: true,
+  },
+  {
+    id: "maw",
+    name: "The Maw",
+    faction: "scourge",
+    pressure: 92,
+    defense: 0,
+    x: 82,
+    y: 28,
+    breachId: "breach-primus",
+    revealed: false,
+  },
+  {
+    id: "cinder",
+    name: "Cinder Flats",
+    faction: "scourge",
+    pressure: 84,
+    defense: 0,
+    x: 86,
+    y: 60,
+    breachId: "breach-cinder",
+    revealed: false,
+  },
+  {
+    id: "perdition",
+    name: "Perdition",
+    faction: "scourge",
+    pressure: 96,
+    defense: 0,
+    x: 74,
+    y: 82,
+    breachId: "breach-perdition",
+    revealed: false,
+  },
 ];
 
 const BREACH_SEED: Breach[] = [
@@ -68,10 +116,7 @@ export function createInitialWorld(now: number): WorldState {
 }
 
 /** Find a region by id (undefined if missing). */
-export function regionById(
-  state: WorldState,
-  id: string,
-): Region | undefined {
+export function regionById(state: WorldState, id: string): Region | undefined {
   return state.regions.find((r) => r.id === id);
 }
 
@@ -81,10 +126,7 @@ export function laneById(state: WorldState, id: string): Lane | undefined {
 }
 
 /** Find a breach by id (undefined if missing). */
-export function breachById(
-  state: WorldState,
-  id: string,
-): Breach | undefined {
+export function breachById(state: WorldState, id: string): Breach | undefined {
   return state.breaches.find((b) => b.id === id);
 }
 

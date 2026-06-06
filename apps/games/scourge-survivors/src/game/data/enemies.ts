@@ -1,40 +1,33 @@
 // Shared Scourge enemy archetypes. These are deliberately data-first so both
 // Campaign waves and Survivors swarms can mix the same readable host variants.
 
-export type EnemyArchetypeId =
-  | 'grunt'
-  | 'swarmling'
-  | 'charger'
-  | 'shooter'
-  | 'flier'
-  | 'tank'
-  | 'splitter'
+export type EnemyArchetypeId = "grunt" | "swarmling" | "charger" | "shooter" | "flier" | "tank" | "splitter";
 
 export interface EnemyArchetypeDef {
-  id: EnemyArchetypeId
-  name: string
-  speedMul: number
-  hpMul: number
-  scale: number
-  color: number
-  attackDamage: number
-  projectileDamage?: number
-  ranged?: boolean
-  flying?: boolean
-  hoverHeight?: number
-  xp: number
-  splitCount?: number
-  mass: number
-  staggerMul: number
-  spawnAfter: number
-  earlyWeight: number
-  lateWeight: number
+  id: EnemyArchetypeId;
+  name: string;
+  speedMul: number;
+  hpMul: number;
+  scale: number;
+  color: number;
+  attackDamage: number;
+  projectileDamage?: number;
+  ranged?: boolean;
+  flying?: boolean;
+  hoverHeight?: number;
+  xp: number;
+  splitCount?: number;
+  mass: number;
+  staggerMul: number;
+  spawnAfter: number;
+  earlyWeight: number;
+  lateWeight: number;
 }
 
 export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
   grunt: {
-    id: 'grunt',
-    name: 'Host Grunt',
+    id: "grunt",
+    name: "Host Grunt",
     speedMul: 1,
     hpMul: 1,
     scale: 1,
@@ -48,8 +41,8 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
     lateWeight: 0.78,
   },
   swarmling: {
-    id: 'swarmling',
-    name: 'Swarmling',
+    id: "swarmling",
+    name: "Swarmling",
     speedMul: 1.48,
     hpMul: 0.48,
     scale: 0.8,
@@ -63,8 +56,8 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
     lateWeight: 0.34,
   },
   charger: {
-    id: 'charger',
-    name: 'Rupture Charger',
+    id: "charger",
+    name: "Rupture Charger",
     speedMul: 1.08,
     hpMul: 1.25,
     scale: 1.08,
@@ -78,8 +71,8 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
     lateWeight: 0.24,
   },
   shooter: {
-    id: 'shooter',
-    name: 'Spitter Host',
+    id: "shooter",
+    name: "Spitter Host",
     speedMul: 0.92,
     hpMul: 0.95,
     scale: 1,
@@ -95,8 +88,8 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
     lateWeight: 0.26,
   },
   flier: {
-    id: 'flier',
-    name: 'Winged Host',
+    id: "flier",
+    name: "Winged Host",
     speedMul: 1.18,
     hpMul: 0.82,
     scale: 0.96,
@@ -114,8 +107,8 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
     lateWeight: 0.2,
   },
   tank: {
-    id: 'tank',
-    name: 'Bone Tank',
+    id: "tank",
+    name: "Bone Tank",
     speedMul: 0.56,
     hpMul: 3.1,
     scale: 1.48,
@@ -129,8 +122,8 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
     lateWeight: 0.17,
   },
   splitter: {
-    id: 'splitter',
-    name: 'Brood Splitter',
+    id: "splitter",
+    name: "Brood Splitter",
     speedMul: 0.82,
     hpMul: 1.65,
     scale: 1.22,
@@ -144,45 +137,45 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
     earlyWeight: 0,
     lateWeight: 0.14,
   },
-}
+};
 
 export const SURVIVORS_ARCHETYPE_IDS: EnemyArchetypeId[] = [
-  'grunt',
-  'swarmling',
-  'charger',
-  'shooter',
-  'flier',
-  'tank',
-  'splitter',
-]
+  "grunt",
+  "swarmling",
+  "charger",
+  "shooter",
+  "flier",
+  "tank",
+  "splitter",
+];
 
 export function pickWeightedEnemyArchetype(runTime: number, chapterIndex = 0): EnemyArchetypeDef {
-  const maturity = Math.max(0, Math.min(1, (runTime - 20) / 230 + chapterIndex * 0.08))
-  let total = 0
-  const weighted: { def: EnemyArchetypeDef; weight: number }[] = []
+  const maturity = Math.max(0, Math.min(1, (runTime - 20) / 230 + chapterIndex * 0.08));
+  let total = 0;
+  const weighted: { def: EnemyArchetypeDef; weight: number }[] = [];
   for (const id of SURVIVORS_ARCHETYPE_IDS) {
-    const def = ENEMY_ARCHETYPES[id]
-    if (runTime < def.spawnAfter) continue
-    const weight = def.earlyWeight * (1 - maturity) + def.lateWeight * maturity
-    if (weight <= 0) continue
-    weighted.push({ def, weight })
-    total += weight
+    const def = ENEMY_ARCHETYPES[id];
+    if (runTime < def.spawnAfter) continue;
+    const weight = def.earlyWeight * (1 - maturity) + def.lateWeight * maturity;
+    if (weight <= 0) continue;
+    weighted.push({ def, weight });
+    total += weight;
   }
-  if (total <= 0) return ENEMY_ARCHETYPES.grunt
-  let roll = Math.random() * total
+  if (total <= 0) return ENEMY_ARCHETYPES.grunt;
+  let roll = Math.random() * total;
   for (const item of weighted) {
-    roll -= item.weight
-    if (roll <= 0) return item.def
+    roll -= item.weight;
+    if (roll <= 0) return item.def;
   }
-  return weighted[weighted.length - 1]?.def ?? ENEMY_ARCHETYPES.grunt
+  return weighted[weighted.length - 1]?.def ?? ENEMY_ARCHETYPES.grunt;
 }
 
 export function campaignArchetypeForWave(waveIndex: number, spawnIndex: number, stageIndex: number): EnemyArchetypeDef {
-  const cadence = (spawnIndex + waveIndex * 2 + stageIndex) % 8
-  if (waveIndex >= 2 && cadence === 0) return ENEMY_ARCHETYPES.tank
-  if (waveIndex >= 1 && cadence === 2) return ENEMY_ARCHETYPES.charger
-  if (waveIndex >= 1 && cadence === 3) return ENEMY_ARCHETYPES.flier
-  if (cadence === 4 || cadence === 5) return ENEMY_ARCHETYPES.shooter
-  if (waveIndex >= 2 && cadence === 6) return ENEMY_ARCHETYPES.splitter
-  return cadence === 7 ? ENEMY_ARCHETYPES.swarmling : ENEMY_ARCHETYPES.grunt
+  const cadence = (spawnIndex + waveIndex * 2 + stageIndex) % 8;
+  if (waveIndex >= 2 && cadence === 0) return ENEMY_ARCHETYPES.tank;
+  if (waveIndex >= 1 && cadence === 2) return ENEMY_ARCHETYPES.charger;
+  if (waveIndex >= 1 && cadence === 3) return ENEMY_ARCHETYPES.flier;
+  if (cadence === 4 || cadence === 5) return ENEMY_ARCHETYPES.shooter;
+  if (waveIndex >= 2 && cadence === 6) return ENEMY_ARCHETYPES.splitter;
+  return cadence === 7 ? ENEMY_ARCHETYPES.swarmling : ENEMY_ARCHETYPES.grunt;
 }

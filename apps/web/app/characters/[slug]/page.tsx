@@ -5,35 +5,20 @@ import Link from "next/link";
 import { Eyebrow } from "@/components/site/eyebrow";
 import { Backdrop } from "@/components/site/atmosphere";
 import { GameCard } from "@/components/game/game-card";
-import {
-  accentVars,
-  characters,
-  characterGames,
-  getCharacter,
-  getFaction,
-  spriteUrl,
-} from "@/lib/content";
+import { accentVars, characters, characterGames, getCharacter, getFaction, spriteUrl } from "@/lib/content";
 
 export function generateStaticParams() {
   return characters.map((c) => ({ slug: c.slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const character = getCharacter(slug);
   if (!character) return {};
   return { title: character.name, description: character.tagline };
 }
 
-export default async function CharacterPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function CharacterPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const character = getCharacter(slug);
   if (!character) notFound();
@@ -98,9 +83,7 @@ export default async function CharacterPage({
                 {character.factionName}
               </Link>
             ) : null}
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-ash">
-              {character.tagline}
-            </p>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-ash">{character.tagline}</p>
           </div>
         </div>
       </section>
@@ -123,30 +106,20 @@ export default async function CharacterPage({
       <section className="relative border-t border-gunmetal/40 px-6 py-20 sm:py-24">
         <div className="mx-auto grid max-w-7xl gap-12 sm:grid-cols-2">
           <div>
-            <h2 className="font-display text-2xl font-bold uppercase tracking-tight text-bone">
-              Gameplay Read
-            </h2>
+            <h2 className="font-display text-2xl font-bold uppercase tracking-tight text-bone">Gameplay Read</h2>
             <ul className="mt-6 space-y-2">
               {character.gameplayRead.map((item, i) => (
-                <li
-                  key={i}
-                  className="border-l-2 border-[var(--page-accent)] pl-3 py-1 text-ash"
-                >
+                <li key={i} className="border-l-2 border-[var(--page-accent)] pl-3 py-1 text-ash">
                   {item}
                 </li>
               ))}
             </ul>
           </div>
           <div>
-            <h2 className="font-display text-2xl font-bold uppercase tracking-tight text-bone">
-              Visual Design
-            </h2>
+            <h2 className="font-display text-2xl font-bold uppercase tracking-tight text-bone">Visual Design</h2>
             <ul className="mt-6 space-y-2">
               {character.visualMotifs.map((item, i) => (
-                <li
-                  key={i}
-                  className="border-l-2 border-[var(--page-accent)] pl-3 py-1 text-ash"
-                >
+                <li key={i} className="border-l-2 border-[var(--page-accent)] pl-3 py-1 text-ash">
                   {item}
                 </li>
               ))}

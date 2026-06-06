@@ -16,7 +16,7 @@ export const COLORS = {
   toxic: 0x8bdc1f,
 } as const;
 
-export type Team = 'pyre' | 'warden';
+export type Team = "pyre" | "warden";
 
 export const CONSTANTS = {
   // Loop
@@ -25,9 +25,9 @@ export const CONSTANTS = {
   // Arena (a single lane running along +Z, centered on the origin)
   // Canon: the sanctioned Pyre–Warden duels happen in Ashgate's arena district.
   arena: {
-    name: 'Ashgate Arena District',
-    loreId: 'ashgate',
-    front: 'holdout',
+    name: "Ashgate Arena District",
+    loreId: "ashgate",
+    front: "holdout",
     length: 64, // along Z
     width: 14, // along X
     laneClamp: 6, // how far off-center the champion can stray (|x|)

@@ -59,11 +59,7 @@ test("deploy on a weak scourge region recaptures it", () => {
 test("deploy flips a neutral region to the faction", () => {
   const w = createInitialWorld(NOW);
   w.pactArmy = 100;
-  const res = applyCommand(
-    w,
-    { kind: "deploy", regionId: "rustmarch", faction: "pyre" },
-    NOW,
-  );
+  const res = applyCommand(w, { kind: "deploy", regionId: "rustmarch", faction: "pyre" }, NOW);
   assert.equal(res.ok, true);
   assert.equal(regionById(res.state, "rustmarch")!.faction, "pyre");
 });

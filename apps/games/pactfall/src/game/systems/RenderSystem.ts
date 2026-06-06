@@ -1,5 +1,5 @@
-import * as THREE from 'three';
-import { COLORS, CONSTANTS } from '../constants';
+import * as THREE from "three";
+import { COLORS, CONSTANTS } from "../constants";
 
 // Owns the renderer, scene, camera, lights, and the static arena geometry.
 // Keeps a smoothed follow-cam locked behind the champion looking down the lane.
@@ -47,7 +47,7 @@ export class RenderSystem {
     this.scene.add(this.emberLight);
 
     this.resize();
-    window.addEventListener('resize', () => this.resize());
+    window.addEventListener("resize", () => this.resize());
   }
 
   add(obj: THREE.Object3D): void {
@@ -127,11 +127,7 @@ export class RenderSystem {
   followChampion(pos: THREE.Vector3, dt: number): void {
     // High, steep top-down chase: ride above and just behind the champion and
     // look slightly up-lane, keeping the hero centered and always in view.
-    this.camTarget.set(
-      pos.x * RenderSystem.CAM_PAN,
-      RenderSystem.CAM_HEIGHT,
-      pos.z - RenderSystem.CAM_BACK,
-    );
+    this.camTarget.set(pos.x * RenderSystem.CAM_PAN, RenderSystem.CAM_HEIGHT, pos.z - RenderSystem.CAM_BACK);
     // Exponential smoothing -> same feel at 30, 60, or 144fps.
     const alpha = 1 - Math.exp(-RenderSystem.CAM_SMOOTH * dt);
     this.camera.position.lerp(this.camTarget, alpha);

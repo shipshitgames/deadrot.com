@@ -71,12 +71,7 @@ export class Input {
 
   private onKeyDown = (e: KeyboardEvent) => {
     // Prevent page scroll on the game keys.
-    if (
-      this.isJumpKey(e.code) ||
-      this.isDashKey(e.code) ||
-      this.isAccelKey(e.code) ||
-      e.code === "ArrowLeft"
-    ) {
+    if (this.isJumpKey(e.code) || this.isDashKey(e.code) || this.isAccelKey(e.code) || e.code === "ArrowLeft") {
       e.preventDefault();
     }
 
@@ -102,10 +97,7 @@ export class Input {
 
   private anyDashHeld() {
     return (
-      this.held.has("ShiftLeft") ||
-      this.held.has("ShiftRight") ||
-      this.held.has("ArrowDown") ||
-      this.held.has("KeyS")
+      this.held.has("ShiftLeft") || this.held.has("ShiftRight") || this.held.has("ArrowDown") || this.held.has("KeyS")
     );
   }
 

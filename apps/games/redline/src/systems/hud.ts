@@ -100,13 +100,7 @@ export class Hud {
 
   /** Visual punch for a hazard hit. */
   flashHit() {
-    this.flash.animate(
-      [
-        { opacity: 0.9 },
-        { opacity: 0 },
-      ],
-      { duration: 280, easing: "ease-out" },
-    );
+    this.flash.animate([{ opacity: 0.9 }, { opacity: 0 }], { duration: 280, easing: "ease-out" });
   }
 
   /** Soft ember-collect flash (hellfire). */
@@ -162,7 +156,9 @@ export class Hud {
       <div class="ssg-main-menu-copy">
         <div id="overlay-kicker" class="ssg-menu-kicker">${isRecord ? "New Personal Best" : "Delivery Complete"}</div>
         <h1 id="overlay-title" class="ssg-main-menu-title" style="font-size:clamp(40px,9vw,72px)">${
-          isRecord ? "<span class='ssg-main-menu-title-line ssg-main-menu-title-line--bone'>RED</span><span class='ssg-main-menu-title-line ssg-main-menu-title-line--hot'>LINED</span>" : "DELIVERED"
+          isRecord
+            ? "<span class='ssg-main-menu-title-line ssg-main-menu-title-line--bone'>RED</span><span class='ssg-main-menu-title-line ssg-main-menu-title-line--hot'>LINED</span>"
+            : "DELIVERED"
         }</h1>
       </div>
       <nav class="ssg-main-menu-nav" aria-label="Run summary">

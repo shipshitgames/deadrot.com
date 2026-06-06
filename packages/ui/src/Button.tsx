@@ -1,14 +1,7 @@
 import type { ButtonHTMLAttributes } from "react";
 import { cn } from "./cn";
 
-export type ButtonVariant =
-  | "default"
-  | "primary"
-  | "secondary"
-  | "danger"
-  | "ghost"
-  | "stack"
-  | "back";
+export type ButtonVariant = "default" | "primary" | "secondary" | "danger" | "ghost" | "stack" | "back";
 export type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -32,18 +25,6 @@ const sizes: Record<ButtonSize, string> = {
   lg: "ssg-button--lg",
 };
 
-export function Button({
-  variant = "primary",
-  size = "md",
-  className,
-  type = "button",
-  ...props
-}: ButtonProps) {
-  return (
-    <button
-      type={type}
-      className={cn("ssg-button", variants[variant], sizes[size], className)}
-      {...props}
-    />
-  );
+export function Button({ variant = "primary", size = "md", className, type = "button", ...props }: ButtonProps) {
+  return <button type={type} className={cn("ssg-button", variants[variant], sizes[size], className)} {...props} />;
 }

@@ -11,11 +11,7 @@
       "hostFamily": "rot-flesh",
       "canon": "Fast melee Scourge fodder that floods lanes and breach rooms through numbers and claws.",
       "promptBase": "Scourge melee swarm creature with hunched parasite frame, black chitin over raw muscle, blade-like forearms, toxic-green breach cores, wet gore and exposed sinew.",
-      "games": [
-        "scourge-survivors",
-        "deadlane",
-        "redline"
-      ],
+      "games": ["scourge-survivors", "deadlane", "redline"],
       "variants": {
         "scourge-survivors": "entities/scourge-swarm/scourge-survivors.webp",
         "deadlane": "entities/scourge-swarm/deadlane.webp",
@@ -33,11 +29,7 @@
       "hostFamily": "mycelial",
       "canon": "Ranged Scourge form that turns infection into projectile pressure via distended toxic sacs or fused arm-lances.",
       "promptBase": "Scourge ranged creature with thin predatory silhouette, distended toxic-green firing sac or bio-industrial arm lance, black chitin, raw sinew, rusted tech fragments embedded in flesh.",
-      "games": [
-        "scourge-survivors",
-        "deadlane",
-        "rothulk"
-      ],
+      "games": ["scourge-survivors", "deadlane", "rothulk"],
       "variants": {
         "scourge-survivors": "entities/scourge-spitter/scourge-survivors.webp",
         "deadlane": "entities/scourge-spitter/deadlane.webp",
@@ -55,11 +47,7 @@
       "hostFamily": "chitin",
       "canon": "Chitin Warhost melee charger that charges in straight lines with armor-piercing carapace, enraging at half health with exposed toxic-green breach nodes.",
       "promptBase": "Scourge elite charger with cracked alien carapace, hunched low-profile silhouette, blade-claw forelimbs, toxic-green parasite nodes at seams, enrage variant shows blood-hot exposed tissue.",
-      "games": [
-        "scourge-survivors",
-        "deadlane",
-        "redline"
-      ],
+      "games": ["scourge-survivors", "deadlane", "redline"],
       "variants": {
         "scourge-survivors": "entities/scourge-elite/scourge-survivors.webp",
         "deadlane": "entities/scourge-elite/deadlane.webp",
@@ -77,11 +65,7 @@
       "hostFamily": "machine-graft",
       "canon": "Machine-Graft siege elite that walks up and shears through fortifications with a massive demolition claw and tendril-burst secondary attack.",
       "promptBase": "Scourge elite industrial walker frame overtaken by parasite, black chitin threading through riveted metal joints, one massive demolition-claw fused with bone-sinew, toxic-green breach cores at former control panels, asymmetric tendril mass opposite.",
-      "games": [
-        "scourge-survivors",
-        "deadlane",
-        "rothulk"
-      ],
+      "games": ["scourge-survivors", "deadlane", "rothulk"],
       "variants": {
         "scourge-survivors": "entities/graft-breacher/scourge-survivors.webp",
         "deadlane": "entities/graft-breacher/deadlane.webp",
@@ -99,11 +83,7 @@
       "hostFamily": "machine-graft",
       "canon": "Machine-Graft ranged siege elite that dissolves fortifications from standoff with a sustained bile-lance, planted and unhittable until the sac is destroyed.",
       "promptBase": "Scourge elite siege unit with rusted industrial machine chassis infested by parasite, black chitin over burst metal hull, toxic-green bile sac swollen inside engine cavity, organic tendrils pulsing through joints, hollow breached cockpit.",
-      "games": [
-        "scourge-survivors",
-        "deadlane",
-        "redline"
-      ],
+      "games": ["scourge-survivors", "deadlane", "redline"],
       "variants": {
         "scourge-survivors": "entities/rot-engine/scourge-survivors.webp",
         "deadlane": "entities/rot-engine/deadlane.webp",
@@ -121,11 +101,7 @@
       "hostFamily": "bone-titan",
       "canon": "Monstrous Scourge expression grown around a breach heart, wielding melee pressure and ranged barrages behind a shield-organ ring.",
       "promptBase": "Scourge breach-boss with huge non-human war body, toxic-green chest core, shield-organ ring, fused rusted metal and wet chitin, massive arms, projectile vents.",
-      "games": [
-        "scourge-survivors",
-        "deadlane",
-        "rothulk"
-      ],
+      "games": ["scourge-survivors", "deadlane", "rothulk"],
       "variants": {
         "scourge-survivors": "entities/breach-boss/scourge-survivors.webp",
         "deadlane": "entities/breach-boss/deadlane.webp",
@@ -143,9 +119,7 @@
       "hostFamily": null,
       "canon": "Neutral Scourge arena threat in Pactfall that pressures both Pyre and Wardens equally from broken arena wreckage.",
       "promptBase": "Neutral Scourge arena boss with parasite mass grown over broken arena metal, toxic-green core, chitin and raw tissue, objective monster silhouette readable from top-down view.",
-      "games": [
-        "pactfall"
-      ],
+      "games": ["pactfall"],
       "variants": {
         "scourge-survivors": null,
         "deadlane": null,
@@ -163,9 +137,7 @@
       "hostFamily": "voidship",
       "canon": "Small infected attack craft that flies in arcade formations and mutates pattern behavior as the Starblight run escalates.",
       "promptBase": "Scourge infected small attack craft with rusted hull fused with black chitin and raw tissue, toxic-green parasite core, arcade-readable silhouette, dark parasitic growth.",
-      "games": [
-        "starblight"
-      ],
+      "games": ["starblight"],
       "variants": {
         "scourge-survivors": null,
         "deadlane": null,
@@ -183,9 +155,7 @@
       "hostFamily": "voidship",
       "canon": "Starblight orbital boss: a living carrier-ship grown around a breach heart, releasing spore mines and fighter waves while shielding its core.",
       "promptBase": "Scourge orbital carrier boss with infected wreckage grown around toxic-green breach heart, chitin plating over rusted ship ribs, spore vents, raw tissue in broken engines, arcade boss silhouette.",
-      "games": [
-        "starblight"
-      ],
+      "games": ["starblight"],
       "variants": {
         "scourge-survivors": null,
         "deadlane": null,
@@ -203,9 +173,7 @@
       "hostFamily": null,
       "canon": "Baseline Pyre Purger operating rifle-first at medium armor and balanced speed for breach descent.",
       "promptBase": "Pyre human Purger, medium armor, rifle, scorched gunmetal, bone ceramic, furnace visor, hellfire orange heat lines, high contrast gunmetal and blood",
-      "games": [
-        "scourge-survivors"
-      ],
+      "games": ["scourge-survivors"],
       "variants": {
         "scourge-survivors": "entities/pyre-ranger/scourge-survivors.webp",
         "deadlane": null,
@@ -223,9 +191,7 @@
       "hostFamily": null,
       "canon": "Heavy Pyre Purger built to stand in breach pressure longer than anyone, running heavy cannon or shotgun.",
       "promptBase": "Pyre heavy Purger, broad slab armor, rotary shotgun or cannon, furnace vents, scorched gunmetal, cracked bone plates, hellfire light",
-      "games": [
-        "scourge-survivors"
-      ],
+      "games": ["scourge-survivors"],
       "variants": {
         "scourge-survivors": "entities/pyre-bulwark/scourge-survivors.webp",
         "deadlane": null,
@@ -243,9 +209,7 @@
       "hostFamily": null,
       "canon": "Fast Pyre scout breaching to mark infiltration points and kiting swarms with sensor rig and grapnel.",
       "promptBase": "Pyre scout Purger, slim fast armor, compact SMG, breach-marker sensors, scorched black suit, ember visor, blood and rust",
-      "games": [
-        "scourge-survivors"
-      ],
+      "games": ["scourge-survivors"],
       "variants": {
         "scourge-survivors": "entities/pyre-vector/scourge-survivors.webp",
         "deadlane": null,
@@ -263,9 +227,7 @@
       "hostFamily": null,
       "canon": "Pyre support operator cauterizing field damage faster than breach pressure can inflict it, using injector tubes and heat-seal tools.",
       "promptBase": "Pyre support Purger, scorched cauterizer medic rig, injector tubes, bone plates, furnace visor, ember medical heat glow, grimy industrial",
-      "games": [
-        "scourge-survivors"
-      ],
+      "games": ["scourge-survivors"],
       "variants": {
         "scourge-survivors": "entities/pyre-patch/scourge-survivors.webp",
         "deadlane": null,
@@ -283,9 +245,7 @@
       "hostFamily": null,
       "canon": "Arena-tuned Pyre fighter built for sanctioned violence where the Pact is tested but not broken, driving aggressive melee pressure.",
       "promptBase": "Pyre arena duelist, light scorched armor, ember blade or carbide weapon, aggressive triangular silhouette, blood and rust, hellfire, sanctioned arena gear",
-      "games": [
-        "pactfall"
-      ],
+      "games": ["pactfall"],
       "variants": {
         "scourge-survivors": null,
         "deadlane": null,
@@ -303,9 +263,7 @@
       "hostFamily": null,
       "canon": "Pyre arena controller treating every problem as fuel for incineration, running heat tanks and short-range burner weaponry.",
       "promptBase": "Pyre Cauterizer, sealed furnace mask, heat tanks and hoses, short-range burner, scorched plates, hellfire heat lines, blood and rust",
-      "games": [
-        "pactfall"
-      ],
+      "games": ["pactfall"],
       "variants": {
         "scourge-survivors": null,
         "deadlane": null,
@@ -323,9 +281,7 @@
       "hostFamily": null,
       "canon": "Pyre pilot burning Scourge breach matter out of orbit before it can fall into the lanes, flying fast interceptors with burn weapons.",
       "promptBase": "Pyre interceptor pilot, sealed scorched flight armor, furnace visor, compact life-support rig, blood-hot warning lamps, hellfire weapons, triangular silhouette",
-      "games": [
-        "starblight"
-      ],
+      "games": ["starblight"],
       "variants": {
         "scourge-survivors": null,
         "deadlane": null,
@@ -343,9 +299,7 @@
       "hostFamily": null,
       "canon": "Warden builder who turns broken ground into defendable lanes, deploying tower-control rigs and repair harnesses under fire.",
       "promptBase": "Warden field engineer, practical armored technician, square modular plates, tool harness, tower-control rig, gunmetal, industrial yellow, bone stencils, ember hardware",
-      "games": [
-        "deadlane"
-      ],
+      "games": ["deadlane"],
       "variants": {
         "scourge-survivors": null,
         "deadlane": "entities/warden-field-engineer/deadlane.webp",
@@ -363,9 +317,7 @@
       "hostFamily": null,
       "canon": "Warden heavy gunner who wins by staying planted while the Scourge breaks itself against attrition firepower and reinforced stance.",
       "promptBase": "Warden lane gunner, heavy stabilized weapon, ammo feed pack, planted stance, gunmetal armor, hazard yellow, ember targeting lamps, square modular silhouette",
-      "games": [
-        "deadlane"
-      ],
+      "games": ["deadlane"],
       "variants": {
         "scourge-survivors": null,
         "deadlane": "entities/warden-lane-gunner/deadlane.webp",
@@ -383,9 +335,7 @@
       "hostFamily": null,
       "canon": "Warden specialist who builds the last wall before a lane becomes a grave, deploying shield emitters and barricade anchors.",
       "promptBase": "Warden Wallwright, shield emitter backpack, deployable barricade anchors, slab armor, gunmetal, worn steel, hazard stripes, ember field nodes, gritty industrial",
-      "games": [
-        "deadlane"
-      ],
+      "games": ["deadlane"],
       "variants": {
         "scourge-survivors": null,
         "deadlane": "entities/warden-wallwright/deadlane.webp",
@@ -403,9 +353,7 @@
       "hostFamily": null,
       "canon": "Warden arena defender who turns a duel into a fortified position, projecting shields inside sanctioned blood-arenas.",
       "promptBase": "Warden Bastion, shield projector, square heavy silhouette, gunmetal slab armor, industrial yellow, ember barrier hardware, gritty blood-arena defender",
-      "games": [
-        "pactfall"
-      ],
+      "games": ["pactfall"],
       "variants": {
         "scourge-survivors": null,
         "deadlane": null,
@@ -423,9 +371,7 @@
       "hostFamily": null,
       "canon": "Warden ranged hero who brings siege mathematics into sanctioned arena combat with controlled firepower and calculated strikes.",
       "promptBase": "Warden Artillerist, shoulder targeting rig, compact artillery launcher, braced stance, gunmetal armor, industrial yellow, ember rangefinder lamps, gritty arena war gear",
-      "games": [
-        "pactfall"
-      ],
+      "games": ["pactfall"],
       "variants": {
         "scourge-survivors": null,
         "deadlane": null,
@@ -443,9 +389,7 @@
       "hostFamily": null,
       "canon": "Warden pilot protecting orbital infrastructure and shielding the lanes below from Scourge breach incursions and infected craft.",
       "promptBase": "Warden defense pilot, reinforced flight suit, shield-control harness, gunmetal plating, industrial yellow, ember shield hardware, practical orbital defender",
-      "games": [
-        "starblight"
-      ],
+      "games": ["starblight"],
       "variants": {
         "scourge-survivors": null,
         "deadlane": null,

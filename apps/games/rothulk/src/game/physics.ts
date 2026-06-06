@@ -1,10 +1,8 @@
-import type { AABB, Platform } from './types';
+import type { AABB, Platform } from "./types";
 
 // Axis-aligned overlap test.
 export function aabbOverlap(a: AABB, b: AABB): boolean {
-  return (
-    Math.abs(a.x - b.x) < a.hw + b.hw && Math.abs(a.y - b.y) < a.hh + b.hh
-  );
+  return Math.abs(a.x - b.x) < a.hw + b.hw && Math.abs(a.y - b.y) < a.hh + b.hh;
 }
 
 export function platformToAABB(p: Platform): AABB {
@@ -35,7 +33,7 @@ export function resolveAgainstSolids(
   vx: number,
   vy: number,
   dt: number,
-  solids: AABB[]
+  solids: AABB[],
 ): CollisionResult {
   let x = px;
   let y = py;
@@ -45,10 +43,7 @@ export function resolveAgainstSolids(
   // ---- X axis ----
   x += vx * dt;
   for (const s of solids) {
-    if (
-      Math.abs(x - s.x) < hw + s.hw &&
-      Math.abs(y - s.y) < hh + s.hh
-    ) {
+    if (Math.abs(x - s.x) < hw + s.hw && Math.abs(y - s.y) < hh + s.hh) {
       if (vx > 0) {
         x = s.x - s.hw - hw;
         vx = 0;
@@ -63,10 +58,7 @@ export function resolveAgainstSolids(
   y += vy * dt;
   for (let i = 0; i < solids.length; i++) {
     const s = solids[i];
-    if (
-      Math.abs(x - s.x) < hw + s.hw &&
-      Math.abs(y - s.y) < hh + s.hh
-    ) {
+    if (Math.abs(x - s.x) < hw + s.hw && Math.abs(y - s.y) < hh + s.hh) {
       if (vy < 0) {
         // falling onto a top surface
         y = s.y + s.hh + hh;

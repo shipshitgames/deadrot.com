@@ -1,10 +1,4 @@
-import {
-  Children,
-  cloneElement,
-  isValidElement,
-  type HTMLAttributes,
-  type ReactElement,
-} from "react";
+import { Children, cloneElement, isValidElement, type HTMLAttributes, type ReactElement } from "react";
 import { cn } from "./cn";
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
@@ -24,10 +18,7 @@ export function Card({ asChild = false, className, children, ...props }: CardPro
   }
 
   return (
-    <div
-      className={cn("ssg-panel", className)}
-      {...props}
-    >
+    <div className={cn("ssg-panel", className)} {...props}>
       {children}
     </div>
   );

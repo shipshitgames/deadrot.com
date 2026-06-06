@@ -1,15 +1,15 @@
-import { fileURLToPath, URL } from 'node:url';
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { fileURLToPath, URL } from "node:url";
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 // Relative base keeps the static build usable behind the monorepo hub route.
 export default defineConfig({
   plugins: [react()],
-  base: './',
+  base: "./",
   resolve: {
-    dedupe: ['three', 'react', 'react-dom', 'react/jsx-runtime'],
+    dedupe: ["three", "react", "react-dom", "react/jsx-runtime"],
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
   server: {
@@ -17,8 +17,8 @@ export default defineConfig({
     port: 5177,
   },
   build: {
-    target: 'es2020',
-    outDir: 'dist',
+    target: "es2020",
+    outDir: "dist",
     sourcemap: false,
   },
 });

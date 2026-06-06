@@ -43,10 +43,7 @@ export function Waitlist() {
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="flex w-full max-w-md flex-col gap-3 sm:flex-row"
-    >
+    <form onSubmit={onSubmit} className="flex w-full max-w-md flex-col gap-3 sm:flex-row">
       <label htmlFor="waitlist-email" className="sr-only">
         Email address
       </label>
@@ -68,9 +65,7 @@ export function Waitlist() {
         {status === "submitting" ? "Sending…" : "Join the waitlist"}
       </Button>
       {status === "error" ? (
-        <p className="w-full text-sm text-blood sm:absolute sm:mt-16">
-          Something went wrong — try again.
-        </p>
+        <p className="w-full text-sm text-blood sm:absolute sm:mt-16">Something went wrong — try again.</p>
       ) : null}
     </form>
   );

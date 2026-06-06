@@ -1,6 +1,6 @@
 # Deadrot Monorepo - Repo Memory
 
-last_verified: 2026-06-05
+last_verified: 2026-06-06
 
 ## What this is
 The shipped Deadrot monorepo (Turborepo + Bun), GitHub
@@ -21,6 +21,9 @@ asset that ships with them:
 
 ## Repo Boundary
 Deadrot assets and runtime packages ship from this repo.
+
+Workflow expectations for agents are documented in
+`.agents/memory/workflow.md`.
 
 Studio tooling that builds/generates those assets lives in the sibling repo:
 

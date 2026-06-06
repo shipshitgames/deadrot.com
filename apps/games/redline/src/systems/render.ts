@@ -114,8 +114,11 @@ export class Render {
         if (m.geometry) m.geometry.dispose();
         if (m.material) {
           const mat = m.material as THREE.Material | THREE.Material[];
-          if (Array.isArray(mat)) mat.forEach((x) => x.dispose());
-          else mat.dispose();
+          if (Array.isArray(mat)) {
+            mat.forEach((x) => {
+              x.dispose();
+            });
+          } else mat.dispose();
         }
       });
     }
@@ -175,13 +178,69 @@ export class Render {
       // 6 verts -> 8 triangles (slope, back, bottom, two sides)
       const verts = new Float32Array([
         // slope face (low-left to high-right), front + back
-        0, b, z, run, top, z, run, b, z, // front lower tri
-        0, b, z, 0, b, -z, run, top, z, // wrap
-        run, top, z, 0, b, -z, run, top, -z,
-        run, b, z, run, top, z, run, top, -z,
-        run, b, z, run, top, -z, run, b, -z,
-        0, b, z, run, b, z, run, b, -z,
-        0, b, z, run, b, -z, 0, b, -z,
+        0,
+        b,
+        z,
+        run,
+        top,
+        z,
+        run,
+        b,
+        z, // front lower tri
+        0,
+        b,
+        z,
+        0,
+        b,
+        -z,
+        run,
+        top,
+        z, // wrap
+        run,
+        top,
+        z,
+        0,
+        b,
+        -z,
+        run,
+        top,
+        -z,
+        run,
+        b,
+        z,
+        run,
+        top,
+        z,
+        run,
+        top,
+        -z,
+        run,
+        b,
+        z,
+        run,
+        top,
+        -z,
+        run,
+        b,
+        -z,
+        0,
+        b,
+        z,
+        run,
+        b,
+        z,
+        run,
+        b,
+        -z,
+        0,
+        b,
+        z,
+        run,
+        b,
+        -z,
+        0,
+        b,
+        -z,
       ]);
       g.setAttribute("position", new THREE.BufferAttribute(verts, 3));
       g.computeVertexNormals();
@@ -215,10 +274,7 @@ export class Render {
       const depth = 5;
       if (h.kind === "spike") {
         // jagged blood creep: a cone + a couple of barbs
-        const cone = new THREE.Mesh(
-          new THREE.ConeGeometry(h.width * 0.7, h.height, 6),
-          matCreep,
-        );
+        const cone = new THREE.Mesh(new THREE.ConeGeometry(h.width * 0.7, h.height, 6), matCreep);
         cone.position.set(h.x, h.baseY + h.height / 2, 0);
         this.track(cone);
 
@@ -231,10 +287,7 @@ export class Render {
         const bottomOfBar = h.baseY + h.clearance;
         const barH = top - bottomOfBar;
 
-        const leftLeg = new THREE.Mesh(
-          new THREE.BoxGeometry(0.3, h.clearance, 0.4),
-          matCreep,
-        );
+        const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.3, h.clearance, 0.4), matCreep);
         leftLeg.position.set(h.x - h.width * 0.5, h.baseY + h.clearance / 2, 0);
         this.track(leftLeg);
 

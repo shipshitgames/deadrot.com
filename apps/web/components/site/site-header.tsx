@@ -33,15 +33,11 @@ export function SiteHeader() {
         "fixed inset-x-0 top-0 z-40 transition-all duration-300",
         scrolled
           ? "border-b border-gunmetal/60 bg-void/85 backdrop-blur-md"
-          : "bg-gradient-to-b from-void/80 to-transparent"
+          : "bg-gradient-to-b from-void/80 to-transparent",
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <Link
-          href="/"
-          aria-label="DEADROT home"
-          className="text-bone"
-        >
+        <Link href="/" aria-label="DEADROT home" className="text-bone">
           <DeadrotBrand textClassName="text-lg" />
         </Link>
 
@@ -69,6 +65,7 @@ export function SiteHeader() {
           onClick={() => setOpen((o) => !o)}
           className="text-bone md:hidden"
           aria-label="Toggle menu"
+          type="button"
         >
           {open ? <X /> : <Menu />}
         </button>

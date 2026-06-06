@@ -118,10 +118,30 @@ body {
   border-left-color: var(--hellfire);
 }
 
-.hud-tl { top: clamp(12px, 2.4vw, 28px); left: clamp(12px, 2.4vw, 28px); }
-.hud-tr { top: clamp(12px, 2.4vw, 28px); right: clamp(12px, 2.4vw, 28px); text-align: right; border-left-width: 1px; border-right-width: 3px; border-right-color: var(--hellfire); }
-.hud-bl { bottom: clamp(12px, 2.4vw, 28px); left: clamp(12px, 2.4vw, 28px); }
-.hud-br { bottom: clamp(12px, 2.4vw, 28px); right: clamp(12px, 2.4vw, 28px); text-align: right; border-left-width: 1px; border-right-width: 3px; border-right-color: var(--hellfire); }
+.hud-tl {
+  top: clamp(12px, 2.4vw, 28px);
+  left: clamp(12px, 2.4vw, 28px);
+}
+.hud-tr {
+  top: clamp(12px, 2.4vw, 28px);
+  right: clamp(12px, 2.4vw, 28px);
+  text-align: right;
+  border-left-width: 1px;
+  border-right-width: 3px;
+  border-right-color: var(--hellfire);
+}
+.hud-bl {
+  bottom: clamp(12px, 2.4vw, 28px);
+  left: clamp(12px, 2.4vw, 28px);
+}
+.hud-br {
+  bottom: clamp(12px, 2.4vw, 28px);
+  right: clamp(12px, 2.4vw, 28px);
+  text-align: right;
+  border-left-width: 1px;
+  border-right-width: 3px;
+  border-right-color: var(--hellfire);
+}
 
 .hud-label {
   font-size: clamp(9px, 1.1vw, 12px);
@@ -139,7 +159,10 @@ body {
   color: var(--bone);
 }
 
-.hud-value.mono { font-family: var(--font-mono); font-weight: 500; }
+.hud-value.mono {
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
 
 .hud-unit {
   font-size: 0.42em;
@@ -157,15 +180,31 @@ body {
 }
 
 /* Speed value heats up when fast (toggled from JS) */
-.hud-value.is-hot { color: var(--hellfire); text-shadow: 0 0 14px rgba(255, 106, 0, 0.5); }
-.hud-value.is-redline { color: var(--blood-hot); text-shadow: 0 0 16px rgba(255, 42, 24, 0.7); }
+.hud-value.is-hot {
+  color: var(--hellfire);
+  text-shadow: 0 0 14px rgba(255, 106, 0, 0.5);
+}
+.hud-value.is-redline {
+  color: var(--blood-hot);
+  text-shadow: 0 0 16px rgba(255, 42, 24, 0.7);
+}
 
 /* status word states */
-#hud-status.s-run { color: var(--bone); }
-#hud-status.s-air { color: var(--hellfire); }
-#hud-status.s-dash { color: var(--toxic); }
-#hud-status.s-hit { color: var(--blood-hot); }
-#hud-status.s-done { color: var(--hellfire); }
+#hud-status.s-run {
+  color: var(--bone);
+}
+#hud-status.s-air {
+  color: var(--hellfire);
+}
+#hud-status.s-dash {
+  color: var(--toxic);
+}
+#hud-status.s-hit {
+  color: var(--blood-hot);
+}
+#hud-status.s-done {
+  color: var(--hellfire);
+}
 
 /* ---- Progress bar ---------------------------------------------------------- */
 #progress {
@@ -233,7 +272,9 @@ body {
   color: var(--bone);
 }
 
-#overlay-title .accent { color: var(--blood); }
+#overlay-title .accent {
+  color: var(--blood);
+}
 
 #overlay-body {
   font-size: 14px;
@@ -285,7 +326,10 @@ kbd {
   border: 0;
   padding: 12px 36px;
   cursor: pointer;
-  transition: box-shadow 0.15s ease, background 0.15s ease, transform 0.06s ease;
+  transition:
+    box-shadow 0.15s ease,
+    background 0.15s ease,
+    transform 0.06s ease;
 }
 
 .btn-primary:hover {
@@ -293,7 +337,9 @@ kbd {
   box-shadow: var(--ember-glow);
 }
 
-.btn-primary:active { transform: translateY(1px); }
+.btn-primary:active {
+  transform: translateY(1px);
+}
 
 /* Stat block injected on win/dead screens */
 #overlay-stats {
@@ -325,9 +371,15 @@ kbd {
   margin-top: 4px;
 }
 
-#overlay-stats .stat .v.gold { color: var(--hellfire); }
+#overlay-stats .stat .v.gold {
+  color: var(--hellfire);
+}
 
 @media (max-width: 480px) {
-  #progress { width: 70vw; }
-  #overlay-controls { grid-template-columns: 1fr; }
+  #progress {
+    width: 70vw;
+  }
+  #overlay-controls {
+    grid-template-columns: 1fr;
+  }
 }

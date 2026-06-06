@@ -60,9 +60,7 @@ function buildPathCells(): Set<string> {
 }
 
 /** World-space waypoints of the lane, in order (spawn -> base). */
-export const pathPoints: THREE.Vector3[] = path.map(([c, r]) =>
-  cellToWorld(c, r),
-);
+export const pathPoints: THREE.Vector3[] = path.map(([c, r]) => cellToWorld(c, r));
 
 export const spawnPoint = pathPoints[0];
 export const basePoint = pathPoints[pathPoints.length - 1];

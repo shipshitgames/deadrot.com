@@ -1,12 +1,5 @@
-import { CONSTANTS } from '../constants';
-import type {
-  LevelData,
-  Platform,
-  Scourge,
-  Ember,
-  Hazard,
-  MovingPlatform,
-} from './types';
+import { CONSTANTS } from "../constants";
+import type { LevelData, Platform, Scourge, Ember, Hazard, MovingPlatform } from "./types";
 
 // Canon location: see apps/lore/content/Locations/The-Rothulk.md and
 // apps/lore/content/Locations/Cinder-Flats.md and apps/lore/content/Maps.md (cross-game map registry).
@@ -19,7 +12,7 @@ export function buildLevel(): LevelData {
   const platforms: Platform[] = [];
 
   const slab = (x: number, y: number, w: number, h = 1): Platform => ({
-    kind: 'slab',
+    kind: "slab",
     x: x + w / 2,
     y: y + h / 2,
     w,
@@ -56,7 +49,7 @@ export function buildLevel(): LevelData {
   // Decorative fleshy backing walls (Scourge tissue behind the metal).
   for (let i = 0; i < 14; i++) {
     platforms.push({
-      kind: 'flesh',
+      kind: "flesh",
       x: i * 10 + 5,
       y: -3,
       w: 10.5,
@@ -95,12 +88,12 @@ export function buildLevel(): LevelData {
 
   const hazards: Hazard[] = [
     // Acid pool under the floating-slab gap.
-    { kind: 'acid', x: 41, y: -1.4, w: 14, h: 1.4 },
+    { kind: "acid", x: 41, y: -1.4, w: 14, h: 1.4 },
     // Bone spikes lining the corridor floor.
-    { kind: 'spikes', x: 94, y: 1.55, w: 2.4, h: 0.9 },
-    { kind: 'spikes', x: 97, y: 1.55, w: 2.4, h: 0.9 },
+    { kind: "spikes", x: 94, y: 1.55, w: 2.4, h: 0.9 },
+    { kind: "spikes", x: 97, y: 1.55, w: 2.4, h: 0.9 },
     // Acid in the final chasm.
-    { kind: 'acid', x: 113, y: -1.0, w: 11, h: 1.4 },
+    { kind: "acid", x: 113, y: -1.0, w: 11, h: 1.4 },
   ];
 
   const mkScourge = (x: number, y: number, range: number): Scourge => ({
@@ -145,9 +138,9 @@ export function buildLevel(): LevelData {
   ];
 
   return {
-    name: 'The Rothulk',
-    loreId: 'cinder',
-    front: 'hulk',
+    name: "The Rothulk",
+    loreId: "cinder",
+    front: "hulk",
     width: 130,
     platforms,
     movers,

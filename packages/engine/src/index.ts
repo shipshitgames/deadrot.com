@@ -14,7 +14,7 @@ export {
   makeBounds,
   type WorldBounds,
   type MapBounds,
-} from './world/bounds'
+} from "./world/bounds";
 
 // --- embodied-base: camera rig (seam: CameraRig — the spine) ---
 export {
@@ -23,10 +23,10 @@ export {
   type CameraRigPreset,
   type RigCaptureEvent,
   type ThirdPersonFollowConfig,
-} from './camera/CameraRig'
+} from "./camera/CameraRig";
 
 // --- embodied-base: input (seam: DOM bindings + movement; genre verbs stay game-side) ---
-export { InputSystem, type InputHooks } from './input/InputSystem'
+export { InputSystem, type InputHooks } from "./input/InputSystem";
 export {
   makeMoveIntent,
   clearMoveIntent,
@@ -34,11 +34,11 @@ export {
   actionFor,
   type MoveIntent,
   type ActionMap,
-} from './input/bindings'
+} from "./input/bindings";
 
 // --- embodied-base: agents (seam: kinematic Agent + pluggable SteeringStrategy) ---
-export { Agent, type PlanarVec } from './agents/Agent'
-export { type SteeringStrategy, type SteerView } from './agents/steering'
+export { Agent, type PlanarVec } from "./agents/Agent";
+export type { SteeringStrategy, SteerView } from "./agents/steering";
 
 // --- embodied-base: spawn (seam: where the next enemy enters the world) ---
 export {
@@ -47,4 +47,4 @@ export {
   type SpawnRequest,
   type SpawnPoint,
   type RectScatterConfig,
-} from './spawn'
+} from "./spawn";

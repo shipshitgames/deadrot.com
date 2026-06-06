@@ -7,10 +7,7 @@ const config = {
   repoOwner: process.env.BOARD_HYGIENE_REPO_OWNER ?? "shipshitgames",
   repo: process.env.BOARD_HYGIENE_REPO ?? "deadrot.com",
   hubProjectNumber: numberFromEnv("BOARD_HYGIENE_HUB_PROJECT", 10),
-  targetProjects: projectNumbersFromEnv(
-    process.env.BOARD_HYGIENE_PROJECTS,
-    DEFAULT_TARGET_PROJECTS,
-  ),
+  targetProjects: projectNumbersFromEnv(process.env.BOARD_HYGIENE_PROJECTS, DEFAULT_TARGET_PROJECTS),
   dryRun: boolFromEnv("BOARD_HYGIENE_DRY_RUN", true),
   chunkSize: numberFromEnv("BOARD_HYGIENE_CHUNK_SIZE", 8),
   rateFloor: numberFromEnv("BOARD_HYGIENE_GRAPHQL_RATE_FLOOR", 1500),
@@ -48,14 +45,10 @@ for (const project of projects) {
   );
 }
 
-const hubProject = projects.find(
-  (project) => project.number === config.hubProjectNumber,
-);
+const hubProject = projects.find((project) => project.number === config.hubProjectNumber);
 
 if (!hubProject) {
-  throw new Error(
-    `Hub project #${config.hubProjectNumber} is not in BOARD_HYGIENE_PROJECTS.`,
-  );
+  throw new Error(`Hub project #${config.hubProjectNumber} is not in BOARD_HYGIENE_PROJECTS.`);
 }
 
 const boardlessIssues = await loadBoardlessOpenIssues();
@@ -71,9 +64,7 @@ for (const issue of boardlessIssues) {
 }
 
 if (lastRateLimit) {
-  console.log(
-    `GraphQL remaining=${lastRateLimit.remaining} reset=${lastRateLimit.resetAt ?? "unknown"}`,
-  );
+  console.log(`GraphQL remaining=${lastRateLimit.remaining} reset=${lastRateLimit.resetAt ?? "unknown"}`);
 }
 
 console.log("Board hygiene complete.");
@@ -155,9 +146,7 @@ function updateRateLimitFromHeaders(headers) {
   const resetSeconds = Number(headers.get("x-ratelimit-reset"));
   lastRateLimit = {
     remaining,
-    resetAt: Number.isFinite(resetSeconds)
-      ? new Date(resetSeconds * 1000).toISOString()
-      : undefined,
+    resetAt: Number.isFinite(resetSeconds) ? new Date(resetSeconds * 1000).toISOString() : undefined,
   };
 }
 
@@ -284,9 +273,7 @@ async function loadProject(projectNumber) {
 
     const itemConnection = pageData.organization.projectV2.items;
     items.push(...itemConnection.nodes);
-    cursor = itemConnection.pageInfo.hasNextPage
-      ? itemConnection.pageInfo.endCursor
-      : null;
+    cursor = itemConnection.pageInfo.hasNextPage ? itemConnection.pageInfo.endCursor : null;
   } while (cursor);
 
   return {
@@ -306,25 +293,19 @@ function validateProjectShape(project) {
 
   for (const option of ["Todo", "In Progress", "Done", "Deferred"]) {
     if (!optionId(status, option)) {
-      throw new Error(
-        `Project #${project.number} ${project.title} is missing Status option ${option}.`,
-      );
+      throw new Error(`Project #${project.number} ${project.title} is missing Status option ${option}.`);
     }
   }
 
   for (const option of ["P0", "P1", "P2", "P3"]) {
     if (!optionId(priority, option)) {
-      throw new Error(
-        `Project #${project.number} ${project.title} is missing Priority option ${option}.`,
-      );
+      throw new Error(`Project #${project.number} ${project.title} is missing Priority option ${option}.`);
     }
   }
 }
 
 function singleSelectField(project, name) {
-  const field = project.fields.find(
-    (candidate) => candidate?.name === name && Array.isArray(candidate.options),
-  );
+  const field = project.fields.find((candidate) => candidate?.name === name && Array.isArray(candidate.options));
 
   if (!field) {
     throw new Error(`Project #${project.number} ${project.title} is missing ${name}.`);
@@ -345,9 +326,7 @@ function collectProjectUpdates(project) {
   const status = singleSelectField(project, "Status");
   const priority = singleSelectField(project, "Priority");
   const statusOptions = new Map(status.options.map((option) => [option.name, option.id]));
-  const priorityOptions = new Map(
-    priority.options.map((option) => [option.name, option.id]),
-  );
+  const priorityOptions = new Map(priority.options.map((option) => [option.name, option.id]));
   const updates = [];
 
   for (const item of project.items) {
@@ -455,9 +434,7 @@ async function loadBoardlessOpenIssues() {
       }
     }
 
-    cursor = issueConnection.pageInfo.hasNextPage
-      ? issueConnection.pageInfo.endCursor
-      : null;
+    cursor = issueConnection.pageInfo.hasNextPage ? issueConnection.pageInfo.endCursor : null;
   } while (cursor);
 
   return boardless;
@@ -487,9 +464,7 @@ async function applyFieldUpdates(updates, label) {
     ensureRateBudget(`${label} chunk ${index / config.chunkSize + 1}`);
 
     await graphql(buildFieldUpdateMutation(chunk), buildFieldUpdateVariables(chunk));
-    console.log(
-      `Applied ${Math.min(index + chunk.length, updates.length)}/${updates.length} ${label} update(s).`,
-    );
+    console.log(`Applied ${Math.min(index + chunk.length, updates.length)}/${updates.length} ${label} update(s).`);
 
     if (index + chunk.length < updates.length) {
       await sleep(config.sleepMs);

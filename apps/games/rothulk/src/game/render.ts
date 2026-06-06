@@ -1,6 +1,6 @@
-import * as THREE from 'three';
-import { COLORS, CONSTANTS } from '../constants';
-import type { LevelData } from './types';
+import * as THREE from "three";
+import { COLORS, CONSTANTS } from "../constants";
+import type { LevelData } from "./types";
 
 // Owns the Three.js scene, the orthographic side camera, and all meshes built
 // from primitives. Side-scroller / 2.5D: we look down -Z at a flat XY world.
@@ -34,7 +34,7 @@ export class Renderer {
     this.renderer = new THREE.WebGLRenderer({
       canvas,
       antialias: true,
-      powerPreference: 'high-performance',
+      powerPreference: "high-performance",
     });
     this.renderer.setClearColor(COLORS.void, 1);
 
@@ -50,7 +50,7 @@ export class Renderer {
     this.scene.add(rim);
 
     this.resize();
-    window.addEventListener('resize', this.resize);
+    window.addEventListener("resize", this.resize);
   }
 
   // --- Static + dynamic level geometry ------------------------------------
@@ -68,7 +68,7 @@ export class Renderer {
     // Backdrop: a huge dark void plane far behind everything.
     const bg = new THREE.Mesh(
       new THREE.PlaneGeometry(level.width + 60, 80),
-      new THREE.MeshBasicMaterial({ color: COLORS.void })
+      new THREE.MeshBasicMaterial({ color: COLORS.void }),
     );
     bg.position.set(level.width / 2, 6, -8);
     this.scene.add(bg);
@@ -91,17 +91,14 @@ export class Renderer {
     });
 
     for (const p of level.platforms) {
-      if (p.kind === 'flesh') {
-        const m = new THREE.Mesh(
-          new THREE.BoxGeometry(p.w, p.h, 0.6),
-          fleshMat
-        );
+      if (p.kind === "flesh") {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(p.w, p.h, 0.6), fleshMat);
         m.position.set(p.x, p.y, -4);
         this.scene.add(m);
         // toxic veins — sparse glowing nodes on the flesh wall
         const vein = new THREE.Mesh(
           new THREE.SphereGeometry(0.18, 8, 8),
-          new THREE.MeshBasicMaterial({ color: COLORS.toxic })
+          new THREE.MeshBasicMaterial({ color: COLORS.toxic }),
         );
         vein.position.set(p.x + (Math.random() - 0.5) * p.w * 0.6, p.y + 1, -3.4);
         this.scene.add(vein);
@@ -110,10 +107,7 @@ export class Renderer {
         m.position.set(p.x, p.y, 0);
         this.scene.add(m);
         // bone-light top trim so platform tops read clearly
-        const trim = new THREE.Mesh(
-          new THREE.BoxGeometry(p.w, 0.14, 1.5),
-          slabEdgeMat
-        );
+        const trim = new THREE.Mesh(new THREE.BoxGeometry(p.w, 0.14, 1.5), slabEdgeMat);
         trim.position.set(p.x, p.y + p.h / 2, 0.01);
         this.scene.add(trim);
       }
@@ -121,10 +115,10 @@ export class Renderer {
 
     // Hazards.
     for (const h of level.hazards) {
-      if (h.kind === 'acid') {
+      if (h.kind === "acid") {
         const m = new THREE.Mesh(
           new THREE.BoxGeometry(h.w, h.h, 1.2),
-          new THREE.MeshBasicMaterial({ color: COLORS.toxic })
+          new THREE.MeshBasicMaterial({ color: COLORS.toxic }),
         );
         m.position.set(h.x, h.y, 0.1);
         m.material.transparent = true;
@@ -138,10 +132,7 @@ export class Renderer {
           roughness: 0.7,
         });
         for (let i = 0; i < count; i++) {
-          const cone = new THREE.Mesh(
-            new THREE.ConeGeometry(0.22, h.h, 5),
-            coneMat
-          );
+          const cone = new THREE.Mesh(new THREE.ConeGeometry(0.22, h.h, 5), coneMat);
           const cx = h.x - h.w / 2 + (i + 0.5) * (h.w / count);
           cone.position.set(cx, h.y - h.h / 2 + h.h / 2, 0.2);
           this.scene.add(cone);
@@ -174,12 +165,12 @@ export class Renderer {
           roughness: 0.6,
           emissive: COLORS.bloodHot,
           emissiveIntensity: 0.2,
-        })
+        }),
       );
       blob.scale.y = 0.8;
       const node = new THREE.Mesh(
         new THREE.SphereGeometry(s.size * 0.18, 8, 8),
-        new THREE.MeshBasicMaterial({ color: COLORS.toxic })
+        new THREE.MeshBasicMaterial({ color: COLORS.toxic }),
       );
       node.position.y = s.size * 0.18;
       g.add(blob, node);
@@ -192,7 +183,7 @@ export class Renderer {
     for (const e of level.embers) {
       const m = new THREE.Mesh(
         new THREE.OctahedronGeometry(CONSTANTS.EMBER_SIZE),
-        new THREE.MeshBasicMaterial({ color: COLORS.hellfire })
+        new THREE.MeshBasicMaterial({ color: COLORS.hellfire }),
       );
       m.position.set(e.x, e.y, 0.3);
       this.scene.add(m);
@@ -206,22 +197,19 @@ export class Renderer {
         color: COLORS.bone,
         emissive: COLORS.iron,
         emissiveIntensity: 0.2,
-      })
+      }),
     );
     this.checkpointMesh.position.set(level.checkpoint.x, level.checkpoint.y, 0.1);
     this.scene.add(this.checkpointMesh);
 
     // Breach-core — pulsing toxic-green icosahedron in a gunmetal cradle.
     this.coreGlowMat = new THREE.MeshBasicMaterial({ color: COLORS.toxic });
-    this.coreMesh = new THREE.Mesh(
-      new THREE.IcosahedronGeometry(1.1, 0),
-      this.coreGlowMat
-    );
+    this.coreMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(1.1, 0), this.coreGlowMat);
     this.coreMesh.position.set(level.core.x, level.core.y, 0.3);
     this.scene.add(this.coreMesh);
     const cradle = new THREE.Mesh(
       new THREE.TorusGeometry(1.4, 0.16, 8, 16),
-      new THREE.MeshStandardMaterial({ color: COLORS.gunmetal, metalness: 0.6 })
+      new THREE.MeshStandardMaterial({ color: COLORS.gunmetal, metalness: 0.6 }),
     );
     cradle.position.copy(this.coreMesh.position);
     this.scene.add(cradle);
@@ -237,7 +225,7 @@ export class Renderer {
         roughness: 0.6,
         emissive: COLORS.iron,
         emissiveIntensity: 0.15,
-      })
+      }),
     );
     this.heroBody.position.y = -CONSTANTS.HERO_HEIGHT * 0.15;
     // Head — blood-red, the Pyre warmark.
@@ -249,7 +237,7 @@ export class Renderer {
     });
     this.heroHead = new THREE.Mesh(
       new THREE.BoxGeometry(CONSTANTS.HERO_WIDTH * 0.7, CONSTANTS.HERO_HEIGHT * 0.32, 0.7),
-      this.heroFlashMat
+      this.heroFlashMat,
     );
     this.heroHead.position.y = CONSTANTS.HERO_HEIGHT * 0.34;
     this.hero.add(this.heroBody, this.heroHead);
@@ -300,13 +288,9 @@ export class Renderer {
   }
 
   setCheckpointReached() {
-    (this.checkpointMesh.material as THREE.MeshStandardMaterial).emissive.setHex(
-      COLORS.blood
-    );
+    (this.checkpointMesh.material as THREE.MeshStandardMaterial).emissive.setHex(COLORS.blood);
     (this.checkpointMesh.material as THREE.MeshStandardMaterial).emissiveIntensity = 0.8;
-    (this.checkpointMesh.material as THREE.MeshStandardMaterial).color.setHex(
-      COLORS.bloodHot
-    );
+    (this.checkpointMesh.material as THREE.MeshStandardMaterial).color.setHex(COLORS.bloodHot);
   }
 
   // Per-frame visual tick (pulses, flash decay).
@@ -335,7 +319,7 @@ export class Renderer {
     const halfW = (CONSTANTS.VIEW_HEIGHT * this.aspect) / 2;
     let camX = targetX + CONSTANTS.CAMERA_LEAD;
     camX = Math.max(halfW, Math.min(levelWidth - halfW, camX));
-    let camY = Math.max(CONSTANTS.CAMERA_MIN_Y, targetY + 2);
+    const camY = Math.max(CONSTANTS.CAMERA_MIN_Y, targetY + 2);
     this.camera.position.x += (camX - this.camera.position.x) * 0.18;
     this.camera.position.y += (camY - this.camera.position.y) * 0.12;
   }
@@ -360,7 +344,7 @@ export class Renderer {
   };
 
   dispose() {
-    window.removeEventListener('resize', this.resize);
+    window.removeEventListener("resize", this.resize);
     this.renderer.dispose();
   }
 }

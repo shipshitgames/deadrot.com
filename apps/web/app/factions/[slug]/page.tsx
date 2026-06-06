@@ -7,34 +7,20 @@ import { Backdrop } from "@/components/site/atmosphere";
 import { GameCard } from "@/components/game/game-card";
 import { EntityCard } from "@/components/roster/entity-card";
 import { FactionCrest } from "@/components/faction/faction-crest";
-import {
-  factions,
-  getFaction,
-  factionGames,
-  charactersByFaction,
-  accentVars,
-} from "@/lib/content";
+import { factions, getFaction, factionGames, charactersByFaction, accentVars } from "@/lib/content";
 
 export function generateStaticParams() {
   return factions.map((f) => ({ slug: f.slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const faction = getFaction(slug);
   if (!faction) return {};
   return { title: faction.name, description: faction.tagline };
 }
 
-export default async function FactionPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function FactionPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const faction = getFaction(slug);
   if (!faction) notFound();
@@ -58,17 +44,12 @@ export default async function FactionPage({
           >
             ← Universe
           </Link>
-          <FactionCrest
-            accent={faction.accent}
-            className="mt-8 h-20 w-20"
-          />
+          <FactionCrest accent={faction.accent} className="mt-8 h-20 w-20" />
           <Eyebrow className="mt-6">{faction.doctrine}</Eyebrow>
           <h1 className="text-glow mt-3 font-display text-5xl font-bold uppercase tracking-tight text-bone sm:text-7xl">
             {faction.name}
           </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-ash">
-            {faction.tagline}
-          </p>
+          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-ash">{faction.tagline}</p>
         </div>
       </section>
 
@@ -98,17 +79,13 @@ export default async function FactionPage({
               <h3 className="font-display text-xl font-bold uppercase tracking-tight text-[var(--page-accent)]">
                 Playstyle
               </h3>
-              <p className="mt-3 leading-relaxed text-ash">
-                {faction.playstyle}
-              </p>
+              <p className="mt-3 leading-relaxed text-ash">{faction.playstyle}</p>
             </div>
             <div className="rounded-md border border-gunmetal bg-coal p-6 transition-colors hover:border-[var(--page-accent)]">
               <h3 className="font-display text-xl font-bold uppercase tracking-tight text-[var(--page-accent)]">
                 The Pact / Rivalry
               </h3>
-              <p className="mt-3 leading-relaxed text-ash">
-                {faction.rivalry}
-              </p>
+              <p className="mt-3 leading-relaxed text-ash">{faction.rivalry}</p>
             </div>
           </div>
         </div>

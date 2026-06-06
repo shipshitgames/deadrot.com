@@ -10,22 +10,9 @@ const STATUS_STYLES: Record<GameStatus, string> = {
   CONCEPT: "border-gunmetal bg-iron text-ash",
 };
 
-export function StatusBadge({
-  status,
-  className,
-}: {
-  status: GameStatus;
-  className?: string;
-}) {
+export function StatusBadge({ status, className }: { status: GameStatus; className?: string }) {
   return (
-    <Badge
-      variant="outline"
-      className={cn(
-        "font-display tracking-widest",
-        STATUS_STYLES[status],
-        className
-      )}
-    >
+    <Badge variant="outline" className={cn("font-display tracking-widest", STATUS_STYLES[status], className)}>
       {status}
     </Badge>
   );
@@ -55,16 +42,12 @@ export function GameCard({ game }: { game: Game }) {
       <div className="relative z-10 p-5">
         <div className="mb-2 flex items-center gap-2">
           <StatusBadge status={game.status} />
-          <span className="text-[0.65rem] uppercase tracking-widest text-ash">
-            {game.genre}
-          </span>
+          <span className="text-[0.65rem] uppercase tracking-widest text-ash">{game.genre}</span>
         </div>
         <h3 className="font-display text-2xl font-bold uppercase leading-none tracking-tight text-bone">
           {game.title}
         </h3>
-        <p className="mt-2 line-clamp-2 text-sm leading-snug text-ash">
-          {game.tagline}
-        </p>
+        <p className="mt-2 line-clamp-2 text-sm leading-snug text-ash">{game.tagline}</p>
       </div>
 
       <span

@@ -1,12 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import {
-  createInitialWorld,
-  regionById,
-  breachById,
-  laneById,
-} from "./map";
+import { createInitialWorld, regionById, breachById, laneById } from "./map";
 import { applyOperation, tick, resetWorld, magnitude } from "./reducer";
 import type { OperationResult, WorldState } from "./types";
 import { SCHEMA_VERSION, TICK } from "./types";
@@ -65,7 +60,7 @@ test("purge-breach lowers breach intensity and credits biomass", () => {
 });
 
 test("purge can seal a breach (active=false, intel bonus, event.sealed)", () => {
-  let w = createInitialWorld(NOW);
+  const w = createInitialWorld(NOW);
   // force the choir breach low so a single purge seals it
   const b = w.breaches.find((x) => x.id === "breach-perdition")!;
   b.intensity = 5;
@@ -92,22 +87,14 @@ test("hold-lane reduces flow and fortifies a human endpoint", () => {
   const laneId = "l-spire-rustmarch";
   const flowBefore = laneById(w, laneId)!.flow;
   const defBefore = regionById(w, "spire")!.defense;
-  const { state } = applyOperation(
-    w,
-    op({ game: "deadlane", targetId: laneId }),
-    NOW,
-  );
+  const { state } = applyOperation(w, op({ game: "deadlane", targetId: laneId }), NOW);
   assert.ok(laneById(state, laneId)!.flow < flowBefore, "flow drops");
   assert.ok(regionById(state, "spire")!.defense > defBefore, "human endpoint fortified");
 });
 
 test("contest-territory flips a neutral region to the faction", () => {
   const w = createInitialWorld(NOW);
-  const { state } = applyOperation(
-    w,
-    op({ game: "pactfall", faction: "pyre", targetId: "rustmarch" }),
-    NOW,
-  );
+  const { state } = applyOperation(w, op({ game: "pactfall", faction: "pyre", targetId: "rustmarch" }), NOW);
   assert.equal(regionById(state, "rustmarch")!.faction, "pyre");
 });
 
@@ -126,7 +113,7 @@ test("defeat still trickles intel and is mild", () => {
     op({ game: "scourge-survivors", outcome: "defeat", targetId: "breach-perdition" }),
     NOW,
   );
-  assert.equal((credited.intel ?? 0), 8, "defeat recon trickle");
+  assert.equal(credited.intel ?? 0, 8, "defeat recon trickle");
   assert.equal(breachById(state, "breach-perdition")!.intensity, before, "no purge on defeat");
 });
 

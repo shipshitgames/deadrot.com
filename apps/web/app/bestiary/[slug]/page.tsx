@@ -5,34 +5,20 @@ import Link from "next/link";
 import { Eyebrow } from "@/components/site/eyebrow";
 import { Backdrop } from "@/components/site/atmosphere";
 import { GameCard } from "@/components/game/game-card";
-import {
-  bestiary,
-  getCreature,
-  creatureGames,
-  accentVars,
-  spriteUrl,
-} from "@/lib/content";
+import { bestiary, getCreature, creatureGames, accentVars, spriteUrl } from "@/lib/content";
 
 export function generateStaticParams() {
   return bestiary.map((b) => ({ slug: b.slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const creature = getCreature(slug);
   if (!creature) return {};
   return { title: creature.name, description: creature.tagline };
 }
 
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const creature = getCreature(slug);
   if (!creature) notFound();
@@ -79,9 +65,7 @@ export default async function Page({
             <h1 className="text-glow mt-3 font-display text-5xl font-bold uppercase leading-[0.9] tracking-tight text-bone sm:text-7xl">
               {creature.name}
             </h1>
-            <p className="mt-5 max-w-xl text-lg leading-relaxed text-ash">
-              {creature.tagline}
-            </p>
+            <p className="mt-5 max-w-xl text-lg leading-relaxed text-ash">{creature.tagline}</p>
           </div>
         </div>
       </section>
@@ -109,10 +93,7 @@ export default async function Page({
             </h2>
             <ul className="mt-6 space-y-4">
               {creature.gameplayRead.map((item, i) => (
-                <li
-                  key={i}
-                  className="border-l-2 border-[var(--page-accent)] pl-4 leading-relaxed text-ash"
-                >
+                <li key={i} className="border-l-2 border-[var(--page-accent)] pl-4 leading-relaxed text-ash">
                   {item}
                 </li>
               ))}
@@ -124,10 +105,7 @@ export default async function Page({
             </h2>
             <ul className="mt-6 space-y-4">
               {creature.visualMotifs.map((item, i) => (
-                <li
-                  key={i}
-                  className="border-l-2 border-[var(--page-accent)] pl-4 leading-relaxed text-ash"
-                >
+                <li key={i} className="border-l-2 border-[var(--page-accent)] pl-4 leading-relaxed text-ash">
                   {item}
                 </li>
               ))}

@@ -7,7 +7,7 @@ export interface AABB {
   hh: number; // half-height
 }
 
-export type PlatformKind = 'slab' | 'flesh';
+export type PlatformKind = "slab" | "flesh";
 
 export interface Platform {
   kind: PlatformKind;
@@ -33,7 +33,7 @@ export interface MovingPlatform {
   vy: number;
 }
 
-export type HazardKind = 'acid' | 'spikes';
+export type HazardKind = "acid" | "spikes";
 
 export interface Hazard {
   kind: HazardKind;
@@ -76,7 +76,7 @@ export interface CoreGoal {
 export interface LevelData {
   name: string; // canon location name (e.g. 'The Rothulk')
   loreId: string; // cross-game map registry id (e.g. 'cinder')
-  front: 'hulk'; // which war-front this level belongs to
+  front: "hulk"; // which war-front this level belongs to
   width: number; // total level length in world-units
   platforms: Platform[];
   movers: MovingPlatform[];
@@ -87,4 +87,4 @@ export interface LevelData {
   core: CoreGoal;
 }
 
-export type GameMode = 'title' | 'playing' | 'dead' | 'won' | 'gameover';
+export type GameMode = "title" | "playing" | "dead" | "won" | "gameover";

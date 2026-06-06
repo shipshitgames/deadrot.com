@@ -1,12 +1,12 @@
-import * as THREE from 'three';
-import { COLORS, CONSTANTS, type Team } from './constants';
-import type { Entity } from './types';
+import * as THREE from "three";
+import { COLORS, CONSTANTS, type Team } from "./constants";
+import type { Entity } from "./types";
 
 // Pure constructors for the visual + data twin of each entity. All art is
 // Three.js primitives with emissive materials in the DOOM palette.
 
 let meshSeed = 0;
-function baseEntity(partial: Partial<Entity> & Pick<Entity, 'kind' | 'team' | 'mesh' | 'maxHp' | 'radius'>): Entity {
+function baseEntity(partial: Partial<Entity> & Pick<Entity, "kind" | "team" | "mesh" | "maxHp" | "radius">): Entity {
   return {
     id: meshSeed++,
     pos: new THREE.Vector3(),
@@ -20,12 +20,17 @@ function baseEntity(partial: Partial<Entity> & Pick<Entity, 'kind' | 'team' | 'm
   } as Entity;
 }
 
-export function makeChampion(team: Team = 'pyre'): Entity {
-  const pyre = team === 'pyre';
+export function makeChampion(team: Team = "pyre"): Entity {
+  const pyre = team === "pyre";
   const g = new THREE.Group();
 
   const body = new THREE.Mesh(
-    new THREE.CapsuleGeometry(CONSTANTS.champion.radius, CONSTANTS.champion.height - CONSTANTS.champion.radius * 2, 6, 12),
+    new THREE.CapsuleGeometry(
+      CONSTANTS.champion.radius,
+      CONSTANTS.champion.height - CONSTANTS.champion.radius * 2,
+      6,
+      12,
+    ),
     new THREE.MeshStandardMaterial({
       // Player reads as bone/hellfire; the Warden champion reads cold gunmetal/blood-hot.
       color: pyre ? COLORS.bone : COLORS.gunmetal,
@@ -50,7 +55,7 @@ export function makeChampion(team: Team = 'pyre'): Entity {
   g.add(crest);
 
   return baseEntity({
-    kind: 'champion',
+    kind: "champion",
     team,
     mesh: g,
     maxHp: CONSTANTS.champion.maxHp,
@@ -62,7 +67,7 @@ export function makeChampion(team: Team = 'pyre'): Entity {
 }
 
 export function makeMinion(team: Team): Entity {
-  const pyre = team === 'pyre';
+  const pyre = team === "pyre";
   const mesh = new THREE.Mesh(
     new THREE.BoxGeometry(0.9, 0.9, 0.9),
     new THREE.MeshStandardMaterial({
@@ -75,7 +80,7 @@ export function makeMinion(team: Team): Entity {
   );
 
   return baseEntity({
-    kind: 'minion',
+    kind: "minion",
     team,
     mesh,
     maxHp: CONSTANTS.minion.maxHp,
@@ -100,8 +105,8 @@ export function makeScourge(): Entity {
   );
 
   return baseEntity({
-    kind: 'scourge',
-    team: 'neutral',
+    kind: "scourge",
+    team: "neutral",
     mesh,
     maxHp: CONSTANTS.scourge.maxHp,
     radius: CONSTANTS.scourge.radius,
@@ -109,7 +114,7 @@ export function makeScourge(): Entity {
 }
 
 export function makeBase(team: Team): Entity {
-  const pyre = team === 'pyre';
+  const pyre = team === "pyre";
   const g = new THREE.Group();
 
   const pillar = new THREE.Mesh(
@@ -137,7 +142,7 @@ export function makeBase(team: Team): Entity {
   g.add(crown);
 
   return baseEntity({
-    kind: 'base',
+    kind: "base",
     team,
     mesh: g,
     maxHp: CONSTANTS.base.maxHp,

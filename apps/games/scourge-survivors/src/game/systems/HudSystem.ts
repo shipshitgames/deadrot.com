@@ -1,79 +1,90 @@
-import * as THREE from 'three'
-import type { GameContext } from '../context'
-import type { GameSystems } from '../systems'
-import { audio } from '../../audio/AudioEngine'
-import { BERSERK_TIME, RELOAD_TIME, TOTAL_WAVES, WEAPON_ORDER, WEAPONS } from '../constants'
-import { EVOLUTIONS, SURVIVOR_CLASSES } from '../data/survivors'
-import type { HUDState } from '../types'
+import * as THREE from "three";
+import type { GameContext } from "../context";
+import type { GameSystems } from "../systems";
+import { audio } from "../../audio/AudioEngine";
+import { BERSERK_TIME, RELOAD_TIME, TOTAL_WAVES, WEAPON_ORDER, WEAPONS } from "../constants";
+import { EVOLUTIONS, SURVIVOR_CLASSES } from "../data/survivors";
+import type { HUDState } from "../types";
 
 export class HudSystem {
   // HUD sync
-  emitAccumulator = 0
-  hitMarkerSeq = 0
-  headshotSeq = 0
-  killSeq = 0
-  damageSeq = 0
-  damageNumbers: { id: number; x: number; y: number; amount: number; kind: 'normal' | 'head' | 'crit'; t: number }[] = []
-  damageNumberId = 0
-  banner = ''
-  bannerSeq = 0
-  toast = ''
-  toastSeq = 0
+  emitAccumulator = 0;
+  hitMarkerSeq = 0;
+  headshotSeq = 0;
+  killSeq = 0;
+  damageSeq = 0;
+  damageNumbers: { id: number; x: number; y: number; amount: number; kind: "normal" | "head" | "crit"; t: number }[] =
+    [];
+  damageNumberId = 0;
+  banner = "";
+  bannerSeq = 0;
+  toast = "";
+  toastSeq = 0;
 
-  constructor(private ctx: GameContext, private sys: GameSystems) {}
+  constructor(
+    private ctx: GameContext,
+    private sys: GameSystems,
+  ) {}
 
   /** Drop the current centre banner (bannerSeq 0 = nothing to render). Called on
    *  run start so a prior "DEFEAT"/"VICTORY" can't re-flash in the new run. */
   clearBanner() {
-    this.banner = ''
-    this.bannerSeq = 0
+    this.banner = "";
+    this.bannerSeq = 0;
   }
 
   announce(text: string) {
-    this.banner = text
-    this.bannerSeq++
-    if (text === 'VICTORY') audio.sfx('victory')
-    else if (text === 'DEFEAT') audio.sfx('defeat')
-    else if (text.includes('BOSS')) audio.sfx('boss')
-    else if (text.startsWith('WAVE') && !text.includes('CLEARED')) audio.sfx('wave')
-    this.emit()
+    this.banner = text;
+    this.bannerSeq++;
+    if (text === "VICTORY") audio.sfx("victory");
+    else if (text === "DEFEAT") audio.sfx("defeat");
+    else if (text.includes("BOSS")) audio.sfx("boss");
+    else if (text.startsWith("WAVE") && !text.includes("CLEARED")) audio.sfx("wave");
+    this.emit();
   }
 
   showToast(text: string) {
-    this.toast = text
-    this.toastSeq++
-    this.emit()
+    this.toast = text;
+    this.toastSeq++;
+    this.emit();
   }
 
-  static readonly DAMAGE_NUMBER_TTL = 0.9
+  static readonly DAMAGE_NUMBER_TTL = 0.9;
   /** Spawn a floating damage number at a world position (projected to screen). */
-  addDamageNumber(world: THREE.Vector3, amount: number, kind: 'normal' | 'head' | 'crit') {
-    const v = world.clone().project(this.ctx.camera)
-    if (v.z > 1) return // behind the camera — don't show
-    const x = (v.x * 0.5 + 0.5) * 100
-    const y = (-v.y * 0.5 + 0.5) * 100
-    this.damageNumbers.push({ id: ++this.damageNumberId, x, y, amount: Math.max(1, Math.round(amount)), kind, t: this.ctx.time })
-    if (this.damageNumbers.length > 40) this.damageNumbers.shift()
+  addDamageNumber(world: THREE.Vector3, amount: number, kind: "normal" | "head" | "crit") {
+    const v = world.clone().project(this.ctx.camera);
+    if (v.z > 1) return; // behind the camera — don't show
+    const x = (v.x * 0.5 + 0.5) * 100;
+    const y = (-v.y * 0.5 + 0.5) * 100;
+    this.damageNumbers.push({
+      id: ++this.damageNumberId,
+      x,
+      y,
+      amount: Math.max(1, Math.round(amount)),
+      kind,
+      t: this.ctx.time,
+    });
+    if (this.damageNumbers.length > 40) this.damageNumbers.shift();
   }
 
   emit() {
-    if (this.ctx.disposed) return
+    if (this.ctx.disposed) return;
     // Drop floating damage numbers once their CSS animation has finished.
     if (this.damageNumbers.length) {
-      this.damageNumbers = this.damageNumbers.filter((d) => this.ctx.time - d.t < HudSystem.DAMAGE_NUMBER_TTL)
+      this.damageNumbers = this.damageNumbers.filter((d) => this.ctx.time - d.t < HudSystem.DAMAGE_NUMBER_TTL);
     }
-    const spec = WEAPONS[this.ctx.activeWeapon]
+    const spec = WEAPONS[this.ctx.activeWeapon];
     const weapons = WEAPON_ORDER.filter((id) => this.ctx.unlocked.has(id)).map((id) => ({
       id,
       name: WEAPONS[id].name,
       key: WEAPON_ORDER.indexOf(id) + 1,
       active: id === this.ctx.activeWeapon,
-    }))
-    const survivorClass = SURVIVOR_CLASSES[this.ctx.survivorClassId] ?? SURVIVOR_CLASSES.ranger
-    const survivorChapter = this.sys.survivors.currentChapter()
+    }));
+    const survivorClass = SURVIVOR_CLASSES[this.ctx.survivorClassId] ?? SURVIVOR_CLASSES.ranger;
+    const survivorChapter = this.sys.survivors.currentChapter();
     const evolved = Object.entries(this.sys.survivors.evolved)
       .filter(([, on]) => on)
-      .map(([id]) => EVOLUTIONS[id as keyof typeof EVOLUTIONS].name)
+      .map(([id]) => EVOLUTIONS[id as keyof typeof EVOLUTIONS].name);
     const state: HUDState = {
       status: this.ctx.status,
       playerHealth: Math.round(this.ctx.health),
@@ -95,7 +106,10 @@ export class HudSystem {
       campaignTotalStages: this.ctx.campaignMaps.length,
       mapName: this.ctx.currentMap.name,
       bossActive: this.sys.pve.bossActive,
-      bossHealthFrac: this.sys.pve.bossActive && this.sys.pve.bossEnemy && this.sys.pve.bossEnemy.alive ? this.sys.pve.bossEnemy.health / this.sys.pve.bossMaxHealth : 0,
+      bossHealthFrac:
+        this.sys.pve.bossActive && this.sys.pve.bossEnemy && this.sys.pve.bossEnemy.alive
+          ? this.sys.pve.bossEnemy.health / this.sys.pve.bossMaxHealth
+          : 0,
       outcome: this.ctx.outcome,
       weapon: spec.name,
       weapons,
@@ -143,10 +157,10 @@ export class HudSystem {
       xp: Math.floor(this.sys.survivors.xp),
       xpToNext: this.sys.survivors.xpToNext,
       build: this.ctx.survivors ? this.sys.survivors.buildList() : [],
-      choices: this.ctx.status === 'levelup' ? this.sys.survivors.choices : [],
+      choices: this.ctx.status === "levelup" ? this.sys.survivors.choices : [],
       rerolls: this.sys.survivors.rerolls,
       banishes: this.sys.survivors.banishes,
-    }
-    this.ctx.listener(state)
+    };
+    this.ctx.listener(state);
   }
 }

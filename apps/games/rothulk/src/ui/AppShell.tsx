@@ -19,25 +19,35 @@ export function AppShell() {
         <div className="hud-top">
           <div className="hud-block ssg-hud-corner">
             <span className="hud-label ssg-stat-label">Lives</span>
-            <span className="hud-value ssg-stat-value" id="hud-lives">x3</span>
+            <span className="hud-value ssg-stat-value" id="hud-lives">
+              x3
+            </span>
           </div>
           <div className="hud-block ssg-hud-corner">
             <span className="hud-label ssg-stat-label">Integrity</span>
-            <div className="hp-bar"><div className="hp-fill" id="hud-hp" /></div>
+            <div className="hp-bar">
+              <div className="hp-fill" id="hud-hp" />
+            </div>
           </div>
           <div className="hud-block hud-grow ssg-hud-corner">
             <span className="hud-label ssg-stat-label">Objective</span>
-            <span className="hud-value hud-obj" id="hud-obj">REACH + IGNITE THE CORE</span>
+            <span className="hud-value hud-obj" id="hud-obj">
+              REACH + IGNITE THE CORE
+            </span>
           </div>
           <div className="hud-block hud-right ssg-hud-corner">
             <span className="hud-label ssg-stat-label">Hulk Depth</span>
-            <div className="progress"><div className="progress-fill" id="hud-progress" /></div>
+            <div className="progress">
+              <div className="progress-fill" id="hud-progress" />
+            </div>
           </div>
         </div>
 
         <div className="hud-bottom">
-          <span className="hud-faction">THE PYRE // INFILTRATION</span>
-          <span className="hud-embers">EMBERS <b id="hud-embers">0</b></span>
+          <span className="hud-faction">{"THE PYRE // INFILTRATION"}</span>
+          <span className="hud-embers">
+            EMBERS <b id="hud-embers">0</b>
+          </span>
         </div>
       </div>
 
@@ -59,10 +69,18 @@ export function AppShell() {
           </MainMenuCopy>
           <MainMenuNav label="Controls">
             <p className="banner-keys">
-              <span><b>&larr; &rarr;</b> / <b>A D</b> MOVE</span>
-              <span><b>SPACE</b> / <b>W</b> / <b>&uarr;</b> JUMP - hold to leap higher</span>
-              <span><b>STOMP</b> from above to pop the Scourge</span>
-              <span><b>R</b> RESTART</span>
+              <span>
+                <b>&larr; &rarr;</b> / <b>A D</b> MOVE
+              </span>
+              <span>
+                <b>SPACE</b> / <b>W</b> / <b>&uarr;</b> JUMP - hold to leap higher
+              </span>
+              <span>
+                <b>STOMP</b> from above to pop the Scourge
+              </span>
+              <span>
+                <b>R</b> RESTART
+              </span>
             </p>
             <MainMenuAction id="start-btn" variant="primary" label="BREACH THE HULK" meta="Begin run" />
           </MainMenuNav>

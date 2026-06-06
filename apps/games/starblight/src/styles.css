@@ -18,8 +18,8 @@
   --ash: #9b958a;
   --toxic: #8bdc1f;
 
-  --display: 'Oswald', 'Arial Narrow', 'Helvetica Neue', sans-serif;
-  --mono: ui-monospace, 'SFMono-Regular', monospace;
+  --display: "Oswald", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --mono: ui-monospace, "SFMono-Regular", monospace;
   --glow: 0 0 0 1px rgba(255, 106, 0, 0.35), 0 0 26px -6px rgba(193, 18, 31, 0.65);
 }
 
@@ -132,7 +132,10 @@ body {
   background: rgba(18, 18, 20, 0.86);
   border: 1px solid var(--gunmetal);
   border-radius: 2px;
-  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    background 120ms ease;
 }
 .pause-btn:hover {
   background: var(--iron);
@@ -328,7 +331,9 @@ body {
   border: 0;
   border-radius: 2px;
   padding: 14px 38px;
-  transition: box-shadow 120ms ease, background 120ms ease;
+  transition:
+    box-shadow 120ms ease,
+    background 120ms ease;
 }
 .cta:hover {
   background: var(--blood-hot);
@@ -393,7 +398,10 @@ body {
   background: var(--iron);
   border: 1px solid var(--gunmetal);
   border-radius: 2px;
-  transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 .menu-action:hover {
   border-color: var(--blood-hot);
@@ -457,7 +465,10 @@ body {
   border-top-width: 3px;
   color: var(--bone);
   font-family: var(--display);
-  transition: transform 110ms ease, box-shadow 110ms ease, border-color 110ms ease;
+  transition:
+    transform 110ms ease,
+    box-shadow 110ms ease,
+    border-color 110ms ease;
 }
 .card.weapon {
   border-top-color: var(--hellfire);
@@ -468,7 +479,9 @@ body {
 .card:hover {
   transform: translateY(-4px) scale(1.03);
   border-color: var(--hellfire);
-  box-shadow: 0 0 0 1px var(--hellfire), 0 10px 40px -12px rgba(255, 106, 0, 0.45);
+  box-shadow:
+    0 0 0 1px var(--hellfire),
+    0 10px 40px -12px rgba(255, 106, 0, 0.45);
 }
 .card-key {
   position: absolute;
@@ -559,7 +572,7 @@ body {
 
 /* tiny watermark — studio attribution, stays out of the way */
 #app::after {
-  content: 'SHIP SHIT GAMES';
+  content: "SHIP SHIT GAMES";
   position: absolute;
   right: 12px;
   bottom: 8px;
