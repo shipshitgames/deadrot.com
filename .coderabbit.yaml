@@ -1,0 +1,57 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+early_access: false
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  review_details: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "develop"
+      - "staging"
+  path_filters:
+    - "!**/node_modules/**"
+    - "!**/dist/**"
+    - "!**/.turbo/**"
+    - "!**/coverage/**"
+    - "!**/playwright-report/**"
+    - "!**/test-results/**"
+    - "!**/.artifacts/**"
+    - "!**/*.png"
+    - "!**/*.jpg"
+    - "!**/*.jpeg"
+    - "!**/*.webp"
+    - "!**/*.gif"
+    - "!**/*.mp3"
+    - "!**/*.wav"
+    - "!**/*.ogg"
+    - "!**/*.mp4"
+  path_instructions:
+    - path: "apps/games/**"
+      instructions: |
+        - Review gameplay changes for deterministic state updates, cleanup of timers/listeners, and frame-loop performance.
+        - Check that UI and visual feedback are clear, readable, and mobile-safe.
+    - path: "packages/**"
+      instructions: |
+        - Review package exports, workspace dependency boundaries, and backwards compatibility for consuming apps.
+        - Flag dependency additions or upgrades that increase supply-chain or runtime risk.
+    - path: ".github/workflows/**"
+      instructions: |
+        - Review workflow permissions, secret handling, untrusted PR inputs, and branch trigger coverage.
+
+chat:
+  auto_reply: true
+  art: false
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "AGENTS.md"
+      - ".agents/memory/*.md"
