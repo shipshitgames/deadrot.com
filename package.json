@@ -28,11 +28,14 @@
     "deploy:games:changed": "node scripts/deploy-changed-games.mjs",
     "typecheck": "turbo run typecheck",
     "ci": "bun run format:check && bun run lint && bun run typecheck && bun run assets:check",
-    "deps:update": "bunx npm-check-updates -u --deep --cooldown 3h --removeRange && bun install"
+    "deps:update": "bunx npm-check-updates -u --deep --cooldown 3h --removeRange && bun install",
+    "doctor": "react-doctor",
+    "prepare": "git config core.hooksPath .githooks || true"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16",
     "@playwright/test": "^1.60.0",
+    "react-doctor": "^0.4.0",
     "turbo": "2.9.16",
     "typescript": "6.0.3"
   }
