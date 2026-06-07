@@ -1,45 +1,48 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Game } from "./game/Game";
-import type { HUDState } from "./game/types";
-import { HUD } from "./components/HUD";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { audio } from "./audio/AudioEngine";
-import type { PlayerAvatarId } from "./net/playerAvatars";
-import {
-  clearScores,
-  loadScores,
-  loadSettings,
-  loadShop,
-  saveScore,
-  saveSettings,
-  saveShop,
-  type ScoreEntry,
-  type Settings,
-  type ShopState,
-} from "./game/storage";
-import {
-  SHOP_BY_ID,
-  SURVIVOR_RUN_GOAL_TIME,
-  shopCost,
-  runGold,
-  xpForLevel,
-  type ShopId,
-  type SurvivorClassId,
-} from "./game/data/survivors";
+import { HUD } from "./components/HUD";
 import {
   MAGAZINE_SIZE,
+  type PickupKind,
   PLAYER_MAX_HEALTH,
   START_RESERVE,
   STARTING_WEAPON,
   TOTAL_WAVES,
   WEAPONS,
-  type PickupKind,
   type WeaponId,
 } from "./game/constants";
+import {
+  runGold,
+  SHOP_BY_ID,
+  type ShopId,
+  SURVIVOR_RUN_GOAL_TIME,
+  type SurvivorClassId,
+  shopCost,
+  xpForLevel,
+} from "./game/data/survivors";
+import { weaponIdentityFor } from "./game/data/weaponIdentity";
 import type { SandboxEnemyKind } from "./game/Game";
+import { Game } from "./game/Game";
+import {
+  clearScores,
+  loadScores,
+  loadSettings,
+  loadShop,
+  type ScoreEntry,
+  type Settings,
+  type ShopState,
+  saveScore,
+  saveSettings,
+  saveShop,
+} from "./game/storage";
+import type { HUDState } from "./game/types";
+import type { PlayerAvatarId } from "./net/playerAvatars";
 
 const SandboxPanel = import.meta.env.DEV
   ? lazy(() => import("./components/SandboxPanel").then((mod) => ({ default: mod.SandboxPanel })))
   : null;
+
+const INITIAL_WEAPON_IDENTITY = weaponIdentityFor(STARTING_WEAPON);
 
 const INITIAL_STATE: HUDState = {
   status: "pointerlock-needed",
@@ -66,6 +69,13 @@ const INITIAL_STATE: HUDState = {
   outcome: null,
   weapon: WEAPONS[STARTING_WEAPON].name,
   weapons: [{ id: STARTING_WEAPON, name: WEAPONS[STARTING_WEAPON].name, key: 1, active: true }],
+  weaponIdentity: {
+    callsign: INITIAL_WEAPON_IDENTITY.callsign,
+    role: INITIAL_WEAPON_IDENTITY.role,
+    fantasy: INITIAL_WEAPON_IDENTITY.fantasy,
+    ads: INITIAL_WEAPON_IDENTITY.ads.label,
+    dualCompatible: INITIAL_WEAPON_IDENTITY.dualCompatible,
+  },
   damageBoost: 0,
   berserk: 0,
   berserkFrac: 0,

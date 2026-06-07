@@ -1,9 +1,10 @@
 import type * as THREE from "three";
-import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
 import { audio } from "../../audio/AudioEngine";
 import { BERSERK_TIME, RELOAD_TIME, TOTAL_WAVES, WEAPON_ORDER, WEAPONS } from "../constants";
+import type { GameContext } from "../context";
 import { EVOLUTIONS, SURVIVOR_CLASSES } from "../data/survivors";
+import { weaponIdentityFor } from "../data/weaponIdentity";
+import type { GameSystems } from "../systems";
 import type { HUDState } from "../types";
 
 export class HudSystem {
@@ -80,6 +81,7 @@ export class HudSystem {
       key: WEAPON_ORDER.indexOf(id) + 1,
       active: id === this.ctx.activeWeapon,
     }));
+    const identity = weaponIdentityFor(this.ctx.activeWeapon);
     const survivorClass = SURVIVOR_CLASSES[this.ctx.survivorClassId] ?? SURVIVOR_CLASSES.ranger;
     const survivorChapter = this.sys.survivors.currentChapter();
     const evolved = Object.entries(this.sys.survivors.evolved)
@@ -113,6 +115,13 @@ export class HudSystem {
       outcome: this.ctx.outcome,
       weapon: spec.name,
       weapons,
+      weaponIdentity: {
+        callsign: identity.callsign,
+        role: identity.role,
+        fantasy: identity.fantasy,
+        ads: identity.ads.label,
+        dualCompatible: identity.dualCompatible,
+      },
       damageBoost: Math.ceil(this.ctx.damageBoostTimer),
       berserk: Math.ceil(this.ctx.damageBoostTimer),
       berserkFrac: Math.max(0, Math.min(1, this.ctx.damageBoostTimer / BERSERK_TIME)),
