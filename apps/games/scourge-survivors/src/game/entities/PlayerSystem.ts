@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import type * as THREE from "three";
 import { RectScatterSpawnProvider, type SpawnPointProvider } from "@shipshitgames/engine";
 import type { GameContext } from "../context";
 import type { GameSystems } from "../systems";
