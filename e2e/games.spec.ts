@@ -1,6 +1,7 @@
+import { readdirSync } from "node:fs";
+import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-
-type GameSlug = "deadlane" | "pactfall" | "redline" | "rothulk" | "scourge-survivors" | "starblight" | "warline";
+import { allGames, type GameSlug } from "./game-catalog";
 
 interface GameSpec {
   path: string;
@@ -136,6 +137,18 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
     },
   },
 };
+
+test.beforeAll(() => {
+  const shippedGameSlugs = readdirSync(path.resolve("apps/games"), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+  const configuredGameSlugs = allGames.map((game) => game.slug).sort();
+  const testedGameSlugs = Object.keys(gameSpecs).sort();
+
+  expect(configuredGameSlugs).toEqual(shippedGameSlugs);
+  expect(testedGameSlugs).toEqual(shippedGameSlugs);
+});
 
 test("boots and responds to core controls", async ({ page }, testInfo) => {
   const slug = gameSlugFromProject(testInfo.project.name);

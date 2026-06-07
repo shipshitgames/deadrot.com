@@ -28,6 +28,7 @@ bun install
 bun run dev        # hub on next dev
 bun run build
 bun run typecheck
+bun run e2e        # cross-game Playwright suite
 bun run e2e:docker # isolated Playwright E2E in Docker
 ```
 

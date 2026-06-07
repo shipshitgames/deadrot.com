@@ -1,7 +1,8 @@
 # E2E Tests
 
-Game E2E runs through Playwright. Use the Docker runner for local verification so
-browser binaries, Linux packages, and dependency installs stay inside the image.
+Game E2E runs through the root Playwright suite. Use the Docker runner for full
+local verification so browser binaries, Linux packages, and dependency installs
+stay inside the image.
 
 ```bash
 bun run e2e:docker
@@ -20,10 +21,33 @@ local environment:
 
 ```bash
 bun run e2e
-cd apps/games/scourge-survivors && bun run test:e2e -- --ui
-cd apps/games/scourge-survivors && bunx playwright show-report
+bun run e2e:ui
+bun run e2e:report
 ```
 
-CI runs the Dockerized suite on pull requests, pushes to `main` or `master`,
-manual dispatch, and a weekly schedule. The workflow uploads `.artifacts/e2e` so
-failed runs retain Playwright reports and traces.
+To focus on one or more games locally or in CI, pass a comma-separated slug
+allow-list:
+
+```bash
+E2E_GAME_SLUGS=scourge-survivors,warline bun run e2e
+```
+
+The suite starts its own Vite servers by default so local runs cannot silently
+reuse a stale checkout. If the default ports `5174` through `5180` are busy,
+shift the whole range:
+
+```bash
+E2E_PORT_BASE=5274 bun run e2e
+```
+
+Only opt into server reuse when you intentionally started matching game dev
+servers yourself:
+
+```bash
+E2E_REUSE_SERVERS=1 bun run e2e
+```
+
+CI runs cross-game E2E on pull requests, pushes to `develop`, `staging`, `main`,
+or `master`, manual dispatch, and a weekly schedule. The workflow uploads
+Playwright reports, screenshots, videos, and traces from `playwright-report/`,
+`test-results/`, and the Docker runner's `.artifacts/e2e/` directory.
