@@ -7,6 +7,8 @@ export type GameStatus =
   | "levelup" // Survivors mode: choosing an upgrade
   | "gameover";
 
+export type RunMode = "campaign" | "structured" | "endless" | "coop" | "sandbox";
+
 export interface UpgradeChoice {
   id: string;
   name: string;
@@ -43,6 +45,12 @@ export interface HUDState {
   /** Current kill-streak combo (0 when the streak has lapsed). */
   combo: number;
   time: number; // elapsed survival time, seconds
+  /** Current run framing for summaries and leaderboard persistence. */
+  runMode: RunMode;
+  /** 1-based run depth: Survivors chapter, campaign stage, or arena wave. */
+  runDepth: number;
+  runDepthTotal: number;
+  runDepthName: string;
   /** 1-based wave number among the normal waves (clamped to TOTAL_WAVES). */
   wave: number;
   totalWaves: number;

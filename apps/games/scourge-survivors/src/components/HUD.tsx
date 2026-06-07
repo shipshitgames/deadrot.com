@@ -424,6 +424,29 @@ function formatTime(seconds: number): string {
   return `${m}:${r.toString().padStart(2, "0")}`;
 }
 
+function runModeLabel(mode?: HUDState["runMode"]): string {
+  switch (mode) {
+    case "structured":
+      return "Structured";
+    case "endless":
+      return "Endless";
+    case "coop":
+      return "Co-op";
+    case "sandbox":
+      return "Sandbox";
+    case "campaign":
+      return "Campaign";
+    default:
+      return "Run";
+  }
+}
+
+function depthLabel(depth?: number, total?: number, name?: string): string {
+  if (!depth) return name || "-";
+  const count = total && total > 0 ? `${depth}/${total}` : `${depth}`;
+  return name ? `${count} · ${name}` : count;
+}
+
 function healthColor(frac: number): string {
   if (frac <= 0.28) return "#c1121f";
   if (frac <= 0.58) return "#ff2a18";
@@ -566,9 +589,10 @@ function Leaderboard({
           <thead>
             <tr>
               <th className={`${th} !text-center`}>#</th>
+              <th className={`${th} !text-left`}>Run</th>
               <th className={th}>Score</th>
               <th className={th}>Kills</th>
-              <th className={th}>HS</th>
+              <th className={th}>Lvl</th>
               <th className={th}>Time</th>
               <th className={th}>Result</th>
             </tr>
@@ -587,9 +611,17 @@ function Leaderboard({
                   className={me ? "bg-[rgba(255,106,0,0.14)] outline outline-1 outline-[rgba(255,106,0,0.36)]" : ""}
                 >
                   <td className={`${td} !text-center`}>{i + 1}</td>
+                  <td className={`${td} !text-left`}>
+                    <span className="block text-[12px] font-bold uppercase tracking-[0.04em]">
+                      {runModeLabel(s.mode)}
+                    </span>
+                    <span className="block max-w-[150px] truncate text-[10px] opacity-55">
+                      {depthLabel(s.depthReached, s.depthTotal, s.depthName)}
+                    </span>
+                  </td>
                   <td className={td}>{s.score.toLocaleString()}</td>
                   <td className={td}>{s.kills}</td>
-                  <td className={td}>{s.headshots}</td>
+                  <td className={td}>{s.level ?? "-"}</td>
                   <td className={td}>{formatTime(s.time)}</td>
                   <td className={`${td} ${s.outcome === "win" ? "text-good font-bold" : "text-[#aab4c2]"}`}>
                     {s.outcome === "win" ? "WIN" : "KO"}
@@ -608,17 +640,19 @@ function SurvivorsHud({ state }: { state: HUDState }) {
   const frac = state.xpToNext > 0 ? state.xp / state.xpToNext : 0;
   return (
     <>
-      <div className="ssg-survivor-runline" aria-hidden>
+      <div className="ssg-survivor-runline" data-testid="survivors-run-hud" aria-hidden>
         <div className="ssg-survivor-runline__meta">
           <span>
             <IconText icon={state.survivorClassIcon} size={14}>
               {state.survivorClassName}
             </IconText>
           </span>
-          <span>
-            Breach {state.survivorChapter}/{state.survivorTotalChapters}
+          <span>{runModeLabel(state.runMode)}</span>
+          <span title={state.runDepthName}>
+            Depth {state.runDepth}/{state.runDepthTotal}
           </span>
-          <span>{state.survivorChapterName}</span>
+          <span>{formatTime(state.time)}</span>
+          <span>{state.kills} kills</span>
         </div>
         <div className="ssg-survivor-runline__chapters">
           {Array.from({ length: state.survivorTotalChapters }, (_, i) => (
@@ -846,6 +880,7 @@ export function HUD({
     playerHealth,
     maxPlayerHealth,
     ammo,
+    magazineSize,
     reserve,
     reloading,
     reloadProgress,
@@ -921,6 +956,12 @@ export function HUD({
           headshots,
           time,
           outcome,
+          mode: state.runMode,
+          level: state.level,
+          depthReached: state.runDepth,
+          depthTotal: state.runDepthTotal,
+          depthName: state.runDepthName,
+          goldEarned: lastRunGold,
           date: scores.find((s) => s.score === score && s.kills === kills && s.time === time)?.date ?? 0,
         }
       : null;
@@ -1037,57 +1078,53 @@ export function HUD({
       {playing && multiplayer && <Scoreboard board={scoreboard} room={room} connected={connected} />}
       {playing && survivors && <SurvivorsHud state={state} />}
 
-      <div
-        className={`${HUD_CORNER} scourge-top-stats top-4 left-1/2 -translate-x-1/2 flex flex-wrap gap-x-[22px] gap-y-[4px] items-center justify-center text-center`}
-      >
-        <div>
-          <div className={STAT_LABEL}>Time</div>
-          <div className={`${STAT_VALUE} text-[30px]`}>{formatTime(time)}</div>
-        </div>
-        {!multiplayer && !survivors && campaignTotalStages > 1 && (
+      {!survivors && (
+        <div
+          className={`${HUD_CORNER} scourge-top-stats top-4 left-1/2 -translate-x-1/2 flex flex-wrap gap-x-[22px] gap-y-[4px] items-center justify-center text-center`}
+        >
           <div>
-            <div className={STAT_LABEL}>Stage</div>
-            <div className={STAT_VALUE}>
-              {campaignStage}/{campaignTotalStages}
+            <div className={STAT_LABEL}>Time</div>
+            <div className={`${STAT_VALUE} text-[30px]`}>{formatTime(time)}</div>
+          </div>
+          {!multiplayer && campaignTotalStages > 1 && (
+            <div>
+              <div className={STAT_LABEL}>Stage</div>
+              <div className={STAT_VALUE}>
+                {campaignStage}/{campaignTotalStages}
+              </div>
+              <div className={STAT_SUB}>{mapName}</div>
             </div>
-            <div className={STAT_SUB}>{mapName}</div>
-          </div>
-        )}
-        {!multiplayer && !survivors && (
-          <div>
-            <div className={STAT_LABEL}>Wave</div>
-            <div className={`${STAT_VALUE}${bossActive ? " text-danger tracking-[0.1em] animate-bosspulse" : ""}`}>
-              {bossActive ? "BOSS" : `${wave}/${totalWaves}`}
+          )}
+          {!multiplayer && (
+            <div>
+              <div className={STAT_LABEL}>Wave</div>
+              <div className={`${STAT_VALUE}${bossActive ? " text-danger tracking-[0.1em] animate-bosspulse" : ""}`}>
+                {bossActive ? "BOSS" : `${wave}/${totalWaves}`}
+              </div>
             </div>
-          </div>
-        )}
-        {survivors && (
+          )}
+          {!multiplayer && (
+            <div>
+              <div className={STAT_LABEL}>Score</div>
+              <div className={STAT_VALUE}>{score.toLocaleString()}</div>
+            </div>
+          )}
           <div>
-            <div className={STAT_LABEL}>Level</div>
-            <div className={STAT_VALUE}>{state.level}</div>
+            <div className={STAT_LABEL}>{multiplayer ? "Frags" : "Kills"}</div>
+            <div className={STAT_VALUE}>{kills}</div>
           </div>
-        )}
-        {!multiplayer && (
           <div>
-            <div className={STAT_LABEL}>Score</div>
-            <div className={STAT_VALUE}>{score.toLocaleString()}</div>
+            <div className={STAT_LABEL}>HS</div>
+            <div className={STAT_VALUE}>{headshots}</div>
           </div>
-        )}
-        <div>
-          <div className={STAT_LABEL}>{multiplayer ? "Frags" : "Kills"}</div>
-          <div className={STAT_VALUE}>{kills}</div>
+          {!multiplayer && (
+            <div>
+              <div className={STAT_LABEL}>Enemies</div>
+              <div className={STAT_VALUE}>{enemiesAlive}</div>
+            </div>
+          )}
         </div>
-        <div>
-          <div className={STAT_LABEL}>HS</div>
-          <div className={STAT_VALUE}>{headshots}</div>
-        </div>
-        {!multiplayer && (
-          <div>
-            <div className={STAT_LABEL}>Enemies</div>
-            <div className={STAT_VALUE}>{enemiesAlive}</div>
-          </div>
-        )}
-      </div>
+      )}
 
       {bossActive && (
         <div className="absolute top-[96px] left-1/2 -translate-x-1/2 w-[min(620px,70vw)] text-center">
@@ -1128,11 +1165,14 @@ export function HUD({
         </div>
       </div>
 
-      <div className={`${HUD_CORNER} scourge-weapon-panel right-[18px] bottom-[18px] text-right min-w-[150px]`}>
+      <div
+        className={`${HUD_CORNER} scourge-weapon-panel right-[18px] bottom-[18px] text-right min-w-[150px]`}
+        data-testid="weapon-panel"
+      >
         <div className="text-[13px] tracking-[0.12em] uppercase text-accent mb-[2px]">{weapon}</div>
         <div className="flex items-baseline justify-end gap-[6px]">
           <span className={`text-[30px] font-extrabold${ammo === 0 ? " text-danger" : ""}`}>{ammo}</span>
-          <span className="text-[16px] opacity-70">/ {survivors ? "∞" : reserve}</span>
+          <span className="text-[16px] opacity-70">/ {survivors ? magazineSize : reserve}</span>
         </div>
         {reloading ? (
           <div className="mt-[6px] flex flex-col items-end gap-[3px] text-warn text-[12px] tracking-[0.08em] uppercase">
@@ -1150,6 +1190,9 @@ export function HUD({
               Press R to reload
             </div>
           )
+        )}
+        {survivors && !reloading && (
+          <div className="mt-[3px] text-[10px] font-bold uppercase tracking-[0.08em] opacity-60">Free reloads</div>
         )}
         {ads && adsZoomLevels > 1 && (
           <div className="mt-[6px] text-[11px] opacity-55 tracking-[0.04em]">
@@ -1600,8 +1643,8 @@ export function HUD({
               <div className="tracking-[0.5em] text-[13px] opacity-60 uppercase mb-[10px]">
                 {survivors
                   ? outcome === "win"
-                    ? "Breach sealed — operator extracted"
-                    : "Run lost — operator signal gone"
+                    ? `${runModeLabel(state.runMode)} run — breach sealed`
+                    : `${runModeLabel(state.runMode)} run — operator signal gone`
                   : outcome === "win"
                     ? "Boss defeated — you cleared the arena"
                     : "You were overrun"}
@@ -1611,11 +1654,23 @@ export function HUD({
                   outcome === "win" ? "from-good to-[#b6ff8a]" : "from-danger to-[#ff9a3c]"
                 }`}
               >
-                {outcome === "win" ? "VICTORY" : "GAME OVER"}
+                {survivors ? "RUN SUMMARY" : outcome === "win" ? "VICTORY" : "GAME OVER"}
               </h1>
               {survivors && (
                 <div className="mb-[14px] w-[min(720px,92vw)] rounded-lg border border-white/10 bg-black/35 px-4 py-3">
-                  <div className="grid grid-cols-2 gap-3 text-left md:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-3 text-left md:grid-cols-3 lg:grid-cols-6">
+                    <div>
+                      <div className={STAT_LABEL}>Mode</div>
+                      <div className={`${STAT_VALUE} !text-[20px]`}>{runModeLabel(state.runMode)}</div>
+                      <div className={STAT_SUB}>{outcome === "win" ? "sealed" : "lost"}</div>
+                    </div>
+                    <div>
+                      <div className={STAT_LABEL}>Depth</div>
+                      <div className={`${STAT_VALUE} !text-[20px]`}>
+                        {state.runDepth}/{state.runDepthTotal}
+                      </div>
+                      <div className={STAT_SUB}>{state.runDepthName}</div>
+                    </div>
                     <div>
                       <div className={STAT_LABEL}>Operator</div>
                       <div className={`${STAT_VALUE} !text-[20px]`}>
@@ -1626,13 +1681,6 @@ export function HUD({
                       <div className={STAT_SUB}>{state.survivorClassRole}</div>
                     </div>
                     <div>
-                      <div className={STAT_LABEL}>Breach</div>
-                      <div className={`${STAT_VALUE} !text-[20px]`}>
-                        {state.survivorChapter}/{state.survivorTotalChapters}
-                      </div>
-                      <div className={STAT_SUB}>{state.survivorChapterName}</div>
-                    </div>
-                    <div>
                       <div className={STAT_LABEL}>Level</div>
                       <div className={`${STAT_VALUE} !text-[20px]`}>{state.level}</div>
                       <div className={STAT_SUB}>
@@ -1640,11 +1688,18 @@ export function HUD({
                       </div>
                     </div>
                     <div>
-                      <div className={STAT_LABEL}>Defense</div>
+                      <div className={STAT_LABEL}>Kills</div>
+                      <div className={`${STAT_VALUE} !text-[20px]`}>{kills}</div>
+                      <div className={STAT_SUB}>{headshots} headshots</div>
+                    </div>
+                    <div>
+                      <div className={STAT_LABEL}>Gold</div>
                       <div className={`${STAT_VALUE} !text-[20px]`}>
-                        {state.survivorArmor}% / {state.survivorMaxShield} / {state.survivorDodge}%
+                        <IconText icon="gold" size={18}>
+                          +{lastRunGold.toLocaleString()}
+                        </IconText>
                       </div>
-                      <div className={STAT_SUB}>armor / shield / evade</div>
+                      <div className={STAT_SUB}>saved to shop</div>
                     </div>
                   </div>
                   {state.survivorEvolved.length > 0 && (

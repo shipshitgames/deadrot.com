@@ -1,8 +1,13 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 type HudSnapshot = {
   status: string;
   sandbox: boolean;
+  survivors: boolean;
+  runMode: string;
+  runDepth: number;
+  runDepthTotal: number;
+  runDepthName: string;
   weapon: string;
   ammo: number;
   enemiesAlive: number;
@@ -47,6 +52,94 @@ async function arenaSnapshot(page: Page): Promise<ArenaDebugSnapshot> {
 }
 
 test.describe("dev sandbox smoke", () => {
+  test("uses the Survivors HUD as the active run HUD and saves run-summary metadata", async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.clear();
+    });
+    await page.goto("/");
+    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
+
+    await page.evaluate(() => {
+      type DevGame = {
+        startSurvivors: (classId?: "ranger") => void;
+        ctx: {
+          status: string;
+          kills: number;
+          headshots: number;
+          score: number;
+          time: number;
+          survivorChapter: number;
+          survivorTotalChapters: number;
+        };
+        sys: {
+          survivors: { level: number; xp: number; xpToNext: number; survClock: number };
+          hud: { emit: () => void };
+          gameOver: { gameOver: (outcome: "dead") => void };
+        };
+      };
+
+      const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
+      game.startSurvivors("ranger");
+      game.ctx.status = "playing";
+      game.ctx.kills = 42;
+      game.ctx.headshots = 5;
+      game.ctx.score = 12_345;
+      game.ctx.time = 181;
+      game.ctx.survivorChapter = 2;
+      game.ctx.survivorTotalChapters = 4;
+      game.sys.survivors.level = 7;
+      game.sys.survivors.xp = 9;
+      game.sys.survivors.xpToNext = 30;
+      game.sys.survivors.survClock = 130;
+      game.sys.hud.emit();
+    });
+
+    await expect.poll(() => snapshot(page).then((state) => state.survivors)).toBe(true);
+    await expect.poll(() => snapshot(page).then((state) => state.runMode)).toBe("structured");
+    await expect.poll(() => snapshot(page).then((state) => state.runDepth)).toBe(3);
+    await expect(page.getByTestId("survivors-run-hud")).toContainText("Structured");
+    await expect(page.getByTestId("survivors-run-hud")).toContainText("Depth 3/4");
+    await expect(page.getByTestId("survivors-run-hud")).toContainText("42 kills");
+    await expect(page.locator(".ssg-survivor-xp")).toContainText("LV 7");
+    await expect(page.locator(".scourge-top-stats")).toHaveCount(0);
+    await expect(page.getByTestId("weapon-panel")).not.toContainText("∞");
+
+    await page.evaluate(() => {
+      type DevGame = {
+        sys: { gameOver: { gameOver: (outcome: "dead") => void } };
+      };
+      (window as unknown as { __fpsGame: DevGame }).__fpsGame.sys.gameOver.gameOver("dead");
+    });
+
+    await expect(page.getByText("RUN SUMMARY")).toBeVisible();
+    await expect(page.getByText("Structured run — operator signal gone")).toBeVisible();
+    await expect(page.locator(".ssg-stat-value", { hasText: "3/4" })).toBeVisible();
+    await expect(page.getByText("saved to shop")).toBeVisible();
+
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const [entry] = JSON.parse(localStorage.getItem("scourge-survivors.scores.v1") || "[]");
+          return entry?.mode;
+        }),
+      )
+      .toBe("structured");
+    const saved = await page.evaluate(() => {
+      const [entry] = JSON.parse(localStorage.getItem("scourge-survivors.scores.v1") || "[]");
+      return entry;
+    });
+    expect(saved).toMatchObject({
+      mode: "structured",
+      level: 7,
+      depthReached: 3,
+      depthTotal: 4,
+      kills: 42,
+      headshots: 5,
+    });
+    expect(saved.goldEarned).toBeGreaterThan(0);
+    await expect(page.locator(".ssg-stat-value", { hasText: `+${saved.goldEarned.toLocaleString()}` })).toBeVisible();
+  });
+
   test("loads runtime visual/audio assets and fires each gun", async ({ page }) => {
     const consoleErrors: string[] = [];
     page.on("console", (msg) => {
