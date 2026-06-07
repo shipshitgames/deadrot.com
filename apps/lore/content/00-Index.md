@@ -56,7 +56,7 @@ Start here, follow the links, open the graph view.
 - Starblight: [[Pyre-Interceptor-Pilot]], [[Warden-Defense-Pilot]], [[Scourge-Fighter]], [[Orbital-Breach-Carrier]]
 - Redline: [[Pyre-Courier]], [[Warden-Courier]]
 - Rothulk: [[Pyre-Saboteur]]
-- Core Scourge: [[Swarm-Ripper]], [[Swarm-Spitter]], [[Render]], [[Rot-Engine]], [[Graft-Breacher]], [[Cairn]], [[Sower]], [[Gristle-Vat]], [[Chorister]], [[Cantor]], [[Descant]], [[Bourdon]], [[Aeolian]], [[Carillon]], [[Quaver]], [[Breach-Boss]]
+- Core Scourge: [[Swarm-Ripper]], [[Swarm-Spitter]], [[Spore-Lung]], [[Render]], [[Rot-Engine]], [[Graft-Breacher]], [[Cairn]], [[Sower]], [[Gristle-Vat]], [[Chorister]], [[Cantor]], [[Descant]], [[Bourdon]], [[Aeolian]], [[Carillon]], [[Quaver]], [[Breach-Boss]]
 
 ## Tech
 
