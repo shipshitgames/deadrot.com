@@ -243,10 +243,6 @@ body {
   position: absolute;
   inset: 0;
   z-index: 20;
-  background:
-    linear-gradient(90deg, rgba(5, 5, 5, 0.92), rgba(10, 10, 10, 0.68)),
-    repeating-linear-gradient(90deg, transparent 0 42px, rgba(255, 106, 0, 0.08) 42px 44px);
-  backdrop-filter: blur(2px);
   transition: opacity 0.25s ease;
 }
 

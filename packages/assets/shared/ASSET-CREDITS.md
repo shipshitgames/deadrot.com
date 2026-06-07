@@ -32,10 +32,12 @@ First-pass shared placeholders added 2026-06-05 so
 
 ## Fonts
 
-- Files: `fonts/oswald.woff2`, `fonts/inter.woff2`
+- Files: `fonts/oswald.woff2`, `fonts/inter.woff2`, `fonts/press-start-2p.ttf`
 - Source:
   - Oswald variable font from Google Fonts `ofl/oswald`.
   - Inter variable font from Google Fonts `ofl/inter`.
+  - Press Start 2P from Google Fonts `ofl/pressstart2p`, already used by
+    Scourge Survivors and promoted here for shared title/menu chrome.
 - License: SIL Open Font License, per Google Fonts upstream.
 - Notes: subset/compressed to WOFF2 for first-pass self-hosting.
 

@@ -133,17 +133,30 @@ export class Hud {
           <span>${this.best === null ? "No record" : `Best ${fmtTime(this.best)}`}</span>
         </div>
       </div>
-      <nav class="ssg-main-menu-nav" aria-label="Route">
-        <div class="ssg-main-menu-nav__label">Route</div>
-        <ul id="overlay-controls">
-          <li><kbd>HOLD →</kbd> Accelerate</li>
-          <li><kbd>SPACE</kbd> Jump</li>
-          <li><kbd>SHIFT</kbd> Roll / dash</li>
-          <li><kbd>R</kbd> Restart</li>
-        </ul>
+      <nav class="ssg-main-menu-nav" aria-label="Main menu">
         <button id="overlay-btn" class="ssg-main-menu-action ssg-main-menu-action--primary">
-          <span class="ssg-main-menu-action__label"><span>IGNITE</span></span>
+          <span class="ssg-main-menu-action__label"><span>Ignite</span></span>
           <span class="ssg-main-menu-action__meta">Run the lane</span>
+        </button>
+        <button class="ssg-main-menu-action ssg-main-menu-action--shop" disabled>
+          <span class="ssg-main-menu-action__label"><span>Upgrades</span></span>
+          <span class="ssg-main-menu-action__meta">Cargo locked</span>
+        </button>
+        <button class="ssg-main-menu-action ssg-main-menu-action--coop" disabled>
+          <span class="ssg-main-menu-action__label"><span>Co-op</span></span>
+          <span class="ssg-main-menu-action__meta">Solo route</span>
+        </button>
+        <button class="ssg-main-menu-action ssg-main-menu-action--records" disabled>
+          <span class="ssg-main-menu-action__label"><span>Leaderboard</span></span>
+          <span class="ssg-main-menu-action__meta">${this.best === null ? "No record" : `Best ${fmtTime(this.best)}`}</span>
+        </button>
+        <button class="ssg-main-menu-action ssg-main-menu-action--settings" disabled>
+          <span class="ssg-main-menu-action__label"><span>Settings</span></span>
+          <span class="ssg-main-menu-action__meta">Keyboard</span>
+        </button>
+        <button class="ssg-main-menu-action ssg-main-menu-action--dev" disabled>
+          <span class="ssg-main-menu-action__label"><span>Sandbox</span></span>
+          <span class="ssg-main-menu-action__meta">Route lab</span>
         </button>
       </nav>
     `;

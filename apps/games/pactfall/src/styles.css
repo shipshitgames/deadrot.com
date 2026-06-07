@@ -196,8 +196,12 @@ body {
 
 .banner {
   text-align: center;
-  /* Let clicks/taps fall through to the canvas so "CLICK TO REDEPLOY" works
-     via the existing pointer handler instead of being swallowed by the overlay. */
+  pointer-events: auto;
+}
+
+#banner {
+  /* Let result-screen clicks/taps fall through to the canvas so redeploy still
+     works via the existing pointer handler instead of being swallowed here. */
   pointer-events: none;
 }
 

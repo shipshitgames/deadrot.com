@@ -2,7 +2,7 @@ import playerHeavyPreview from "@shipshitgames/assets/games/scourge-survivors/pl
 import playerMedicPreview from "@shipshitgames/assets/games/scourge-survivors/players/pyre/patch/front.webp";
 import playerRangerPreview from "@shipshitgames/assets/games/scourge-survivors/players/pyre/ranger/front.webp";
 import playerScoutPreview from "@shipshitgames/assets/games/scourge-survivors/players/pyre/vector/front.webp";
-import menuHero from "@shipshitgames/assets/games/scourge-survivors/ui/menu/scourge-hero.jpg";
+import menuHero from "@shipshitgames/assets/games/scourge-survivors/ui/menu/title.webp";
 import {
   Button,
   Card,

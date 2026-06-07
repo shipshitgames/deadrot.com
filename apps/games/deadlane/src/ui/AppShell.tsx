@@ -6,8 +6,11 @@ import {
   MainMenuScreen,
   MainMenuStatus,
   MainMenuTitle,
+  MainMenuTitleLine,
+  MainMenuTopBar,
   MenuKicker,
 } from "@shipshitgames/ui";
+import menuHero from "@shipshitgames/assets/games/deadlane/ui/menu/title.webp";
 
 export function AppShell() {
   return (
@@ -35,19 +38,30 @@ export function AppShell() {
           </div>
         </div>
 
-        <MainMenuScreen id="hud-banner" className="hidden ssg-main-menu-screen--compact">
+        <MainMenuScreen id="hud-banner" className="hidden" backgroundImage={menuHero}>
+          <MainMenuTopBar mark="SSG" meta="150 gold" aria-hidden>
+            Ashgate lane
+          </MainMenuTopBar>
           <MainMenuLayout>
             <MainMenuCopy>
               <MenuKicker>Scourge Lane Defense</MenuKicker>
-              <MainMenuTitle id="banner-title">DEADLANE</MainMenuTitle>
+              <MainMenuTitle id="banner-title">
+                <MainMenuTitleLine>DEAD</MainMenuTitleLine>
+                <MainMenuTitleLine tone="hot">LANE</MainMenuTitleLine>
+              </MainMenuTitle>
               <p id="banner-sub" className="ssg-main-menu-subtitle" />
               <MainMenuStatus>
                 <span>Build the kill corridor</span>
                 <span>Hold the base</span>
               </MainMenuStatus>
             </MainMenuCopy>
-            <MainMenuNav label="Command">
-              <MainMenuAction id="banner-btn" variant="primary" label="DEPLOY" meta="Start wave" />
+            <MainMenuNav aria-label="Main menu">
+              <MainMenuAction id="banner-btn" variant="primary" label="Deploy" meta="Start wave" />
+              <MainMenuAction variant="shop" label="Upgrades" meta="Tower tech" disabled />
+              <MainMenuAction variant="coop" label="Co-op" meta="Solo command" disabled />
+              <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
+              <MainMenuAction variant="settings" label="Settings" meta="Build grid" disabled />
+              <MainMenuAction variant="dev" label="Sandbox" meta="Lane lab" disabled />
             </MainMenuNav>
           </MainMenuLayout>
         </MainMenuScreen>

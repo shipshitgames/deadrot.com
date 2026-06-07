@@ -14,7 +14,7 @@ export class Game {
   readonly hud: HudSystem;
 
   // Shared run state
-  phase: Phase = "playing";
+  phase: Phase = "title";
   buffTime = 0; // seconds of champion damage buff remaining
   elapsed = 0;
 
@@ -32,14 +32,14 @@ export class Game {
     // actually redeployed, so a redeploy click isn't also read as a move order.
     this.input.onRestart = () => {
       if (this.phase === "playing") return false;
-      this.reset();
+      this.beginRun();
       return true;
     };
 
-    this.reset();
+    this.entities.reset();
   }
 
-  reset(): void {
+  beginRun(): void {
     this.phase = "playing";
     this.buffTime = 0;
     this.elapsed = 0;

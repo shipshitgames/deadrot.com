@@ -163,21 +163,21 @@ export class HudSystem {
       this.bannerSub.textContent = "THE ORBITAL FRONT";
       this.bannerHint.innerHTML =
         "MOVE WITH THE MOUSE &nbsp;&bull;&nbsp; weapons auto-fire &nbsp;&bull;&nbsp; collect gems, draft upgrades, stack combos";
-      this.setBannerButton("ENGAGE", "Start sortie");
+      this.setBannerButton("Engage", "Start sortie");
       this.bannerBtn.classList.remove("hidden");
     } else if (s.phase === "gameover") {
       this.banner.classList.remove("hidden");
       this.bannerTitle.textContent = "OVERRUN";
       this.bannerSub.textContent = `t=${fmtTime(s.timeSec)} · LVL ${s.level} · ${s.kills} burned`;
       this.bannerHint.innerHTML = "The Scourge breached the line.";
-      this.setBannerButton("RE-ENGAGE", "Retry run");
+      this.setBannerButton("Re-engage", "Retry run");
       this.bannerBtn.classList.remove("hidden");
     } else if (s.phase === "victory") {
       this.banner.classList.remove("hidden");
       this.bannerTitle.textContent = "FRONT HELD";
       this.bannerSub.textContent = `The Blight-Maw is burned · t=${fmtTime(s.timeSec)} · LVL ${s.level}`;
       this.bannerHint.innerHTML = "The orbital front holds — for now.";
-      this.setBannerButton("FLY AGAIN", "Launch again");
+      this.setBannerButton("Fly again", "Launch again");
       this.bannerBtn.classList.remove("hidden");
     } else {
       this.banner.classList.add("hidden");

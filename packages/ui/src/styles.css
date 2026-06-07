@@ -11,6 +11,7 @@
   --ssg-ash: #9b958a;
   --ssg-toxic: #8bdc1f;
   --ssg-font-display: "Oswald", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --ssg-font-pixel: "SSG Press Start", ui-monospace, SFMono-Regular, Menlo, monospace;
   --ssg-font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   --ssg-glow: 0 0 0 1px rgba(255, 106, 0, 0.35), 0 0 26px -6px rgba(193, 18, 31, 0.85);
 
@@ -30,6 +31,14 @@
   --ink: var(--ssg-void);
   --good: var(--ssg-toxic);
   --warn: var(--ssg-ember);
+}
+
+@font-face {
+  font-family: "SSG Press Start";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../../assets/shared/fonts/press-start-2p.ttf") format("truetype");
 }
 
 .ssg-menu-screen {
@@ -124,7 +133,8 @@
     var(--ssg-main-menu-image, linear-gradient(135deg, #070707, #180607 42%, #080808));
   background-position: center;
   background-size: cover;
-  font-family: var(--ssg-font-display);
+  font-family: var(--ssg-font-pixel);
+  image-rendering: pixelated;
   text-align: left;
   isolation: isolate;
 }
@@ -146,6 +156,21 @@
   mix-blend-mode: screen;
   opacity: 0.42;
   animation: ssg-menu-atmosphere 14s ease-in-out infinite alternate;
+}
+
+.ssg-main-menu-particles {
+  position: absolute;
+  inset: -10%;
+  z-index: 1;
+  background:
+    radial-gradient(circle, rgba(255, 176, 46, 0.68) 0 1px, transparent 2px) 8% 22% / 180px 160px,
+    radial-gradient(circle, rgba(255, 42, 24, 0.72) 0 1px, transparent 2px) 28% 74% / 230px 190px,
+    radial-gradient(circle, rgba(233, 227, 214, 0.32) 0 1px, transparent 2px) 62% 30% / 260px 210px,
+    radial-gradient(circle, rgba(139, 220, 31, 0.42) 0 1px, transparent 2px) 86% 62% / 210px 180px;
+  opacity: 0.4;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: ssg-menu-particles 20s linear infinite;
 }
 
 .ssg-main-menu-screen::after {
@@ -243,10 +268,10 @@
   align-items: flex-start;
   margin: 12px 0 0;
   color: var(--ssg-bone);
-  font-family: var(--ssg-font-display);
+  font-family: var(--ssg-font-pixel);
   font-size: clamp(4.2rem, 7vw, 8.2rem);
-  font-weight: 700;
-  line-height: 0.8;
+  font-weight: 400;
+  line-height: 1.02;
   text-align: left;
   text-transform: uppercase;
   text-shadow:
@@ -259,9 +284,7 @@
 }
 
 .ssg-main-menu-title--pixel {
-  font-family: var(--ssg-font-pixel, var(--ssg-font-display));
   font-size: clamp(2.7rem, 4.8vw, 4.35rem);
-  line-height: 1.02;
   image-rendering: pixelated;
   -webkit-font-smoothing: none;
 }
@@ -344,8 +367,9 @@
   max-width: 38rem;
   margin: 20px 0 0;
   color: var(--ssg-ash);
-  font-size: 14px;
-  line-height: 1.55;
+  font-family: var(--ssg-font-mono);
+  font-size: 12px;
+  line-height: 1.65;
   text-transform: uppercase;
 }
 
@@ -416,9 +440,9 @@
     inset 0 0 0 1px rgba(0, 0, 0, 0.82),
     inset 0 -20px 36px rgba(0, 0, 0, 0.24),
     0 16px 38px -28px rgba(0, 0, 0, 0.95);
-  font-family: var(--ssg-font-display);
-  font-size: 18px;
-  font-weight: 700;
+  font-family: var(--ssg-font-pixel);
+  font-size: 14px;
+  font-weight: 400;
   text-align: left;
   text-transform: uppercase;
   transition:
@@ -537,14 +561,14 @@
   min-width: 0;
   align-items: center;
   gap: 8px;
-  font-size: 22px;
-  line-height: 1;
+  font-size: 15px;
+  line-height: 1.15;
   letter-spacing: 0;
   white-space: nowrap;
 }
 
 .ssg-main-menu-action--primary .ssg-main-menu-action__label {
-  font-size: 34px;
+  font-size: 24px;
 }
 
 .ssg-main-menu-action__icon {
@@ -578,6 +602,16 @@
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes ssg-menu-particles {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-64px, 42px, 0);
   }
 }
 
@@ -661,11 +695,11 @@
   }
 
   .ssg-main-menu-action__label {
-    font-size: 19px;
+    font-size: 13px;
   }
 
   .ssg-main-menu-action--primary .ssg-main-menu-action__label {
-    font-size: 27px;
+    font-size: 18px;
   }
 
   .ssg-main-menu-action__meta {
@@ -681,6 +715,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ssg-main-menu-screen::before,
+  .ssg-main-menu-particles,
   .ssg-main-menu-copy,
   .ssg-main-menu-nav {
     animation: none;

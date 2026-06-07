@@ -1,5 +1,6 @@
-/* GENERATED FROM lore/DESIGN.md v0.1.0 hash:492c60dc — DO NOT EDIT. Run: bun assetgen tokens */
+/* GENERATED FROM lore/DESIGN.md v0.1.0 hash:f810af73 — DO NOT EDIT. Run: bun assetgen tokens */
 :root {
+  --primary: #c1121f;
   --void: #0a0a0a;
   --coal: #121214;
   --iron: #1e1e22;

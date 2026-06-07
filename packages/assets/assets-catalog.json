@@ -465,6 +465,55 @@
       "note": "Directional corridor marker for TD/MOBA lane positions and objectives."
     },
     {
+      "id": "ui-title-deadlane",
+      "kind": "ui",
+      "name": "Deadlane Title Background",
+      "path": "games/deadlane/ui/menu/title.webp",
+      "note": "Generated medium-chunky pixel-art title screen background, 2026-06-07."
+    },
+    {
+      "id": "ui-title-pactfall",
+      "kind": "ui",
+      "name": "Pactfall Title Background",
+      "path": "games/pactfall/ui/menu/title.webp",
+      "note": "Generated medium-chunky pixel-art title screen background, 2026-06-07."
+    },
+    {
+      "id": "ui-title-redline",
+      "kind": "ui",
+      "name": "Redline Title Background",
+      "path": "games/redline/ui/menu/title.webp",
+      "note": "Generated medium-chunky pixel-art title screen background, 2026-06-07."
+    },
+    {
+      "id": "ui-title-rothulk",
+      "kind": "ui",
+      "name": "Rothulk Title Background",
+      "path": "games/rothulk/ui/menu/title.webp",
+      "note": "Generated medium-chunky pixel-art title screen background, 2026-06-07."
+    },
+    {
+      "id": "ui-title-scourge-survivors",
+      "kind": "ui",
+      "name": "Scourge Survivors Title Background",
+      "path": "games/scourge-survivors/ui/menu/title.webp",
+      "note": "Generated medium-chunky pixel-art title screen background, 2026-06-07."
+    },
+    {
+      "id": "ui-title-starblight",
+      "kind": "ui",
+      "name": "Starblight Title Background",
+      "path": "games/starblight/ui/menu/title.webp",
+      "note": "Generated medium-chunky pixel-art title screen background, 2026-06-07."
+    },
+    {
+      "id": "ui-title-warline",
+      "kind": "ui",
+      "name": "Warline Title Background",
+      "path": "games/warline/ui/menu/title.webp",
+      "note": "Generated medium-chunky pixel-art title screen background, 2026-06-07."
+    },
+    {
       "id": "font-oswald",
       "kind": "font",
       "name": "Oswald (display)",
@@ -477,6 +526,13 @@
       "name": "Inter (body)",
       "path": "shared/fonts/inter.woff2",
       "note": "Utilitarian legible body face (flavor text, UI labels)."
+    },
+    {
+      "id": "font-press-start-2p",
+      "kind": "font",
+      "name": "Press Start 2P (pixel display)",
+      "path": "shared/fonts/press-start-2p.ttf",
+      "note": "Pixel title/menu face shared by every game title screen."
     },
     {
       "id": "audio-breach-collapse",

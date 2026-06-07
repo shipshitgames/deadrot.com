@@ -7,8 +7,10 @@ import {
   MainMenuStatus,
   MainMenuTitle,
   MainMenuTitleLine,
+  MainMenuTopBar,
   MenuKicker,
 } from "@shipshitgames/ui";
+import menuHero from "@shipshitgames/assets/games/rothulk/ui/menu/title.webp";
 
 export function AppShell() {
   return (
@@ -51,7 +53,10 @@ export function AppShell() {
         </div>
       </div>
 
-      <MainMenuScreen id="banner" className="banner">
+      <MainMenuScreen id="banner" className="banner" backgroundImage={menuHero}>
+        <MainMenuTopBar mark="SSG" meta="0 gold" aria-hidden>
+          Pyre infiltration
+        </MainMenuTopBar>
         <MainMenuLayout>
           <MainMenuCopy>
             <MenuKicker>Pyre Infiltration</MenuKicker>
@@ -67,22 +72,13 @@ export function AppShell() {
               <span>Core below</span>
             </MainMenuStatus>
           </MainMenuCopy>
-          <MainMenuNav label="Controls">
-            <p className="banner-keys">
-              <span>
-                <b>&larr; &rarr;</b> / <b>A D</b> MOVE
-              </span>
-              <span>
-                <b>SPACE</b> / <b>W</b> / <b>&uarr;</b> JUMP - hold to leap higher
-              </span>
-              <span>
-                <b>STOMP</b> from above to pop the Scourge
-              </span>
-              <span>
-                <b>R</b> RESTART
-              </span>
-            </p>
-            <MainMenuAction id="start-btn" variant="primary" label="BREACH THE HULK" meta="Begin run" />
+          <MainMenuNav aria-label="Main menu">
+            <MainMenuAction id="start-btn" variant="primary" label="Breach" meta="Begin run" />
+            <MainMenuAction variant="shop" label="Upgrades" meta="Core locked" disabled />
+            <MainMenuAction variant="coop" label="Co-op" meta="Solo breach" disabled />
+            <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
+            <MainMenuAction variant="settings" label="Settings" meta="Controls" disabled />
+            <MainMenuAction variant="dev" label="Sandbox" meta="Hulk lab" disabled />
           </MainMenuNav>
         </MainMenuLayout>
       </MainMenuScreen>
