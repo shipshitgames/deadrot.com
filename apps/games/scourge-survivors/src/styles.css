@@ -5,7 +5,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("@shipshitgames/assets/games/scourge-survivors/fonts/press-start-2p.ttf") format("truetype");
+  src: url("@shipshitgames/assets/shared/fonts/press-start-2p.ttf") format("truetype");
 }
 
 :root {
@@ -20,7 +20,7 @@
   --color-ink: #0a0a0a;
   --color-fg: #e9e3d6;
 
-  --font-sans: Inter, system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  --font-sans: var(--ssg-font-pixel);
 
   --animate-hit: hitpop 0.18s ease-out;
   --animate-hit-kill: hitpop 0.28s ease-out;
@@ -200,6 +200,7 @@
     user-select: none;
     -webkit-user-select: none;
     font-family: var(--font-sans);
+    font-synthesis-weight: none;
   }
 
   /* Three.js injects its <canvas> into .game-root at runtime. */

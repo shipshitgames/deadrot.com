@@ -2,11 +2,11 @@
 
 Game-agnostic typefaces shared across the Scourge universe, per `apps/lore/content/DESIGN.md`.
 
-First-pass self-hosted font files:
+Self-hosted font files:
 
-- `oswald.woff2` — Oswald, the display / heading face.
-- `inter.woff2` — Inter, the body / UI face.
-- `press-start-2p.ttf` — Press Start 2P, the pixel title / menu face.
+- `press-start-2p.ttf` — Press Start 2P, the current shared pixel UI face.
+- `oswald.woff2` — legacy display / heading face, retained for asset history.
+- `inter.woff2` — legacy body / UI face, retained for asset history.
 
-Both are sourced from Google Fonts under the SIL Open Font License and are
+All are sourced from Google Fonts under the SIL Open Font License and are
 referenced from `assets-catalog.json` under `shared` (`kind: "font"`).

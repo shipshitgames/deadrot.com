@@ -17,7 +17,7 @@ export const COLORS = {
 } as const;
 
 export const FONTS = {
-  display: "Oswald, 'Arial Narrow', 'Helvetica Neue', sans-serif",
-  body: "Inter, system-ui, sans-serif",
-  mono: "ui-monospace, SFMono-Regular, monospace",
+  display: '"SSG Press Start", ui-monospace, SFMono-Regular, Menlo, monospace',
+  body: '"SSG Press Start", ui-monospace, SFMono-Regular, Menlo, monospace',
+  mono: '"SSG Press Start", ui-monospace, SFMono-Regular, Menlo, monospace',
 } as const;

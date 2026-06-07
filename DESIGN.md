@@ -25,25 +25,25 @@ colors:
   toxic: "#8bdc1f"
 typography:
   display:
-    fontFamily: "Oswald, 'Arial Narrow', 'Helvetica Neue', sans-serif"
+    fontFamily: "\"SSG Press Start\", ui-monospace, SFMono-Regular, Menlo, monospace"
     fontSize: "3rem"
-    fontWeight: 700
+    fontWeight: 400
     lineHeight: 1
     letterSpacing: "0em"
   body:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "\"SSG Press Start\", ui-monospace, SFMono-Regular, Menlo, monospace"
     fontSize: "1rem"
     fontWeight: 400
     lineHeight: 1.6
     letterSpacing: "0em"
   label:
-    fontFamily: "Oswald, 'Arial Narrow', 'Helvetica Neue', sans-serif"
+    fontFamily: "\"SSG Press Start\", ui-monospace, SFMono-Regular, Menlo, monospace"
     fontSize: "0.875rem"
     fontWeight: 700
     lineHeight: 1
     letterSpacing: "0em"
   mono:
-    fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+    fontFamily: "\"SSG Press Start\", ui-monospace, SFMono-Regular, Menlo, monospace"
     fontSize: "0.875rem"
     fontWeight: 500
     lineHeight: 1.45
@@ -241,12 +241,12 @@ Rule: red, fire, metal, bone. The palette should feel hot and violent, not neon.
 
 ## Typography
 
-- **Display:** Oswald 700, uppercase. Use for game titles, faction labels,
-  section headers, HUD labels, and button labels.
-- **Body:** Inter 400/500/600. Use for lore summaries, marketing copy, forms,
-  cards, and readable player-facing UI.
-- **Mono:** system monospace. Use for HUD counters, ammo, wave timers, map
-  coordinates, seed/build IDs, and telemetry-style readouts.
+- **Display:** SSG Press Start / Press Start 2P 400, uppercase. Use for game
+  titles, faction labels, section headers, HUD labels, and button labels.
+- **Body:** SSG Press Start / Press Start 2P 400. Use for lore summaries,
+  marketing copy, forms, cards, and readable player-facing UI.
+- **Mono:** SSG Press Start / Press Start 2P 400. Use for HUD counters, ammo,
+  wave timers, map coordinates, seed/build IDs, and telemetry-style readouts.
 
 ## Layout
 
@@ -272,7 +272,7 @@ and game overlays. Avoid pill buttons, plush cards, and clean glassmorphism.
 
 ## Components
 
-- **button-primary:** blood background, bone text, uppercase Oswald, hard 2px radius.
+- **button-primary:** blood background, bone text, uppercase pixel type, hard 2px radius.
 - **button-secondary:** coal background, hellfire text, hard 2px radius.
 - **game-card:** coal surface, bone title, ash body, gunmetal border, pixelated art.
 - **hud-panel:** void or iron plate, mono readouts, hard edges, no rounded softness.
@@ -280,7 +280,7 @@ and game overlays. Avoid pill buttons, plush cards, and clean glassmorphism.
 
 ## Do's and Don'ts
 
-**Do:** make it brutal and readable; use Oswald + Inter; preserve visible pixel
+**Do:** make it brutal and readable; use the shared pixel font; preserve visible pixel
 grids; reserve toxic-green for Scourge; keep UI edges hard; let blood, hellfire,
 gunmetal, and bone carry the identity.
 

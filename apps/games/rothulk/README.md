@@ -61,7 +61,7 @@ src/
   main.ts            mounts React shell, then bootstraps title-screen wiring
   ui/AppShell.tsx    shared UI package components + stable HUD element IDs
   constants.ts       COLORS (DOOM palette) + CONSTANTS (all tunables)
-  styles.css         DOOM HUD overlay (Oswald, uppercase, blood-on-gunmetal)
+  styles.css         DOOM HUD overlay (pixel type, uppercase, blood-on-gunmetal)
   game/
     Game.ts          owner: state + loop + gameplay step
     types.ts         entity / level contracts

@@ -18,7 +18,7 @@ assets every game shares identically.
     render paths (`null` until rendered).
   - `shared` — truly game-agnostic assets used **identically** by every game:
     FX (blood / ember / muzzle / breach-glow), UI icons (Pyre / Warden / Scourge
-    / breach / lane), fonts (Oswald / Inter), and audio.
+    / breach / lane), fonts (Press Start 2P / SSG Press Start), and audio.
 - **`entities/<id>/<game>.webp`** — the per-game entity renders, produced by the
   variant-matrix generator (see below). This is what makes the catalog's
   `variants` paths resolve.
@@ -140,5 +140,6 @@ other dependency.
 
 ## Design canon
 
-DOOM, not neon. Blood `#c1121f`, hellfire `#ff6a00`, gunmetal, bone; Oswald
-display + Inter body. See `apps/lore/content/DESIGN.md`.
+DOOM, not neon. Blood `#c1121f`, hellfire `#ff6a00`, gunmetal, bone; all
+player-facing UI uses the shared Press Start 2P pixel face. See
+`apps/lore/content/DESIGN.md`.

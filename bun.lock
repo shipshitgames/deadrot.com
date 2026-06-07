@@ -254,6 +254,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@radix-ui/react-slot": "^1.2.4",
+        "@shipshitgames/assets": "workspace:*",
         "@shipshitgames/ui": "^0.1.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",

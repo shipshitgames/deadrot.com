@@ -307,7 +307,14 @@ function RegionNode({ state, region, selected, onSelect, onHover }: RegionNodePr
 
       {/* hidden marker */}
       {isHidden && (
-        <text x={region.x} y={region.y + 1.4} textAnchor="middle" fontSize={4} fontFamily="monospace" fill="#9b958a">
+        <text
+          x={region.x}
+          y={region.y + 1.4}
+          textAnchor="middle"
+          fontSize={4}
+          fontFamily="SSG Press Start, ui-monospace, monospace"
+          fill="#9b958a"
+        >
           ?
         </text>
       )}
@@ -318,8 +325,8 @@ function RegionNode({ state, region, selected, onSelect, onHover }: RegionNodePr
         y={region.y + radius + 3.2}
         textAnchor="middle"
         fontSize={2.6}
-        fontFamily="Oswald, sans-serif"
-        fontWeight={700}
+        fontFamily="SSG Press Start, ui-monospace, monospace"
+        fontWeight={400}
         fill={isHidden ? "#9b958a" : "#e9e3d6"}
         style={{ textTransform: "uppercase", pointerEvents: "none" }}
       >

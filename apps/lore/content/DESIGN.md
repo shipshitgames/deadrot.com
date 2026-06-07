@@ -19,16 +19,16 @@ colors:
   toxic: "#8bdc1f"
 typography:
   display:
-    fontFamily: "Oswald, 'Arial Narrow', 'Helvetica Neue', sans-serif"
-    fontWeight: 700
-    letterSpacing: "-0.01em"
+    fontFamily: "\"SSG Press Start\", ui-monospace, SFMono-Regular, Menlo, monospace"
+    fontWeight: 400
+    letterSpacing: "0em"
     textTransform: "uppercase"
   body:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "\"SSG Press Start\", ui-monospace, SFMono-Regular, Menlo, monospace"
     fontWeight: 400
     lineHeight: 1.6
   mono:
-    fontFamily: "ui-monospace, SFMono-Regular, monospace"
+    fontFamily: "\"SSG Press Start\", ui-monospace, SFMono-Regular, Menlo, monospace"
 rounded:
   none: "0px"
   sm: "2px"
@@ -357,7 +357,7 @@ The single source of design truth for **everything** — the website, every game
 menus, and every AI-generated asset. The aesthetic is **DOOM**: brutal, metal, blood, and
 hellfire. Dark, heavy, gritty, high-contrast. This supersedes the earlier "neon-industrial"
 direction — there is **no magenta/cyan neon**. An agent that reads this file should produce
-black-void surfaces, gunmetal panels, bone headlines in heavy uppercase Oswald, and
+black-void surfaces, gunmetal panels, bone headlines in uppercase pixel type, and
 blood-red call-to-action buttons with an ember glow. The lore [[Style-Bible]] points here.
 
 ### Game Art Direction
@@ -396,9 +396,9 @@ parasite grammar: toxic-green nodes, black chitin, wet tissue, tendrils, and rup
 
 ## Typography
 
-- **Display** — Oswald 700, UPPERCASE, tight tracking. Militaristic, heavy. Titles, HUD labels.
-- **Body** — Inter 400/600. Utilitarian, legible.
-- **Mono** — system monospace. Counters, ammo, timers, HUD numerics.
+- **Display** — SSG Press Start / Press Start 2P 400, UPPERCASE, zero tracking. Pixel title, menu, and HUD labels.
+- **Body** — SSG Press Start / Press Start 2P 400. All player-facing UI should stay pixelized.
+- **Mono** — SSG Press Start / Press Start 2P 400. Counters, ammo, timers, and HUD numerics.
 
 ## Layout
 
@@ -428,7 +428,7 @@ parasite grammar: toxic-green nodes, black chitin, wet tissue, tendrils, and rup
 
 ## Do's and Don'ts
 
-**Do:** lead with red + fire + metal + bone; UPPERCASE Oswald headers; reserve toxic-green
+**Do:** lead with red + fire + metal + bone; UPPERCASE pixel headers; reserve toxic-green
 for the Scourge; make Scourge forms read as parasitic infestation; use ember glow sparingly;
 keep edges hard and high-contrast.
 
