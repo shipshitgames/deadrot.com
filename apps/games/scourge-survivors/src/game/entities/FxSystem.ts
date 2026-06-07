@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
 import type { Pop, Tracer } from "../data/internalTypes";
+import type { GameSystems } from "../systems";
 
 const CORPSE_PART_SOFT_CAP = 72;
 const CORPSE_PART_HARD_CAP = 96;
@@ -30,12 +30,30 @@ export class FxSystem {
     private sys: GameSystems,
   ) {}
 
+  private get particlesLevel() {
+    return this.ctx.effectLevels.particles;
+  }
+
+  private get flashLevel() {
+    return this.ctx.effectLevels.flash;
+  }
+
+  private get shakeLevel() {
+    return this.ctx.effectLevels.shake;
+  }
+
+  private scaledParticleCount(count: number, min = 0) {
+    if (this.particlesLevel <= 0.01) return 0;
+    return Math.max(min, Math.round(count * this.particlesLevel));
+  }
+
   addTracer(from: THREE.Vector3, to: THREE.Vector3) {
+    if (this.flashLevel <= 0.01) return;
     const geo = new THREE.BufferGeometry().setFromPoints([from, to]);
     const mat = new THREE.LineBasicMaterial({
       color: 0xfff1b5,
       transparent: true,
-      opacity: 0.9,
+      opacity: 0.9 * this.flashLevel,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
@@ -45,12 +63,13 @@ export class FxSystem {
   }
 
   spawnDeathPop(pos: THREE.Vector3, color: number, scale: number) {
+    if (this.flashLevel <= 0.01) return;
     const mesh = new THREE.Mesh(
       new THREE.SphereGeometry(0.5 * scale, 12, 12),
       new THREE.MeshBasicMaterial({
         color,
         transparent: true,
-        opacity: 0.95,
+        opacity: 0.95 * this.flashLevel,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       }),
@@ -66,7 +85,7 @@ export class FxSystem {
       new THREE.MeshBasicMaterial({
         color: 0xffffff,
         transparent: true,
-        opacity: 0.7,
+        opacity: 0.7 * this.flashLevel,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       }),
@@ -78,7 +97,7 @@ export class FxSystem {
 
   /** Brief blood spurt for a non-lethal hit. Headshots throw a brighter, taller burst. */
   spawnBloodHit(pos: THREE.Vector3, headshot = false) {
-    const count = headshot ? 8 : 4;
+    const count = this.scaledParticleCount(headshot ? 8 : 4, 1);
     for (let i = 0; i < count; i++) {
       const mesh = new THREE.Mesh(
         new THREE.SphereGeometry(headshot ? 0.075 : 0.055, 6, 4),
@@ -109,12 +128,13 @@ export class FxSystem {
     pos: THREE.Vector3,
     opts: { headshot?: boolean; elite?: boolean; scale?: number; color?: number } = {},
   ) {
+    if (this.particlesLevel <= 0.01 && this.flashLevel <= 0.01) return;
     const scale = opts.scale ?? (opts.elite ? 1.8 : 1);
     const color = opts.color ?? (opts.elite ? 0xff2d55 : 0xc1121f);
     this.spawnDeathPop(pos, color, opts.elite ? scale * 1.15 : scale);
     this.spawnCorpseParts(pos, { headshot: opts.headshot, elite: opts.elite, scale });
 
-    const count = opts.elite ? 28 : opts.headshot ? 18 : 11;
+    const count = this.scaledParticleCount(opts.elite ? 28 : opts.headshot ? 18 : 11, 2);
     const origin = pos.clone();
     origin.y = opts.headshot ? 1.75 * scale : 1.05 * scale;
     for (let i = 0; i < count; i++) {
@@ -147,7 +167,7 @@ export class FxSystem {
       });
     }
 
-    const splats = opts.elite ? 4 : opts.headshot ? 3 : 2;
+    const splats = this.scaledParticleCount(opts.elite ? 4 : opts.headshot ? 3 : 2, 1);
     for (let i = 0; i < splats; i++) {
       const mesh = new THREE.Mesh(
         new THREE.CircleGeometry(0.5 + Math.random() * 0.45, 14),
@@ -181,7 +201,7 @@ export class FxSystem {
 
   private spawnCorpseParts(pos: THREE.Vector3, opts: { headshot?: boolean; elite?: boolean; scale: number }) {
     const scale = Math.max(0.72, opts.scale);
-    const count = opts.elite ? 12 : opts.headshot ? 5 : 3;
+    const count = this.scaledParticleCount(opts.elite ? 12 : opts.headshot ? 5 : 3);
     const originY = opts.headshot ? 1.45 * scale : 1.05 * scale;
 
     for (let i = 0; i < count; i++) {
@@ -266,12 +286,13 @@ export class FxSystem {
 
   /** Tiny bright spark at a bullet impact point (enemy or wall). Cheap, per-hit. */
   spawnImpactSpark(pos: THREE.Vector3, color: number) {
+    if (this.flashLevel <= 0.01) return;
     const mesh = new THREE.Mesh(
       new THREE.SphereGeometry(0.13, 8, 6),
       new THREE.MeshBasicMaterial({
         color,
         transparent: true,
-        opacity: 0.95,
+        opacity: 0.95 * this.flashLevel,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       }),
@@ -283,13 +304,14 @@ export class FxSystem {
 
   /** Blood-rage pickup hit: screen shake plus a hot ring and short-lived spray around the player. */
   triggerBerserkBurst() {
+    if (this.particlesLevel <= 0.01 && this.flashLevel <= 0.01 && this.shakeLevel <= 0.01) return;
     const center = this.ctx.camera.position.clone();
     const ring = new THREE.Mesh(
       new THREE.RingGeometry(0.7, 1.08, 56),
       new THREE.MeshBasicMaterial({
         color: 0xff2a18,
         transparent: true,
-        opacity: 0.78,
+        opacity: 0.78 * this.flashLevel,
         side: THREE.DoubleSide,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
@@ -301,7 +323,8 @@ export class FxSystem {
     this.ctx.scene.add(ring);
     this.pops.push({ mesh: ring, age: 0, ttl: 0.46, baseScale: 0.18, growth: 11.5, floor: true });
 
-    for (let i = 0; i < 22; i++) {
+    const count = this.scaledParticleCount(22, 2);
+    for (let i = 0; i < count; i++) {
       const mesh = new THREE.Mesh(
         new THREE.SphereGeometry(0.045 + Math.random() * 0.05, 6, 4),
         new THREE.MeshBasicMaterial({
@@ -332,8 +355,9 @@ export class FxSystem {
   }
 
   private spawnBerserkWake() {
+    if (this.particlesLevel <= 0.01) return;
     const center = this.ctx.camera.position;
-    const count = Math.random() < 0.45 ? 2 : 1;
+    const count = this.scaledParticleCount(Math.random() < 0.45 ? 2 : 1, 1);
     for (let i = 0; i < count; i++) {
       const a = Math.random() * Math.PI * 2;
       const r = 0.48 + Math.random() * 0.55;
@@ -363,12 +387,12 @@ export class FxSystem {
   // ---- camera juice: trauma-based screenshake + recoil kick + hitstop ----
   /** Add screenshake trauma (0..1, clamped). Magnitude in render scales trauma². */
   addShake(amount: number) {
-    this.ctx.shakeTrauma = Math.min(1, this.ctx.shakeTrauma + amount);
+    this.ctx.shakeTrauma = Math.min(1, this.ctx.shakeTrauma + amount * this.shakeLevel);
   }
 
   /** Kick the view pitch up by `amount` radians; springs back in updateEffects. */
   addRecoil(amount: number) {
-    this.ctx.camRecoil += amount;
+    this.ctx.camRecoil += amount * this.shakeLevel;
   }
 
   /** Freeze the sim for `seconds` (tiny — reads as a punch, not lag). */
@@ -392,7 +416,7 @@ export class FxSystem {
         this.berserkParticleTimer = 0.055 + Math.random() * 0.045;
         this.spawnBerserkWake();
       }
-      this.ctx.shakeTrauma = Math.min(1, this.ctx.shakeTrauma + delta * 0.035);
+      this.ctx.shakeTrauma = Math.min(1, this.ctx.shakeTrauma + delta * 0.035 * this.shakeLevel);
     } else {
       this.berserkParticleTimer = 0;
     }
@@ -415,7 +439,7 @@ export class FxSystem {
       const t = this.tracers[i];
       t.age += delta;
       const k = 1 - t.age / t.ttl;
-      (t.line.material as THREE.LineBasicMaterial).opacity = Math.max(0, k * 0.9);
+      (t.line.material as THREE.LineBasicMaterial).opacity = Math.max(0, k * 0.9 * this.flashLevel);
       if (t.age >= t.ttl) {
         this.ctx.scene.remove(t.line);
         t.line.geometry.dispose();
@@ -442,7 +466,10 @@ export class FxSystem {
       }
       const k = p.age / p.ttl;
       p.mesh.scale.setScalar((p.baseScale ?? 0.4) + k * (p.growth ?? 3.0));
-      (p.mesh.material as THREE.MeshBasicMaterial).opacity = Math.max(0, (p.floor ? 0.38 : 0.9) * (1 - k));
+      (p.mesh.material as THREE.MeshBasicMaterial).opacity = Math.max(
+        0,
+        (p.floor ? 0.38 : 0.9) * (1 - k) * Math.max(this.particlesLevel, this.flashLevel),
+      );
       if (p.age >= p.ttl) {
         this.ctx.scene.remove(p.mesh);
         p.mesh.geometry.dispose();
@@ -473,7 +500,7 @@ export class FxSystem {
 
       const fadeStart = Math.max(0, part.ttl - CORPSE_PART_FADE_SECONDS);
       const fade = Math.max(0, Math.min(1, (part.age - fadeStart) / CORPSE_PART_FADE_SECONDS));
-      (part.mesh.material as THREE.MeshStandardMaterial).opacity = part.baseOpacity * (1 - fade);
+      (part.mesh.material as THREE.MeshStandardMaterial).opacity = part.baseOpacity * (1 - fade) * this.particlesLevel;
       if (part.age >= part.ttl) this.removeCorpsePart(i);
     }
   }

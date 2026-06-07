@@ -19,6 +19,7 @@ export class RenderSystem {
   private nearStars!: THREE.Points;
   private farStars!: THREE.Points;
   private lattice: THREE.LineSegments[] = [];
+  private effectsLevel = 1;
 
   constructor(canvas: HTMLCanvasElement) {
     this.scene.background = new THREE.Color(COLORS.void);
@@ -78,6 +79,10 @@ export class RenderSystem {
     this.shake = Math.min(this.shake + amount, CONSTANTS.fx.shakeMax);
   }
 
+  setEffectsLevel(level: number) {
+    this.effectsLevel = Math.max(0, Math.min(1, level));
+  }
+
   resetFocus(x: number, y: number) {
     this.camFocus.set(x, y);
   }
@@ -104,8 +109,8 @@ export class RenderSystem {
     let sx = 0;
     let sy = 0;
     if (this.shake > 0.0001) {
-      sx = (Math.random() - 0.5) * this.shake;
-      sy = (Math.random() - 0.5) * this.shake;
+      sx = (Math.random() - 0.5) * this.shake * this.effectsLevel;
+      sy = (Math.random() - 0.5) * this.shake * this.effectsLevel;
       this.shake = Math.max(0, this.shake - CONSTANTS.fx.shakeDecay * dt * this.shake);
     }
     const fx = this.camFocus.x + sx;

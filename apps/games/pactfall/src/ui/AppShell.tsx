@@ -1,4 +1,13 @@
-import { MainMenuCopy, MainMenuLayout, MainMenuScreen, MainMenuTitle, MenuKicker } from "@shipshitgames/ui";
+import {
+  GlobalGameSettingsPanel,
+  GlobalMusicToggle,
+  MainMenuCopy,
+  MainMenuLayout,
+  MainMenuNav,
+  MainMenuScreen,
+  MainMenuTitle,
+  MenuKicker,
+} from "@shipshitgames/ui";
 
 export function AppShell() {
   return (
@@ -36,12 +45,17 @@ export function AppShell() {
 
         <div id="hint">WASD / TAP TO MOVE - AUTO-ATTACKS NEAREST - KILL THE SCOURGE FOR A BUFF</div>
 
+        <GlobalGameSettingsPanel />
+
         <MainMenuScreen id="banner" className="banner banner--hidden ssg-main-menu-screen--compact">
           <MainMenuLayout>
             <MainMenuCopy>
               <MainMenuTitle className="banner-title" />
               <MenuKicker className="banner-sub">PRESS R OR CLICK TO REDEPLOY</MenuKicker>
             </MainMenuCopy>
+            <MainMenuNav label="Audio">
+              <GlobalMusicToggle />
+            </MainMenuNav>
           </MainMenuLayout>
         </MainMenuScreen>
       </div>

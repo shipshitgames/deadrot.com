@@ -1,6 +1,4 @@
 import * as THREE from "three";
-import type { WeaponId } from "./constants";
-import type { PlayerAvatarId } from "../net/playerAvatars";
 import {
   ANIMATION_MANIFEST,
   ASSET_MANIFEST,
@@ -9,11 +7,13 @@ import {
   audioUrl,
   loadSpriteTexture,
   loadTexture,
+  type SpriteView,
   spriteEntry,
   spriteScale,
   textureEntry,
-  type SpriteView,
 } from "../assets/catalog";
+import type { PlayerAvatarId } from "../net/playerAvatars";
+import type { WeaponId } from "./constants";
 
 type EnemySpriteKind = "melee" | "ranged" | "flying" | "boss";
 type EnemySpriteView = SpriteView;
@@ -52,6 +52,14 @@ const WEAPON_SPRITE_IDS: Record<WeaponId, string> = {
   shotgun: "weapon-shotgun",
   cannon: "weapon-cannon",
   sniper: "weapon-sniper",
+};
+
+const WEAPON_PICKUP_SPRITE_IDS: Record<WeaponId, string> = {
+  pistol: "weapon-pickup-pistol",
+  smg: "weapon-pickup-smg",
+  shotgun: "weapon-pickup-shotgun",
+  cannon: "weapon-pickup-cannon",
+  sniper: "weapon-pickup-sniper",
 };
 
 function textureViews(id: string): Record<EnemySpriteView, THREE.Texture> {
@@ -163,6 +171,22 @@ export const WEAPON_SPRITE_TEXTURES: Record<WeaponId, THREE.Texture> = {
   shotgun: loadSpriteTexture(WEAPON_SPRITE_IDS.shotgun),
   cannon: loadSpriteTexture(WEAPON_SPRITE_IDS.cannon),
   sniper: loadSpriteTexture(WEAPON_SPRITE_IDS.sniper),
+};
+
+export const WEAPON_PICKUP_SPRITE_TEXTURES: Record<WeaponId, THREE.Texture> = {
+  pistol: loadSpriteTexture(WEAPON_PICKUP_SPRITE_IDS.pistol),
+  smg: loadSpriteTexture(WEAPON_PICKUP_SPRITE_IDS.smg),
+  shotgun: loadSpriteTexture(WEAPON_PICKUP_SPRITE_IDS.shotgun),
+  cannon: loadSpriteTexture(WEAPON_PICKUP_SPRITE_IDS.cannon),
+  sniper: loadSpriteTexture(WEAPON_PICKUP_SPRITE_IDS.sniper),
+};
+
+export const WEAPON_PICKUP_SPRITE_SCALES: Record<WeaponId, [number, number]> = {
+  pistol: spriteScale(WEAPON_PICKUP_SPRITE_IDS.pistol),
+  smg: spriteScale(WEAPON_PICKUP_SPRITE_IDS.smg),
+  shotgun: spriteScale(WEAPON_PICKUP_SPRITE_IDS.shotgun),
+  cannon: spriteScale(WEAPON_PICKUP_SPRITE_IDS.cannon),
+  sniper: spriteScale(WEAPON_PICKUP_SPRITE_IDS.sniper),
 };
 
 export const WEAPON_SPRITE_CONFIG: Record<

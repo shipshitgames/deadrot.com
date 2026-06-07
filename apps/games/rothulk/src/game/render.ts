@@ -27,6 +27,7 @@ export class Renderer {
   private flashMesh!: THREE.Mesh;
   private flashMat!: THREE.MeshBasicMaterial;
   private flashAmount = 0;
+  private effectsLevel = 1;
 
   private aspect = 1;
 
@@ -283,8 +284,12 @@ export class Renderer {
     this.hero.visible = v;
   }
 
+  setEffectsLevel(level: number) {
+    this.effectsLevel = Math.max(0, Math.min(1, level));
+  }
+
   triggerFlash() {
-    this.flashAmount = 1;
+    this.flashAmount = this.effectsLevel > 0.01 ? 1 : 0;
   }
 
   setCheckpointReached() {
@@ -310,7 +315,7 @@ export class Renderer {
     }
     if (this.flashAmount > 0) {
       this.flashAmount = Math.max(0, this.flashAmount - dt * 1.5);
-      this.flashMat.opacity = this.flashAmount * 0.85;
+      this.flashMat.opacity = this.flashAmount * 0.85 * this.effectsLevel;
     }
   }
 

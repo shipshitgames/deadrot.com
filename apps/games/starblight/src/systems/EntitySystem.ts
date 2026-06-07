@@ -1,7 +1,4 @@
 import * as THREE from "three";
-import { COLORS, CONSTANTS, ENEMIES, SPITTER, WORLD, type EnemyType } from "../game/constants";
-import type { Bullet, Enemy, EnemyBullet, Gem, Particle } from "../game/types";
-import type { RenderSystem } from "./RenderSystem";
 import orbitalBreachCarrierUrl from "../assets/sprites/runtime/orbital-breach-carrier.webp";
 import playerInterceptorUrl from "../assets/sprites/runtime/player-interceptor.webp";
 import salvageShardUrl from "../assets/sprites/runtime/salvage-shard.webp";
@@ -10,6 +7,9 @@ import scourgeGruntUrl from "../assets/sprites/runtime/scourge-grunt.webp";
 import scourgeSpitterUrl from "../assets/sprites/runtime/scourge-spitter.webp";
 import scourgeSwarmlingUrl from "../assets/sprites/runtime/scourge-swarmling.webp";
 import scourgeWeaverUrl from "../assets/sprites/runtime/scourge-weaver.webp";
+import { COLORS, CONSTANTS, ENEMIES, type EnemyType, SPITTER, WORLD } from "../game/constants";
+import type { Bullet, Enemy, EnemyBullet, Gem, Particle } from "../game/types";
+import type { RenderSystem } from "./RenderSystem";
 
 const TAU = Math.PI * 2;
 const HIT_FLASH = 0.09;
@@ -70,6 +70,7 @@ export class EntitySystem {
   enemyBullets: EnemyBullet[] = [];
   gems: Gem[] = [];
   particles: Particle[] = [];
+  private effectsLevel = 1;
 
   // --- shared geometry/materials (created once, reused) ------------------
   private boltGeom = new THREE.BoxGeometry(0.42, 1.5, 0.42);
@@ -109,6 +110,10 @@ export class EntitySystem {
   private enemyPool: Record<string, { mesh: THREE.Mesh; mat: THREE.MeshBasicMaterial }[]> = {};
 
   constructor(private readonly render: RenderSystem) {}
+
+  setEffectsLevel(level: number) {
+    this.effectsLevel = Math.max(0, Math.min(1, level));
+  }
 
   // --- ship --------------------------------------------------------------
 
@@ -636,7 +641,8 @@ export class EntitySystem {
   // --- particles ---------------------------------------------------------
 
   pop(x: number, y: number, color: number, count: number = CONSTANTS.fx.particlePerPop) {
-    for (let i = 0; i < count; i++) {
+    const scaledCount = this.effectsLevel <= 0.01 ? 0 : Math.max(1, Math.round(count * this.effectsLevel));
+    for (let i = 0; i < scaledCount; i++) {
       const { mesh, mat } = this.acquireParticle();
       mat.color.setHex(color);
       mat.opacity = 1;
@@ -664,7 +670,7 @@ export class EntitySystem {
       p.vx *= 0.92;
       p.vy *= 0.92;
       const t = Math.max(0, p.life / p.maxLife);
-      (p.mesh.material as THREE.MeshBasicMaterial).opacity = t;
+      (p.mesh.material as THREE.MeshBasicMaterial).opacity = t * this.effectsLevel;
       p.mesh.scale.setScalar(0.3 + t);
     }
     let n = this.particles.length;

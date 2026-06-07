@@ -14,13 +14,14 @@
  * stays stable regardless of frame rate.
  */
 
+import { subscribeGlobalGameSettings } from "@shipshitgames/ui";
 import { CAMERA } from "./constants";
 import { generateCourse } from "./course";
 import { Runner } from "./entities/runner";
+import { Hud } from "./systems/hud";
 import { Input } from "./systems/input";
 import { Physics } from "./systems/physics";
 import { Render } from "./systems/render";
-import { Hud } from "./systems/hud";
 import type { Course, Phase } from "./types";
 
 const FIXED_DT = 1 / 120; // physics step
@@ -42,11 +43,16 @@ export class Game {
   private last = 0;
   private acc = 0;
   private raf = 0;
+  private readonly unsubscribeSettings: () => void;
 
   constructor(canvas: HTMLCanvasElement) {
     this.input = new Input(canvas);
     this.render = new Render(canvas);
     this.course = generateCourse();
+    this.unsubscribeSettings = subscribeGlobalGameSettings((settings) => {
+      this.render.setEffectsLevel(settings.effectLevels.shake);
+      this.hud.setEffectsLevel(settings.effectLevels.flash);
+    });
 
     this.render.buildCourse(this.course, this.runner);
 
@@ -66,6 +72,7 @@ export class Game {
     window.removeEventListener("resize", this.onResize);
     this.input.dispose();
     this.render.dispose();
+    this.unsubscribeSettings();
   }
 
   private onResize = () => this.render.resize();

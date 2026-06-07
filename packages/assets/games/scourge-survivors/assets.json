@@ -369,6 +369,126 @@
         "scope": "Scourge Survivors runtime"
       }
     },
+    "weapon-pickup-pistol": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/pickups/pistol.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        1.35,
+        1.35
+      ],
+      "license": {
+        "tool": "built-in image_gen",
+        "plan": "Codex generated weapon pickup sprite refresh",
+        "date": "2026-06-07",
+        "kind": "generated 2D Pyre pistol world pickup sprite",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-pickup-smg": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/pickups/smg.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        1.48,
+        1.48
+      ],
+      "license": {
+        "tool": "built-in image_gen",
+        "plan": "Codex generated weapon pickup sprite refresh",
+        "date": "2026-06-07",
+        "kind": "generated 2D Pyre SMG world pickup sprite",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-pickup-shotgun": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/pickups/shotgun.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        1.65,
+        1.65
+      ],
+      "license": {
+        "tool": "built-in image_gen",
+        "plan": "Codex generated weapon pickup sprite refresh",
+        "date": "2026-06-07",
+        "kind": "generated 2D Pyre shotgun world pickup sprite",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-pickup-cannon": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/pickups/cannon.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        1.72,
+        1.72
+      ],
+      "license": {
+        "tool": "built-in image_gen",
+        "plan": "Codex generated weapon pickup sprite refresh",
+        "date": "2026-06-07",
+        "kind": "generated 2D Pyre cannon world pickup sprite",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-pickup-sniper": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/pickups/sniper.webp",
+      "dimensions": [
+        512,
+        512
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        1.8,
+        1.8
+      ],
+      "license": {
+        "tool": "built-in image_gen",
+        "plan": "Codex generated weapon pickup sprite refresh",
+        "date": "2026-06-07",
+        "kind": "generated 2D Pyre sniper world pickup sprite",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
     "muzzle-flash-pyre": {
       "type": "sprite",
       "path": "games/scourge-survivors/fx/pyre/muzzle-flash.webp",
@@ -1259,10 +1379,10 @@
         1
       ],
       "license": {
-        "tool": "procedural sprite texture generator",
-        "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific arena prop sprite texture",
+        "tool": "built-in image_gen",
+        "plan": "Codex generated map prop sprite refresh",
+        "date": "2026-06-07",
+        "kind": "AI generated Ashgate arena prop sprite texture from built-in image tool",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1280,10 +1400,10 @@
         1
       ],
       "license": {
-        "tool": "procedural sprite texture generator",
-        "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific arena prop sprite texture",
+        "tool": "built-in image_gen",
+        "plan": "Codex generated map prop sprite refresh",
+        "date": "2026-06-07",
+        "kind": "AI generated Hollow Lanes arena prop sprite texture from built-in image tool",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1301,10 +1421,10 @@
         1
       ],
       "license": {
-        "tool": "procedural sprite texture generator",
-        "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific arena prop sprite texture",
+        "tool": "built-in image_gen",
+        "plan": "Codex generated map prop sprite refresh",
+        "date": "2026-06-07",
+        "kind": "AI generated Maw arena prop sprite texture from built-in image tool",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1322,10 +1442,10 @@
         1
       ],
       "license": {
-        "tool": "procedural sprite texture generator",
-        "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific arena prop sprite texture",
+        "tool": "built-in image_gen",
+        "plan": "Codex generated map prop sprite refresh",
+        "date": "2026-06-07",
+        "kind": "AI generated Perdition arena prop sprite texture from built-in image tool",
         "scope": "Scourge Survivors runtime"
       }
     }

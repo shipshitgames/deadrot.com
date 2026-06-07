@@ -35,6 +35,7 @@ export class HudSystem {
   private lastDraft = "";
   private lastPhase = "";
   private lastLevel = 1;
+  private effectsLevel = 1;
 
   private readonly onBtnClick = () => this.onStart();
   private readonly onPauseClick = () => this.onPause();
@@ -66,6 +67,10 @@ export class HudSystem {
     if (this.flashTimer) window.clearTimeout(this.flashTimer);
   }
 
+  setEffectsLevel(level: number) {
+    this.effectsLevel = Math.max(0, Math.min(1, level));
+  }
+
   update(s: HudState) {
     // Continuous bars.
     this.xpFill.style.width = `${Math.round(s.xp01 * 100)}%`;
@@ -94,7 +99,8 @@ export class HudSystem {
     }
 
     // Low-integrity danger vignette.
-    this.vignette.classList.toggle("show", s.lowIntegrity);
+    this.vignette.classList.toggle("show", s.lowIntegrity && this.effectsLevel > 0.01);
+    this.vignette.style.opacity = s.lowIntegrity && this.effectsLevel > 0.01 ? String(this.effectsLevel) : "";
 
     // Build tray.
     const buildKey = s.build.map((b) => `${b.id}${b.level}`).join(",");
@@ -195,9 +201,14 @@ export class HudSystem {
 
   private flashTimer = 0;
   private pulseFlash() {
+    if (this.effectsLevel <= 0.01) return;
+    this.flash.style.opacity = String(this.effectsLevel);
     this.flash.classList.add("show");
     if (this.flashTimer) window.clearTimeout(this.flashTimer);
-    this.flashTimer = window.setTimeout(() => this.flash.classList.remove("show"), 180);
+    this.flashTimer = window.setTimeout(() => {
+      this.flash.classList.remove("show");
+      this.flash.style.opacity = "";
+    }, 180);
   }
 }
 

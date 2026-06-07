@@ -1,5 +1,31 @@
 # Asset Credits
 
+## 2026-06-07 - built-in imagegen arena prop sprite refresh
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Role: high-detail map-specific world prop sprites for Ashgate, the Hollow Lanes, the Maw, and Perdition.
+- Tool: built-in `image_gen`.
+- Plan: Codex generated map prop sprite refresh.
+- Kind: generated 2D arena prop sprite textures on magenta chroma-key source backgrounds.
+- Source outputs: `/Users/decod3rslabs/.codex/generated_images/019ea18a-f008-73e0-9699-b9fac6df8a02/`.
+- Final assets: `textures/arenas/{ashgate,hollowlanes,maw,perdition}/prop.webp`.
+- Post-processing: keyed `#ff00ff` backgrounds to alpha, trimmed/padded to square, downscaled to 512x512, removed edge key fringe, and encoded lossless WebP.
+- Notes: Replaces the procedural prop placeholder sprites that read as UI icon plates in-world.
+
+## 2026-06-07 - Pyre weapon pickup sprite refresh
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Role: floor/world weapon pickup sprites for pistol, SMG, shotgun, cannon, and sniper.
+- Tool: built-in `image_gen`.
+- Plan: Codex generated weapon pickup sprite refresh.
+- Kind: generated 2D Pyre weapon world pickup sprites on magenta chroma-key source backgrounds.
+- Source outputs: `/Users/decod3rslabs/.codex/generated_images/019ea18a-f008-73e0-9699-b9fac6df8a02/`.
+- Final assets: `weapons/pyre/pickups/{pistol,smg,shotgun,cannon,sniper}.webp`.
+- Post-processing: keyed `#ff00ff` backgrounds to alpha, trimmed/padded to square, downscaled to 512x512, removed edge key fringe, and encoded lossless WebP.
+- Runtime note: floor weapon pickups now use hand-free world sprites; first-person equipped weapons continue to use `weapons/pyre/{pistol,smg,shotgun,cannon,sniper}.webp`.
+
 ## 2026-06-06 - authored breach-arena texture sets
 
 - Status: promoted into runtime.

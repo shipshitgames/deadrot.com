@@ -1,9 +1,5 @@
 import * as THREE from "three";
 import { audio } from "../../audio/AudioEngine";
-import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
-import { PICKUP_COLORS, type Pickup } from "../data/internalTypes";
-import { PICKUP_SPRITE_SCALES, PICKUP_SPRITE_TEXTURES, WEAPON_SPRITE_TEXTURES } from "../spriteAssets";
 import {
   DAMAGE_BOOST_TIME,
   DUAL_WEAPON_TIME,
@@ -11,12 +7,21 @@ import {
   PICKUP_DROP_CHANCE,
   PICKUP_RADIUS,
   PICKUP_TTL,
+  type PickupKind,
   STARTING_WEAPON,
   WEAPON_ORDER,
   WEAPONS,
-  type PickupKind,
   type WeaponId,
 } from "../constants";
+import type { GameContext } from "../context";
+import { PICKUP_COLORS, type Pickup } from "../data/internalTypes";
+import {
+  PICKUP_SPRITE_SCALES,
+  PICKUP_SPRITE_TEXTURES,
+  WEAPON_PICKUP_SPRITE_SCALES,
+  WEAPON_PICKUP_SPRITE_TEXTURES,
+} from "../spriteAssets";
+import type { GameSystems } from "../systems";
 
 function isWeaponPickup(kind: PickupKind): kind is WeaponId {
   return WEAPON_ORDER.includes(kind as WeaponId);
@@ -52,15 +57,17 @@ export class PickupsSystem {
     let icon: THREE.Object3D;
     if (isWeapon) {
       const mat = new THREE.SpriteMaterial({
-        map: WEAPON_SPRITE_TEXTURES[kind],
+        map: WEAPON_PICKUP_SPRITE_TEXTURES[kind],
         transparent: true,
+        alphaTest: 0.04,
         depthWrite: false,
         toneMapped: false,
       });
       const sprite = new THREE.Sprite(mat);
-      sprite.scale.set(1.5, 1.1, 1);
-      sprite.position.y = 1.0;
-      sprite.userData = { baseScale: [1.5, 1.1], baseY: 1.0 };
+      const scale = WEAPON_PICKUP_SPRITE_SCALES[kind];
+      sprite.scale.set(scale[0], scale[1], 1);
+      sprite.position.y = 0.82;
+      sprite.userData = { baseScale: scale, baseY: 0.82 };
       icon = sprite;
     } else if (kind === "health" || kind === "ammo" || kind === "damage" || kind === "dual") {
       const mat = new THREE.SpriteMaterial({

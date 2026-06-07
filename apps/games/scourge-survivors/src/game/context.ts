@@ -1,6 +1,6 @@
+import { type CameraRig, RectBounds, type WorldBounds } from "@shipshitgames/engine";
+import { DEFAULT_GLOBAL_EFFECT_LEVELS, type GlobalEffectLevels } from "@shipshitgames/ui";
 import * as THREE from "three";
-import type { Enemy } from "./entities/Enemy";
-import type { GameStatus, StateListener } from "./types";
 import {
   ARENA_HALF,
   PLAYER_HEIGHT,
@@ -10,9 +10,10 @@ import {
   WEAPONS,
   type WeaponId,
 } from "./constants";
-import { DEFAULT_MAP_ID, getMap, type ArenaMap } from "./data/maps";
+import { type ArenaMap, DEFAULT_MAP_ID, getMap } from "./data/maps";
 import { SURV_BASE_MAGNET, type SurvivorClassId } from "./data/survivors";
-import { RectBounds, type WorldBounds, type CameraRig } from "@shipshitgames/engine";
+import type { Enemy } from "./entities/Enemy";
+import type { GameStatus, StateListener } from "./types";
 
 /**
  * The shared mutable world. Systems are behaviour modules that operate on this
@@ -76,6 +77,7 @@ export class GameContext {
   shakeTrauma = 0;
   camRecoil = 0;
   hitstopTimer = 0;
+  effectLevels: GlobalEffectLevels = { ...DEFAULT_GLOBAL_EFFECT_LEVELS };
 
   // --- kill-streak combo: the horde dopamine engine. Bumped on every kill,
   // decays after comboTimer runs out (FxSystem.updateEffects). ---

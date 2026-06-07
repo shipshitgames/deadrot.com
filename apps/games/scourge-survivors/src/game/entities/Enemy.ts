@@ -32,6 +32,16 @@ import {
 import { chasePlayerStrategy, redirectBlockedRangedRetreat } from "./ChasePlayerStrategy";
 
 const HEALTHBAR_WIDTH = 0.95;
+const LEG_HIT_BOX = { w: 0.75, h: 0.7, d: 0.55, y: 0.35 };
+const TORSO_HIT_BOX = { w: 0.95, h: 0.75, d: 0.6, y: 1.08 };
+const HEAD_HIT_BOX = { w: 0.55, h: 0.55, d: 0.55, y: 1.78 };
+const BOSS_LEG_HIT_BOX = { w: 1.9, h: 0.72, d: 0.9, y: 0.38 };
+const BOSS_TORSO_HIT_BOX = { w: 2.28, h: 1.32, d: 0.95, y: 1.1 };
+const BOSS_HEAD_HIT_BOX = { w: 1.26, h: 0.72, d: 0.78, y: 2.08 };
+// Boss animation plates are 128x180 with transparent bottom padding.
+// The lurch frames carry ~30px bottom padding, which is 0.6 world units before group scale.
+const BOSS_SPRITE_GROUND_OFFSET = 0.6;
+const BOSS_COLLISION_RADIUS_FROM_SPRITE_WIDTH = 0.36;
 type EnemySpriteKind = "melee" | "ranged" | "flying" | "boss";
 type EnemySpriteView = "front" | "side" | "back";
 
@@ -142,6 +152,9 @@ export class Enemy extends Agent {
   private healthBarGroup = new THREE.Group();
   private shieldMesh: THREE.Mesh;
   private tellMesh: THREE.Mesh;
+  private legsHit: THREE.Mesh;
+  private torsoHit: THREE.Mesh;
+  private headHit: THREE.Mesh;
   private spriteMat: THREE.SpriteMaterial;
   private sprite: THREE.Sprite;
   private spriteView: EnemySpriteView = "front";
@@ -162,21 +175,27 @@ export class Enemy extends Agent {
       metalness: 0.25,
     });
 
-    const legs = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.7, 0.55), this.bodyMat);
-    legs.position.y = 0.35;
+    const legs = new THREE.Mesh(new THREE.BoxGeometry(LEG_HIT_BOX.w, LEG_HIT_BOX.h, LEG_HIT_BOX.d), this.bodyMat);
+    legs.position.y = LEG_HIT_BOX.y;
     legs.castShadow = true;
     legs.userData = { enemy: this, part: "body" };
 
-    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.75, 0.6), this.bodyMat);
-    torso.position.y = 1.08;
+    const torso = new THREE.Mesh(
+      new THREE.BoxGeometry(TORSO_HIT_BOX.w, TORSO_HIT_BOX.h, TORSO_HIT_BOX.d),
+      this.bodyMat,
+    );
+    torso.position.y = TORSO_HIT_BOX.y;
     torso.castShadow = true;
     torso.userData = { enemy: this, part: "body" };
 
     const headMat = new THREE.MeshStandardMaterial({ color: 0x222831, roughness: 0.4, metalness: 0.5 });
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.55), headMat);
-    head.position.y = 1.78;
+    const head = new THREE.Mesh(new THREE.BoxGeometry(HEAD_HIT_BOX.w, HEAD_HIT_BOX.h, HEAD_HIT_BOX.d), headMat);
+    head.position.y = HEAD_HIT_BOX.y;
     head.castShadow = true;
     head.userData = { enemy: this, part: "head" };
+    this.legsHit = legs;
+    this.torsoHit = torso;
+    this.headHit = head;
 
     this.eyeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xff3b30, emissiveIntensity: 2.2 });
     const eyeGeo = new THREE.BoxGeometry(0.12, 0.1, 0.06);
@@ -300,9 +319,13 @@ export class Enemy extends Agent {
 
     const scale = cfg.scale ?? 1;
     this.group.scale.setScalar(scale);
-    this.radius = ENEMY_RADIUS * (this.isBoss ? scale * 0.8 : this.flying ? scale * 0.72 : 1);
+    const bossSpriteWidth = ENEMY_SPRITE_SCALES.boss.front[0] * scale;
+    this.radius = this.isBoss
+      ? Math.max(ENEMY_RADIUS * scale * 0.8, bossSpriteWidth * BOSS_COLLISION_RADIUS_FROM_SPRITE_WIDTH)
+      : ENEMY_RADIUS * (this.flying ? scale * 0.72 : 1);
 
     this.applyStyle(cfg.color ?? 0xff5a3c);
+    this.configureHitMeshes();
     this.applySprite();
     this.group.position.set(x, this.hoverHeight, z);
     this.group.visible = true;
@@ -342,7 +365,29 @@ export class Enemy extends Agent {
     }
     this.spriteMat.rotation = moving ? step * 0.035 * flip : 0;
     this.sprite.scale.set(baseW * (1 + squash * 0.025) * flip * punch, baseH * (1 - squash * 0.035) * punch, 1);
-    this.sprite.position.y = moving ? squash * 0.035 : 0;
+    this.sprite.position.y = (moving ? squash * 0.035 : 0) - (kind === "boss" ? BOSS_SPRITE_GROUND_OFFSET : 0);
+  }
+
+  private configureHitMeshes() {
+    if (this.isBoss) {
+      this.setHitMeshBox(this.legsHit, LEG_HIT_BOX, BOSS_LEG_HIT_BOX);
+      this.setHitMeshBox(this.torsoHit, TORSO_HIT_BOX, BOSS_TORSO_HIT_BOX);
+      this.setHitMeshBox(this.headHit, HEAD_HIT_BOX, BOSS_HEAD_HIT_BOX);
+      return;
+    }
+
+    this.setHitMeshBox(this.legsHit, LEG_HIT_BOX, LEG_HIT_BOX);
+    this.setHitMeshBox(this.torsoHit, TORSO_HIT_BOX, TORSO_HIT_BOX);
+    this.setHitMeshBox(this.headHit, HEAD_HIT_BOX, HEAD_HIT_BOX);
+  }
+
+  private setHitMeshBox(
+    mesh: THREE.Mesh,
+    base: { w: number; h: number; d: number; y: number },
+    next: { w: number; h: number; d: number; y: number },
+  ) {
+    mesh.position.y = next.y;
+    mesh.scale.set(next.w / base.w, next.h / base.h, next.d / base.d);
   }
 
   private resolveSpriteAnimation(moving: boolean): EnemySpriteAnimationState | "static" {
@@ -532,14 +577,16 @@ export class Enemy extends Agent {
     this.group.rotation.y = Math.atan2(dirX, dirZ);
     pos.y = this.flying
       ? this.hoverHeight + Math.sin(elapsed * (this.speed * 1.25) + this.bobPhase) * 0.18
-      : Math.abs(Math.sin(elapsed * (this.speed * 1.6) + this.bobPhase)) * 0.07;
+      : this.isBoss
+        ? 0
+        : Math.abs(Math.sin(elapsed * (this.speed * 1.6) + this.bobPhase)) * 0.07;
     const frame = this.chooseSpriteFrame(move.x, move.z, dirX, dirZ);
     this.applySprite(frame.view, frame.flip, elapsed, Math.hypot(move.x, move.z) > 0.05, delta);
     this.healthBarGroup.quaternion.copy(cameraQuat);
     this.updateTell(delta);
 
     // ---- boss abilities
-    if (this.isBoss) this.updateBoss(delta, elapsed, dirX, dirZ, dist, playerPos, tick);
+    if (this.isBoss) this.updateBoss(delta, elapsed, dirX, dirZ, playerPos, tick);
 
     // ---- melee
     const canAct = this.staggerTimer <= 0.02 && this.chargeWindup <= 0;
@@ -606,7 +653,6 @@ export class Enemy extends Agent {
     elapsed: number,
     dirX: number,
     dirZ: number,
-    dist: number,
     playerPos: THREE.Vector3,
     tick: EnemyTick,
   ) {

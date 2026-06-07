@@ -1,9 +1,10 @@
+import { subscribeGlobalGameSettings } from "@shipshitgames/ui";
 import { CONSTANTS } from "./constants";
-import type { Phase } from "./types";
-import { RenderSystem } from "./systems/RenderSystem";
-import { InputSystem } from "./systems/InputSystem";
 import { EntitySystem } from "./systems/EntitySystem";
 import { HudSystem } from "./systems/HudSystem";
+import { InputSystem } from "./systems/InputSystem";
+import { RenderSystem } from "./systems/RenderSystem";
+import type { Phase } from "./types";
 
 // Thin owner of shared state. It wires the systems together, runs the clamped
 // rAF loop, and exposes a tiny amount of game state the systems mutate.
@@ -17,13 +18,19 @@ export class Game {
   phase: Phase = "playing";
   buffTime = 0; // seconds of champion damage buff remaining
   elapsed = 0;
+  flashLevel = 1;
 
   private running = false;
   private lastTime = 0;
   private readonly tick = (now: number) => this.frame(now);
+  private readonly unsubscribeSettings: () => void;
 
   constructor(canvas: HTMLCanvasElement, hudRoot: HTMLElement) {
     this.render = new RenderSystem(canvas);
+    this.unsubscribeSettings = subscribeGlobalGameSettings((settings) => {
+      this.flashLevel = settings.effectLevels.flash;
+      this.render.setEffectsLevel(settings.effectLevels.flash);
+    });
     this.input = new InputSystem(canvas, this.render);
     this.entities = new EntitySystem(this);
     this.hud = new HudSystem(hudRoot);
@@ -52,6 +59,10 @@ export class Game {
     this.running = true;
     this.lastTime = performance.now();
     requestAnimationFrame(this.tick);
+  }
+
+  dispose(): void {
+    this.unsubscribeSettings();
   }
 
   get buffed(): boolean {

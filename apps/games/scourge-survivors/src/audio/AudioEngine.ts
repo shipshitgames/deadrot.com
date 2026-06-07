@@ -69,6 +69,9 @@ export class AudioEngine {
 
   private musicEnabled = true;
   private sfxEnabled = true;
+  private musicLevel = 1;
+  private sfxLevel = 1;
+  private musicTrackVolume = 0.2;
   private musicMode: MusicMode = "menu";
 
   // authored-music layer: file beds → musicBus
@@ -92,10 +95,10 @@ export class AudioEngine {
       this.master.gain.value = 0.9;
       this.master.connect(this.ctx.destination);
       this.musicBus = this.ctx.createGain();
-      this.musicBus.gain.value = 0.2;
+      this.musicBus.gain.value = this.musicTrackVolume * this.musicLevel;
       this.musicBus.connect(this.master);
       this.sfxBus = this.ctx.createGain();
-      this.sfxBus.gain.value = 0.5;
+      this.sfxBus.gain.value = this.sfxLevel * 0.5;
       this.sfxBus.connect(this.master);
       this.loadSamples();
       return true;
@@ -125,6 +128,16 @@ export class AudioEngine {
 
   setSfxEnabled(on: boolean) {
     this.sfxEnabled = on;
+  }
+
+  setMusicLevel(level: number) {
+    this.musicLevel = Math.max(0, Math.min(1, level));
+    this.applyMusicGain();
+  }
+
+  setSfxLevel(level: number) {
+    this.sfxLevel = Math.max(0, Math.min(1, level));
+    if (this.sfxBus) this.sfxBus.gain.value = this.sfxLevel * 0.5;
   }
 
   setMusicMode(mode: MusicMode) {
@@ -195,7 +208,8 @@ export class AudioEngine {
     const manifestId = MUSIC_TRACKS[track];
     const entry = audioEntry(manifestId);
     this.musicEl.loop = entry.loop;
-    this.musicBus.gain.value = entry.volume;
+    this.musicTrackVolume = entry.volume;
+    this.applyMusicGain();
     if (this.loadedTrack !== track) {
       this.musicEl.src = audioUrl(manifestId);
       this.loadedTrack = track;
@@ -206,6 +220,10 @@ export class AudioEngine {
   private handleTrackPlaybackFailure() {
     this.loadedTrack = null;
     this.musicEl?.pause();
+  }
+
+  private applyMusicGain() {
+    if (this.musicBus) this.musicBus.gain.value = this.musicTrackVolume * this.musicLevel;
   }
 
   // ----------------------------------------------------------------- sfx
@@ -238,7 +256,7 @@ export class AudioEngine {
   }
 
   sfx(name: SfxName, opts?: { pitch?: number }) {
-    if (!this.sfxEnabled || !this.ensure() || !this.ctx) return;
+    if (!this.sfxEnabled || this.sfxLevel <= 0 || !this.ensure() || !this.ctx) return;
     if (this.ctx.state === "suspended") void this.ctx.resume();
     // Authored sample if loaded (slight pitch jitter so rapid fire isn't a flat repeat); else synth.
     if (this.playSample(name, opts?.pitch ?? 0.97 + Math.random() * 0.06)) return;

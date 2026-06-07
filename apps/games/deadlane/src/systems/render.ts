@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { CONSTANTS, COLORS } from "../constants";
-import { cellToWorld, isPathCell, pathPoints, basePoint, boardSize } from "../board";
+import { basePoint, boardSize, cellToWorld, isPathCell, pathPoints } from "../board";
+import { COLORS, CONSTANTS } from "../constants";
 
 /**
  * RenderSystem owns the Three.js scene, camera, renderer, the static board art,
@@ -16,6 +16,7 @@ export class RenderSystem {
   readonly groundPlane: THREE.Mesh;
   /** Translucent cell shown under the cursor while building. */
   private readonly hover: THREE.Mesh;
+  private effectsLevel = 1;
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new THREE.WebGLRenderer({
@@ -42,6 +43,10 @@ export class RenderSystem {
 
     this.resize();
     window.addEventListener("resize", () => this.resize());
+  }
+
+  setEffectsLevel(level: number): void {
+    this.effectsLevel = Math.max(0, Math.min(1, level));
   }
 
   // ---- scene construction ---------------------------------------------------
@@ -198,7 +203,7 @@ export class RenderSystem {
     const core = this.base.userData.core as THREE.Mesh;
     const mat = core.material as THREE.MeshStandardMaterial;
     const pulse = 1.2 + Math.sin(t * 3) * 0.4;
-    mat.emissiveIntensity = baseHit ? 4 : pulse;
+    mat.emissiveIntensity = baseHit ? pulse + 2.8 * this.effectsLevel : pulse;
     core.rotation.y += dt * 0.8;
   }
 

@@ -1,41 +1,42 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Game } from "./game/Game";
-import type { HUDState } from "./game/types";
-import { HUD } from "./components/HUD";
+import { type GlobalEffectKey, subscribeGlobalGameSettings } from "@shipshitgames/ui";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { audio } from "./audio/AudioEngine";
-import type { PlayerAvatarId } from "./net/playerAvatars";
-import {
-  clearScores,
-  loadScores,
-  loadSettings,
-  loadShop,
-  saveScore,
-  saveSettings,
-  saveShop,
-  type ScoreEntry,
-  type Settings,
-  type ShopState,
-} from "./game/storage";
-import {
-  SHOP_BY_ID,
-  SURVIVOR_RUN_GOAL_TIME,
-  shopCost,
-  runGold,
-  xpForLevel,
-  type ShopId,
-  type SurvivorClassId,
-} from "./game/data/survivors";
+import { HUD } from "./components/HUD";
 import {
   MAGAZINE_SIZE,
+  type PickupKind,
   PLAYER_MAX_HEALTH,
   START_RESERVE,
   STARTING_WEAPON,
   TOTAL_WAVES,
   WEAPONS,
-  type PickupKind,
   type WeaponId,
 } from "./game/constants";
+import {
+  runGold,
+  SHOP_BY_ID,
+  type ShopId,
+  SURVIVOR_RUN_GOAL_TIME,
+  type SurvivorClassId,
+  shopCost,
+  xpForLevel,
+} from "./game/data/survivors";
 import type { SandboxEnemyKind } from "./game/Game";
+import { Game } from "./game/Game";
+import {
+  clearScores,
+  loadScores,
+  loadSettings,
+  loadShop,
+  type ScoreEntry,
+  type Settings,
+  type ShopState,
+  saveScore,
+  saveSettings,
+  saveShop,
+} from "./game/storage";
+import type { HUDState } from "./game/types";
+import type { PlayerAvatarId } from "./net/playerAvatars";
 
 const SandboxPanel = import.meta.env.DEV
   ? lazy(() => import("./components/SandboxPanel").then((mod) => ({ default: mod.SandboxPanel })))
@@ -153,9 +154,12 @@ export default function App() {
     const container = containerRef.current;
     if (!container) return;
     audio.setMusicEnabled(settings.music);
+    audio.setMusicLevel(settings.effectLevels.music);
     audio.setSfxEnabled(settings.sfx);
+    audio.setSfxLevel(settings.effectLevels.sound);
     const game = new Game(container, setHud);
     gameRef.current = game;
+    game.setEffectLevels(settings.effectLevels);
     game.setShopUpgrades(shop.tiers);
     game.start();
     if (initialSandbox) game.startSandbox();
@@ -171,6 +175,18 @@ export default function App() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(
+    () =>
+      subscribeGlobalGameSettings((global) => {
+        setSettings((current) => ({ ...current, music: !global.musicMuted, effectLevels: global.effectLevels }));
+        audio.setMusicEnabled(!global.musicMuted);
+        audio.setMusicLevel(global.effectLevels.music);
+        audio.setSfxLevel(global.effectLevels.sound);
+        gameRef.current?.setEffectLevels(global.effectLevels);
+      }),
+    [],
+  );
 
   // Record a run on the leaderboard (and award Survivors gold) once per game-over.
   useEffect(() => {
@@ -228,6 +244,16 @@ export default function App() {
         audio.unlock();
         audio.sfx("switch");
       }
+      return next;
+    });
+  }, []);
+  const handleEffectLevelChange = useCallback((key: GlobalEffectKey, value: number) => {
+    setSettings((s) => {
+      const next = { ...s, effectLevels: { ...s.effectLevels, [key]: value } };
+      saveSettings(next);
+      audio.setMusicLevel(next.effectLevels.music);
+      audio.setSfxLevel(next.effectLevels.sound);
+      gameRef.current?.setEffectLevels(next.effectLevels);
       return next;
     });
   }, []);
@@ -348,6 +374,7 @@ export default function App() {
         onRestart={handleRestart}
         onToggleMusic={toggleMusic}
         onToggleSfx={toggleSfx}
+        onEffectLevelChange={handleEffectLevelChange}
         onClearScores={handleClearScores}
         onStartMultiplayer={handleStartMultiplayer}
         onLeaveRoom={handleLeaveRoom}

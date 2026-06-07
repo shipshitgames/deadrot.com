@@ -1,12 +1,13 @@
+import { GlobalGameSettingsPanel, GlobalMusicToggle } from "@shipshitgames/ui";
 import { useState } from "react";
-import { useWarline } from "./store";
-import { Header } from "./components/Header";
-import { ResourceBar } from "./components/ResourceBar";
-import { WarMap } from "./components/WarMap";
-import { WarFeed } from "./components/WarFeed";
 import { CommandPanel } from "./components/CommandPanel";
-import { OpsPanel } from "./components/OpsPanel";
+import { Header } from "./components/Header";
 import { Legend } from "./components/Legend";
+import { OpsPanel } from "./components/OpsPanel";
+import { ResourceBar } from "./components/ResourceBar";
+import { WarFeed } from "./components/WarFeed";
+import { WarMap } from "./components/WarMap";
+import { useWarline } from "./store";
 
 export default function App() {
   const { state, summary, status, faction, setFaction, command, simulate } = useWarline();
@@ -26,6 +27,8 @@ export default function App() {
           {/* Right rail */}
           <div className="flex flex-col gap-4">
             <ResourceBar resources={state.resources} army={state.pactArmy} />
+            <GlobalMusicToggle />
+            <GlobalGameSettingsPanel inline />
             <CommandPanel
               state={state}
               faction={faction}

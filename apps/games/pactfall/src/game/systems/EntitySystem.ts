@@ -1,8 +1,8 @@
 import * as THREE from "three";
 import { COLORS, CONSTANTS, MARCH_DIR, type Team } from "../constants";
-import type { Entity } from "../types";
+import { makeBase, makeChampion, makeMinion, makeScourge } from "../factory";
 import type { Game } from "../Game";
-import { makeChampion, makeMinion, makeScourge, makeBase } from "../factory";
+import type { Entity } from "../types";
 
 // Owns every entity, the spawn cadence, movement, targeting, combat, and the
 // transient attack beams. This is where the core loop actually lives.
@@ -336,6 +336,7 @@ export class EntitySystem {
   // ---- transient beams ----------------------------------------------------
 
   private beam(from: THREE.Vector3, to: THREE.Vector3, color: number, life: number, thick: number): void {
+    if (this.game.flashLevel <= 0.01) return;
     const a = from.clone();
     a.y = 1.1;
     const b = to.clone();
@@ -344,7 +345,7 @@ export class EntitySystem {
     if (len < 0.001) return;
 
     const geo = new THREE.CylinderGeometry(0.06 * thick, 0.06 * thick, len, 6, 1, true);
-    const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.95 });
+    const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.95 * this.game.flashLevel });
     const mesh = new THREE.Mesh(geo, mat);
     mesh.position.copy(a).lerp(b, 0.5);
     mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize());
@@ -356,7 +357,7 @@ export class EntitySystem {
     for (const b of this.beams) {
       b.life -= dt;
       const mat = b.mesh.material as THREE.MeshBasicMaterial;
-      mat.opacity = Math.max(0, b.life / b.max) * 0.95;
+      mat.opacity = Math.max(0, b.life / b.max) * 0.95 * this.game.flashLevel;
     }
     const dead = this.beams.filter((b) => b.life <= 0);
     for (const b of dead) {

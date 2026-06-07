@@ -1,4 +1,6 @@
 import {
+  GlobalGameSettingsPanel,
+  GlobalMusicToggle,
   MainMenuAction,
   MainMenuCopy,
   MainMenuLayout,
@@ -94,8 +96,10 @@ export function AppShell() {
               </li>
             </ul>
             <MainMenuAction id="overlay-btn" variant="primary" label="IGNITE" meta="Run the lane" />
+            <GlobalMusicToggle />
           </MainMenuNav>
         </MainMenuLayout>
+        <GlobalGameSettingsPanel />
       </MainMenuScreen>
     </>
   );

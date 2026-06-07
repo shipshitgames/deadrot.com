@@ -1,5 +1,7 @@
 // localStorage-backed leaderboard + audio settings (no backend required).
 
+import { type GlobalEffectLevels, loadGlobalGameSettings, saveGlobalGameSettings } from "@shipshitgames/ui";
+
 export interface ScoreEntry {
   score: number;
   kills: number;
@@ -50,24 +52,27 @@ export function clearScores(): ScoreEntry[] {
 export interface Settings {
   music: boolean;
   sfx: boolean;
+  effectLevels: GlobalEffectLevels;
 }
 
 export function loadSettings(): Settings {
+  const global = loadGlobalGameSettings();
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (raw) {
       const s = JSON.parse(raw);
-      return { music: s.music !== false, sfx: s.sfx !== false };
+      return { music: !global.musicMuted, sfx: s.sfx !== false, effectLevels: global.effectLevels };
     }
   } catch {
     /* ignore */
   }
-  return { music: true, sfx: true };
+  return { music: !global.musicMuted, sfx: true, effectLevels: global.effectLevels };
 }
 
 export function saveSettings(s: Settings) {
+  saveGlobalGameSettings({ effectLevels: s.effectLevels, musicMuted: !s.music });
   try {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ music: s.music, sfx: s.sfx }));
   } catch {
     /* ignore */
   }

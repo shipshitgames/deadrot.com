@@ -1,14 +1,14 @@
-import * as THREE from "three";
 import { firstPersonPointerLock } from "@shipshitgames/engine";
+import * as THREE from "three";
+import { CAMERA_BASE_FOV } from "../constants";
 import type { GameContext } from "../context";
 import type { GameSystems } from "../systems";
-import { CAMERA_BASE_FOV } from "../constants";
 
 /** Owns the renderer/scene/camera/controls bootstrap and the per-frame draw. */
 export class RenderSystem {
   constructor(
     private ctx: GameContext,
-    private sys: GameSystems,
+    _sys: GameSystems,
   ) {}
 
   setupRenderer() {
@@ -66,8 +66,8 @@ export class RenderSystem {
 
   render() {
     const cam = this.ctx.camera;
-    const trauma = this.ctx.shakeTrauma;
-    const recoil = this.ctx.camRecoil;
+    const trauma = this.ctx.shakeTrauma * this.ctx.effectLevels.shake;
+    const recoil = this.ctx.camRecoil * this.ctx.effectLevels.shake;
 
     // Apply screenshake + recoil as a TRANSIENT offset around the draw, then
     // restore — so the camera rig's mouse-look (which owns camera rotation) never

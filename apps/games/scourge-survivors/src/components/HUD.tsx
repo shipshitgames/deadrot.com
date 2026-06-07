@@ -6,6 +6,9 @@ import menuHero from "@shipshitgames/assets/games/scourge-survivors/ui/menu/scou
 import {
   Button,
   Card,
+  type GlobalEffectKey,
+  GlobalEffectSliders,
+  GlobalMusicToggle,
   MainMenuAction,
   MainMenuCopy,
   MainMenuLayout,
@@ -46,6 +49,7 @@ interface Props {
   onRestart: () => void;
   onToggleMusic: () => void;
   onToggleSfx: () => void;
+  onEffectLevelChange: (key: GlobalEffectKey, value: number) => void;
   onClearScores: () => void;
   onStartMultiplayer: (name: string, room: string, avatar: PlayerAvatarId) => void;
   onLeaveRoom: () => void;
@@ -501,28 +505,37 @@ function SettingsRow({
   settings,
   onToggleMusic,
   onToggleSfx,
+  onEffectLevelChange,
   className = "mt-4",
 }: {
   settings: Settings;
   onToggleMusic: () => void;
   onToggleSfx: () => void;
+  onEffectLevelChange: (key: GlobalEffectKey, value: number) => void;
   className?: string;
 }) {
   const row = "ssg-settings-row text-[13px] tracking-[0.03em]";
   return (
-    <div className={`flex gap-3 justify-center ${className}`} onClick={(e) => e.stopPropagation()}>
-      <label className={row}>
-        <IconText icon="music" size={16}>
-          Music
-        </IconText>
-        <Switch checked={settings.music} onCheckedChange={onToggleMusic} aria-label="Toggle music" />
-      </label>
-      <label className={row}>
-        <IconText icon="sfx" size={16}>
-          SFX
-        </IconText>
-        <Switch checked={settings.sfx} onCheckedChange={onToggleSfx} aria-label="Toggle sound effects" />
-      </label>
+    <div className={`flex flex-col items-center gap-3 ${className}`} onClick={(e) => e.stopPropagation()}>
+      <div className="flex gap-3 justify-center flex-wrap">
+        <label className={row}>
+          <IconText icon="music" size={16}>
+            Music
+          </IconText>
+          <Switch checked={settings.music} onCheckedChange={onToggleMusic} aria-label="Toggle music" />
+        </label>
+        <label className={row}>
+          <IconText icon="sfx" size={16}>
+            SFX
+          </IconText>
+          <Switch checked={settings.sfx} onCheckedChange={onToggleSfx} aria-label="Toggle sound effects" />
+        </label>
+      </div>
+      <GlobalEffectSliders
+        className="w-[min(420px,90vw)]"
+        settings={{ effectsLevel: 1, effectLevels: settings.effectLevels, musicMuted: !settings.music }}
+        onChange={onEffectLevelChange}
+      />
     </div>
   );
 }
@@ -826,6 +839,7 @@ export function HUD({
   onRestart,
   onToggleMusic,
   onToggleSfx,
+  onEffectLevelChange,
   onClearScores,
   onStartMultiplayer,
   onLeaveRoom,
@@ -1261,6 +1275,7 @@ export function HUD({
                   meta="Audio"
                   onClick={() => setMenuScreen("settings")}
                 />
+                <GlobalMusicToggle className="w-full" />
                 {onStartSandbox && (
                   <MainMenuAction
                     type="button"
@@ -1343,7 +1358,12 @@ export function HUD({
                       Settings
                     </IconText>
                   </div>
-                  <SettingsRow settings={settings} onToggleMusic={onToggleMusic} onToggleSfx={onToggleSfx} />
+                  <SettingsRow
+                    settings={settings}
+                    onToggleMusic={onToggleMusic}
+                    onToggleSfx={onToggleSfx}
+                    onEffectLevelChange={onEffectLevelChange}
+                  />
                   <Button
                     type="button"
                     variant="back"
@@ -1464,6 +1484,7 @@ export function HUD({
                   settings={settings}
                   onToggleMusic={onToggleMusic}
                   onToggleSfx={onToggleSfx}
+                  onEffectLevelChange={onEffectLevelChange}
                   className="mt-0"
                 />
                 <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel("none")}>
@@ -1723,7 +1744,12 @@ export function HUD({
               </div>
             </>
           )}
-          <SettingsRow settings={settings} onToggleMusic={onToggleMusic} onToggleSfx={onToggleSfx} />
+          <SettingsRow
+            settings={settings}
+            onToggleMusic={onToggleMusic}
+            onToggleSfx={onToggleSfx}
+            onEffectLevelChange={onEffectLevelChange}
+          />
         </div>
       )}
     </div>

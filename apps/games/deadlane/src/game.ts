@@ -1,9 +1,10 @@
+import { subscribeGlobalGameSettings } from "@shipshitgames/ui";
 import { CONSTANTS } from "./constants";
-import type { GameState } from "./types";
-import { RenderSystem } from "./systems/render";
 import { EntitySystem } from "./systems/entities";
-import { InputSystem } from "./systems/input";
 import { HudSystem } from "./systems/hud";
+import { InputSystem } from "./systems/input";
+import { RenderSystem } from "./systems/render";
+import type { GameState } from "./types";
 
 /**
  * Game — the thin owner of shared state + the systems, per studio convention.
@@ -17,6 +18,7 @@ export class Game {
   private readonly entities: EntitySystem;
   private readonly input: InputSystem;
   private readonly hud: HudSystem;
+  private readonly unsubscribeSettings: () => void;
 
   private last = 0;
   private elapsed = 0;
@@ -26,6 +28,9 @@ export class Game {
     this.entities = new EntitySystem(this.render.scene);
     this.input = new InputSystem(canvas, this.render.camera, this.render.groundPlane);
     this.hud = new HudSystem();
+    this.unsubscribeSettings = subscribeGlobalGameSettings((settings) => {
+      this.render.setEffectsLevel(settings.effectLevels.flash);
+    });
 
     this.hud.bannerBtn.addEventListener("click", () => this.onBannerClick());
 
@@ -33,6 +38,10 @@ export class Game {
     this.hud.update(this.state);
 
     requestAnimationFrame((t) => this.frame(t));
+  }
+
+  dispose(): void {
+    this.unsubscribeSettings();
   }
 
   // ---- state transitions ----------------------------------------------------

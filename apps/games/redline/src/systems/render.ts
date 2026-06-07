@@ -13,9 +13,9 @@
  */
 
 import * as THREE from "three";
-import { COLORS, CAMERA, WORLD, RUNNER, EMBER, TRAIL } from "../constants";
-import type { Course } from "../types";
+import { CAMERA, COLORS, EMBER, RUNNER, TRAIL, WORLD } from "../constants";
 import type { Runner } from "../entities/runner";
+import type { Course } from "../types";
 
 interface TrailGhost {
   mesh: THREE.Mesh;
@@ -40,6 +40,7 @@ export class Render {
   // camera state
   private shake = 0;
   private shakeSeed = Math.random() * 1000;
+  private effectsLevel = 1;
   private viewHeight = CAMERA.viewHeight;
 
   private aspect = 1;
@@ -531,8 +532,8 @@ export class Render {
     this.shake = Math.max(0, this.shake - CAMERA.shakeDecay * dt * this.shake);
     if (this.shake > 0.001) {
       const t = this.elapsed * 60 + this.shakeSeed;
-      this.camera.position.x += Math.sin(t * 1.7) * this.shake * 0.5;
-      this.camera.position.y += Math.cos(t * 2.3) * this.shake;
+      this.camera.position.x += Math.sin(t * 1.7) * this.shake * 0.5 * this.effectsLevel;
+      this.camera.position.y += Math.cos(t * 2.3) * this.shake * this.effectsLevel;
     }
 
     // beacon point-light reach: brighten as you approach (handled by progress in HUD)
@@ -544,6 +545,10 @@ export class Render {
   /** Kick the screen-shake (called on stagger). */
   kickShake(amount: number) {
     this.shake = Math.max(this.shake, amount);
+  }
+
+  setEffectsLevel(level: number) {
+    this.effectsLevel = Math.max(0, Math.min(1, level));
   }
 
   private applyProjection() {

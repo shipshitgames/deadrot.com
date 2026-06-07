@@ -1,11 +1,12 @@
-import { COLORS, CONSTANTS, WORLD, type EnemyType } from "./constants";
-import { ALL_UPGRADES, computeStats, defOf, maxLevelOf, xpForLevel, type Stats, type UpgradeId } from "./upgrades";
-import type { DraftCard, Enemy, GamePhase, HudState } from "./types";
-import { RenderSystem } from "../systems/RenderSystem";
-import { InputSystem } from "../systems/InputSystem";
+import { subscribeGlobalGameSettings } from "@shipshitgames/ui";
 import { EntitySystem } from "../systems/EntitySystem";
-import { WeaponSystem } from "../systems/WeaponSystem";
 import { HudSystem } from "../systems/HudSystem";
+import { InputSystem } from "../systems/InputSystem";
+import { RenderSystem } from "../systems/RenderSystem";
+import { WeaponSystem } from "../systems/WeaponSystem";
+import { COLORS, CONSTANTS, type EnemyType, WORLD } from "./constants";
+import type { DraftCard, Enemy, GamePhase, HudState } from "./types";
+import { ALL_UPGRADES, computeStats, defOf, maxLevelOf, type Stats, type UpgradeId, xpForLevel } from "./upgrades";
 
 const TAU = Math.PI * 2;
 
@@ -54,6 +55,7 @@ export class Game {
   private raf = 0;
   private prev = 0;
   private disposed = false;
+  private readonly unsubscribeSettings: () => void;
 
   constructor(canvas: HTMLCanvasElement) {
     this.render = new RenderSystem(canvas);
@@ -69,6 +71,11 @@ export class Game {
       () => this.startRun(),
       () => this.returnToTitle(),
     );
+    this.unsubscribeSettings = subscribeGlobalGameSettings((settings) => {
+      this.render.setEffectsLevel(settings.effectLevels.shake);
+      this.entities.setEffectsLevel(settings.effectLevels.particles);
+      this.hud.setEffectsLevel(settings.effectLevels.flash);
+    });
   }
 
   start() {
@@ -87,6 +94,7 @@ export class Game {
     this.entities.dispose();
     this.hud.dispose();
     this.render.dispose();
+    this.unsubscribeSettings();
   }
 
   // --- run lifecycle -----------------------------------------------------

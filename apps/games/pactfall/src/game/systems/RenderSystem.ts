@@ -12,6 +12,7 @@ export class RenderSystem {
   private readonly lookTarget = new THREE.Vector3();
   private readonly emberLight: THREE.PointLight;
   private emberPhase = 0;
+  private effectsLevel = 1;
 
   // Top-down MOBA follow-cam tunables. The camera rides high and steeply behind
   // the champion so it reads like Dota/LoL — and stays high enough that the
@@ -56,6 +57,10 @@ export class RenderSystem {
 
   remove(obj: THREE.Object3D): void {
     this.scene.remove(obj);
+  }
+
+  setEffectsLevel(level: number): void {
+    this.effectsLevel = Math.max(0, Math.min(1, level));
   }
 
   private buildLights(): void {
@@ -138,7 +143,7 @@ export class RenderSystem {
   update(dt: number): void {
     // Flickering hellfire ember light for atmosphere.
     this.emberPhase += dt * 6;
-    this.emberLight.intensity = 50 + Math.sin(this.emberPhase) * 14 + Math.random() * 6;
+    this.emberLight.intensity = 50 + (Math.sin(this.emberPhase) * 14 + Math.random() * 6) * this.effectsLevel;
   }
 
   draw(): void {

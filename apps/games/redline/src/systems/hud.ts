@@ -25,12 +25,17 @@ export class Hud {
 
   private overlay = document.getElementById("overlay")!;
   private overlayCard = document.getElementById("overlay-card")!;
+  private effectsLevel = 1;
 
   best: number | null = null;
 
   constructor() {
     this.best = this.loadBest();
     this.elBest.textContent = this.best === null ? "--.--" : fmtTime(this.best);
+  }
+
+  setEffectsLevel(level: number) {
+    this.effectsLevel = Math.max(0, Math.min(1, level));
   }
 
   // --- best time persistence ------------------------------------------------
@@ -95,19 +100,24 @@ export class Hud {
     this.elStatus.className = cls[opts.state];
 
     // speed-lines intensify with velocity
-    this.speedlines.style.opacity = String(Math.max(0, (opts.speedFrac - 0.25) * 1.25));
+    this.speedlines.style.opacity = String(Math.max(0, (opts.speedFrac - 0.25) * 1.25) * this.effectsLevel);
   }
 
   /** Visual punch for a hazard hit. */
   flashHit() {
-    this.flash.animate([{ opacity: 0.9 }, { opacity: 0 }], { duration: 280, easing: "ease-out" });
+    if (this.effectsLevel <= 0.01) return;
+    this.flash.animate([{ opacity: 0.9 * this.effectsLevel }, { opacity: 0 }], { duration: 280, easing: "ease-out" });
   }
 
   /** Soft ember-collect flash (hellfire). */
   flashEmber() {
+    if (this.effectsLevel <= 0.01) return;
     this.flash.animate(
       [
-        { opacity: 0.28, background: "radial-gradient(circle at 50% 50%, rgba(255,106,0,0.5), transparent 70%)" },
+        {
+          opacity: 0.28 * this.effectsLevel,
+          background: "radial-gradient(circle at 50% 50%, rgba(255,106,0,0.5), transparent 70%)",
+        },
         { opacity: 0 },
       ],
       { duration: 200, easing: "ease-out" },

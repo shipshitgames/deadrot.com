@@ -1,4 +1,6 @@
 import {
+  GlobalGameSettingsPanel,
+  GlobalMusicToggle,
   MainMenuAction,
   MainMenuCopy,
   MainMenuLayout,
@@ -83,6 +85,8 @@ export function AppShell() {
               </span>
             </p>
             <MainMenuAction id="start-btn" variant="primary" label="BREACH THE HULK" meta="Begin run" />
+            <GlobalMusicToggle />
+            <GlobalGameSettingsPanel inline />
           </MainMenuNav>
         </MainMenuLayout>
       </MainMenuScreen>

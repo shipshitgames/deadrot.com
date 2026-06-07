@@ -1,9 +1,10 @@
+import { subscribeGlobalGameSettings } from "@shipshitgames/ui";
 import { CONSTANTS } from "../constants";
-import { Input } from "./input";
-import { Renderer } from "./render";
 import { Hud } from "./hud";
+import { Input } from "./input";
 import { buildLevel } from "./level";
 import { aabbOverlap, platformToAABB, rectToAABB, resolveAgainstSolids } from "./physics";
+import { Renderer } from "./render";
 import type { AABB, GameMode, LevelData } from "./types";
 
 // The thin owner of shared state + systems. Runs the rAF loop with a clamped
@@ -41,14 +42,23 @@ export class Game {
   private lastTime = 0;
   private elapsed = 0;
   private running = false;
+  private readonly unsubscribeSettings: () => void;
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new Renderer(canvas);
+    this.unsubscribeSettings = subscribeGlobalGameSettings((settings) => {
+      this.renderer.setEffectsLevel(settings.effectLevels.flash);
+    });
     this.renderer.buildLevel(this.level);
     this.renderer.buildHero();
     this.renderer.setHeroTransform(this.hx, this.hy, this.facing, 1);
     this.refreshHud();
     this.hud.setObjective("REACH + IGNITE THE CORE");
+  }
+
+  dispose() {
+    this.unsubscribeSettings();
+    this.renderer.dispose();
   }
 
   start() {

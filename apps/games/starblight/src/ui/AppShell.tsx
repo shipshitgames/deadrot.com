@@ -1,4 +1,6 @@
 import {
+  GlobalGameSettingsPanel,
+  GlobalMusicToggle,
   MainMenuAction,
   MainMenuCopy,
   MainMenuLayout,
@@ -85,6 +87,8 @@ export function AppShell() {
             </MainMenuCopy>
             <MainMenuNav label="Launch">
               <MainMenuAction id="banner-btn" variant="primary" label="ENGAGE" meta="Start sortie" />
+              <GlobalMusicToggle />
+              <GlobalGameSettingsPanel inline />
             </MainMenuNav>
           </MainMenuLayout>
         </MainMenuScreen>
@@ -95,6 +99,7 @@ export function AppShell() {
             <p id="pause-stats" className="pause-stats mono">
               0:00 - LVL 1 - 0 kills
             </p>
+            <GlobalGameSettingsPanel inline />
             <div className="pause-actions">
               <button id="pause-resume" className="menu-action primary" type="button">
                 RESUME
@@ -115,6 +120,7 @@ export function AppShell() {
             <p id="pause-stats" className="pause-stats mono">
               0:00 - LVL 1 - 0 kills
             </p>
+            <GlobalGameSettingsPanel inline />
             <div className="pause-actions">
               <button id="pause-resume" className="menu-action primary" type="button">
                 RESUME

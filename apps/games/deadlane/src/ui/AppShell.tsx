@@ -1,4 +1,6 @@
 import {
+  GlobalGameSettingsPanel,
+  GlobalMusicToggle,
   MainMenuAction,
   MainMenuCopy,
   MainMenuLayout,
@@ -48,6 +50,8 @@ export function AppShell() {
             </MainMenuCopy>
             <MainMenuNav label="Command">
               <MainMenuAction id="banner-btn" variant="primary" label="DEPLOY" meta="Start wave" />
+              <GlobalMusicToggle />
+              <GlobalGameSettingsPanel inline />
             </MainMenuNav>
           </MainMenuLayout>
         </MainMenuScreen>
