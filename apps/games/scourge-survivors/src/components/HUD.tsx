@@ -644,10 +644,8 @@ function SurvivorsHud({ state }: { state: HUDState }) {
           {state.build.map((b) => (
             <span
               key={b.id}
-              className={`scourge-build-chip inline-flex items-center gap-[3px] border rounded-[2px] px-[7px] py-[2px] ${
-                b.evolved
-                  ? "border-[#ffd166] text-[#ffd166] shadow-[0_0_14px_rgba(255,209,102,0.35)]"
-                  : "border-white/[0.14]"
+              className={`scourge-build-chip inline-flex items-center gap-[3px] rounded-[2px] px-[7px] py-[2px] ${
+                b.evolved ? "text-[#ffd166] shadow-[0_0_14px_rgba(255,209,102,0.35)]" : ""
               }`}
               title={b.name}
             >
@@ -655,52 +653,6 @@ function SurvivorsHud({ state }: { state: HUDState }) {
               <b className="text-[11px] text-accent ml-[2px] align-super">{b.level}</b>
             </span>
           ))}
-        </div>
-      )}
-      {(state.survivorMaxShield > 0 ||
-        state.survivorArmor > 0 ||
-        state.survivorDodge > 0 ||
-        state.survivorGrace > 0) && (
-        <div
-          className="scourge-survivor-defense absolute left-[18px] bottom-[86px] min-w-[190px] rounded-[2px] border border-white/10 px-[10px] py-2"
-          aria-hidden
-        >
-          {state.survivorMaxShield > 0 && (
-            <div className="mb-[6px]">
-              <div className="mb-[3px] flex justify-between text-[10px] uppercase tracking-[0.1em] opacity-70">
-                <span>Shield</span>
-                <span>
-                  {state.survivorShield}/{state.survivorMaxShield}
-                </span>
-              </div>
-              <div className="scourge-defense-bar h-[7px] overflow-hidden rounded-[2px] bg-white/[0.12]">
-                <div
-                  className="h-full bg-[#e9e3d6] shadow-[0_0_10px_rgba(255,106,0,0.45)]"
-                  style={{
-                    width: `${state.survivorMaxShield ? (state.survivorShield / state.survivorMaxShield) * 100 : 0}%`,
-                  }}
-                />
-              </div>
-            </div>
-          )}
-          {state.survivorArmor > 0 && (
-            <div className="flex justify-between text-[11px] uppercase tracking-[0.1em]">
-              <span className="opacity-70">Armor</span>
-              <b className="text-[#ffd166]">{state.survivorArmor}%</b>
-            </div>
-          )}
-          {state.survivorDodge > 0 && (
-            <div className="flex justify-between text-[11px] uppercase tracking-[0.1em]">
-              <span className="opacity-70">Evade</span>
-              <b className="text-[#ffd166]">{state.survivorDodge}%</b>
-            </div>
-          )}
-          {state.survivorGrace > 0 && (
-            <div className="flex justify-between text-[11px] uppercase tracking-[0.1em]">
-              <span className="opacity-70">Grace</span>
-              <b className="text-[#ffd166]">{state.survivorGrace.toFixed(2)}s</b>
-            </div>
-          )}
         </div>
       )}
     </>
@@ -910,6 +862,12 @@ export function HUD({
     if (status !== "gameover") setGameOverPanel("summary");
   }, [status]);
   const healthFrac = playerHealth / maxPlayerHealth;
+  const shieldFrac = state.survivorMaxShield ? state.survivorShield / state.survivorMaxShield : 0;
+  const integrityStats = [
+    state.survivorArmor > 0 ? { label: "Armor", value: `${state.survivorArmor}%` } : null,
+    state.survivorDodge > 0 ? { label: "Evade", value: `${state.survivorDodge}%` } : null,
+    state.survivorGrace > 0 ? { label: "Grace", value: `${state.survivorGrace.toFixed(2)}s` } : null,
+  ].filter((stat): stat is { label: string; value: string } => Boolean(stat));
   const playing = status === "playing";
   const berserkActive = playing && berserk > 0;
   const bossLabel = bossShielded ? "SHIELDED" : bossEnraged ? "ENRAGED" : "BOSS";
@@ -1115,17 +1073,40 @@ export function HUD({
         </div>
       )}
 
-      <div className={`${HUD_CORNER} scourge-health-panel left-[18px] bottom-[18px] min-w-[190px]`}>
-        <div className={STAT_LABEL}>Health</div>
-        <div className="flex items-center gap-[10px]">
-          <div className="scourge-health-bar relative w-[150px] h-[14px] bg-white/[0.12] rounded-[2px] overflow-hidden">
-            <div
-              className="absolute inset-0 rounded-[2px] [transition:width_0.15s_linear,background_0.2s_linear]"
-              style={{ width: `${Math.max(0, healthFrac) * 100}%`, background: healthColor(healthFrac) }}
-            />
-          </div>
-          <div className={`${STAT_VALUE} !text-[18px]`}>{playerHealth}</div>
+      <div className={`${HUD_CORNER} scourge-health-panel left-[18px] bottom-[18px] min-w-[214px]`}>
+        <div className="scourge-integrity-head">
+          <span className={STAT_LABEL}>{survivors ? "Integrity" : "Health"}</span>
+          {survivors && state.survivorMaxShield > 0 && (
+            <span>
+              Shield {state.survivorShield}/{state.survivorMaxShield}
+            </span>
+          )}
         </div>
+        <div className="scourge-integrity-stack">
+          {survivors && state.survivorMaxShield > 0 && (
+            <div className="scourge-shield-bar">
+              <div style={{ width: `${Math.max(0, Math.min(1, shieldFrac)) * 100}%` }} />
+            </div>
+          )}
+          <div className="flex items-center gap-[10px]">
+            <div className="scourge-health-bar relative w-[150px] h-[14px] overflow-hidden">
+              <div
+                className="absolute inset-0 [transition:width_0.15s_linear,background_0.2s_linear]"
+                style={{ width: `${Math.max(0, healthFrac) * 100}%`, background: healthColor(healthFrac) }}
+              />
+            </div>
+            <div className={`${STAT_VALUE} !text-[18px]`}>{playerHealth}</div>
+          </div>
+        </div>
+        {survivors && integrityStats.length > 0 && (
+          <div className="scourge-integrity-meta">
+            {integrityStats.map((stat) => (
+              <span key={stat.label}>
+                {stat.label} <b>{stat.value}</b>
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className={`${HUD_CORNER} scourge-weapon-panel right-[18px] bottom-[18px] text-right min-w-[150px]`}>
@@ -1161,10 +1142,10 @@ export function HUD({
             {weapons.map((w) => (
               <span
                 key={w.id}
-                className={`text-[11px] px-[7px] py-[2px] rounded-[2px] border whitespace-nowrap ${
+                className={`text-[11px] px-[7px] py-[2px] rounded-[2px] whitespace-nowrap ${
                   w.active
-                    ? "opacity-100 bg-[rgba(255,106,0,0.16)] border-[rgba(255,106,0,0.52)]"
-                    : "opacity-70 bg-white/[0.08] border-white/[0.12]"
+                    ? "opacity-100 bg-[rgba(255,106,0,0.12)] text-[#ffd166] shadow-[0_0_14px_rgba(255,106,0,0.22)]"
+                    : "opacity-70 bg-white/[0.05]"
                 }`}
               >
                 <b className="text-accent mr-[2px]">{w.key}</b> {w.name}

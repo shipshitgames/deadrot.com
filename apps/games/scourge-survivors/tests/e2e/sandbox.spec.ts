@@ -347,14 +347,15 @@ test.describe("dev sandbox smoke", () => {
       ".scourge-berserk-meter",
       ".scourge-dual-weapon",
       ".scourge-health-panel",
-      ".scourge-survivor-defense",
+      ".scourge-integrity-meta",
       ".scourge-weapon-panel",
     ];
     const desktopSamples = await sampleHudPanels(page, styleSelectors);
 
     for (const panel of desktopSamples) {
       expect(panel.visible, panel.selector).toBe(true);
-      expect(panel.borderLeftWidth, panel.selector).toBeLessThanOrEqual(panel.borderRightWidth + 0.1);
+      expect(panel.borderLeftWidth, panel.selector).toBeLessThanOrEqual(0.1);
+      expect(panel.borderRightWidth, panel.selector).toBeLessThanOrEqual(0.1);
       expect(panel.maxBackgroundAlpha, panel.selector).toBeLessThanOrEqual(0.24);
     }
 
@@ -366,8 +367,8 @@ test.describe("dev sandbox smoke", () => {
       ".scourge-build-strip",
       ".scourge-berserk-meter",
       ".scourge-dual-weapon",
+      ".scourge-combo-counter",
       ".scourge-health-panel",
-      ".scourge-survivor-defense",
       ".scourge-weapon-panel",
     ];
     const mobileSamples = await sampleHudPanels(page, layoutSelectors);
@@ -385,7 +386,7 @@ test.describe("dev sandbox smoke", () => {
       [".ssg-survivor-xp", ".scourge-berserk-meter"],
       [".scourge-berserk-meter", ".scourge-build-strip"],
       [".scourge-build-strip", ".scourge-dual-weapon"],
-      [".scourge-survivor-defense", ".scourge-health-panel"],
+      [".scourge-dual-weapon", ".scourge-combo-counter"],
       [".scourge-health-panel", ".scourge-weapon-panel"],
     ] as const;
 
