@@ -42,6 +42,8 @@ import {
   survivorBuildList,
   survivorChapterAt,
   survivorChapterStart,
+  survivorClassFor,
+  survivorStartingWeapon,
   xpForLevel,
   type SurvArchetype,
   type SurvivorClassId,
@@ -111,12 +113,12 @@ export class SurvivorsSystem {
 
   startSurvivors(classId: SurvivorClassId = this.selectedClass) {
     this.sys.multiplayer.leaveMultiplayer(false);
-    this.selectedClass = SURVIVOR_CLASSES[classId] ? classId : "ranger";
+    this.selectedClass = survivorClassFor(classId).id;
     this.ctx.survivorClassId = this.selectedClass;
     this.ctx.survivors = true;
     this.ctx.campaignStage = 0;
     this.sys.arena.buildArena(getMap(DEFAULT_MAP_ID));
-    this.sys.player.resetPlayer(SURVIVOR_CLASSES[this.selectedClass].startingWeapon);
+    this.sys.player.resetPlayer(survivorStartingWeapon(this.selectedClass));
     this.initSurvivorsRun();
     this.ctx.status = "pointerlock-needed";
     this.sys.hud.emit();
@@ -194,6 +196,10 @@ export class SurvivorsSystem {
   setShopUpgrades(tiers: Record<string, number>) {
     this.shopTiers = tiers || {};
     if (this.ctx.survivors) this.recomputeStats();
+  }
+
+  selectedStartingWeapon() {
+    return survivorStartingWeapon(this.selectedClass);
   }
 
   setSurvivorClass(classId: SurvivorClassId) {

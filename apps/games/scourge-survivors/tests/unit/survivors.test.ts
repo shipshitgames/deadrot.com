@@ -4,11 +4,15 @@ import {
   UPGRADE_BY_ID,
   availableEvolutionChoice,
   runGold,
+  survivorStartingWeapon,
+  SURVIVOR_CLASS_IDS,
+  SURVIVOR_CLASSES,
   survivorBuildList,
   xpForLevel,
   type UpgradeId,
   type WeaponUpgradeId,
 } from "../../src/game/data/survivors";
+import { STARTING_WEAPON, WEAPONS } from "../../src/game/constants";
 
 const noEvolutions: Record<WeaponUpgradeId, boolean> = {
   orbit: false,
@@ -17,6 +21,21 @@ const noEvolutions: Record<WeaponUpgradeId, boolean> = {
 };
 
 describe("survivors progression data", () => {
+  it("defines an explicit valid starting weapon for every survivor class", () => {
+    for (const id of SURVIVOR_CLASS_IDS) {
+      const startingWeapon = SURVIVOR_CLASSES[id].startingWeapon;
+
+      expect(startingWeapon, id).toBeTruthy();
+      expect(WEAPONS[startingWeapon], id).toBeDefined();
+      expect(survivorStartingWeapon(id), id).toBe(startingWeapon);
+    }
+  });
+
+  it("keeps the default non-class fallback on the sidearm", () => {
+    expect(STARTING_WEAPON).toBe("pistol");
+    expect(survivorStartingWeapon("not-a-class")).toBe(STARTING_WEAPON);
+  });
+
   it("only offers an evolution after the weapon and paired passive are maxed", () => {
     const levels: Partial<Record<UpgradeId, number>> = {
       orbit: UPGRADE_BY_ID.orbit.max,
