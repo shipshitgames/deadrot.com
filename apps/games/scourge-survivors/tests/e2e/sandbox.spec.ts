@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 type HudSnapshot = {
   status: string;
@@ -47,6 +47,20 @@ async function arenaSnapshot(page: Page): Promise<ArenaDebugSnapshot> {
 }
 
 test.describe("dev sandbox smoke", () => {
+  test("main menu uses Survivors run and co-op breach vocabulary", async ({ page }) => {
+    await page.goto("/");
+
+    await expect(page.getByRole("button", { name: /start run/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^co-op/i })).toBeVisible();
+
+    await page.getByRole("button", { name: /^co-op/i }).click();
+
+    await expect(page.getByText("Co-op Breach Rooms")).toBeVisible();
+    await expect(page.getByPlaceholder("Breach code (blank = random)")).toBeVisible();
+    await expect(page.getByRole("button", { name: /join breach/i })).toBeVisible();
+    await expect(page.getByText("Share the breach code so friends can join the same run.")).toBeVisible();
+  });
+
   test("loads runtime visual/audio assets and fires each gun", async ({ page }) => {
     const consoleErrors: string[] = [];
     page.on("console", (msg) => {

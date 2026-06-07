@@ -1,5 +1,5 @@
 import type * as THREE from "three";
-import { Enemy } from "../entities/Enemy";
+import { audio } from "../../audio/AudioEngine";
 import {
   BOSS_ATTACK_DAMAGE,
   BOSS_ATTACK_INTERVAL,
@@ -27,11 +27,11 @@ import {
   WAVES,
   WEAPONS,
 } from "../constants";
-import { CAMPAIGN_ORDER, campaignSequence } from "../data/maps";
-import { campaignArchetypeForWave, ENEMY_ARCHETYPES } from "../data/enemies";
-import { SURV_XP_GEM_VALUE } from "../data/survivors";
-import { audio } from "../../audio/AudioEngine";
 import type { GameContext } from "../context";
+import { campaignArchetypeForWave, ENEMY_ARCHETYPES, SCOURGE_THREAT_TIERS } from "../data/enemies";
+import { CAMPAIGN_ORDER, campaignSequence } from "../data/maps";
+import { SURV_XP_GEM_VALUE } from "../data/survivors";
+import { Enemy } from "../entities/Enemy";
 import type { GameSystems } from "../systems";
 
 export class PveDirectorSystem {
@@ -90,7 +90,7 @@ export class PveDirectorSystem {
       this.sys.hud.announce(`WAVE ${this.waveIndex + 1}`);
     } else {
       this.bossActive = true;
-      this.sys.hud.announce("BOSS");
+      this.sys.hud.announce(SCOURGE_THREAT_TIERS.breachBoss.banner);
       this.spawnBoss();
     }
   }
@@ -103,7 +103,7 @@ export class PveDirectorSystem {
     this.sys.hud.announce(cleared >= TOTAL_WAVES ? "FINAL WAVE CLEARED" : `WAVE ${cleared} CLEARED`);
   }
 
-  /** Per-stage difficulty scalar for the campaign (1.0 on stage 1, no effect elsewhere). */
+  /** Per-stage difficulty scalar for the structured descent (1.0 on stage 1, no effect elsewhere). */
   stageMul(): number {
     return 1 + STAGE_DIFFICULTY_STEP * this.ctx.campaignStage;
   }
@@ -208,7 +208,7 @@ export class PveDirectorSystem {
         color: wasBoss ? 0xff2d55 : 0xc1121f,
       });
       this.sys.survivors.dropXpGem(deathPos.clone(), this.sys.survivors.enemyXp.get(enemy) ?? SURV_XP_GEM_VALUE);
-      if (wasBoss) this.sys.survivors.onEliteKilled(deathPos.clone()); // elites also drop health + damage
+      if (wasBoss) this.sys.survivors.onEliteKilled(deathPos.clone()); // Scourge elites also drop health + damage
       this.sys.survivors.onEnemyKilled(enemy, wasBoss);
       this.spawnSplitterChildren(enemy, deathPos);
       // NOTE: no ammo on kill in Survivors — the sidearm is meant to run dry.
@@ -278,7 +278,7 @@ export class PveDirectorSystem {
     this.sys.input.requestLock();
   }
 
-  /** Boss down: advance to the next campaign map, or win if this was the last. */
+  /** Breach-boss down: advance to the next descent map, or win if this was the last. */
   advanceCampaignOrWin() {
     if (this.ctx.campaignStage < this.ctx.campaignMaps.length - 1) {
       this.ctx.campaignStage++;

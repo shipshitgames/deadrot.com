@@ -1,15 +1,12 @@
 import * as THREE from "three";
-import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
 import { audio } from "../../audio/AudioEngine";
-import type { Enemy } from "./Enemy";
 import {
-  CANNON_SPLASH_DAMAGE,
-  CANNON_SPLASH_RADIUS,
   ADS_LERP,
   BERSERK_FIRE_RATE_MULT,
   BERSERK_KNOCKBACK_MULT,
   CAMERA_BASE_FOV,
+  CANNON_SPLASH_DAMAGE,
+  CANNON_SPLASH_RADIUS,
   DAMAGE_BOOST_MULT,
   HEADSHOT_MULTIPLIER,
   MELEE_ARC_DOT,
@@ -22,8 +19,11 @@ import {
   WEAPONS,
   type WeaponId,
 } from "../constants";
-import { MUZZLE_FLASH_TEXTURE, WEAPON_SPRITE_CONFIG, WEAPON_SPRITE_TEXTURES } from "../spriteAssets";
+import type { GameContext } from "../context";
 import { WEAPON_VIEW_X, WEAPON_VIEW_Y, WEAPON_VIEW_Z } from "../data/internalTypes";
+import { MUZZLE_FLASH_TEXTURE, WEAPON_SPRITE_CONFIG, WEAPON_SPRITE_TEXTURES } from "../spriteAssets";
+import type { GameSystems } from "../systems";
+import type { Enemy } from "./Enemy";
 
 /** Per-weapon fire sound so each gun reads distinct (cannon booms, shotgun ka-chunks…). */
 const SHOOT_SFX: Record<WeaponId, "shoot" | "shootSmg" | "shootSniper" | "shootShotgun" | "shootCannon"> = {
@@ -320,7 +320,7 @@ export class WeaponSystem {
         for (const h of hits) {
           const ud = h.object.userData as { enemy?: Enemy; part?: string; solid?: boolean; remoteId?: string };
           if (ud.remoteId) {
-            // PvP: report the hit to the server (authoritative health/kills).
+            // Co-op room hit sync: the server owns remote health/kills.
             const headshot = ud.part === "head";
             const dmg = spec.damage * dmgMult * (headshot ? headshotMultiplier : 1);
             this.sys.multiplayer.net?.sendHit(ud.remoteId, dmg);

@@ -1,41 +1,41 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Game } from "./game/Game";
-import type { HUDState } from "./game/types";
-import { HUD } from "./components/HUD";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { audio } from "./audio/AudioEngine";
-import type { PlayerAvatarId } from "./net/playerAvatars";
-import {
-  clearScores,
-  loadScores,
-  loadSettings,
-  loadShop,
-  saveScore,
-  saveSettings,
-  saveShop,
-  type ScoreEntry,
-  type Settings,
-  type ShopState,
-} from "./game/storage";
-import {
-  SHOP_BY_ID,
-  SURVIVOR_RUN_GOAL_TIME,
-  shopCost,
-  runGold,
-  xpForLevel,
-  type ShopId,
-  type SurvivorClassId,
-} from "./game/data/survivors";
+import { HUD } from "./components/HUD";
 import {
   MAGAZINE_SIZE,
+  type PickupKind,
   PLAYER_MAX_HEALTH,
   START_RESERVE,
   STARTING_WEAPON,
   TOTAL_WAVES,
   WEAPONS,
-  type PickupKind,
   type WeaponId,
 } from "./game/constants";
+import {
+  runGold,
+  SHOP_BY_ID,
+  type ShopId,
+  SURVIVOR_RUN_GOAL_TIME,
+  type SurvivorClassId,
+  shopCost,
+  xpForLevel,
+} from "./game/data/survivors";
 import type { SandboxEnemyKind } from "./game/Game";
+import { Game } from "./game/Game";
+import {
+  clearScores,
+  loadScores,
+  loadSettings,
+  loadShop,
+  type ScoreEntry,
+  type Settings,
+  type ShopState,
+  saveScore,
+  saveSettings,
+  saveShop,
+} from "./game/storage";
+import type { HUDState } from "./game/types";
+import type { PlayerAvatarId } from "./net/playerAvatars";
 
 const SandboxPanel = import.meta.env.DEV
   ? lazy(() => import("./components/SandboxPanel").then((mod) => ({ default: mod.SandboxPanel })))
@@ -126,7 +126,7 @@ export default function App() {
   const [lastRunGold, setLastRunGold] = useState(0);
   const sandboxAvailable = import.meta.env.DEV;
   const savedRef = useRef(false);
-  // A shared link like `?room=ARENA-AB12` lands the player on the join screen.
+  // A shared link like `?room=BREACH-AB12` lands the player on the join screen.
   const initialRoom = useMemo(
     () => (new URLSearchParams(window.location.search).get("room") || "").toUpperCase().slice(0, 24),
     [],

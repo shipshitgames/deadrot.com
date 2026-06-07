@@ -1,15 +1,15 @@
 import * as THREE from "three";
 import { audio } from "../../audio/AudioEngine";
-import { NetClient, type HitMessage, type RemotePlayerInfo } from "../../net/NetClient";
+import { type HitMessage, NetClient, type RemotePlayerInfo } from "../../net/NetClient";
 import type { PlayerAvatarId } from "../../net/playerAvatars";
 import { RemoteAvatar } from "../../net/RemoteAvatar";
 import { PLAYER_HEIGHT, WEAPONS } from "../constants";
-import { DEFAULT_MAP_ID, getMap } from "../data/maps";
 import type { GameContext } from "../context";
+import { DEFAULT_MAP_ID, getMap } from "../data/maps";
 import type { GameSystems } from "../systems";
 
 export class MultiplayerSystem {
-  // Multiplayer
+  // Co-op breach room state.
   net: NetClient | null = null;
   connected = false;
   roomName = "";
@@ -26,7 +26,7 @@ export class MultiplayerSystem {
   startMultiplayer(room: string, name: string, avatar: PlayerAvatarId = "ranger") {
     this.leaveMultiplayer(false); // tear down any prior session/avatars first
     this.ctx.campaignStage = 0;
-    this.sys.arena.buildArena(getMap(DEFAULT_MAP_ID)); // PvP always uses the default arena
+    this.sys.arena.buildArena(getMap(DEFAULT_MAP_ID)); // Co-op rooms use the default breach arena.
     this.sys.player.resetPlayer();
     this.ctx.multiplayer = true;
     this.connected = false;
@@ -35,7 +35,7 @@ export class MultiplayerSystem {
     this.playerAvatar = avatar;
     this.ctx.kills = 0;
 
-    // Disable the PvE campaign.
+    // Disable solo run progression while the co-op room owns pacing.
     for (const e of this.ctx.enemies) e.kill();
     this.sys.pve.waveActive = false;
     this.sys.pve.bossActive = false;
@@ -140,7 +140,7 @@ export class MultiplayerSystem {
         this.ctx.wantsCrouch = false;
         this.ctx.camera.position.set(msg.respawn.x, PLAYER_HEIGHT, msg.respawn.z);
         this.ctx.velocity.set(0, 0, 0);
-        this.sys.hud.showToast(`Fragged by ${msg.byName}`);
+        this.sys.hud.showToast(`DROPPED BY ${msg.byName}`);
       }
     } else {
       const r = this.remotePlayers.get(msg.target);
@@ -156,7 +156,7 @@ export class MultiplayerSystem {
       this.ctx.kills = msg.killerKills;
       if (msg.killed) {
         this.sys.hud.killSeq++;
-        this.sys.hud.showToast("FRAG!");
+        this.sys.hud.showToast("SYNC KILL");
         audio.sfx("kill");
       }
     } else {

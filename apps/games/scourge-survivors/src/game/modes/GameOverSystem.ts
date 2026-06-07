@@ -1,8 +1,8 @@
-import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
-import { CAMPAIGN_ORDER, DEFAULT_MAP_ID, campaignSequence, getMap } from "../data/maps";
 import { STARTING_WEAPON, WEAPON_ORDER, WEAPONS } from "../constants";
+import type { GameContext } from "../context";
+import { CAMPAIGN_ORDER, campaignSequence, DEFAULT_MAP_ID, getMap } from "../data/maps";
 import { SURVIVOR_CLASSES } from "../data/survivors";
+import type { GameSystems } from "../systems";
 
 /** Terminal state + the restart / return-to-menu orchestration. */
 export class GameOverSystem {
@@ -11,11 +11,11 @@ export class GameOverSystem {
     private sys: GameSystems,
   ) {}
 
-  /** "Play Again" — replays the current mode (campaign restarts from stage 1). */
+  /** "Play Again" — replays the current mode (structured descent restarts from stage 1). */
   restart() {
-    // PvP has no local "restart" — the server owns match state. A Restart click
-    // from a multiplayer pause must not reset stats / rebuild the arena under the
-    // live net session (that strands the player in a broken half-campaign state);
+    // Co-op rooms have no local "restart" — the server owns room state. A Restart click
+    // from a co-op pause must not reset stats / rebuild the arena under the
+    // live net session (that strands the player in a broken half-run state);
     // treat it as a resume instead.
     if (this.ctx.multiplayer) {
       this.sys.input.requestLock();

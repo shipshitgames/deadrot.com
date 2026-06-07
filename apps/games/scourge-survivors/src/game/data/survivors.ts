@@ -2,8 +2,8 @@
 // level-up draft where the player picks 1 of 3 upgrades to stack into combos.
 
 import type { PixelIconId } from "../../assets/ui/pixelIcons";
-import type { BuildEntry, UpgradeChoice } from "../types";
 import type { WeaponId } from "../constants";
+import type { BuildEntry, UpgradeChoice } from "../types";
 
 export {
   ENEMY_ARCHETYPES as SURV_ARCHETYPES,
@@ -48,60 +48,60 @@ export interface UpgradeDef {
 export const UPGRADES: UpgradeDef[] = [
   {
     id: "orbit",
-    name: "Orbiting Blades",
-    desc: "+1 spinning blade that shreds nearby foes",
+    name: "Cautery Ring",
+    desc: "+1 Pyre blade orbit that cauterizes nearby Scourge",
     icon: "orbit",
     max: 6,
     kind: "weapon",
   },
   {
     id: "bolt",
-    name: "Seeker Bolts",
-    desc: "Auto-fires homing bolts at the nearest enemy",
+    name: "Ember-Seeker Bolts",
+    desc: "Auto-fires furnace-guided bolts at the nearest Scourge",
     icon: "bolt",
     max: 6,
     kind: "weapon",
   },
   {
     id: "nova",
-    name: "Nova Pulse",
-    desc: "Periodic shockwave damaging everything around you",
+    name: "Breachfire Nova",
+    desc: "Periodic Pyre shockwave that burns the swarm around you",
     icon: "nova",
     max: 6,
     kind: "weapon",
   },
-  { id: "dmg", name: "Heavy Rounds", desc: "+25% damage (all sources)", icon: "fire", max: 5, kind: "passive" },
+  { id: "dmg", name: "Incendiary Rounds", desc: "+25% damage (all sources)", icon: "fire", max: 5, kind: "passive" },
   {
     id: "amp",
-    name: "Overcharge",
-    desc: "+22% damage to your auto-weapons (blades / bolts / nova)",
+    name: "Cauterizer Feed",
+    desc: "+22% damage to Pyre auto-weapons (ring / bolts / nova)",
     icon: "battery",
     max: 5,
     kind: "passive",
   },
-  { id: "rate", name: "Rapid Fire", desc: "+18% fire rate", icon: "lightning", max: 5, kind: "passive" },
+  { id: "rate", name: "Stoke the Chamber", desc: "+18% fire rate", icon: "lightning", max: 5, kind: "passive" },
   {
     id: "multishot",
-    name: "Split Shot",
-    desc: "+1 projectile on your gun AND auto-weapons",
+    name: "Splinter Ignition",
+    desc: "+1 projectile on your gun and Pyre auto-weapons",
     icon: "trident",
     max: 3,
     kind: "passive",
   },
   {
     id: "crit",
-    name: "Deadeye",
+    name: "Weakpoint Catechism",
     desc: "+12% critical hit chance (2× damage)",
     icon: "target",
     max: 4,
     kind: "passive",
   },
-  { id: "speed", name: "Adrenaline", desc: "+12% move speed", icon: "boot", max: 4, kind: "passive" },
-  { id: "maxhp", name: "Vitality", desc: "+30 max health (and heal)", icon: "heart", max: 5, kind: "passive" },
-  { id: "regen", name: "Regeneration", desc: "+2 HP / second", icon: "medic-cross", max: 4, kind: "passive" },
+  { id: "speed", name: "Ash Sprint", desc: "+12% move speed", icon: "boot", max: 4, kind: "passive" },
+  { id: "maxhp", name: "Purger Vigor", desc: "+30 max health (and heal)", icon: "heart", max: 5, kind: "passive" },
+  { id: "regen", name: "Field Cautery", desc: "+2 HP / second", icon: "medic-cross", max: 4, kind: "passive" },
   {
     id: "armor",
-    name: "Bone Plating",
+    name: "Charplate",
     desc: "-10% incoming damage from every hit",
     icon: "armor",
     max: 5,
@@ -109,7 +109,7 @@ export const UPGRADES: UpgradeDef[] = [
   },
   {
     id: "ward",
-    name: "Warden Aegis",
+    name: "Ash Ward",
     desc: "+24 regenerating shield before health takes damage",
     icon: "shield",
     max: 4,
@@ -117,15 +117,15 @@ export const UPGRADES: UpgradeDef[] = [
   },
   {
     id: "spikes",
-    name: "Retribution Mesh",
-    desc: "Taking damage lashes nearby foes with bone-shard counterfire",
+    name: "Bone-Shard Reprisal",
+    desc: "Taking damage lashes nearby Scourge with bone-shard counterfire",
     icon: "spikes",
     max: 4,
     kind: "passive",
   },
   {
     id: "bloodtap",
-    name: "Blood Tap",
+    name: "Blood Tithe",
     desc: "Heal a small amount from every kill",
     icon: "bloodtap",
     max: 4,
@@ -133,7 +133,7 @@ export const UPGRADES: UpgradeDef[] = [
   },
   {
     id: "bastion",
-    name: "Bastion Protocol",
+    name: "Last Cautery",
     desc: "Low-health hits trigger a defensive blast around you",
     icon: "bastion",
     max: 3,
@@ -141,7 +141,7 @@ export const UPGRADES: UpgradeDef[] = [
   },
   {
     id: "dodge",
-    name: "Ghost Step",
+    name: "Smoke Step",
     desc: "+8% chance to evade incoming hits entirely",
     icon: "dodge",
     max: 4,
@@ -149,14 +149,14 @@ export const UPGRADES: UpgradeDef[] = [
   },
   {
     id: "grace",
-    name: "Ire Frames",
+    name: "Ash Grace",
     desc: "After health damage, gain longer post-hit invulnerability",
     icon: "grace",
     max: 3,
     kind: "passive",
   },
-  { id: "magnet", name: "Magnet", desc: "+45% XP pickup radius", icon: "magnet", max: 4, kind: "passive" },
-  { id: "xpgain", name: "Fast Learner", desc: "+20% XP gained", icon: "chart", max: 4, kind: "passive" },
+  { id: "magnet", name: "Ichor Draw", desc: "+45% XP pickup radius", icon: "magnet", max: 4, kind: "passive" },
+  { id: "xpgain", name: "Breach Lessons", desc: "+20% XP gained", icon: "chart", max: 4, kind: "passive" },
 ];
 
 export const UPGRADE_BY_ID: Record<UpgradeId, UpgradeDef> = Object.fromEntries(
@@ -180,22 +180,22 @@ export const EVOLUTIONS: Record<WeaponUpgradeId, EvolutionDef> = {
   orbit: {
     weapon: "orbit",
     passive: "dmg",
-    name: "CYCLONE",
-    desc: "Blades become a roaring ring — bigger, faster, far deadlier",
+    name: "PYRE CYCLONE",
+    desc: "Cautery blades become a roaring fire ring -- bigger, faster, far deadlier",
     icon: "orbit",
   },
   bolt: {
     weapon: "bolt",
     passive: "crit",
-    name: "HAILSTORM",
-    desc: "A relentless storm of bolts that punch clean through the swarm",
+    name: "EMBER STORM",
+    desc: "A relentless storm of Pyre bolts that punches clean through the swarm",
     icon: "bolt",
   },
   nova: {
     weapon: "nova",
     passive: "rate",
-    name: "SUPERNOVA",
-    desc: "Nova erupts twice as often with a vast second shockwave",
+    name: "FURNACE HEART",
+    desc: "Breachfire erupts twice as often with a vast second shockwave",
     icon: "nova",
   },
 };
@@ -270,7 +270,7 @@ export const SURVIVOR_CLASSES: Record<SurvivorClassId, SurvivorClassDef> = {
     id: "ranger",
     name: "Ranger",
     role: "Balanced Pyre-operator",
-    desc: "Starts with a reliable sidearm and an early Seeker Bolt path.",
+    desc: "Starts with a reliable sidearm and an early Ember-Seeker path.",
     icon: "target",
     startingWeapon: "pistol",
     startingUpgrades: { bolt: 1 },
@@ -281,7 +281,7 @@ export const SURVIVOR_CLASSES: Record<SurvivorClassId, SurvivorClassDef> = {
     id: "heavy",
     name: "Bulwark",
     role: "Defensible breach anchor",
-    desc: "Slower, tougher, and starts with a shotgun plus Orbiting Blades.",
+    desc: "Slower, tougher, and starts with a shotgun plus a Cautery Ring.",
     icon: "shield",
     startingWeapon: "shotgun",
     startingUpgrades: { orbit: 1, armor: 1 },
@@ -421,7 +421,7 @@ export const SURV_SPAWN_MIN = 0.18; // fastest spawn interval
 export const SURV_ELITE_INTERVAL = 22; // seconds between elite spawns
 export const SURV_ENEMY_BASE_HP = 28;
 export const SURV_XP_GEM_VALUE = 2;
-export const SURV_XP_ELITE_VALUE = 24; // elites ("bosses") are a big XP payout
+export const SURV_XP_ELITE_VALUE = 24; // Scourge elites are a big XP payout
 
 // Auto-weapon tuning (indexed loosely by level)
 export const ORBIT_RADIUS = 2.6;
@@ -466,31 +466,45 @@ export interface ShopDef {
 }
 
 export const SHOP_UPGRADES: ShopDef[] = [
-  { id: "might", name: "Might", desc: "+8% base damage (all sources)", icon: "fire", max: 5, baseCost: 35 },
-  { id: "vigor", name: "Vigor", desc: "+18 starting max health", icon: "heart", max: 5, baseCost: 35 },
-  { id: "swift", name: "Swift", desc: "+6% base move speed", icon: "boot", max: 4, baseCost: 45 },
-  { id: "regenP", name: "Recovery", desc: "+0.8 base HP regen / second", icon: "medic-cross", max: 4, baseCost: 40 },
-  { id: "magnetP", name: "Lodestone", desc: "+24% base pickup radius", icon: "magnet", max: 4, baseCost: 30 },
-  { id: "scholar", name: "Scholar", desc: "+12% XP gained", icon: "chart", max: 4, baseCost: 40 },
-  { id: "greed", name: "Greed", desc: "+18% gold earned per run", icon: "gold", max: 4, baseCost: 50 },
+  { id: "might", name: "Pyre Munitions", desc: "+8% base damage (all sources)", icon: "fire", max: 5, baseCost: 35 },
+  { id: "vigor", name: "Ash-Hardened Suit", desc: "+18 starting max health", icon: "heart", max: 5, baseCost: 35 },
+  { id: "swift", name: "Breach Sprint", desc: "+6% base move speed", icon: "boot", max: 4, baseCost: 45 },
+  {
+    id: "regenP",
+    name: "Field Cautery",
+    desc: "+0.8 base HP regen / second",
+    icon: "medic-cross",
+    max: 4,
+    baseCost: 40,
+  },
+  { id: "magnetP", name: "Ichor Draw", desc: "+24% base pickup radius", icon: "magnet", max: 4, baseCost: 30 },
+  { id: "scholar", name: "Breach Lessons", desc: "+12% XP gained", icon: "chart", max: 4, baseCost: 40 },
+  { id: "greed", name: "Salvage Tithe", desc: "+18% gold earned per run", icon: "gold", max: 4, baseCost: 50 },
   // --- Starting weapons: buy these to begin a run already armed (build variety) ---
   {
     id: "arsenal",
-    name: "Arsenal",
-    desc: "Start every run with Orbiting Blades Lv1",
+    name: "Cautery Kit",
+    desc: "Start every run with Cautery Ring Lv1",
     icon: "orbit",
     max: 1,
     baseCost: 95,
   },
   {
     id: "munitions",
-    name: "Munitions",
-    desc: "Start every run with Seeker Bolts Lv1",
+    name: "Ember Cache",
+    desc: "Start every run with Ember-Seeker Bolts Lv1",
     icon: "bolt",
     max: 1,
     baseCost: 95,
   },
-  { id: "pulsar", name: "Pulsar", desc: "Start every run with Nova Pulse Lv1", icon: "nova", max: 1, baseCost: 110 },
+  {
+    id: "pulsar",
+    name: "Nova Core",
+    desc: "Start every run with Breachfire Nova Lv1",
+    icon: "nova",
+    max: 1,
+    baseCost: 110,
+  },
 ];
 
 export const SHOP_BY_ID: Record<ShopId, ShopDef> = Object.fromEntries(SHOP_UPGRADES.map((s) => [s.id, s])) as Record<
