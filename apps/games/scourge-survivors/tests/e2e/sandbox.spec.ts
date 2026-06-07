@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 type HudSnapshot = {
   status: string;
@@ -24,6 +24,12 @@ type AnimationSample = {
 
 type ArenaDebugSnapshot = {
   mapId: string;
+  bounds: {
+    minX: number;
+    maxX: number;
+    minZ: number;
+    maxZ: number;
+  };
   materialIds: Record<"floor" | "wall" | "block" | "column", string>;
   environmentObjectCount: number;
   silhouetteCount: number;
@@ -209,6 +215,7 @@ test.describe("dev sandbox smoke", () => {
       expect(result.solidMeshes).toBeGreaterThan(0);
       expect(result.obstacleBoxes).toBeLessThan(result.solidMeshes);
       expect(result.raycastTargets).toBe(result.solidMeshes);
+      expect(result.bounds).toEqual({ minX: -40, maxX: 40, minZ: -40, maxZ: 40 });
     }
 
     expect(consoleErrors).toEqual([]);

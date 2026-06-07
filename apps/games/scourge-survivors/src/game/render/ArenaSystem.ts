@@ -1,13 +1,19 @@
+import { makeBounds } from "@shipshitgames/engine";
 import * as THREE from "three";
+import { PLAYER_HEIGHT, WALL_HEIGHT, WALL_THICKNESS } from "../constants";
 import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
+import { type ArenaMap, DEFAULT_ARENA_BOUNDS, DEFAULT_ARENA_MATERIALS, type ObstacleMat } from "../data/maps";
 import { arenaTexture, arenaTextureRepeat } from "../spriteAssets";
-import { DEFAULT_ARENA_MATERIALS, type ArenaMap, type ObstacleMat } from "../data/maps";
-import { ARENA_HALF, PLAYER_HEIGHT, WALL_HEIGHT, WALL_THICKNESS } from "../constants";
-import { RectBounds } from "@shipshitgames/engine";
+import type { GameSystems } from "../systems";
 
 export interface ArenaDebugSnapshot {
   mapId: string;
+  bounds: {
+    minX: number;
+    maxX: number;
+    minZ: number;
+    maxZ: number;
+  };
   materialIds: Record<"floor" | "wall" | "block" | "column", string>;
   environmentObjectCount: number;
   silhouetteCount: number;
@@ -29,7 +35,7 @@ export class ArenaSystem {
 
   constructor(
     private ctx: GameContext,
-    private sys: GameSystems,
+    _sys: GameSystems,
   ) {}
 
   /** Tear down the current arena (meshes, materials, textures) so a new map can
@@ -59,12 +65,17 @@ export class ArenaSystem {
   }
 
   /** Build (or rebuild) the arena from a map definition: theme + boundary walls
-   *  + interior obstacles. All campaign maps share the 80x80 footprint. */
+   *  + interior obstacles. Maps default to the 80x80 FPS footprint and may opt into custom bounds. */
   buildArena(map: ArenaMap) {
     this.clearArena();
     this.ctx.currentMap = map;
-    this.ctx.bounds = RectBounds.square(ARENA_HALF);
+    this.ctx.bounds = makeBounds(map.bounds ?? DEFAULT_ARENA_BOUNDS);
     const t = map.theme;
+    const bounds = this.ctx.bounds;
+    const width = bounds.maxX - bounds.minX;
+    const depth = bounds.maxZ - bounds.minZ;
+    const centerX = bounds.minX + width / 2;
+    const centerZ = bounds.minZ + depth / 2;
 
     // --- theme: background, fog, rim lights ---
     const bg = new THREE.Color(t.bg);
@@ -112,21 +123,30 @@ export class ArenaSystem {
     this.arenaMaterials.push(floorMat, wallMat, trimMat, crateMat, pillarMat);
 
     // --- floor ---
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(ARENA_HALF * 2, ARENA_HALF * 2), floorMat);
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(width, depth), floorMat);
     floor.rotation.x = -Math.PI / 2;
+    floor.position.set(centerX, 0, centerZ);
     floor.receiveShadow = true;
     this.ctx.scene.add(floor);
     this.arenaObjects.push(floor);
 
     // --- boundary walls (+ neon trim) ---
-    const span = ARENA_HALF * 2 + WALL_THICKNESS;
-    const wallDefs: Array<[number, number, number, number]> = [
-      [0, -ARENA_HALF, span, WALL_THICKNESS],
-      [0, ARENA_HALF, span, WALL_THICKNESS],
-      [-ARENA_HALF, 0, WALL_THICKNESS, span],
-      [ARENA_HALF, 0, WALL_THICKNESS, span],
+    const spanX = width + WALL_THICKNESS;
+    const spanZ = depth + WALL_THICKNESS;
+    const wallDefs: Array<{
+      x: number;
+      z: number;
+      w: number;
+      d: number;
+      inwardX: number;
+      inwardZ: number;
+    }> = [
+      { x: centerX, z: bounds.minZ, w: spanX, d: WALL_THICKNESS, inwardX: 0, inwardZ: WALL_THICKNESS / 2 },
+      { x: centerX, z: bounds.maxZ, w: spanX, d: WALL_THICKNESS, inwardX: 0, inwardZ: -WALL_THICKNESS / 2 },
+      { x: bounds.minX, z: centerZ, w: WALL_THICKNESS, d: spanZ, inwardX: WALL_THICKNESS / 2, inwardZ: 0 },
+      { x: bounds.maxX, z: centerZ, w: WALL_THICKNESS, d: spanZ, inwardX: -WALL_THICKNESS / 2, inwardZ: 0 },
     ];
-    for (const [x, z, w, d] of wallDefs) {
+    for (const { x, z, w, d, inwardX, inwardZ } of wallDefs) {
       const wall = new THREE.Mesh(new THREE.BoxGeometry(w, WALL_HEIGHT, d), wallMat);
       wall.position.set(x, WALL_HEIGHT / 2, z);
       wall.castShadow = true;
@@ -143,8 +163,6 @@ export class ArenaSystem {
         new THREE.BoxGeometry(longX ? w : trimDepth, trimThickness, longX ? trimDepth : d),
         trimMat,
       );
-      const inwardX = !longX ? (x < 0 ? WALL_THICKNESS / 2 : -WALL_THICKNESS / 2) : 0;
-      const inwardZ = longX ? (z < 0 ? WALL_THICKNESS / 2 : -WALL_THICKNESS / 2) : 0;
       trim.position.set(x + inwardX, WALL_HEIGHT - 0.08, z + inwardZ);
       this.ctx.scene.add(trim);
       this.arenaObjects.push(trim);
@@ -190,8 +208,15 @@ export class ArenaSystem {
 
   debugSnapshot(): ArenaDebugSnapshot {
     const materialIds = this.ctx.currentMap.materials ?? DEFAULT_ARENA_MATERIALS;
+    const bounds = this.ctx.bounds;
     return {
       mapId: this.ctx.currentMap.id,
+      bounds: {
+        minX: bounds.minX,
+        maxX: bounds.maxX,
+        minZ: bounds.minZ,
+        maxZ: bounds.maxZ,
+      },
       materialIds,
       environmentObjectCount: this.environmentObjectCount,
       silhouetteCount: this.silhouetteCount,
@@ -205,13 +230,18 @@ export class ArenaSystem {
 
   private buildDistantEnvironment(map: ArenaMap) {
     const env = map.environment;
+    const bounds = this.ctx.bounds;
+    const visualRadius = Math.max(bounds.maxX - bounds.minX, bounds.maxZ - bounds.minZ) / 2;
+    const centerX = (bounds.minX + bounds.maxX) / 2;
+    const centerZ = (bounds.minZ + bounds.maxZ) / 2;
     const skyMat = new THREE.MeshBasicMaterial({
       color: env.skyTop,
       side: THREE.BackSide,
       depthWrite: false,
       fog: false,
     });
-    const sky = new THREE.Mesh(new THREE.SphereGeometry(ARENA_HALF * 4.2, 32, 16), skyMat);
+    const sky = new THREE.Mesh(new THREE.SphereGeometry(visualRadius * 4.2, 32, 16), skyMat);
+    sky.position.set(centerX, 0, centerZ);
     sky.renderOrder = -20;
     this.addEnvironmentMesh(sky, skyMat);
 
@@ -224,10 +254,10 @@ export class ArenaSystem {
       fog: false,
     });
     const haze = new THREE.Mesh(
-      new THREE.CylinderGeometry(ARENA_HALF * 2.25, ARENA_HALF * 2.25, 30, 48, 1, true),
+      new THREE.CylinderGeometry(visualRadius * 2.25, visualRadius * 2.25, 30, 48, 1, true),
       hazeMat,
     );
-    haze.position.y = 12;
+    haze.position.set(centerX, 12, centerZ);
     haze.renderOrder = -18;
     this.addEnvironmentMesh(haze, hazeMat);
 
@@ -240,10 +270,10 @@ export class ArenaSystem {
       fog: false,
     });
     const horizon = new THREE.Mesh(
-      new THREE.CylinderGeometry(ARENA_HALF * 2.18, ARENA_HALF * 2.18, 16, 48, 1, true),
+      new THREE.CylinderGeometry(visualRadius * 2.18, visualRadius * 2.18, 16, 48, 1, true),
       horizonMat,
     );
-    horizon.position.y = 3.5;
+    horizon.position.set(centerX, 3.5, centerZ);
     horizon.renderOrder = -19;
     this.addEnvironmentMesh(horizon, horizonMat);
 
