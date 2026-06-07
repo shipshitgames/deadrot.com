@@ -66,4 +66,4 @@ Start here, follow the links, open the graph view.
 
 ## Compendium
 
-Characters · Locations ([[Ashgate]], [[The-Cinder-Wells]], [[The-Hush]], [[The-Spire]], [[The-Pyre-Gate]], [[Ash-Reach]], [[Rustmarch]], [[The-Hollow-Lanes]], [[The-Switchback]], [[Holdout-Nine|Holdout Nine]], [[The-Skyhook]], [[The-Maw]], [[Cinder-Flats]] (incl. [[The-Rothulk]]), [[Perdition]]) · Bestiary · Tech — scaffold new entries from `Templates/`.
+Characters · Locations ([[Ashgate]], [[The-Cinder-Wells]], [[The-Hush]], [[The-Spire]], [[The-Spire-Causeway]], [[The-Pyre-Gate]], [[Ash-Reach]], [[Rustmarch]], [[The-Hollow-Lanes]], [[The-Switchback]], [[Holdout-Nine|Holdout Nine]], [[The-Skyhook]], [[The-Maw]], [[Cinder-Flats]] (incl. [[The-Rothulk]]), [[Perdition]]) · Bestiary · Tech — scaffold new entries from `Templates/`.

@@ -16,7 +16,7 @@ One war, one map, six games shooting at it from different angles. A place is the
 | Location | id | front | faction | breach/lane | warline region | Game(s) + in-game map name |
 |---|---|---|---|---|---|---|
 | [[Ashgate]] | `ashgate` | holdout | Wardens | — (3 lanes converge) | `ashgate` | [[Scourge-Survivors]] 'Ashgate' stage 1 · [[Deadlane]] 'Ashgate — Eastern Lane' · [[Pactfall]] 'Ashgate Arena District' |
-| [[The-Spire]] | `spire` | holdout | Wardens | Spire Causeway | `spire` | — |
+| [[The-Spire]] | `spire` | holdout | Wardens | [[The-Spire-Causeway|Spire Causeway]] | `spire` | — |
 | [[The-Pyre-Gate]] | `pyregate` | holdout | Pyre | Pyre Road | `pyregate` | — |
 | [[Ash-Reach]] | `ashreach` | holdout | Pyre | Ash Front | `ashreach` | — |
 | [[Rustmarch]] | `rustmarch` | lane | neutral | North Front | `rustmarch` | — |
