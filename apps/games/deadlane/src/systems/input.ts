@@ -28,6 +28,7 @@ export class InputSystem {
   constructor(
     private readonly rig: CameraRig,
     private readonly groundPlane: THREE.Mesh,
+    private readonly onPause: () => void,
   ) {
     this.binder = new InputBinder({
       move: this.move,
@@ -80,7 +81,10 @@ export class InputSystem {
 
   private onRawKeyDown = (e: KeyboardEvent): void => {
     if (!this.active) return;
-    if (e.code === "KeyE") {
+    if (e.code === "Escape") {
+      e.preventDefault();
+      this.onPause();
+    } else if (e.code === "KeyE") {
       e.preventDefault();
       this.wantsBuild = true;
     } else if (e.code === "ShiftLeft" || e.code === "ShiftRight") {

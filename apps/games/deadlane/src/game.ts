@@ -26,7 +26,7 @@ export class Game {
   constructor(canvas: HTMLCanvasElement) {
     this.render = new RenderSystem(canvas);
     this.entities = new EntitySystem(this.render.scene);
-    this.input = new InputSystem(this.render.rig, this.render.groundPlane);
+    this.input = new InputSystem(this.render.rig, this.render.groundPlane, () => this.pauseRun());
     this.hud = new HudSystem();
 
     this.hud.bannerBtn.addEventListener("click", () => this.onBannerClick());
@@ -47,6 +47,7 @@ export class Game {
 
   private onBannerClick(): void {
     if (this.pausedForCapture) {
+      this.resumeRun();
       this.render.rig.requestCapture();
     } else if (this.state.phase === "menu") {
       this.startRun();
@@ -289,19 +290,29 @@ export class Game {
 
   private onCapture = (): void => {
     if (this.state.phase !== "building" && this.state.phase !== "wave") return;
-    this.pausedForCapture = false;
-    this.input.setActive(true);
-    this.hud.hideBanner();
+    this.resumeRun();
   };
 
   private onRelease = (): void => {
+    this.pauseRun();
+  };
+
+  private pauseRun(): void {
     if (this.state.phase !== "building" && this.state.phase !== "wave") return;
+    if (this.pausedForCapture) return;
     this.pausedForCapture = true;
     this.input.setActive(false);
     this.resetBuildProgress();
     this.state.hintText = "CLICK RE-ENTER TO RETURN";
     this.hud.showBanner("PAUSED", "RE-ENTER THE LANE. THE BREACH WAITS FOR NO ONE.", "RE-ENTER");
-  };
+  }
+
+  private resumeRun(): void {
+    if (this.state.phase !== "building" && this.state.phase !== "wave") return;
+    this.pausedForCapture = false;
+    this.input.setActive(true);
+    this.hud.hideBanner();
+  }
 }
 
 function freshState(): GameState {
