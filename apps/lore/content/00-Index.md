@@ -36,6 +36,7 @@ Start here, follow the links, open the graph view.
 - [[The-Listeners]] — heresy; understand the Choir _(concept)_
 - [[The-Quiet-Rooms]] — Listener black-room practice; keep severed Choir nodes alive to study
 - [[The-Pact]] — field compact; Pyre/Warden rivalry stops the instant a breach opens
+- [[The-Last-Manifest]] — Pyre run sheet; target, fuel ledger, and Pact handoff
 
 ## Games (entries in the canon)
 
