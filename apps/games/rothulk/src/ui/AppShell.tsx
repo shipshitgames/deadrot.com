@@ -65,15 +65,15 @@ export function AppShell() {
               <MainMenuTitleLine tone="hot">HULK</MainMenuTitleLine>
             </MainMenuTitle>
             <MenuKicker className="banner-sub">
-              Run the rotting Scourge hulk. Stomp the horde. Ignite the breach-core.
+              Climb the living Scourge hulk. Ignite the breach-core. Escape the severed node.
             </MenuKicker>
             <MainMenuStatus>
               <span>Boarding spike armed</span>
-              <span>Core below</span>
+              <span>Core at crown</span>
             </MainMenuStatus>
           </MainMenuCopy>
           <MainMenuNav aria-label="Main menu">
-            <MainMenuAction id="start-btn" variant="primary" label="Breach" meta="Begin run" />
+            <MainMenuAction id="start-btn" variant="primary" label="Breach the Hulk" meta="Begin run" />
             <MainMenuAction variant="shop" label="Upgrades" meta="Core locked" disabled />
             <MainMenuAction variant="coop" label="Co-op" meta="Solo breach" disabled />
             <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />

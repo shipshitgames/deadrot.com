@@ -1,9 +1,19 @@
 import { CONSTANTS } from "../constants";
-import { Input } from "./input";
-import { Renderer } from "./render";
+import {
+  type CoreLoopState,
+  completeEscape,
+  createCoreLoopState,
+  igniteBreachCore,
+  objectiveForPhase,
+  progressForPhase,
+  shouldCompleteEscape,
+  shouldIgniteCore,
+} from "./coreLoop";
 import { Hud } from "./hud";
+import { Input } from "./input";
 import { buildLevel } from "./level";
 import { aabbOverlap, platformToAABB, rectToAABB, resolveAgainstSolids } from "./physics";
+import { Renderer } from "./render";
 import type { AABB, GameMode, LevelData } from "./types";
 
 // The thin owner of shared state + systems. Runs the rAF loop with a clamped
@@ -30,6 +40,7 @@ export class Game {
   private jumpBuffer = 0;
 
   // --- Run state -----------------------------------------------------------
+  private coreLoop: CoreLoopState = createCoreLoopState();
   private lives = CONSTANTS.START_LIVES;
   private hp = CONSTANTS.MAX_HP;
   private embers = 0;
@@ -48,7 +59,7 @@ export class Game {
     this.renderer.buildHero();
     this.renderer.setHeroTransform(this.hx, this.hy, this.facing, 1);
     this.refreshHud();
-    this.hud.setObjective("REACH + IGNITE THE CORE");
+    this.hud.setObjective(objectiveForPhase(this.coreLoop.phase));
   }
 
   start() {
@@ -66,6 +77,7 @@ export class Game {
   // Full reset (new run from the title or after win/gameover via R).
   private resetRun() {
     this.level = buildLevel();
+    this.coreLoop = createCoreLoopState();
     this.renderer.buildLevel(this.level);
     this.lives = CONSTANTS.START_LIVES;
     this.hp = CONSTANTS.MAX_HP;
@@ -73,7 +85,7 @@ export class Game {
     this.spawnX = CONSTANTS.HERO_SPAWN_X;
     this.spawnY = CONSTANTS.HERO_SPAWN_Y;
     this.hud.clearBigToast();
-    this.hud.setObjective("REACH + IGNITE THE CORE");
+    this.hud.setObjective(objectiveForPhase(this.coreLoop.phase));
     this.respawnHero();
     this.refreshHud();
   }
@@ -94,7 +106,39 @@ export class Game {
     this.hud.setLives(this.lives);
     this.hud.setHp(this.hp);
     this.hud.setEmbers(this.embers);
-    this.hud.setProgress(this.hx / this.level.width);
+    this.hud.setProgress(progressForPhase(this.hx, this.level.width, this.coreLoop.phase));
+  }
+
+  debugSnapshot() {
+    return {
+      mode: this.mode,
+      phase: this.coreLoop.phase,
+      coreIgnited: this.level.core.ignited,
+      scourgeSevered: this.coreLoop.scourgeSevered,
+      exitReached: this.level.exit.reached,
+      feralScourge: this.level.scourge.filter((s) => s.feral).length,
+      objective: objectiveForPhase(this.coreLoop.phase),
+      hero: {
+        x: this.hx,
+        y: this.hy,
+      },
+    };
+  }
+
+  teleportToCore() {
+    this.hx = this.level.core.x;
+    this.hy = this.level.core.y;
+    this.vx = 0;
+    this.vy = 0;
+    this.renderer.setHeroTransform(this.hx, this.hy, this.facing, 1);
+  }
+
+  teleportToExit() {
+    this.hx = this.level.exit.x;
+    this.hy = this.level.exit.y;
+    this.vx = 0;
+    this.vy = 0;
+    this.renderer.setHeroTransform(this.hx, this.hy, this.facing, 1);
   }
 
   // -------------------------------------------------------------------------
@@ -242,6 +286,7 @@ export class Game {
     this.checkEmbers();
     this.checkCheckpoint();
     this.checkCore();
+    this.checkExit();
     this.checkFatalFall();
 
     // --- Push transforms to renderer ---
@@ -259,10 +304,10 @@ export class Game {
       const len = Math.hypot(dx, dy) || 1;
       // We track position along the segment via t in [0,1] using the ORIGINAL
       // endpoints; store base on first run.
-      const baseX = (mv as any)._baseX ?? mv.x;
-      const baseY = (mv as any)._baseY ?? mv.y;
-      (mv as any)._baseX = baseX;
-      (mv as any)._baseY = baseY;
+      const baseX = mv.baseX ?? mv.x;
+      const baseY = mv.baseY ?? mv.y;
+      mv.baseX = baseX;
+      mv.baseY = baseY;
       const segLen = Math.hypot(mv.toX - baseX, mv.toY - baseY) || 1;
 
       mv.t += (mv.dir * CONSTANTS.MOVER_SPEED * dt) / segLen;
@@ -368,20 +413,53 @@ export class Game {
       this.spawnY = cp.y + 1.5;
       this.renderer.setCheckpointReached();
       this.hud.flashToast("CHECKPOINT SECURED", 1.4);
-      this.hud.setObjective("PUSH DEEPER // IGNITE THE CORE");
+      this.hud.setObjective(
+        this.coreLoop.phase === "infiltrate"
+          ? "PUSH DEEPER // IGNITE THE CORE"
+          : objectiveForPhase(this.coreLoop.phase),
+      );
     }
   }
 
   private checkCore() {
-    if (this.level.core.ignited) return;
+    if (this.coreLoop.phase !== "infiltrate") return;
     const core = this.level.core;
-    if (Math.hypot(this.hx - core.x, this.hy - core.y) < 2.0) {
-      core.ignited = true;
-      this.mode = "won";
-      this.renderer.triggerFlash();
-      this.hud.setProgress(1);
-      this.hud.showBigToast("won");
+    if (!shouldIgniteCore(this.hx, this.hy, core)) return;
+
+    this.coreLoop = igniteBreachCore(this.coreLoop);
+    core.ignited = true;
+    this.armFeralEscape();
+  }
+
+  private checkExit() {
+    if (this.coreLoop.phase !== "escape") return;
+    const exit = this.level.exit;
+    if (!shouldCompleteEscape(this.hx, this.hy, exit)) return;
+
+    this.coreLoop = completeEscape(this.coreLoop);
+    exit.reached = true;
+    this.mode = "won";
+    this.renderer.triggerFlash();
+    this.renderer.setExitArmed(false);
+    this.hud.setObjective(objectiveForPhase(this.coreLoop.phase));
+    this.hud.setProgress(1);
+    this.hud.showBigToast("won");
+  }
+
+  private armFeralEscape() {
+    this.renderer.triggerFlash();
+    this.renderer.setCoreIgnited();
+    this.renderer.setExitArmed(true);
+    for (let i = 0; i < this.level.scourge.length; i++) {
+      const s = this.level.scourge[i];
+      if (!s.alive) continue;
+      s.feral = true;
+      const dir = s.vx === 0 ? (s.x >= this.hx ? 1 : -1) : Math.sign(s.vx);
+      s.vx = dir * CONSTANTS.SCOURGE_FERAL_SPEED;
+      this.renderer.setScourgeFeral(i, true);
     }
+    this.hud.flashToast("NODE SEVERED // ESCAPE", 1.8);
+    this.hud.setObjective(objectiveForPhase(this.coreLoop.phase));
   }
 
   private checkFatalFall() {
