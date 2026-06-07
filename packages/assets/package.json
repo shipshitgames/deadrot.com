@@ -16,6 +16,7 @@
       "default": "./src/scourge-survivors.ts"
     },
     "./games/scourge-survivors/*": "./games/scourge-survivors/*",
+    "./games/warline/*": "./games/warline/*",
     "./sites/deadrotcom/*": "./sites/deadrotcom/*",
     "./tokens/*": "./tokens/*"
   },
