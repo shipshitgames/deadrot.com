@@ -64,7 +64,7 @@ export class MultiplayerSystem {
         this.removeRemote(id);
         this.sys.hud.emit();
       },
-      onState: (id, x, y, z, yaw, weapon, health) => {
+      onState: (id, x, y, z, yaw, _weapon, health) => {
         const r = this.remotePlayers.get(id);
         if (r) {
           r.setTarget(x, y, z, yaw);
