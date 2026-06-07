@@ -2,14 +2,16 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
 import animationManifest from "@shipshitgames/assets/games/scourge-survivors/animations/scourge/animation-pack.json";
 import manifest from "@shipshitgames/assets/games/scourge-survivors/assets.json";
+import { describe, expect, it } from "vitest";
+import { ASSET_CATALOG } from "../../src/assets/catalog";
 import { CAMPAIGN_ORDER, MAPS } from "../../src/game/data/maps";
 
 type Manifest = typeof manifest;
 type SpriteEntry = Manifest["sprites"][keyof Manifest["sprites"]];
 type AudioEntry = Manifest["audio"][keyof Manifest["audio"]];
+type UiEntry = Manifest["ui"][keyof Manifest["ui"]];
 
 const assetsRoot = fileURLToPath(new URL("../../../../../packages/assets/", import.meta.url));
 
@@ -17,6 +19,16 @@ function expectExistingAsset(path: string) {
   const fullPath = join(assetsRoot, path);
   expect(existsSync(fullPath), path).toBe(true);
   expect(statSync(fullPath).size, path).toBeGreaterThan(0);
+}
+
+function expectLicenseRecord(entry: { license?: unknown }, id: string) {
+  expect(entry.license, `${id} license`).toBeTruthy();
+  expect(entry.license, `${id} license`).toMatchObject({
+    tool: expect.any(String),
+    plan: expect.any(String),
+    date: expect.any(String),
+    kind: expect.any(String),
+  });
 }
 
 function scourgeEnemySpritePaths() {
@@ -56,6 +68,63 @@ describe("asset manifest", () => {
 
     for (const entry of Object.values(manifest.textures)) expectExistingAsset(entry.path);
     for (const entry of Object.values(manifest.audio)) expectExistingAsset(entry.path);
+    for (const entry of Object.values(manifest.ui) as UiEntry[]) expectExistingAsset(entry.path);
+  });
+
+  it("keeps provenance records on every manifest entry", () => {
+    for (const [id, entry] of Object.entries(manifest.sprites)) expectLicenseRecord(entry, id);
+    for (const [id, entry] of Object.entries(manifest.textures)) expectLicenseRecord(entry, id);
+    for (const [id, entry] of Object.entries(manifest.audio)) expectLicenseRecord(entry, id);
+    for (const [id, entry] of Object.entries(manifest.ui)) expectLicenseRecord(entry, id);
+  });
+
+  it("defines catalog aliases for all Scourge runtime surfaces", () => {
+    expect(Object.keys(manifest.runtime.weapons).sort()).toEqual(["cannon", "pistol", "shotgun", "smg", "sniper"]);
+    expect(Object.keys(manifest.runtime.players).sort()).toEqual(["heavy", "medic", "ranger", "scout"]);
+    expect(Object.keys(manifest.runtime.enemies).sort()).toEqual(["boss", "flying", "melee", "ranged"]);
+    expect(Object.keys(manifest.runtime.pickups).sort()).toEqual(["ammo", "damage", "dual", "health", "xpBlood"]);
+    expect(Object.keys(manifest.runtime.projectiles).sort()).toEqual(["boss", "enemy"]);
+    expect(Object.keys(manifest.runtime.fx).sort()).toEqual(["muzzleFlash"]);
+    expect(Object.keys(manifest.runtime.ui).sort()).toEqual([
+      "cardBastionJpg",
+      "cardBastionPng",
+      "cardBreachJpg",
+      "cardBreachPng",
+      "cardFleshworksJpg",
+      "cardFleshworksPng",
+      "menuHeroJpg",
+      "menuHeroPng",
+      "menuTitle",
+    ]);
+  });
+
+  it("resolves runtime catalog aliases to real manifest entries", () => {
+    for (const [kind, ref] of Object.entries(manifest.runtime.enemies)) {
+      expect(manifest.sprites[ref.sprite as keyof typeof manifest.sprites], `${kind} sprite`).toBeTruthy();
+
+      const entity = animationManifest.entities[ref.animation.entity as keyof typeof animationManifest.entities];
+      expect(entity, `${kind} animation entity`).toBeTruthy();
+      for (const [state, action] of Object.entries(ref.animation.actions)) {
+        expect(entity.actions[action as keyof typeof entity.actions], `${kind} ${state} animation`).toBeTruthy();
+      }
+    }
+
+    for (const [domain, refs] of Object.entries({
+      players: manifest.runtime.players,
+      weapons: manifest.runtime.weapons,
+      pickups: manifest.runtime.pickups,
+      projectiles: manifest.runtime.projectiles,
+      fx: manifest.runtime.fx,
+    })) {
+      for (const [id, ref] of Object.entries(refs)) {
+        expect(manifest.sprites[ref.sprite as keyof typeof manifest.sprites], `${domain}.${id}`).toBeTruthy();
+      }
+    }
+
+    for (const [id, ref] of Object.entries(manifest.runtime.ui)) {
+      expect(manifest.ui[ref.asset as keyof typeof manifest.ui], `ui.${id}`).toBeTruthy();
+      expect(ASSET_CATALOG.runtimeUiUrl(id), `ui.${id} URL`).toMatch(/\.(webp|jpe?g|png)(\?|$)/);
+    }
   });
 
   it("keeps enemies and player avatars covered by front, side, and back views", () => {

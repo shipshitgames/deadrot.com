@@ -65,6 +65,12 @@ games/scourge-survivors/
 at these package-relative files, so Vite games get final URLs through
 `scourgeSurvivorsAssetUrl(path)`.
 
+The manifest also carries the Scourge Survivors runtime alias table that the old
+standalone game tracked as `src/assets/assets.json`: enemy roles, player avatars,
+weapons, pickups, projectiles, FX, and menu/card UI all resolve to manifest asset
+IDs with license records. The game consumes that table through its local
+`AssetCatalog` loader instead of importing package file paths directly.
+
 ## Source material
 
 Runtime packs should only commit files that games load at build time or runtime.
