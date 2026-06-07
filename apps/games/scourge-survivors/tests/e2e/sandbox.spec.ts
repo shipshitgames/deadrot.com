@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 type HudSnapshot = {
   status: string;
@@ -34,6 +34,15 @@ type ArenaDebugSnapshot = {
   obstacleBoxes: number;
 };
 
+type HudPanelSample = {
+  selector: string;
+  visible: boolean;
+  maxBackgroundAlpha: number;
+  borderLeftWidth: number;
+  borderRightWidth: number;
+  rect: { left: number; top: number; right: number; bottom: number; width: number; height: number };
+};
+
 async function snapshot(page: Page): Promise<HudSnapshot> {
   return page.evaluate(() => (window as unknown as { __hudSnapshot: () => HudSnapshot }).__hudSnapshot());
 }
@@ -43,6 +52,117 @@ async function arenaSnapshot(page: Page): Promise<ArenaDebugSnapshot> {
     (
       window as unknown as { __fpsGame: { arenaDebugSnapshot: () => ArenaDebugSnapshot } }
     ).__fpsGame.arenaDebugSnapshot(),
+  );
+}
+
+async function stageActiveSurvivorsHud(page: Page) {
+  await page.evaluate(() => {
+    type DevGame = {
+      startSurvivors: (classId?: "heavy") => void;
+      ctx: {
+        aliveCount: number;
+        combo: number;
+        damageBoostTimer: number;
+        dualWeaponTimer: number;
+        headshots: number;
+        kills: number;
+        score: number;
+        statArmor: number;
+        statDodge: number;
+        statGrace: number;
+        statShield: number;
+        statShieldMax: number;
+        status: string;
+        time: number;
+      };
+      sys: {
+        hud: { emit: () => void };
+        survivors: {
+          evolved: { orbit: boolean; bolt: boolean; nova: boolean };
+          level: number;
+          upgradeLevels: Record<string, number>;
+          xp: number;
+          xpToNext: number;
+        };
+      };
+    };
+
+    const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
+    game.startSurvivors("heavy");
+    game.ctx.status = "playing";
+    game.ctx.time = 93;
+    game.ctx.score = 12_500;
+    game.ctx.kills = 42;
+    game.ctx.headshots = 8;
+    game.ctx.aliveCount = 26;
+    game.ctx.combo = 9;
+    game.ctx.statShieldMax = 48;
+    game.ctx.statShield = 32;
+    game.ctx.statArmor = 0.28;
+    game.ctx.statDodge = 0.18;
+    game.ctx.statGrace = 1.6;
+    game.ctx.damageBoostTimer = 6;
+    game.ctx.dualWeaponTimer = 8;
+    game.sys.survivors.level = 6;
+    game.sys.survivors.xp = 18;
+    game.sys.survivors.xpToNext = 42;
+    game.sys.survivors.upgradeLevels = { orbit: 2, bolt: 1, armor: 2, ward: 1, dodge: 1, grace: 1 };
+    game.sys.survivors.evolved = { orbit: true, bolt: false, nova: false };
+    game.sys.hud.emit();
+  });
+
+  await expect.poll(() => snapshot(page).then((state) => state.status)).toBe("playing");
+}
+
+async function sampleHudPanels(page: Page, selectors: string[]): Promise<HudPanelSample[]> {
+  return page.evaluate((panelSelectors) => {
+    function maxAlpha(value: string) {
+      const matches = [...value.matchAll(/rgba?\(([^)]*)\)/g)];
+      let max = 0;
+      for (const match of matches) {
+        const parts = (match[1] ?? "").split(",").map((part) => part.trim());
+        const alpha = parts.length >= 4 ? Number(parts[3]) : 1;
+        if (Number.isFinite(alpha)) max = Math.max(max, alpha);
+      }
+      return max;
+    }
+
+    return panelSelectors.map((selector) => {
+      const element = document.querySelector(selector);
+      if (!element) {
+        return {
+          selector,
+          visible: false,
+          maxBackgroundAlpha: 0,
+          borderLeftWidth: 0,
+          borderRightWidth: 0,
+          rect: { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 },
+        };
+      }
+      const styles = window.getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      return {
+        selector,
+        visible: rect.width > 0 && rect.height > 0 && styles.visibility !== "hidden" && styles.display !== "none",
+        maxBackgroundAlpha: maxAlpha(`${styles.backgroundColor} ${styles.backgroundImage}`),
+        borderLeftWidth: Number.parseFloat(styles.borderLeftWidth),
+        borderRightWidth: Number.parseFloat(styles.borderRightWidth),
+        rect: {
+          left: rect.left,
+          top: rect.top,
+          right: rect.right,
+          bottom: rect.bottom,
+          width: rect.width,
+          height: rect.height,
+        },
+      };
+    });
+  }, selectors);
+}
+
+function overlaps(a: HudPanelSample, b: HudPanelSample) {
+  return (
+    a.rect.left < b.rect.right && a.rect.right > b.rect.left && a.rect.top < b.rect.bottom && a.rect.bottom > b.rect.top
   );
 }
 
@@ -212,6 +332,66 @@ test.describe("dev sandbox smoke", () => {
     }
 
     expect(consoleErrors).toEqual([]);
+  });
+
+  test("keeps active gameplay HUD panels light, edge-neutral, and separated", async ({ page }) => {
+    await page.goto("/?sandbox=1");
+    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
+    await stageActiveSurvivorsHud(page);
+
+    const styleSelectors = [
+      ".scourge-top-stats",
+      ".ssg-survivor-runline",
+      ".ssg-survivor-xp",
+      ".scourge-build-chip",
+      ".scourge-berserk-meter",
+      ".scourge-dual-weapon",
+      ".scourge-health-panel",
+      ".scourge-survivor-defense",
+      ".scourge-weapon-panel",
+    ];
+    const desktopSamples = await sampleHudPanels(page, styleSelectors);
+
+    for (const panel of desktopSamples) {
+      expect(panel.visible, panel.selector).toBe(true);
+      expect(panel.borderLeftWidth, panel.selector).toBeLessThanOrEqual(panel.borderRightWidth + 0.1);
+      expect(panel.maxBackgroundAlpha, panel.selector).toBeLessThanOrEqual(0.24);
+    }
+
+    await page.setViewportSize({ width: 390, height: 780 });
+    const layoutSelectors = [
+      ".scourge-top-stats",
+      ".ssg-survivor-runline",
+      ".ssg-survivor-xp",
+      ".scourge-build-strip",
+      ".scourge-berserk-meter",
+      ".scourge-dual-weapon",
+      ".scourge-health-panel",
+      ".scourge-survivor-defense",
+      ".scourge-weapon-panel",
+    ];
+    const mobileSamples = await sampleHudPanels(page, layoutSelectors);
+    const bySelector = Object.fromEntries(mobileSamples.map((panel) => [panel.selector, panel]));
+
+    for (const panel of mobileSamples) {
+      expect(panel.visible, panel.selector).toBe(true);
+      expect(panel.rect.left, panel.selector).toBeGreaterThanOrEqual(-1);
+      expect(panel.rect.right, panel.selector).toBeLessThanOrEqual(391);
+    }
+
+    const nonOverlappingPairs = [
+      [".scourge-top-stats", ".ssg-survivor-runline"],
+      [".ssg-survivor-runline", ".ssg-survivor-xp"],
+      [".ssg-survivor-xp", ".scourge-berserk-meter"],
+      [".scourge-berserk-meter", ".scourge-build-strip"],
+      [".scourge-build-strip", ".scourge-dual-weapon"],
+      [".scourge-survivor-defense", ".scourge-health-panel"],
+      [".scourge-health-panel", ".scourge-weapon-panel"],
+    ] as const;
+
+    for (const [a, b] of nonOverlappingPairs) {
+      expect(overlaps(bySelector[a], bySelector[b]), `${a} overlaps ${b}`).toBe(false);
+    }
   });
 
   test("damage pickup activates a bounded berserk state", async ({ page }) => {

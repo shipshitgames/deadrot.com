@@ -389,7 +389,7 @@ function SurvivorsPanel({
 
 function Scoreboard({ board, room, connected }: { board: HUDState["scoreboard"]; room: string; connected: boolean }) {
   return (
-    <div className="scourge-scoreboard absolute top-[96px] right-[18px] min-w-[190px] border border-white/10 rounded-[10px] px-[10px] py-2 [font-variant-numeric:tabular-nums]">
+    <div className="scourge-scoreboard absolute top-[96px] right-[18px] min-w-[190px] border border-white/10 rounded-[2px] px-[10px] py-2 [font-variant-numeric:tabular-nums]">
       <div className="flex justify-between text-[12px] tracking-[0.06em] opacity-85 mb-[5px] pb-1 border-b border-white/10">
         <IconText icon="swords" size={14}>
           {room || "-"}
@@ -644,7 +644,7 @@ function SurvivorsHud({ state }: { state: HUDState }) {
           {state.build.map((b) => (
             <span
               key={b.id}
-              className={`scourge-build-chip inline-flex items-center gap-[3px] border rounded-lg px-[7px] py-[2px] ${
+              className={`scourge-build-chip inline-flex items-center gap-[3px] border rounded-[2px] px-[7px] py-[2px] ${
                 b.evolved
                   ? "border-[#ffd166] text-[#ffd166] shadow-[0_0_14px_rgba(255,209,102,0.35)]"
                   : "border-white/[0.14]"
@@ -662,7 +662,7 @@ function SurvivorsHud({ state }: { state: HUDState }) {
         state.survivorDodge > 0 ||
         state.survivorGrace > 0) && (
         <div
-          className="scourge-survivor-defense absolute left-[18px] bottom-[86px] min-w-[190px] rounded-[10px] border border-white/10 px-[10px] py-2"
+          className="scourge-survivor-defense absolute left-[18px] bottom-[86px] min-w-[190px] rounded-[2px] border border-white/10 px-[10px] py-2"
           aria-hidden
         >
           {state.survivorMaxShield > 0 && (
@@ -673,7 +673,7 @@ function SurvivorsHud({ state }: { state: HUDState }) {
                   {state.survivorShield}/{state.survivorMaxShield}
                 </span>
               </div>
-              <div className="scourge-defense-bar h-[7px] overflow-hidden rounded bg-white/[0.12]">
+              <div className="scourge-defense-bar h-[7px] overflow-hidden rounded-[2px] bg-white/[0.12]">
                 <div
                   className="h-full bg-[#e9e3d6] shadow-[0_0_10px_rgba(255,106,0,0.45)]"
                   style={{
@@ -1025,7 +1025,7 @@ export function HUD({
       )}
       {playing && dualWeapon > 0 && (
         <div
-          className={`scourge-dual-weapon${berserkActive ? " is-berserk-offset" : ""} absolute top-[166px] left-1/2 -translate-x-1/2 px-4 py-[6px] rounded-[18px] border border-[rgba(215,210,196,0.55)] text-[#e7dfca] text-[13px] font-bold [text-shadow:0_0_10px_rgba(215,210,196,0.48)]`}
+          className={`scourge-dual-weapon${berserkActive ? " is-berserk-offset" : ""} absolute top-[166px] left-1/2 -translate-x-1/2 px-4 py-[6px] rounded-[2px] border border-[rgba(215,210,196,0.55)] text-[#e7dfca] text-[13px] font-bold [text-shadow:0_0_10px_rgba(215,210,196,0.48)]`}
           aria-hidden
         >
           <IconText icon="swords" size={16}>
@@ -1118,9 +1118,9 @@ export function HUD({
       <div className={`${HUD_CORNER} scourge-health-panel left-[18px] bottom-[18px] min-w-[190px]`}>
         <div className={STAT_LABEL}>Health</div>
         <div className="flex items-center gap-[10px]">
-          <div className="scourge-health-bar relative w-[150px] h-[14px] bg-white/[0.12] rounded-[7px] overflow-hidden">
+          <div className="scourge-health-bar relative w-[150px] h-[14px] bg-white/[0.12] rounded-[2px] overflow-hidden">
             <div
-              className="absolute inset-0 rounded-[7px] [transition:width_0.15s_linear,background_0.2s_linear]"
+              className="absolute inset-0 rounded-[2px] [transition:width_0.15s_linear,background_0.2s_linear]"
               style={{ width: `${Math.max(0, healthFrac) * 100}%`, background: healthColor(healthFrac) }}
             />
           </div>
@@ -1136,9 +1136,9 @@ export function HUD({
         </div>
         {reloading ? (
           <div className="mt-[6px] flex flex-col items-end gap-[3px] text-warn text-[12px] tracking-[0.08em] uppercase">
-            <div className="w-[120px] h-[5px] bg-white/[0.15] rounded-[3px] overflow-hidden">
+            <div className="w-[120px] h-[5px] bg-white/[0.15] rounded-[2px] overflow-hidden">
               <div
-                className="h-full bg-warn rounded-[3px] transition-[width] duration-100 ease-linear"
+                className="h-full bg-warn rounded-[2px] transition-[width] duration-100 ease-linear"
                 style={{ width: `${reloadProgress * 100}%` }}
               />
             </div>
@@ -1161,7 +1161,7 @@ export function HUD({
             {weapons.map((w) => (
               <span
                 key={w.id}
-                className={`text-[11px] px-[7px] py-[2px] rounded-[5px] border whitespace-nowrap ${
+                className={`text-[11px] px-[7px] py-[2px] rounded-[2px] border whitespace-nowrap ${
                   w.active
                     ? "opacity-100 bg-[rgba(255,106,0,0.16)] border-[rgba(255,106,0,0.52)]"
                     : "opacity-70 bg-white/[0.08] border-white/[0.12]"
