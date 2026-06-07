@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 type HudSnapshot = {
   status: string;
@@ -170,6 +170,113 @@ test.describe("dev sandbox smoke", () => {
     await expect(foes.getByRole("button", { name: /spawn flying/i })).toBeVisible();
     await foes.getByRole("button", { name: /spawn flying/i }).click();
     await expect.poll(() => snapshot(page).then((state) => state.enemiesAlive)).toBeGreaterThan(0);
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test("routes live FPS input bindings while captured", async ({ page }) => {
+    const consoleErrors: string[] = [];
+    page.on("console", (msg) => {
+      if (msg.type() === "error") consoleErrors.push(msg.text());
+    });
+    page.on("pageerror", (error) => consoleErrors.push(String(error)));
+
+    await page.goto("/?sandbox=1");
+    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
+    await page.evaluate(() => {
+      type DevGame = {
+        ctx: {
+          rig: object;
+          status: string;
+        };
+        sys: { hud: { emit: () => void } };
+      };
+      const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
+      Object.defineProperty(game.ctx.rig, "captured", { configurable: true, get: () => true });
+      game.ctx.status = "playing";
+      game.sys.hud.emit();
+    });
+    await expect.poll(() => snapshot(page).then((state) => state.status)).toBe("playing");
+
+    await page.keyboard.press("Digit2");
+    await expect.poll(() => snapshot(page).then((state) => state.weapon)).toBe("SMG");
+
+    await page.keyboard.press("KeyF");
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          type DevGame = { sys: { weapon: { meleeCd: number } } };
+          return (window as unknown as { __fpsGame: DevGame }).__fpsGame.sys.weapon.meleeCd;
+        }),
+      )
+      .toBeGreaterThan(0);
+
+    await page.evaluate(() => {
+      type DevGame = {
+        ctx: {
+          canJump: boolean;
+          velocity: { y: number };
+        };
+      };
+      const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
+      game.ctx.canJump = true;
+      game.ctx.velocity.y = 0;
+    });
+    await page.keyboard.press("Space");
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          type DevGame = {
+            ctx: {
+              canJump: boolean;
+              velocity: { y: number };
+            };
+          };
+          const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
+          return { canJump: game.ctx.canJump, y: game.ctx.velocity.y };
+        }),
+      )
+      .toMatchObject({ canJump: false, y: expect.any(Number) });
+    expect(
+      await page.evaluate(() => {
+        type DevGame = { ctx: { velocity: { y: number } } };
+        return (window as unknown as { __fpsGame: DevGame }).__fpsGame.ctx.velocity.y;
+      }),
+    ).toBeGreaterThan(0);
+
+    await page.evaluate(() => {
+      type DevGame = { ctx: { fireCooldown: number } };
+      (window as unknown as { __fpsGame: DevGame }).__fpsGame.ctx.fireCooldown = 0;
+    });
+    const beforeFire = await snapshot(page);
+    await page.dispatchEvent("body", "mousedown", { button: 0 });
+    await expect.poll(() => snapshot(page).then((state) => state.ammo)).toBeLessThan(beforeFire.ammo);
+    await page.dispatchEvent("body", "mouseup", { button: 0 });
+
+    await page.evaluate(() => {
+      type DevGame = {
+        ctx: {
+          activeWeapon: string;
+          ammo: number;
+          firing: boolean;
+          reloading: boolean;
+          reloadTimer: number;
+          triggerQueued: boolean;
+          weaponMag: Record<string, number>;
+        };
+        sys: { hud: { emit: () => void } };
+      };
+      const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
+      game.ctx.firing = false;
+      game.ctx.triggerQueued = false;
+      game.ctx.reloading = false;
+      game.ctx.reloadTimer = 0;
+      game.ctx.ammo = Math.max(0, game.ctx.ammo - 1);
+      game.ctx.weaponMag[game.ctx.activeWeapon] = game.ctx.ammo;
+      game.sys.hud.emit();
+    });
+    await page.keyboard.press("KeyR");
+    await expect.poll(() => snapshot(page).then((state) => state.reloading)).toBe(true);
 
     expect(consoleErrors).toEqual([]);
   });
