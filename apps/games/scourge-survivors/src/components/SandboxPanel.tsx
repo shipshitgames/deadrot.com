@@ -1,23 +1,20 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties, ReactNode } from "react";
-import type { HUDState } from "../game/types";
-import { MAP_PICKER } from "../game/data/maps";
-import { STARTING_WEAPON, WEAPON_ORDER, WEAPONS, type PickupKind, type WeaponId } from "../game/constants";
-import type { SandboxEnemyKind } from "../game/Game";
-import { RUNTIME_AUDIO_ASSET_URLS, RUNTIME_VISUAL_ASSET_URLS } from "../game/spriteAssets";
-
 import bossBack from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/breach-boss/back.webp";
 import bossFront from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/breach-boss/front.webp";
 import bossSide from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/breach-boss/side.webp";
 import enemyMeleeBack from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/host-grunt/back.webp";
 import enemyMeleeFront from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/host-grunt/front.webp";
 import enemyMeleeSide from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/host-grunt/side.webp";
-import enemyFlyingBack from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/winged-host/back.webp";
-import enemyFlyingFront from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/winged-host/front.webp";
-import enemyFlyingSide from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/winged-host/side.webp";
 import enemyRangedBack from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/spitter-host/back.webp";
 import enemyRangedFront from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/spitter-host/front.webp";
 import enemyRangedSide from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/spitter-host/side.webp";
+import enemyFlyingBack from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/winged-host/back.webp";
+import enemyFlyingFront from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/winged-host/front.webp";
+import enemyFlyingSide from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/winged-host/side.webp";
+import pickupAmmo from "@shipshitgames/assets/games/scourge-survivors/pickups/ammo/bone-cache.webp";
+import pickupDamage from "@shipshitgames/assets/games/scourge-survivors/pickups/bonus/damage-boost.webp";
+import pickupDual from "@shipshitgames/assets/games/scourge-survivors/pickups/bonus/dual-wield.webp";
+import pickupHealth from "@shipshitgames/assets/games/scourge-survivors/pickups/health/blood-vial.webp";
+import pickupXpBlood from "@shipshitgames/assets/games/scourge-survivors/pickups/xp/scourge-ichor.webp";
 import playerHeavyBack from "@shipshitgames/assets/games/scourge-survivors/players/pyre/bulwark/back.webp";
 import playerHeavyFront from "@shipshitgames/assets/games/scourge-survivors/players/pyre/bulwark/front.webp";
 import playerHeavySide from "@shipshitgames/assets/games/scourge-survivors/players/pyre/bulwark/side.webp";
@@ -32,16 +29,6 @@ import playerScoutFront from "@shipshitgames/assets/games/scourge-survivors/play
 import playerScoutSide from "@shipshitgames/assets/games/scourge-survivors/players/pyre/vector/side.webp";
 import projectileBoss from "@shipshitgames/assets/games/scourge-survivors/projectiles/scourge/boss-barrage.webp";
 import projectileEnemy from "@shipshitgames/assets/games/scourge-survivors/projectiles/scourge/enemy-spit.webp";
-import pickupAmmo from "@shipshitgames/assets/games/scourge-survivors/pickups/ammo/bone-cache.webp";
-import pickupDamage from "@shipshitgames/assets/games/scourge-survivors/pickups/bonus/damage-boost.webp";
-import pickupDual from "@shipshitgames/assets/games/scourge-survivors/pickups/bonus/dual-wield.webp";
-import pickupHealth from "@shipshitgames/assets/games/scourge-survivors/pickups/health/blood-vial.webp";
-import pickupXpBlood from "@shipshitgames/assets/games/scourge-survivors/pickups/xp/scourge-ichor.webp";
-import weaponCannon from "@shipshitgames/assets/games/scourge-survivors/weapons/pyre/cannon.webp";
-import weaponPistol from "@shipshitgames/assets/games/scourge-survivors/weapons/pyre/pistol.webp";
-import weaponShotgun from "@shipshitgames/assets/games/scourge-survivors/weapons/pyre/shotgun.webp";
-import weaponSmg from "@shipshitgames/assets/games/scourge-survivors/weapons/pyre/smg.webp";
-import weaponSniper from "@shipshitgames/assets/games/scourge-survivors/weapons/pyre/sniper.webp";
 import arenaBlock from "@shipshitgames/assets/games/scourge-survivors/textures/arenas/generic/block.webp";
 import arenaColumn from "@shipshitgames/assets/games/scourge-survivors/textures/arenas/generic/column.webp";
 import arenaFloor from "@shipshitgames/assets/games/scourge-survivors/textures/arenas/generic/floor.webp";
@@ -54,6 +41,18 @@ import menuCardFleshworks from "@shipshitgames/assets/games/scourge-survivors/ui
 import menuCardFleshworksPng from "@shipshitgames/assets/games/scourge-survivors/ui/cards/codex/fleshworks.png";
 import menuHeroJpg from "@shipshitgames/assets/games/scourge-survivors/ui/menu/scourge-hero.jpg";
 import menuHeroPng from "@shipshitgames/assets/games/scourge-survivors/ui/menu/scourge-hero.png";
+import weaponCannon from "@shipshitgames/assets/games/scourge-survivors/weapons/pyre/cannon.webp";
+import weaponPistol from "@shipshitgames/assets/games/scourge-survivors/weapons/pyre/pistol.webp";
+import weaponShotgun from "@shipshitgames/assets/games/scourge-survivors/weapons/pyre/shotgun.webp";
+import weaponSmg from "@shipshitgames/assets/games/scourge-survivors/weapons/pyre/smg.webp";
+import weaponSniper from "@shipshitgames/assets/games/scourge-survivors/weapons/pyre/sniper.webp";
+import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { type PickupKind, STARTING_WEAPON, WEAPON_ORDER, WEAPONS, type WeaponId } from "../game/constants";
+import { MAP_PICKER } from "../game/data/maps";
+import type { SandboxEnemyKind } from "../game/Game";
+import { RUNTIME_AUDIO_ASSET_URLS, RUNTIME_VISUAL_ASSET_URLS } from "../game/spriteAssets";
+import type { HUDState } from "../game/types";
 
 interface Props {
   state: HUDState;
@@ -120,6 +119,12 @@ const VISUAL_ASSETS: VisualAsset[] = [
   { id: "pickup-damage", label: "Damage pickup", src: pickupDamage, kind: "sprite" },
   { id: "pickup-dual", label: "Dual pickup", src: pickupDual, kind: "sprite" },
   { id: "pickup-xp-blood", label: "XP ichor", src: pickupXpBlood, kind: "sprite" },
+  { id: "gib-meat-chunk", label: "Meat gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-meat-chunk"], kind: "sprite" },
+  { id: "gib-skull-shard", label: "Skull gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-skull-shard"], kind: "sprite" },
+  { id: "gib-bone-blade", label: "Bone gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-bone-blade"], kind: "sprite" },
+  { id: "gib-claw-limb", label: "Claw gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-claw-limb"], kind: "sprite" },
+  { id: "gib-acid-sac", label: "Acid sac gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-acid-sac"], kind: "sprite" },
+  { id: "gib-wing-membrane", label: "Wing gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-wing-membrane"], kind: "sprite" },
   { id: "arena-floor", label: "Arena floor", src: arenaFloor, kind: "texture" },
   { id: "arena-wall", label: "Arena wall", src: arenaWall, kind: "texture" },
   { id: "arena-column", label: "Arena column", src: arenaColumn, kind: "texture" },

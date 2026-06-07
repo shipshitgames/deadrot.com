@@ -232,6 +232,12 @@ test.describe("dev sandbox smoke", () => {
         "Damage pickup",
         "Dual pickup",
         "XP ichor",
+        "Meat gib",
+        "Skull gib",
+        "Bone gib",
+        "Claw gib",
+        "Acid sac gib",
+        "Wing gib",
       ]),
     );
 
@@ -564,5 +570,82 @@ test.describe("dev sandbox smoke", () => {
       ranged: expect.stringContaining("/spitter-host/spit/"),
     });
     expect(result.attacking.every((sample) => sample.state === "attack")).toBe(true);
+  });
+
+  test("uses death animation frames and sprite gibs for enemy kills", async ({ page }) => {
+    await page.goto("/?sandbox=1");
+    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
+
+    const result = await page.evaluate(async () => {
+      type DevSpriteMaterial = {
+        map?: {
+          image?: {
+            currentSrc?: string;
+            src?: string;
+          };
+        };
+      };
+      type DevGame = {
+        clearSandboxActors: () => void;
+        damageSandboxEnemies: (amount: number, headshot?: boolean, all?: boolean) => void;
+        spawnSandboxEnemy: (kind: "melee", count?: number) => void;
+        startSandbox: () => void;
+        ctx: {
+          body: {
+            position: {
+              x: number;
+              z: number;
+            };
+          };
+          enemies: Array<{
+            alive: boolean;
+            group: {
+              position: {
+                x: number;
+                z: number;
+              };
+            };
+          }>;
+          status: string;
+        };
+        sys: {
+          fx: {
+            corpseParts: Array<{ mesh: { type: string; material: DevSpriteMaterial } }>;
+            deathSprites: Array<{ material: DevSpriteMaterial }>;
+          };
+        };
+      };
+
+      const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
+      const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+      const srcOf = (material?: DevSpriteMaterial) =>
+        material?.map?.image?.currentSrc || material?.map?.image?.src || "";
+
+      game.startSandbox();
+      game.ctx.status = "playing";
+      game.clearSandboxActors();
+      game.spawnSandboxEnemy("melee", 1);
+      const enemy = game.ctx.enemies.find((candidate) => candidate.alive);
+      if (enemy) {
+        enemy.group.position.x = game.ctx.body.position.x;
+        enemy.group.position.z = game.ctx.body.position.z - 8;
+      }
+      game.damageSandboxEnemies(-1, true);
+      await wait(80);
+
+      return {
+        corpseCount: game.sys.fx.corpseParts.length,
+        corpseSources: game.sys.fx.corpseParts.map((part) => srcOf(part.mesh.material)),
+        corpseTypes: game.sys.fx.corpseParts.map((part) => part.mesh.type),
+        deathCount: game.sys.fx.deathSprites.length,
+        deathSrc: srcOf(game.sys.fx.deathSprites[0]?.material),
+      };
+    });
+
+    expect(result.deathCount).toBeGreaterThan(0);
+    expect(result.deathSrc).toContain("/animations/scourge/host-grunt/death/");
+    expect(result.corpseCount).toBeGreaterThan(0);
+    expect(result.corpseTypes.every((type) => type === "Sprite")).toBe(true);
+    expect(result.corpseSources.every((src) => src.includes("/fx/gibs/"))).toBe(true);
   });
 });

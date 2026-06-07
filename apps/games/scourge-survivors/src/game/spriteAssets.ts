@@ -1,6 +1,4 @@
 import * as THREE from "three";
-import type { WeaponId } from "./constants";
-import type { PlayerAvatarId } from "../net/playerAvatars";
 import {
   ANIMATION_MANIFEST,
   ASSET_MANIFEST,
@@ -9,15 +7,17 @@ import {
   audioUrl,
   loadSpriteTexture,
   loadTexture,
+  type SpriteView,
   spriteEntry,
   spriteScale,
   textureEntry,
-  type SpriteView,
 } from "../assets/catalog";
+import type { PlayerAvatarId } from "../net/playerAvatars";
+import type { WeaponId } from "./constants";
 
-type EnemySpriteKind = "melee" | "ranged" | "flying" | "boss";
-type EnemySpriteView = SpriteView;
-export type EnemySpriteAnimationState = "move" | "attack";
+export type EnemySpriteKind = "melee" | "ranged" | "flying" | "boss";
+export type EnemySpriteView = SpriteView;
+export type EnemySpriteAnimationState = "move" | "attack" | "death";
 
 const ENEMY_SPRITE_IDS: Record<EnemySpriteKind, string> = {
   melee: "enemy-melee",
@@ -33,10 +33,10 @@ const ENEMY_ANIMATION_CONFIG: Record<
     actions: Record<EnemySpriteAnimationState, string>;
   }
 > = {
-  melee: { entity: "host-grunt", actions: { move: "walk", attack: "slash" } },
-  ranged: { entity: "spitter-host", actions: { move: "walk", attack: "spit" } },
-  flying: { entity: "winged-host", actions: { move: "fly", attack: "attack" } },
-  boss: { entity: "breach-boss", actions: { move: "lurch", attack: "barrage" } },
+  melee: { entity: "host-grunt", actions: { move: "walk", attack: "slash", death: "death" } },
+  ranged: { entity: "spitter-host", actions: { move: "walk", attack: "spit", death: "death" } },
+  flying: { entity: "winged-host", actions: { move: "fly", attack: "attack", death: "death" } },
+  boss: { entity: "breach-boss", actions: { move: "lurch", attack: "barrage", death: "death" } },
 };
 
 const PLAYER_SPRITE_IDS: Record<PlayerAvatarId, string> = {
@@ -101,6 +101,7 @@ function animationStateViews(
   return {
     move: animationFrameViews(config.entity, config.actions.move),
     attack: animationFrameViews(config.entity, config.actions.attack),
+    death: animationFrameViews(config.entity, config.actions.death),
   };
 }
 
@@ -118,6 +119,11 @@ function animationStateMeta(
     attack: {
       fps: entity.actions[config.actions.attack].fps,
       loop: entity.actions[config.actions.attack].loop,
+      frameCount: ANIMATION_MANIFEST.framesPerAction,
+    },
+    death: {
+      fps: entity.actions[config.actions.death].fps,
+      loop: entity.actions[config.actions.death].loop,
       frameCount: ANIMATION_MANIFEST.framesPerAction,
     },
   };
@@ -205,6 +211,23 @@ export const PICKUP_SPRITE_SCALES = {
 
 export const XP_BLOOD_TEXTURE = loadSpriteTexture("pickup-xp-blood");
 export const XP_BLOOD_SCALE = spriteScale("pickup-xp-blood");
+
+const CORPSE_PART_SPRITE_IDS = [
+  "gib-meat-chunk",
+  "gib-skull-shard",
+  "gib-bone-blade",
+  "gib-claw-limb",
+  "gib-acid-sac",
+  "gib-wing-membrane",
+] as const;
+
+export type CorpsePartSpriteId = (typeof CORPSE_PART_SPRITE_IDS)[number];
+
+export const CORPSE_PART_SPRITES = CORPSE_PART_SPRITE_IDS.map((id) => ({
+  id,
+  texture: loadSpriteTexture(id),
+  scale: spriteScale(id),
+}));
 
 export const PLAYER_AVATAR_SPRITES: Record<
   PlayerAvatarId,
