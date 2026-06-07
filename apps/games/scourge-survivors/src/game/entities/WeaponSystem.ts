@@ -1,15 +1,12 @@
 import * as THREE from "three";
-import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
 import { audio } from "../../audio/AudioEngine";
-import type { Enemy } from "./Enemy";
 import {
-  CANNON_SPLASH_DAMAGE,
-  CANNON_SPLASH_RADIUS,
   ADS_LERP,
   BERSERK_FIRE_RATE_MULT,
   BERSERK_KNOCKBACK_MULT,
   CAMERA_BASE_FOV,
+  CANNON_SPLASH_DAMAGE,
+  CANNON_SPLASH_RADIUS,
   DAMAGE_BOOST_MULT,
   HEADSHOT_MULTIPLIER,
   MELEE_ARC_DOT,
@@ -22,8 +19,11 @@ import {
   WEAPONS,
   type WeaponId,
 } from "../constants";
-import { MUZZLE_FLASH_TEXTURE, WEAPON_SPRITE_CONFIG, WEAPON_SPRITE_TEXTURES } from "../spriteAssets";
+import type { GameContext } from "../context";
 import { WEAPON_VIEW_X, WEAPON_VIEW_Y, WEAPON_VIEW_Z } from "../data/internalTypes";
+import { MUZZLE_FLASH_TEXTURE, WEAPON_SPRITE_CONFIG, WEAPON_SPRITE_TEXTURES } from "../spriteAssets";
+import type { GameSystems } from "../systems";
+import type { Enemy } from "./Enemy";
 
 /** Per-weapon fire sound so each gun reads distinct (cannon booms, shotgun ka-chunks…). */
 const SHOOT_SFX: Record<WeaponId, "shoot" | "shootSmg" | "shootSniper" | "shootShotgun" | "shootCannon"> = {
@@ -48,6 +48,7 @@ export class WeaponSystem {
   meleeCd = 0;
   meleeAnim = 0;
   private muzzleFlashBaseRotation = 0;
+  private currentFov = CAMERA_BASE_FOV;
 
   constructor(
     private ctx: GameContext,
@@ -117,7 +118,7 @@ export class WeaponSystem {
     this.weapon.add(this.ctx.muzzleLight);
 
     this.weapon.position.set(WEAPON_VIEW_X, WEAPON_VIEW_Y, WEAPON_VIEW_Z);
-    this.ctx.camera.add(this.weapon);
+    this.ctx.rig.attach.add(this.weapon);
     this.applyWeaponModel(this.ctx.activeWeapon);
   }
 
@@ -204,12 +205,12 @@ export class WeaponSystem {
     this.meleeAnim = 0.22;
     audio.sfx("hit");
 
-    this.ctx.camera.getWorldDirection(this.ctx._fwd);
+    this.ctx._fwd.set(0, 0, -1).applyQuaternion(this.ctx.rig.facing);
     const flen = Math.hypot(this.ctx._fwd.x, this.ctx._fwd.z) || 1;
     const dirX = this.ctx._fwd.x / flen;
     const dirZ = this.ctx._fwd.z / flen;
-    const px = this.ctx.camera.position.x;
-    const pz = this.ctx.camera.position.z;
+    const px = this.ctx.body.position.x;
+    const pz = this.ctx.body.position.z;
     const dmgMul = (this.ctx.damageBoostTimer > 0 ? DAMAGE_BOOST_MULT : 1) * this.ctx.statDamageMul;
     const knockbackMul = this.ctx.damageBoostTimer > 0 ? BERSERK_KNOCKBACK_MULT : 1;
     let hitAny = false;
@@ -274,8 +275,9 @@ export class WeaponSystem {
     this.ctx.muzzleLight.intensity = berserkActive ? 13 : 8;
 
     this.ctx.scene.updateMatrixWorld();
-    this.ctx.camera.getWorldPosition(this.ctx._origin);
-    this.ctx.camera.getWorldDirection(this.ctx._fwd);
+    this.ctx.rig.pickRay(0, 0, this.ctx.raycaster);
+    this.ctx._origin.copy(this.ctx.raycaster.ray.origin);
+    this.ctx._fwd.copy(this.ctx.raycaster.ray.direction);
     this.ctx._right.crossVectors(this.ctx._fwd, this.ctx._worldUp).normalize();
     this.ctx._up.crossVectors(this.ctx._right, this.ctx._fwd).normalize();
 
@@ -533,9 +535,9 @@ export class WeaponSystem {
     if (zoomIndex !== this.ctx.adsZoomIndex) this.ctx.adsZoomIndex = zoomIndex;
     const targetFov = spec.adsFovs[zoomIndex] ?? CAMERA_BASE_FOV;
     const fov = CAMERA_BASE_FOV + (targetFov - CAMERA_BASE_FOV) * this.ctx.adsT;
-    if (Math.abs(this.ctx.camera.fov - fov) > 0.02) {
-      this.ctx.camera.fov = fov;
-      this.ctx.camera.updateProjectionMatrix();
+    if (Math.abs(this.currentFov - fov) > 0.02) {
+      this.currentFov = fov;
+      this.ctx.rig.setFov(fov);
     }
   }
 
@@ -549,8 +551,8 @@ export class WeaponSystem {
       this.ctx.aimingDownSights = false;
       this.ctx.adsT = 0;
       this.ctx.adsZoomIndex = 0;
-      this.ctx.camera.fov = CAMERA_BASE_FOV;
-      this.ctx.camera.updateProjectionMatrix();
+      this.currentFov = CAMERA_BASE_FOV;
+      this.ctx.rig.setFov(CAMERA_BASE_FOV);
       this.applyWeaponModel(this.ctx.activeWeapon);
     }
   }

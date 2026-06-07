@@ -1,7 +1,7 @@
 import { InputSystem as InputBinder, type InputHooks } from "@shipshitgames/engine";
+import { JUMP_VELOCITY, WEAPON_ORDER } from "../constants";
 import type { GameContext } from "../context";
 import type { GameSystems } from "../systems";
-import { JUMP_VELOCITY, WEAPON_ORDER } from "../constants";
 
 /**
  * FPS input adapter. The genre-neutral DOM plumbing + WASD/jump movement live in
@@ -182,10 +182,7 @@ export class InputSystem {
 
   lockPointer(allowRetry = true) {
     try {
-      const res: unknown = this.ctx.renderer.domElement.requestPointerLock();
-      if (res && typeof (res as Promise<void>).catch === "function") {
-        (res as Promise<void>).catch(() => this.scheduleLockRetry(allowRetry));
-      }
+      this.ctx.rig.requestCapture();
     } catch {
       // Browsers impose a short cooldown after Esc exits pointer lock, during
       // which requestPointerLock fails. Retry once after the cooldown clears.

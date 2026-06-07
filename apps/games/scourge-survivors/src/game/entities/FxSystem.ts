@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
 import type { Pop, Tracer } from "../data/internalTypes";
+import type { GameSystems } from "../systems";
 
 const CORPSE_PART_SOFT_CAP = 72;
 const CORPSE_PART_HARD_CAP = 96;
@@ -283,7 +283,7 @@ export class FxSystem {
 
   /** Blood-rage pickup hit: screen shake plus a hot ring and short-lived spray around the player. */
   triggerBerserkBurst() {
-    const center = this.ctx.camera.position.clone();
+    const center = this.ctx.body.position.clone();
     const ring = new THREE.Mesh(
       new THREE.RingGeometry(0.7, 1.08, 56),
       new THREE.MeshBasicMaterial({
@@ -332,7 +332,7 @@ export class FxSystem {
   }
 
   private spawnBerserkWake() {
-    const center = this.ctx.camera.position;
+    const center = this.ctx.body.position;
     const count = Math.random() < 0.45 ? 2 : 1;
     for (let i = 0; i < count; i++) {
       const a = Math.random() * Math.PI * 2;

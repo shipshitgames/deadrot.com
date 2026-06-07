@@ -1,5 +1,5 @@
 import type * as THREE from "three";
-import { Enemy } from "../entities/Enemy";
+import { audio } from "../../audio/AudioEngine";
 import {
   BOSS_ATTACK_DAMAGE,
   BOSS_ATTACK_INTERVAL,
@@ -27,11 +27,11 @@ import {
   WAVES,
   WEAPONS,
 } from "../constants";
-import { CAMPAIGN_ORDER, campaignSequence } from "../data/maps";
-import { campaignArchetypeForWave, ENEMY_ARCHETYPES } from "../data/enemies";
-import { SURV_XP_GEM_VALUE } from "../data/survivors";
-import { audio } from "../../audio/AudioEngine";
 import type { GameContext } from "../context";
+import { campaignArchetypeForWave, ENEMY_ARCHETYPES } from "../data/enemies";
+import { CAMPAIGN_ORDER, campaignSequence } from "../data/maps";
+import { SURV_XP_GEM_VALUE } from "../data/survivors";
+import { Enemy } from "../entities/Enemy";
 import type { GameSystems } from "../systems";
 
 export class PveDirectorSystem {
@@ -299,11 +299,11 @@ export class PveDirectorSystem {
 
   updateEnemies(delta: number, elapsed: number) {
     let damageToPlayer = 0;
-    const playerPos = this.ctx.camera.position;
-    const quat = this.ctx.camera.quaternion;
+    const playerPos = this.ctx.body.position;
+    const billboardQuat = this.ctx.camera.quaternion;
     for (const enemy of this.ctx.enemies) {
       if (!enemy.alive) continue;
-      const tick = enemy.update(delta, elapsed, playerPos, this.ctx.enemies, quat, this.ctx.bounds);
+      const tick = enemy.update(delta, elapsed, playerPos, this.ctx.enemies, billboardQuat, this.ctx.bounds);
       damageToPlayer += tick.melee;
       for (const shot of tick.shots) this.sys.projectiles.spawnProjectile(shot, enemy);
       this.sys.player.pushOutOfObstacles(enemy.position, enemy.radius);

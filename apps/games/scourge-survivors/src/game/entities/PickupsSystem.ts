@@ -1,9 +1,5 @@
 import * as THREE from "three";
 import { audio } from "../../audio/AudioEngine";
-import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
-import { PICKUP_COLORS, type Pickup } from "../data/internalTypes";
-import { PICKUP_SPRITE_SCALES, PICKUP_SPRITE_TEXTURES, WEAPON_SPRITE_TEXTURES } from "../spriteAssets";
 import {
   DAMAGE_BOOST_TIME,
   DUAL_WEAPON_TIME,
@@ -11,12 +7,16 @@ import {
   PICKUP_DROP_CHANCE,
   PICKUP_RADIUS,
   PICKUP_TTL,
+  type PickupKind,
   STARTING_WEAPON,
   WEAPON_ORDER,
   WEAPONS,
-  type PickupKind,
   type WeaponId,
 } from "../constants";
+import type { GameContext } from "../context";
+import { PICKUP_COLORS, type Pickup } from "../data/internalTypes";
+import { PICKUP_SPRITE_SCALES, PICKUP_SPRITE_TEXTURES, WEAPON_SPRITE_TEXTURES } from "../spriteAssets";
+import type { GameSystems } from "../systems";
 
 function isWeaponPickup(kind: PickupKind): kind is WeaponId {
   return WEAPON_ORDER.includes(kind as WeaponId);
@@ -126,8 +126,8 @@ export class PickupsSystem {
   }
 
   updatePickups(delta: number) {
-    const px = this.ctx.camera.position.x;
-    const pz = this.ctx.camera.position.z;
+    const px = this.ctx.body.position.x;
+    const pz = this.ctx.body.position.z;
     for (let i = this.pickups.length - 1; i >= 0; i--) {
       const p = this.pickups[i];
       p.age += delta;

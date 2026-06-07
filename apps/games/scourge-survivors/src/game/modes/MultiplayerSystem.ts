@@ -1,11 +1,11 @@
 import * as THREE from "three";
 import { audio } from "../../audio/AudioEngine";
-import { NetClient, type HitMessage, type RemotePlayerInfo } from "../../net/NetClient";
+import { type HitMessage, NetClient, type RemotePlayerInfo } from "../../net/NetClient";
 import type { PlayerAvatarId } from "../../net/playerAvatars";
 import { RemoteAvatar } from "../../net/RemoteAvatar";
 import { PLAYER_HEIGHT, WEAPONS } from "../constants";
-import { DEFAULT_MAP_ID, getMap } from "../data/maps";
 import type { GameContext } from "../context";
+import { DEFAULT_MAP_ID, getMap } from "../data/maps";
 import type { GameSystems } from "../systems";
 
 export class MultiplayerSystem {
@@ -51,7 +51,7 @@ export class MultiplayerSystem {
       },
       onWelcome: (selfId, players) => {
         for (const p of players) {
-          if (p.id === selfId) this.ctx.camera.position.set(p.x, PLAYER_HEIGHT, p.z);
+          if (p.id === selfId) this.ctx.rig.placeAt(p.x, PLAYER_HEIGHT, p.z, 0, -1);
           else this.addRemote(p);
         }
         this.sys.hud.emit();
@@ -138,7 +138,7 @@ export class MultiplayerSystem {
         this.ctx.stanceHeight = PLAYER_HEIGHT;
         this.ctx.wantsSprint = false;
         this.ctx.wantsCrouch = false;
-        this.ctx.camera.position.set(msg.respawn.x, PLAYER_HEIGHT, msg.respawn.z);
+        this.ctx.rig.placeAt(msg.respawn.x, PLAYER_HEIGHT, msg.respawn.z, 0, -1);
         this.ctx.velocity.set(0, 0, 0);
         this.sys.hud.showToast(`Fragged by ${msg.byName}`);
       }
@@ -167,15 +167,16 @@ export class MultiplayerSystem {
   }
 
   updateMultiplayer(delta: number) {
-    const quat = this.ctx.camera.quaternion;
-    for (const r of this.remotePlayers.values()) r.update(delta, quat, this.ctx.camera.position);
+    const facing = this.ctx.rig.facing;
+    const player = this.ctx.body.position;
+    for (const r of this.remotePlayers.values()) r.update(delta, this.ctx.camera.quaternion, this.ctx.camera.position);
     if (this.net) {
-      this._euler.setFromQuaternion(quat, "YXZ");
-      const netY = this.ctx.camera.position.y - this.ctx.stanceHeight + PLAYER_HEIGHT;
+      this._euler.setFromQuaternion(facing, "YXZ");
+      const netY = player.y - this.ctx.stanceHeight + PLAYER_HEIGHT;
       this.net.sendState(
-        this.ctx.camera.position.x,
+        player.x,
         netY,
-        this.ctx.camera.position.z,
+        player.z,
         this._euler.y,
         WEAPONS[this.ctx.activeWeapon].name,
         Math.round(this.ctx.health),
