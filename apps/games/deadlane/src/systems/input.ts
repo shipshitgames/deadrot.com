@@ -23,7 +23,7 @@ export class InputSystem {
   readonly move: MoveIntent = makeMoveIntent();
   active = false;
   wantsSprint = false;
-  wantsBuild = false;
+  private buildQueued = false;
 
   constructor(
     private readonly rig: CameraRig,
@@ -35,10 +35,7 @@ export class InputSystem {
       isActive: () => this.active,
       onActionKey: (code) => this.onActionKey(code),
       onPointerDown: (button) => {
-        if (button === 0) this.wantsBuild = true;
-      },
-      onPointerUp: (button) => {
-        if (button === 0) this.wantsBuild = false;
+        if (button === 0) this.buildQueued = true;
       },
       suppressContextMenu: () => this.active,
     });
@@ -55,7 +52,7 @@ export class InputSystem {
   clearTransientInput(): void {
     clearMoveIntent(this.move);
     this.wantsSprint = false;
-    this.wantsBuild = false;
+    this.buildQueued = false;
   }
 
   aimedCell(): HoverCell | null {
@@ -74,8 +71,14 @@ export class InputSystem {
     window.removeEventListener("keyup", this.onRawKeyUp);
   }
 
+  takeBuildAction(): boolean {
+    const queued = this.buildQueued;
+    this.buildQueued = false;
+    return queued;
+  }
+
   private onActionKey(code: string): void {
-    if (code === "KeyE") this.wantsBuild = true;
+    if (code === "KeyE") this.buildQueued = true;
     if (code === "ShiftLeft" || code === "ShiftRight") this.wantsSprint = true;
   }
 
@@ -86,7 +89,7 @@ export class InputSystem {
       this.onPause();
     } else if (e.code === "KeyE") {
       e.preventDefault();
-      this.wantsBuild = true;
+      this.buildQueued = true;
     } else if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
       this.wantsSprint = true;
     }
@@ -95,7 +98,6 @@ export class InputSystem {
   private onRawKeyUp = (e: KeyboardEvent): void => {
     if (e.code === "KeyE") {
       e.preventDefault();
-      this.wantsBuild = false;
     } else if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
       this.wantsSprint = false;
     }

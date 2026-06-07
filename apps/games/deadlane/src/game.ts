@@ -1,4 +1,5 @@
-import { cellToWorld, inBounds, playBounds, worldToCell } from "./board";
+import * as THREE from "three";
+import { cellToWorld, inBounds, isPathCell, playBounds, worldToCell } from "./board";
 import { CONSTANTS } from "./constants";
 import { EntitySystem } from "./systems/entities";
 import { HudSystem } from "./systems/hud";
@@ -18,6 +19,7 @@ export class Game {
   private readonly entities: EntitySystem;
   private readonly input: InputSystem;
   private readonly hud: HudSystem;
+  private readonly forward = new THREE.Vector3();
 
   private last = 0;
   private elapsed = 0;
@@ -187,8 +189,10 @@ export class Game {
     const readiness = this.buildReadiness(target, occupied);
     const ready = readiness.ready;
     const targetKey = target ? `${target.col},${target.row}` : null;
+    const alreadyBuilding = s.buildProgress > 0 && s.buildTargetKey === targetKey;
+    const startBuilding = this.input.takeBuildAction();
 
-    if (ready && this.input.wantsBuild) {
+    if (ready && (startBuilding || alreadyBuilding)) {
       if (s.buildTargetKey !== targetKey) {
         s.buildTargetKey = targetKey;
         s.buildProgress = 0;
@@ -203,7 +207,7 @@ export class Game {
         this.resetBuildProgress();
       }
     } else {
-      if (!this.input.wantsBuild || s.buildTargetKey !== targetKey) this.resetBuildProgress();
+      if (!ready || s.buildTargetKey !== targetKey) this.resetBuildProgress();
       s.hintText = readiness.hint;
     }
 
@@ -226,7 +230,14 @@ export class Game {
     if (aimed) return aimed;
 
     const pos = this.render.rig.body.position;
-    const cell = worldToCell(pos.x, pos.z);
+    this.forward.set(0, 0, -1).applyQuaternion(this.render.rig.facing);
+    this.forward.y = 0;
+    this.forward.normalize();
+
+    const cell = worldToCell(
+      pos.x + this.forward.x * CONSTANTS.board.cell,
+      pos.z + this.forward.z * CONSTANTS.board.cell,
+    );
     return inBounds(cell.col, cell.row) ? cell : null;
   }
 
@@ -234,7 +245,8 @@ export class Game {
     const cost = CONSTANTS.economy.towerCost;
     if (!this.input.active) return { ready: false, hint: "CLICK THE GAME TO LOCK VIEW" };
     if (!cell) return { ready: false, hint: "LOOK AT A BUILD TILE" };
-    if (!InputSystem.isBuildable(cell, occupied)) return { ready: false, hint: "TILE BLOCKED" };
+    if (isPathCell(cell.col, cell.row)) return { ready: false, hint: "LANE TILE BLOCKED" };
+    if (occupied.has(`${cell.col},${cell.row}`)) return { ready: false, hint: "TOWER ONLINE - MOVE TO NEXT TILE" };
     if (this.state.gold < cost) return { ready: false, hint: `NEED ${cost} GOLD` };
 
     const p = cellToWorld(cell.col, cell.row);
@@ -245,7 +257,7 @@ export class Game {
     }
 
     const bonus = this.state.lastBonus ? `${this.state.lastBonus} - ` : "";
-    return { ready: true, hint: `${bonus}HOLD E OR LEFT MOUSE TO BUILD (${cost})` };
+    return { ready: true, hint: `${bonus}PRESS E OR CLICK TO BUILD (${cost})` };
   }
 
   private resetBuildProgress(): void {
@@ -321,7 +333,7 @@ function freshState(): GameState {
     gold: CONSTANTS.economy.startGold,
     wave: 0,
     baseHp: CONSTANTS.base.startHp,
-    hintText: "HOLD E OR LEFT MOUSE TO BUILD",
+    hintText: "PRESS E OR CLICK TO BUILD",
     towers: [],
     creeps: [],
     projectiles: [],

@@ -23,7 +23,7 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
     async exercise(page) {
       await page.getByRole("button", { name: "DEPLOY" }).click();
       await expect(page.locator("#hud-banner")).toHaveClass(/hidden/);
-      await expect(page.locator("#hint-text")).toContainText(/HOLD E OR LEFT MOUSE|MOVE TO TILE|LOOK AT A BUILD TILE/);
+      await expect(page.locator("#hint-text")).toContainText(/PRESS E OR CLICK|MOVE TO TILE|LOOK AT A BUILD TILE/);
     },
   },
   pactfall: {
