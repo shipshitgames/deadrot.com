@@ -1,24 +1,5 @@
 import * as THREE from "three";
-import type { StateListener } from "./types";
 import type { PlayerAvatarId } from "../net/playerAvatars";
-import { GameContext } from "./context";
-import type { GameSystems } from "./systems";
-import { DEFAULT_MAP_ID, getMap } from "./data/maps";
-import type { SurvivorClassId } from "./data/survivors";
-import { ENEMY_ARCHETYPES } from "./data/enemies";
-import { RenderSystem } from "./render/RenderSystem";
-import { ArenaSystem, type ArenaDebugSnapshot } from "./render/ArenaSystem";
-import { PlayerSystem } from "./entities/PlayerSystem";
-import { WeaponSystem } from "./entities/WeaponSystem";
-import { ProjectilesSystem } from "./entities/ProjectilesSystem";
-import { PickupsSystem } from "./entities/PickupsSystem";
-import { FxSystem } from "./entities/FxSystem";
-import { PveDirectorSystem } from "./modes/PveDirectorSystem";
-import { SurvivorsSystem } from "./modes/SurvivorsSystem";
-import { MultiplayerSystem } from "./modes/MultiplayerSystem";
-import { GameOverSystem } from "./modes/GameOverSystem";
-import { InputSystem } from "./systems/InputSystem";
-import { HudSystem } from "./systems/HudSystem";
 import {
   BOSS_ATTACK_DAMAGE,
   BOSS_ATTACK_INTERVAL,
@@ -37,12 +18,32 @@ import {
   ENEMY_PROJECTILE_SPEED,
   ENEMY_SPEED_MIN,
   PICKUP_TTL,
+  type PickupKind,
   STARTING_WEAPON,
   WEAPON_ORDER,
   WEAPONS,
-  type PickupKind,
   type WeaponId,
 } from "./constants";
+import { GameContext } from "./context";
+import { ENEMY_ARCHETYPES } from "./data/enemies";
+import { DEFAULT_MAP_ID, getMap } from "./data/maps";
+import type { SurvivorClassId } from "./data/survivors";
+import { FxSystem } from "./entities/FxSystem";
+import { PickupsSystem } from "./entities/PickupsSystem";
+import { PlayerSystem } from "./entities/PlayerSystem";
+import { ProjectilesSystem } from "./entities/ProjectilesSystem";
+import { WeaponSystem } from "./entities/WeaponSystem";
+import { GameOverSystem } from "./modes/GameOverSystem";
+import { MissionSystem } from "./modes/MissionSystem";
+import { MultiplayerSystem } from "./modes/MultiplayerSystem";
+import { PveDirectorSystem } from "./modes/PveDirectorSystem";
+import { SurvivorsSystem } from "./modes/SurvivorsSystem";
+import { type ArenaDebugSnapshot, ArenaSystem } from "./render/ArenaSystem";
+import { RenderSystem } from "./render/RenderSystem";
+import type { GameSystems } from "./systems";
+import { HudSystem } from "./systems/HudSystem";
+import { InputSystem } from "./systems/InputSystem";
+import type { StateListener } from "./types";
 
 export type SandboxEnemyKind = "melee" | "ranged" | "flying" | "boss";
 
@@ -70,6 +71,7 @@ export class Game {
     sys.pickups = new PickupsSystem(ctx, sys);
     sys.fx = new FxSystem(ctx, sys);
     sys.pve = new PveDirectorSystem(ctx, sys);
+    sys.mission = new MissionSystem(ctx, sys);
     sys.survivors = new SurvivorsSystem(ctx, sys);
     sys.multiplayer = new MultiplayerSystem(ctx, sys);
     sys.input = new InputSystem(ctx, sys);
@@ -162,7 +164,7 @@ export class Game {
 
   startCampaign(startMapId?: string) {
     this.ctx.sandbox = false;
-    this.sys.pve.startCampaign(startMapId);
+    this.sys.mission.startCampaign(startMapId);
   }
 
   startSurvivors(classId?: SurvivorClassId) {
@@ -176,6 +178,7 @@ export class Game {
 
   startSandbox(mapId: string = this.ctx.currentMap?.id ?? DEFAULT_MAP_ID) {
     this.sys.multiplayer.leaveMultiplayer(false);
+    this.sys.mission.clearMissionState();
     this.ctx.sandbox = true;
     this.ctx.survivors = false;
     this.sys.survivors.recomputeStats();
@@ -344,6 +347,7 @@ export class Game {
 
   startMultiplayer(room: string, name: string, avatar: PlayerAvatarId = "ranger") {
     this.ctx.sandbox = false;
+    this.sys.mission.clearMissionState();
     this.sys.multiplayer.startMultiplayer(room, name, avatar);
   }
 

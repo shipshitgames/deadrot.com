@@ -1,6 +1,5 @@
+import { type CameraRig, RectBounds, type WorldBounds } from "@shipshitgames/engine";
 import * as THREE from "three";
-import type { Enemy } from "./entities/Enemy";
-import type { GameStatus, StateListener } from "./types";
 import {
   ARENA_HALF,
   PLAYER_HEIGHT,
@@ -10,9 +9,11 @@ import {
   WEAPONS,
   type WeaponId,
 } from "./constants";
-import { DEFAULT_MAP_ID, getMap, type ArenaMap } from "./data/maps";
+import { type ArenaMap, DEFAULT_MAP_ID, getMap } from "./data/maps";
+import { createIdleMissionState, type MissionRunState } from "./data/missions";
 import { SURV_BASE_MAGNET, type SurvivorClassId } from "./data/survivors";
-import { RectBounds, type WorldBounds, type CameraRig } from "@shipshitgames/engine";
+import type { Enemy } from "./entities/Enemy";
+import type { GameStatus, StateListener } from "./types";
 
 /**
  * The shared mutable world. Systems are behaviour modules that operate on this
@@ -64,6 +65,7 @@ export class GameContext {
   bounds: WorldBounds = RectBounds.square(ARENA_HALF);
   campaignMaps: ArenaMap[] = [];
   campaignStage = 0; // 0-based index into campaignMaps
+  mission: MissionRunState = createIdleMissionState();
 
   // --- muzzle flash (armed by WeaponSystem.shoot, decayed by FxSystem.updateEffects) ---
   muzzleFlash!: THREE.Sprite;
@@ -86,6 +88,7 @@ export class GameContext {
   // --- mode / phase ---
   status: GameStatus = "pointerlock-needed";
   outcome: "win" | "dead" | null = null;
+  campaign = false;
   multiplayer = false;
   survivors = false;
   /** Dev-only labs/sandbox mode: real sim, no wave director progression. */

@@ -1,14 +1,12 @@
 import * as THREE from "three";
-import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
 import { audio } from "../../audio/AudioEngine";
-import type { Enemy } from "../entities/Enemy";
-import { XP_BLOOD_SCALE, XP_BLOOD_TEXTURE } from "../spriteAssets";
 import { WEAPONS } from "../constants";
-import { DEFAULT_MAP_ID, getMap } from "../data/maps";
+import type { GameContext } from "../context";
 import { pickWeightedEnemyArchetype } from "../data/enemies";
+import { DEFAULT_MAP_ID, getMap } from "../data/maps";
 import {
   AMP_PER_TIER,
+  availableEvolutionChoice,
   BANISHES_PER_RUN,
   BOLT_DMG,
   BOLT_SPEED,
@@ -25,9 +23,6 @@ import {
   SURV_BASE_MAGNET,
   SURV_ELITE_INTERVAL,
   SURV_ENEMY_BASE_HP,
-  SURVIVOR_CLASSES,
-  SURVIVOR_RUN_CHAPTERS,
-  SURVIVOR_RUN_GOAL_TIME,
   SURV_SPAWN_CAP,
   SURV_SPAWN_MIN,
   SURV_SPAWN_START,
@@ -35,19 +30,24 @@ import {
   SURV_SWELL_COUNT,
   SURV_SWELL_INTERVAL,
   SURV_XP_ELITE_VALUE,
-  UPGRADES,
-  UPGRADE_BY_ID,
-  WEAPON_UPGRADE_IDS,
-  availableEvolutionChoice,
+  SURVIVOR_CLASSES,
+  SURVIVOR_RUN_CHAPTERS,
+  SURVIVOR_RUN_GOAL_TIME,
+  type SurvArchetype,
+  type SurvivorClassId,
   survivorBuildList,
   survivorChapterAt,
   survivorChapterStart,
-  xpForLevel,
-  type SurvArchetype,
-  type SurvivorClassId,
+  UPGRADE_BY_ID,
+  UPGRADES,
   type UpgradeId,
+  WEAPON_UPGRADE_IDS,
   type WeaponUpgradeId,
+  xpForLevel,
 } from "../data/survivors";
+import type { Enemy } from "../entities/Enemy";
+import { XP_BLOOD_SCALE, XP_BLOOD_TEXTURE } from "../spriteAssets";
+import type { GameSystems } from "../systems";
 import type { BuildEntry, UpgradeChoice } from "../types";
 
 const DEFENSIVE_UPGRADES: UpgradeId[] = [
@@ -111,6 +111,7 @@ export class SurvivorsSystem {
 
   startSurvivors(classId: SurvivorClassId = this.selectedClass) {
     this.sys.multiplayer.leaveMultiplayer(false);
+    this.sys.mission.clearMissionState();
     this.selectedClass = SURVIVOR_CLASSES[classId] ? classId : "ranger";
     this.ctx.survivorClassId = this.selectedClass;
     this.ctx.survivors = true;

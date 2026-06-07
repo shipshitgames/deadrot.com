@@ -1,11 +1,11 @@
 import * as THREE from "three";
 import { audio } from "../../audio/AudioEngine";
-import { NetClient, type HitMessage, type RemotePlayerInfo } from "../../net/NetClient";
+import { type HitMessage, NetClient, type RemotePlayerInfo } from "../../net/NetClient";
 import type { PlayerAvatarId } from "../../net/playerAvatars";
 import { RemoteAvatar } from "../../net/RemoteAvatar";
 import { PLAYER_HEIGHT, WEAPONS } from "../constants";
-import { DEFAULT_MAP_ID, getMap } from "../data/maps";
 import type { GameContext } from "../context";
+import { DEFAULT_MAP_ID, getMap } from "../data/maps";
 import type { GameSystems } from "../systems";
 
 export class MultiplayerSystem {
@@ -25,6 +25,7 @@ export class MultiplayerSystem {
 
   startMultiplayer(room: string, name: string, avatar: PlayerAvatarId = "ranger") {
     this.leaveMultiplayer(false); // tear down any prior session/avatars first
+    this.sys.mission.clearMissionState();
     this.ctx.campaignStage = 0;
     this.sys.arena.buildArena(getMap(DEFAULT_MAP_ID)); // PvP always uses the default arena
     this.sys.player.resetPlayer();

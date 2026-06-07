@@ -1,5 +1,5 @@
 import type * as THREE from "three";
-import { Enemy } from "../entities/Enemy";
+import { audio } from "../../audio/AudioEngine";
 import {
   BOSS_ATTACK_DAMAGE,
   BOSS_ATTACK_INTERVAL,
@@ -19,7 +19,6 @@ import {
   ENEMY_SPEED_MAX,
   ENEMY_SPEED_MIN,
   FIRST_WAVE_DELAY,
-  STAGE_CLEAR_HEAL,
   STAGE_DIFFICULTY_STEP,
   TOTAL_WAVES,
   WAVE_BREAK,
@@ -27,11 +26,10 @@ import {
   WAVES,
   WEAPONS,
 } from "../constants";
-import { CAMPAIGN_ORDER, campaignSequence } from "../data/maps";
+import type { GameContext } from "../context";
 import { campaignArchetypeForWave, ENEMY_ARCHETYPES } from "../data/enemies";
 import { SURV_XP_GEM_VALUE } from "../data/survivors";
-import { audio } from "../../audio/AudioEngine";
-import type { GameContext } from "../context";
+import { Enemy } from "../entities/Enemy";
 import type { GameSystems } from "../systems";
 
 export class PveDirectorSystem {
@@ -222,7 +220,7 @@ export class PveDirectorSystem {
       this.sys.fx.spawnEnemyDeath(deathPos, { headshot, elite: true, scale: 2.5, color: 0xff2d55 });
       this.bossActive = false;
       this.bossEnemy = null;
-      this.advanceCampaignOrWin();
+      this.sys.mission.onBossDefeated();
     } else {
       this.ctx.score += ENEMY_SCORE + (headshot ? 50 : 0);
       this.ctx.reserve = Math.min(spec.reserveCap, this.ctx.reserve + spec.ammoPerKill);
@@ -260,41 +258,6 @@ export class PveDirectorSystem {
       if (this.ctx.survivors) this.sys.survivors.enemyXp.set(child, 1);
     }
     this.sys.hud.showToast("SPLITTER BROOD");
-  }
-
-  startCampaign(startMapId?: string) {
-    this.sys.multiplayer.leaveMultiplayer(false);
-    this.ctx.survivors = false;
-    this.sys.survivors.recomputeStats();
-    this.ctx.campaignMaps = campaignSequence(startMapId ?? CAMPAIGN_ORDER[0]);
-    this.ctx.campaignStage = 0;
-    this.sys.arena.buildArena(this.ctx.campaignMaps[0]);
-    this.sys.player.resetPlayer();
-    this.sys.fx.clearTransientFx();
-    this.sys.survivors.clearSurvivorsEntities();
-    this.startWaveSystem();
-    this.ctx.status = "pointerlock-needed";
-    this.sys.hud.emit();
-    this.sys.input.requestLock();
-  }
-
-  /** Boss down: advance to the next campaign map, or win if this was the last. */
-  advanceCampaignOrWin() {
-    if (this.ctx.campaignStage < this.ctx.campaignMaps.length - 1) {
-      this.ctx.campaignStage++;
-      const next = this.ctx.campaignMaps[this.ctx.campaignStage];
-      this.ctx.health = Math.min(this.ctx.maxHealthValue, this.ctx.health + STAGE_CLEAR_HEAL);
-      this.sys.arena.buildArena(next);
-      this.sys.fx.clearTransientFx();
-      this.sys.arena.placeAtSpawn();
-      this.startWaveSystem();
-      this.sys.hud.announce(
-        `STAGE ${this.ctx.campaignStage + 1}/${this.ctx.campaignMaps.length} · ${next.name.toUpperCase()}`,
-      );
-      this.sys.hud.emit();
-    } else {
-      this.sys.gameOver.gameOver("win");
-    }
   }
 
   updateEnemies(delta: number, elapsed: number) {

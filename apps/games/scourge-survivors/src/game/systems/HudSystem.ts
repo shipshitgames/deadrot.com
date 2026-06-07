@@ -1,9 +1,10 @@
 import type * as THREE from "three";
-import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
 import { audio } from "../../audio/AudioEngine";
 import { BERSERK_TIME, RELOAD_TIME, TOTAL_WAVES, WEAPON_ORDER, WEAPONS } from "../constants";
+import type { GameContext } from "../context";
+import { currentMissionCheckpoint, currentMissionEncounter, currentMissionObjective } from "../data/missions";
 import { EVOLUTIONS, SURVIVOR_CLASSES } from "../data/survivors";
+import type { GameSystems } from "../systems";
 import type { HUDState } from "../types";
 
 export class HudSystem {
@@ -82,6 +83,9 @@ export class HudSystem {
     }));
     const survivorClass = SURVIVOR_CLASSES[this.ctx.survivorClassId] ?? SURVIVOR_CLASSES.ranger;
     const survivorChapter = this.sys.survivors.currentChapter();
+    const missionObjective = currentMissionObjective(this.ctx.mission);
+    const missionCheckpoint = currentMissionCheckpoint(this.ctx.mission);
+    const missionEncounter = currentMissionEncounter(this.ctx.mission);
     const evolved = Object.entries(this.sys.survivors.evolved)
       .filter(([, on]) => on)
       .map(([id]) => EVOLUTIONS[id as keyof typeof EVOLUTIONS].name);
@@ -135,6 +139,15 @@ export class HudSystem {
       connected: this.sys.multiplayer.connected,
       room: this.sys.multiplayer.roomName,
       scoreboard: this.ctx.multiplayer ? this.sys.multiplayer.buildScoreboard() : [],
+      campaign: this.ctx.campaign,
+      missionId: this.ctx.mission.missionId ?? "",
+      missionTitle: this.ctx.mission.missionTitle,
+      missionPhase: this.ctx.mission.phase,
+      missionObjective: missionObjective?.label ?? "",
+      missionCheckpoint: missionCheckpoint?.name ?? "",
+      missionEncounter: missionEncounter?.name ?? "",
+      missionExtractionReady: this.ctx.mission.extractionReady,
+      missionComplete: this.ctx.mission.completed,
       sandbox: this.ctx.sandbox,
       survivors: this.ctx.survivors,
       survivorClassId: survivorClass.id,
