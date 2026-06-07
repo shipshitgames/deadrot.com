@@ -57,6 +57,7 @@ Start here, follow the links, open the graph view.
 - Redline: [[Pyre-Courier]], [[Warden-Courier]]
 - Rothulk: [[Pyre-Saboteur]]
 - Core Scourge: [[Swarm-Ripper]], [[Swarm-Spitter]], [[Spore-Lung]], [[Render]], [[Rot-Engine]], [[Graft-Breacher]], [[Cairn]], [[Sower]], [[Gristle-Vat]], [[Chorister]], [[Cantor]], [[Descant]], [[Bourdon]], [[Aeolian]], [[Carillon]], [[Quaver]], [[Breach-Boss]]
+- Scourge support: [[Braid-Worm]]
 
 ## Tech
 
