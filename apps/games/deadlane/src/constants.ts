@@ -45,7 +45,7 @@ export const CONSTANTS = {
 
   // ---- Economy --------------------------------------------------------------
   economy: {
-    startGold: 150,
+    startGold: 175,
     towerCost: 50,
     killReward: 12,
     waveClearBonus: 25,
@@ -58,7 +58,7 @@ export const CONSTANTS = {
 
   // ---- Tower ----------------------------------------------------------------
   tower: {
-    range: 5.5,
+    range: 6.25,
     fireRate: 1.6, // shots per second
     damage: 16,
     projectileSpeed: 22,
@@ -68,7 +68,7 @@ export const CONSTANTS = {
   // ---- Creep (Scourge) ------------------------------------------------------
   creep: {
     baseHp: 30,
-    baseSpeed: 2.4, // world units / sec along the path
+    baseSpeed: 2.25, // world units / sec along the path
     radius: 0.45,
     // per-wave scaling
     hpGrowth: 1.22, // multiplied each wave
@@ -81,15 +81,32 @@ export const CONSTANTS = {
     baseCount: 6, // creeps in wave 1
     countGrowth: 2, // extra creeps added per wave
     spawnInterval: 0.85, // seconds between creeps in a wave
-    interWaveDelay: 3.0, // seconds of breathing room between waves
+    interWaveDelay: 7.5, // seconds of breathing room between waves
   },
 
   // ---- Render / camera ------------------------------------------------------
   camera: {
-    fov: 50,
-    // Angled perspective over the board.
-    position: [0, 18, 16] as [number, number, number],
-    lookAtY: 0,
+    fov: 74,
+    far: 220,
+  },
+
+  // ---- Embodied player ------------------------------------------------------
+  player: {
+    height: 1.75,
+    radius: 0.42,
+    moveSpeed: 5.0,
+    sprintMultiplier: 1.42,
+    buildRange: 2.1,
+    startBackset: 2.4,
+  },
+
+  build: {
+    time: 1.55,
+  },
+
+  bonuses: {
+    buildSpeedPerLevel: 0.22,
+    runSpeedPerLevel: 0.16,
   },
 
   // ---- Loop -----------------------------------------------------------------

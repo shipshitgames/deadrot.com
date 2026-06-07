@@ -1,5 +1,12 @@
+import {
+  type CameraRig,
+  clearMoveIntent,
+  InputSystem as InputBinder,
+  type MoveIntent,
+  makeMoveIntent,
+} from "@shipshitgames/engine";
 import * as THREE from "three";
-import { worldToCell, inBounds, isPathCell } from "../board";
+import { inBounds, isPathCell, worldToCell } from "../board";
 
 export interface HoverCell {
   col: number;
@@ -7,40 +14,51 @@ export interface HoverCell {
 }
 
 /**
- * InputSystem raycasts the pointer onto the board ground plane and reports the
- * hovered cell + click events. It is intentionally dumb: it knows about the
- * grid, not about game rules (cost/occupancy). The Game decides validity.
+ * InputSystem binds first-person movement and reports the tile under the
+ * crosshair. It stays rules-light: the Game decides cost, range, and occupancy.
  */
 export class InputSystem {
   private readonly raycaster = new THREE.Raycaster();
-  private readonly pointer = new THREE.Vector2();
-  hover: HoverCell | null = null;
-  private clickedCell: HoverCell | null = null;
-  private pointerOnScreen = false;
+  private readonly binder: InputBinder;
+  readonly move: MoveIntent = makeMoveIntent();
+  active = false;
+  wantsSprint = false;
+  wantsBuild = false;
 
   constructor(
-    private readonly canvas: HTMLCanvasElement,
-    private readonly camera: THREE.Camera,
+    private readonly rig: CameraRig,
     private readonly groundPlane: THREE.Mesh,
   ) {
-    canvas.addEventListener("pointermove", (e) => this.onMove(e));
-    canvas.addEventListener("pointerleave", () => {
-      this.pointerOnScreen = false;
-      this.hover = null;
+    this.binder = new InputBinder({
+      move: this.move,
+      isActive: () => this.active,
+      onActionKey: (code) => this.onActionKey(code),
+      onPointerDown: (button) => {
+        if (button === 0) this.wantsBuild = true;
+      },
+      onPointerUp: (button) => {
+        if (button === 0) this.wantsBuild = false;
+      },
+      suppressContextMenu: () => this.active,
     });
-    canvas.addEventListener("pointerdown", (e) => this.onDown(e));
+    this.binder.bind();
+    window.addEventListener("keydown", this.onRawKeyDown);
+    window.addEventListener("keyup", this.onRawKeyUp);
   }
 
-  private updatePointer(e: PointerEvent): void {
-    const rect = this.canvas.getBoundingClientRect();
-    this.pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-    this.pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-    this.pointerOnScreen = true;
+  setActive(active: boolean): void {
+    this.active = active;
+    if (!active) this.clearTransientInput();
   }
 
-  private cellUnderPointer(): HoverCell | null {
-    if (!this.pointerOnScreen) return null;
-    this.raycaster.setFromCamera(this.pointer, this.camera);
+  clearTransientInput(): void {
+    clearMoveIntent(this.move);
+    this.wantsSprint = false;
+    this.wantsBuild = false;
+  }
+
+  aimedCell(): HoverCell | null {
+    this.rig.pickRay(0, 0, this.raycaster);
     const hits = this.raycaster.intersectObject(this.groundPlane, false);
     if (hits.length === 0) return null;
     const p = hits[0].point;
@@ -49,15 +67,35 @@ export class InputSystem {
     return { col, row };
   }
 
-  private onMove(e: PointerEvent): void {
-    this.updatePointer(e);
-    this.hover = this.cellUnderPointer();
+  dispose(): void {
+    this.binder.unbind();
+    window.removeEventListener("keydown", this.onRawKeyDown);
+    window.removeEventListener("keyup", this.onRawKeyUp);
   }
 
-  private onDown(e: PointerEvent): void {
-    this.updatePointer(e);
-    this.clickedCell = this.cellUnderPointer();
+  private onActionKey(code: string): void {
+    if (code === "KeyE") this.wantsBuild = true;
+    if (code === "ShiftLeft" || code === "ShiftRight") this.wantsSprint = true;
   }
+
+  private onRawKeyDown = (e: KeyboardEvent): void => {
+    if (!this.active) return;
+    if (e.code === "KeyE") {
+      e.preventDefault();
+      this.wantsBuild = true;
+    } else if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
+      this.wantsSprint = true;
+    }
+  };
+
+  private onRawKeyUp = (e: KeyboardEvent): void => {
+    if (e.code === "KeyE") {
+      e.preventDefault();
+      this.wantsBuild = false;
+    } else if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
+      this.wantsSprint = false;
+    }
+  };
 
   /** True if the hovered cell could legally hold a tower (empty, off-path). */
   static isBuildable(cell: HoverCell | null, occupied: Set<string>): boolean {
@@ -65,12 +103,5 @@ export class InputSystem {
     if (isPathCell(cell.col, cell.row)) return false;
     if (occupied.has(`${cell.col},${cell.row}`)) return false;
     return true;
-  }
-
-  /** Consume a click made this frame, if any. */
-  takeClick(): HoverCell | null {
-    const c = this.clickedCell;
-    this.clickedCell = null;
-    return c;
   }
 }

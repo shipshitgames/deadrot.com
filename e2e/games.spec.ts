@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 type GameSlug = "deadlane" | "pactfall" | "redline" | "rothulk" | "scourge-survivors" | "starblight" | "warline";
 
@@ -23,7 +23,7 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
     async exercise(page) {
       await page.getByRole("button", { name: "DEPLOY" }).click();
       await expect(page.locator("#hud-banner")).toHaveClass(/hidden/);
-      await expect(page.locator("#hint-text")).toContainText(/CLICK A CELL TO BUILD|NOT ENOUGH GOLD/);
+      await expect(page.locator("#hint-text")).toContainText(/HOLD E OR LEFT MOUSE|MOVE TO TILE|LOOK AT A BUILD TILE/);
     },
   },
   pactfall: {
