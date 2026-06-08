@@ -7,6 +7,8 @@ status: canon
 ---
 # Aeolian
 
+**At a glance:** [[Scourge]] atmospheric Choir-repeater · [[Scourge-Host-Families|Mycelial Spore Host]] drifting in the open-air rung between surface and orbit · severing it breaks a layer of the Choir column and blinds falling matter · appears in [[Starblight]] / [[Deadlane]] / [[The-Listeners]].
+
 An **atmospheric Choir-repeater** — a named relay class alongside the rooted [[Chorister]], the
 mobile [[Cantor]], the orbital [[Descant]], and the subterranean [[Bourdon]], and the one that carries
 the **Choir** ([[CANON]] §5–6) through the *open air*. A Chorister extends the signal's **radius**

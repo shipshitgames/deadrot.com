@@ -7,6 +7,8 @@ status: canon
 ---
 # Descant
 
+**At a glance:** [[Scourge]] orbital Choir-repeater · [[Scourge-Host-Families|Voidship Host]] rooted in captured wreckage high above the front · destroying it cuts orbit off from the ground Choir · appears in [[Starblight]] / [[Deadlane]] / [[The-Listeners]].
+
 An **orbital Choir-repeater** — the third named relay class after the rooted [[Chorister]] and the
 mobile [[Cantor]], and the one that holds the **Choir** ([[CANON]] §5–6) up the *gravity well*. A
 Chorister extends the signal's **radius** across a breach; a Cantor extends its **range of motion**
