@@ -9,7 +9,10 @@
 }
 
 :root {
-  --ssg-font-pixel: "SSG Press Start", var(--ssg-font-mono, ui-monospace, monospace);
+  /* Literal stack — do NOT reference var(--ssg-font-mono): packages/ui sets
+     --ssg-font-mono to var(--ssg-font-pixel), so referencing it back here forms
+     a cycle that resolves to empty and drops the title to a serif fallback. */
+  --ssg-font-pixel: "SSG Press Start", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 @theme {
