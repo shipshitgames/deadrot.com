@@ -35,6 +35,7 @@ Start here, follow the links, open the graph view.
 - [[The-Wardens]] — defense; hold the line → Deadlane
 - [[The-Listeners]] — heresy; understand the Choir _(concept)_
 - [[The-Quiet-Rooms]] — Listener black-room practice; keep severed Choir nodes alive to study
+- [[The-Dead-Air-Liturgy]] — Pact dead-air drill; clear carriers after the cut
 - [[The-Pact]] — field compact; Pyre/Warden rivalry stops the instant a breach opens
 
 ## Games (entries in the canon)
