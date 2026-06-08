@@ -21,11 +21,19 @@ export {
   thirdPersonFollow,
 } from "./camera/CameraRig";
 export {
+  type ActionId,
   type ActionMap,
   actionFor,
   applyMoveKey,
+  type CaptureRig,
   clearMoveIntent,
+  DEFAULT_MOVE_KEYS,
+  DEFAULT_MOVEMENT_CONFIG,
+  type InputActionHandler,
+  isJumpKey,
   type MoveIntent,
+  type MovementConfig,
+  type MovementKeyMap,
   makeMoveIntent,
 } from "./input/bindings";
 // --- embodied-base: input (seam: DOM bindings + movement; genre verbs stay game-side) ---

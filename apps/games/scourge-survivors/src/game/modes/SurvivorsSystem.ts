@@ -142,9 +142,9 @@ export class SurvivorsSystem {
     for (const [id, level] of Object.entries(cls.startingUpgrades ?? {}) as [UpgradeId, number][]) {
       this.upgradeLevels[id] = Math.max(this.upgradeLevels[id] ?? 0, level);
     }
-    if ((this.shopTiers["arsenal"] ?? 0) > 0) this.upgradeLevels.orbit = Math.max(this.upgradeLevels.orbit ?? 0, 1); // Arsenal perk
-    if ((this.shopTiers["munitions"] ?? 0) > 0) this.upgradeLevels.bolt = Math.max(this.upgradeLevels.bolt ?? 0, 1); // Munitions perk
-    if ((this.shopTiers["pulsar"] ?? 0) > 0) this.upgradeLevels.nova = Math.max(this.upgradeLevels.nova ?? 0, 1); // Pulsar perk
+    if ((this.shopTiers.arsenal ?? 0) > 0) this.upgradeLevels.orbit = Math.max(this.upgradeLevels.orbit ?? 0, 1); // Arsenal perk
+    if ((this.shopTiers.munitions ?? 0) > 0) this.upgradeLevels.bolt = Math.max(this.upgradeLevels.bolt ?? 0, 1); // Munitions perk
+    if ((this.shopTiers.pulsar ?? 0) > 0) this.upgradeLevels.nova = Math.max(this.upgradeLevels.nova ?? 0, 1); // Pulsar perk
     this.survSpawnTimer = 0.25;
     this.survClock = 0;
     this.eliteTimer = this.currentChapter().eliteInterval;
@@ -420,7 +420,7 @@ export class SurvivorsSystem {
       this.choices = [];
       this.ctx.status = "playing";
       this.sys.hud.emit();
-      this.sys.input.lockPointer();
+      this.sys.input.requestLock();
     }
   }
 

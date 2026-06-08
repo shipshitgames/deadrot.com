@@ -45,7 +45,7 @@ export interface CameraRig {
   setFov(deg: number): void;
   zoom(factor: number): void;
 
-  requestCapture(): void;
+  requestCapture(): void | Promise<void>;
   releaseCapture(silent?: boolean): void; // safe no-op if not captured
   on(ev: RigCaptureEvent, fn: () => void): void;
   off(ev: RigCaptureEvent, fn: () => void): void;
@@ -150,11 +150,8 @@ class FirstPersonRig implements CameraRig {
     this.camera.updateProjectionMatrix();
   }
 
-  requestCapture(): void {
-    const result: unknown = this.domElement.requestPointerLock();
-    if (result && typeof (result as Promise<void>).catch === "function") {
-      void (result as Promise<void>).catch(() => {});
-    }
+  requestCapture(): void | Promise<void> {
+    return this.domElement.requestPointerLock();
   }
 
   releaseCapture(silent = false): void {
