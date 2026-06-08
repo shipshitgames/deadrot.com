@@ -7,6 +7,8 @@ status: canon
 ---
 # Bourdon
 
+**At a glance:** [[Scourge]] subterranean Choir-repeater · [[Scourge-Host-Families|Bone Titan Host]] rooted into descent rock · severs the deep-to-surface Choir column when destroyed · appears in [[Scourge-Survivors]] / [[Deadlane]] / [[The-Listeners]].
+
 A **subterranean Choir-repeater** — the fourth named relay class after the rooted [[Chorister]],
 the mobile [[Cantor]], and the orbital [[Descant]], and the one that carries the **Choir**
 ([[CANON]] §5–6) *up the rock*. A Chorister extends the signal's **radius** across a surface

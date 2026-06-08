@@ -1,11 +1,12 @@
-import { COLORS, CONSTANTS, WORLD, type EnemyType } from "./constants";
-import { ALL_UPGRADES, computeStats, defOf, maxLevelOf, xpForLevel, type Stats, type UpgradeId } from "./upgrades";
-import type { DraftCard, Enemy, GamePhase, HudState } from "./types";
-import { RenderSystem } from "../systems/RenderSystem";
-import { InputSystem } from "../systems/InputSystem";
 import { EntitySystem } from "../systems/EntitySystem";
-import { WeaponSystem } from "../systems/WeaponSystem";
 import { HudSystem } from "../systems/HudSystem";
+import { InputSystem } from "../systems/InputSystem";
+import { RenderSystem } from "../systems/RenderSystem";
+import { WeaponSystem } from "../systems/WeaponSystem";
+import { clearPauseActions, setPauseActions } from "../ui/gameBridge";
+import { COLORS, CONSTANTS, type EnemyType, WORLD } from "./constants";
+import type { DraftCard, Enemy, GamePhase, HudState } from "./types";
+import { ALL_UPGRADES, computeStats, defOf, maxLevelOf, type Stats, type UpgradeId, xpForLevel } from "./upgrades";
 
 const TAU = Math.PI * 2;
 
@@ -65,10 +66,13 @@ export class Game {
       () => this.startRun(),
       (id) => this.pickById(id),
       () => this.pauseRun(),
-      () => this.resumeRun(),
-      () => this.startRun(),
-      () => this.returnToTitle(),
     );
+    // The shared PauseMenu (React) invokes these through the gameBridge.
+    setPauseActions({
+      resume: () => this.resumeRun(),
+      restart: () => this.startRun(),
+      title: () => this.returnToTitle(),
+    });
   }
 
   start() {
@@ -82,6 +86,7 @@ export class Game {
   dispose() {
     this.disposed = true;
     cancelAnimationFrame(this.raf);
+    clearPauseActions();
     this.input.dispose();
     this.weapons.dispose();
     this.entities.dispose();

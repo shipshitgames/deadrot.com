@@ -4,6 +4,7 @@
  * overlays plus start / win / dead card text.
  */
 
+import { warlineLobbyHref } from "@shipshitgames/ui";
 import { RUNNER, STORAGE_KEY } from "../constants";
 import type { Phase, RunnerState } from "../types";
 
@@ -150,14 +151,18 @@ export class Hud {
           <span class="ssg-main-menu-action__label"><span>Leaderboard</span></span>
           <span class="ssg-main-menu-action__meta">${this.best === null ? "No record" : `Best ${fmtTime(this.best)}`}</span>
         </button>
-        <button class="ssg-main-menu-action ssg-main-menu-action--settings" disabled>
+        <button id="overlay-settings-btn" class="ssg-main-menu-action ssg-main-menu-action--settings">
           <span class="ssg-main-menu-action__label"><span>Settings</span></span>
-          <span class="ssg-main-menu-action__meta">Keyboard</span>
+          <span class="ssg-main-menu-action__meta">Audio</span>
         </button>
         <button class="ssg-main-menu-action ssg-main-menu-action--dev" disabled>
           <span class="ssg-main-menu-action__label"><span>Sandbox</span></span>
           <span class="ssg-main-menu-action__meta">Route lab</span>
         </button>
+        <a class="ssg-main-menu-action ssg-main-menu-action--default" href="${warlineLobbyHref()}">
+          <span class="ssg-main-menu-action__label"><span>← Back to Warline</span></span>
+          <span class="ssg-main-menu-action__meta">Lobby</span>
+        </a>
       </nav>
     `;
   }
@@ -217,6 +222,15 @@ export class Hud {
   /** Wire the (re)created overlay button to a callback. */
   onOverlayButton(cb: () => void) {
     const btn = document.getElementById("overlay-btn");
+    if (btn) btn.addEventListener("click", cb, { once: true });
+  }
+
+  /**
+   * Wire the start-screen Settings button to a callback. Only present on the
+   * start card (re-created by showStart), so re-wire each time it is shown.
+   */
+  onSettingsButton(cb: () => void) {
+    const btn = document.getElementById("overlay-settings-btn");
     if (btn) btn.addEventListener("click", cb, { once: true });
   }
 

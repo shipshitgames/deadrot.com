@@ -36,6 +36,17 @@ export interface SpriteEntry {
     flashScale: number;
     flashRotation?: number;
   };
+  /**
+   * Horizontal tier sheet: one weapon view-model drawn at N escalating visual tiers,
+   * left to right. The runtime UV-samples one equal-width cell per tier, so `path`
+   * is the whole sheet and `scale` is the on-screen size of a SINGLE cell.
+   */
+  tierSheet?: {
+    /** Number of equal-width cells in the row. */
+    columns: number;
+    /** Visual-tier id per cell, left to right (e.g. ["base","tier-2","tier-3","tier-4","evolved"]). */
+    tiers: string[];
+  };
   views?: Partial<Record<SpriteView, SpriteViewEntry>>;
   license: LicenseRecord;
 }

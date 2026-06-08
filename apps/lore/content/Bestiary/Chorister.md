@@ -7,6 +7,8 @@ status: canon
 ---
 # Chorister
 
+**At a glance:** [[Scourge]] rooted Choir-repeater · [[Scourge-Host-Families|Mycelial Spore Host]] relay that extends the Choir past its natural radius · priority objective; destroy it and the local swarm goes feral · appears in [[Deadlane]] / [[Scourge-Survivors]] / [[The-Listeners]].
+
 A named **Choir-repeater** — the physical node the Scourge grows to carry its hive signal past
 its natural radius. It does not fight so much as *sing*: a rooted, throat-heavy relay organism
 that broadcasts the **Choir** ([[CANON]] §5–6) to every Scourge around it, so the horde in its

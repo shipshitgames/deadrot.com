@@ -27,7 +27,7 @@ import {
 import { GameContext } from "./context";
 import { ENEMY_ARCHETYPES } from "./data/enemies";
 import { DEFAULT_MAP_ID, getMap } from "./data/maps";
-import type { SurvivorClassId } from "./data/survivors";
+import type { MainWeaponVisualTier, SurvivorClassId } from "./data/survivors";
 import { FxSystem } from "./entities/FxSystem";
 import { PickupsSystem } from "./entities/PickupsSystem";
 import { PlayerSystem } from "./entities/PlayerSystem";
@@ -201,6 +201,15 @@ export class Game {
     if (!this.ctx.sandbox) return;
     this.unlockSandboxArsenal(id);
     this.sys.hud.showToast(`LAB WEAPON: ${WEAPONS[id].name.toUpperCase()}`);
+    this.sys.hud.emit();
+  }
+
+  /** Preview a weapon visual tier in the sandbox (parity with in-run tier rendering). */
+  setSandboxWeaponTier(tier: MainWeaponVisualTier) {
+    if (!this.ctx.sandbox) return;
+    this.ctx.sandboxWeaponTier = tier;
+    this.sys.weapon.applyWeaponModel(this.ctx.activeWeapon);
+    this.sys.hud.showToast(`LAB TIER: ${tier.toUpperCase()}`);
     this.sys.hud.emit();
   }
 

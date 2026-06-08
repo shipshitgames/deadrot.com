@@ -3,7 +3,6 @@ import type { GameContext } from "../context";
 import type { Pop, Tracer } from "../data/internalTypes";
 import {
   CORPSE_PART_SPRITES,
-  ENEMY_SPRITE_ANIMATION_META,
   ENEMY_SPRITE_ANIMATION_TEXTURES,
   ENEMY_SPRITE_SCALES,
   type EnemySpriteKind,
@@ -15,7 +14,11 @@ const CORPSE_PART_SOFT_CAP = 72;
 const CORPSE_PART_HARD_CAP = 96;
 const CORPSE_PART_FADE_SECONDS = 1.35;
 const CORPSE_PART_GRAVITY = 18;
-const DEATH_SPRITE_FADE_SECONDS = 0.6;
+// Death reads as a quick explosion, not a slow ragdoll: blow through all death
+// frames in PLAYBACK seconds, then a short FADE — the death-pop ring + particle
+// burst carry the "explosion" punch once the corpse sprite is gone.
+const DEATH_SPRITE_PLAYBACK_SECONDS = 0.16;
+const DEATH_SPRITE_FADE_SECONDS = 0.12;
 type DeathSpriteKind = EnemySpriteKind;
 type DeathSpriteView = EnemySpriteView;
 
@@ -277,7 +280,6 @@ export class FxSystem {
   ) {
     const kind = opts.kind ?? (opts.elite ? "boss" : "melee");
     const view = opts.view ?? "front";
-    const meta = ENEMY_SPRITE_ANIMATION_META[kind].death;
     const frames = ENEMY_SPRITE_ANIMATION_TEXTURES[kind].death[view];
     const firstFrame = frames[0];
     if (!firstFrame) return;
@@ -299,7 +301,7 @@ export class FxSystem {
     sprite.position.set(pos.x, 0.03, pos.z);
     sprite.renderOrder = 6;
     this.ctx.scene.add(sprite);
-    const duration = meta.frameCount / meta.fps;
+    const duration = DEATH_SPRITE_PLAYBACK_SECONDS;
     const baseOpacity = opts.elite ? 0.94 : 0.88;
     this.deathSprites.push({
       sprite,
@@ -535,9 +537,9 @@ export class FxSystem {
     for (let i = this.deathSprites.length - 1; i >= 0; i--) {
       const death = this.deathSprites[i];
       death.age += delta;
-      const meta = ENEMY_SPRITE_ANIMATION_META[death.kind].death;
       const frames = ENEMY_SPRITE_ANIMATION_TEXTURES[death.kind].death[death.view];
-      const frame = frames[Math.min(frames.length - 1, Math.floor(death.age * meta.fps))];
+      const frameIndex = Math.floor((death.age / DEATH_SPRITE_PLAYBACK_SECONDS) * frames.length);
+      const frame = frames[Math.min(frames.length - 1, frameIndex)];
       if (frame && death.material.map !== frame) {
         death.material.map = frame;
         death.material.needsUpdate = true;

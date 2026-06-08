@@ -1,5 +1,6 @@
 import type { HudState } from "../game/types";
 import type { UpgradeId } from "../game/upgrades";
+import { publishPause } from "../ui/gameBridge";
 
 // Binds the React-rendered HUD shell to game state with cached element refs and
 // dirty-checked writes. Draft cards and build tray still update imperatively.
@@ -20,11 +21,6 @@ export class HudSystem {
   private bannerSub = byId("banner-sub");
   private bannerHint = byId("banner-hint");
   private bannerBtn = byId("banner-btn") as HTMLButtonElement;
-  private pauseMenu = byId("pause-menu");
-  private pauseStats = byId("pause-stats");
-  private pauseResume = byId("pause-resume") as HTMLButtonElement;
-  private pauseRestart = byId("pause-restart") as HTMLButtonElement;
-  private pauseTitle = byId("pause-title-btn") as HTMLButtonElement;
   private draft = byId("draft");
   private draftCards = byId("draft-cards");
   private flash = byId("flash");
@@ -35,34 +31,25 @@ export class HudSystem {
   private lastDraft = "";
   private lastPhase = "";
   private lastLevel = 1;
+  private pauseStatsText = "0:00 - LVL 1 - 0 kills";
 
   private readonly onBtnClick = () => this.onStart();
   private readonly onPauseClick = () => this.onPause();
-  private readonly onResumeClick = () => this.onResume();
-  private readonly onRestartClick = () => this.onRestart();
-  private readonly onTitleClick = () => this.onTitle();
 
+  // The pause overlay (Resume / Restart / Main Menu) is the shared React
+  // PauseMenu now — those callbacks reach it through the gameBridge instead.
   constructor(
     private readonly onStart: () => void,
     private readonly onPick: (id: UpgradeId) => void,
     private readonly onPause: () => void,
-    private readonly onResume: () => void,
-    private readonly onRestart: () => void,
-    private readonly onTitle: () => void,
   ) {
     this.bannerBtn.addEventListener("click", this.onBtnClick);
     this.pauseBtn.addEventListener("click", this.onPauseClick);
-    this.pauseResume.addEventListener("click", this.onResumeClick);
-    this.pauseRestart.addEventListener("click", this.onRestartClick);
-    this.pauseTitle.addEventListener("click", this.onTitleClick);
   }
 
   dispose() {
     this.bannerBtn.removeEventListener("click", this.onBtnClick);
     this.pauseBtn.removeEventListener("click", this.onPauseClick);
-    this.pauseResume.removeEventListener("click", this.onResumeClick);
-    this.pauseRestart.removeEventListener("click", this.onRestartClick);
-    this.pauseTitle.removeEventListener("click", this.onTitleClick);
     if (this.flashTimer) window.clearTimeout(this.flashTimer);
   }
 
@@ -84,7 +71,9 @@ export class HudSystem {
       this.salvageEl.textContent = s.gems.toLocaleString();
       this.killsEl.textContent = `${s.kills} kills`;
       this.intText.textContent = `${s.integrity}/${s.maxIntegrity}`;
-      this.pauseStats.textContent = `${fmtTime(s.timeSec)} - LVL ${s.level} - ${s.kills} kills`;
+      this.pauseStatsText = `${fmtTime(s.timeSec)} - LVL ${s.level} - ${s.kills} kills`;
+      // Keep the (open) overlay's status line live as the run clock ticks.
+      if (s.phase === "paused") publishPause({ open: true, stats: this.pauseStatsText });
       if (s.bossHp01 == null) {
         this.bossBar.classList.add("hidden");
       } else {
@@ -139,14 +128,16 @@ export class HudSystem {
     this.draftCards.innerHTML = "";
     s.draft.forEach((c, i) => {
       const isNew = c.level === 0;
+      const badgeClass = isNew ? "ssg-upgrade-card__badge ssg-upgrade-card__badge--new" : "ssg-upgrade-card__badge";
+      const tip = c.desc.replace(/"/g, "&quot;");
       const card = document.createElement("button");
-      card.className = `ssg-upgrade-card card ${c.kind}`;
+      card.className = "ssg-upgrade-card";
       card.innerHTML = `
-        <div class="card-key">${i + 1}</div>
-        <div class="card-icon ssg-upgrade-card__icon">${c.icon}</div>
-        <div class="card-name">${c.name}</div>
-        <div class="card-lv">${isNew ? '<span class="new">NEW</span>' : `LVL ${c.level} -> ${c.level + 1}`}</div>
-        <div class="card-desc">${c.desc}</div>`;
+        <span class="ssg-upgrade-card__key">${i + 1}</span>
+        <span class="${badgeClass}">${isNew ? "NEW" : `LV ${c.level + 1}`}</span>
+        <span class="ssg-upgrade-card__plaque" data-tip="${tip}">${c.icon}</span>
+        <b class="ssg-upgrade-card__title">${c.name}</b>
+        <span class="ssg-upgrade-card__desc">${c.desc}</span>`;
       card.addEventListener("click", () => this.onPick(c.id));
       this.draftCards.appendChild(card);
     });
@@ -158,12 +149,6 @@ export class HudSystem {
 
     if (s.phase === "title") {
       this.banner.classList.remove("hidden");
-      this.bannerTitle.innerHTML =
-        '<span class="ssg-main-menu-title-line ssg-main-menu-title-line--bone">STAR</span><span class="ssg-main-menu-title-line ssg-main-menu-title-line--hot">BLIGHT</span>';
-      this.bannerSub.textContent = "THE ORBITAL FRONT";
-      this.bannerHint.innerHTML =
-        "MOVE WITH THE MOUSE &nbsp;&bull;&nbsp; weapons auto-fire &nbsp;&bull;&nbsp; collect gems, draft upgrades, stack combos";
-      this.setBannerButton("Engage", "Start sortie");
       this.bannerBtn.classList.remove("hidden");
     } else if (s.phase === "gameover") {
       this.banner.classList.remove("hidden");
@@ -190,7 +175,8 @@ export class HudSystem {
 
   private renderPause(s: HudState) {
     this.pauseBtn.classList.toggle("hidden", s.phase !== "playing");
-    this.pauseMenu.classList.toggle("hidden", s.phase !== "paused");
+    // The pause overlay itself is the shared React PauseMenu, driven via the bridge.
+    publishPause({ open: s.phase === "paused", stats: this.pauseStatsText });
   }
 
   private flashTimer = 0;

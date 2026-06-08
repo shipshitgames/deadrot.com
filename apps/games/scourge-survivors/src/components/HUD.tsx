@@ -1,8 +1,12 @@
 import {
   Button,
   Card,
+  GlobalGameSettingsPanel,
+  GlobalMusicToggle,
+  goToWarlineLobby,
   MainMenuAction,
   MainMenuCopy,
+  MainMenuEnterPrompt,
   MainMenuLayout,
   MainMenuNav,
   MainMenuScreen,
@@ -10,6 +14,11 @@ import {
   MainMenuTitle,
   MainMenuTitleLine,
   MainMenuTopBar,
+  PauseMenu,
+  type PauseMenuAction,
+  PixelConfetti,
+  UpgradeCard,
+  useEnterToReveal,
 } from "@shipshitgames/ui";
 import {
   type MouseEvent as ReactMouseEvent,
@@ -19,7 +28,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { Switch } from "@/components/ui/switch";
 import { SCOURGE_THREAT_TIERS } from "../game/data/enemies";
 import {
   SHOP_UPGRADES,
@@ -31,7 +39,7 @@ import {
 } from "../game/data/survivors";
 import { WEAPON_IDENTITIES } from "../game/data/weaponIdentity";
 import { MENU_HERO_URL, PLAYER_AVATAR_PREVIEW_URLS } from "../game/spriteAssets";
-import type { ScoreEntry, Settings, ShopState } from "../game/storage";
+import type { ScoreEntry, ShopState } from "../game/storage";
 import type { HUDState } from "../game/types";
 import { normalizePlayerAvatar, PLAYER_AVATAR_OPTIONS, type PlayerAvatarId } from "../net/playerAvatars";
 import { PixelIcon, type PixelIconId } from "./PixelIcon";
@@ -39,11 +47,8 @@ import { PixelIcon, type PixelIconId } from "./PixelIcon";
 interface Props {
   state: HUDState;
   scores: ScoreEntry[];
-  settings: Settings;
   onLock: () => void;
   onRestart: () => void;
-  onToggleMusic: () => void;
-  onToggleSfx: () => void;
   onClearScores: () => void;
   onStartMultiplayer: (name: string, room: string, avatar: PlayerAvatarId) => void;
   onLeaveRoom: () => void;
@@ -94,35 +99,10 @@ function IconText({
   );
 }
 
-function roomShareUrl(room: string): string {
-  return `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(room)}`;
-}
-
-function CopyLinkButton({ room }: { room: string }) {
-  const [copied, setCopied] = useState(false);
-  const copy = () => {
-    const url = roomShareUrl(room);
-    const done = () => {
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1600);
-    };
-    try {
-      navigator.clipboard?.writeText(url).then(done, done);
-    } catch {
-      done();
-    }
-  };
-  return (
-    <Button type="button" variant="default" onClick={copy}>
-      {copied ? <IconText icon="check">Copied!</IconText> : <IconText icon="link">Copy breach link</IconText>}
-    </Button>
-  );
-}
-
 function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => void }) {
   return (
     <div
-      className="pointer-events-auto w-[min(620px,88vw)] mt-[14px] bg-[rgba(255,209,102,0.05)] border border-[rgba(255,209,102,0.35)] rounded-xl px-4 py-[14px]"
+      className="pointer-events-auto w-[min(680px,92vw)] mt-[14px] bg-[rgba(255,209,102,0.05)] border border-[rgba(255,209,102,0.35)] rounded-xl px-4 py-[14px]"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex justify-between items-center mb-[10px]">
@@ -137,7 +117,7 @@ function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => void })
           </IconText>
         </span>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="flex flex-col gap-2 max-h-[56vh] overflow-y-auto overscroll-contain pr-1.5">
         {SHOP_UPGRADES.map((u) => {
           const tier = shop.tiers[u.id] ?? 0;
           const maxed = tier >= u.max;
@@ -146,19 +126,20 @@ function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => void })
           return (
             <Card
               key={u.id}
-              className={`flex items-center gap-[10px] bg-black/30 border-white/10 rounded-[9px] px-[10px] py-2 text-left${maxed ? " opacity-70" : ""}`}
+              title={u.desc}
+              className={`flex items-center gap-3 bg-black/30 border-white/10 rounded-[9px] px-3 py-2.5 text-left${maxed ? " opacity-70" : ""}`}
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-[5px] border border-white/10 bg-black/30">
-                <PixelIcon id={u.icon} size={24} label={u.name} />
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[6px] border border-white/10 bg-black/30">
+                <PixelIcon id={u.icon} size={34} label={u.name} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-[14px] font-bold">
+                <div className="text-[15px] font-bold">
                   {u.name}{" "}
                   <span className="text-[11px] opacity-60 font-semibold">
                     {tier}/{u.max}
                   </span>
                 </div>
-                <div className="text-[11px] opacity-65 leading-[1.3]">{u.desc}</div>
+                <div className="mt-0.5 text-[12px] leading-snug text-[#9b958a] normal-case">{u.desc}</div>
               </div>
               <button
                 type="button"
@@ -302,19 +283,7 @@ function MultiplayerPanel({
   );
 }
 
-function SurvivorsPanel({
-  shop,
-  onStart,
-  onShop,
-  onCoop,
-  onLeaderboard,
-}: {
-  shop: ShopState;
-  onStart: (classId: SurvivorClassId) => void;
-  onShop: () => void;
-  onCoop: () => void;
-  onLeaderboard: () => void;
-}) {
+function SurvivorsPanel({ onStart, onBack }: { onStart: (classId: SurvivorClassId) => void; onBack: () => void }) {
   const [classId, setClassId] = useState<SurvivorClassId>(() => savedSurvivorClass());
   const selected = SURVIVOR_CLASSES[classId];
   const selectedWeapon = WEAPON_IDENTITIES[selected.startingWeapon];
@@ -334,7 +303,8 @@ function SurvivorsPanel({
             <button
               key={id}
               type="button"
-              className={`pointer-events-auto cursor-pointer min-h-[238px] rounded-lg border bg-black/30 px-3 py-3 text-left transition-[border-color,background,transform,box-shadow] hover:-translate-y-px ${
+              title={`${cls.desc}\n\nStarting weapon — ${weapon.displayName}: ${weapon.role}`}
+              className={`pointer-events-auto cursor-pointer min-h-[188px] rounded-lg border bg-black/30 px-3 py-3 text-left transition-[border-color,background,transform,box-shadow] hover:-translate-y-px ${
                 active
                   ? "border-accent bg-accent/12 shadow-[0_0_0_1px_rgba(255,106,0,0.22),0_18px_44px_-28px_rgba(255,106,0,0.9)]"
                   : "border-white/15 hover:bg-white/10"
@@ -342,53 +312,42 @@ function SurvivorsPanel({
               onClick={() => setClassId(id)}
               aria-pressed={active}
             >
-              <span className="relative mb-3 flex h-[128px] items-end justify-center overflow-hidden rounded-md border border-white/10 bg-black/35">
+              <span className="relative mb-3 flex h-[120px] items-end justify-center overflow-hidden rounded-md border border-white/10 bg-black/35">
                 <span
                   className={`absolute bottom-[8px] h-[20px] w-[78px] rounded-full blur-[10px] ${active ? "bg-accent/45" : "bg-white/10"}`}
                 />
                 <img
                   src={AVATAR_PREVIEWS[id]}
                   alt=""
-                  className="relative z-[1] h-[124px] w-auto max-w-none object-contain [filter:drop-shadow(0_8px_8px_rgba(0,0,0,0.82))]"
+                  className="relative z-[1] h-[116px] w-auto max-w-none object-contain [filter:drop-shadow(0_8px_8px_rgba(0,0,0,0.82))]"
                   draggable={false}
                 />
               </span>
               <span className="mb-1 flex items-center justify-between gap-2">
-                <b className="text-[17px] leading-tight">{cls.name}</b>
-                <PixelIcon id={cls.icon} size={22} label={cls.name} />
+                <b className="text-[16px] leading-tight">{cls.name}</b>
+                <PixelIcon id={cls.icon} size={20} label={cls.name} />
               </span>
-              <span className="block text-[11px] font-bold uppercase tracking-[0.08em] text-[#ffb56b]">{cls.role}</span>
-              <span className="mt-1 block text-[12px] leading-[1.35] opacity-70">{cls.desc}</span>
-              <span className="mt-2 block rounded-[6px] border border-white/10 bg-black/25 px-2 py-[6px] text-[11px] leading-[1.25] text-[#ffd2a0]">
-                {weapon.displayName} · {weapon.role}
-              </span>
+              <span className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[#ffb56b]">{cls.role}</span>
             </button>
           );
         })}
       </div>
-      <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_auto_auto] md:items-center">
-        <div className="rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-left">
-          <div className="text-[12px] uppercase tracking-[0.12em] text-[#ffb56b]">Selected</div>
-          <div className="text-[22px] font-black tracking-[0.03em]">{selected.name}</div>
-          <div className="text-[12px] opacity-65">
-            {selectedWeapon.callsign} · {Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}:
-            {(SURVIVOR_RUN_GOAL_TIME % 60).toString().padStart(2, "0")} breach descent · {shop.gold.toLocaleString()}{" "}
-            gold banked
-          </div>
+      <div className="mt-4 rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-left">
+        <div className="text-[12px] uppercase tracking-[0.12em] text-[#ffb56b]">Selected</div>
+        <div className="text-[22px] font-black tracking-[0.03em]">{selected.name}</div>
+        <div className="text-[12px] opacity-65">
+          {selectedWeapon.callsign} · {Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}:
+          {(SURVIVOR_RUN_GOAL_TIME % 60).toString().padStart(2, "0")} breach descent
         </div>
-        <Button type="button" variant="ghost" className="h-full min-h-[58px]" onClick={onShop}>
-          Shop
+      </div>
+      <div className="mt-4 flex items-stretch gap-3">
+        <Button type="button" variant="back" onClick={onBack}>
+          ← Back
         </Button>
-        <Button type="button" variant="ghost" className="h-full min-h-[58px]" onClick={onCoop}>
-          Co-op
-        </Button>
-        <Button type="button" variant="ghost" className="h-full min-h-[58px]" onClick={onLeaderboard}>
-          Leaderboard
+        <Button type="button" variant="primary" size="lg" className="flex-1" onClick={launch}>
+          Play a Run
         </Button>
       </div>
-      <Button type="button" variant="primary" size="lg" className="mt-4 w-[min(380px,86vw)]" onClick={launch}>
-        Play a Run
-      </Button>
     </div>
   );
 }
@@ -396,7 +355,6 @@ function SurvivorsPanel({
 function SurvivorsHub({
   shop,
   scores,
-  onStart,
   onOperator,
   onShop,
   onCoop,
@@ -406,7 +364,6 @@ function SurvivorsHub({
 }: {
   shop: ShopState;
   scores: ScoreEntry[];
-  onStart: (classId: SurvivorClassId) => void;
   onOperator: () => void;
   onShop: () => void;
   onCoop: () => void;
@@ -416,7 +373,6 @@ function SurvivorsHub({
 }) {
   const [classId] = useState<SurvivorClassId>(() => savedSurvivorClass());
   const selected = SURVIVOR_CLASSES[classId];
-  const launch = () => onStart(classId);
   return (
     <MainMenuNav label="Survivors Hub" aria-label="Survivors hub">
       <MainMenuAction
@@ -428,17 +384,6 @@ function SurvivorsHub({
           </IconText>
         }
         meta={`${selected.name} · ${Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}m breach`}
-        onClick={launch}
-      />
-      <MainMenuAction
-        type="button"
-        variant="default"
-        label={
-          <IconText icon={selected.icon} size={18}>
-            Operator Loadout
-          </IconText>
-        }
-        meta={selected.role}
         onClick={onOperator}
       />
       <MainMenuAction
@@ -498,6 +443,13 @@ function SurvivorsHub({
           onClick={onStartSandbox}
         />
       )}
+      <MainMenuAction
+        type="button"
+        variant="default"
+        label="← Back to Warline"
+        meta="Lobby"
+        onClick={() => goToWarlineLobby()}
+      />
     </MainMenuNav>
   );
 }
@@ -635,32 +587,12 @@ function ReloadRing({ progress }: { progress: number }) {
   );
 }
 
-function SettingsRow({
-  settings,
-  onToggleMusic,
-  onToggleSfx,
-  className = "mt-4",
-}: {
-  settings: Settings;
-  onToggleMusic: () => void;
-  onToggleSfx: () => void;
-  className?: string;
-}) {
-  const row = "ssg-settings-row text-[13px] tracking-[0.03em]";
+// Music + SFX volume sliders, sourced from the shared global settings store.
+// Self-subscribing, so it needs no props beyond layout spacing.
+function SettingsRow({ className = "mt-4" }: { className?: string }) {
   return (
-    <div className={`flex gap-3 justify-center ${className}`} onClick={(e) => e.stopPropagation()}>
-      <label className={row}>
-        <IconText icon="music" size={16}>
-          Music
-        </IconText>
-        <Switch checked={settings.music} onCheckedChange={onToggleMusic} aria-label="Toggle music" />
-      </label>
-      <label className={row}>
-        <IconText icon="sfx" size={16}>
-          SFX
-        </IconText>
-        <Switch checked={settings.sfx} onCheckedChange={onToggleSfx} aria-label="Toggle sound effects" />
-      </label>
+    <div className={`pointer-events-auto flex justify-center ${className}`} onClick={(e) => e.stopPropagation()}>
+      <GlobalGameSettingsPanel inline className="w-[min(360px,86vw)]" />
     </div>
   );
 }
@@ -846,74 +778,56 @@ function LevelUpDraft({
 
   return (
     <div className={`${OVERLAY} cursor-default`}>
-      <div className="ssg-menu-kicker mb-[10px]">Level {state.level} — choose an upgrade</div>
-      <h2 className="ssg-menu-title !text-[40px] !mb-5">CHOOSE UPGRADE</h2>
-      <div className="flex gap-[18px] flex-wrap justify-center max-w-[92vw]">
-        {state.choices.map((c) => (
-          <div key={c.id} className="relative">
-            <Card
-              asChild
-              className={`pointer-events-auto w-[min(260px,86vw)] cursor-pointer border-white/15 bg-black/45 px-4 py-4 text-center transition-[transform,border-color,background,box-shadow] hover:-translate-y-[2px] hover:bg-white/10 ${
-                c.golden
-                  ? "!border-[#ffd166] bg-[rgba(255,176,46,0.08)] shadow-[0_0_30px_-6px_rgba(255,176,46,0.75)]"
-                  : ""
-              }`}
-            >
-              <button
-                type="button"
+      <PixelConfetti seed={state.level} />
+      <div className="relative z-[1] flex flex-col items-center gap-[18px]">
+        <div className="ssg-menu-kicker mb-[10px]">Level {state.level} — choose an upgrade</div>
+        <h2 className="ssg-menu-title !text-[40px] !mb-5">CHOOSE UPGRADE</h2>
+        <div className="flex gap-[18px] flex-wrap justify-center items-stretch max-w-[92vw]">
+          {state.choices.map((c) => (
+            <div key={c.id} className="relative flex">
+              <UpgradeCard
+                featured={c.golden}
+                icon={<PixelIcon id={c.icon} size={60} label={c.name} />}
+                title={c.name}
+                meta={c.golden ? "EVO" : c.level === 0 ? "NEW" : `LV ${c.level + 1}`}
+                metaTone={c.level === 0 ? "new" : "level"}
+                description={c.desc}
+                tooltip={c.desc}
                 onPointerDown={(event) => armDraftAction(`pick:${c.id}`, event)}
                 onClick={(event) => runDraftAction(`pick:${c.id}`, event, () => onPick(c.id))}
-              >
-                <span className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-[6px] border border-white/15 bg-black/45 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]">
-                  <PixelIcon id={c.icon} size={42} label={c.name} />
-                </span>
-                <span className="block text-[18px] font-extrabold tracking-[0.03em] text-fg">{c.name}</span>
-                <span
-                  className={`mt-1 block text-[11px] font-extrabold uppercase tracking-[0.16em] ${c.golden ? "text-[#ffd166]" : "text-accent"}`}
+              />
+              {!c.golden && state.banishes > 0 && (
+                <button
+                  type="button"
+                  title="Banish — remove from this run's pool"
+                  onPointerDown={(event) => armDraftAction(`banish:${c.id}`, event)}
+                  onClick={(event) => runDraftAction(`banish:${c.id}`, event, () => onBanish(c.id))}
+                  className="pointer-events-auto cursor-pointer absolute -top-2 -left-2 w-7 h-7 rounded-full bg-black/70 border border-white/25 text-white/70 text-[14px] leading-none flex items-center justify-center hover:bg-[#c1121f] hover:text-white hover:border-[#c1121f]"
                 >
-                  {c.golden ? "TRANSFORM" : c.level === 0 ? "NEW" : `Lv ${c.level} -> ${c.level + 1}`}
-                </span>
-                <span className="mt-3 block text-[13px] leading-[1.35] opacity-70">{c.desc}</span>
-                {c.golden && (
-                  <span className="mt-3 text-[11px] tracking-[0.2em] uppercase text-[#ffd166] font-bold">
-                    <IconText icon="evolution" size={15}>
-                      Evolution
-                    </IconText>
-                  </span>
-                )}
-              </button>
-            </Card>
-            {!c.golden && state.banishes > 0 && (
-              <button
-                type="button"
-                title="Banish — remove from this run's pool"
-                onPointerDown={(event) => armDraftAction(`banish:${c.id}`, event)}
-                onClick={(event) => runDraftAction(`banish:${c.id}`, event, () => onBanish(c.id))}
-                className="pointer-events-auto cursor-pointer absolute -top-2 -right-2 w-7 h-7 rounded-full bg-black/70 border border-white/25 text-white/70 text-[14px] leading-none flex items-center justify-center hover:bg-[#c1121f] hover:text-white hover:border-[#c1121f]"
-              >
-                <PixelIcon id="banish" size={16} label="Banish" />
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
-      <div className="flex items-center gap-4 mt-6">
-        <button
-          type="button"
-          disabled={state.rerolls <= 0}
-          onPointerDown={(event) => armDraftAction("reroll", event)}
-          onClick={(event) => runDraftAction("reroll", event, onReroll)}
-          className="pointer-events-auto cursor-pointer text-[14px] font-bold rounded-lg px-4 py-2 border border-[#ff6a00]/45 text-[#e9e3d6] transition-colors hover:bg-[#ff6a00]/15 hover:border-[#ff6a00] disabled:opacity-40 disabled:cursor-default"
-        >
-          <IconText icon="reroll" size={16}>
-            Re-roll ({state.rerolls})
-          </IconText>
-        </button>
-        <span className="text-[12px] uppercase tracking-[0.1em] opacity-60">
-          <IconText icon="banish" size={14}>
-            Banish available: {state.banishes}
-          </IconText>
-        </span>
+                  <PixelIcon id="banish" size={16} label="Banish" />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center gap-4 mt-6">
+          <button
+            type="button"
+            disabled={state.rerolls <= 0}
+            onPointerDown={(event) => armDraftAction("reroll", event)}
+            onClick={(event) => runDraftAction("reroll", event, onReroll)}
+            className="pointer-events-auto cursor-pointer text-[14px] font-bold rounded-lg px-4 py-2 border border-[#ff6a00]/45 text-[#e9e3d6] transition-colors hover:bg-[#ff6a00]/15 hover:border-[#ff6a00] disabled:opacity-40 disabled:cursor-default"
+          >
+            <IconText icon="reroll" size={16}>
+              Re-roll ({state.rerolls})
+            </IconText>
+          </button>
+          <span className="text-[12px] uppercase tracking-[0.1em] opacity-60">
+            <IconText icon="banish" size={14}>
+              Banish available: {state.banishes}
+            </IconText>
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -922,11 +836,8 @@ function LevelUpDraft({
 export function HUD({
   state,
   scores,
-  settings,
   onLock,
   onRestart,
-  onToggleMusic,
-  onToggleSfx,
   onClearScores,
   onStartMultiplayer,
   onLeaveRoom,
@@ -969,7 +880,6 @@ export function HUD({
     outcome,
     weapon,
     weapons,
-    weaponIdentity,
     berserk,
     berserkFrac,
     dualWeapon,
@@ -1049,14 +959,81 @@ export function HUD({
         }
       : null;
   const showMainMenu = status === "pointerlock-needed" && !suppressMenu && !campaign && !survivors && !multiplayer;
+  // Title splash: hold the menu behind a "press enter to continue" prompt.
+  const menuRevealed = useEnterToReveal(showMainMenu && menuScreen === "home");
   const showLockPrompt = status === "pointerlock-needed" && !suppressMenu && (campaign || survivors || multiplayer);
 
   const menuScreenWrap = "flex flex-col items-center gap-2 mt-[14px] w-full";
+
+  // Status row + real actions for the shared PauseMenu (mirrors the title menu;
+  // no shop affordance). Multiplayer surfaces breach/connection info + Leave.
+  const pauseStatus: ReactNode = multiplayer ? (
+    <>
+      <span>
+        Breach {room || "-"} · {connected ? "connected" : "connecting…"}
+      </span>
+      <span>{kills} frags</span>
+    </>
+  ) : (
+    <>
+      <span>Score {score.toLocaleString()}</span>
+      <span>{bossActive ? SCOURGE_THREAT_TIERS.breachBoss.banner : `Wave ${wave}/${totalWaves}`}</span>
+      <span>{kills} kills</span>
+    </>
+  );
+  const pauseActions: PauseMenuAction[] = [
+    {
+      id: "settings",
+      label: "Settings",
+      meta: "Audio",
+      variant: "settings",
+      onSelect: () => setPausePanel("settings"),
+    },
+    {
+      id: "controls",
+      label: "Controls",
+      meta: "Key bindings",
+      variant: "default",
+      onSelect: () => setPausePanel("controls"),
+    },
+    {
+      id: "restart",
+      label: "Restart Run",
+      meta: "New breach",
+      variant: "default",
+      onSelect: onRestart,
+    },
+    ...(multiplayer
+      ? [
+          {
+            id: "leave",
+            label: "Leave Breach",
+            meta: room || "Co-op room",
+            variant: "coop" as const,
+            onSelect: onLeaveRoom,
+          },
+        ]
+      : []),
+    {
+      id: "title",
+      label: "Exit to Menu",
+      meta: "Main menu",
+      onSelect: onMenu,
+    },
+  ];
 
   return (
     // `hud-paused` freezes every in-flight HUD animation except the pause overlay's own UI (see styles.css).
     <div className={`absolute inset-0 pointer-events-none z-10${status === "paused" ? " hud-paused" : ""}`}>
       {playing && <Crosshair berserk={berserkActive} />}
+      {playing && (
+        <div
+          className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-[4px] border border-white/12 bg-black/45 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/55"
+          aria-hidden
+        >
+          <span className="font-bold text-[#ffb26b]">Esc</span> · Pause
+        </div>
+      )}
       {berserkActive && (
         <div className="scourge-berserk-vignette absolute inset-0 pointer-events-none" aria-hidden>
           <span className="scourge-berserk-vignette__slash scourge-berserk-vignette__slash--a" />
@@ -1285,14 +1262,9 @@ export function HUD({
         data-testid="weapon-panel"
       >
         <div className="text-[13px] tracking-[0.12em] uppercase text-accent mb-[2px]">{weapon}</div>
-        <div className="text-[10px] uppercase tracking-[0.08em] text-[#ffb56b]">{weaponIdentity.role}</div>
         <div className="flex items-baseline justify-end gap-[6px]">
           <span className={`text-[30px] font-extrabold${ammo === 0 ? " text-danger" : ""}`}>{ammo}</span>
           <span className="text-[16px] opacity-70">/ {survivors ? magazineSize : reserve}</span>
-        </div>
-        <div className="mt-[3px] text-[10px] leading-tight opacity-60">
-          {weaponIdentity.callsign} · {weaponIdentity.ads} ·{" "}
-          {weaponIdentity.dualCompatible ? "dual-ready" : "single rig"}
         </div>
         {reloading ? (
           <div className="mt-[6px] flex flex-col items-end gap-[3px] text-warn text-[12px] tracking-[0.08em] uppercase">
@@ -1310,9 +1282,6 @@ export function HUD({
               Press R to reload
             </div>
           )
-        )}
-        {survivors && !reloading && (
-          <div className="mt-[3px] text-[10px] font-bold uppercase tracking-[0.08em] opacity-60">Free reloads</div>
         )}
         {ads && adsZoomLevels > 1 && (
           <div className="mt-[6px] text-[11px] opacity-55 tracking-[0.04em]">
@@ -1355,8 +1324,8 @@ export function HUD({
           </MainMenuTopBar>
 
           {menuScreen === "home" ? (
-            <MainMenuLayout>
-              <MainMenuCopy>
+            <MainMenuLayout className={menuRevealed ? "ssg-main-menu-layout--menu" : "ssg-main-menu-layout--splash"}>
+              <MainMenuCopy hidden={menuRevealed}>
                 <div className="ssg-menu-kicker">Pyre breach hub</div>
                 <MainMenuTitle className="ssg-main-menu-title--pixel">
                   <MainMenuTitleLine>SCOURGE</MainMenuTitleLine>
@@ -1368,38 +1337,27 @@ export function HUD({
                 </MainMenuStatus>
               </MainMenuCopy>
 
-              <SurvivorsHub
-                shop={shop}
-                scores={scores}
-                onStart={onStartSurvivors}
-                onOperator={() => setMenuScreen("operator")}
-                onShop={() => setMenuScreen("shop")}
-                onCoop={() => setMenuScreen("multiplayer")}
-                onLeaderboard={() => setMenuScreen("leaderboard")}
-                onSettings={() => setMenuScreen("settings")}
-                onStartSandbox={onStartSandbox}
-              />
+              {menuRevealed ? (
+                <SurvivorsHub
+                  shop={shop}
+                  scores={scores}
+                  onOperator={() => setMenuScreen("operator")}
+                  onShop={() => setMenuScreen("shop")}
+                  onCoop={() => setMenuScreen("multiplayer")}
+                  onLeaderboard={() => setMenuScreen("leaderboard")}
+                  onSettings={() => setMenuScreen("settings")}
+                  onStartSandbox={onStartSandbox}
+                />
+              ) : (
+                <MainMenuEnterPrompt />
+              )}
             </MainMenuLayout>
           ) : (
             <div className="scourge-menu-content">
               {menuScreen === "operator" && (
                 <div className={menuScreenWrap}>
                   <div className={MENU_HEADING}>Operator Loadout</div>
-                  <SurvivorsPanel
-                    shop={shop}
-                    onStart={onStartSurvivors}
-                    onShop={() => setMenuScreen("shop")}
-                    onCoop={() => setMenuScreen("multiplayer")}
-                    onLeaderboard={() => setMenuScreen("leaderboard")}
-                  />
-                  <Button
-                    type="button"
-                    variant="back"
-                    className="scourge-menu-back"
-                    onClick={() => setMenuScreen("home")}
-                  >
-                    ← Survivors Hub
-                  </Button>
+                  <SurvivorsPanel onStart={onStartSurvivors} onBack={() => setMenuScreen("home")} />
                 </div>
               )}
 
@@ -1448,7 +1406,7 @@ export function HUD({
                       Settings
                     </IconText>
                   </div>
-                  <SettingsRow settings={settings} onToggleMusic={onToggleMusic} onToggleSfx={onToggleSfx} />
+                  <SettingsRow />
                   <Button
                     type="button"
                     variant="back"
@@ -1480,196 +1438,140 @@ export function HUD({
               )}
             </div>
           )}
+          <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>
       )}
 
-      {status === "paused" && (
+      {status === "paused" && !suppressMenu && pausePanel === "none" && (
+        <PauseMenu
+          open
+          className="pause-ui"
+          kicker={multiplayer ? "Breach run" : "Pyre breach"}
+          title="Paused"
+          subtitle={
+            multiplayer
+              ? "Hold the line — the breach keeps churning while you regroup."
+              : "The breach is held in stasis. Catch your breath, operator."
+          }
+          status={pauseStatus}
+          onResume={onLock}
+          actions={pauseActions}
+        />
+      )}
+
+      {status === "paused" && !suppressMenu && pausePanel === "settings" && (
         <div className={OVERLAY} onClick={onLock}>
-          <h2 className="m-0 mb-[18px] text-[30px] font-bold">Paused</h2>
-          {multiplayer ? (
-            <>
-              <p className="my-1 opacity-85 text-[16px]">
-                Breach <b>{room}</b> · {connected ? "connected" : "connecting..."} · Kills {kills}
-              </p>
-              <div
-                className="pause-ui pointer-events-auto my-[8px] w-[min(460px,86vw)] bg-[rgba(255,106,0,0.08)] border border-[rgba(255,106,0,0.32)] rounded-[10px] px-[14px] py-3 text-center"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="text-[12px] opacity-70 mb-2">Invite a friend to this breach run:</div>
-                <input
-                  className="pointer-events-auto w-full text-[13px] text-[#cbe9f5] bg-black/40 border border-white/[0.18] rounded-[7px] px-[10px] py-2 text-center"
-                  readOnly
-                  value={roomShareUrl(room)}
-                  onFocus={(e) => e.currentTarget.select()}
-                />
-                <div className="flex gap-[10px] justify-center mt-[10px] flex-wrap">
-                  <CopyLinkButton room={room} />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onLeaveRoom();
-                    }}
-                  >
-                    <IconText icon="leave" size={16}>
-                      Leave Breach
-                    </IconText>
-                  </Button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <p className="my-1 opacity-85 text-[16px]">
-              Score {score.toLocaleString()} · Kills {kills} ·{" "}
-              {bossActive ? SCOURGE_THREAT_TIERS.breachBoss.banner : `Wave ${wave}/${totalWaves}`}
-            </p>
-          )}
+          <h2 className="m-0 mb-[18px] text-[30px] font-bold">
+            <IconText icon="settings" size={26}>
+              Settings
+            </IconText>
+          </h2>
+          <SettingsRow className="mt-0" />
           <div
-            className="pause-ui flex flex-col gap-[10px] mt-[22px] w-[min(340px,86vw)] pointer-events-auto"
+            className="pause-ui mt-[22px] w-[min(340px,86vw)] pointer-events-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            {pausePanel === "none" && (
-              <>
-                <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel("settings")}>
-                  <IconText icon="settings" size={16}>
-                    Settings
-                  </IconText>
-                </Button>
-                <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel("controls")}>
-                  <IconText icon="gamepad" size={16}>
-                    Controls
-                  </IconText>
-                </Button>
-                <Button type="button" variant="ghost" className="w-full" onClick={onRestart}>
-                  <IconText icon="restart" size={16}>
-                    Restart Run
-                  </IconText>
-                </Button>
-                <Button type="button" variant="default" className="w-full" onClick={onLock}>
-                  <IconText icon="resume" size={16}>
-                    Resume
-                  </IconText>
-                </Button>
-                <Button type="button" variant="ghost" className="w-full" onClick={onMenu}>
-                  <IconText icon="leave" size={16}>
-                    Exit to Menu
-                  </IconText>
-                </Button>
-              </>
-            )}
+            <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel("none")}>
+              ← Back
+            </Button>
+          </div>
+        </div>
+      )}
 
-            {pausePanel === "settings" && (
-              <>
-                <div className="text-[16px] font-extrabold tracking-[0.04em] text-center mb-[2px]">
-                  <IconText icon="settings" size={17}>
-                    Settings
-                  </IconText>
-                </div>
-                <SettingsRow
-                  settings={settings}
-                  onToggleMusic={onToggleMusic}
-                  onToggleSfx={onToggleSfx}
-                  className="mt-0"
-                />
-                <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel("none")}>
-                  ← Back
-                </Button>
-              </>
-            )}
-
-            {pausePanel === "controls" && (
-              <>
-                <div className="text-[16px] font-extrabold tracking-[0.04em] text-center mb-[2px]">
-                  <IconText icon="gamepad" size={17}>
-                    Controls
-                  </IconText>
-                </div>
-                <div className="flex flex-col gap-2 px-[18px] py-[14px] bg-white/[0.04] border border-white/[0.12] rounded-[10px] text-[14px] [&>div]:flex [&>div]:items-center [&>div]:gap-[10px] [&_span]:shrink-0 [&_span]:w-[110px] [&_span]:text-right [&_span]:opacity-85">
-                  <div>
-                    <span>
-                      <kbd>WASD</kbd>
-                    </span>{" "}
-                    Move
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>Mouse</kbd>
-                    </span>{" "}
-                    Look
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>L-Click</kbd>
-                    </span>{" "}
-                    Fire
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>R-Click</kbd>
-                    </span>{" "}
-                    ADS
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>Wheel</kbd>
-                    </span>{" "}
-                    Weapon switch
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>R-Click</kbd> + <kbd>Wheel</kbd>
-                    </span>{" "}
-                    Scope zoom
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>F</kbd> / <kbd>V</kbd>
-                    </span>{" "}
-                    Melee
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>1</kbd>–<kbd>5</kbd>
-                    </span>{" "}
-                    Weapon
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>Space</kbd>
-                    </span>{" "}
-                    Jump
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>Shift</kbd>
-                    </span>{" "}
-                    Run
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>Ctrl</kbd> / <kbd>C</kbd>
-                    </span>{" "}
-                    Crouch
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>R</kbd>
-                    </span>{" "}
-                    Reload
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>Esc</kbd>
-                    </span>{" "}
-                    Pause / Resume
-                  </div>
-                </div>
-                <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel("none")}>
-                  ← Back
-                </Button>
-              </>
-            )}
+      {status === "paused" && !suppressMenu && pausePanel === "controls" && (
+        <div className={OVERLAY} onClick={onLock}>
+          <h2 className="m-0 mb-[18px] text-[30px] font-bold">
+            <IconText icon="gamepad" size={26}>
+              Controls
+            </IconText>
+          </h2>
+          <div
+            className="pause-ui flex flex-col gap-[10px] w-[min(340px,86vw)] pointer-events-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col gap-2 px-[18px] py-[14px] bg-white/[0.04] border border-white/[0.12] rounded-[10px] text-[14px] [&>div]:flex [&>div]:items-center [&>div]:gap-[10px] [&_span]:shrink-0 [&_span]:w-[110px] [&_span]:text-right [&_span]:opacity-85">
+              <div>
+                <span>
+                  <kbd>WASD</kbd>
+                </span>{" "}
+                Move
+              </div>
+              <div>
+                <span>
+                  <kbd>Mouse</kbd>
+                </span>{" "}
+                Look
+              </div>
+              <div>
+                <span>
+                  <kbd>L-Click</kbd>
+                </span>{" "}
+                Fire
+              </div>
+              <div>
+                <span>
+                  <kbd>R-Click</kbd>
+                </span>{" "}
+                ADS
+              </div>
+              <div>
+                <span>
+                  <kbd>Wheel</kbd>
+                </span>{" "}
+                Weapon switch
+              </div>
+              <div>
+                <span>
+                  <kbd>R-Click</kbd> + <kbd>Wheel</kbd>
+                </span>{" "}
+                Scope zoom
+              </div>
+              <div>
+                <span>
+                  <kbd>F</kbd> / <kbd>V</kbd>
+                </span>{" "}
+                Melee
+              </div>
+              <div>
+                <span>
+                  <kbd>1</kbd>–<kbd>5</kbd>
+                </span>{" "}
+                Weapon
+              </div>
+              <div>
+                <span>
+                  <kbd>Space</kbd>
+                </span>{" "}
+                Jump
+              </div>
+              <div>
+                <span>
+                  <kbd>Shift</kbd>
+                </span>{" "}
+                Run
+              </div>
+              <div>
+                <span>
+                  <kbd>Ctrl</kbd> / <kbd>C</kbd>
+                </span>{" "}
+                Crouch
+              </div>
+              <div>
+                <span>
+                  <kbd>R</kbd>
+                </span>{" "}
+                Reload
+              </div>
+              <div>
+                <span>
+                  <kbd>Esc</kbd>
+                </span>{" "}
+                Pause / Resume
+              </div>
+            </div>
+            <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel("none")}>
+              ← Back
+            </Button>
           </div>
         </div>
       )}
@@ -1841,7 +1743,7 @@ export function HUD({
               </div>
             </>
           )}
-          <SettingsRow settings={settings} onToggleMusic={onToggleMusic} onToggleSfx={onToggleSfx} />
+          <SettingsRow />
         </div>
       )}
     </div>

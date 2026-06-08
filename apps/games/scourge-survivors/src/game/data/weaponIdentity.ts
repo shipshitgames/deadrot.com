@@ -134,7 +134,7 @@ export const WEAPON_IDENTITIES: Record<WeaponId, WeaponIdentityDef> = {
     starterClassIds: ["scout"],
     assetIds: {
       sprite: "weapon-smg",
-      sfx: "sfx-smg-pyre",
+      sfx: "sfx-smg",
     },
     ads: {
       label: "close ADS notch",

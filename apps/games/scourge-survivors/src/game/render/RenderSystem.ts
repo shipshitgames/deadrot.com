@@ -1,8 +1,8 @@
-import * as THREE from "three";
 import { firstPersonPointerLock } from "@shipshitgames/engine";
+import * as THREE from "three";
+import { CAMERA_BASE_FOV } from "../constants";
 import type { GameContext } from "../context";
 import type { GameSystems } from "../systems";
-import { CAMERA_BASE_FOV } from "../constants";
 
 /** Owns the renderer/scene/camera/controls bootstrap and the per-frame draw. */
 export class RenderSystem {
@@ -19,7 +19,7 @@ export class RenderSystem {
     this.ctx.renderer.shadowMap.enabled = true;
     this.ctx.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.ctx.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.ctx.renderer.toneMappingExposure = 1.15;
+    this.ctx.renderer.toneMappingExposure = 1.25;
     this.ctx.container.appendChild(this.ctx.renderer.domElement);
   }
 
@@ -38,8 +38,8 @@ export class RenderSystem {
     this.ctx.rig = firstPersonPointerLock(camera, this.ctx.renderer.domElement);
     this.ctx.scene.add(camera);
 
-    this.ctx.scene.add(new THREE.HemisphereLight(0x9fc4ff, 0x202028, 1.1));
-    this.ctx.scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+    this.ctx.scene.add(new THREE.HemisphereLight(0x9fc4ff, 0x202028, 1.3));
+    this.ctx.scene.add(new THREE.AmbientLight(0xffffff, 0.85));
 
     const sun = new THREE.DirectionalLight(0xffffff, 2.6);
     sun.position.set(38, 58, 22);
