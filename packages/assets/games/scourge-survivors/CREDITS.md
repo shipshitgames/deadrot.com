@@ -1,5 +1,18 @@
 # Asset Credits
 
+## 2026-06-08 - Scourge enemy cutout re-extraction
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Faction / role: Scourge host-grunt, spitter-host, winged-host, and breach-boss static and animation sprites.
+- Tool: local re-extraction with `ffmpeg`, a deterministic Node pixel pass, and `cwebp`.
+- Plan: Codex local cleanup.
+- Kind: alpha/matte cleanup of existing generated 2D enemy sprite sheets.
+- Source sheets: `animations/scourge/*/*/source/sheet.png`.
+- Final assets: `enemies/scourge/**/{front,side,back}.webp` and `animations/scourge/**/frame-*.webp`.
+- Post-processing: split preserved 6-frame by 3-view sheets, keyed magenta/green matte pixels and white-pink grid fringe to hard alpha, cleared the outer alpha border, resized with nearest-neighbor, and encoded lossless WebP with exact alpha.
+- Notes: No new raster art was generated. This refresh removes visible magenta/purple matte rectangles and keeps the runtime sprites aligned with the existing animation source sheets.
+
 ## 2026-06-07 - Scourge gib sprite set
 
 - Status: promoted into runtime.
