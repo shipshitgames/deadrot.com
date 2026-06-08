@@ -1,11 +1,11 @@
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-
-import { Eyebrow } from "@/components/site/eyebrow";
-import { Backdrop } from "@/components/site/atmosphere";
+import { notFound } from "next/navigation";
 import { GameCard } from "@/components/game/game-card";
-import { bestiary, getCreature, creatureGames, accentVars, spriteUrl } from "@/lib/content";
+import { Backdrop } from "@/components/site/atmosphere";
+import { Eyebrow } from "@/components/site/eyebrow";
+import { accentVars, bestiary, creatureGames, getCreature, spriteUrl } from "@/lib/content";
+import { createEntitySocialMetadata } from "@/lib/social";
 
 export function generateStaticParams() {
   return bestiary.map((b) => ({ slug: b.slug }));
@@ -15,7 +15,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const creature = getCreature(slug);
   if (!creature) return {};
-  return { title: creature.name, description: creature.tagline };
+  return createEntitySocialMetadata({
+    title: creature.name,
+    description: creature.tagline,
+    path: `/bestiary/${creature.slug}`,
+    kind: "Bestiary",
+  });
 }
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {

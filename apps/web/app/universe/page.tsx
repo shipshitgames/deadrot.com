@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-
-import { Eyebrow } from "@/components/site/eyebrow";
-import { Backdrop } from "@/components/site/atmosphere";
-import { EntityCard } from "@/components/roster/entity-card";
 import { FactionCrest } from "@/components/faction/faction-crest";
+import { EntityCard } from "@/components/roster/entity-card";
+import { Backdrop } from "@/components/site/atmosphere";
+import { Eyebrow } from "@/components/site/eyebrow";
 import { accentVars, bestiary, characters, factions, universe } from "@/lib/content";
+import { createSocialMetadata } from "@/lib/social";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createSocialMetadata({
   title: "The Universe",
   description: "One blood-soaked canon — the Scourge, the Pact, the Choir, and the war for the lanes.",
-};
+  path: "/universe",
+  openGraphTitle: "The DEADROT Universe",
+});
 
 export default function UniversePage() {
   return (

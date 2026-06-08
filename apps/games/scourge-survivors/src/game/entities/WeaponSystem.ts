@@ -21,7 +21,7 @@ import {
 } from "../constants";
 import type { GameContext } from "../context";
 import { WEAPON_VIEW_X, WEAPON_VIEW_Y, WEAPON_VIEW_Z } from "../data/internalTypes";
-import { MUZZLE_FLASH_TEXTURE, WEAPON_SPRITE_CONFIG, WEAPON_SPRITE_TEXTURES } from "../spriteAssets";
+import { MUZZLE_FLASH_TEXTURE, WEAPON_SPRITE_TEXTURES, weaponSpriteConfig, weaponSpriteTexture } from "../spriteAssets";
 import type { GameSystems } from "../systems";
 import type { Enemy } from "./Enemy";
 
@@ -130,8 +130,9 @@ export class WeaponSystem {
     this.weaponBarrel.scale.z = spec.barrelLen / 0.45;
     this.weaponBarrel.position.set(0, 0.02, -0.2 - spec.barrelLen / 2);
 
-    const sprite = WEAPON_SPRITE_CONFIG[id];
-    this.weaponSpriteMat.map = WEAPON_SPRITE_TEXTURES[id];
+    const tier = this.activeWeaponVisualTier(id);
+    const sprite = weaponSpriteConfig(id, tier);
+    this.weaponSpriteMat.map = weaponSpriteTexture(id, tier);
     this.weaponSpriteMat.needsUpdate = true;
     this.weaponSprite.scale.set(sprite.scale[0], sprite.scale[1], 1);
     this.weaponSprite.position.set(sprite.offset[0], sprite.offset[1], sprite.offset[2]);
@@ -269,7 +270,7 @@ export class WeaponSystem {
     this.ctx.muzzleFlash.material.rotation = this.muzzleFlashBaseRotation + (Math.random() - 0.5) * 0.18;
     this.ctx.muzzleFlash.material.color.setHex(berserkActive ? 0xff2a18 : 0xffffff);
     this.ctx.muzzleFlash.scale.setScalar(
-      WEAPON_SPRITE_CONFIG[this.ctx.activeWeapon].flashScale * (berserkActive ? 1.22 : 1),
+      weaponSpriteConfig(this.ctx.activeWeapon, this.activeWeaponVisualTier()).flashScale * (berserkActive ? 1.22 : 1),
     );
     this.ctx.muzzleLight.color.setHex(berserkActive ? 0xff2a18 : 0xffcc66);
     this.ctx.muzzleLight.intensity = berserkActive ? 13 : 8;
@@ -539,6 +540,10 @@ export class WeaponSystem {
       this.currentFov = fov;
       this.ctx.rig.setFov(fov);
     }
+  }
+
+  private activeWeaponVisualTier(id: WeaponId = this.ctx.activeWeapon) {
+    return this.ctx.survivors && id === "pistol" ? this.sys.survivors.mainWeaponVisualTier() : "base";
   }
 
   resetView() {

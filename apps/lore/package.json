@@ -18,6 +18,7 @@
     "typecheck": "tsc --noEmit",
     "format": "npx prettier . --write",
     "test": "tsx --test",
+    "test:unit": "bun test tests",
     "profile": "0x -D prof ./quartz/bootstrap-cli.mjs build --concurrency=1"
   },
   "engines": {

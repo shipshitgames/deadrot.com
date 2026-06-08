@@ -110,6 +110,16 @@ export interface HUDState {
   connected: boolean;
   room: string;
   scoreboard: ScoreboardEntry[];
+  /** Campaign mode state, distinct from menu, sandbox, multiplayer, and Survivors. */
+  campaign: boolean;
+  missionId: string;
+  missionTitle: string;
+  missionPhase: "idle" | "active" | "complete";
+  missionObjective: string;
+  missionCheckpoint: string;
+  missionEncounter: string;
+  missionExtractionReady: boolean;
+  missionComplete: boolean;
   /** Dev sandbox/labs mode: real combat sim without run/wave progression. */
   sandbox: boolean;
   /** Survivors mode state. */

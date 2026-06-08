@@ -1,40 +1,42 @@
-import type { Metadata } from "next";
-import Link from "next/link";
 import {
   BookOpen,
   Boxes,
   ExternalLink,
   Gamepad2,
   GitBranch,
+  type LucideIcon,
   RadioTower,
   ScrollText,
   Terminal,
   Wrench,
-  type LucideIcon,
 } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Eyebrow } from "@/components/site/eyebrow";
-import { Backdrop } from "@/components/site/atmosphere";
+import type { Metadata } from "next";
+import Link from "next/link";
 import { StatusBadge } from "@/components/game/game-card";
+import { Backdrop } from "@/components/site/atmosphere";
+import { Eyebrow } from "@/components/site/eyebrow";
+import { Button } from "@/components/ui/button";
 import {
   accentVars,
   bestiary,
   characters,
   factions,
+  type GameStatus,
   games,
   getCharacter,
   getCreature,
   playableGames,
   universe,
-  type GameStatus,
 } from "@/lib/content";
+import { createSocialMetadata } from "@/lib/social";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createSocialMetadata({
   title: "Docs",
   description:
     "Public Ship Shit Games documentation for the games, canon, Warline, shared packages, asset pipeline, and studio workflow.",
-};
+  path: "/docs",
+  openGraphTitle: "DEADROT Docs",
+});
 
 const STATUS_RANK: Record<GameStatus, number> = {
   PLAYABLE: 0,

@@ -35,6 +35,7 @@ Start here, follow the links, open the graph view.
 - [[The-Wardens]] — defense; hold the line → Deadlane
 - [[The-Listeners]] — heresy; understand the Choir _(concept)_
 - [[The-Quiet-Rooms]] — Listener black-room practice; keep severed Choir nodes alive to study
+- [[The-Dead-Air-Liturgy]] — Pact dead-air drill; clear carriers after the cut
 - [[The-Pact]] — field compact; Pyre/Warden rivalry stops the instant a breach opens
 - [[The-Last-Manifest]] — Pyre run sheet; target, fuel ledger, and Pact handoff
 
@@ -43,7 +44,7 @@ Start here, follow the links, open the graph view.
 - [[Zero-Day]] — _the night we lost the sky_ (first-contact space shooter; the origin) — concept
 - [[Scourge-Survivors]] — _survive the swarm_ (first-person horde-survivors shooter) — playable prototype
 - [[Deadlane]] — _hold the lane_ (3D tower defense) — playable prototype
-- [[Pactfall]] — _test the Pact_ (Pyre vs Wardens MOBA) — playable prototype
+- [[Pactfall]] — _test the Pact_ (Pyre vs Wardens MOBA) — playable prototype; [[Bloodlane]] is the one-lane v1 design doc
 - [[Starblight]] — _burn the orbital infection_ (arcade pilot shooter) — playable prototype
 - [[Redline]] — _outrun the Choir_ (high-speed courier platformer) — playable prototype
 - [[Rothulk]] — _burn it from the inside_ (infiltration platformer) — playable prototype
@@ -54,7 +55,7 @@ Start here, follow the links, open the graph view.
 - Pyre / Scourge Survivors: [[Ranger]], [[Bulwark]], [[Vector]], [[Patch]]
 - Wardens / Deadlane: [[Field-Engineer]], [[Lane-Gunner]], [[Wallwright]]
 - Pactfall: [[Pyre-Duelist]], [[Pyre-Cauterizer]], [[Warden-Bastion]], [[Warden-Artillerist]], [[Trucebreaker]]
-- Starblight: [[Pyre-Interceptor-Pilot]], [[Warden-Defense-Pilot]], [[Scourge-Fighter]], [[Orbital-Breach-Carrier]]
+- Starblight: [[Pyre-Interceptor-Pilot]], [[Warden-Defense-Pilot]], [[Scourge-Fighter]], [[Spore-Casket]], [[Orbital-Breach-Carrier]]
 - Redline: [[Pyre-Courier]], [[Warden-Courier]]
 - Rothulk: [[Pyre-Saboteur]]
 - Core Scourge: [[Swarm-Ripper]], [[Swarm-Spitter]], [[Wound-Hound]], [[Spore-Lung]], [[Render]], [[Rot-Engine]], [[Graft-Breacher]], [[Cairn]], [[Sower]], [[Gristle-Vat]], [[Chorister]], [[Cantor]], [[Descant]], [[Bourdon]], [[Aeolian]], [[Carillon]], [[Quaver]], [[Breach-Boss]]

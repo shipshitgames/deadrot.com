@@ -1,13 +1,13 @@
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-
-import { Eyebrow } from "@/components/site/eyebrow";
-import { Backdrop } from "@/components/site/atmosphere";
+import { notFound } from "next/navigation";
+import { FactionCrest } from "@/components/faction/faction-crest";
 import { GameCard } from "@/components/game/game-card";
 import { EntityCard } from "@/components/roster/entity-card";
-import { FactionCrest } from "@/components/faction/faction-crest";
-import { factions, getFaction, factionGames, charactersByFaction, accentVars } from "@/lib/content";
+import { Backdrop } from "@/components/site/atmosphere";
+import { Eyebrow } from "@/components/site/eyebrow";
+import { accentVars, charactersByFaction, factionGames, factions, getFaction } from "@/lib/content";
+import { createEntitySocialMetadata } from "@/lib/social";
 
 export function generateStaticParams() {
   return factions.map((f) => ({ slug: f.slug }));
@@ -17,7 +17,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const faction = getFaction(slug);
   if (!faction) return {};
-  return { title: faction.name, description: faction.tagline };
+  return createEntitySocialMetadata({
+    title: faction.name,
+    description: faction.tagline,
+    path: `/factions/${faction.slug}`,
+    kind: "Faction",
+  });
 }
 
 export default async function FactionPage({ params }: { params: Promise<{ slug: string }> }) {

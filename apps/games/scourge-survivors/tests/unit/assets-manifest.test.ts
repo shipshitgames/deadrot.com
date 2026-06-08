@@ -178,12 +178,16 @@ describe("asset manifest", () => {
       hash.update("\0");
     }
 
-    expect(hash.digest("hex")).toBe("3bd0c4b4e9d7cbb8370860c6c4329bd5acd4d3d2d20c9db1718ae11a7cc108cc");
+    expect(hash.digest("hex")).toBe("6bd4f67a7cf04e6a2657c0c4613e46f2b04b7de7c9c4d62810bceab0279a0f53");
   });
 
   it("defines weapon sprite metadata needed for first-person runtime placement", () => {
     const weaponSpriteIds = [
       "weapon-pistol",
+      "weapon-pistol-tier-2",
+      "weapon-pistol-tier-3",
+      "weapon-pistol-tier-4",
+      "weapon-pistol-evolved",
       "weapon-smg",
       "weapon-shotgun",
       "weapon-cannon",
@@ -198,6 +202,29 @@ describe("asset manifest", () => {
       expect(entry.weapon?.offset, `${id} offset`).toHaveLength(3);
       expect(entry.weapon?.muzzle, `${id} muzzle`).toHaveLength(3);
       expect(entry.weapon?.flashScale, `${id} flash scale`).toBeGreaterThan(0);
+    }
+  });
+
+  it("keeps main sidearm tier sprites as optimized WebP cutouts with stable muzzle metadata", () => {
+    const tierSpriteIds = [
+      "weapon-pistol-tier-2",
+      "weapon-pistol-tier-3",
+      "weapon-pistol-tier-4",
+      "weapon-pistol-evolved",
+    ] as const;
+    const base = manifest.sprites["weapon-pistol"];
+
+    for (const id of tierSpriteIds) {
+      const entry = manifest.sprites[id];
+      expect(entry.path, `${id} path`).toMatch(/^games\/scourge-survivors\/weapons\/pyre\/.*\.webp$/);
+      expect(entry.filter, id).toBe("nearest");
+      expect(entry.dimensions?.[0], `${id} width`).toBeGreaterThan(0);
+      expect(entry.dimensions?.[1], `${id} height`).toBeGreaterThan(0);
+      expect(entry.license.tool, `${id} tool`).toBe("gpt-image-2");
+      expect(entry.scale, `${id} scale`).toEqual(base.scale);
+      expect(entry.weapon?.offset, `${id} offset`).toEqual(base.weapon?.offset);
+      expect(entry.weapon?.muzzle, `${id} muzzle`).toEqual(base.weapon?.muzzle);
+      expect(entry.weapon?.flashScale, `${id} flash scale`).toEqual(base.weapon?.flashScale);
     }
   });
 
