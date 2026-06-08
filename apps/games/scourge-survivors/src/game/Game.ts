@@ -34,6 +34,7 @@ import { PlayerSystem } from "./entities/PlayerSystem";
 import { ProjectilesSystem } from "./entities/ProjectilesSystem";
 import { WeaponSystem } from "./entities/WeaponSystem";
 import { GameOverSystem } from "./modes/GameOverSystem";
+import { MissionSystem } from "./modes/MissionSystem";
 import { MultiplayerSystem } from "./modes/MultiplayerSystem";
 import { PveDirectorSystem } from "./modes/PveDirectorSystem";
 import { SurvivorsSystem } from "./modes/SurvivorsSystem";
@@ -70,6 +71,7 @@ export class Game {
     sys.pickups = new PickupsSystem(ctx, sys);
     sys.fx = new FxSystem(ctx, sys);
     sys.pve = new PveDirectorSystem(ctx, sys);
+    sys.mission = new MissionSystem(ctx, sys);
     sys.survivors = new SurvivorsSystem(ctx, sys);
     sys.multiplayer = new MultiplayerSystem(ctx, sys);
     sys.input = new InputSystem(ctx, sys);
@@ -162,7 +164,7 @@ export class Game {
 
   startCampaign(startMapId?: string) {
     this.ctx.sandbox = false;
-    this.sys.pve.startCampaign(startMapId);
+    this.sys.mission.startCampaign(startMapId);
   }
 
   startSurvivors(classId?: SurvivorClassId) {
@@ -176,6 +178,7 @@ export class Game {
 
   startSandbox(mapId: string = this.ctx.currentMap?.id ?? DEFAULT_MAP_ID) {
     this.sys.multiplayer.leaveMultiplayer(false);
+    this.sys.mission.clearMissionState();
     this.ctx.sandbox = true;
     this.ctx.survivors = false;
     this.sys.survivors.recomputeStats();
@@ -344,6 +347,7 @@ export class Game {
 
   startMultiplayer(room: string, name: string, avatar: PlayerAvatarId = "ranger") {
     this.ctx.sandbox = false;
+    this.sys.mission.clearMissionState();
     this.sys.multiplayer.startMultiplayer(room, name, avatar);
   }
 

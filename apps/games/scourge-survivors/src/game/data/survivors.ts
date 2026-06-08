@@ -202,6 +202,25 @@ export const EVOLUTIONS: Record<WeaponUpgradeId, EvolutionDef> = {
 
 export const WEAPON_UPGRADE_IDS: WeaponUpgradeId[] = ["orbit", "bolt", "nova"];
 
+export type MainWeaponVisualTier = "base" | "tier-2" | "tier-3" | "tier-4" | "evolved";
+
+export const MAIN_WEAPON_VISUAL_TIERS: MainWeaponVisualTier[] = ["base", "tier-2", "tier-3", "tier-4", "evolved"];
+
+const MAIN_WEAPON_VISUAL_UPGRADES = ["dmg", "rate", "multishot", "crit"] as const satisfies readonly UpgradeId[];
+
+export function mainWeaponUpgradeScore(upgradeLevels: Partial<Record<UpgradeId, number>>): number {
+  return MAIN_WEAPON_VISUAL_UPGRADES.reduce((sum, id) => sum + (upgradeLevels[id] ?? 0), 0);
+}
+
+export function mainWeaponVisualTier(upgradeLevels: Partial<Record<UpgradeId, number>>): MainWeaponVisualTier {
+  const score = mainWeaponUpgradeScore(upgradeLevels);
+  if (score >= 12) return "evolved";
+  if (score >= 8) return "tier-4";
+  if (score >= 4) return "tier-3";
+  if (score >= 1) return "tier-2";
+  return "base";
+}
+
 export function availableEvolutionChoice(
   upgradeLevels: Partial<Record<UpgradeId, number>>,
   evolved: Partial<Record<WeaponUpgradeId, boolean>>,

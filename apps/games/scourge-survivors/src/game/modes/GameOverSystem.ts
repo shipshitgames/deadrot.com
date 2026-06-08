@@ -1,6 +1,6 @@
 import { STARTING_WEAPON, WEAPON_ORDER, WEAPONS } from "../constants";
 import type { GameContext } from "../context";
-import { CAMPAIGN_ORDER, campaignSequence, DEFAULT_MAP_ID, getMap } from "../data/maps";
+import { DEFAULT_MAP_ID, getMap } from "../data/maps";
 import type { GameSystems } from "../systems";
 
 /** Terminal state + the restart / return-to-menu orchestration. */
@@ -38,11 +38,8 @@ export class GameOverSystem {
       this.sys.player.resetPlayer(this.sys.survivors.selectedStartingWeapon());
       this.sys.survivors.initSurvivorsRun();
     } else {
-      this.ctx.campaignStage = 0;
-      if (!this.ctx.campaignMaps.length) this.ctx.campaignMaps = campaignSequence(CAMPAIGN_ORDER[0]);
-      this.sys.arena.buildArena(this.ctx.campaignMaps[0]);
-      this.sys.player.resetPlayer();
-      this.sys.pve.startWaveSystem();
+      this.sys.mission.restartCampaign();
+      return;
     }
     this.ctx.status = "pointerlock-needed";
     this.sys.hud.emit();
@@ -52,9 +49,9 @@ export class GameOverSystem {
   /** Return to the main menu (drops any mode, no auto-lock). */
   returnToMenu() {
     this.sys.multiplayer.leaveMultiplayer(false);
+    this.sys.mission.clearMissionState();
     this.ctx.sandbox = false;
     this.ctx.survivors = false;
-    this.ctx.campaignStage = 0;
     this.sys.survivors.recomputeStats();
     this.sys.arena.buildArena(getMap(DEFAULT_MAP_ID));
     this.sys.player.resetPlayer();

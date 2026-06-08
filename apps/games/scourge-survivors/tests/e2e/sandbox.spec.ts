@@ -2,6 +2,7 @@ import { expect, type Page, test } from "@playwright/test";
 
 type HudSnapshot = {
   status: string;
+  campaign: boolean;
   sandbox: boolean;
   survivors: boolean;
   multiplayer: boolean;
@@ -19,6 +20,17 @@ type HudSnapshot = {
   ads: boolean;
   adsZoom: number;
   adsZoomLevels: number;
+  campaignStage: number;
+  campaignTotalStages: number;
+  mapName: string;
+  missionId: string;
+  missionTitle: string;
+  missionPhase: string;
+  missionObjective: string;
+  missionCheckpoint: string;
+  missionEncounter: string;
+  missionExtractionReady: boolean;
+  missionComplete: boolean;
 };
 
 type AnimationSample = {
@@ -656,6 +668,38 @@ test.describe("dev sandbox smoke", () => {
     for (const [a, b] of nonOverlappingPairs) {
       expect(overlaps(bySelector[a], bySelector[b]), `${a} overlaps ${b}`).toBe(false);
     }
+  });
+
+  test("starts campaign through the mission system instead of the main menu state", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
+
+    await page.evaluate(() => {
+      (window as unknown as { __fpsGame: { startCampaign: (mapId: string) => void } }).__fpsGame.startCampaign("maw");
+    });
+
+    await expect.poll(() => snapshot(page).then((state) => state.campaign)).toBe(true);
+    const state = await snapshot(page);
+
+    expect(state).toMatchObject({
+      status: "pointerlock-needed",
+      campaign: true,
+      sandbox: false,
+      survivors: false,
+      campaignStage: 1,
+      campaignTotalStages: 4,
+      mapName: "The Maw",
+      missionId: "ashgate-breach",
+      missionTitle: "Ashgate Breach",
+      missionPhase: "active",
+      missionObjective: "Sever the local Choir relay inside The Maw",
+      missionCheckpoint: "The Maw breachhead",
+      missionEncounter: "The Maw Choir guard",
+      missionExtractionReady: false,
+      missionComplete: false,
+    });
+    await expect(page.getByRole("button", { name: /click to lock/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /start run/i })).toHaveCount(0);
   });
 
   test("damage pickup activates a bounded berserk state", async ({ page }) => {

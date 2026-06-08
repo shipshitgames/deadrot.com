@@ -1,11 +1,11 @@
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-
-import { Eyebrow } from "@/components/site/eyebrow";
-import { Backdrop } from "@/components/site/atmosphere";
+import { notFound } from "next/navigation";
 import { GameCard } from "@/components/game/game-card";
-import { accentVars, characters, characterGames, getCharacter, getFaction, spriteUrl } from "@/lib/content";
+import { Backdrop } from "@/components/site/atmosphere";
+import { Eyebrow } from "@/components/site/eyebrow";
+import { accentVars, characterGames, characters, getCharacter, getFaction, spriteUrl } from "@/lib/content";
+import { createEntitySocialMetadata } from "@/lib/social";
 
 export function generateStaticParams() {
   return characters.map((c) => ({ slug: c.slug }));
@@ -15,7 +15,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const character = getCharacter(slug);
   if (!character) return {};
-  return { title: character.name, description: character.tagline };
+  return createEntitySocialMetadata({
+    title: character.name,
+    description: character.tagline,
+    path: `/characters/${character.slug}`,
+    kind: "Dossier",
+  });
 }
 
 export default async function CharacterPage({ params }: { params: Promise<{ slug: string }> }) {
