@@ -25,6 +25,7 @@ import {
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -967,19 +968,23 @@ export function HUD({
 
   // Status row + real actions for the shared PauseMenu (mirrors the title menu;
   // no shop affordance). Multiplayer surfaces breach/connection info + Leave.
-  const pauseStatus: ReactNode = multiplayer ? (
-    <>
-      <span>
-        Breach {room || "-"} · {connected ? "connected" : "connecting…"}
-      </span>
-      <span>{kills} frags</span>
-    </>
-  ) : (
-    <>
-      <span>Score {score.toLocaleString()}</span>
-      <span>{bossActive ? SCOURGE_THREAT_TIERS.breachBoss.banner : `Wave ${wave}/${totalWaves}`}</span>
-      <span>{kills} kills</span>
-    </>
+  const pauseStatus = useMemo<ReactNode>(
+    () =>
+      multiplayer ? (
+        <>
+          <span>
+            Breach {room || "-"} · {connected ? "connected" : "connecting…"}
+          </span>
+          <span>{kills} frags</span>
+        </>
+      ) : (
+        <>
+          <span>Score {score.toLocaleString()}</span>
+          <span>{bossActive ? SCOURGE_THREAT_TIERS.breachBoss.banner : `Wave ${wave}/${totalWaves}`}</span>
+          <span>{kills} kills</span>
+        </>
+      ),
+    [bossActive, connected, kills, multiplayer, room, score, totalWaves, wave],
   );
   const pauseActions: PauseMenuAction[] = [
     {
@@ -1479,14 +1484,20 @@ export function HUD({
       )}
 
       {status === "paused" && !suppressMenu && pausePanel === "controls" && (
-        <div className={OVERLAY} onClick={onLock}>
-          <h2 className="m-0 mb-[18px] text-[30px] font-bold">
+        <div className={`${OVERLAY} relative`}>
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default border-0 bg-transparent"
+            aria-label="Resume run"
+            onClick={onLock}
+          />
+          <h2 className="relative z-[1] m-0 mb-[18px] text-[30px] font-bold">
             <IconText icon="gamepad" size={26}>
               Controls
             </IconText>
           </h2>
           <div
-            className="pause-ui flex flex-col gap-[10px] w-[min(340px,86vw)] pointer-events-auto"
+            className="pause-ui relative z-[1] flex flex-col gap-[10px] w-[min(340px,86vw)] pointer-events-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex flex-col gap-2 px-[18px] py-[14px] bg-white/[0.04] border border-white/[0.12] rounded-[10px] text-[14px] [&>div]:flex [&>div]:items-center [&>div]:gap-[10px] [&_span]:shrink-0 [&_span]:w-[110px] [&_span]:text-right [&_span]:opacity-85">

@@ -21,9 +21,7 @@ export class Game {
   // Pause is owned by the React shell (Esc-toggled). When set, the loop keeps
   // rendering but freezes the simulation so the player is never stuck.
   paused = false;
-  // Fired whenever `phase` transitions so the React shell can react (e.g. drop
-  // the pause overlay the moment a match ends).
-  onPhaseChange: ((phase: Phase) => void) | null = null;
+  private readonly phaseListeners = new Set<(phase: Phase) => void>();
 
   private running = false;
   private lastTime = 0;
@@ -46,6 +44,13 @@ export class Game {
     this.entities.reset();
   }
 
+  subscribePhaseChange(listener: (phase: Phase) => void): () => void {
+    this.phaseListeners.add(listener);
+    return () => {
+      this.phaseListeners.delete(listener);
+    };
+  }
+
   beginRun(): void {
     this.buffTime = 0;
     this.elapsed = 0;
@@ -66,7 +71,7 @@ export class Game {
   private setPhase(phase: Phase): void {
     if (this.phase === phase) return;
     this.phase = phase;
-    this.onPhaseChange?.(phase);
+    for (const listener of this.phaseListeners) listener(phase);
   }
 
   start(): void {

@@ -22,7 +22,7 @@ import { Input } from "./systems/input";
 import { Physics } from "./systems/physics";
 import { Render } from "./systems/render";
 import type { Course, Phase } from "./types";
-import { overlayController } from "./ui/overlays";
+import { overlayController } from "./ui/overlayController";
 
 const FIXED_DT = 1 / 120; // physics step
 const MAX_FRAME = 0.1; // clamp huge deltas (tab switch etc.)

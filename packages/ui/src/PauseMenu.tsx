@@ -13,6 +13,8 @@ import {
   MenuKicker,
 } from "./Menu";
 
+const EMPTY_PAUSE_ACTIONS: PauseMenuAction[] = [];
+
 export interface PauseMenuAction {
   /** Stable identity for React keys; falls back to position if omitted. */
   id?: string;
@@ -65,7 +67,7 @@ export function PauseMenu({
   resumeLabel = "Resume",
   resumeMeta,
   onResume,
-  actions = [],
+  actions = EMPTY_PAUSE_ACTIONS,
 }: PauseMenuProps) {
   if (!open) return null;
 

@@ -18,7 +18,7 @@ import {
   PauseMenu,
   useEnterToReveal,
 } from "@shipshitgames/ui";
-import { useState, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { getPauseActions, getPauseSnapshot, subscribePause } from "./gameBridge";
 
 export function AppShell() {
@@ -27,6 +27,14 @@ export function AppShell() {
   const pause = useSyncExternalStore(subscribePause, getPauseSnapshot, getPauseSnapshot);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const revealed = useEnterToReveal(true);
+  const pauseStatus = useMemo(() => <span>{pause.stats}</span>, [pause.stats]);
+  const pauseActions = useMemo(
+    () => [
+      { id: "restart", label: "Restart run", meta: "New sortie", onSelect: () => getPauseActions().restart() },
+      { id: "title", label: "Main menu", meta: "Exit to title", onSelect: () => getPauseActions().title() },
+    ],
+    [],
+  );
 
   return (
     <>
@@ -135,12 +143,9 @@ export function AppShell() {
           kicker="Orbital Front"
           title="Paused"
           subtitle="The Scourge holds at the threshold while you stand down."
-          status={<span>{pause.stats}</span>}
+          status={pauseStatus}
           onResume={() => getPauseActions().resume()}
-          actions={[
-            { id: "restart", label: "Restart run", meta: "New sortie", onSelect: () => getPauseActions().restart() },
-            { id: "title", label: "Main menu", meta: "Exit to title", onSelect: () => getPauseActions().title() },
-          ]}
+          actions={pauseActions}
         />
 
         {settingsOpen && (

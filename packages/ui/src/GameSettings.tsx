@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode, SyntheticEvent } from "react";
 import { useEffect, useId, useState } from "react";
 import { cn } from "./cn";
+import { DEFAULT_AUDIO_SLIDER_KEYS, EFFECT_SLIDER_LABELS } from "./GameSettings.constants";
 import {
   clampEffectsLevel,
   type GlobalEffectKey,
@@ -13,16 +14,9 @@ import {
   toggleGlobalMusicMuted,
 } from "./settings";
 
-const EFFECT_SLIDER_LABELS: Record<GlobalEffectKey, string> = {
-  music: "Music",
-  sound: "Sound FX",
-  particles: "Particles / Debris",
-  flash: "Flash / Glow",
-  shake: "Shake / Recoil",
-};
-
-/** Default sliders shown by GlobalEffectSliders / GlobalGameSettingsPanel — music + SFX only. */
-export const DEFAULT_AUDIO_SLIDER_KEYS: readonly GlobalEffectKey[] = ["music", "sound"];
+function stopGameInput(event: SyntheticEvent<HTMLDivElement>) {
+  event.stopPropagation();
+}
 
 export interface EffectLevelSliderProps extends Omit<HTMLAttributes<HTMLLabelElement>, "onChange"> {
   label?: ReactNode;
@@ -160,10 +154,6 @@ export function GlobalGameSettingsPanel({
   const [settings, setSettings] = useState(() => loadGlobalGameSettings());
 
   useEffect(() => subscribeGlobalGameSettings(setSettings), []);
-
-  const stopGameInput = (event: SyntheticEvent<HTMLDivElement>) => {
-    event.stopPropagation();
-  };
 
   return (
     <div

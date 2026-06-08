@@ -10,54 +10,7 @@
 
 import { GlobalGameSettingsPanel, PauseMenu } from "@shipshitgames/ui";
 import { useSyncExternalStore } from "react";
-
-export interface OverlayState {
-  paused: boolean;
-  settingsOpen: boolean;
-}
-
-type Listener = () => void;
-
-/**
- * Minimal external store the imperative Game can drive without importing React.
- */
-class OverlayController {
-  private state: OverlayState = { paused: false, settingsOpen: false };
-  private readonly listeners = new Set<Listener>();
-
-  /** Secondary pause actions (Restart / Exit to title), wired by the Game. */
-  pauseActions: { id: string; label: string; meta?: string; onSelect: () => void }[] = [];
-  /** Resume callback, wired by the Game. */
-  onResume: () => void = () => {};
-
-  getState = (): OverlayState => this.state;
-
-  subscribe = (fn: Listener): (() => void) => {
-    this.listeners.add(fn);
-    return () => {
-      this.listeners.delete(fn);
-    };
-  };
-
-  private set(patch: Partial<OverlayState>) {
-    this.state = { ...this.state, ...patch };
-    for (const fn of this.listeners) fn();
-  }
-
-  setPaused(paused: boolean) {
-    this.set({ paused });
-  }
-
-  openSettings() {
-    this.set({ settingsOpen: true });
-  }
-
-  closeSettings() {
-    this.set({ settingsOpen: false });
-  }
-}
-
-export const overlayController = new OverlayController();
+import { overlayController } from "./overlayController";
 
 export function GameOverlays() {
   const state = useSyncExternalStore(overlayController.subscribe, overlayController.getState);
@@ -65,7 +18,7 @@ export function GameOverlays() {
   return (
     <>
       {state.settingsOpen && (
-        <div className="settings-overlay" role="dialog" aria-modal="true" aria-label="Settings">
+        <dialog className="settings-overlay" open aria-modal="true" aria-label="Settings">
           <div className="settings-overlay__card">
             <div className="settings-overlay__head">
               <div>
@@ -82,7 +35,7 @@ export function GameOverlays() {
             </div>
             <GlobalGameSettingsPanel inline />
           </div>
-        </div>
+        </dialog>
       )}
 
       <PauseMenu

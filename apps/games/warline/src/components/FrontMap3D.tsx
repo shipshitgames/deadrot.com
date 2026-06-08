@@ -220,6 +220,29 @@ export function FrontMap3D({
   const [musicEnabled, setMusicEnabled] = useState(() =>
     typeof window === "undefined" ? true : !loadGlobalGameSettings().musicMuted,
   );
+  const pauseStatus = useMemo(
+    () => (
+      <>
+        <span>{summary.regionsHuman} pact sectors holding</span>
+        <span>Threat {Math.round(summary.threat)}%</span>
+      </>
+    ),
+    [summary.regionsHuman, summary.threat],
+  );
+  const pauseActions = useMemo(
+    () => [
+      { id: "command", label: "Command Table", meta: "War map", variant: "shop" as const, onSelect: onOpenCommand },
+      {
+        id: "settings",
+        label: "Settings",
+        meta: "Audio",
+        variant: "settings" as const,
+        onSelect: () => setPauseSettings(true),
+      },
+      { id: "title", label: "Exit to title", meta: "Main menu", onSelect: () => onExitToTitle?.() },
+    ],
+    [onExitToTitle, onOpenCommand],
+  );
 
   useEffect(() => {
     const portal = PORTALS.find((p) => normalizePath(window.location.pathname) === normalizePath(p.href));
@@ -548,28 +571,13 @@ export function FrontMap3D({
         kicker="Warline Front"
         title="Paused"
         subtitle="The lanes hold while you stand at the threshold."
-        status={
-          <>
-            <span>{summary.regionsHuman} pact sectors holding</span>
-            <span>Threat {Math.round(summary.threat)}%</span>
-          </>
-        }
+        status={pauseStatus}
         onResume={() => resumeRef.current()}
-        actions={[
-          { id: "command", label: "Command Table", meta: "War map", variant: "shop", onSelect: onOpenCommand },
-          {
-            id: "settings",
-            label: "Settings",
-            meta: "Audio",
-            variant: "settings",
-            onSelect: () => setPauseSettings(true),
-          },
-          { id: "title", label: "Exit to title", meta: "Main menu", onSelect: () => onExitToTitle?.() },
-        ]}
+        actions={pauseActions}
       />
 
       {paused && pauseSettings && (
-        <div className="front-map3d__settings" role="dialog" aria-modal="true" aria-label="Settings">
+        <dialog className="front-map3d__settings" open aria-modal="true" aria-label="Settings">
           <div className="front-map3d__settings-inner">
             <span className="front-map3d__kicker">Audio Settings</span>
             <strong>WARLINE</strong>
@@ -578,7 +586,7 @@ export function FrontMap3D({
               ← Back
             </button>
           </div>
-        </div>
+        </dialog>
       )}
 
       {nearTable && !paused && (
@@ -1107,6 +1115,9 @@ function makeLabelSprite(title: string, subtitle: string, accent: string) {
 }
 
 function updateDynamicScene(runtime: ReturnType<typeof buildFrontScene>, state: WorldState, time: number) {
+  const breachesById = new Map(state.breaches.map((breach) => [breach.id, breach]));
+  const lanesById = new Map(state.lanes.map((lane) => [lane.id, lane]));
+
   for (const portal of runtime.portals) {
     const region = regionById(state, portal.def.regionId);
     const heat = region ? Math.max(0, Math.min(1, region.pressure / 100)) : 0.4;
@@ -1123,7 +1134,7 @@ function updateDynamicScene(runtime: ReturnType<typeof buildFrontScene>, state: 
     if (!region) continue;
     item.mat.color.setHex(region.revealed ? FACTION_COLOR[region.faction] : 0x1e1e22);
     if (item.breach) {
-      const breach = region.breachId ? state.breaches.find((b) => b.id === region.breachId) : undefined;
+      const breach = region.breachId ? breachesById.get(region.breachId) : undefined;
       item.breach.visible = breach?.active ?? false;
       item.breach.material.opacity = 0.35 + 0.45 * (0.5 + 0.5 * Math.sin(time * 3.5));
       item.breach.rotation.z += 0.015;
@@ -1131,7 +1142,7 @@ function updateDynamicScene(runtime: ReturnType<typeof buildFrontScene>, state: 
   }
 
   for (const item of runtime.tableLanes) {
-    const lane = state.lanes.find((l) => l.id === item.id);
+    const lane = lanesById.get(item.id);
     if (!lane) continue;
     item.mat.color.setHex(FACTION_COLOR[lane.control]);
     item.mat.opacity = 0.35 + Math.max(0.2, lane.flow / 120);
