@@ -450,78 +450,7 @@ body {
   justify-content: center;
   flex-wrap: wrap;
 }
-.card {
-  pointer-events: auto;
-  cursor: pointer;
-  position: relative;
-  width: clamp(200px, 26vw, 250px);
-  text-align: left;
-  padding: 20px 18px 22px;
-  background: var(--iron);
-  border: 1px solid var(--gunmetal);
-  border-top-width: 3px;
-  color: var(--bone);
-  font-family: var(--display);
-  transition:
-    transform 110ms ease,
-    box-shadow 110ms ease,
-    border-color 110ms ease;
-}
-.card.weapon {
-  border-top-color: var(--hellfire);
-}
-.card.passive {
-  border-top-color: var(--ash);
-}
-.card:hover {
-  transform: translateY(-4px) scale(1.03);
-  border-color: var(--hellfire);
-  box-shadow:
-    0 0 0 1px var(--hellfire),
-    0 10px 40px -12px rgba(255, 106, 0, 0.45);
-}
-.card-key {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--ash);
-  border: 1px solid var(--gunmetal);
-  padding: 0 6px;
-}
-.card-icon {
-  font-size: 40px;
-  line-height: 1;
-  margin-bottom: 10px;
-}
-.card-name {
-  font-size: 19px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.card-lv {
-  margin-top: 4px;
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--ember);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.card-lv .new {
-  color: var(--void);
-  background: var(--hellfire);
-  padding: 1px 7px;
-  font-weight: 700;
-}
-.card-desc {
-  margin-top: 12px;
-  font-size: 14px;
-  line-height: 1.35;
-  color: var(--ash);
-  font-style: italic;
-}
+/* Draft cards use the shared .ssg-upgrade-card styles from @shipshitgames/ui. */
 .draft-hint {
   margin-top: 22px;
   font-family: var(--mono);

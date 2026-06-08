@@ -16,6 +16,7 @@ import {
   MainMenuTopBar,
   PauseMenu,
   type PauseMenuAction,
+  UpgradeCard,
   useEnterToReveal,
 } from "@shipshitgames/ui";
 import {
@@ -777,48 +778,27 @@ function LevelUpDraft({
     <div className={`${OVERLAY} cursor-default`}>
       <div className="ssg-menu-kicker mb-[10px]">Level {state.level} — choose an upgrade</div>
       <h2 className="ssg-menu-title !text-[40px] !mb-5">CHOOSE UPGRADE</h2>
-      <div className="flex gap-[18px] flex-wrap justify-center max-w-[92vw]">
+      <div className="flex gap-[18px] flex-wrap justify-center items-stretch max-w-[92vw]">
         {state.choices.map((c) => (
-          <div key={c.id} className="relative">
-            <Card
-              asChild
-              className={`pointer-events-auto w-[min(260px,86vw)] cursor-pointer border-white/15 bg-black/45 px-4 py-4 text-center transition-[transform,border-color,background,box-shadow] hover:-translate-y-[2px] hover:bg-white/10 ${
-                c.golden
-                  ? "!border-[#ffd166] bg-[rgba(255,176,46,0.08)] shadow-[0_0_30px_-6px_rgba(255,176,46,0.75)]"
-                  : ""
-              }`}
-            >
-              <button
-                type="button"
-                onPointerDown={(event) => armDraftAction(`pick:${c.id}`, event)}
-                onClick={(event) => runDraftAction(`pick:${c.id}`, event, () => onPick(c.id))}
-              >
-                <span className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-[6px] border border-white/15 bg-black/45 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]">
-                  <PixelIcon id={c.icon} size={42} label={c.name} />
-                </span>
-                <span className="block text-[18px] font-extrabold tracking-[0.03em] text-fg">{c.name}</span>
-                <span
-                  className={`mt-1 block text-[11px] font-extrabold uppercase tracking-[0.16em] ${c.golden ? "text-[#ffd166]" : "text-accent"}`}
-                >
-                  {c.golden ? "TRANSFORM" : c.level === 0 ? "NEW" : `Lv ${c.level} -> ${c.level + 1}`}
-                </span>
-                <span className="mt-3 block text-[13px] leading-[1.35] opacity-70">{c.desc}</span>
-                {c.golden && (
-                  <span className="mt-3 text-[11px] tracking-[0.2em] uppercase text-[#ffd166] font-bold">
-                    <IconText icon="evolution" size={15}>
-                      Evolution
-                    </IconText>
-                  </span>
-                )}
-              </button>
-            </Card>
+          <div key={c.id} className="relative flex">
+            <UpgradeCard
+              featured={c.golden}
+              icon={<PixelIcon id={c.icon} size={60} label={c.name} />}
+              title={c.name}
+              meta={c.golden ? "EVO" : c.level === 0 ? "NEW" : `LV ${c.level + 1}`}
+              metaTone={c.level === 0 ? "new" : "level"}
+              description={c.desc}
+              tooltip={c.desc}
+              onPointerDown={(event) => armDraftAction(`pick:${c.id}`, event)}
+              onClick={(event) => runDraftAction(`pick:${c.id}`, event, () => onPick(c.id))}
+            />
             {!c.golden && state.banishes > 0 && (
               <button
                 type="button"
                 title="Banish — remove from this run's pool"
                 onPointerDown={(event) => armDraftAction(`banish:${c.id}`, event)}
                 onClick={(event) => runDraftAction(`banish:${c.id}`, event, () => onBanish(c.id))}
-                className="pointer-events-auto cursor-pointer absolute -top-2 -right-2 w-7 h-7 rounded-full bg-black/70 border border-white/25 text-white/70 text-[14px] leading-none flex items-center justify-center hover:bg-[#c1121f] hover:text-white hover:border-[#c1121f]"
+                className="pointer-events-auto cursor-pointer absolute -top-2 -left-2 w-7 h-7 rounded-full bg-black/70 border border-white/25 text-white/70 text-[14px] leading-none flex items-center justify-center hover:bg-[#c1121f] hover:text-white hover:border-[#c1121f]"
               >
                 <PixelIcon id="banish" size={16} label="Banish" />
               </button>

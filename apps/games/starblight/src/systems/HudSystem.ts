@@ -128,14 +128,15 @@ export class HudSystem {
     this.draftCards.innerHTML = "";
     s.draft.forEach((c, i) => {
       const isNew = c.level === 0;
+      const badgeClass = isNew ? "ssg-upgrade-card__badge ssg-upgrade-card__badge--new" : "ssg-upgrade-card__badge";
       const card = document.createElement("button");
-      card.className = `ssg-upgrade-card card ${c.kind}`;
+      card.className = "ssg-upgrade-card";
       card.innerHTML = `
-        <div class="card-key">${i + 1}</div>
-        <div class="card-icon ssg-upgrade-card__icon">${c.icon}</div>
-        <div class="card-name">${c.name}</div>
-        <div class="card-lv">${isNew ? '<span class="new">NEW</span>' : `LVL ${c.level} -> ${c.level + 1}`}</div>
-        <div class="card-desc">${c.desc}</div>`;
+        <span class="ssg-upgrade-card__key">${i + 1}</span>
+        <span class="${badgeClass}">${isNew ? "NEW" : `LV ${c.level + 1}`}</span>
+        <span class="ssg-upgrade-card__plaque" title="${c.desc}">${c.icon}</span>
+        <b class="ssg-upgrade-card__title">${c.name}</b>
+        <span class="ssg-upgrade-card__desc">${c.desc}</span>`;
       card.addEventListener("click", () => this.onPick(c.id));
       this.draftCards.appendChild(card);
     });
