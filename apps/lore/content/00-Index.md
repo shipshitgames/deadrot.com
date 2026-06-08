@@ -55,7 +55,7 @@ Start here, follow the links, open the graph view.
 - Pyre / Scourge Survivors: [[Ranger]], [[Bulwark]], [[Vector]], [[Patch]]
 - Wardens / Deadlane: [[Field-Engineer]], [[Lane-Gunner]], [[Wallwright]]
 - Pactfall: [[Pyre-Duelist]], [[Pyre-Cauterizer]], [[Warden-Bastion]], [[Warden-Artillerist]], [[Trucebreaker]]
-- Starblight: [[Pyre-Interceptor-Pilot]], [[Warden-Defense-Pilot]], [[Scourge-Fighter]], [[Orbital-Breach-Carrier]]
+- Starblight: [[Pyre-Interceptor-Pilot]], [[Warden-Defense-Pilot]], [[Scourge-Fighter]], [[Spore-Casket]], [[Orbital-Breach-Carrier]]
 - Redline: [[Pyre-Courier]], [[Warden-Courier]]
 - Rothulk: [[Pyre-Saboteur]]
 - Core Scourge: [[Swarm-Ripper]], [[Swarm-Spitter]], [[Wound-Hound]], [[Spore-Lung]], [[Render]], [[Rot-Engine]], [[Graft-Breacher]], [[Cairn]], [[Sower]], [[Gristle-Vat]], [[Chorister]], [[Cantor]], [[Descant]], [[Bourdon]], [[Aeolian]], [[Carillon]], [[Quaver]], [[Breach-Boss]]
