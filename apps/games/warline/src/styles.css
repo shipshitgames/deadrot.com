@@ -326,3 +326,31 @@ body {
   font-size: 1.5rem;
   color: var(--color-bone);
 }
+
+/* Command Table side rail — overlays the lobby while the war map holograms over the table. */
+.warline-command-rail {
+  position: fixed;
+  top: 74px;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  width: min(460px, 94vw);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  overflow-y: auto;
+  background: linear-gradient(90deg, transparent, rgba(8, 7, 7, 0.94) 12%);
+  border-left: 2px solid var(--color-gunmetal);
+  pointer-events: auto;
+}
+
+.warline-command-rail__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 2px solid var(--color-gunmetal);
+  background: var(--color-coal);
+  padding: 8px 12px;
+}

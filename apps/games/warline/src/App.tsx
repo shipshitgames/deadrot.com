@@ -102,8 +102,10 @@ export default function App() {
 
       <Header state={state} summary={summary} status={status} />
 
-      {!showTitle &&
-        (mode === "front" ? (
+      {!showTitle && (
+        <>
+          {/* The 3D lobby stays mounted; the Command Table lifts the war map into
+              a hologram over the table and overlays the controls as a side rail. */}
           <FrontMap3D
             state={state}
             summary={summary}
@@ -111,52 +113,44 @@ export default function App() {
             faction={faction}
             onOpenCommand={() => setMode("command")}
             onExitToTitle={() => setShowTitle(true)}
+            commandActive={mode === "command"}
           />
-        ) : (
-          <main className="mx-auto max-w-[1400px] px-4 py-4 sm:px-6">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-2 border-gunmetal bg-coal px-3 py-2">
-              <div>
-                <div className="font-display text-xs tracking-wide text-hellfire">Command Table</div>
-                <div className="font-mono text-[0.7rem] text-ash">
-                  EPOCH {state.epoch} / TICK {state.tick}
+
+          {mode === "command" && (
+            <aside className="warline-command-rail">
+              <div className="warline-command-rail__head">
+                <div>
+                  <div className="font-display text-xs tracking-wide text-hellfire">Command Table</div>
+                  <div className="font-mono text-[0.7rem] text-ash">
+                    EPOCH {state.epoch} / TICK {state.tick}
+                  </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setMode("front")}
+                  className="border-2 border-hellfire bg-iron px-3 py-2 font-display text-xs tracking-wide text-bone transition-colors hover:bg-hellfire/20"
+                >
+                  Return to Front
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setMode("front")}
-                className="border-2 border-hellfire bg-iron px-3 py-2 font-display text-xs tracking-wide text-bone transition-colors hover:bg-hellfire/20"
-              >
-                Return to Front
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-              {/* Map — large, spans two columns on lg */}
-              <div className="lg:col-span-2">
-                <WarMap state={state} selectedId={selectedId} onSelect={setSelectedId} />
+              <WarMap state={state} selectedId={selectedId} onSelect={setSelectedId} />
+              <ResourceBar resources={state.resources} army={state.pactArmy} />
+              <CommandPanel
+                state={state}
+                faction={faction}
+                setFaction={setFaction}
+                selectedId={selectedId}
+                command={command}
+              />
+              <OpsPanel simulate={simulate} />
+              <Legend />
+              <div className="h-64 shrink-0">
+                <WarFeed feed={state.feed} />
               </div>
-
-              {/* Right rail */}
-              <div className="flex flex-col gap-4">
-                <ResourceBar resources={state.resources} army={state.pactArmy} />
-                <CommandPanel
-                  state={state}
-                  faction={faction}
-                  setFaction={setFaction}
-                  selectedId={selectedId}
-                  command={command}
-                />
-                <OpsPanel simulate={simulate} />
-                <Legend />
-              </div>
-            </div>
-
-            {/* Feed below, full width */}
-            <div className="mt-4 h-80">
-              <WarFeed feed={state.feed} />
-            </div>
-          </main>
-        ))}
+            </aside>
+          )}
+        </>
+      )}
 
       <footer className="border-t-2 border-gunmetal px-4 py-3 text-center sm:px-6">
         <p className="font-mono text-[0.65rem] text-ash">

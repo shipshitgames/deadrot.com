@@ -38,6 +38,8 @@ interface FrontMap3DProps {
   faction: HumanFaction;
   onOpenCommand: () => void;
   onExitToTitle?: () => void;
+  /** When true the war map lifts off the table into a hologram. */
+  commandActive?: boolean;
 }
 
 interface PortalDef {
@@ -182,7 +184,15 @@ const LOBBY_MUSIC = {
   loop: true,
 };
 
-export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onExitToTitle }: FrontMap3DProps) {
+export function FrontMap3D({
+  state,
+  summary,
+  status,
+  faction,
+  onOpenCommand,
+  onExitToTitle,
+  commandActive = false,
+}: FrontMap3DProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const stateRef = useRef(state);
   const summaryRef = useRef(summary);
@@ -190,6 +200,7 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onE
   const nearTableRef = useRef(false);
   const launchRef = useRef<(slug: GameSlug) => void>(() => {});
   const commandRef = useRef(onOpenCommand);
+  const commandActiveRef = useRef(commandActive);
   const requestCaptureRef = useRef<() => void>(() => {});
   const pauseRef = useRef<() => void>(() => {});
   const resumeRef = useRef<() => void>(() => {});
@@ -224,7 +235,8 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onE
 
   useEffect(() => {
     commandRef.current = onOpenCommand;
-  }, [onOpenCommand]);
+    commandActiveRef.current = commandActive;
+  }, [onOpenCommand, commandActive]);
 
   useEffect(() => subscribeGlobalGameSettings((s) => setMusicEnabled(!s.musicMuted)), []);
 
@@ -330,6 +342,7 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onE
     const move = makeMoveIntent();
     const raycaster = new THREE.Raycaster();
     let raf = 0;
+    let prevCommandActive = false;
     let lastFrame = performance.now();
     const startedAt = lastFrame;
 
@@ -351,10 +364,10 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onE
 
     const input = new InputSystem({
       move,
-      isActive: () => !pausedRef.current,
+      isActive: () => !pausedRef.current && !commandActiveRef.current,
       onPointerDown: (_button, event) => {
         // Click the floor to grab pointer-lock mouse-look (optional) — never required to move.
-        if (event.target === renderer.domElement && !pausedRef.current && !rig.captured) {
+        if (event.target === renderer.domElement && !pausedRef.current && !commandActiveRef.current && !rig.captured) {
           playMusicRef.current();
           try {
             rig.requestCapture();
@@ -380,6 +393,7 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onE
           // the nearest portal.
           if (nearTableRef.current) {
             commandRef.current();
+            rig.releaseCapture(true); // free the cursor for the command rail
           } else if (nearestRef.current) {
             launchRef.current(nearestRef.current);
           }
@@ -387,6 +401,7 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onE
         if (code === "KeyM" || code === "Tab") {
           event.preventDefault();
           commandRef.current();
+          rig.releaseCapture(true);
         }
       },
       onResumeKey: () => {
@@ -425,6 +440,26 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onE
         updateMovement(rig, move, bounds, obstacleBoxes, delta);
       }
       updateDynamicScene(sceneRuntime, stateRef.current, time);
+
+      // Lift the war map off the table into a slowly-spinning hologram while the
+      // Command Table is engaged; settle it back onto the table otherwise.
+      const holo = sceneRuntime.tableHolo;
+      const holoT = commandActiveRef.current ? 1 : 0;
+      const ease = 1 - (1 - Math.min(1, delta * 4));
+      holo.position.y += (holoT * 2.6 - holo.position.y) * ease;
+      const targetScale = 1 + holoT * 0.85;
+      holo.scale.x += (targetScale - holo.scale.x) * ease;
+      holo.scale.y += (targetScale - holo.scale.y) * ease;
+      holo.scale.z += (targetScale - holo.scale.z) * ease;
+      if (commandActiveRef.current) holo.rotation.y += delta * 0.25;
+      else holo.rotation.y += (0 - holo.rotation.y) * ease;
+
+      // On engaging the Command Table, step the camera back to frame the table +
+      // its rising hologram (movement/look are frozen while commanding).
+      if (commandActiveRef.current && !prevCommandActive) {
+        rig.placeAt(0, 3.2, 9.5, 0, -1);
+      }
+      prevCommandActive = commandActiveRef.current;
 
       const nextNearest = nearestPortalFor(rig.body.position, sceneRuntime.portals);
       if (nextNearest !== nearestRef.current) {
@@ -522,7 +557,13 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onE
         onResume={() => resumeRef.current()}
         actions={[
           { id: "command", label: "Command Table", meta: "War map", variant: "shop", onSelect: onOpenCommand },
-          { id: "settings", label: "Settings", meta: "Audio", variant: "settings", onSelect: () => setPauseSettings(true) },
+          {
+            id: "settings",
+            label: "Settings",
+            meta: "Audio",
+            variant: "settings",
+            onSelect: () => setPauseSettings(true),
+          },
           { id: "title", label: "Exit to title", meta: "Main menu", onSelect: () => onExitToTitle?.() },
         ]}
       />
@@ -740,13 +781,13 @@ function buildFrontScene(scene: THREE.Scene, state: WorldState) {
 
   addBoundaryWalls(scene, wallMat, colliders);
   addRunways(scene, PORTALS);
-  addCommandTable(scene, state, tableRegions, tableLanes, colliders);
+  const tableHolo = addCommandTable(scene, state, tableRegions, tableLanes, colliders);
   addObstacles(scene, blockMat, columnMat, colliders);
   addDecals(scene, decalTexture);
 
   for (const portal of PORTALS) portals.push(addPortal(scene, textureLoader, portal, colliders));
 
-  return { colliders, portals, tableRegions, tableLanes, disposed: false };
+  return { colliders, portals, tableRegions, tableLanes, tableHolo, disposed: false };
 }
 
 function makeTexture(loader: THREE.TextureLoader, url: string, repeatX: number, repeatY: number) {
@@ -812,7 +853,7 @@ function addCommandTable(
   regions: TableRegionRuntime[],
   lanes: TableLaneRuntime[],
   colliders: THREE.Mesh[],
-) {
+): THREE.Group {
   const baseMat = new THREE.MeshStandardMaterial({ color: 0x1e1e22, roughness: 0.55, metalness: 0.48 });
   const topMat = new THREE.MeshStandardMaterial({
     color: 0x0a0a0a,
@@ -841,6 +882,11 @@ function addCommandTable(
   glow.position.set(0, 1.85, 0);
   scene.add(glow);
 
+  // The war map (lanes + region nodes + breaches) lives in its own group so it
+  // can lift off the table into a hologram when the Command Table is engaged.
+  const holo = new THREE.Group();
+  scene.add(holo);
+
   for (const lane of state.lanes) {
     const from = regionById(state, lane.from);
     const to = regionById(state, lane.to);
@@ -852,7 +898,7 @@ function addCommandTable(
       new THREE.Vector3(b.x, 0.78, b.z),
     ]);
     const mat = new THREE.LineBasicMaterial({ color: FACTION_COLOR[lane.control], transparent: true, opacity: 0.7 });
-    scene.add(new THREE.Line(geom, mat));
+    holo.add(new THREE.Line(geom, mat));
     lanes.push({ id: lane.id, mat });
   }
 
@@ -862,7 +908,7 @@ function addCommandTable(
     const node = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.06, 18), mat);
     node.position.set(p.x, 0.84, p.z);
     node.rotation.x = Math.PI / 2;
-    scene.add(node);
+    holo.add(node);
 
     let breach: THREE.Mesh<THREE.TorusGeometry, THREE.MeshBasicMaterial> | undefined;
     if (region.breachId) {
@@ -872,11 +918,13 @@ function addCommandTable(
       );
       breach.position.set(p.x, 0.88, p.z);
       breach.rotation.x = Math.PI / 2;
-      scene.add(breach);
+      holo.add(breach);
     }
 
     regions.push({ id: region.id, mat, breach });
   }
+
+  return holo;
 }
 
 function mapPointToTable(x: number, y: number) {
