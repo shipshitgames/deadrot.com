@@ -49,6 +49,8 @@ export {
   MenuTitle,
   UpgradeCard,
 } from "./Menu";
+export type { MusicSceneDef, MusicTrackDef } from "./MusicDirector";
+export { MusicDirector } from "./MusicDirector";
 export type { PauseMenuAction, PauseMenuProps } from "./PauseMenu";
 export { PauseMenu } from "./PauseMenu";
 export type {

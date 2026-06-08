@@ -17,7 +17,13 @@ import {
   makeMoveIntent,
   RectBounds,
 } from "@shipshitgames/engine";
-import { PauseMenu } from "@shipshitgames/ui";
+import {
+  loadGlobalGameSettings,
+  MusicDirector,
+  PauseMenu,
+  subscribeGlobalGameSettings,
+  toggleGlobalMusicMuted,
+} from "@shipshitgames/ui";
 import type { Faction, GameSlug, HumanFaction, Summary, WorldState } from "@shipshitgames/warline";
 import { GAME_OPERATIONS, regionById } from "@shipshitgames/warline";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -169,7 +175,11 @@ const PORTAL_TRIGGER_RADIUS = 4.75;
 const TABLE_TRIGGER_RADIUS = 8;
 const JUMP_VELOCITY = 7.6;
 const GRAVITY = 22;
-const MUSIC_STORAGE_KEY = "warline.front.music";
+const LOBBY_MUSIC = {
+  id: "warline-lobby",
+  tracks: [{ id: "chainsaw", url: lobbyMusicUrl }],
+  loop: true,
+};
 
 export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onExitToTitle }: FrontMap3DProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
@@ -184,7 +194,7 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onE
   const resumeRef = useRef<() => void>(() => {});
   const playMusicRef = useRef<() => void>(() => {});
   const pauseMusicRef = useRef<() => void>(() => {});
-  const musicEnabledRef = useRef(true);
+  const directorRef = useRef<MusicDirector | null>(null);
   const controlActiveRef = useRef(false);
   const pausedRef = useRef(false);
 
@@ -192,8 +202,10 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onE
   const [nearTable, setNearTable] = useState(false);
   const [captured, setCaptured] = useState(false);
   const [paused, setPausedState] = useState(false);
-  const [musicEnabled, setMusicEnabledState] = useState(() =>
-    typeof window === "undefined" ? true : window.localStorage.getItem(MUSIC_STORAGE_KEY) !== "off",
+  // "Mute Music"/"Music On" label mirrors the shared global mute (same state the
+  // title-menu corner toggle + settings sliders drive).
+  const [musicEnabled, setMusicEnabled] = useState(() =>
+    typeof window === "undefined" ? true : !loadGlobalGameSettings().musicMuted,
   );
 
   useEffect(() => {
@@ -212,29 +224,22 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onE
     commandRef.current = onOpenCommand;
   }, [onOpenCommand]);
 
-  useEffect(() => {
-    musicEnabledRef.current = musicEnabled;
-  }, [musicEnabled]);
+  useEffect(() => subscribeGlobalGameSettings((s) => setMusicEnabled(!s.musicMuted)), []);
 
   useEffect(() => {
-    const audio = document.createElement("audio");
-    audio.dataset.warlineLobbyAudio = "true";
-    audio.loop = true;
-    audio.volume = 0.42;
-    audio.preload = "metadata";
-    audio.src = lobbyMusicUrl;
-    audio.load();
-    document.body.appendChild(audio);
+    // Lobby music rides the shared MusicDirector: it routes through the global
+    // music volume + mute, so the title-menu sliders and corner mute control it.
+    const director = new MusicDirector({ baseGain: 0.42 });
+    directorRef.current = director;
     playMusicRef.current = () => {
-      if (!musicEnabledRef.current) return;
-      void audio.play().catch(() => {});
+      director.resume();
+      director.play(LOBBY_MUSIC);
     };
-    pauseMusicRef.current = () => audio.pause();
+    pauseMusicRef.current = () => director.stop();
 
     return () => {
-      audio.pause();
-      audio.src = "";
-      audio.remove();
+      director.dispose();
+      directorRef.current = null;
       playMusicRef.current = () => {};
       pauseMusicRef.current = () => {};
     };
@@ -247,12 +252,9 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onE
   }, []);
 
   const toggleMusic = useCallback(() => {
-    const next = !musicEnabledRef.current;
-    musicEnabledRef.current = next;
-    setMusicEnabledState(next);
-    window.localStorage.setItem(MUSIC_STORAGE_KEY, next ? "on" : "off");
-    if (next) playMusicRef.current();
-    else pauseMusicRef.current();
+    // Flip the shared global mute; the subscription updates the label and the
+    // director silences/unsilences via its master gain.
+    toggleGlobalMusicMuted();
   }, []);
 
   useEffect(() => {
