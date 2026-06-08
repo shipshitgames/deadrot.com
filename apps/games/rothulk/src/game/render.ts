@@ -19,9 +19,14 @@ export class Renderer {
   readonly scourgeMeshes: THREE.Group[] = [];
   readonly emberMeshes: THREE.Mesh[] = [];
   readonly moverMeshes: THREE.Mesh[] = [];
+  private levelObjects: THREE.Object3D[] = [];
   private coreMesh!: THREE.Mesh;
   private coreGlowMat!: THREE.MeshBasicMaterial;
+  private coreIgnited = false;
   private checkpointMesh!: THREE.Mesh;
+  private exitMesh!: THREE.Group;
+  private exitGlowMat!: THREE.MeshBasicMaterial;
+  private exitArmed = false;
 
   // Ignite flash overlay (full-bleed billboard tied to camera).
   private flashMesh!: THREE.Mesh;
@@ -56,14 +61,13 @@ export class Renderer {
   // --- Static + dynamic level geometry ------------------------------------
   buildLevel(level: LevelData) {
     // Clear any prior level (on restart) but keep lights + hero + flash.
-    for (const g of this.scourgeMeshes) this.scene.remove(g);
-    for (const m of this.emberMeshes) this.scene.remove(m);
-    for (const m of this.moverMeshes) this.scene.remove(m);
+    for (const object of this.levelObjects) this.scene.remove(object);
+    this.levelObjects.length = 0;
     this.scourgeMeshes.length = 0;
     this.emberMeshes.length = 0;
     this.moverMeshes.length = 0;
-    if (this.coreMesh) this.scene.remove(this.coreMesh);
-    if (this.checkpointMesh) this.scene.remove(this.checkpointMesh);
+    this.coreIgnited = level.core.ignited;
+    this.exitArmed = false;
 
     // Backdrop: a huge dark void plane far behind everything.
     const bg = new THREE.Mesh(
@@ -71,7 +75,7 @@ export class Renderer {
       new THREE.MeshBasicMaterial({ color: COLORS.void }),
     );
     bg.position.set(level.width / 2, 6, -8);
-    this.scene.add(bg);
+    this.addLevelObject(bg);
 
     // Platforms.
     const slabMat = new THREE.MeshStandardMaterial({
@@ -94,22 +98,22 @@ export class Renderer {
       if (p.kind === "flesh") {
         const m = new THREE.Mesh(new THREE.BoxGeometry(p.w, p.h, 0.6), fleshMat);
         m.position.set(p.x, p.y, -4);
-        this.scene.add(m);
+        this.addLevelObject(m);
         // toxic veins — sparse glowing nodes on the flesh wall
         const vein = new THREE.Mesh(
           new THREE.SphereGeometry(0.18, 8, 8),
           new THREE.MeshBasicMaterial({ color: COLORS.toxic }),
         );
         vein.position.set(p.x + (Math.random() - 0.5) * p.w * 0.6, p.y + 1, -3.4);
-        this.scene.add(vein);
+        this.addLevelObject(vein);
       } else {
         const m = new THREE.Mesh(new THREE.BoxGeometry(p.w, p.h, 1.4), slabMat);
         m.position.set(p.x, p.y, 0);
-        this.scene.add(m);
+        this.addLevelObject(m);
         // bone-light top trim so platform tops read clearly
         const trim = new THREE.Mesh(new THREE.BoxGeometry(p.w, 0.14, 1.5), slabEdgeMat);
         trim.position.set(p.x, p.y + p.h / 2, 0.01);
-        this.scene.add(trim);
+        this.addLevelObject(trim);
       }
     }
 
@@ -123,7 +127,7 @@ export class Renderer {
         m.position.set(h.x, h.y, 0.1);
         m.material.transparent = true;
         (m.material as THREE.MeshBasicMaterial).opacity = 0.55;
-        this.scene.add(m);
+        this.addLevelObject(m);
       } else {
         // bone spikes — a row of cones
         const count = Math.max(2, Math.round(h.w / 0.6));
@@ -135,7 +139,7 @@ export class Renderer {
           const cone = new THREE.Mesh(new THREE.ConeGeometry(0.22, h.h, 5), coneMat);
           const cx = h.x - h.w / 2 + (i + 0.5) * (h.w / count);
           cone.position.set(cx, h.y - h.h / 2 + h.h / 2, 0.2);
-          this.scene.add(cone);
+          this.addLevelObject(cone);
         }
       }
     }
@@ -151,7 +155,7 @@ export class Renderer {
     for (const mv of level.movers) {
       const m = new THREE.Mesh(new THREE.BoxGeometry(mv.w, mv.h, 1.4), moverMat);
       m.position.set(mv.x, mv.y, 0);
-      this.scene.add(m);
+      this.addLevelObject(m);
       this.moverMeshes.push(m);
     }
 
@@ -175,7 +179,7 @@ export class Renderer {
       node.position.y = s.size * 0.18;
       g.add(blob, node);
       g.position.set(s.x, s.y, 0.2);
-      this.scene.add(g);
+      this.addLevelObject(g);
       this.scourgeMeshes.push(g);
     }
 
@@ -186,7 +190,7 @@ export class Renderer {
         new THREE.MeshBasicMaterial({ color: COLORS.hellfire }),
       );
       m.position.set(e.x, e.y, 0.3);
-      this.scene.add(m);
+      this.addLevelObject(m);
       this.emberMeshes.push(m);
     }
 
@@ -200,19 +204,45 @@ export class Renderer {
       }),
     );
     this.checkpointMesh.position.set(level.checkpoint.x, level.checkpoint.y, 0.1);
-    this.scene.add(this.checkpointMesh);
+    this.addLevelObject(this.checkpointMesh);
 
     // Breach-core — pulsing toxic-green icosahedron in a gunmetal cradle.
     this.coreGlowMat = new THREE.MeshBasicMaterial({ color: COLORS.toxic });
     this.coreMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(1.1, 0), this.coreGlowMat);
     this.coreMesh.position.set(level.core.x, level.core.y, 0.3);
-    this.scene.add(this.coreMesh);
+    this.addLevelObject(this.coreMesh);
     const cradle = new THREE.Mesh(
       new THREE.TorusGeometry(1.4, 0.16, 8, 16),
       new THREE.MeshStandardMaterial({ color: COLORS.gunmetal, metalness: 0.6 }),
     );
     cradle.position.copy(this.coreMesh.position);
-    this.scene.add(cradle);
+    this.addLevelObject(cradle);
+
+    // Exit marker — the Pyre boarding spike becomes the escape target after ignition.
+    this.exitMesh = new THREE.Group();
+    const spike = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.18, 0.3, 2.6, 6),
+      new THREE.MeshStandardMaterial({
+        color: COLORS.gunmetal,
+        roughness: 0.75,
+        metalness: 0.5,
+        emissive: COLORS.iron,
+        emissiveIntensity: 0.25,
+      }),
+    );
+    const flame = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.55),
+      new THREE.MeshBasicMaterial({
+        color: COLORS.hellfire,
+        transparent: true,
+        opacity: 0.2,
+      }),
+    );
+    flame.position.y = 1.55;
+    this.exitGlowMat = flame.material as THREE.MeshBasicMaterial;
+    this.exitMesh.add(spike, flame);
+    this.exitMesh.position.set(level.exit.x, level.exit.y - 1.1, 0.35);
+    this.addLevelObject(this.exitMesh);
   }
 
   buildHero() {
@@ -287,6 +317,28 @@ export class Renderer {
     this.flashAmount = 1;
   }
 
+  setCoreIgnited() {
+    this.coreIgnited = true;
+    this.coreGlowMat.color.setHex(COLORS.hellfire);
+  }
+
+  setExitArmed(armed: boolean) {
+    this.exitArmed = armed;
+    this.exitGlowMat.opacity = armed ? 0.95 : 0.2;
+  }
+
+  setScourgeFeral(index: number, feral: boolean) {
+    const group = this.scourgeMeshes[index];
+    if (!group) return;
+    const blob = group.children[0] as THREE.Mesh | undefined;
+    const node = group.children[1] as THREE.Mesh | undefined;
+    const blobMat = blob?.material as THREE.MeshStandardMaterial | undefined;
+    const nodeMat = node?.material as THREE.MeshBasicMaterial | undefined;
+    blobMat?.emissive.setHex(feral ? COLORS.hellfire : COLORS.bloodHot);
+    blobMat?.color.setHex(feral ? COLORS.fleshWet : COLORS.blood);
+    nodeMat?.color.setHex(feral ? COLORS.hellfire : COLORS.toxic);
+  }
+
   setCheckpointReached() {
     (this.checkpointMesh.material as THREE.MeshStandardMaterial).emissive.setHex(COLORS.blood);
     (this.checkpointMesh.material as THREE.MeshStandardMaterial).emissiveIntensity = 0.8;
@@ -300,7 +352,12 @@ export class Renderer {
       this.coreMesh.scale.setScalar(1 + pulse * 0.12);
       this.coreMesh.rotation.y += dt * 1.2;
       this.coreMesh.rotation.x += dt * 0.6;
-      this.coreGlowMat.color.setHex(COLORS.toxic);
+      this.coreGlowMat.color.setHex(this.coreIgnited ? COLORS.hellfire : COLORS.toxic);
+    }
+    if (this.exitMesh) {
+      const pulse = this.exitArmed ? 0.75 + 0.25 * Math.sin(time * 7) : 0.2;
+      this.exitGlowMat.opacity = this.exitArmed ? pulse : 0.2;
+      this.exitMesh.rotation.z = Math.sin(time * 3) * 0.025;
     }
     for (const m of this.emberMeshes) {
       if (m.visible) m.rotation.y += dt * 3;
@@ -326,6 +383,11 @@ export class Renderer {
 
   render() {
     this.renderer.render(this.scene, this.camera);
+  }
+
+  private addLevelObject(object: THREE.Object3D) {
+    this.scene.add(object);
+    this.levelObjects.push(object);
   }
 
   private resize = () => {

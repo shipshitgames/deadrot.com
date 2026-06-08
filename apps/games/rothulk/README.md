@@ -15,8 +15,10 @@ at the heart of the hulk. A playable core loop skeleton, not a finished game.
 - **Dodge hazards** — acid pools (toxic-green) and bone spikes.
 - **Ride moving platforms** across the chasms.
 - Grab **embers** for score; bank a **mid-level checkpoint**.
-- A fall into the void or losing all HP costs a **life**. Reach and touch the pulsing
-  **breach-core** to **ignite it and WIN**.
+- A fall into the void or losing all HP costs a **life**.
+- Reach the pulsing **breach-core** to ignite it, sever the local Choir node, and turn the
+  remaining Scourge feral.
+- Escape back to the armed boarding spike to clear the hulk.
 
 ## Controls
 
@@ -64,6 +66,7 @@ src/
   styles.css         DOOM HUD overlay (pixel type, uppercase, blood-on-gunmetal)
   game/
     Game.ts          owner: state + loop + gameplay step
+    coreLoop.ts      pure state helpers for core ignition, escape, and progress
     types.ts         entity / level contracts
     level.ts         the hand-authored hulk level (data)
     input.ts         keyboard, edge-detected jump

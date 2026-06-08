@@ -80,6 +80,19 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
       await page.getByRole("button", { name: /^Breach\b/i }).click();
       await expect(page.locator("#banner")).toHaveClass(/hidden/);
       await expect(page.locator("#hud-obj")).toContainText("REACH");
+      await page.waitForFunction(() => Boolean((window as unknown as { __rothulkGame?: unknown }).__rothulkGame));
+
+      await page.evaluate(() => {
+        (window as unknown as { __rothulkGame: { teleportToCore: () => void } }).__rothulkGame.teleportToCore();
+      });
+      await expect.poll(() => rothulkSnapshot(page, "phase")).toBe("escape");
+      await expect(page.locator("#hud-obj")).toContainText("ESCAPE");
+
+      await page.evaluate(() => {
+        (window as unknown as { __rothulkGame: { teleportToExit: () => void } }).__rothulkGame.teleportToExit();
+      });
+      await expect.poll(() => rothulkSnapshot(page, "mode")).toBe("won");
+      await expect(page.locator("#toast")).toContainText("HULK SEVERED");
     },
   },
   "scourge-survivors": {
@@ -221,4 +234,20 @@ async function expectNoBrokenImages(page: Page) {
       .map((image) => image.currentSrc || image.src),
   );
   expect(brokenImages).toEqual([]);
+}
+
+async function rothulkSnapshot(page: Page, field: "mode" | "phase") {
+  return page.evaluate((key) => {
+    const game = (
+      window as unknown as {
+        __rothulkGame: {
+          debugSnapshot: () => {
+            mode: string;
+            phase: string;
+          };
+        };
+      }
+    ).__rothulkGame;
+    return game.debugSnapshot()[key];
+  }, field);
 }
