@@ -32,7 +32,7 @@ export class Game {
     this.input = new InputSystem(this.render.rig, this.render.groundPlane, () => this.pauseRun());
     this.hud = new HudSystem();
 
-    this.hud.bannerBtn.addEventListener("click", () => this.onBannerClick());
+    document.addEventListener("click", this.onDocumentClick);
     this.render.rig.on("capture", this.onCapture);
     this.render.rig.on("release", this.onRelease);
 
@@ -58,6 +58,12 @@ export class Game {
       this.resetRun();
     }
   }
+
+  private readonly onDocumentClick = (event: MouseEvent): void => {
+    const target = event.target;
+    if (!(target instanceof Element) || !target.closest("#banner-btn")) return;
+    this.onBannerClick();
+  };
 
   private startRun(): void {
     this.hud.hideBanner();

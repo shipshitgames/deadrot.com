@@ -18,10 +18,12 @@ import {
   useEnterToReveal,
 } from "@shipshitgames/ui";
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { getBannerSnapshot, subscribeBanner } from "./bannerBridge";
 import { getPauseSnapshot, subscribePause } from "./pauseBridge";
 
 export function AppShell() {
   const [showSettings, setShowSettings] = useState(false);
+  const banner = useSyncExternalStore(subscribeBanner, getBannerSnapshot, getBannerSnapshot);
   const pause = useSyncExternalStore(subscribePause, getPauseSnapshot, getPauseSnapshot);
   // The title <MainMenuScreen> is always mounted (visibility toggled via the
   // "hidden" class by the game engine), so the title is always "showing" here.
@@ -45,36 +47,36 @@ export function AppShell() {
           <div className="stat ssg-hud-corner">
             <span className="stat-label ssg-stat-label">Gold</span>
             <span className="stat-value ssg-stat-value" id="stat-gold">
-              0
+              {banner.gold}
             </span>
           </div>
           <div className="stat ssg-hud-corner">
             <span className="stat-label ssg-stat-label">Wave</span>
             <span className="stat-value ssg-stat-value" id="stat-wave">
-              0 / 0
+              {banner.wave}
             </span>
           </div>
           <div className="stat ssg-hud-corner">
             <span className="stat-label ssg-stat-label">Base HP</span>
             <span className="stat-value ssg-stat-value" id="stat-hp">
-              0
+              {banner.hp}
             </span>
           </div>
           <div className="stat ssg-hud-corner">
             <span className="stat-label ssg-stat-label">Build</span>
             <span className="stat-value ssg-stat-value" id="stat-build">
-              100%
+              {banner.build}
             </span>
           </div>
           <div className="stat ssg-hud-corner">
             <span className="stat-label ssg-stat-label">Run</span>
             <span className="stat-value ssg-stat-value" id="stat-run">
-              100%
+              {banner.run}
             </span>
           </div>
         </div>
 
-        <MainMenuScreen id="hud-banner" className="hidden" backgroundImage={menuHero}>
+        <MainMenuScreen id="hud-banner" className={banner.visible ? undefined : "hidden"} backgroundImage={menuHero}>
           <MainMenuTopBar mark="SSG" meta="150 gold" aria-hidden>
             Ashgate lane
           </MainMenuTopBar>
@@ -82,10 +84,18 @@ export function AppShell() {
             <MainMenuCopy hidden={revealed}>
               <MenuKicker>Scourge Lane Defense</MenuKicker>
               <MainMenuTitle id="banner-title">
-                <MainMenuTitleLine>DEAD</MainMenuTitleLine>
-                <MainMenuTitleLine tone="hot">LANE</MainMenuTitleLine>
+                {banner.title === "DEADLANE" ? (
+                  <>
+                    <MainMenuTitleLine>DEAD</MainMenuTitleLine>
+                    <MainMenuTitleLine tone="hot">LANE</MainMenuTitleLine>
+                  </>
+                ) : (
+                  <MainMenuTitleLine tone="hot">{banner.title}</MainMenuTitleLine>
+                )}
               </MainMenuTitle>
-              <p id="banner-sub" className="ssg-main-menu-subtitle" />
+              <p id="banner-sub" className="ssg-main-menu-subtitle">
+                {banner.subtitle}
+              </p>
               <MainMenuStatus>
                 <span>Run to the tile</span>
                 <span>Build by hand</span>
@@ -94,7 +104,12 @@ export function AppShell() {
             </MainMenuCopy>
             {revealed ? (
               <MainMenuNav aria-label="Main menu">
-                <MainMenuAction id="banner-btn" variant="primary" label="Deploy" meta="Start wave" />
+                <MainMenuAction
+                  id="banner-btn"
+                  variant="primary"
+                  label={banner.actionLabel}
+                  meta={banner.actionMeta}
+                />
                 <MainMenuAction variant="shop" label="Upgrades" meta="Tower tech" disabled />
                 <MainMenuAction variant="coop" label="Co-op" meta="Solo command" disabled />
                 <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
@@ -122,7 +137,7 @@ export function AppShell() {
         </MainMenuScreen>
 
         <div id="hud-hint">
-          <span id="hint-text">CLICK A CELL TO BUILD (COST 50)</span>
+          <span id="hint-text">{banner.hint}</span>
         </div>
       </div>
 
