@@ -56,6 +56,21 @@
 - Post-processing: generated on magenta chroma-key background, removed with the bundled imagegen chroma-key helper, then encoded to lossless WebP with `cwebp -lossless -exact`.
 - Notes: Establishes the pistol as the base/default weapon so the long marksman sprite can stay a scoped sniper instead of pretending to be the default gun.
 
+## 2026-06-08 - Pyre sidearm main weapon tier sprites
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Faction / role: The Pyre, default sidearm visible upgrade tiers.
+- Tool: `gpt-image-2` via built-in `image_gen`.
+- Plan: Codex built-in.
+- Kind: generated 2D first-person weapon upgrade sprites.
+- Source outputs: `/Users/decod3rslabs/.codex/generated_images/019ea531-3224-7cc1-936b-b522c4712745/`.
+- Workspace source folder: `sources/generated/scourge-survivors/weapons/pyre/main-sidearm-tiers/2026-06-08/`.
+- Final assets: `weapons/pyre/pistol-tier-2.webp`, `weapons/pyre/pistol-tier-3.webp`, `weapons/pyre/pistol-tier-4.webp`, `weapons/pyre/pistol-evolved.webp`.
+- Prompt source: existing runtime `weapons/pyre/pistol.webp` as the validated visual reference plus `CANON.md`, `DESIGN.md`, `Universe/Style-Bible.md`, and `Games/Scourge-Survivors.md`.
+- Post-processing: generated on green chroma-key backgrounds, removed with the bundled imagegen chroma-key helper using a temporary Pillow venv, then encoded to alpha WebP with `cwebp -q 86 -alpha_q 100 -m 6`.
+- Notes: Keeps the existing pistol as the base tier and adds upgraded, advanced, elite, and evolved sidearm visuals for the main weapon progression.
+
 ## 2026-06-05 - Scourge enemy sprite refresh
 
 - Status: promoted into runtime.

@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
-  EVOLUTIONS,
-  UPGRADE_BY_ID,
   availableEvolutionChoice,
+  EVOLUTIONS,
+  mainWeaponUpgradeScore,
+  mainWeaponVisualTier,
   runGold,
   survivorBuildList,
-  xpForLevel,
+  UPGRADE_BY_ID,
   type UpgradeId,
   type WeaponUpgradeId,
+  xpForLevel,
 } from "../../src/game/data/survivors";
 
 const noEvolutions: Record<WeaponUpgradeId, boolean> = {
@@ -76,5 +78,14 @@ describe("survivors progression data", () => {
     expect(xpForLevel(12)).toBeGreaterThan(xpForLevel(6));
     expect(runGold(50, 8, 180, 0)).toBeGreaterThan(runGold(20, 4, 90, 0));
     expect(runGold(50, 8, 180, 2)).toBeGreaterThan(runGold(50, 8, 180, 0));
+  });
+
+  it("maps gun-affecting upgrades onto visible main weapon sprite tiers", () => {
+    expect(mainWeaponUpgradeScore({})).toBe(0);
+    expect(mainWeaponVisualTier({})).toBe("base");
+    expect(mainWeaponVisualTier({ dmg: 1 })).toBe("tier-2");
+    expect(mainWeaponVisualTier({ dmg: 2, rate: 2 })).toBe("tier-3");
+    expect(mainWeaponVisualTier({ dmg: 5, rate: 3 })).toBe("tier-4");
+    expect(mainWeaponVisualTier({ dmg: 5, rate: 4, multishot: 3 })).toBe("evolved");
   });
 });

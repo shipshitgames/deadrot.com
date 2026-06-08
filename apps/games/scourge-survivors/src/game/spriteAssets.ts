@@ -1,6 +1,4 @@
 import * as THREE from "three";
-import type { WeaponId } from "./constants";
-import type { PlayerAvatarId } from "../net/playerAvatars";
 import {
   ANIMATION_MANIFEST,
   ASSET_MANIFEST,
@@ -9,11 +7,14 @@ import {
   audioUrl,
   loadSpriteTexture,
   loadTexture,
+  type SpriteView,
   spriteEntry,
   spriteScale,
   textureEntry,
-  type SpriteView,
 } from "../assets/catalog";
+import type { PlayerAvatarId } from "../net/playerAvatars";
+import type { WeaponId } from "./constants";
+import type { MainWeaponVisualTier } from "./data/survivors";
 
 type EnemySpriteKind = "melee" | "ranged" | "flying" | "boss";
 type EnemySpriteView = SpriteView;
@@ -52,6 +53,14 @@ const WEAPON_SPRITE_IDS: Record<WeaponId, string> = {
   shotgun: "weapon-shotgun",
   cannon: "weapon-cannon",
   sniper: "weapon-sniper",
+};
+
+const PISTOL_TIER_SPRITE_IDS: Record<MainWeaponVisualTier, string> = {
+  base: "weapon-pistol",
+  "tier-2": "weapon-pistol-tier-2",
+  "tier-3": "weapon-pistol-tier-3",
+  "tier-4": "weapon-pistol-tier-4",
+  evolved: "weapon-pistol-evolved",
 };
 
 function textureViews(id: string): Record<EnemySpriteView, THREE.Texture> {
@@ -165,6 +174,14 @@ export const WEAPON_SPRITE_TEXTURES: Record<WeaponId, THREE.Texture> = {
   sniper: loadSpriteTexture(WEAPON_SPRITE_IDS.sniper),
 };
 
+export const MAIN_WEAPON_TIER_TEXTURES: Record<MainWeaponVisualTier, THREE.Texture> = {
+  base: WEAPON_SPRITE_TEXTURES.pistol,
+  "tier-2": loadSpriteTexture(PISTOL_TIER_SPRITE_IDS["tier-2"]),
+  "tier-3": loadSpriteTexture(PISTOL_TIER_SPRITE_IDS["tier-3"]),
+  "tier-4": loadSpriteTexture(PISTOL_TIER_SPRITE_IDS["tier-4"]),
+  evolved: loadSpriteTexture(PISTOL_TIER_SPRITE_IDS.evolved),
+};
+
 export const WEAPON_SPRITE_CONFIG: Record<
   WeaponId,
   {
@@ -181,6 +198,16 @@ export const WEAPON_SPRITE_CONFIG: Record<
   cannon: weaponConfig("cannon"),
   sniper: weaponConfig("sniper"),
 };
+
+export function weaponSpriteTexture(id: WeaponId, tier: MainWeaponVisualTier = "base"): THREE.Texture {
+  if (id === "pistol") return MAIN_WEAPON_TIER_TEXTURES[tier];
+  return WEAPON_SPRITE_TEXTURES[id];
+}
+
+export function weaponSpriteConfig(id: WeaponId, tier: MainWeaponVisualTier = "base") {
+  if (id === "pistol") return weaponConfigForSpriteId(PISTOL_TIER_SPRITE_IDS[tier]);
+  return WEAPON_SPRITE_CONFIG[id];
+}
 
 export const MUZZLE_FLASH_TEXTURE = loadSpriteTexture("muzzle-flash-pyre");
 
@@ -268,7 +295,11 @@ export const RUNTIME_AUDIO_ASSET_URLS = Object.fromEntries(
 ) as Record<string, string>;
 
 function weaponConfig(id: WeaponId) {
-  const entry = spriteEntry(WEAPON_SPRITE_IDS[id]);
+  return weaponConfigForSpriteId(WEAPON_SPRITE_IDS[id]);
+}
+
+function weaponConfigForSpriteId(id: string) {
+  const entry = spriteEntry(id);
   if (!entry.scale || !entry.weapon) throw new Error(`Weapon sprite ${id} is missing weapon metadata`);
   return {
     scale: entry.scale,

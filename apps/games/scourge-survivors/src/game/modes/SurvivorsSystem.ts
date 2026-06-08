@@ -1,18 +1,17 @@
 import * as THREE from "three";
-import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
 import { audio } from "../../audio/AudioEngine";
-import type { Enemy } from "../entities/Enemy";
-import { XP_BLOOD_SCALE, XP_BLOOD_TEXTURE } from "../spriteAssets";
 import { WEAPONS } from "../constants";
-import { DEFAULT_MAP_ID, getMap } from "../data/maps";
+import type { GameContext } from "../context";
 import { pickWeightedEnemyArchetype } from "../data/enemies";
+import { DEFAULT_MAP_ID, getMap } from "../data/maps";
 import {
   AMP_PER_TIER,
+  availableEvolutionChoice,
   BANISHES_PER_RUN,
   BOLT_DMG,
   BOLT_SPEED,
   BOLT_TTL,
+  mainWeaponVisualTier,
   NOVA_DMG,
   NOVA_INTERVAL,
   NOVA_RADIUS,
@@ -25,9 +24,6 @@ import {
   SURV_BASE_MAGNET,
   SURV_ELITE_INTERVAL,
   SURV_ENEMY_BASE_HP,
-  SURVIVOR_CLASSES,
-  SURVIVOR_RUN_CHAPTERS,
-  SURVIVOR_RUN_GOAL_TIME,
   SURV_SPAWN_CAP,
   SURV_SPAWN_MIN,
   SURV_SPAWN_START,
@@ -35,19 +31,24 @@ import {
   SURV_SWELL_COUNT,
   SURV_SWELL_INTERVAL,
   SURV_XP_ELITE_VALUE,
-  UPGRADES,
-  UPGRADE_BY_ID,
-  WEAPON_UPGRADE_IDS,
-  availableEvolutionChoice,
+  SURVIVOR_CLASSES,
+  SURVIVOR_RUN_CHAPTERS,
+  SURVIVOR_RUN_GOAL_TIME,
+  type SurvArchetype,
+  type SurvivorClassId,
   survivorBuildList,
   survivorChapterAt,
   survivorChapterStart,
-  xpForLevel,
-  type SurvArchetype,
-  type SurvivorClassId,
+  UPGRADE_BY_ID,
+  UPGRADES,
   type UpgradeId,
+  WEAPON_UPGRADE_IDS,
   type WeaponUpgradeId,
+  xpForLevel,
 } from "../data/survivors";
+import type { Enemy } from "../entities/Enemy";
+import { XP_BLOOD_SCALE, XP_BLOOD_TEXTURE } from "../spriteAssets";
+import type { GameSystems } from "../systems";
 import type { BuildEntry, UpgradeChoice } from "../types";
 
 const DEFENSIVE_UPGRADES: UpgradeId[] = [
@@ -142,9 +143,9 @@ export class SurvivorsSystem {
     for (const [id, level] of Object.entries(cls.startingUpgrades ?? {}) as [UpgradeId, number][]) {
       this.upgradeLevels[id] = Math.max(this.upgradeLevels[id] ?? 0, level);
     }
-    if ((this.shopTiers["arsenal"] ?? 0) > 0) this.upgradeLevels.orbit = Math.max(this.upgradeLevels.orbit ?? 0, 1); // Arsenal perk
-    if ((this.shopTiers["munitions"] ?? 0) > 0) this.upgradeLevels.bolt = Math.max(this.upgradeLevels.bolt ?? 0, 1); // Munitions perk
-    if ((this.shopTiers["pulsar"] ?? 0) > 0) this.upgradeLevels.nova = Math.max(this.upgradeLevels.nova ?? 0, 1); // Pulsar perk
+    if ((this.shopTiers.arsenal ?? 0) > 0) this.upgradeLevels.orbit = Math.max(this.upgradeLevels.orbit ?? 0, 1); // Arsenal perk
+    if ((this.shopTiers.munitions ?? 0) > 0) this.upgradeLevels.bolt = Math.max(this.upgradeLevels.bolt ?? 0, 1); // Munitions perk
+    if ((this.shopTiers.pulsar ?? 0) > 0) this.upgradeLevels.nova = Math.max(this.upgradeLevels.nova ?? 0, 1); // Pulsar perk
     this.survSpawnTimer = 0.25;
     this.survClock = 0;
     this.eliteTimer = this.currentChapter().eliteInterval;
@@ -162,6 +163,10 @@ export class SurvivorsSystem {
     this.ctx.ammo = WEAPONS[this.ctx.activeWeapon].magazineSize;
     this.ctx.reserve = 0; // unused in Survivors (reload ignores reserve); shown as ∞
     this.ctx.reloading = false;
+  }
+
+  mainWeaponVisualTier() {
+    return mainWeaponVisualTier(this.upgradeLevels);
   }
 
   clearSurvivorsEntities() {
@@ -393,6 +398,7 @@ export class SurvivorsSystem {
   /** Called from the React draft UI when a card is chosen. */
   pickUpgrade(id: string) {
     if (this.ctx.status !== "levelup") return;
+    const previousMainWeaponTier = this.mainWeaponVisualTier();
     if (id.startsWith("evo-")) {
       const w = id.slice(4) as WeaponUpgradeId;
       if (WEAPON_UPGRADE_IDS.includes(w) && !this.evolved[w]) {
@@ -410,6 +416,9 @@ export class SurvivorsSystem {
         if (uid === "ward") this.ctx.statShield = Math.min(this.ctx.statShieldMax, this.ctx.statShield + 24);
         audio.sfx("pickup");
       }
+    }
+    if (this.ctx.activeWeapon === "pistol" && this.mainWeaponVisualTier() !== previousMainWeaponTier) {
+      this.sys.weapon.applyWeaponModel(this.ctx.activeWeapon);
     }
     this.pendingLevels = Math.max(0, this.pendingLevels - 1);
     if (this.pendingLevels > 0) {
