@@ -3,6 +3,7 @@ import {
   GlobalMusicToggle,
   MainMenuAction,
   MainMenuCopy,
+  MainMenuEnterPrompt,
   MainMenuLayout,
   MainMenuNav,
   MainMenuScreen,
@@ -11,6 +12,7 @@ import {
   MainMenuTitleLine,
   MainMenuTopBar,
   MenuKicker,
+  useEnterToReveal,
 } from "@shipshitgames/ui";
 import { useState } from "react";
 import { CommandPanel } from "./components/CommandPanel";
@@ -30,6 +32,7 @@ export default function App() {
   // The Front is the walkable 3D lobby (portals to every game); the Command
   // Table swaps in the Warline strategy UI. Title menu enters the Front.
   const [mode, setMode] = useState<"front" | "command">("front");
+  const revealed = useEnterToReveal(showTitle);
 
   return (
     <div className="relative min-h-screen bg-void text-ash">
@@ -42,8 +45,8 @@ export default function App() {
           <MainMenuTopBar mark="SSG" meta={status === "LIVE" ? "Live front" : "Local front"} aria-hidden>
             War for the lanes
           </MainMenuTopBar>
-          <MainMenuLayout>
-            <MainMenuCopy>
+          <MainMenuLayout className={revealed ? "ssg-main-menu-layout--menu" : "ssg-main-menu-layout--splash"}>
+            <MainMenuCopy hidden={revealed}>
               <MenuKicker>Strategic Command</MenuKicker>
               <MainMenuTitle>
                 <MainMenuTitleLine>WAR</MainMenuTitleLine>
@@ -57,37 +60,41 @@ export default function App() {
                 <span>Threat {Math.round(summary.threat)}%</span>
               </MainMenuStatus>
             </MainMenuCopy>
-            <MainMenuNav aria-label="Main menu">
-              <MainMenuAction
-                type="button"
-                variant="primary"
-                label="Enter the Front"
-                meta="3D lobby"
-                onClick={() => {
-                  setMode("front");
-                  setShowTitle(false);
-                }}
-              />
-              <MainMenuAction
-                type="button"
-                variant="shop"
-                label="Command Table"
-                meta="War map"
-                onClick={() => {
-                  setMode("command");
-                  setShowTitle(false);
-                }}
-              />
-              <MainMenuAction
-                variant="coop"
-                label="Co-op"
-                meta={status === "LIVE" ? "Shared room" : "Offline"}
-                disabled
-              />
-              <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
-              <MainMenuAction variant="settings" label="Settings" meta="Simulation" disabled />
-              <MainMenuAction variant="dev" label="Sandbox" meta="Ops sim" disabled />
-            </MainMenuNav>
+            {revealed ? (
+              <MainMenuNav aria-label="Main menu">
+                <MainMenuAction
+                  type="button"
+                  variant="primary"
+                  label="Enter the Front"
+                  meta="3D lobby"
+                  onClick={() => {
+                    setMode("front");
+                    setShowTitle(false);
+                  }}
+                />
+                <MainMenuAction
+                  type="button"
+                  variant="shop"
+                  label="Command Table"
+                  meta="War map"
+                  onClick={() => {
+                    setMode("command");
+                    setShowTitle(false);
+                  }}
+                />
+                <MainMenuAction
+                  variant="coop"
+                  label="Co-op"
+                  meta={status === "LIVE" ? "Shared room" : "Offline"}
+                  disabled
+                />
+                <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
+                <MainMenuAction variant="settings" label="Settings" meta="Simulation" disabled />
+                <MainMenuAction variant="dev" label="Sandbox" meta="Ops sim" disabled />
+              </MainMenuNav>
+            ) : (
+              <MainMenuEnterPrompt />
+            )}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>

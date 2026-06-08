@@ -18,6 +18,7 @@ import {
   RectBounds,
 } from "@shipshitgames/engine";
 import {
+  GlobalGameSettingsPanel,
   loadGlobalGameSettings,
   MusicDirector,
   PauseMenu,
@@ -202,6 +203,7 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onE
   const [nearTable, setNearTable] = useState(false);
   const [captured, setCaptured] = useState(false);
   const [paused, setPausedState] = useState(false);
+  const [pauseSettings, setPauseSettings] = useState(false);
   // "Mute Music"/"Music On" label mirrors the shared global mute (same state the
   // title-menu corner toggle + settings sliders drive).
   const [musicEnabled, setMusicEnabled] = useState(() =>
@@ -307,9 +309,10 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onE
     };
     const pauseControls = () => {
       setPaused(true);
+      setPauseSettings(false); // each pause opens on the menu, not the settings panel
       setControlActive(false);
       clearMoveIntent(move);
-      pauseMusicRef.current();
+      // Keep the music playing through the pause — only stop it on unmount.
       rig.releaseCapture(true);
     };
     const resumeControls = () => activateControls();
@@ -506,7 +509,7 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onE
       )}
 
       <PauseMenu
-        open={paused}
+        open={paused && !pauseSettings}
         kicker="Warline Front"
         title="Paused"
         subtitle="The lanes hold while you stand at the threshold."
@@ -519,9 +522,23 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onE
         onResume={() => resumeRef.current()}
         actions={[
           { id: "command", label: "Command Table", meta: "War map", variant: "shop", onSelect: onOpenCommand },
+          { id: "settings", label: "Settings", meta: "Audio", variant: "settings", onSelect: () => setPauseSettings(true) },
           { id: "title", label: "Exit to title", meta: "Main menu", onSelect: () => onExitToTitle?.() },
         ]}
       />
+
+      {paused && pauseSettings && (
+        <div className="front-map3d__settings" role="dialog" aria-modal="true" aria-label="Settings">
+          <div className="front-map3d__settings-inner">
+            <span className="front-map3d__kicker">Audio Settings</span>
+            <strong>WARLINE</strong>
+            <GlobalGameSettingsPanel inline />
+            <button type="button" className="front-map3d__button" onClick={() => setPauseSettings(false)}>
+              ← Back
+            </button>
+          </div>
+        </div>
+      )}
 
       {nearTable && !paused && (
         <div className="front-map3d__portal-panel" style={{ "--portal-accent": "#ff6a00" } as React.CSSProperties}>

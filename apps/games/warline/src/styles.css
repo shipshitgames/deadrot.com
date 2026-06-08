@@ -298,3 +298,31 @@ body {
     flex-wrap: wrap;
   }
 }
+
+/* Lobby pause → Settings overlay (audio sliders). */
+.front-map3d__settings {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  background: rgba(6, 5, 5, 0.92);
+  backdrop-filter: blur(3px);
+}
+
+.front-map3d__settings-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(420px, 92vw);
+  padding: 24px;
+  border: 1px solid rgba(233, 227, 214, 0.16);
+  border-left: 3px solid var(--color-hellfire);
+  background: rgba(10, 10, 10, 0.92);
+}
+
+.front-map3d__settings-inner strong {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--color-bone);
+}
