@@ -461,7 +461,14 @@ describe("physics — surface resolution, hazards, embers, beacon", () => {
     const phys = new Physics();
     const course = flatCourse();
     course.hazards = [
-      { kind: "spike", x: 10, width: COURSE.spikeWidth, baseY: WORLD.groundY, height: COURSE.spikeHeight, clearance: 0 },
+      {
+        kind: "spike",
+        x: 10,
+        width: COURSE.spikeWidth,
+        baseY: WORLD.groundY,
+        height: COURSE.spikeHeight,
+        clearance: 0,
+      },
     ];
     const r = new Runner();
     r.x = 10;
@@ -476,7 +483,14 @@ describe("physics — surface resolution, hazards, embers, beacon", () => {
     const phys = new Physics();
     const course = flatCourse();
     course.hazards = [
-      { kind: "spike", x: 10, width: COURSE.spikeWidth, baseY: WORLD.groundY, height: COURSE.spikeHeight, clearance: 0 },
+      {
+        kind: "spike",
+        x: 10,
+        width: COURSE.spikeWidth,
+        baseY: WORLD.groundY,
+        height: COURSE.spikeHeight,
+        clearance: 0,
+      },
     ];
     const r = new Runner();
     r.x = 10;
@@ -535,7 +549,14 @@ describe("physics — surface resolution, hazards, embers, beacon", () => {
     const phys = new Physics();
     const course = flatCourse();
     course.hazards = [
-      { kind: "spike", x: 10, width: COURSE.spikeWidth, baseY: WORLD.groundY, height: COURSE.spikeHeight, clearance: 0 },
+      {
+        kind: "spike",
+        x: 10,
+        width: COURSE.spikeWidth,
+        baseY: WORLD.groundY,
+        height: COURSE.spikeHeight,
+        clearance: 0,
+      },
     ];
     const r = new Runner();
     r.x = 10;

@@ -127,9 +127,7 @@ describe("lane / path", () => {
     expect(mobPathPoints[0].equals(breachDoorPoint)).toBe(true);
     expect(mobPathPoints[1].equals(spawnPoint)).toBe(true);
     // The door is outside the board on the spawn side (further from base).
-    expect(breachDoorPoint.distanceTo(basePoint)).toBeGreaterThan(
-      spawnPoint.distanceTo(basePoint),
-    );
+    expect(breachDoorPoint.distanceTo(basePoint)).toBeGreaterThan(spawnPoint.distanceTo(basePoint));
   });
 
   test("play bounds enclose the board and the breach door", () => {
@@ -184,9 +182,7 @@ describe("wave director schedule", () => {
   });
 
   test("wave size escalates strictly with each wave", () => {
-    const counts = Array.from({ length: CONSTANTS.waves.total }, (_, i) =>
-      spawnCountForWave(i + 1),
-    );
+    const counts = Array.from({ length: CONSTANTS.waves.total }, (_, i) => spawnCountForWave(i + 1));
     expect(counts[0]).toBe(CONSTANTS.waves.baseCount);
     for (let i = 1; i < counts.length; i++) {
       expect(counts[i]).toBeGreaterThan(counts[i - 1]);
@@ -198,10 +194,7 @@ describe("wave director schedule", () => {
     const first = spawnCountForWave(1);
     const last = spawnCountForWave(CONSTANTS.waves.total);
     expect(last).toBeGreaterThan(first);
-    expect(last).toBe(
-      CONSTANTS.waves.baseCount +
-        (CONSTANTS.waves.total - 1) * CONSTANTS.waves.countGrowth,
-    );
+    expect(last).toBe(CONSTANTS.waves.baseCount + (CONSTANTS.waves.total - 1) * CONSTANTS.waves.countGrowth);
   });
 
   test("inter-wave timer counts down and triggers the next wave at zero", () => {
@@ -369,8 +362,7 @@ describe("build readiness state machine", () => {
 
   test("an occupied tile is never ready, even with gold and in range", () => {
     const occupied = new Set<string>(["3,3"]);
-    const ready = (key: string, gold: number) =>
-      !occupied.has(key) && gold >= CONSTANTS.economy.towerCost;
+    const ready = (key: string, gold: number) => !occupied.has(key) && gold >= CONSTANTS.economy.towerCost;
     expect(ready("3,3", 999)).toBe(false);
     expect(ready("4,3", 999)).toBe(true);
   });
@@ -389,8 +381,7 @@ describe("build readiness state machine", () => {
   });
 
   test("build percentage is floored 0..100", () => {
-    const pct = (progress: number) =>
-      Math.min(100, Math.floor((progress / CONSTANTS.build.time) * 100));
+    const pct = (progress: number) => Math.min(100, Math.floor((progress / CONSTANTS.build.time) * 100));
     expect(pct(0)).toBe(0);
     expect(pct(CONSTANTS.build.time / 2)).toBe(50);
     expect(pct(CONSTANTS.build.time)).toBe(100);
@@ -446,9 +437,7 @@ describe("loop integration constants", () => {
   test("a creep cannot skip the whole board in a single clamped frame", () => {
     // Max distance a final-wave creep moves in one clamped step.
     const maxStep = creepSpeedForWave(CONSTANTS.waves.total) * CONSTANTS.loop.maxDelta;
-    const laneLength = mobPathPoints
-      .slice(1)
-      .reduce((sum, p, i) => sum + p.distanceTo(mobPathPoints[i]), 0);
+    const laneLength = mobPathPoints.slice(1).reduce((sum, p, i) => sum + p.distanceTo(mobPathPoints[i]), 0);
     expect(maxStep).toBeLessThan(laneLength);
   });
 });

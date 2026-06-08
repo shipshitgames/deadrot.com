@@ -1,11 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import {
-  CONSTANTS,
-  ENEMIES,
-  type EnemyType,
-  SPITTER,
-  WORLD,
-} from "../../src/game/constants";
+import { CONSTANTS, ENEMIES, type EnemyType, SPITTER, WORLD } from "../../src/game/constants";
 import {
   ALL_UPGRADES,
   atLevel,
