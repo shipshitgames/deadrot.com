@@ -51,6 +51,14 @@ export function SiteHeader() {
               {i.label}
             </Link>
           ))}
+          {/* The Warline lobby is the live entry into every game. Plain <a> — /warline/
+              is a rewrite to the SPA (apps/games/warline), not a Next route. */}
+          <a
+            href="/warline/"
+            className="font-display text-sm font-bold uppercase tracking-widest text-toxic transition-colors hover:text-bone"
+          >
+            Warline
+          </a>
           <a
             href={WATCH}
             target="_blank"
@@ -83,6 +91,13 @@ export function SiteHeader() {
               {i.label}
             </Link>
           ))}
+          <a
+            href="/warline/"
+            onClick={() => setOpen(false)}
+            className="py-2 font-display text-sm font-bold uppercase tracking-widest text-toxic hover:text-bone"
+          >
+            Warline
+          </a>
           <a
             href={WATCH}
             target="_blank"
