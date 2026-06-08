@@ -164,7 +164,7 @@ const AUDIO_ASSETS: AudioAsset[] = [
   },
   { id: "sfx-pistol-pyre", label: "Pistol SFX", src: RUNTIME_AUDIO_ASSET_URLS["sfx-pistol-pyre"], kind: "sfx" },
   { id: "sfx-sniper", label: "Sniper SFX", src: RUNTIME_AUDIO_ASSET_URLS["sfx-sniper"], kind: "sfx" },
-  { id: "sfx-smg-pyre", label: "Pyre SMG SFX", src: RUNTIME_AUDIO_ASSET_URLS["sfx-smg-pyre"], kind: "sfx" },
+  { id: "sfx-smg", label: "SMG SFX", src: RUNTIME_AUDIO_ASSET_URLS["sfx-smg"], kind: "sfx" },
   { id: "sfx-shotgun", label: "Shotgun SFX", src: RUNTIME_AUDIO_ASSET_URLS["sfx-shotgun"], kind: "sfx" },
   { id: "sfx-cannon", label: "Cannon SFX", src: RUNTIME_AUDIO_ASSET_URLS["sfx-cannon"], kind: "sfx" },
 ];

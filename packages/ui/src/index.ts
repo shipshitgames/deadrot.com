@@ -33,6 +33,8 @@ export type {
   MenuItemProps,
   UpgradeCardProps,
 } from "./Menu";
+export { PixelConfetti } from "./PixelConfetti";
+export type { PixelConfettiProps } from "./PixelConfetti";
 export {
   MainMenuAction,
   MainMenuCopy,

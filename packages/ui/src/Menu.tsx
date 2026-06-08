@@ -226,7 +226,7 @@ export function UpgradeCard({
         </span>
       )}
       {icon && (
-        <span className="ssg-upgrade-card__plaque" title={tooltip}>
+        <span className="ssg-upgrade-card__plaque" data-tip={tooltip}>
           {icon}
         </span>
       )}

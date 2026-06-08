@@ -255,7 +255,7 @@ describe("asset manifest", () => {
         "music-blood-circuit-ascension",
         "sfx-pistol-pyre",
         "sfx-sniper",
-        "sfx-smg-pyre",
+        "sfx-smg",
         "sfx-shotgun",
         "sfx-cannon",
       ]),
@@ -269,7 +269,7 @@ describe("asset manifest", () => {
     const cueToId = Object.fromEntries(Object.entries(audio).map(([id, entry]) => [entry.cue, id]));
     expect(cueToId).toMatchObject({
       shoot: "sfx-pistol-pyre",
-      shootSmg: "sfx-smg-pyre",
+      shootSmg: "sfx-smg",
       shootSniper: "sfx-sniper",
       shootShotgun: "sfx-shotgun",
       shootCannon: "sfx-cannon",

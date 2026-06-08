@@ -587,6 +587,29 @@
         "scope": "project prototype"
       }
     },
+    "projectile-pyre-bolt": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/projectiles/scourge/pyre-bolt.webp",
+      "dimensions": [
+        96,
+        96
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "scale": [
+        0.5,
+        0.5
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI 2D projectile sprite (additive, black-bg)",
+        "scope": "embedded in-game use"
+      }
+    },
     "gib-meat-chunk": {
       "type": "sprite",
       "path": "games/scourge-survivors/fx/gibs/gib-meat-chunk.webp",
@@ -1685,20 +1708,20 @@
         "scope": "Scourge Survivors runtime"
       }
     },
-    "sfx-smg-pyre": {
+    "sfx-smg": {
       "type": "audio",
-      "path": "games/scourge-survivors/audio/sfx/weapons/smg-fire-pyre.webm",
+      "path": "games/scourge-survivors/audio/sfx/weapons/smg.webm",
       "category": "sfx",
       "cue": "shootSmg",
-      "duration": 0.128,
+      "duration": 1.368,
       "volume": 1,
       "loop": false,
       "license": {
-        "tool": "ffmpeg synthesis",
-        "plan": "local",
+        "tool": "ElevenLabs SFX",
+        "plan": "unknown",
         "date": "2026-06-04",
-        "kind": "procedural placeholder weapon SFX",
-        "scope": "project-owned placeholder"
+        "kind": "AI weapon SFX",
+        "scope": "embedded in-game use"
       }
     },
     "sfx-shotgun": {
@@ -1731,21 +1754,6 @@
         "date": "2026-06-04",
         "kind": "AI weapon SFX",
         "scope": "embedded in-game use"
-      }
-    },
-    "sfx-smg-legacy": {
-      "type": "audio",
-      "path": "games/scourge-survivors/audio/sfx/weapons/smg.webm",
-      "category": "sfx",
-      "duration": 1.368,
-      "volume": 1,
-      "loop": false,
-      "license": {
-        "tool": "ElevenLabs SFX",
-        "plan": "unknown",
-        "date": "2026-06-04",
-        "kind": "AI weapon SFX",
-        "scope": "legacy unused sample"
       }
     }
   },

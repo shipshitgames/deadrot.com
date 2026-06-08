@@ -16,6 +16,7 @@ import {
   MainMenuTopBar,
   PauseMenu,
   type PauseMenuAction,
+  PixelConfetti,
   UpgradeCard,
   useEnterToReveal,
 } from "@shipshitgames/ui";
@@ -776,6 +777,8 @@ function LevelUpDraft({
 
   return (
     <div className={`${OVERLAY} cursor-default`}>
+      <PixelConfetti seed={state.level} />
+      <div className="relative z-[1] flex flex-col items-center gap-[18px]">
       <div className="ssg-menu-kicker mb-[10px]">Level {state.level} — choose an upgrade</div>
       <h2 className="ssg-menu-title !text-[40px] !mb-5">CHOOSE UPGRADE</h2>
       <div className="flex gap-[18px] flex-wrap justify-center items-stretch max-w-[92vw]">
@@ -823,6 +826,7 @@ function LevelUpDraft({
             Banish available: {state.banishes}
           </IconText>
         </span>
+      </div>
       </div>
     </div>
   );
@@ -1440,6 +1444,7 @@ export function HUD({
       {status === "paused" && pausePanel === "none" && (
         <PauseMenu
           open
+          className="pause-ui"
           kicker={multiplayer ? "Breach run" : "Pyre breach"}
           title="Paused"
           subtitle={

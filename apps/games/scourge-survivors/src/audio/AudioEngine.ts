@@ -55,7 +55,7 @@ const DEFAULT_TRACK: MusicTrack = "ash-reactor"; // gameplay loop; menu/boss can
 // SfxName not listed here stays procedural — the zero-asset fallback.
 const SFX_SAMPLE_IDS: Partial<Record<SfxName, string>> = {
   shoot: "sfx-pistol-pyre",
-  shootSmg: "sfx-smg-pyre",
+  shootSmg: "sfx-smg",
   shootSniper: "sfx-sniper",
   shootShotgun: "sfx-shotgun",
   shootCannon: "sfx-cannon",
