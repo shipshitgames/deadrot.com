@@ -184,6 +184,10 @@ describe("asset manifest", () => {
   it("defines weapon sprite metadata needed for first-person runtime placement", () => {
     const weaponSpriteIds = [
       "weapon-pistol",
+      "weapon-pistol-tier-2",
+      "weapon-pistol-tier-3",
+      "weapon-pistol-tier-4",
+      "weapon-pistol-evolved",
       "weapon-smg",
       "weapon-shotgun",
       "weapon-cannon",
@@ -198,6 +202,29 @@ describe("asset manifest", () => {
       expect(entry.weapon?.offset, `${id} offset`).toHaveLength(3);
       expect(entry.weapon?.muzzle, `${id} muzzle`).toHaveLength(3);
       expect(entry.weapon?.flashScale, `${id} flash scale`).toBeGreaterThan(0);
+    }
+  });
+
+  it("keeps main sidearm tier sprites as optimized WebP cutouts with stable muzzle metadata", () => {
+    const tierSpriteIds = [
+      "weapon-pistol-tier-2",
+      "weapon-pistol-tier-3",
+      "weapon-pistol-tier-4",
+      "weapon-pistol-evolved",
+    ] as const;
+    const base = manifest.sprites["weapon-pistol"];
+
+    for (const id of tierSpriteIds) {
+      const entry = manifest.sprites[id];
+      expect(entry.path, `${id} path`).toMatch(/^games\/scourge-survivors\/weapons\/pyre\/.*\.webp$/);
+      expect(entry.filter, id).toBe("nearest");
+      expect(entry.dimensions?.[0], `${id} width`).toBeGreaterThan(0);
+      expect(entry.dimensions?.[1], `${id} height`).toBeGreaterThan(0);
+      expect(entry.license.tool, `${id} tool`).toBe("gpt-image-2");
+      expect(entry.scale, `${id} scale`).toEqual(base.scale);
+      expect(entry.weapon?.offset, `${id} offset`).toEqual(base.weapon?.offset);
+      expect(entry.weapon?.muzzle, `${id} muzzle`).toEqual(base.weapon?.muzzle);
+      expect(entry.weapon?.flashScale, `${id} flash scale`).toEqual(base.weapon?.flashScale);
     }
   });
 

@@ -11,6 +11,7 @@ import {
   BOLT_DMG,
   BOLT_SPEED,
   BOLT_TTL,
+  mainWeaponVisualTier,
   NOVA_DMG,
   NOVA_INTERVAL,
   NOVA_RADIUS,
@@ -164,6 +165,10 @@ export class SurvivorsSystem {
     this.ctx.ammo = WEAPONS[this.ctx.activeWeapon].magazineSize;
     this.ctx.reserve = 0; // unused in Survivors (reload ignores reserve); shown as ∞
     this.ctx.reloading = false;
+  }
+
+  mainWeaponVisualTier() {
+    return mainWeaponVisualTier(this.upgradeLevels);
   }
 
   clearSurvivorsEntities() {
@@ -399,6 +404,7 @@ export class SurvivorsSystem {
   /** Called from the React draft UI when a card is chosen. */
   pickUpgrade(id: string) {
     if (this.ctx.status !== "levelup") return;
+    const previousMainWeaponTier = this.mainWeaponVisualTier();
     if (id.startsWith("evo-")) {
       const w = id.slice(4) as WeaponUpgradeId;
       if (WEAPON_UPGRADE_IDS.includes(w) && !this.evolved[w]) {
@@ -416,6 +422,9 @@ export class SurvivorsSystem {
         if (uid === "ward") this.ctx.statShield = Math.min(this.ctx.statShieldMax, this.ctx.statShield + 24);
         audio.sfx("pickup");
       }
+    }
+    if (this.ctx.activeWeapon === "pistol" && this.mainWeaponVisualTier() !== previousMainWeaponTier) {
+      this.sys.weapon.applyWeaponModel(this.ctx.activeWeapon);
     }
     this.pendingLevels = Math.max(0, this.pendingLevels - 1);
     if (this.pendingLevels > 0) {
