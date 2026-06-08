@@ -150,9 +150,9 @@ export class Hud {
           <span class="ssg-main-menu-action__label"><span>Leaderboard</span></span>
           <span class="ssg-main-menu-action__meta">${this.best === null ? "No record" : `Best ${fmtTime(this.best)}`}</span>
         </button>
-        <button class="ssg-main-menu-action ssg-main-menu-action--settings" disabled>
+        <button id="overlay-settings-btn" class="ssg-main-menu-action ssg-main-menu-action--settings">
           <span class="ssg-main-menu-action__label"><span>Settings</span></span>
-          <span class="ssg-main-menu-action__meta">Keyboard</span>
+          <span class="ssg-main-menu-action__meta">Audio</span>
         </button>
         <button class="ssg-main-menu-action ssg-main-menu-action--dev" disabled>
           <span class="ssg-main-menu-action__label"><span>Sandbox</span></span>
@@ -217,6 +217,15 @@ export class Hud {
   /** Wire the (re)created overlay button to a callback. */
   onOverlayButton(cb: () => void) {
     const btn = document.getElementById("overlay-btn");
+    if (btn) btn.addEventListener("click", cb, { once: true });
+  }
+
+  /**
+   * Wire the start-screen Settings button to a callback. Only present on the
+   * start card (re-created by showStart), so re-wire each time it is shown.
+   */
+  onSettingsButton(cb: () => void) {
+    const btn = document.getElementById("overlay-settings-btn");
     if (btn) btn.addEventListener("click", cb, { once: true });
   }
 

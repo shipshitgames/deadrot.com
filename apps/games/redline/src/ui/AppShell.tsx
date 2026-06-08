@@ -1,4 +1,6 @@
+import menuHero from "@shipshitgames/assets/games/redline/ui/menu/title.webp";
 import {
+  GlobalMusicToggle,
   MainMenuAction,
   MainMenuCopy,
   MainMenuLayout,
@@ -10,7 +12,7 @@ import {
   MainMenuTopBar,
   MenuKicker,
 } from "@shipshitgames/ui";
-import menuHero from "@shipshitgames/assets/games/redline/ui/menu/title.webp";
+import { GameOverlays } from "./overlays";
 
 export function AppShell() {
   return (
@@ -88,11 +90,14 @@ export function AppShell() {
             <MainMenuAction variant="shop" label="Upgrades" meta="Cargo locked" disabled />
             <MainMenuAction variant="coop" label="Co-op" meta="Solo route" disabled />
             <MainMenuAction variant="records" label="Leaderboard" meta="Best time" disabled />
-            <MainMenuAction variant="settings" label="Settings" meta="Keyboard" disabled />
+            <MainMenuAction variant="settings" label="Settings" meta="Audio" />
             <MainMenuAction variant="dev" label="Sandbox" meta="Route lab" disabled />
           </MainMenuNav>
         </MainMenuLayout>
+        <GlobalMusicToggle className="ssg-music-toggle--corner" />
       </MainMenuScreen>
+
+      <GameOverlays />
     </>
   );
 }

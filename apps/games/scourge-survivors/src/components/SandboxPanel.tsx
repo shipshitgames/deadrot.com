@@ -212,13 +212,26 @@ function Section({
   title,
   children,
   defaultOpen = true,
+  collapsible = true,
 }: {
   title: string;
   children: ReactNode;
   defaultOpen?: boolean;
+  collapsible?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const panelId = `sandbox-section-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+
+  if (!collapsible) {
+    return (
+      <section className="border-t border-white/10 pt-3">
+        <div className="mb-2 flex min-h-[32px] w-full items-center gap-3 rounded-[6px] border border-white/10 bg-white/[0.035] px-2.5 py-1.5 text-left text-[11px] font-black uppercase tracking-[0.16em] text-[#ffb26b]">
+          <span>{title}</span>
+        </div>
+        <div id={panelId}>{children}</div>
+      </section>
+    );
+  }
 
   return (
     <section className="border-t border-white/10 pt-3">
@@ -364,7 +377,7 @@ export function SandboxPanel({
           </div>
         </div>
 
-        <Section title="Session">
+        <Section title="Session" collapsible={false}>
           <div className="grid grid-cols-2 gap-2">
             <LabButton active={needsLock} onClick={onLock}>
               {needsLock ? "Resume / Lock" : "Pointer Locked"}

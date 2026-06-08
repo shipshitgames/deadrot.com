@@ -25,7 +25,12 @@ export class InputSystem {
   ) {
     window.addEventListener("keydown", (e) => this.onKey(e, true));
     window.addEventListener("keyup", (e) => this.onKey(e, false));
-    window.addEventListener("blur", () => this.keys.clear());
+    // Clear AND recompute on focus loss — otherwise the cached move vector keeps
+    // its last non-zero value and the champion drifts forever after an alt-tab.
+    window.addEventListener("blur", () => {
+      this.keys.clear();
+      this.recompute();
+    });
     canvas.addEventListener("pointerdown", (e) => this.onPointer(e));
     // Suppress the context menu so right-drag camera feel isn't hijacked.
     canvas.addEventListener("contextmenu", (e) => e.preventDefault());
@@ -34,7 +39,7 @@ export class InputSystem {
   private onKey(e: KeyboardEvent, down: boolean): void {
     const k = e.key.toLowerCase();
     if (k === "r" && down) {
-      this.onRestart?.();
+      if (!e.repeat) this.onRestart?.(); // ignore key auto-repeat so holding R doesn't respawn every frame
       return;
     }
     const tracked = ["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"];
@@ -60,6 +65,10 @@ export class InputSystem {
   }
 
   private onPointer(e: PointerEvent): void {
+    // Only the primary button (left-click / touch / pen) issues orders; a
+    // right- or middle-click must not redeploy or walk the champion.
+    if (e.button !== 0) return;
+
     // When the match is over a click redeploys — and is NOT also a move order.
     if (this.onRestart?.()) return;
 

@@ -1,3 +1,4 @@
+import { subscribeGlobalGameSettings } from "@shipshitgames/ui";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { audio } from "./audio/AudioEngine";
 import { HUD } from "./components/HUD";
@@ -32,7 +33,6 @@ import {
   type Settings,
   type ShopState,
   saveScore,
-  saveSettings,
   saveShop,
 } from "./game/storage";
 import type { HUDState } from "./game/types";
@@ -144,7 +144,7 @@ export default function App() {
   const hudRef = useRef<HUDState>(INITIAL_STATE);
   const [hud, setHudState] = useState<HUDState>(INITIAL_STATE);
   const [scores, setScores] = useState<ScoreEntry[]>(() => loadScores());
-  const [settings, setSettings] = useState<Settings>(() => loadSettings());
+  const [settings] = useState<Settings>(() => loadSettings());
   const [shop, setShop] = useState<ShopState>(() => loadShop());
   const lastRunGoldRef = useRef(0);
   const sandboxAvailable = import.meta.env.DEV;
@@ -170,6 +170,17 @@ export default function App() {
   const setHud = useCallback((next: HUDState) => {
     hudRef.current = next;
     setHudState(next);
+  }, []);
+
+  // Mirror the global music/SFX sliders + mute (the shared GlobalGameSettingsPanel)
+  // into the AudioEngine bus gains. subscribe fires once immediately with the
+  // stored settings, so this also seeds the initial levels on mount.
+  useEffect(() => {
+    return subscribeGlobalGameSettings((s) => {
+      audio.setMusicLevel(s.effectLevels.music);
+      audio.setSfxLevel(s.effectLevels.sound);
+      audio.setMusicMuted(s.musicMuted);
+    });
   }, []);
 
   useEffect(() => {
@@ -254,27 +265,6 @@ export default function App() {
   const handleRestart = useCallback(() => {
     audio.unlock();
     gameRef.current?.restart();
-  }, []);
-  const toggleMusic = useCallback(() => {
-    setSettings((s) => {
-      const next = { ...s, music: !s.music };
-      saveSettings(next);
-      audio.unlock();
-      audio.setMusicEnabled(next.music);
-      return next;
-    });
-  }, []);
-  const toggleSfx = useCallback(() => {
-    setSettings((s) => {
-      const next = { ...s, sfx: !s.sfx };
-      saveSettings(next);
-      audio.setSfxEnabled(next.sfx);
-      if (next.sfx) {
-        audio.unlock();
-        audio.sfx("switch");
-      }
-      return next;
-    });
   }, []);
   const handleClearScores = useCallback(() => setScores(clearScores()), []);
   const handleStartMultiplayer = useCallback(
@@ -388,11 +378,8 @@ export default function App() {
       <HUD
         state={hud}
         scores={scores}
-        settings={settings}
         onLock={handleLock}
         onRestart={handleRestart}
-        onToggleMusic={toggleMusic}
-        onToggleSfx={toggleSfx}
         onClearScores={handleClearScores}
         onStartMultiplayer={handleStartMultiplayer}
         onLeaveRoom={handleLeaveRoom}

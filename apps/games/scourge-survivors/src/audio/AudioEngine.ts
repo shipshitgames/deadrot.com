@@ -71,6 +71,13 @@ export class AudioEngine {
   private sfxEnabled = true;
   private musicMode: MusicMode = "menu";
 
+  // Global-settings scalars (0..1) layered on top of the authored base gains.
+  private musicLevel = 1;
+  private sfxLevel = 1;
+  private musicMuted = false;
+  // Base gain of the currently-playing authored bed (from its manifest entry).
+  private musicBaseGain = 0.2;
+
   // authored-music layer: file beds → musicBus
   private musicEl: HTMLAudioElement | null = null;
   private musicSrcNode: MediaElementAudioSourceNode | null = null;
@@ -100,10 +107,10 @@ export class AudioEngine {
       this.master.gain.value = 0.9;
       this.master.connect(this.ctx.destination);
       this.musicBus = this.ctx.createGain();
-      this.musicBus.gain.value = 0.2;
+      this.musicBus.gain.value = this.musicBaseGain * this.musicGainScalar();
       this.musicBus.connect(this.master);
       this.sfxBus = this.ctx.createGain();
-      this.sfxBus.gain.value = 0.5;
+      this.sfxBus.gain.value = 0.5 * this.sfxLevel;
       this.sfxBus.connect(this.master);
       if (!this.connectMusicElement()) return false;
       this.loadSamples();
@@ -146,6 +153,40 @@ export class AudioEngine {
 
   setSfxEnabled(on: boolean) {
     this.sfxEnabled = on;
+  }
+
+  // ---------------------------------------------- global-settings levels
+  //
+  // The global settings store feeds 0..1 scalars + a mute flag through these.
+  // They multiply the authored base gains (musicBus 0.2 base, sfxBus 0.5 base),
+  // so the existing mix is preserved at level 1 and unmuted.
+
+  /** Music multiplier 0..1, layered on the authored bed volume. */
+  setMusicLevel(level: number) {
+    this.musicLevel = Math.max(0, Math.min(1, level));
+    this.applyMusicGain();
+  }
+
+  /** SFX multiplier 0..1, layered on the 0.5 sfx-bus base. */
+  setSfxLevel(level: number) {
+    this.sfxLevel = Math.max(0, Math.min(1, level));
+    if (this.sfxBus) this.sfxBus.gain.value = 0.5 * this.sfxLevel;
+  }
+
+  /** Honor the global music-mute flag — forces the music bus to silence. */
+  setMusicMuted(muted: boolean) {
+    this.musicMuted = muted;
+    this.applyMusicGain();
+  }
+
+  /** Combined music scalar: muted (or level 0) → 0, else the level. */
+  private musicGainScalar(): number {
+    return this.musicMuted ? 0 : this.musicLevel;
+  }
+
+  /** Push the current base × scalar onto the live music bus. */
+  private applyMusicGain() {
+    if (this.musicBus) this.musicBus.gain.value = this.musicBaseGain * this.musicGainScalar();
   }
 
   setMusicMode(mode: MusicMode) {
@@ -214,7 +255,8 @@ export class AudioEngine {
     const manifestId = MUSIC_TRACKS[track];
     const entry = audioEntry(manifestId);
     el.loop = entry.loop;
-    this.musicBus.gain.value = entry.volume;
+    this.musicBaseGain = entry.volume;
+    this.applyMusicGain();
     void el.play().catch(() => this.handleTrackPlaybackFailure());
   }
 

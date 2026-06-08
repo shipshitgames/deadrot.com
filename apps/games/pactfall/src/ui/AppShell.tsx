@@ -1,4 +1,7 @@
+import menuHero from "@shipshitgames/assets/games/pactfall/ui/menu/title.webp";
 import {
+  GlobalGameSettingsPanel,
+  GlobalMusicToggle,
   MainMenuAction,
   MainMenuCopy,
   MainMenuLayout,
@@ -9,10 +12,75 @@ import {
   MainMenuTitleLine,
   MainMenuTopBar,
   MenuKicker,
+  PauseMenu,
 } from "@shipshitgames/ui";
-import menuHero from "@shipshitgames/assets/games/pactfall/ui/menu/title.webp";
+import { useEffect, useState } from "react";
+import type { Game } from "../game/Game";
+import type { Phase } from "../game/types";
+import { getBridgeGame, subscribeBridgeGame } from "./gameBridge";
 
 export function AppShell() {
+  // The vanilla Game owns the loop + HUD DOM; it registers itself on the bridge
+  // once main.ts has spun it up. We only need it to drive pause/resume.
+  const [game, setGame] = useState<Game | null>(() => getBridgeGame());
+  const [phase, setPhase] = useState<Phase>(() => getBridgeGame()?.phase ?? "title");
+  const [paused, setPaused] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+
+  useEffect(() => subscribeBridgeGame(setGame), []);
+
+  // Mirror the Game's phase into React so the pause overlay only arms during a
+  // live match and drops the instant a match resolves.
+  useEffect(() => {
+    if (!game) return;
+    setPhase(game.phase);
+    game.onPhaseChange = (next) => {
+      setPhase(next);
+      if (next !== "playing") {
+        setPaused(false);
+        setShowSettings(false);
+      }
+    };
+    return () => {
+      game.onPhaseChange = null;
+    };
+  }, [game]);
+
+  // Esc toggles pause, but only while a match is actually in play.
+  useEffect(() => {
+    if (!game) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (game.phase !== "playing") return;
+      event.preventDefault();
+      // Esc closes the settings panel first (back to the pause menu), only then toggles pause.
+      if (showSettings) {
+        setShowSettings(false);
+        return;
+      }
+      setPaused((prev) => {
+        const next = !prev;
+        if (next) game.pause();
+        else game.resume();
+        return next;
+      });
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [game, showSettings]);
+
+  const resume = () => {
+    game?.resume();
+    setPaused(false);
+    setShowSettings(false);
+  };
+
+  const restart = () => {
+    setPaused(false);
+    setShowSettings(false);
+    game?.beginRun();
+  };
+
   return (
     <>
       <canvas id="scene" />
@@ -72,10 +140,17 @@ export function AppShell() {
               <MainMenuAction variant="shop" label="Upgrades" meta="Champion locked" disabled />
               <MainMenuAction variant="coop" label="Co-op" meta="Local duel" disabled />
               <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
-              <MainMenuAction variant="settings" label="Settings" meta="Auto attack" disabled />
+              <MainMenuAction
+                type="button"
+                variant="settings"
+                label="Settings"
+                meta="Audio"
+                onClick={() => setShowSettings(true)}
+              />
               <MainMenuAction variant="dev" label="Sandbox" meta="Arena lab" disabled />
             </MainMenuNav>
           </MainMenuLayout>
+          <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>
 
         <MainMenuScreen id="banner" className="banner banner--hidden" backgroundImage={menuHero}>
@@ -87,6 +162,54 @@ export function AppShell() {
           </MainMenuLayout>
         </MainMenuScreen>
       </div>
+
+      {showSettings && (
+        <MainMenuScreen className="banner" backgroundImage={menuHero} style={{ position: "fixed", zIndex: 90 }}>
+          <MainMenuLayout>
+            <MainMenuCopy>
+              <MenuKicker>Arena Settings</MenuKicker>
+              <MainMenuTitle>
+                <MainMenuTitleLine>AUDIO</MainMenuTitleLine>
+              </MainMenuTitle>
+              <GlobalGameSettingsPanel inline />
+            </MainMenuCopy>
+            <MainMenuNav aria-label="Settings">
+              <MainMenuAction
+                type="button"
+                variant="primary"
+                label="Back"
+                meta="Title menu"
+                onClick={() => setShowSettings(false)}
+              />
+            </MainMenuNav>
+          </MainMenuLayout>
+          <GlobalMusicToggle className="ssg-music-toggle--corner" />
+        </MainMenuScreen>
+      )}
+
+      <PauseMenu
+        open={paused && phase === "playing" && !showSettings}
+        kicker="Ashgate Arena"
+        title="Paused"
+        subtitle="The duel holds. Catch your breath, then redeploy."
+        status={
+          <>
+            <span>Champion armed</span>
+            <span>Scourge prowling</span>
+          </>
+        }
+        onResume={resume}
+        actions={[
+          { id: "restart", label: "Redeploy", meta: "Restart duel", onSelect: restart },
+          {
+            id: "settings",
+            label: "Settings",
+            meta: "Audio",
+            variant: "settings",
+            onSelect: () => setShowSettings(true),
+          },
+        ]}
+      />
     </>
   );
 }
