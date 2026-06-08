@@ -23,9 +23,17 @@ Start here, follow the links, open the graph view.
 - [[Variation-Matrix]] — batch planning + selection criteria _(draft)_
 - [[Generation-History]] — generated asset ledger _(active)_
 - [[Style-Bakeoff]] — house-look validation · outcome locked 2026-06-04 _(active)_
+- [[Art/Style-Lock-Audit-2026-06-05|Style Lock Audit 2026-06-05]] — asset/style lock follow-up audit _(active)_
 - [[Character-Asset-Status]] — visual asset review board with sprite/portrait previews, source paths, and lock status _(active)_
+- [[Art/style-refs/README|Locked Style References]] — pinned per-game style-reference files _(active)_
+- [[Art/Prompt-Batches/2026-06-03-gallery-thumbnails-and-menu-ui|2026-06-03 Gallery Thumbnails and Menu UI]] — historical web/menu prompt batch
+- [[Art/Prompt-Batches/2026-06-03-scourge-host-family-concepts|2026-06-03 Scourge Host Family Concepts]] — historical Scourge host-family exploration
+- [[Art/Prompt-Batches/2026-06-04-key-art-placeholders|2026-06-04 Key Art Placeholders]] — historical/off-canon placeholder batch
+- [[Art/Prompt-Batches/2026-06-04-website-portrait-placeholders|2026-06-04 Website Portrait Placeholders]] — historical/off-canon portrait batch
 - [[Art/Prompt-Batches/2026-06-04-game-previs|2026-06-04 Game Previs Prompts]] — saved prompts for per-game key-art pre-viz _(active)_
 - [[Art/UI-Drafts/2026-06-04-fps-hud-previs/README|Scourge Survivors FPS HUD Previs]] — Doom-pixel HUD overlay direction _(active)_
+- [[Art/Prompt-Batches/2026-06-05-game-og-cards|2026-06-05 Game OG Cards]] — deterministic social-card composition batch
+- [[Art/Prompt-Batches/2026-06-05-scourge-animation-pack|2026-06-05 Scourge Animation Pack]] — first-pass Scourge animation sheet prompts
 
 ## Factions
 
