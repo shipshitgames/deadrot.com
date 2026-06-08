@@ -58,7 +58,10 @@ export default function Home() {
           </p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="xl" className="font-display uppercase tracking-widest shadow-ember">
-              <a href="#games">Enter the War</a>
+              {/* Front door into the persistent war: the Warline lobby (apps/games/warline),
+                  from which every game is a walkable portal. Plain <a> for a full document
+                  load — /warline/ is a rewrite to the SPA, not a Next route. */}
+              <a href="/warline/">Enter the War</a>
             </Button>
             <Button
               asChild
