@@ -11,8 +11,8 @@ import type { Input } from "../systems/input";
 import type { RunnerState } from "../types";
 
 export class Runner {
-  x = WORLD.startX;
-  y = WORLD.groundY + RUNNER.radius;
+  x: number = WORLD.startX;
+  y: number = WORLD.groundY + RUNNER.radius;
   vx: number = RUNNER.baseSpeed;
   vy = 0;
 
