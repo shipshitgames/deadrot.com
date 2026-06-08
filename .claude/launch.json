@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "warline",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "apps/games/warline",
+      "port": 5180
+    }
+  ]
+}
