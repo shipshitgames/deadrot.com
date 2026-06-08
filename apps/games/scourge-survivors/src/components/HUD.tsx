@@ -3,8 +3,10 @@ import {
   Card,
   GlobalGameSettingsPanel,
   GlobalMusicToggle,
+  goToWarlineLobby,
   MainMenuAction,
   MainMenuCopy,
+  MainMenuEnterPrompt,
   MainMenuLayout,
   MainMenuNav,
   MainMenuScreen,
@@ -14,6 +16,7 @@ import {
   MainMenuTopBar,
   PauseMenu,
   type PauseMenuAction,
+  useEnterToReveal,
 } from "@shipshitgames/ui";
 import {
   type MouseEvent as ReactMouseEvent,
@@ -97,7 +100,7 @@ function IconText({
 function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => void }) {
   return (
     <div
-      className="pointer-events-auto w-[min(620px,88vw)] mt-[14px] bg-[rgba(255,209,102,0.05)] border border-[rgba(255,209,102,0.35)] rounded-xl px-4 py-[14px]"
+      className="pointer-events-auto w-[min(680px,92vw)] mt-[14px] bg-[rgba(255,209,102,0.05)] border border-[rgba(255,209,102,0.35)] rounded-xl px-4 py-[14px]"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex justify-between items-center mb-[10px]">
@@ -112,7 +115,7 @@ function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => void })
           </IconText>
         </span>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="flex flex-col gap-2">
         {SHOP_UPGRADES.map((u) => {
           const tier = shop.tiers[u.id] ?? 0;
           const maxed = tier >= u.max;
@@ -121,19 +124,19 @@ function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => void })
           return (
             <Card
               key={u.id}
-              className={`flex items-center gap-[10px] bg-black/30 border-white/10 rounded-[9px] px-[10px] py-2 text-left${maxed ? " opacity-70" : ""}`}
+              title={u.desc}
+              className={`flex items-center gap-3 bg-black/30 border-white/10 rounded-[9px] px-3 py-2.5 text-left${maxed ? " opacity-70" : ""}`}
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-[5px] border border-white/10 bg-black/30">
-                <PixelIcon id={u.icon} size={24} label={u.name} />
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[6px] border border-white/10 bg-black/30">
+                <PixelIcon id={u.icon} size={34} label={u.name} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-[14px] font-bold">
+                <div className="text-[15px] font-bold">
                   {u.name}{" "}
                   <span className="text-[11px] opacity-60 font-semibold">
                     {tier}/{u.max}
                   </span>
                 </div>
-                <div className="text-[11px] opacity-65 leading-[1.3]">{u.desc}</div>
               </div>
               <button
                 type="button"
@@ -277,19 +280,7 @@ function MultiplayerPanel({
   );
 }
 
-function SurvivorsPanel({
-  shop,
-  onStart,
-  onShop,
-  onCoop,
-  onLeaderboard,
-}: {
-  shop: ShopState;
-  onStart: (classId: SurvivorClassId) => void;
-  onShop: () => void;
-  onCoop: () => void;
-  onLeaderboard: () => void;
-}) {
+function SurvivorsPanel({ onStart, onBack }: { onStart: (classId: SurvivorClassId) => void; onBack: () => void }) {
   const [classId, setClassId] = useState<SurvivorClassId>(() => savedSurvivorClass());
   const selected = SURVIVOR_CLASSES[classId];
   const selectedWeapon = WEAPON_IDENTITIES[selected.startingWeapon];
@@ -309,7 +300,8 @@ function SurvivorsPanel({
             <button
               key={id}
               type="button"
-              className={`pointer-events-auto cursor-pointer min-h-[238px] rounded-lg border bg-black/30 px-3 py-3 text-left transition-[border-color,background,transform,box-shadow] hover:-translate-y-px ${
+              title={`${cls.desc}\n\nStarting weapon — ${weapon.displayName}: ${weapon.role}`}
+              className={`pointer-events-auto cursor-pointer min-h-[188px] rounded-lg border bg-black/30 px-3 py-3 text-left transition-[border-color,background,transform,box-shadow] hover:-translate-y-px ${
                 active
                   ? "border-accent bg-accent/12 shadow-[0_0_0_1px_rgba(255,106,0,0.22),0_18px_44px_-28px_rgba(255,106,0,0.9)]"
                   : "border-white/15 hover:bg-white/10"
@@ -317,53 +309,42 @@ function SurvivorsPanel({
               onClick={() => setClassId(id)}
               aria-pressed={active}
             >
-              <span className="relative mb-3 flex h-[128px] items-end justify-center overflow-hidden rounded-md border border-white/10 bg-black/35">
+              <span className="relative mb-3 flex h-[120px] items-end justify-center overflow-hidden rounded-md border border-white/10 bg-black/35">
                 <span
                   className={`absolute bottom-[8px] h-[20px] w-[78px] rounded-full blur-[10px] ${active ? "bg-accent/45" : "bg-white/10"}`}
                 />
                 <img
                   src={AVATAR_PREVIEWS[id]}
                   alt=""
-                  className="relative z-[1] h-[124px] w-auto max-w-none object-contain [filter:drop-shadow(0_8px_8px_rgba(0,0,0,0.82))]"
+                  className="relative z-[1] h-[116px] w-auto max-w-none object-contain [filter:drop-shadow(0_8px_8px_rgba(0,0,0,0.82))]"
                   draggable={false}
                 />
               </span>
               <span className="mb-1 flex items-center justify-between gap-2">
-                <b className="text-[17px] leading-tight">{cls.name}</b>
-                <PixelIcon id={cls.icon} size={22} label={cls.name} />
+                <b className="text-[16px] leading-tight">{cls.name}</b>
+                <PixelIcon id={cls.icon} size={20} label={cls.name} />
               </span>
-              <span className="block text-[11px] font-bold uppercase tracking-[0.08em] text-[#ffb56b]">{cls.role}</span>
-              <span className="mt-1 block text-[12px] leading-[1.35] opacity-70">{cls.desc}</span>
-              <span className="mt-2 block rounded-[6px] border border-white/10 bg-black/25 px-2 py-[6px] text-[11px] leading-[1.25] text-[#ffd2a0]">
-                {weapon.displayName} · {weapon.role}
-              </span>
+              <span className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[#ffb56b]">{cls.role}</span>
             </button>
           );
         })}
       </div>
-      <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_auto_auto] md:items-center">
-        <div className="rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-left">
-          <div className="text-[12px] uppercase tracking-[0.12em] text-[#ffb56b]">Selected</div>
-          <div className="text-[22px] font-black tracking-[0.03em]">{selected.name}</div>
-          <div className="text-[12px] opacity-65">
-            {selectedWeapon.callsign} · {Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}:
-            {(SURVIVOR_RUN_GOAL_TIME % 60).toString().padStart(2, "0")} breach descent · {shop.gold.toLocaleString()}{" "}
-            gold banked
-          </div>
+      <div className="mt-4 rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-left">
+        <div className="text-[12px] uppercase tracking-[0.12em] text-[#ffb56b]">Selected</div>
+        <div className="text-[22px] font-black tracking-[0.03em]">{selected.name}</div>
+        <div className="text-[12px] opacity-65">
+          {selectedWeapon.callsign} · {Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}:
+          {(SURVIVOR_RUN_GOAL_TIME % 60).toString().padStart(2, "0")} breach descent
         </div>
-        <Button type="button" variant="ghost" className="h-full min-h-[58px]" onClick={onShop}>
-          Shop
+      </div>
+      <div className="mt-4 flex items-stretch gap-3">
+        <Button type="button" variant="back" onClick={onBack}>
+          ← Back
         </Button>
-        <Button type="button" variant="ghost" className="h-full min-h-[58px]" onClick={onCoop}>
-          Co-op
-        </Button>
-        <Button type="button" variant="ghost" className="h-full min-h-[58px]" onClick={onLeaderboard}>
-          Leaderboard
+        <Button type="button" variant="primary" size="lg" className="flex-1" onClick={launch}>
+          Play a Run
         </Button>
       </div>
-      <Button type="button" variant="primary" size="lg" className="mt-4 w-[min(380px,86vw)]" onClick={launch}>
-        Play a Run
-      </Button>
     </div>
   );
 }
@@ -371,7 +352,6 @@ function SurvivorsPanel({
 function SurvivorsHub({
   shop,
   scores,
-  onStart,
   onOperator,
   onShop,
   onCoop,
@@ -381,7 +361,6 @@ function SurvivorsHub({
 }: {
   shop: ShopState;
   scores: ScoreEntry[];
-  onStart: (classId: SurvivorClassId) => void;
   onOperator: () => void;
   onShop: () => void;
   onCoop: () => void;
@@ -391,7 +370,6 @@ function SurvivorsHub({
 }) {
   const [classId] = useState<SurvivorClassId>(() => savedSurvivorClass());
   const selected = SURVIVOR_CLASSES[classId];
-  const launch = () => onStart(classId);
   return (
     <MainMenuNav label="Survivors Hub" aria-label="Survivors hub">
       <MainMenuAction
@@ -403,17 +381,6 @@ function SurvivorsHub({
           </IconText>
         }
         meta={`${selected.name} · ${Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}m breach`}
-        onClick={launch}
-      />
-      <MainMenuAction
-        type="button"
-        variant="default"
-        label={
-          <IconText icon={selected.icon} size={18}>
-            Operator Loadout
-          </IconText>
-        }
-        meta={selected.role}
         onClick={onOperator}
       />
       <MainMenuAction
@@ -473,6 +440,13 @@ function SurvivorsHub({
           onClick={onStartSandbox}
         />
       )}
+      <MainMenuAction
+        type="button"
+        variant="default"
+        label="← Back to Warline"
+        meta="Lobby"
+        onClick={() => goToWarlineLobby()}
+      />
     </MainMenuNav>
   );
 }
@@ -921,7 +895,6 @@ export function HUD({
     outcome,
     weapon,
     weapons,
-    weaponIdentity,
     berserk,
     berserkFrac,
     dualWeapon,
@@ -1001,6 +974,8 @@ export function HUD({
         }
       : null;
   const showMainMenu = status === "pointerlock-needed" && !suppressMenu && !campaign && !survivors && !multiplayer;
+  // Title splash: hold the menu behind a "press enter to continue" prompt.
+  const menuRevealed = useEnterToReveal(showMainMenu && menuScreen === "home");
   const showLockPrompt = status === "pointerlock-needed" && !suppressMenu && (campaign || survivors || multiplayer);
 
   const menuScreenWrap = "flex flex-col items-center gap-2 mt-[14px] w-full";
@@ -1066,6 +1041,14 @@ export function HUD({
     // `hud-paused` freezes every in-flight HUD animation except the pause overlay's own UI (see styles.css).
     <div className={`absolute inset-0 pointer-events-none z-10${status === "paused" ? " hud-paused" : ""}`}>
       {playing && <Crosshair berserk={berserkActive} />}
+      {playing && (
+        <div
+          className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-[4px] border border-white/12 bg-black/45 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/55"
+          aria-hidden
+        >
+          <span className="font-bold text-[#ffb26b]">Esc</span> · Pause
+        </div>
+      )}
       {berserkActive && (
         <div className="scourge-berserk-vignette absolute inset-0 pointer-events-none" aria-hidden>
           <span className="scourge-berserk-vignette__slash scourge-berserk-vignette__slash--a" />
@@ -1294,14 +1277,9 @@ export function HUD({
         data-testid="weapon-panel"
       >
         <div className="text-[13px] tracking-[0.12em] uppercase text-accent mb-[2px]">{weapon}</div>
-        <div className="text-[10px] uppercase tracking-[0.08em] text-[#ffb56b]">{weaponIdentity.role}</div>
         <div className="flex items-baseline justify-end gap-[6px]">
           <span className={`text-[30px] font-extrabold${ammo === 0 ? " text-danger" : ""}`}>{ammo}</span>
           <span className="text-[16px] opacity-70">/ {survivors ? magazineSize : reserve}</span>
-        </div>
-        <div className="mt-[3px] text-[10px] leading-tight opacity-60">
-          {weaponIdentity.callsign} · {weaponIdentity.ads} ·{" "}
-          {weaponIdentity.dualCompatible ? "dual-ready" : "single rig"}
         </div>
         {reloading ? (
           <div className="mt-[6px] flex flex-col items-end gap-[3px] text-warn text-[12px] tracking-[0.08em] uppercase">
@@ -1319,9 +1297,6 @@ export function HUD({
               Press R to reload
             </div>
           )
-        )}
-        {survivors && !reloading && (
-          <div className="mt-[3px] text-[10px] font-bold uppercase tracking-[0.08em] opacity-60">Free reloads</div>
         )}
         {ads && adsZoomLevels > 1 && (
           <div className="mt-[6px] text-[11px] opacity-55 tracking-[0.04em]">
@@ -1364,8 +1339,8 @@ export function HUD({
           </MainMenuTopBar>
 
           {menuScreen === "home" ? (
-            <MainMenuLayout>
-              <MainMenuCopy>
+            <MainMenuLayout className={menuRevealed ? "ssg-main-menu-layout--menu" : "ssg-main-menu-layout--splash"}>
+              <MainMenuCopy hidden={menuRevealed}>
                 <div className="ssg-menu-kicker">Pyre breach hub</div>
                 <MainMenuTitle className="ssg-main-menu-title--pixel">
                   <MainMenuTitleLine>SCOURGE</MainMenuTitleLine>
@@ -1377,38 +1352,27 @@ export function HUD({
                 </MainMenuStatus>
               </MainMenuCopy>
 
-              <SurvivorsHub
-                shop={shop}
-                scores={scores}
-                onStart={onStartSurvivors}
-                onOperator={() => setMenuScreen("operator")}
-                onShop={() => setMenuScreen("shop")}
-                onCoop={() => setMenuScreen("multiplayer")}
-                onLeaderboard={() => setMenuScreen("leaderboard")}
-                onSettings={() => setMenuScreen("settings")}
-                onStartSandbox={onStartSandbox}
-              />
+              {menuRevealed ? (
+                <SurvivorsHub
+                  shop={shop}
+                  scores={scores}
+                  onOperator={() => setMenuScreen("operator")}
+                  onShop={() => setMenuScreen("shop")}
+                  onCoop={() => setMenuScreen("multiplayer")}
+                  onLeaderboard={() => setMenuScreen("leaderboard")}
+                  onSettings={() => setMenuScreen("settings")}
+                  onStartSandbox={onStartSandbox}
+                />
+              ) : (
+                <MainMenuEnterPrompt />
+              )}
             </MainMenuLayout>
           ) : (
             <div className="scourge-menu-content">
               {menuScreen === "operator" && (
                 <div className={menuScreenWrap}>
                   <div className={MENU_HEADING}>Operator Loadout</div>
-                  <SurvivorsPanel
-                    shop={shop}
-                    onStart={onStartSurvivors}
-                    onShop={() => setMenuScreen("shop")}
-                    onCoop={() => setMenuScreen("multiplayer")}
-                    onLeaderboard={() => setMenuScreen("leaderboard")}
-                  />
-                  <Button
-                    type="button"
-                    variant="back"
-                    className="scourge-menu-back"
-                    onClick={() => setMenuScreen("home")}
-                  >
-                    ← Survivors Hub
-                  </Button>
+                  <SurvivorsPanel onStart={onStartSurvivors} onBack={() => setMenuScreen("home")} />
                 </div>
               )}
 
