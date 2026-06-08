@@ -9,6 +9,7 @@
     "build": "vite build",
     "test": "bun run test:unit",
     "test:unit": "bun test tests/unit",
+    "test:coverage": "bun test --coverage tests/unit",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "deps:update": "bunx npm-check-updates -u --cooldown 3h --removeRange && bun install"

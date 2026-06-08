@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "test": "bun run test:unit && bun run test:e2e",
     "test:unit": "vitest run tests/unit",
+    "test:coverage": "vitest run tests/unit --coverage",
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
     "party:dev": "partykit dev",
@@ -42,6 +43,7 @@
     "tailwindcss": "^4.3.0",
     "typescript": "6.0.3",
     "vite": "8.0.16",
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.8",
+    "@vitest/coverage-v8": "^4.1.8"
   }
 }
