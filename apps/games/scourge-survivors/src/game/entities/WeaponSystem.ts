@@ -322,7 +322,7 @@ export class WeaponSystem {
         for (const h of hits) {
           const ud = h.object.userData as { enemy?: Enemy; part?: string; solid?: boolean; remoteId?: string };
           if (ud.remoteId) {
-            // PvP: report the hit to the server (authoritative health/kills).
+            // Co-op room hit sync: the server owns remote health/kills.
             const headshot = ud.part === "head";
             const dmg = spec.damage * dmgMult * (headshot ? headshotMultiplier : 1);
             this.sys.multiplayer.net?.sendHit(ud.remoteId, dmg);

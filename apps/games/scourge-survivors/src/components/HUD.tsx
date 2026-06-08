@@ -20,6 +20,7 @@ import {
   useState,
 } from "react";
 import { Switch } from "@/components/ui/switch";
+import { SCOURGE_THREAT_TIERS } from "../game/data/enemies";
 import {
   SHOP_UPGRADES,
   SURVIVOR_CLASS_IDS,
@@ -112,7 +113,7 @@ function CopyLinkButton({ room }: { room: string }) {
   };
   return (
     <Button type="button" variant="default" onClick={copy}>
-      {copied ? <IconText icon="check">Copied!</IconText> : <IconText icon="link">Copy room link</IconText>}
+      {copied ? <IconText icon="check">Copied!</IconText> : <IconText icon="link">Copy breach link</IconText>}
     </Button>
   );
 }
@@ -177,7 +178,7 @@ function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => void })
         })}
       </div>
       <div className="mt-[10px] text-[11px] opacity-60 text-center">
-        Permanent — applies to every Survivors run. Earn gold by surviving.
+        Permanent upgrades apply to every Survivors run. Earn gold by surviving.
       </div>
     </div>
   );
@@ -218,7 +219,7 @@ function MultiplayerPanel({
     >
       <div className="text-[14px] tracking-[0.1em] uppercase text-[#ff8aa0] mb-[10px]">
         <IconText icon="swords" size={18}>
-          Co-op Rooms
+          Co-op Breach Rooms
         </IconText>
       </div>
       <div className="flex gap-[10px] justify-center flex-wrap">
@@ -231,7 +232,7 @@ function MultiplayerPanel({
         />
         <input
           className={input}
-          placeholder="Room code (blank = random)"
+          placeholder="Breach code (blank = random)"
           maxLength={20}
           value={room}
           onChange={(e) => setRoom(e.target.value)}
@@ -292,10 +293,10 @@ function MultiplayerPanel({
         onClick={join}
       >
         <IconText icon="swords" size={19}>
-          Start Co-op Run
+          Join Breach
         </IconText>
       </button>
-      <div className="mt-2 text-[12px] opacity-60">Share the room code so friends can join the same breach run.</div>
+      <div className="mt-2 text-[12px] opacity-60">Share the breach code so friends can join the same run.</div>
     </div>
   );
 }
@@ -1019,7 +1020,11 @@ export function HUD({
   const healthFrac = playerHealth / maxPlayerHealth;
   const playing = status === "playing";
   const berserkActive = playing && berserk > 0;
-  const bossLabel = bossShielded ? "SHIELDED" : bossEnraged ? "ENRAGED" : "BOSS";
+  const bossLabel = bossShielded
+    ? `${SCOURGE_THREAT_TIERS.breachBoss.banner} SHIELD`
+    : bossEnraged
+      ? `${SCOURGE_THREAT_TIERS.breachBoss.banner} FRENZY`
+      : SCOURGE_THREAT_TIERS.breachBoss.banner;
   const currentRun: ScoreEntry | null =
     status === "gameover" && outcome
       ? {
@@ -1164,7 +1169,7 @@ export function HUD({
           <div>
             <div className={STAT_LABEL}>Wave</div>
             <div className={`${STAT_VALUE}${bossActive ? " text-danger tracking-[0.1em] animate-bosspulse" : ""}`}>
-              {bossActive ? "BOSS" : `${wave}/${totalWaves}`}
+              {bossActive ? SCOURGE_THREAT_TIERS.breachBoss.banner : `${wave}/${totalWaves}`}
             </div>
           </div>
         )}
@@ -1181,7 +1186,7 @@ export function HUD({
           </div>
         )}
         <div>
-          <div className={STAT_LABEL}>{multiplayer ? "Frags" : "Kills"}</div>
+          <div className={STAT_LABEL}>Kills</div>
           <div className={STAT_VALUE}>{kills}</div>
         </div>
         <div>
@@ -1370,7 +1375,7 @@ export function HUD({
                 <div className={menuScreenWrap}>
                   <div className={MENU_HEADING}>
                     <IconText icon="swords" size={18}>
-                      Co-op Run
+                      Co-op
                     </IconText>
                   </div>
                   <MultiplayerPanel onStart={onStartMultiplayer} initialRoom={initialRoom} />
@@ -1433,13 +1438,13 @@ export function HUD({
           {multiplayer ? (
             <>
               <p className="my-1 opacity-85 text-[16px]">
-                Room <b>{room}</b> · {connected ? "connected" : "connecting..."} · Frags {kills}
+                Breach <b>{room}</b> · {connected ? "connected" : "connecting..."} · Kills {kills}
               </p>
               <div
                 className="pause-ui pointer-events-auto my-[8px] w-[min(460px,86vw)] bg-[rgba(255,106,0,0.08)] border border-[rgba(255,106,0,0.32)] rounded-[10px] px-[14px] py-3 text-center"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="text-[12px] opacity-70 mb-2">Invite a friend — share this link:</div>
+                <div className="text-[12px] opacity-70 mb-2">Invite a friend to this breach run:</div>
                 <input
                   className="pointer-events-auto w-full text-[13px] text-[#cbe9f5] bg-black/40 border border-white/[0.18] rounded-[7px] px-[10px] py-2 text-center"
                   readOnly
@@ -1457,7 +1462,7 @@ export function HUD({
                     }}
                   >
                     <IconText icon="leave" size={16}>
-                      Leave Room
+                      Leave Breach
                     </IconText>
                   </Button>
                 </div>
@@ -1465,7 +1470,8 @@ export function HUD({
             </>
           ) : (
             <p className="my-1 opacity-85 text-[16px]">
-              Score {score.toLocaleString()} · Kills {kills} · {bossActive ? "BOSS" : `Wave ${wave}/${totalWaves}`}
+              Score {score.toLocaleString()} · Kills {kills} ·{" "}
+              {bossActive ? SCOURGE_THREAT_TIERS.breachBoss.banner : `Wave ${wave}/${totalWaves}`}
             </p>
           )}
           <div
@@ -1486,7 +1492,7 @@ export function HUD({
                 </Button>
                 <Button type="button" variant="ghost" className="w-full" onClick={onRestart}>
                   <IconText icon="restart" size={16}>
-                    Restart Level
+                    Restart Run
                   </IconText>
                 </Button>
                 <Button type="button" variant="default" className="w-full" onClick={onLock}>
@@ -1652,7 +1658,7 @@ export function HUD({
                     ? "Breach sealed — operator extracted"
                     : "Run lost — operator signal gone"
                   : outcome === "win"
-                    ? "Boss defeated — you cleared the arena"
+                    ? "Breach-boss down — run cleared"
                     : "You were overrun"}
               </div>
               <h1

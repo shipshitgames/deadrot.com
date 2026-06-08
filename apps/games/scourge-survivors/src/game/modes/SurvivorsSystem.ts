@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { audio } from "../../audio/AudioEngine";
 import { WEAPONS } from "../constants";
 import type { GameContext } from "../context";
-import { pickWeightedEnemyArchetype } from "../data/enemies";
+import { pickWeightedEnemyArchetype, SCOURGE_THREAT_TIERS } from "../data/enemies";
 import { DEFAULT_MAP_ID, getMap } from "../data/maps";
 import {
   AMP_PER_TIER,
@@ -97,7 +97,7 @@ export class SurvivorsSystem {
   banishes = 0; // banishes remaining this run
   banished = new Set<UpgradeId>(); // upgrades removed from this run's pool
   evolved: Record<WeaponUpgradeId, boolean> = { orbit: false, bolt: false, nova: false };
-  statAmp = 1; // 'amp' (Overcharge) auto-weapon damage multiplier
+  statAmp = 1; // 'amp' (Cauterizer Feed) auto-weapon damage multiplier
   bastionTimer = 0;
 
   constructor(
@@ -278,7 +278,7 @@ export class SurvivorsSystem {
     this.orbitLevel = lv("orbit");
     this.boltLevel = lv("bolt");
     this.novaLevel = lv("nova");
-    // L1 = 2 blades; Split Shot adds blades; Cyclone evolution adds 2 more.
+    // L1 = 2 blades; Splinter Ignition adds blades; Pyre Cyclone adds 2 more.
     const orbitCount = this.orbitLevel
       ? this.orbitLevel + 1 + this.ctx.statMultishot + (this.evolved.orbit ? 2 : 0)
       : 0;
@@ -295,8 +295,8 @@ export class SurvivorsSystem {
     this.orbitOrbs = [];
     const evo = this.evolved.orbit;
     const r = evo ? 0.44 : 0.32;
-    const color = evo ? 0xffd166 : 0x6fe7ff;
-    const emissive = evo ? 0xffae2e : 0x29c5ff;
+    const color = evo ? 0xffd166 : 0xff6a00;
+    const emissive = evo ? 0xffae2e : 0xff2a18;
     for (let i = 0; i < count; i++) {
       const orb = new THREE.Mesh(
         new THREE.SphereGeometry(r, 12, 10),
@@ -456,7 +456,7 @@ export class SurvivorsSystem {
     }
     this.eliteTimer -= delta;
     if (this.eliteTimer <= 0) {
-      this.sys.hud.announce("ELITE"); // telegraph the beat (was a silent spawn)
+      this.sys.hud.announce(SCOURGE_THREAT_TIERS.elite.banner); // telegraph the beat (was a silent spawn)
       audio.sfx("boss");
       this.spawnSwarmEnemy(true);
       this.eliteTimer = chapter.eliteInterval;
@@ -566,7 +566,7 @@ export class SurvivorsSystem {
   autoDamageEnemy(enemy: Enemy, dmg: number) {
     if (!enemy.alive) return;
     const crit = this.ctx.statCrit > 0 && Math.random() < this.ctx.statCrit;
-    // statAmp (Overcharge) + crit make a passive build empower the auto-weapons.
+    // statAmp (Cauterizer Feed) + crit make a passive build empower the auto-weapons.
     const total = dmg * this.ctx.statDamageMul * this.statAmp * (crit ? 2 : 1);
     const res = enemy.takeDamage(total, false);
     this.sys.hud.addDamageNumber(enemy.position.clone().setY(1.6), total, crit ? "crit" : "normal");
@@ -650,7 +650,7 @@ export class SurvivorsSystem {
     }
     this.orbitGroup.visible = true;
     this.orbitGroup.position.set(this.ctx.body.position.x, 1.2, this.ctx.body.position.z);
-    const evo = this.evolved.orbit; // CYCLONE: bigger, faster, deadlier
+    const evo = this.evolved.orbit; // PYRE CYCLONE: bigger, faster, deadlier
     this.orbitAngle += ORBIT_SPEED * (evo ? 1.6 : 1) * delta;
     const ringR = ORBIT_RADIUS * (evo ? 1.25 : 1);
     const n = this.orbitOrbs.length;
@@ -683,7 +683,7 @@ export class SurvivorsSystem {
   updateBolts(delta: number) {
     if (this.boltLevel > 0) {
       this.boltTimer -= delta;
-      const evo = this.evolved.bolt; // HAILSTORM: faster, more, piercing
+      const evo = this.evolved.bolt; // EMBER STORM: faster, more, piercing
       const interval = Math.max(0.12, (0.9 - 0.08 * (this.boltLevel - 1)) * (evo ? 0.55 : 1));
       if (this.boltTimer <= 0) {
         this.boltTimer = interval;
@@ -739,7 +739,7 @@ export class SurvivorsSystem {
     const mesh = new THREE.Mesh(
       new THREE.SphereGeometry(0.22, 10, 8),
       new THREE.MeshBasicMaterial({
-        color: 0x8affff,
+        color: 0xff6a00,
         transparent: true,
         opacity: 0.95,
         blending: THREE.AdditiveBlending,
@@ -768,7 +768,7 @@ export class SurvivorsSystem {
   updateNovas(delta: number) {
     if (this.novaLevel > 0) {
       this.novaTimer -= delta;
-      // SUPERNOVA: erupts roughly twice as often
+      // FURNACE HEART: erupts roughly twice as often
       const interval = Math.max(0.9, (NOVA_INTERVAL - 0.22 * (this.novaLevel - 1)) * (this.evolved.nova ? 0.5 : 1));
       if (this.novaTimer <= 0) {
         this.novaTimer = interval;

@@ -432,7 +432,7 @@ export const MAPS: Record<string, ArenaMap> = {
  */
 export const CAMPAIGN_ORDER: string[] = ["ashgate", "hollowlanes", "maw", "perdition"];
 
-/** Default arena for non-campaign modes (Survivors / Multiplayer / menu). */
+/** Default arena for non-structured modes (Survivors / co-op / menu). */
 export const DEFAULT_MAP_ID = "ashgate";
 
 export function getMap(id: string): ArenaMap {

@@ -46,13 +46,13 @@ export interface HUDState {
   /** 1-based wave number among the normal waves (clamped to TOTAL_WAVES). */
   wave: number;
   totalWaves: number;
-  /** Campaign multi-map journey: 1-based current stage, total stages, current map name. */
+  /** Structured descent journey: 1-based current stage, total stages, current map name. */
   campaignStage: number;
   campaignTotalStages: number;
   mapName: string;
-  /** True while the boss is on the field. */
+  /** True while the breach-boss or Scourge elite is on the field. */
   bossActive: boolean;
-  /** 0..1 boss health fraction (only meaningful while bossActive). */
+  /** 0..1 breach-boss health fraction (only meaningful while bossActive). */
   bossHealthFrac: number;
   /** Outcome once status === 'gameover'. */
   outcome: "win" | "dead" | null;
@@ -72,7 +72,7 @@ export interface HUDState {
   adsZoom: number;
   /** Total ADS zoom levels for the current weapon. */
   adsZoomLevels: number;
-  /** Boss ability state (only meaningful while bossActive). */
+  /** Breach-boss ability state (only meaningful while bossActive). */
   bossShielded: boolean;
   bossEnraged: boolean;
   /** Monotonic counters used by the HUD to trigger transient animations. */
@@ -80,7 +80,7 @@ export interface HUDState {
   headshotSeq: number;
   killSeq: number;
   damageSeq: number;
-  /** Transient centre-screen banner ("WAVE 2", "BOSS INCOMING", ...). */
+  /** Transient centre-screen banner ("WAVE 2", "BREACH-BOSS", ...). */
   banner: string;
   bannerSeq: number;
   /** Small transient toast for pickups ("+ SHOTGUN", "+35 HP", ...). */
@@ -88,7 +88,7 @@ export interface HUDState {
   toastSeq: number;
   /** Floating damage numbers, anchored to where the hit landed (screen %). */
   damageNumbers: DamageNumber[];
-  /** Multiplayer (PvP arena) state. */
+  /** Co-op breach room state. */
   multiplayer: boolean;
   connected: boolean;
   room: string;

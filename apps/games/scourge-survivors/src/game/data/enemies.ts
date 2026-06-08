@@ -1,11 +1,38 @@
 // Shared Scourge enemy archetypes. These are deliberately data-first so both
-// Campaign waves and Survivors swarms can mix the same readable host variants.
+// structured runs and Survivors swarms can mix the same readable host variants.
 
 export type EnemyArchetypeId = "grunt" | "swarmling" | "charger" | "shooter" | "flier" | "tank" | "splitter";
+export type ScourgeThreatTier = "swarm" | "elite" | "breachBoss";
+
+export const SCOURGE_THREAT_TIERS: Record<
+  ScourgeThreatTier,
+  {
+    label: string;
+    banner: string;
+    summary: string;
+  }
+> = {
+  swarm: {
+    label: "Scourge Swarm",
+    banner: "SCOURGE SWARM",
+    summary: "fodder host-mass that wins through density",
+  },
+  elite: {
+    label: "Scourge Elite",
+    banner: "SCOURGE ELITE",
+    summary: "mutated pressure spike inside a Survivors run",
+  },
+  breachBoss: {
+    label: "Breach-Boss",
+    banner: "BREACH-BOSS",
+    summary: "breach-held war body with shield and frenzy states",
+  },
+};
 
 export interface EnemyArchetypeDef {
   id: EnemyArchetypeId;
   name: string;
+  loreTier: Extract<ScourgeThreatTier, "swarm">;
   speedMul: number;
   hpMul: number;
   scale: number;
@@ -27,7 +54,8 @@ export interface EnemyArchetypeDef {
 export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
   grunt: {
     id: "grunt",
-    name: "Host Grunt",
+    name: "Swarm Ripper",
+    loreTier: "swarm",
     speedMul: 1,
     hpMul: 1,
     scale: 1,
@@ -42,7 +70,8 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
   },
   swarmling: {
     id: "swarmling",
-    name: "Swarmling",
+    name: "Feral Swarmling",
+    loreTier: "swarm",
     speedMul: 1.48,
     hpMul: 0.48,
     scale: 0.8,
@@ -57,7 +86,8 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
   },
   charger: {
     id: "charger",
-    name: "Rupture Charger",
+    name: "Chitin Charger",
+    loreTier: "swarm",
     speedMul: 1.08,
     hpMul: 1.25,
     scale: 1.08,
@@ -72,7 +102,8 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
   },
   shooter: {
     id: "shooter",
-    name: "Spitter Host",
+    name: "Swarm Spitter",
+    loreTier: "swarm",
     speedMul: 0.92,
     hpMul: 0.95,
     scale: 1,
@@ -89,7 +120,8 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
   },
   flier: {
     id: "flier",
-    name: "Winged Host",
+    name: "Quaver Host",
+    loreTier: "swarm",
     speedMul: 1.18,
     hpMul: 0.82,
     scale: 0.96,
@@ -108,7 +140,8 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
   },
   tank: {
     id: "tank",
-    name: "Bone Tank",
+    name: "Bone-Hulk Swarm",
+    loreTier: "swarm",
     speedMul: 0.56,
     hpMul: 3.1,
     scale: 1.48,
@@ -124,6 +157,7 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
   splitter: {
     id: "splitter",
     name: "Brood Splitter",
+    loreTier: "swarm",
     speedMul: 0.82,
     hpMul: 1.65,
     scale: 1.22,
