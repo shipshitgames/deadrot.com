@@ -1,8 +1,3 @@
-import playerHeavyPreview from "@shipshitgames/assets/games/scourge-survivors/players/pyre/bulwark/front.webp";
-import playerMedicPreview from "@shipshitgames/assets/games/scourge-survivors/players/pyre/patch/front.webp";
-import playerRangerPreview from "@shipshitgames/assets/games/scourge-survivors/players/pyre/ranger/front.webp";
-import playerScoutPreview from "@shipshitgames/assets/games/scourge-survivors/players/pyre/vector/front.webp";
-import menuHero from "@shipshitgames/assets/games/scourge-survivors/ui/menu/title.webp";
 import {
   Button,
   Card,
@@ -33,6 +28,7 @@ import {
   type SurvivorClassId,
   shopCost,
 } from "../game/data/survivors";
+import { MENU_HERO_URL, PLAYER_AVATAR_PREVIEW_URLS } from "../game/spriteAssets";
 import type { ScoreEntry, Settings, ShopState } from "../game/storage";
 import type { HUDState } from "../game/types";
 import { normalizePlayerAvatar, PLAYER_AVATAR_OPTIONS, type PlayerAvatarId } from "../net/playerAvatars";
@@ -70,12 +66,7 @@ const STAT_VALUE = "ssg-stat-value";
 const MENU_HEADING = "ssg-section-heading";
 const STAT_SUB = "ssg-stat-sub";
 const DRAFT_PRESS_MAX_AGE_MS = 1200;
-const AVATAR_PREVIEWS: Record<PlayerAvatarId, string> = {
-  ranger: playerRangerPreview,
-  heavy: playerHeavyPreview,
-  scout: playerScoutPreview,
-  medic: playerMedicPreview,
-};
+const AVATAR_PREVIEWS: Record<PlayerAvatarId, string> = PLAYER_AVATAR_PREVIEW_URLS;
 
 function IconText({
   icon,
@@ -1186,7 +1177,7 @@ export function HUD({
       )}
 
       {showMainMenu && (
-        <MainMenuScreen className="cursor-default overflow-y-auto" backgroundImage={menuHero}>
+        <MainMenuScreen className="cursor-default overflow-y-auto" backgroundImage={MENU_HERO_URL}>
           <MainMenuTopBar mark="SSG" meta={`${shop.gold.toLocaleString()} gold`} aria-hidden>
             Ashgate breach
           </MainMenuTopBar>

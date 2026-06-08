@@ -1456,5 +1456,249 @@
         "scope": "legacy unused sample"
       }
     }
+  },
+  "ui": {
+    "ui-menu-title": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/menu/title.webp",
+      "role": "menu-background",
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "menu title background",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-menu-hero-jpg": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/menu/scourge-hero.jpg",
+      "role": "menu-background",
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "menu hero plate",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-menu-hero-png": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/menu/scourge-hero.png",
+      "role": "menu-background",
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "menu hero plate",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-card-bastion-jpg": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/cards/codex/bastion.jpg",
+      "role": "codex-card",
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "codex card illustration",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-card-bastion-png": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/cards/codex/bastion.png",
+      "role": "codex-card",
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "codex card illustration",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-card-breach-jpg": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/cards/codex/breach.jpg",
+      "role": "codex-card",
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "codex card illustration",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-card-breach-png": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/cards/codex/breach.png",
+      "role": "codex-card",
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "codex card illustration",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-card-fleshworks-jpg": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/cards/codex/fleshworks.jpg",
+      "role": "codex-card",
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "codex card illustration",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-card-fleshworks-png": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/cards/codex/fleshworks.png",
+      "role": "codex-card",
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "codex card illustration",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    }
+  },
+  "runtime": {
+    "enemies": {
+      "melee": {
+        "sprite": "enemy-melee",
+        "animation": {
+          "entity": "host-grunt",
+          "actions": {
+            "move": "walk",
+            "attack": "slash"
+          }
+        }
+      },
+      "ranged": {
+        "sprite": "enemy-ranged",
+        "animation": {
+          "entity": "spitter-host",
+          "actions": {
+            "move": "walk",
+            "attack": "spit"
+          }
+        }
+      },
+      "flying": {
+        "sprite": "enemy-flying",
+        "animation": {
+          "entity": "winged-host",
+          "actions": {
+            "move": "fly",
+            "attack": "attack"
+          }
+        }
+      },
+      "boss": {
+        "sprite": "boss",
+        "animation": {
+          "entity": "breach-boss",
+          "actions": {
+            "move": "lurch",
+            "attack": "barrage"
+          }
+        }
+      }
+    },
+    "players": {
+      "ranger": {
+        "sprite": "player-ranger"
+      },
+      "heavy": {
+        "sprite": "player-heavy"
+      },
+      "scout": {
+        "sprite": "player-scout"
+      },
+      "medic": {
+        "sprite": "player-medic"
+      }
+    },
+    "weapons": {
+      "pistol": {
+        "sprite": "weapon-pistol"
+      },
+      "smg": {
+        "sprite": "weapon-smg"
+      },
+      "shotgun": {
+        "sprite": "weapon-shotgun"
+      },
+      "cannon": {
+        "sprite": "weapon-cannon"
+      },
+      "sniper": {
+        "sprite": "weapon-sniper"
+      }
+    },
+    "pickups": {
+      "health": {
+        "sprite": "pickup-health"
+      },
+      "ammo": {
+        "sprite": "pickup-ammo"
+      },
+      "damage": {
+        "sprite": "pickup-damage"
+      },
+      "dual": {
+        "sprite": "pickup-dual"
+      },
+      "xpBlood": {
+        "sprite": "pickup-xp-blood"
+      }
+    },
+    "projectiles": {
+      "enemy": {
+        "sprite": "projectile-enemy"
+      },
+      "boss": {
+        "sprite": "projectile-boss"
+      }
+    },
+    "fx": {
+      "muzzleFlash": {
+        "sprite": "muzzle-flash-pyre"
+      }
+    },
+    "ui": {
+      "menuTitle": {
+        "asset": "ui-menu-title"
+      },
+      "menuHeroJpg": {
+        "asset": "ui-menu-hero-jpg"
+      },
+      "menuHeroPng": {
+        "asset": "ui-menu-hero-png"
+      },
+      "cardBastionJpg": {
+        "asset": "ui-card-bastion-jpg"
+      },
+      "cardBastionPng": {
+        "asset": "ui-card-bastion-png"
+      },
+      "cardBreachJpg": {
+        "asset": "ui-card-breach-jpg"
+      },
+      "cardBreachPng": {
+        "asset": "ui-card-breach-png"
+      },
+      "cardFleshworksJpg": {
+        "asset": "ui-card-fleshworks-jpg"
+      },
+      "cardFleshworksPng": {
+        "asset": "ui-card-fleshworks-png"
+      }
+    }
   }
 }
