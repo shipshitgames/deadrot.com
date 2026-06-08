@@ -1,24 +1,37 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-import { SiteHeader } from "@/components/site/site-header";
-import { SiteFooter } from "@/components/site/site-footer";
 import { Grain } from "@/components/site/atmosphere";
+import { SiteFooter } from "@/components/site/site-footer";
+import { SiteHeader } from "@/components/site/site-header";
+import { DEFAULT_SOCIAL_IMAGE, SITE_NAME, SITE_URL } from "@/lib/social";
+
+const siteDescription =
+  "One brutal, blood-soaked universe — DOOM's gore with Blizzard's cohesion. The Scourge eats worlds; you make it pay. Built live by Ship Shit Games.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://deadrot.com"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "DEADROT — we lost the sky. Now we burn it back.",
     template: "%s — DEADROT",
   },
-  description:
-    "One brutal, blood-soaked universe — DOOM's gore with Blizzard's cohesion. The Scourge eats worlds; you make it pay. Built live by Ship Shit Games.",
+  description: siteDescription,
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "DEADROT",
+    title: SITE_NAME,
     description: "One blood-soaked universe. Many browser games. The Scourge eats worlds — you make it pay.",
-    url: "https://deadrot.com",
-    siteName: "DEADROT",
+    url: "/",
+    siteName: SITE_NAME,
     type: "website",
+    images: [DEFAULT_SOCIAL_IMAGE],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: siteDescription,
+    images: [DEFAULT_SOCIAL_IMAGE.url],
   },
   icons: {
     icon: [

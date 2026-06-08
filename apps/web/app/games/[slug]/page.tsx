@@ -1,14 +1,14 @@
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Eyebrow } from "@/components/site/eyebrow";
-import { Backdrop } from "@/components/site/atmosphere";
+import { notFound } from "next/navigation";
 import { StatusBadge } from "@/components/game/game-card";
 import { EntityCard } from "@/components/roster/entity-card";
-import { games, getGame, getFaction, gameCharacters, gameCreatures, accentVars } from "@/lib/content";
+import { Backdrop } from "@/components/site/atmosphere";
+import { Eyebrow } from "@/components/site/eyebrow";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { accentVars, gameCharacters, gameCreatures, games, getFaction, getGame } from "@/lib/content";
+import { createSocialMetadata } from "@/lib/social";
 
 export function generateStaticParams() {
   return games.map((g) => ({ slug: g.slug }));
@@ -25,24 +25,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     alt: `${game.title} - DEADROT`,
   };
 
-  return {
+  return createSocialMetadata({
     title: game.title,
     description: game.tagline,
-    openGraph: {
-      title: `${game.title} - DEADROT`,
-      description: game.tagline,
-      url: `/games/${game.slug}`,
-      siteName: "DEADROT",
-      type: "website",
-      images: [image],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${game.title} - DEADROT`,
-      description: game.tagline,
-      images: [image.url],
-    },
-  };
+    path: `/games/${game.slug}`,
+    openGraphTitle: `${game.title} - DEADROT`,
+    image,
+  });
 }
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
