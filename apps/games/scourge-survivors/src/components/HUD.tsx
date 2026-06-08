@@ -68,6 +68,11 @@ const STAT_SUB = "ssg-stat-sub";
 const DRAFT_PRESS_MAX_AGE_MS = 1200;
 const AVATAR_PREVIEWS: Record<PlayerAvatarId, string> = PLAYER_AVATAR_PREVIEW_URLS;
 
+function savedSurvivorClass(): SurvivorClassId {
+  const saved = localStorage.getItem("scourge-survivors.survivorClass");
+  return SURVIVOR_CLASS_IDS.includes(saved as SurvivorClassId) ? (saved as SurvivorClassId) : "ranger";
+}
+
 function IconText({
   icon,
   children,
@@ -182,7 +187,7 @@ function randomRoom(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let s = "";
   for (let i = 0; i < 4; i++) s += chars[Math.floor(Math.random() * chars.length)];
-  return `ARENA-${s}`;
+  return `BREACH-${s}`;
 }
 
 function MultiplayerPanel({
@@ -213,7 +218,7 @@ function MultiplayerPanel({
     >
       <div className="text-[14px] tracking-[0.1em] uppercase text-[#ff8aa0] mb-[10px]">
         <IconText icon="swords" size={18}>
-          Online Rooms
+          Co-op Rooms
         </IconText>
       </div>
       <div className="flex gap-[10px] justify-center flex-wrap">
@@ -287,10 +292,10 @@ function MultiplayerPanel({
         onClick={join}
       >
         <IconText icon="swords" size={19}>
-          Join Room
+          Start Co-op Run
         </IconText>
       </button>
-      <div className="mt-2 text-[12px] opacity-60">Share the room code so friends can join the same arena.</div>
+      <div className="mt-2 text-[12px] opacity-60">Share the room code so friends can join the same breach run.</div>
     </div>
   );
 }
@@ -300,16 +305,15 @@ function SurvivorsPanel({
   onStart,
   onShop,
   onCoop,
+  onLeaderboard,
 }: {
   shop: ShopState;
   onStart: (classId: SurvivorClassId) => void;
   onShop: () => void;
   onCoop: () => void;
+  onLeaderboard: () => void;
 }) {
-  const [classId, setClassId] = useState<SurvivorClassId>(() => {
-    const saved = localStorage.getItem("scourge-survivors.survivorClass");
-    return SURVIVOR_CLASS_IDS.includes(saved as SurvivorClassId) ? (saved as SurvivorClassId) : "ranger";
-  });
+  const [classId, setClassId] = useState<SurvivorClassId>(() => savedSurvivorClass());
   const selected = SURVIVOR_CLASSES[classId];
   const launch = () => {
     localStorage.setItem("scourge-survivors.survivorClass", classId);
@@ -355,7 +359,7 @@ function SurvivorsPanel({
           );
         })}
       </div>
-      <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_auto] md:items-center">
+      <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_auto_auto] md:items-center">
         <div className="rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-left">
           <div className="text-[12px] uppercase tracking-[0.12em] text-[#ffb56b]">Selected</div>
           <div className="text-[22px] font-black tracking-[0.03em]">{selected.name}</div>
@@ -370,11 +374,123 @@ function SurvivorsPanel({
         <Button type="button" variant="ghost" className="h-full min-h-[58px]" onClick={onCoop}>
           Co-op
         </Button>
+        <Button type="button" variant="ghost" className="h-full min-h-[58px]" onClick={onLeaderboard}>
+          Leaderboard
+        </Button>
       </div>
       <Button type="button" variant="primary" size="lg" className="mt-4 w-[min(380px,86vw)]" onClick={launch}>
-        Start Run
+        Play a Run
       </Button>
     </div>
+  );
+}
+
+function SurvivorsHub({
+  shop,
+  scores,
+  onStart,
+  onOperator,
+  onShop,
+  onCoop,
+  onLeaderboard,
+  onSettings,
+  onStartSandbox,
+}: {
+  shop: ShopState;
+  scores: ScoreEntry[];
+  onStart: (classId: SurvivorClassId) => void;
+  onOperator: () => void;
+  onShop: () => void;
+  onCoop: () => void;
+  onLeaderboard: () => void;
+  onSettings: () => void;
+  onStartSandbox?: () => void;
+}) {
+  const [classId] = useState<SurvivorClassId>(() => savedSurvivorClass());
+  const selected = SURVIVOR_CLASSES[classId];
+  const launch = () => onStart(classId);
+  return (
+    <MainMenuNav label="Survivors Hub" aria-label="Survivors hub">
+      <MainMenuAction
+        type="button"
+        variant="primary"
+        label={
+          <IconText icon="target" size={22}>
+            Play a Run
+          </IconText>
+        }
+        meta={`${selected.name} · ${Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}m breach`}
+        onClick={launch}
+      />
+      <MainMenuAction
+        type="button"
+        variant="default"
+        label={
+          <IconText icon={selected.icon} size={18}>
+            Operator Loadout
+          </IconText>
+        }
+        meta={selected.role}
+        onClick={onOperator}
+      />
+      <MainMenuAction
+        type="button"
+        variant="shop"
+        label={
+          <IconText icon="shop" size={18}>
+            Shop
+          </IconText>
+        }
+        meta={`${shop.gold.toLocaleString()} gold`}
+        onClick={onShop}
+      />
+      <MainMenuAction
+        type="button"
+        variant="coop"
+        label={
+          <IconText icon="swords" size={18}>
+            Co-op
+          </IconText>
+        }
+        meta="Breach rooms"
+        onClick={onCoop}
+      />
+      <MainMenuAction
+        type="button"
+        variant="records"
+        label={
+          <IconText icon="trophy" size={18}>
+            Leaderboard
+          </IconText>
+        }
+        meta={scores.length === 0 ? "No records" : "Local archive"}
+        onClick={onLeaderboard}
+      />
+      <MainMenuAction
+        type="button"
+        variant="settings"
+        label={
+          <IconText icon="settings" size={18}>
+            Settings
+          </IconText>
+        }
+        meta="Audio"
+        onClick={onSettings}
+      />
+      {onStartSandbox && (
+        <MainMenuAction
+          type="button"
+          variant="dev"
+          label={
+            <IconText icon="gamepad" size={18}>
+              Sandbox
+            </IconText>
+          }
+          meta="Dev lab"
+          onClick={onStartSandbox}
+        />
+      )}
+    </MainMenuNav>
   );
 }
 
@@ -880,7 +996,7 @@ export function HUD({
     survivors,
   } = state;
 
-  type MenuScreen = "home" | "survivor" | "multiplayer" | "shop" | "settings" | "leaderboard";
+  type MenuScreen = "home" | "operator" | "multiplayer" | "shop" | "settings" | "leaderboard";
   const [menuScreen, setMenuScreen] = useState<MenuScreen>(initialRoom ? "multiplayer" : "home");
   const [pausePanel, setPausePanel] = useState<"none" | "settings" | "controls">("none");
   const [gameOverPanel, setGameOverPanel] = useState<"summary" | "shop">("summary");
@@ -1185,98 +1301,40 @@ export function HUD({
           {menuScreen === "home" ? (
             <MainMenuLayout>
               <MainMenuCopy>
-                <div className="ssg-menu-kicker">Ship Shit Games</div>
+                <div className="ssg-menu-kicker">Pyre breach hub</div>
                 <MainMenuTitle className="ssg-main-menu-title--pixel">
                   <MainMenuTitleLine>SCOURGE</MainMenuTitleLine>
                   <MainMenuTitleLine tone="hot">SURVIVORS</MainMenuTitleLine>
                 </MainMenuTitle>
                 <MainMenuStatus>
-                  <span>Pyre operator ready</span>
+                  <span>Survivors core online</span>
                   <span>{scores.length === 0 ? "No records" : `${scores.length} local records`}</span>
                 </MainMenuStatus>
               </MainMenuCopy>
 
-              <MainMenuNav aria-label="Main menu">
-                <MainMenuAction
-                  type="button"
-                  variant="primary"
-                  label={
-                    <IconText icon="target" size={22}>
-                      Start Run
-                    </IconText>
-                  }
-                  meta="Choose operator"
-                  onClick={() => setMenuScreen("survivor")}
-                />
-                <MainMenuAction
-                  type="button"
-                  variant="shop"
-                  label={
-                    <IconText icon="shop" size={18}>
-                      Upgrades
-                    </IconText>
-                  }
-                  meta={`${shop.gold.toLocaleString()} gold`}
-                  onClick={() => setMenuScreen("shop")}
-                />
-                <MainMenuAction
-                  type="button"
-                  variant="coop"
-                  label={
-                    <IconText icon="swords" size={18}>
-                      Co-op
-                    </IconText>
-                  }
-                  meta="Online rooms"
-                  onClick={() => setMenuScreen("multiplayer")}
-                />
-                <MainMenuAction
-                  type="button"
-                  variant="records"
-                  label={
-                    <IconText icon="trophy" size={18}>
-                      Leaderboard
-                    </IconText>
-                  }
-                  meta={scores.length === 0 ? "No records" : "Local archive"}
-                  onClick={() => setMenuScreen("leaderboard")}
-                />
-                <MainMenuAction
-                  type="button"
-                  variant="settings"
-                  label={
-                    <IconText icon="settings" size={18}>
-                      Settings
-                    </IconText>
-                  }
-                  meta="Audio"
-                  onClick={() => setMenuScreen("settings")}
-                />
-                {onStartSandbox && (
-                  <MainMenuAction
-                    type="button"
-                    variant="dev"
-                    label={
-                      <IconText icon="gamepad" size={18}>
-                        Sandbox
-                      </IconText>
-                    }
-                    meta="Dev lab"
-                    onClick={onStartSandbox}
-                  />
-                )}
-              </MainMenuNav>
+              <SurvivorsHub
+                shop={shop}
+                scores={scores}
+                onStart={onStartSurvivors}
+                onOperator={() => setMenuScreen("operator")}
+                onShop={() => setMenuScreen("shop")}
+                onCoop={() => setMenuScreen("multiplayer")}
+                onLeaderboard={() => setMenuScreen("leaderboard")}
+                onSettings={() => setMenuScreen("settings")}
+                onStartSandbox={onStartSandbox}
+              />
             </MainMenuLayout>
           ) : (
             <div className="scourge-menu-content">
-              {menuScreen === "survivor" && (
+              {menuScreen === "operator" && (
                 <div className={menuScreenWrap}>
-                  <div className={MENU_HEADING}>Choose Operator</div>
+                  <div className={MENU_HEADING}>Operator Loadout</div>
                   <SurvivorsPanel
                     shop={shop}
                     onStart={onStartSurvivors}
                     onShop={() => setMenuScreen("shop")}
                     onCoop={() => setMenuScreen("multiplayer")}
+                    onLeaderboard={() => setMenuScreen("leaderboard")}
                   />
                   <Button
                     type="button"
@@ -1284,7 +1342,7 @@ export function HUD({
                     className="scourge-menu-back"
                     onClick={() => setMenuScreen("home")}
                   >
-                    ← Back
+                    ← Survivors Hub
                   </Button>
                 </div>
               )}
@@ -1312,7 +1370,7 @@ export function HUD({
                 <div className={menuScreenWrap}>
                   <div className={MENU_HEADING}>
                     <IconText icon="swords" size={18}>
-                      Multiplayer
+                      Co-op Run
                     </IconText>
                   </div>
                   <MultiplayerPanel onStart={onStartMultiplayer} initialRoom={initialRoom} />

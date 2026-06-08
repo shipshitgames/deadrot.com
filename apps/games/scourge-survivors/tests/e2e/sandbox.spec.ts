@@ -3,6 +3,8 @@ import { expect, type Page, test } from "@playwright/test";
 type HudSnapshot = {
   status: string;
   sandbox: boolean;
+  survivors: boolean;
+  multiplayer: boolean;
   weapon: string;
   ammo: number;
   enemiesAlive: number;
@@ -51,6 +53,45 @@ async function arenaSnapshot(page: Page): Promise<ArenaDebugSnapshot> {
     ).__fpsGame.arenaDebugSnapshot(),
   );
 }
+
+test.describe("survivors menu", () => {
+  test("opens on the Survivors hub and starts a run from the primary action", async ({ page }) => {
+    const consoleErrors: string[] = [];
+    page.on("console", (msg) => {
+      if (msg.type() === "error" && !msg.text().includes("PointerLockControls: Unable to use Pointer Lock API")) {
+        consoleErrors.push(msg.text());
+      }
+    });
+    page.on("pageerror", (error) => consoleErrors.push(String(error)));
+
+    await page.goto("/");
+    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
+
+    await expect(page.getByText("SCOURGE", { exact: true })).toBeVisible();
+    await expect(page.getByText("SURVIVORS", { exact: true })).toBeVisible();
+    const hub = page.getByRole("navigation", { name: /survivors hub/i });
+    await expect(hub).toBeVisible();
+    await expect(hub.getByRole("button", { name: /play a run/i })).toBeVisible();
+    await expect(hub.getByRole("button", { name: /shop/i })).toBeVisible();
+    await expect(hub.getByRole("button", { name: /co-op/i })).toBeVisible();
+    await expect(hub.getByRole("button", { name: /leaderboard/i })).toBeVisible();
+
+    await hub.getByRole("button", { name: /co-op/i }).click();
+    await expect(page.getByText("Co-op Run", { exact: true })).toBeVisible();
+    await expect(page.getByText("Co-op Rooms", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: /back/i }).click();
+
+    await page
+      .getByRole("navigation", { name: /survivors hub/i })
+      .getByRole("button", { name: /play a run/i })
+      .click();
+    await expect(page.getByRole("button", { name: /click to lock/i })).toBeVisible();
+    await expect.poll(() => snapshot(page).then((state) => state.status)).toBe("pointerlock-needed");
+    await expect.poll(() => snapshot(page).then((state) => state.survivors)).toBe(true);
+    await expect.poll(() => snapshot(page).then((state) => state.multiplayer)).toBe(false);
+    expect(consoleErrors).toEqual([]);
+  });
+});
 
 test.describe("dev sandbox smoke", () => {
   test("loads runtime visual/audio assets and fires each gun", async ({ page }) => {
