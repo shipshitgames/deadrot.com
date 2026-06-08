@@ -22,6 +22,7 @@ import {
   ENEMY_SPEED_MIN,
 } from "../constants";
 import { ENEMY_ARCHETYPES, type EnemyArchetypeId } from "../data/enemies";
+import { chooseMovementDirectionalSpriteFrame, type DirectionalSpriteView } from "../directionalSprites";
 import {
   ENEMY_SPRITE_ANIMATION_META,
   ENEMY_SPRITE_ANIMATION_TEXTURES,
@@ -33,7 +34,7 @@ import { chasePlayerStrategy, redirectBlockedRangedRetreat } from "./ChasePlayer
 
 const HEALTHBAR_WIDTH = 0.95;
 type EnemySpriteKind = "melee" | "ranged" | "flying" | "boss";
-type EnemySpriteView = "front" | "side" | "back";
+type EnemySpriteView = DirectionalSpriteView;
 
 export interface DamageResult {
   died: boolean;
@@ -405,17 +406,15 @@ export class Enemy extends Agent {
     dirX: number,
     dirZ: number,
   ): { view: EnemySpriteView; flip: number } {
-    const moveLen = Math.hypot(moveX, moveZ);
-    if (moveLen < 0.05) return { view: this.spriteView, flip: this.spriteFlip };
-
-    const mx = moveX / moveLen;
-    const mz = moveZ / moveLen;
-    const dot = mx * dirX + mz * dirZ;
-    if (dot > 0.5) return { view: "front", flip: 1 };
-    if (dot < -0.45) return { view: "back", flip: 1 };
-
-    const cross = dirX * mz - dirZ * mx;
-    return { view: "side", flip: cross >= 0 ? 1 : -1 };
+    return chooseMovementDirectionalSpriteFrame(moveX, moveZ, dirX, dirZ, {
+      fallback: {
+        sector: this.spriteView === "side" ? (this.spriteFlip >= 0 ? "right" : "left") : this.spriteView,
+        view: this.spriteView,
+        flip: this.spriteFlip,
+      },
+      minLength: 0.05,
+      mirrorBasis: "viewer",
+    });
   }
 
   private applyStyle(color: number) {
