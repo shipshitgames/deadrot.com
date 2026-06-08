@@ -128,38 +128,37 @@ export function AppShell({ createGame }: AppShellProps) {
                 <span>Core at crown</span>
               </MainMenuStatus>
             </MainMenuCopy>
-            {revealed ? (
-              <MainMenuNav aria-label="Main menu">
-                <MainMenuAction
-                  id="start-btn"
-                  type="button"
-                  variant="primary"
-                  label="Breach the Hulk"
-                  meta="Begin run"
-                  onClick={beginRun}
-                />
-                <MainMenuAction variant="shop" label="Upgrades" meta="Core locked" disabled />
-                <MainMenuAction variant="coop" label="Co-op" meta="Solo breach" disabled />
-                <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
-                <MainMenuAction
-                  type="button"
-                  variant="settings"
-                  label="Settings"
-                  meta="Audio"
-                  onClick={() => setShowSettings(true)}
-                />
-                <MainMenuAction variant="dev" label="Sandbox" meta="Hulk lab" disabled />
-                <MainMenuAction
-                  type="button"
-                  variant="default"
-                  label="← Back to Warline"
-                  meta="Lobby"
-                  onClick={() => goToWarlineLobby()}
-                />
-              </MainMenuNav>
-            ) : (
-              <MainMenuEnterPrompt />
-            )}
+            {/* Nav stays mounted; the splash gate only hides it until
+                Enter/Space/click reveals the menu. */}
+            <MainMenuNav aria-label="Main menu" hidden={!revealed}>
+              <MainMenuAction
+                id="start-btn"
+                type="button"
+                variant="primary"
+                label="Breach the Hulk"
+                meta="Begin run"
+                onClick={beginRun}
+              />
+              <MainMenuAction variant="shop" label="Upgrades" meta="Core locked" disabled />
+              <MainMenuAction variant="coop" label="Co-op" meta="Solo breach" disabled />
+              <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
+              <MainMenuAction
+                type="button"
+                variant="settings"
+                label="Settings"
+                meta="Audio"
+                onClick={() => setShowSettings(true)}
+              />
+              <MainMenuAction variant="dev" label="Sandbox" meta="Hulk lab" disabled />
+              <MainMenuAction
+                type="button"
+                variant="default"
+                label="← Back to Warline"
+                meta="Lobby"
+                onClick={() => goToWarlineLobby()}
+              />
+            </MainMenuNav>
+            {!revealed && <MainMenuEnterPrompt />}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>

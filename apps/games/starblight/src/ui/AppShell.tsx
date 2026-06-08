@@ -104,31 +104,30 @@ export function AppShell() {
                 <span>Draft systems hot</span>
               </MainMenuStatus>
             </MainMenuCopy>
-            {revealed ? (
-              <MainMenuNav aria-label="Main menu">
-                <MainMenuAction id="banner-btn" variant="primary" label="Engage" meta="Start sortie" />
-                <MainMenuAction variant="shop" label="Upgrades" meta="Draft only" disabled />
-                <MainMenuAction variant="coop" label="Co-op" meta="Solo sortie" disabled />
-                <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
-                <MainMenuAction
-                  type="button"
-                  variant="settings"
-                  label="Settings"
-                  meta="Audio"
-                  onClick={() => setSettingsOpen(true)}
-                />
-                <MainMenuAction variant="dev" label="Sandbox" meta="Orbit lab" disabled />
-                <MainMenuAction
-                  type="button"
-                  variant="default"
-                  label="← Back to Warline"
-                  meta="Lobby"
-                  onClick={() => goToWarlineLobby()}
-                />
-              </MainMenuNav>
-            ) : (
-              <MainMenuEnterPrompt />
-            )}
+            {/* Nav stays mounted (engine grabs #banner-btn at boot); the splash
+                gate only hides it until Enter/Space/click reveals the menu. */}
+            <MainMenuNav aria-label="Main menu" hidden={!revealed}>
+              <MainMenuAction id="banner-btn" variant="primary" label="Engage" meta="Start sortie" />
+              <MainMenuAction variant="shop" label="Upgrades" meta="Draft only" disabled />
+              <MainMenuAction variant="coop" label="Co-op" meta="Solo sortie" disabled />
+              <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
+              <MainMenuAction
+                type="button"
+                variant="settings"
+                label="Settings"
+                meta="Audio"
+                onClick={() => setSettingsOpen(true)}
+              />
+              <MainMenuAction variant="dev" label="Sandbox" meta="Orbit lab" disabled />
+              <MainMenuAction
+                type="button"
+                variant="default"
+                label="← Back to Warline"
+                meta="Lobby"
+                onClick={() => goToWarlineLobby()}
+              />
+            </MainMenuNav>
+            {!revealed && <MainMenuEnterPrompt />}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>
