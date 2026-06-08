@@ -38,7 +38,7 @@ function pickupSpriteAssetId(id: "health" | "ammo" | "damage" | "dual" | "xpBloo
   return ASSET_CATALOG.pickup(id).sprite;
 }
 
-function projectileSpriteAssetId(id: "enemy" | "boss"): string {
+function projectileSpriteAssetId(id: "enemy" | "boss" | "bolt" | "orb"): string {
   return ASSET_CATALOG.projectile(id).sprite;
 }
 
@@ -231,6 +231,8 @@ export const MUZZLE_FLASH_TEXTURE = loadSpriteTexture(fxSpriteAssetId("muzzleFla
 export const PROJECTILE_SPRITE_TEXTURES = {
   enemy: loadSpriteTexture(projectileSpriteAssetId("enemy")),
   boss: loadSpriteTexture(projectileSpriteAssetId("boss")),
+  bolt: loadSpriteTexture(projectileSpriteAssetId("bolt")),
+  orb: loadSpriteTexture(projectileSpriteAssetId("orb")),
 } as const;
 
 export const PICKUP_SPRITE_TEXTURES = {

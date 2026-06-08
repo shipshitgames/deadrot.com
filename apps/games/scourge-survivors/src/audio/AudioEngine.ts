@@ -87,6 +87,9 @@ export class AudioEngine {
 
   // authored weapon-SFX sample buffers (decoded once; procedural synth is the fallback)
   private sampleBuffers = new Map<SfxName, AudioBuffer>();
+  // Per-cue gain from each sample's manifest `volume` — lets us balance weapon
+  // loudness in assets.json without re-rendering audio.
+  private sampleVolumes = new Map<SfxName, number>();
   private samplesRequested = false;
 
   constructor() {
@@ -329,6 +332,7 @@ export class AudioEngine {
     if (this.samplesRequested || !this.ctx) return;
     this.samplesRequested = true;
     for (const [name, id] of Object.entries(SFX_SAMPLE_IDS) as [SfxName, string][]) {
+      this.sampleVolumes.set(name, audioEntry(id).volume ?? 1);
       fetch(audioUrl(id))
         .then((r) => r.arrayBuffer())
         .then((b) => this.ctx?.decodeAudioData(b))
@@ -346,7 +350,16 @@ export class AudioEngine {
     const src = this.ctx.createBufferSource();
     src.buffer = buf;
     src.playbackRate.value = pitch;
-    src.connect(this.sfxBus);
+    const vol = this.sampleVolumes.get(name) ?? 1;
+    if (vol !== 1) {
+      // Per-cue level from the manifest (config-only loudness balance).
+      const gain = this.ctx.createGain();
+      gain.gain.value = vol;
+      src.connect(gain);
+      gain.connect(this.sfxBus);
+    } else {
+      src.connect(this.sfxBus);
+    }
     src.start();
     return true;
   }

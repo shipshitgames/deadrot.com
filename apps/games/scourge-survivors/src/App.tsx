@@ -1,4 +1,4 @@
-import { subscribeGlobalGameSettings } from "@shipshitgames/ui";
+import { GlobalMusicToggle, subscribeGlobalGameSettings } from "@shipshitgames/ui";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { audio } from "./audio/AudioEngine";
 import { HUD } from "./components/HUD";
@@ -395,6 +395,7 @@ export default function App() {
         initialRoom={initialRoom}
         suppressMenu={sandboxActive}
       />
+      {sandboxActive && <GlobalMusicToggle className="ssg-music-toggle--corner" />}
       {SandboxPanel && sandboxActive && (
         <Suspense fallback={null}>
           <SandboxPanel

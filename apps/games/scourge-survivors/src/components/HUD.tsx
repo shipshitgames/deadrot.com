@@ -117,7 +117,7 @@ function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => void })
           </IconText>
         </span>
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 max-h-[56vh] overflow-y-auto overscroll-contain pr-1.5">
         {SHOP_UPGRADES.map((u) => {
           const tier = shop.tiers[u.id] ?? 0;
           const maxed = tier >= u.max;
@@ -139,6 +139,7 @@ function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => void })
                     {tier}/{u.max}
                   </span>
                 </div>
+                <div className="mt-0.5 text-[12px] leading-snug text-[#9b958a] normal-case">{u.desc}</div>
               </div>
               <button
                 type="button"
@@ -1441,7 +1442,7 @@ export function HUD({
         </MainMenuScreen>
       )}
 
-      {status === "paused" && pausePanel === "none" && (
+      {status === "paused" && !suppressMenu && pausePanel ==="none" && (
         <PauseMenu
           open
           className="pause-ui"
@@ -1458,7 +1459,7 @@ export function HUD({
         />
       )}
 
-      {status === "paused" && pausePanel === "settings" && (
+      {status === "paused" && !suppressMenu && pausePanel ==="settings" && (
         <div className={OVERLAY} onClick={onLock}>
           <h2 className="m-0 mb-[18px] text-[30px] font-bold">
             <IconText icon="settings" size={26}>
@@ -1477,7 +1478,7 @@ export function HUD({
         </div>
       )}
 
-      {status === "paused" && pausePanel === "controls" && (
+      {status === "paused" && !suppressMenu && pausePanel ==="controls" && (
         <div className={OVERLAY} onClick={onLock}>
           <h2 className="m-0 mb-[18px] text-[30px] font-bold">
             <IconText icon="gamepad" size={26}>

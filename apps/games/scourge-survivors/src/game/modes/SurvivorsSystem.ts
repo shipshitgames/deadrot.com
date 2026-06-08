@@ -49,7 +49,7 @@ import {
   xpForLevel,
 } from "../data/survivors";
 import type { Enemy } from "../entities/Enemy";
-import { XP_BLOOD_SCALE, XP_BLOOD_TEXTURE } from "../spriteAssets";
+import { PROJECTILE_SPRITE_TEXTURES, XP_BLOOD_SCALE, XP_BLOOD_TEXTURE } from "../spriteAssets";
 import type { GameSystems } from "../systems";
 import type { BuildEntry, UpgradeChoice } from "../types";
 
@@ -77,10 +77,10 @@ export class SurvivorsSystem {
   novaLevel = 0;
   // auto-weapon runtime
   orbitGroup!: THREE.Group;
-  orbitOrbs: THREE.Mesh[] = [];
+  orbitOrbs: THREE.Sprite[] = [];
   orbitAngle = 0;
   orbitCd = new WeakMap<Enemy, number>();
-  bolts: { mesh: THREE.Mesh; vel: THREE.Vector3; dmg: number; age: number; pierce: number }[] = [];
+  bolts: { mesh: THREE.Sprite; vel: THREE.Vector3; dmg: number; age: number; pierce: number }[] = [];
   boltTimer = 0;
   novas: { mesh: THREE.Mesh; age: number; ttl: number; hit: Set<Enemy>; dmg: number; maxR: number }[] = [];
   novaTimer = NOVA_INTERVAL;
@@ -295,19 +295,26 @@ export class SurvivorsSystem {
   rebuildOrbit(count: number) {
     for (const o of this.orbitOrbs) {
       this.orbitGroup.remove(o);
-      o.geometry.dispose();
+      // Sprites share an internal geometry; only the per-orb material is ours to free
+      // (the map is the shared PROJECTILE_SPRITE_TEXTURES.orb and must NOT be disposed).
       (o.material as THREE.Material).dispose();
     }
     this.orbitOrbs = [];
     const evo = this.evolved.orbit;
     const r = evo ? 0.44 : 0.32;
-    const color = evo ? 0xffd166 : 0xff6a00;
-    const emissive = evo ? 0xffae2e : 0xff2a18;
+    const color = evo ? 0xffd166 : 0xffffff;
     for (let i = 0; i < count; i++) {
-      const orb = new THREE.Mesh(
-        new THREE.SphereGeometry(r, 12, 10),
-        new THREE.MeshStandardMaterial({ color, emissive, emissiveIntensity: 2.4, roughness: 0.3 }),
+      const orb = new THREE.Sprite(
+        new THREE.SpriteMaterial({
+          map: PROJECTILE_SPRITE_TEXTURES.orb,
+          color,
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+          toneMapped: false,
+        }),
       );
+      orb.scale.setScalar(r * 2.4);
       this.orbitGroup.add(orb);
       this.orbitOrbs.push(orb);
     }
@@ -746,16 +753,17 @@ export class SurvivorsSystem {
   fireBolt() {
     const tgt = this.nearestEnemy(this.ctx.body.position);
     if (!tgt) return;
-    const mesh = new THREE.Mesh(
-      new THREE.SphereGeometry(0.22, 10, 8),
-      new THREE.MeshBasicMaterial({
-        color: 0xff6a00,
+    const mesh = new THREE.Sprite(
+      new THREE.SpriteMaterial({
+        map: PROJECTILE_SPRITE_TEXTURES.bolt,
+        color: this.evolved.bolt ? 0xffd166 : 0xffffff,
         transparent: true,
-        opacity: 0.95,
-        blending: THREE.AdditiveBlending,
         depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        toneMapped: false,
       }),
     );
+    mesh.scale.setScalar(this.evolved.bolt ? 1.35 : 1.1);
     mesh.position.set(this.ctx.body.position.x, 1.3, this.ctx.body.position.z);
     const dx = tgt.position.x - mesh.position.x;
     const dz = tgt.position.z - mesh.position.z;
@@ -770,7 +778,8 @@ export class SurvivorsSystem {
   removeBolt(i: number) {
     const b = this.bolts[i];
     this.ctx.scene.remove(b.mesh);
-    b.mesh.geometry.dispose();
+    // Sprites share an internal geometry; only the per-bolt material is ours to free
+    // (the map texture is shared via PROJECTILE_SPRITE_TEXTURES and must NOT be disposed).
     (b.mesh.material as THREE.Material).dispose();
     this.bolts.splice(i, 1);
   }

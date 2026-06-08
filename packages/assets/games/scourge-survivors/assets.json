@@ -591,22 +591,22 @@
       "type": "sprite",
       "path": "games/scourge-survivors/projectiles/scourge/pyre-bolt.webp",
       "dimensions": [
-        96,
-        96
+        128,
+        128
       ],
       "anchor": [
         0.5,
         0.5
       ],
       "scale": [
-        0.5,
-        0.5
+        0.9,
+        0.9
       ],
       "license": {
         "tool": "gpt-image-2 via Codex built-in image_gen",
         "plan": "codex",
         "date": "2026-06-08",
-        "kind": "AI 2D projectile sprite (additive, black-bg)",
+        "kind": "AI 2D projectile sprite (white-bg keyed to alpha)",
         "scope": "embedded in-game use"
       }
     },
@@ -1052,6 +1052,29 @@
         "date": "2026-06-02",
         "kind": "generated 2D player sprite",
         "scope": "project prototype"
+      }
+    },
+    "projectile-pyre-orb": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/projectiles/scourge/pyre-orb.webp",
+      "dimensions": [
+        96,
+        96
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "scale": [
+        0.8,
+        0.8
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI orbit-orb sprite (Cautery Ring, additive black-bg)",
+        "scope": "embedded in-game use"
       }
     }
   },
@@ -1574,11 +1597,11 @@
         1
       ],
       "license": {
-        "tool": "procedural sprite texture generator",
-        "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific arena prop sprite texture",
-        "scope": "Scourge Survivors runtime"
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI arena prop object (ashgate)",
+        "scope": "embedded in-game use"
       }
     },
     "arena-hollowlanes-prop": {
@@ -1595,11 +1618,11 @@
         1
       ],
       "license": {
-        "tool": "procedural sprite texture generator",
-        "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific arena prop sprite texture",
-        "scope": "Scourge Survivors runtime"
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI arena prop object (hollowlanes)",
+        "scope": "embedded in-game use"
       }
     },
     "arena-maw-prop": {
@@ -1616,11 +1639,11 @@
         1
       ],
       "license": {
-        "tool": "procedural sprite texture generator",
-        "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific arena prop sprite texture",
-        "scope": "Scourge Survivors runtime"
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI arena prop object (maw)",
+        "scope": "embedded in-game use"
       }
     },
     "arena-perdition-prop": {
@@ -1637,11 +1660,11 @@
         1
       ],
       "license": {
-        "tool": "procedural sprite texture generator",
-        "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific arena prop sprite texture",
-        "scope": "Scourge Survivors runtime"
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI arena prop object (perdition)",
+        "scope": "embedded in-game use"
       }
     }
   },
@@ -1697,15 +1720,15 @@
       "path": "games/scourge-survivors/audio/sfx/weapons/pistol-pyre.webm",
       "category": "sfx",
       "cue": "shoot",
-      "duration": 0.248,
+      "duration": 0.558,
       "volume": 1,
       "loop": false,
       "license": {
-        "tool": "Codex PCM synthesis",
-        "plan": "local",
-        "date": "2026-06-05",
-        "kind": "project-owned sidearm weapon SFX",
-        "scope": "Scourge Survivors runtime"
+        "tool": "ElevenLabs SFX",
+        "plan": "unknown",
+        "date": "2026-06-08",
+        "kind": "AI weapon SFX (gunshot #3, lead-silence trimmed to trigger)",
+        "scope": "embedded in-game use"
       }
     },
     "sfx-smg": {
@@ -1968,6 +1991,12 @@
       },
       "boss": {
         "sprite": "projectile-boss"
+      },
+      "bolt": {
+        "sprite": "projectile-pyre-bolt"
+      },
+      "orb": {
+        "sprite": "projectile-pyre-orb"
       }
     },
     "fx": {
