@@ -22,7 +22,14 @@ import {
 import type { GameContext } from "../context";
 import type { MainWeaponVisualTier } from "../data/survivors";
 import { WEAPON_VIEW_X, WEAPON_VIEW_Y, WEAPON_VIEW_Z } from "../data/internalTypes";
-import { MUZZLE_FLASH_TEXTURE, WEAPON_SPRITE_TEXTURES, weaponSpriteConfig, weaponSpriteTexture } from "../spriteAssets";
+import {
+  MUZZLE_FLASH_TEXTURE,
+  WEAPON_SPRITE_TEXTURES,
+  weaponSheetColumns,
+  weaponSpriteConfig,
+  weaponSpriteTexture,
+  weaponTierCellIndex,
+} from "../spriteAssets";
 import type { GameSystems } from "../systems";
 import type { Enemy } from "./Enemy";
 
@@ -35,14 +42,23 @@ const SHOOT_SFX: Record<WeaponId, "shoot" | "shootSmg" | "shootSniper" | "shootS
   sniper: "shootSniper",
 };
 
-/** Every weapon visibly "heats up" as the run's damage build climbs (works for all guns,
- *  not just the pistol's sprite tiers): a hellfire tint ramp by visual tier. */
+/** Every weapon ships ONE view-model image and visibly "powers up" as the run's damage
+ *  build climbs, via FX rather than per-tier art: a hellfire tint ramp (TIER_GLOW) plus
+ *  a slight size growth (TIER_SCALE) so each tier reads as a bigger, hotter gun. */
 const TIER_GLOW: Record<MainWeaponVisualTier, number> = {
   base: 0xffffff,
-  "tier-2": 0xffe8cf,
-  "tier-3": 0xffce9a,
-  "tier-4": 0xffac63,
-  evolved: 0xffd166,
+  "tier-2": 0xffe0b0,
+  "tier-3": 0xffbb6e,
+  "tier-4": 0xff8f3a,
+  evolved: 0xffd24d,
+};
+/** View-model size multiplier per tier — the gun grows as it ascends. */
+const TIER_SCALE: Record<MainWeaponVisualTier, number> = {
+  base: 1,
+  "tier-2": 1.05,
+  "tier-3": 1.1,
+  "tier-4": 1.16,
+  evolved: 1.24,
 };
 
 export class WeaponSystem {
@@ -162,25 +178,32 @@ export class WeaponSystem {
     this.weaponBarrel.position.set(0, 0.02, -0.2 - spec.barrelLen / 2);
 
     const tier = this.activeWeaponVisualTier(id);
-    const sprite = weaponSpriteConfig(id, tier);
-    this.weaponSpriteMat.map = weaponSpriteTexture(id, tier);
+    const sprite = weaponSpriteConfig(id);
+    const tierScale = TIER_SCALE[tier];
+    // The view-model texture is a horizontal tier SHEET; select this tier's cell by UV
+    // offset (columns=1 for a single-image weapon, so this is a no-op there).
+    const cols = weaponSheetColumns(id);
+    const cell = weaponTierCellIndex(id, tier);
+    const tex = weaponSpriteTexture(id);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.repeat.x = 1 / cols;
+    tex.offset.x = cell / cols;
+    this.weaponSpriteMat.map = tex;
     this.weaponSpriteMat.needsUpdate = true;
-    this.weaponSprite.scale.set(sprite.scale[0], sprite.scale[1], 1);
+    this.weaponSprite.scale.set(sprite.scale[0] * tierScale, sprite.scale[1] * tierScale, 1);
     this.weaponSprite.position.set(sprite.offset[0], sprite.offset[1], sprite.offset[2]);
-    // Mirror the same art to the opposite side for the dual-weapon bonus (akimbo read).
-    // Sprite scale can't flip UVs, so use a horizontally-flipped texture clone.
+    // Mirror the same cell to the opposite side for the dual-weapon bonus (akimbo read).
+    // Sprite scale can't flip UVs, so use a horizontally-flipped clone of the same cell.
     this.dualMapClone?.dispose();
-    const flipped = this.weaponSpriteMat.map ? this.weaponSpriteMat.map.clone() : null;
-    if (flipped) {
-      flipped.wrapS = THREE.RepeatWrapping;
-      flipped.repeat.x = -1;
-      flipped.offset.x = 1;
-      flipped.needsUpdate = true;
-    }
+    const flipped = tex.clone();
+    flipped.wrapS = THREE.RepeatWrapping;
+    flipped.repeat.x = -1 / cols;
+    flipped.offset.x = (cell + 1) / cols;
+    flipped.needsUpdate = true;
     this.dualMapClone = flipped;
     this.weaponSpriteDualMat.map = flipped;
     this.weaponSpriteDualMat.needsUpdate = true;
-    this.weaponSpriteDual.scale.set(sprite.scale[0], sprite.scale[1], 1);
+    this.weaponSpriteDual.scale.set(sprite.scale[0] * tierScale, sprite.scale[1] * tierScale, 1);
     this.weaponSpriteDual.position.set(-sprite.offset[0], sprite.offset[1], sprite.offset[2]);
     this.ctx.muzzleFlash.position.set(sprite.muzzle[0], sprite.muzzle[1], sprite.muzzle[2]);
     this.ctx.muzzleFlash.scale.setScalar(sprite.flashScale);
@@ -316,7 +339,7 @@ export class WeaponSystem {
     this.ctx.muzzleFlash.material.rotation = this.muzzleFlashBaseRotation + (Math.random() - 0.5) * 0.18;
     this.ctx.muzzleFlash.material.color.setHex(berserkActive ? 0xff2a18 : 0xffffff);
     this.ctx.muzzleFlash.scale.setScalar(
-      weaponSpriteConfig(this.ctx.activeWeapon, this.activeWeaponVisualTier()).flashScale * (berserkActive ? 1.22 : 1),
+      weaponSpriteConfig(this.ctx.activeWeapon).flashScale * (berserkActive ? 1.22 : 1),
     );
     this.ctx.muzzleLight.color.setHex(berserkActive ? 0xff2a18 : 0xffcc66);
     this.ctx.muzzleLight.intensity = berserkActive ? 13 : 8;
@@ -598,8 +621,8 @@ export class WeaponSystem {
   }
 
   private activeWeaponVisualTier(id: WeaponId = this.ctx.activeWeapon): MainWeaponVisualTier {
-    // The visual tier (a build-power score) now lifts every weapon's glow; the pistol
-    // additionally swaps to its dedicated tier art via weaponSpriteTexture().
+    // The visual tier (a build-power score) drives every weapon's glow, size bump, and
+    // UV-selected tier-sheet cell (see applyWeaponModel).
     void id;
     if (this.ctx.survivors) return this.sys.survivors.mainWeaponVisualTier();
     // Sandbox mirrors the game's tier rendering via a settable override (parity for testing).

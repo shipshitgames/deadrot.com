@@ -182,17 +182,7 @@ describe("asset manifest", () => {
   });
 
   it("defines weapon sprite metadata needed for first-person runtime placement", () => {
-    const weaponSpriteIds = [
-      "weapon-pistol",
-      "weapon-pistol-tier-2",
-      "weapon-pistol-tier-3",
-      "weapon-pistol-tier-4",
-      "weapon-pistol-evolved",
-      "weapon-smg",
-      "weapon-shotgun",
-      "weapon-cannon",
-      "weapon-sniper",
-    ] as const;
+    const weaponSpriteIds = ["weapon-pistol", "weapon-smg", "weapon-shotgun", "weapon-cannon", "weapon-sniper"] as const;
 
     for (const id of weaponSpriteIds) {
       const entry = manifest.sprites[id];
@@ -205,26 +195,26 @@ describe("asset manifest", () => {
     }
   });
 
-  it("keeps main sidearm tier sprites as optimized WebP cutouts with stable muzzle metadata", () => {
-    const tierSpriteIds = [
-      "weapon-pistol-tier-2",
-      "weapon-pistol-tier-3",
-      "weapon-pistol-tier-4",
-      "weapon-pistol-evolved",
-    ] as const;
-    const base = manifest.sprites["weapon-pistol"];
+  it("ships every weapon as a 5-cell tier sheet (base->evolved) UV-sampled per visual tier", () => {
+    const weaponSpriteIds = ["weapon-pistol", "weapon-smg", "weapon-shotgun", "weapon-cannon", "weapon-sniper"] as const;
+    const expectedTiers = ["base", "tier-2", "tier-3", "tier-4", "evolved"];
 
-    for (const id of tierSpriteIds) {
+    for (const id of weaponSpriteIds) {
       const entry = manifest.sprites[id];
-      expect(entry.path, `${id} path`).toMatch(/^games\/scourge-survivors\/weapons\/pyre\/.*\.webp$/);
+      expect(entry.path, `${id} path`).toMatch(/^games\/scourge-survivors\/weapons\/pyre\/.*-tiers\.webp$/);
       expect(entry.filter, id).toBe("nearest");
       expect(entry.dimensions?.[0], `${id} width`).toBeGreaterThan(0);
       expect(entry.dimensions?.[1], `${id} height`).toBeGreaterThan(0);
       expect(entry.license.tool, `${id} tool`).toBe("gpt-image-2");
-      expect(entry.scale, `${id} scale`).toEqual(base.scale);
-      expect(entry.weapon?.offset, `${id} offset`).toEqual(base.weapon?.offset);
-      expect(entry.weapon?.muzzle, `${id} muzzle`).toEqual(base.weapon?.muzzle);
-      expect(entry.weapon?.flashScale, `${id} flash scale`).toEqual(base.weapon?.flashScale);
+      // One horizontal sheet, one cell per visual tier, in canonical order.
+      expect(entry.tierSheet?.columns, `${id} columns`).toBe(5);
+      expect(entry.tierSheet?.tiers, `${id} tiers`).toEqual(expectedTiers);
+      expect(entry.tierSheet?.columns).toBe(entry.tierSheet?.tiers.length);
+    }
+
+    // The retired pistol per-tier sprites must be gone (superseded by the sheet).
+    for (const t of ["tier-2", "tier-3", "tier-4", "evolved"]) {
+      expect(manifest.sprites[`weapon-pistol-${t}`], `weapon-pistol-${t} retired`).toBeUndefined();
     }
   });
 

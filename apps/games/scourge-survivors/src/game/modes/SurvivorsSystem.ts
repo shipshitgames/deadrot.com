@@ -431,7 +431,9 @@ export class SurvivorsSystem {
         audio.sfx("pickup");
       }
     }
-    if (this.ctx.activeWeapon === "pistol" && this.mainWeaponVisualTier() !== previousMainWeaponTier) {
+    // Every weapon re-applies its model on a tier change so the TIER_SCALE growth (and any
+    // future per-tier art) lands; the per-frame TIER_GLOW tint tracks the tier on its own.
+    if (this.mainWeaponVisualTier() !== previousMainWeaponTier) {
       this.sys.weapon.applyWeaponModel(this.ctx.activeWeapon);
     }
     this.pendingLevels = Math.max(0, this.pendingLevels - 1);
