@@ -106,7 +106,7 @@ export interface GlobalMusicToggleProps extends Omit<ButtonHTMLAttributes<HTMLBu
 
 export function GlobalMusicToggle({
   className,
-  mutedLabel = "Music Muted",
+  mutedLabel = "Music Off",
   unmutedLabel = "Music On",
   onChange,
   onClick,

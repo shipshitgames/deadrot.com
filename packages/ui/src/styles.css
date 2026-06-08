@@ -237,6 +237,47 @@
   padding: clamp(72px, 8vh, 104px) clamp(24px, 6vw, 96px) clamp(32px, 7vh, 76px);
 }
 
+/* Once the title splash is dismissed the hero is hidden — the menu takes the
+   stage as a single wider centered column. */
+.ssg-main-menu-layout--menu {
+  grid-template-columns: minmax(0, 640px);
+  justify-content: center;
+}
+
+/* Title splash: centered hero with the "press enter" prompt stacked below it. */
+.ssg-main-menu-layout--splash {
+  grid-template-columns: minmax(0, 760px);
+  align-content: center;
+  justify-content: center;
+  justify-items: center;
+  gap: clamp(18px, 5vh, 40px);
+  text-align: center;
+}
+
+.ssg-main-menu-layout--splash .ssg-main-menu-copy {
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ssg-main-menu-layout--splash .ssg-main-menu-copy::before {
+  display: none;
+}
+
+.ssg-main-menu-layout--splash .ssg-main-menu-title {
+  align-items: center;
+}
+
+.ssg-main-menu-layout--splash .ssg-main-menu-status {
+  justify-content: center;
+}
+
+.ssg-main-menu-layout--splash .ssg-main-menu-enter {
+  justify-content: center;
+  min-height: auto;
+}
+
 .ssg-main-menu-copy {
   position: relative;
   max-width: min(680px, 100%);
@@ -423,9 +464,10 @@
   min-height: 58px;
   width: 100%;
   cursor: pointer;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 4px;
   overflow: hidden;
   padding: 12px 16px;
   color: var(--ssg-bone);
@@ -433,9 +475,8 @@
     var(--ssg-menu-action-blood, transparent),
     var(--ssg-menu-action-splatter, radial-gradient(circle at 88% 40%, rgba(193, 18, 31, 0.2), transparent 8rem)),
     linear-gradient(110deg, rgba(12, 12, 13, 0.92) 0%, rgba(24, 22, 22, 0.86) 58%, rgba(10, 10, 10, 0.68) 100%);
-  border: 1px solid rgba(233, 227, 214, 0.16);
-  border-left: 4px solid var(--ssg-menu-action-edge, var(--ssg-hellfire));
-  border-radius: 2px;
+  border: 1px solid rgba(233, 227, 214, 0.14);
+  border-radius: 0;
   box-shadow:
     inset 0 0 0 1px rgba(0, 0, 0, 0.82),
     inset 0 -20px 36px rgba(0, 0, 0, 0.24),
@@ -556,8 +597,35 @@
   z-index: 1;
 }
 
+/* "Press Enter to continue" splash prompt (shown where the nav will appear). */
+.ssg-main-menu-enter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 76px;
+  padding: 16px 4px;
+  color: var(--ssg-ember);
+  font-family: var(--ssg-font-pixel);
+  font-size: clamp(13px, 1.4vw, 16px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px rgba(255, 106, 0, 0.6);
+  animation: ssg-enter-blink 1.15s steps(1, end) infinite;
+}
+
+.ssg-main-menu-enter__caret {
+  color: var(--ssg-blood-hot);
+}
+
+@keyframes ssg-enter-blink {
+  50% {
+    opacity: 0.32;
+  }
+}
+
 .ssg-main-menu-action__label {
   display: inline-flex;
+  max-width: 100%;
   min-width: 0;
   align-items: center;
   gap: 8px;
@@ -578,12 +646,15 @@
 }
 
 .ssg-main-menu-action__meta {
-  flex: 0 0 auto;
+  max-width: 100%;
+  overflow: hidden;
   color: rgba(233, 227, 214, 0.64);
   font-family: var(--ssg-font-mono);
   font-size: 11px;
   letter-spacing: 0.08em;
   text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @keyframes ssg-menu-atmosphere {
@@ -1206,9 +1277,7 @@
 /* Shared pause overlay — a darker scrim over live gameplay, same cinematic
    layout as the title menu (see PauseMenu.tsx). */
 .ssg-main-menu-screen--pause {
-  background:
-    radial-gradient(120% 120% at 50% 0%, rgba(193, 18, 31, 0.18), transparent 60%),
-    rgba(6, 5, 5, 0.9);
+  background: radial-gradient(120% 120% at 50% 0%, rgba(193, 18, 31, 0.18), transparent 60%), rgba(6, 5, 5, 0.9);
   backdrop-filter: blur(3px);
 }
 

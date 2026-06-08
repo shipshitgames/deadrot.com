@@ -19,6 +19,9 @@ export {
   GlobalGameSettingsPanel,
   GlobalMusicToggle,
 } from "./GameSettings";
+export { goToWarlineLobby, warlineLobbyHref } from "./lobby";
+export type { MainMenuEnterPromptProps } from "./MainMenuEnter";
+export { MainMenuEnterPrompt, useEnterToReveal } from "./MainMenuEnter";
 export type {
   DivProps,
   MainMenuActionProps,
