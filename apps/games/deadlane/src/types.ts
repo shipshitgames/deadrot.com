@@ -34,10 +34,17 @@ export interface GameState {
   gold: number;
   wave: number; // 1-based; 0 before the first wave
   baseHp: number;
+  hintText: string;
 
   towers: Tower[];
   creeps: Creep[];
   projectiles: Projectile[];
+
+  buildProgress: number; // seconds spent holding build on the current tile
+  buildTargetKey: string | null;
+  buildSpeedLevel: number;
+  runSpeedLevel: number;
+  lastBonus: string | null;
 
   // wave runtime
   spawnQueue: number; // creeps left to spawn this wave

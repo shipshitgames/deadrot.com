@@ -17,6 +17,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@shipshitgames/assets": "workspace:*",
+        "@shipshitgames/engine": "workspace:*",
         "@shipshitgames/ui": "workspace:*",
         "react": "19.2.7",
         "react-dom": "19.2.7",

@@ -60,6 +60,7 @@ export type RigCaptureEvent = "capture" | "release";
 
 /** Builds a {@link CameraRig} around a caller-owned render camera + capture surface. */
 export type CameraRigPreset = (camera: THREE.PerspectiveCamera, domElement: HTMLElement) => CameraRig;
+type PointerLockControlsWithErrorHandler = PointerLockControls & { _onPointerlockError?: EventListener };
 
 // Shared scratch — single instances, never escape a synchronous call.
 const _ndc = new THREE.Vector2();
@@ -86,6 +87,10 @@ class FirstPersonRig implements CameraRig {
     this.camera = camera;
     this.domElement = domElement;
     this.controls = new PointerLockControls(camera, domElement);
+    const controls = this.controls as PointerLockControlsWithErrorHandler;
+    if (controls._onPointerlockError) {
+      this.domElement.ownerDocument.removeEventListener("pointerlockerror", controls._onPointerlockError);
+    }
     this.controls.addEventListener("lock", this._onLock);
     this.controls.addEventListener("unlock", this._onUnlock);
   }
@@ -151,7 +156,14 @@ class FirstPersonRig implements CameraRig {
   }
 
   requestCapture(): void | Promise<void> {
-    return this.domElement.requestPointerLock();
+    try {
+      // Return the lock promise so callers that retry (e.g. the FPS pointer-lock
+      // rig) can react to async rejection; guard the synchronous throw that
+      // requestPointerLock can raise outside a user activation.
+      return this.domElement.requestPointerLock();
+    } catch {
+      // Capture is best-effort; the game can keep showing its re-enter prompt.
+    }
   }
 
   releaseCapture(silent = false): void {

@@ -36,6 +36,18 @@ export function AppShell() {
               0
             </span>
           </div>
+          <div className="stat ssg-hud-corner">
+            <span className="stat-label ssg-stat-label">Build</span>
+            <span className="stat-value ssg-stat-value" id="stat-build">
+              100%
+            </span>
+          </div>
+          <div className="stat ssg-hud-corner">
+            <span className="stat-label ssg-stat-label">Run</span>
+            <span className="stat-value ssg-stat-value" id="stat-run">
+              100%
+            </span>
+          </div>
         </div>
 
         <MainMenuScreen id="hud-banner" className="hidden" backgroundImage={menuHero}>
@@ -51,7 +63,8 @@ export function AppShell() {
               </MainMenuTitle>
               <p id="banner-sub" className="ssg-main-menu-subtitle" />
               <MainMenuStatus>
-                <span>Build the kill corridor</span>
+                <span>Run to the tile</span>
+                <span>Build by hand</span>
                 <span>Hold the base</span>
               </MainMenuStatus>
             </MainMenuCopy>
