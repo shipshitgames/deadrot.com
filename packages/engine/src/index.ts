@@ -8,43 +8,40 @@
  * Built seam-by-seam out of scourge-survivors — see that repo's ENGINE-EXTRACTION-PLAN.md.
  */
 
-// --- embodied-base: world bounds (seam: WorldBounds) ---
-export {
-  RectBounds,
-  makeBounds,
-  type WorldBounds,
-  type MapBounds,
-} from "./world/bounds";
-
-// --- embodied-base: camera rig (seam: CameraRig — the spine) ---
-export {
-  firstPersonPointerLock,
-  type CameraRig,
-  type CameraRigPreset,
-  type RigCaptureEvent,
-  type ThirdPersonFollowConfig,
-} from "./camera/CameraRig";
-
-// --- embodied-base: input (seam: DOM bindings + movement; genre verbs stay game-side) ---
-export { InputSystem, type InputHooks } from "./input/InputSystem";
-export {
-  makeMoveIntent,
-  clearMoveIntent,
-  applyMoveKey,
-  actionFor,
-  type MoveIntent,
-  type ActionMap,
-} from "./input/bindings";
-
 // --- embodied-base: agents (seam: kinematic Agent + pluggable SteeringStrategy) ---
 export { Agent, type PlanarVec } from "./agents/Agent";
 export type { SteeringStrategy, SteerView } from "./agents/steering";
-
+// --- embodied-base: camera rig (seam: CameraRig — the spine) ---
+export {
+  type CameraRig,
+  type CameraRigPreset,
+  firstPersonPointerLock,
+  type RigCaptureEvent,
+  type ThirdPersonFollowConfig,
+  thirdPersonFollow,
+} from "./camera/CameraRig";
+export {
+  type ActionMap,
+  actionFor,
+  applyMoveKey,
+  clearMoveIntent,
+  type MoveIntent,
+  makeMoveIntent,
+} from "./input/bindings";
+// --- embodied-base: input (seam: DOM bindings + movement; genre verbs stay game-side) ---
+export { type InputHooks, InputSystem } from "./input/InputSystem";
 // --- embodied-base: spawn (seam: where the next enemy enters the world) ---
 export {
+  type RectScatterConfig,
   RectScatterSpawnProvider,
+  type SpawnPoint,
   type SpawnPointProvider,
   type SpawnRequest,
-  type SpawnPoint,
-  type RectScatterConfig,
 } from "./spawn";
+// --- embodied-base: world bounds (seam: WorldBounds) ---
+export {
+  type MapBounds,
+  makeBounds,
+  RectBounds,
+  type WorldBounds,
+} from "./world/bounds";

@@ -1,14 +1,12 @@
 import * as THREE from "three";
-import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
 import { audio } from "../../audio/AudioEngine";
-import type { Enemy } from "../entities/Enemy";
-import { XP_BLOOD_SCALE, XP_BLOOD_TEXTURE } from "../spriteAssets";
 import { WEAPONS } from "../constants";
-import { DEFAULT_MAP_ID, getMap } from "../data/maps";
+import type { GameContext } from "../context";
 import { pickWeightedEnemyArchetype } from "../data/enemies";
+import { DEFAULT_MAP_ID, getMap } from "../data/maps";
 import {
   AMP_PER_TIER,
+  availableEvolutionChoice,
   BANISHES_PER_RUN,
   BOLT_DMG,
   BOLT_SPEED,
@@ -25,9 +23,6 @@ import {
   SURV_BASE_MAGNET,
   SURV_ELITE_INTERVAL,
   SURV_ENEMY_BASE_HP,
-  SURVIVOR_CLASSES,
-  SURVIVOR_RUN_CHAPTERS,
-  SURVIVOR_RUN_GOAL_TIME,
   SURV_SPAWN_CAP,
   SURV_SPAWN_MIN,
   SURV_SPAWN_START,
@@ -35,19 +30,24 @@ import {
   SURV_SWELL_COUNT,
   SURV_SWELL_INTERVAL,
   SURV_XP_ELITE_VALUE,
-  UPGRADES,
-  UPGRADE_BY_ID,
-  WEAPON_UPGRADE_IDS,
-  availableEvolutionChoice,
+  SURVIVOR_CLASSES,
+  SURVIVOR_RUN_CHAPTERS,
+  SURVIVOR_RUN_GOAL_TIME,
+  type SurvArchetype,
+  type SurvivorClassId,
   survivorBuildList,
   survivorChapterAt,
   survivorChapterStart,
-  xpForLevel,
-  type SurvArchetype,
-  type SurvivorClassId,
+  UPGRADE_BY_ID,
+  UPGRADES,
   type UpgradeId,
+  WEAPON_UPGRADE_IDS,
   type WeaponUpgradeId,
+  xpForLevel,
 } from "../data/survivors";
+import type { Enemy } from "../entities/Enemy";
+import { XP_BLOOD_SCALE, XP_BLOOD_TEXTURE } from "../spriteAssets";
+import type { GameSystems } from "../systems";
 import type { BuildEntry, UpgradeChoice } from "../types";
 
 const DEFENSIVE_UPGRADES: UpgradeId[] = [
@@ -504,8 +504,8 @@ export class SurvivorsSystem {
     // spawn on a ring around the player, just out of immediate sight
     const a = Math.random() * Math.PI * 2;
     const r = 26 + Math.random() * 10;
-    let x = this.ctx.camera.position.x + Math.cos(a) * r;
-    let z = this.ctx.camera.position.z + Math.sin(a) * r;
+    let x = this.ctx.body.position.x + Math.cos(a) * r;
+    let z = this.ctx.body.position.z + Math.sin(a) * r;
     x = Math.max(this.ctx.bounds.minX + 2, Math.min(this.ctx.bounds.maxX - 2, x));
     z = Math.max(this.ctx.bounds.minZ + 2, Math.min(this.ctx.bounds.maxZ - 2, z));
     const chapter = this.currentChapter();
@@ -571,8 +571,8 @@ export class SurvivorsSystem {
   onPlayerDamaged(rawDamage: number, healthDamage: number) {
     if (rawDamage <= 0) return;
     if (this.ctx.statRetaliate > 0) {
-      const px = this.ctx.camera.position.x;
-      const pz = this.ctx.camera.position.z;
+      const px = this.ctx.body.position.x;
+      const pz = this.ctx.body.position.z;
       const radius = 5.2;
       const dmg = this.ctx.statRetaliate + rawDamage * 0.6;
       for (const enemy of this.ctx.enemies) {
@@ -609,7 +609,7 @@ export class SurvivorsSystem {
   private castBastionPulse() {
     this.sys.hud.announce("BASTION PULSE");
     audio.sfx("shieldUp");
-    const center = this.ctx.camera.position;
+    const center = this.ctx.body.position;
     const ring = new THREE.Mesh(
       new THREE.RingGeometry(0.78, 1.0, 46),
       new THREE.MeshBasicMaterial({
@@ -643,7 +643,7 @@ export class SurvivorsSystem {
       return;
     }
     this.orbitGroup.visible = true;
-    this.orbitGroup.position.set(this.ctx.camera.position.x, 1.2, this.ctx.camera.position.z);
+    this.orbitGroup.position.set(this.ctx.body.position.x, 1.2, this.ctx.body.position.z);
     const evo = this.evolved.orbit; // CYCLONE: bigger, faster, deadlier
     this.orbitAngle += ORBIT_SPEED * (evo ? 1.6 : 1) * delta;
     const ringR = ORBIT_RADIUS * (evo ? 1.25 : 1);
@@ -728,7 +728,7 @@ export class SurvivorsSystem {
   }
 
   fireBolt() {
-    const tgt = this.nearestEnemy(this.ctx.camera.position);
+    const tgt = this.nearestEnemy(this.ctx.body.position);
     if (!tgt) return;
     const mesh = new THREE.Mesh(
       new THREE.SphereGeometry(0.22, 10, 8),
@@ -740,7 +740,7 @@ export class SurvivorsSystem {
         depthWrite: false,
       }),
     );
-    mesh.position.set(this.ctx.camera.position.x, 1.3, this.ctx.camera.position.z);
+    mesh.position.set(this.ctx.body.position.x, 1.3, this.ctx.body.position.z);
     const dx = tgt.position.x - mesh.position.x;
     const dz = tgt.position.z - mesh.position.z;
     const d = Math.hypot(dx, dz) || 1;
@@ -807,7 +807,7 @@ export class SurvivorsSystem {
       }),
     );
     ring.rotation.x = -Math.PI / 2;
-    ring.position.set(this.ctx.camera.position.x, 0.2, this.ctx.camera.position.z);
+    ring.position.set(this.ctx.body.position.x, 0.2, this.ctx.body.position.z);
     ring.scale.setScalar(0.001);
     this.ctx.scene.add(ring);
     this.novas.push({
@@ -861,8 +861,8 @@ export class SurvivorsSystem {
   }
 
   updateXpGems(delta: number) {
-    const px = this.ctx.camera.position.x;
-    const pz = this.ctx.camera.position.z;
+    const px = this.ctx.body.position.x;
+    const pz = this.ctx.body.position.z;
     for (let i = this.xpGems.length - 1; i >= 0; i--) {
       const g = this.xpGems[i];
       g.age += delta;

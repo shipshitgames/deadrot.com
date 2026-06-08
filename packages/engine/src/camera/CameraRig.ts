@@ -125,10 +125,12 @@ class FirstPersonRig implements CameraRig {
   }
 
   pickRay(ndcX: number, ndcY: number, out: THREE.Raycaster): void {
+    this.camera.updateMatrixWorld();
     out.setFromCamera(_ndc.set(ndcX, ndcY), this.camera);
   }
 
   groundPoint(ndcX: number, ndcY: number, planeY: number, out: THREE.Vector3): boolean {
+    this.camera.updateMatrixWorld();
     _groundRay.setFromCamera(_ndc.set(ndcX, ndcY), this.camera);
     _plane.setComponents(0, 1, 0, -planeY); // horizontal plane at y = planeY
     return _groundRay.ray.intersectPlane(_plane, out) !== null;
@@ -149,7 +151,10 @@ class FirstPersonRig implements CameraRig {
   }
 
   requestCapture(): void {
-    this.domElement.requestPointerLock();
+    const result: unknown = this.domElement.requestPointerLock();
+    if (result && typeof (result as Promise<void>).catch === "function") {
+      void (result as Promise<void>).catch(() => {});
+    }
   }
 
   releaseCapture(silent = false): void {
@@ -208,15 +213,192 @@ export const firstPersonPointerLock: CameraRigPreset = (camera, domElement) => n
 /**
  * Config for the third-person orbit-follow preset.
  *
- * NOTE: `thirdPersonFollow(cfg)` itself is intentionally NOT implemented yet —
- * the extraction plan validates the orbit/follow-lerp/boom-collision math by
- * BUILDING Deadlane on it (checklist step 12), because that camera scheme has no
- * consumer to test against until then. The interface + this config are defined
- * now so the contract is stable; the preset lands with its first real consumer.
+ * The generic third-person preset follows `body` from behind its `facing`
+ * heading. Games own input policy; this rig owns the body/camera separation,
+ * cursor ray helpers, FOV/zoom, and boom collision.
  */
 export interface ThirdPersonFollowConfig {
   distance: number;
   height: number;
   followLerp: number;
   minDistance: number;
+}
+
+class ThirdPersonRig implements CameraRig {
+  readonly camera: THREE.PerspectiveCamera;
+  readonly body = new THREE.Object3D();
+  readonly attach = new THREE.Object3D();
+  private readonly config: ThirdPersonFollowConfig;
+  private readonly _facing = new THREE.Quaternion();
+  private readonly _euler = new THREE.Euler(0, 0, 0, "YXZ");
+  private readonly _right = new THREE.Vector3();
+  private readonly _forward = new THREE.Vector3();
+  private readonly _target = new THREE.Vector3();
+  private readonly _desired = new THREE.Vector3();
+  private readonly _boomDir = new THREE.Vector3();
+  private readonly _boomRay = new THREE.Raycaster();
+  private readonly _captureFns = new Set<() => void>();
+  private readonly _releaseFns = new Set<() => void>();
+  private colliders: THREE.Object3D[] = [];
+  private isCaptured = false;
+
+  constructor(camera: THREE.PerspectiveCamera, _domElement: HTMLElement, config: ThirdPersonFollowConfig) {
+    this.camera = camera;
+    this.config = normalizeThirdPersonConfig(config);
+    this.attach.position.y = Math.max(0.1, this.config.height * 0.72);
+    this.body.add(this.attach);
+    this.placeAt(0, 0, 0, 0, -1);
+  }
+
+  get facing(): THREE.Quaternion {
+    return this._facing;
+  }
+
+  get yaw(): number {
+    this._euler.setFromQuaternion(this._facing, "YXZ");
+    return this._euler.y;
+  }
+
+  get pitch(): number {
+    return 0;
+  }
+
+  get captured(): boolean {
+    return this.isCaptured;
+  }
+
+  movePlanar(dx: number, dz: number): void {
+    this._right.set(1, 0, 0).applyQuaternion(this._facing);
+    this._right.y = 0;
+    if (this._right.lengthSq() > 0.0001) this._right.normalize();
+
+    this._forward.set(0, 0, -1).applyQuaternion(this._facing);
+    this._forward.y = 0;
+    if (this._forward.lengthSq() > 0.0001) this._forward.normalize();
+    else this._forward.set(0, 0, -1);
+
+    this.body.position.addScaledVector(this._right, dx);
+    this.body.position.addScaledVector(this._forward, dz);
+  }
+
+  placeAt(x: number, y: number, z: number, faceX: number, faceZ: number): void {
+    this.body.position.set(x, y, z);
+    const yaw = faceX === 0 && faceZ === 0 ? 0 : Math.atan2(-faceX, -faceZ);
+    this._facing.setFromAxisAngle(this.body.up, yaw);
+    this.body.quaternion.copy(this._facing);
+    this.snapCamera();
+  }
+
+  pickRay(ndcX: number, ndcY: number, out: THREE.Raycaster): void {
+    this.camera.updateMatrixWorld();
+    out.setFromCamera(_ndc.set(ndcX, ndcY), this.camera);
+  }
+
+  groundPoint(ndcX: number, ndcY: number, planeY: number, out: THREE.Vector3): boolean {
+    this.camera.updateMatrixWorld();
+    _groundRay.setFromCamera(_ndc.set(ndcX, ndcY), this.camera);
+    _plane.setComponents(0, 1, 0, -planeY);
+    return _groundRay.ray.intersectPlane(_plane, out) !== null;
+  }
+
+  setColliders(objs: THREE.Object3D[]): void {
+    this.colliders = objs;
+  }
+
+  setFov(deg: number): void {
+    this.camera.fov = deg;
+    this.camera.updateProjectionMatrix();
+  }
+
+  zoom(factor: number): void {
+    this.camera.zoom = Math.max(0.01, this.camera.zoom * factor);
+    this.camera.updateProjectionMatrix();
+  }
+
+  requestCapture(): void {
+    if (this.isCaptured) return;
+    this.isCaptured = true;
+    for (const fn of this._captureFns) fn();
+  }
+
+  releaseCapture(silent = false): void {
+    if (!this.isCaptured) return;
+    this.isCaptured = false;
+    if (silent) return;
+    for (const fn of this._releaseFns) fn();
+  }
+
+  on(ev: RigCaptureEvent, fn: () => void): void {
+    (ev === "capture" ? this._captureFns : this._releaseFns).add(fn);
+  }
+
+  off(ev: RigCaptureEvent, fn: () => void): void {
+    (ev === "capture" ? this._captureFns : this._releaseFns).delete(fn);
+  }
+
+  update(delta: number): void {
+    this.computeCameraTarget();
+    const t = this.config.followLerp <= 0 ? 1 : 1 - Math.exp(-this.config.followLerp * delta);
+    this.camera.position.lerp(this._desired, Math.max(0, Math.min(1, t)));
+    this.camera.lookAt(this._target);
+    this.camera.updateMatrixWorld();
+  }
+
+  resize(aspect: number): void {
+    this.camera.aspect = aspect;
+    this.camera.updateProjectionMatrix();
+  }
+
+  dispose(): void {
+    this.releaseCapture(true);
+    this._captureFns.clear();
+    this._releaseFns.clear();
+    this.colliders = [];
+  }
+
+  private snapCamera(): void {
+    this.computeCameraTarget();
+    this.camera.position.copy(this._desired);
+    this.camera.lookAt(this._target);
+    this.camera.updateMatrixWorld();
+  }
+
+  private computeCameraTarget(): void {
+    this._target.copy(this.body.position);
+    this._target.y += this.config.height;
+
+    this._forward.set(0, 0, -1).applyQuaternion(this._facing);
+    this._forward.y = 0;
+    if (this._forward.lengthSq() > 0.0001) this._forward.normalize();
+    else this._forward.set(0, 0, -1);
+
+    this._desired.copy(this._target).addScaledVector(this._forward, -this.config.distance);
+    this._boomDir.copy(this._desired).sub(this._target);
+    const desiredDistance = this._boomDir.length();
+    if (desiredDistance <= 0.0001) return;
+    this._boomDir.multiplyScalar(1 / desiredDistance);
+
+    if (!this.colliders.length) return;
+    this._boomRay.set(this._target, this._boomDir);
+    this._boomRay.far = desiredDistance;
+    const hit = this._boomRay
+      .intersectObjects(this.colliders, true)
+      .find((candidate) => candidate.distance > this.config.minDistance);
+    if (!hit) return;
+    const distance = Math.max(this.config.minDistance, hit.distance - 0.25);
+    this._desired.copy(this._target).addScaledVector(this._boomDir, distance);
+  }
+}
+
+function normalizeThirdPersonConfig(config: ThirdPersonFollowConfig): ThirdPersonFollowConfig {
+  return {
+    distance: Math.max(0.01, config.distance),
+    height: Math.max(0, config.height),
+    followLerp: Math.max(0, config.followLerp),
+    minDistance: Math.max(0.01, Math.min(config.minDistance, config.distance)),
+  };
+}
+
+export function thirdPersonFollow(config: ThirdPersonFollowConfig): CameraRigPreset {
+  return (camera, domElement) => new ThirdPersonRig(camera, domElement, config);
 }

@@ -1,10 +1,10 @@
-import * as THREE from "three";
-import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
-import { arenaTexture, arenaTextureRepeat } from "../spriteAssets";
-import { DEFAULT_ARENA_MATERIALS, type ArenaMap, type ObstacleMat } from "../data/maps";
-import { ARENA_HALF, PLAYER_HEIGHT, WALL_HEIGHT, WALL_THICKNESS } from "../constants";
 import { RectBounds } from "@shipshitgames/engine";
+import * as THREE from "three";
+import { ARENA_HALF, PLAYER_HEIGHT, WALL_HEIGHT, WALL_THICKNESS } from "../constants";
+import type { GameContext } from "../context";
+import { type ArenaMap, DEFAULT_ARENA_MATERIALS, type ObstacleMat } from "../data/maps";
+import { arenaTexture, arenaTextureRepeat } from "../spriteAssets";
+import type { GameSystems } from "../systems";
 
 export interface ArenaDebugSnapshot {
   mapId: string;
@@ -56,6 +56,7 @@ export class ArenaSystem {
     this.propCount = 0;
     this.ctx.solidMeshes = [];
     this.ctx.obstacleBoxes = [];
+    this.ctx.rig.setColliders([]);
   }
 
   /** Build (or rebuild) the arena from a map definition: theme + boundary walls
@@ -176,6 +177,7 @@ export class ArenaSystem {
     this.buildArenaProps(map);
 
     this.ctx.raycastTargets.push(...this.ctx.solidMeshes);
+    this.ctx.rig.setColliders(this.ctx.solidMeshes);
   }
 
   /** Position the player at the current map's spawn, facing the arena centre. */
