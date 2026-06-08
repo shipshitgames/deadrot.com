@@ -1076,6 +1076,126 @@
         "kind": "AI orbit-orb sprite (Cautery Ring, additive black-bg)",
         "scope": "embedded in-game use"
       }
+    },
+    "weapon-pistol-loot": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/pistol-loot.webp",
+      "dimensions": [
+        384,
+        384
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI weapon-only loot pickup sprite (pistol)",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-smg-loot": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/smg-loot.webp",
+      "dimensions": [
+        384,
+        384
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI weapon-only loot pickup sprite (smg)",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-shotgun-loot": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/shotgun-loot.webp",
+      "dimensions": [
+        384,
+        384
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI weapon-only loot pickup sprite (shotgun)",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-cannon-loot": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/cannon-loot.webp",
+      "dimensions": [
+        384,
+        384
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI weapon-only loot pickup sprite (cannon)",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-sniper-loot": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/sniper-loot.webp",
+      "dimensions": [
+        384,
+        384
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI weapon-only loot pickup sprite (sniper)",
+        "scope": "Scourge Survivors runtime"
+      }
     }
   },
   "textures": {

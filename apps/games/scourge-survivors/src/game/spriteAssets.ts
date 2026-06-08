@@ -16,7 +16,7 @@ import {
 } from "../assets/catalog";
 import type { PlayerAvatarId } from "../net/playerAvatars";
 import type { WeaponId } from "./constants";
-import type { MainWeaponVisualTier } from "./data/survivors";
+import { MAIN_WEAPON_VISUAL_TIERS, type MainWeaponVisualTier } from "./data/survivors";
 
 export type EnemySpriteKind = "melee" | "ranged" | "flying" | "boss";
 export type EnemySpriteView = SpriteView;
@@ -56,13 +56,30 @@ function enemyAnimationAction(kind: EnemySpriteKind, state: EnemySpriteAnimation
   return action;
 }
 
-const PISTOL_TIER_SPRITE_IDS: Record<MainWeaponVisualTier, string> = {
-  base: "weapon-pistol",
-  "tier-2": "weapon-pistol-tier-2",
-  "tier-3": "weapon-pistol-tier-3",
-  "tier-4": "weapon-pistol-tier-4",
-  evolved: "weapon-pistol-evolved",
+// Per-weapon tier sprite ids. A weapon (or a missing tier) falls back to the highest
+// tier it actually has, else the base sprite — so partial sets degrade gracefully.
+const WEAPON_TIER_SPRITE_IDS: Partial<Record<WeaponId, Partial<Record<MainWeaponVisualTier, string>>>> = {
+  // Only the pistol has reliable redrawn tier view-models. Other weapons would need
+  // hand-framed art (codex draws the gun off-axis), so they tier up via the glow ramp
+  // (see WeaponSystem TIER_GLOW) instead of swapping sprites.
+  pistol: {
+    "tier-2": "weapon-pistol-tier-2",
+    "tier-3": "weapon-pistol-tier-3",
+    "tier-4": "weapon-pistol-tier-4",
+    evolved: "weapon-pistol-evolved",
+  },
 };
+
+/** Highest tier sprite id ≤ the requested tier that this weapon has (else null = base). */
+function resolveTierSpriteId(id: WeaponId, tier: MainWeaponVisualTier): string | null {
+  const map = WEAPON_TIER_SPRITE_IDS[id];
+  if (!map) return null;
+  for (let i = MAIN_WEAPON_VISUAL_TIERS.indexOf(tier); i >= 0; i--) {
+    const sid = map[MAIN_WEAPON_VISUAL_TIERS[i]];
+    if (sid) return sid;
+  }
+  return null;
+}
 
 function textureViews(id: string): Record<EnemySpriteView, THREE.Texture> {
   return {
@@ -191,12 +208,20 @@ export const WEAPON_SPRITE_TEXTURES: Record<WeaponId, THREE.Texture> = {
   sniper: loadSpriteTexture(weaponSpriteAssetId("sniper")),
 };
 
-export const MAIN_WEAPON_TIER_TEXTURES: Record<MainWeaponVisualTier, THREE.Texture> = {
-  base: WEAPON_SPRITE_TEXTURES.pistol,
-  "tier-2": loadSpriteTexture(PISTOL_TIER_SPRITE_IDS["tier-2"]),
-  "tier-3": loadSpriteTexture(PISTOL_TIER_SPRITE_IDS["tier-3"]),
-  "tier-4": loadSpriteTexture(PISTOL_TIER_SPRITE_IDS["tier-4"]),
-  evolved: loadSpriteTexture(PISTOL_TIER_SPRITE_IDS.evolved),
+// Textures for every per-weapon tier sprite id that exists (loaded once).
+const TIER_TEXTURES: Record<string, THREE.Texture> = {};
+for (const map of Object.values(WEAPON_TIER_SPRITE_IDS)) {
+  for (const sid of Object.values(map ?? {})) {
+    if (sid && !TIER_TEXTURES[sid]) TIER_TEXTURES[sid] = loadSpriteTexture(sid);
+  }
+}
+
+/** Weapon-only floor-loot sprites (no hands). Absent weapons fall back to the view-model. */
+export const WEAPON_LOOT_SPRITE_TEXTURES: Partial<Record<WeaponId, THREE.Texture>> = {
+  pistol: loadSpriteTexture("weapon-pistol-loot"),
+  smg: loadSpriteTexture("weapon-smg-loot"),
+  shotgun: loadSpriteTexture("weapon-shotgun-loot"),
+  cannon: loadSpriteTexture("weapon-cannon-loot"),
 };
 
 export const WEAPON_SPRITE_CONFIG: Record<
@@ -217,13 +242,13 @@ export const WEAPON_SPRITE_CONFIG: Record<
 };
 
 export function weaponSpriteTexture(id: WeaponId, tier: MainWeaponVisualTier = "base"): THREE.Texture {
-  if (id === "pistol") return MAIN_WEAPON_TIER_TEXTURES[tier];
-  return WEAPON_SPRITE_TEXTURES[id];
+  const sid = resolveTierSpriteId(id, tier);
+  return sid ? TIER_TEXTURES[sid] : WEAPON_SPRITE_TEXTURES[id];
 }
 
 export function weaponSpriteConfig(id: WeaponId, tier: MainWeaponVisualTier = "base") {
-  if (id === "pistol") return weaponConfigForSpriteId(PISTOL_TIER_SPRITE_IDS[tier]);
-  return WEAPON_SPRITE_CONFIG[id];
+  const sid = resolveTierSpriteId(id, tier);
+  return sid ? weaponConfigForSpriteId(sid) : WEAPON_SPRITE_CONFIG[id];
 }
 
 export const MUZZLE_FLASH_TEXTURE = loadSpriteTexture(fxSpriteAssetId("muzzleFlash"));

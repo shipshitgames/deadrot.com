@@ -13,6 +13,7 @@ import {
   type WeaponId,
 } from "./game/constants";
 import {
+  type MainWeaponVisualTier,
   runGold,
   SHOP_BY_ID,
   type ShopId,
@@ -313,6 +314,9 @@ export default function App() {
     audio.unlock();
     gameRef.current?.setSandboxWeapon(id);
   }, []);
+  const handleSandboxWeaponTier = useCallback((tier: MainWeaponVisualTier) => {
+    gameRef.current?.setSandboxWeaponTier(tier);
+  }, []);
   const handleSandboxSpawnEnemy = useCallback((kind: SandboxEnemyKind, count?: number) => {
     audio.unlock();
     gameRef.current?.spawnSandboxEnemy(kind, count);
@@ -404,6 +408,7 @@ export default function App() {
             onExit={handleExitSandbox}
             onLock={handleLock}
             onWeapon={handleSandboxWeapon}
+            onWeaponTier={handleSandboxWeaponTier}
             onFire={handleSandboxFire}
             onRefill={handleSandboxRefill}
             onSpawnEnemy={handleSandboxSpawnEnemy}
