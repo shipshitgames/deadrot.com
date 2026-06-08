@@ -62,7 +62,13 @@
       "path": "audio/sfx/shoot-rifle.webm",
       "category": "sfx",
       "volume": 0.7,
-      "license": { "tool": "ElevenLabs", "plan": "Creator", "date": "2026-05-30", "kind": "ai-sfx", "scope": "perpetual-commercial" }
+      "license": {
+        "tool": "ElevenLabs",
+        "plan": "Creator",
+        "date": "2026-05-30",
+        "kind": "ai-sfx",
+        "scope": "perpetual-commercial"
+      }
     },
     {
       "id": "music-arena-loop",
@@ -71,7 +77,13 @@
       "category": "music",
       "loop": true,
       "volume": 0.5,
-      "license": { "tool": "Soundraw", "plan": "Creator", "date": "2026-05-27", "kind": "music", "scope": "perpetual-commercial" }
+      "license": {
+        "tool": "Soundraw",
+        "plan": "Creator",
+        "date": "2026-05-27",
+        "kind": "music",
+        "scope": "perpetual-commercial"
+      }
     }
   ]
 }

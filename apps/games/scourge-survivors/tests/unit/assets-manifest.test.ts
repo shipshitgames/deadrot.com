@@ -83,7 +83,7 @@ describe("asset manifest", () => {
     expect(Object.keys(manifest.runtime.players).sort()).toEqual(["heavy", "medic", "ranger", "scout"]);
     expect(Object.keys(manifest.runtime.enemies).sort()).toEqual(["boss", "flying", "melee", "ranged"]);
     expect(Object.keys(manifest.runtime.pickups).sort()).toEqual(["ammo", "damage", "dual", "health", "xpBlood"]);
-    expect(Object.keys(manifest.runtime.projectiles).sort()).toEqual(["boss", "enemy"]);
+    expect(Object.keys(manifest.runtime.projectiles).sort()).toEqual(["bolt", "boss", "enemy", "orb"]);
     expect(Object.keys(manifest.runtime.fx).sort()).toEqual(["muzzleFlash"]);
     expect(Object.keys(manifest.runtime.ui).sort()).toEqual([
       "cardBastionJpg",

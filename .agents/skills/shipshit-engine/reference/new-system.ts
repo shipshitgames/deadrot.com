@@ -7,15 +7,18 @@
 //   sys.foo = new FooSystem(ctx, sys)
 // Call one-time setup from Game.start(); call update(delta) from Game.update().
 
-import type { GameContext } from '../context'
-import type { GameSystems } from '../systems'
+import type { GameContext } from "../context";
+import type { GameSystems } from "../systems";
 
 /** One paragraph: what slice of the world this system owns. */
 export class FooSystem {
   // Per-system PRIVATE state. Anything a sibling needs goes on ctx instead.
-  private timer = 0
+  private timer = 0;
 
-  constructor(private ctx: GameContext, private sys: GameSystems) {}
+  constructor(
+    private ctx: GameContext,
+    private sys: GameSystems,
+  ) {}
 
   /** One-time setup, called from Game.start() (after RenderSystem bootstrap). */
   setup() {
@@ -24,7 +27,7 @@ export class FooSystem {
 
   /** Per-frame tick, called from Game.update() in a deterministic order. */
   update(delta: number) {
-    this.timer += delta
+    this.timer += delta;
     // read the world via this.ctx, call siblings via this.sys.<name>:
     // this.sys.fx.spawnBurst(this.ctx._dir)
     // this.sys.hud.showToast('...')

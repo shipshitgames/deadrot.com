@@ -780,54 +780,54 @@ function LevelUpDraft({
     <div className={`${OVERLAY} cursor-default`}>
       <PixelConfetti seed={state.level} />
       <div className="relative z-[1] flex flex-col items-center gap-[18px]">
-      <div className="ssg-menu-kicker mb-[10px]">Level {state.level} — choose an upgrade</div>
-      <h2 className="ssg-menu-title !text-[40px] !mb-5">CHOOSE UPGRADE</h2>
-      <div className="flex gap-[18px] flex-wrap justify-center items-stretch max-w-[92vw]">
-        {state.choices.map((c) => (
-          <div key={c.id} className="relative flex">
-            <UpgradeCard
-              featured={c.golden}
-              icon={<PixelIcon id={c.icon} size={60} label={c.name} />}
-              title={c.name}
-              meta={c.golden ? "EVO" : c.level === 0 ? "NEW" : `LV ${c.level + 1}`}
-              metaTone={c.level === 0 ? "new" : "level"}
-              description={c.desc}
-              tooltip={c.desc}
-              onPointerDown={(event) => armDraftAction(`pick:${c.id}`, event)}
-              onClick={(event) => runDraftAction(`pick:${c.id}`, event, () => onPick(c.id))}
-            />
-            {!c.golden && state.banishes > 0 && (
-              <button
-                type="button"
-                title="Banish — remove from this run's pool"
-                onPointerDown={(event) => armDraftAction(`banish:${c.id}`, event)}
-                onClick={(event) => runDraftAction(`banish:${c.id}`, event, () => onBanish(c.id))}
-                className="pointer-events-auto cursor-pointer absolute -top-2 -left-2 w-7 h-7 rounded-full bg-black/70 border border-white/25 text-white/70 text-[14px] leading-none flex items-center justify-center hover:bg-[#c1121f] hover:text-white hover:border-[#c1121f]"
-              >
-                <PixelIcon id="banish" size={16} label="Banish" />
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
-      <div className="flex items-center gap-4 mt-6">
-        <button
-          type="button"
-          disabled={state.rerolls <= 0}
-          onPointerDown={(event) => armDraftAction("reroll", event)}
-          onClick={(event) => runDraftAction("reroll", event, onReroll)}
-          className="pointer-events-auto cursor-pointer text-[14px] font-bold rounded-lg px-4 py-2 border border-[#ff6a00]/45 text-[#e9e3d6] transition-colors hover:bg-[#ff6a00]/15 hover:border-[#ff6a00] disabled:opacity-40 disabled:cursor-default"
-        >
-          <IconText icon="reroll" size={16}>
-            Re-roll ({state.rerolls})
-          </IconText>
-        </button>
-        <span className="text-[12px] uppercase tracking-[0.1em] opacity-60">
-          <IconText icon="banish" size={14}>
-            Banish available: {state.banishes}
-          </IconText>
-        </span>
-      </div>
+        <div className="ssg-menu-kicker mb-[10px]">Level {state.level} — choose an upgrade</div>
+        <h2 className="ssg-menu-title !text-[40px] !mb-5">CHOOSE UPGRADE</h2>
+        <div className="flex gap-[18px] flex-wrap justify-center items-stretch max-w-[92vw]">
+          {state.choices.map((c) => (
+            <div key={c.id} className="relative flex">
+              <UpgradeCard
+                featured={c.golden}
+                icon={<PixelIcon id={c.icon} size={60} label={c.name} />}
+                title={c.name}
+                meta={c.golden ? "EVO" : c.level === 0 ? "NEW" : `LV ${c.level + 1}`}
+                metaTone={c.level === 0 ? "new" : "level"}
+                description={c.desc}
+                tooltip={c.desc}
+                onPointerDown={(event) => armDraftAction(`pick:${c.id}`, event)}
+                onClick={(event) => runDraftAction(`pick:${c.id}`, event, () => onPick(c.id))}
+              />
+              {!c.golden && state.banishes > 0 && (
+                <button
+                  type="button"
+                  title="Banish — remove from this run's pool"
+                  onPointerDown={(event) => armDraftAction(`banish:${c.id}`, event)}
+                  onClick={(event) => runDraftAction(`banish:${c.id}`, event, () => onBanish(c.id))}
+                  className="pointer-events-auto cursor-pointer absolute -top-2 -left-2 w-7 h-7 rounded-full bg-black/70 border border-white/25 text-white/70 text-[14px] leading-none flex items-center justify-center hover:bg-[#c1121f] hover:text-white hover:border-[#c1121f]"
+                >
+                  <PixelIcon id="banish" size={16} label="Banish" />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center gap-4 mt-6">
+          <button
+            type="button"
+            disabled={state.rerolls <= 0}
+            onPointerDown={(event) => armDraftAction("reroll", event)}
+            onClick={(event) => runDraftAction("reroll", event, onReroll)}
+            className="pointer-events-auto cursor-pointer text-[14px] font-bold rounded-lg px-4 py-2 border border-[#ff6a00]/45 text-[#e9e3d6] transition-colors hover:bg-[#ff6a00]/15 hover:border-[#ff6a00] disabled:opacity-40 disabled:cursor-default"
+          >
+            <IconText icon="reroll" size={16}>
+              Re-roll ({state.rerolls})
+            </IconText>
+          </button>
+          <span className="text-[12px] uppercase tracking-[0.1em] opacity-60">
+            <IconText icon="banish" size={14}>
+              Banish available: {state.banishes}
+            </IconText>
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -1442,7 +1442,7 @@ export function HUD({
         </MainMenuScreen>
       )}
 
-      {status === "paused" && !suppressMenu && pausePanel ==="none" && (
+      {status === "paused" && !suppressMenu && pausePanel === "none" && (
         <PauseMenu
           open
           className="pause-ui"
@@ -1459,7 +1459,7 @@ export function HUD({
         />
       )}
 
-      {status === "paused" && !suppressMenu && pausePanel ==="settings" && (
+      {status === "paused" && !suppressMenu && pausePanel === "settings" && (
         <div className={OVERLAY} onClick={onLock}>
           <h2 className="m-0 mb-[18px] text-[30px] font-bold">
             <IconText icon="settings" size={26}>
@@ -1478,7 +1478,7 @@ export function HUD({
         </div>
       )}
 
-      {status === "paused" && !suppressMenu && pausePanel ==="controls" && (
+      {status === "paused" && !suppressMenu && pausePanel === "controls" && (
         <div className={OVERLAY} onClick={onLock}>
           <h2 className="m-0 mb-[18px] text-[30px] font-bold">
             <IconText icon="gamepad" size={26}>
