@@ -85,6 +85,7 @@ Useful checks:
 
 ```bash
 bun run assets:check
+bun run e2e        # cross-game Playwright suite
 bun run e2e:docker
 bun run e2e:ui
 ```
