@@ -50,10 +50,14 @@ export function AppShell() {
 
         <div id="progress">
           <div id="progress-fill" />
-          <div id="progress-beacon">{"\u26eb"}</div>
+          <div id="progress-beacon">{"⛫"}</div>
         </div>
       </div>
 
+      {/* The imperative HUD engine owns the start / win / dead cards: showStart,
+          showWin, and showDead each rewrite #overlay-card's innerHTML and wire
+          #overlay-btn. React must leave #overlay-card empty so a re-render can
+          never replace the engine's live button mid-click. */}
       <MainMenuScreen id="overlay" backgroundImage={menuHero}>
         <MainMenuTopBar mark="SSG" meta="0 gold" aria-hidden>
           Beacon run

@@ -102,31 +102,30 @@ export function AppShell() {
                 <span>Hold the base</span>
               </MainMenuStatus>
             </MainMenuCopy>
-            {revealed ? (
-              <MainMenuNav aria-label="Main menu">
-                <MainMenuAction id="banner-btn" variant="primary" label={banner.actionLabel} meta={banner.actionMeta} />
-                <MainMenuAction variant="shop" label="Upgrades" meta="Tower tech" disabled />
-                <MainMenuAction variant="coop" label="Co-op" meta="Solo command" disabled />
-                <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
-                <MainMenuAction
-                  type="button"
-                  variant="settings"
-                  label="Settings"
-                  meta="Audio"
-                  onClick={() => setShowSettings(true)}
-                />
-                <MainMenuAction variant="dev" label="Sandbox" meta="Lane lab" disabled />
-                <MainMenuAction
-                  type="button"
-                  variant="default"
-                  label="← Back to Warline"
-                  meta="Lobby"
-                  onClick={() => goToWarlineLobby()}
-                />
-              </MainMenuNav>
-            ) : (
-              <MainMenuEnterPrompt />
-            )}
+            {/* Nav stays mounted (engine grabs #banner-btn at boot); the splash
+                gate only hides it until Enter/Space/click reveals the menu. */}
+            <MainMenuNav aria-label="Main menu" hidden={!revealed}>
+              <MainMenuAction id="banner-btn" variant="primary" label={banner.actionLabel} meta={banner.actionMeta} />
+              <MainMenuAction variant="shop" label="Upgrades" meta="Tower tech" disabled />
+              <MainMenuAction variant="coop" label="Co-op" meta="Solo command" disabled />
+              <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
+              <MainMenuAction
+                type="button"
+                variant="settings"
+                label="Settings"
+                meta="Audio"
+                onClick={() => setShowSettings(true)}
+              />
+              <MainMenuAction variant="dev" label="Sandbox" meta="Lane lab" disabled />
+              <MainMenuAction
+                type="button"
+                variant="default"
+                label="← Back to Warline"
+                meta="Lobby"
+                onClick={() => goToWarlineLobby()}
+              />
+            </MainMenuNav>
+            {!revealed && <MainMenuEnterPrompt />}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>

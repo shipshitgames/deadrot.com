@@ -454,6 +454,15 @@
   animation: ssg-menu-rise 0.5s ease-out 0.18s forwards;
 }
 
+/* The nav stays mounted even during the title splash (the imperative game
+   engines look up their start button — #banner-btn etc. — at boot), so the
+   gate hides it via the [hidden] attribute instead of unmounting it. An
+   explicit rule is required because .ssg-main-menu-nav sets display: flex,
+   which would otherwise win over the UA [hidden] { display: none }. */
+.ssg-main-menu-nav[hidden] {
+  display: none;
+}
+
 .ssg-main-menu-nav__label {
   align-self: flex-start;
   color: rgba(255, 42, 24, 0.92);

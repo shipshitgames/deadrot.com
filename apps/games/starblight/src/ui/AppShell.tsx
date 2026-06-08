@@ -5,6 +5,7 @@ import {
   goToWarlineLobby,
   MainMenuAction,
   MainMenuCopy,
+  MainMenuEnterPrompt,
   MainMenuLayout,
   MainMenuNav,
   MainMenuScreen,
@@ -15,6 +16,7 @@ import {
   MenuKicker,
   MenuPanel,
   PauseMenu,
+  useEnterToReveal,
 } from "@shipshitgames/ui";
 import { useState, useSyncExternalStore } from "react";
 import { getPauseActions, getPauseSnapshot, subscribePause } from "./gameBridge";
@@ -24,6 +26,7 @@ export function AppShell() {
   // bridge so the shared React PauseMenu can render over the canvas.
   const pause = useSyncExternalStore(subscribePause, getPauseSnapshot, getPauseSnapshot);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const revealed = useEnterToReveal(true);
 
   return (
     <>
@@ -99,7 +102,9 @@ export function AppShell() {
                 <span>Draft systems hot</span>
               </MainMenuStatus>
             </MainMenuCopy>
-            <MainMenuNav aria-label="Main menu">
+            {/* Nav stays mounted (engine grabs #banner-btn at boot); the splash
+                gate only hides it until Enter/Space/click reveals the menu. */}
+            <MainMenuNav aria-label="Main menu" hidden={!revealed}>
               <MainMenuAction id="banner-btn" variant="primary" label="Engage" meta="Start sortie" />
               <MainMenuAction variant="shop" label="Upgrades" meta="Draft only" disabled />
               <MainMenuAction variant="coop" label="Co-op" meta="Solo sortie" disabled />
@@ -120,6 +125,7 @@ export function AppShell() {
                 onClick={() => goToWarlineLobby()}
               />
             </MainMenuNav>
+            {!revealed && <MainMenuEnterPrompt />}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>

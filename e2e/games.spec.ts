@@ -1,6 +1,6 @@
 import { readdirSync } from "node:fs";
 import path from "node:path";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 import { allGames, type GameSlug } from "./game-catalog";
 
 interface GameSpec {
@@ -9,17 +9,21 @@ interface GameSpec {
   exercise: (page: Page) => Promise<void>;
   canvasSelector?: string;
   ignoredConsoleErrors?: RegExp[];
+  // Games whose title screen sits behind the shared "press Enter to continue"
+  // splash (useEnterToReveal): the menu nav only mounts after the gate is
+  // dismissed, so the test must reveal it before asserting the start controls.
+  entersFromSplash?: boolean;
 }
 
 const gameSpecs: Record<GameSlug, GameSpec> = {
   deadlane: {
     path: "/",
     canvasSelector: "#scene",
+    entersFromSplash: true,
     async assertLoaded(page) {
       await expect(page.getByText("Gold", { exact: true })).toBeVisible();
       await expect(page.getByText("Wave", { exact: true })).toBeVisible();
       await expect(page.getByText("Base HP", { exact: true })).toBeVisible();
-      await expect(page.getByRole("button", { name: "DEPLOY" })).toBeVisible();
     },
     async exercise(page) {
       await page.getByRole("button", { name: "DEPLOY" }).click();
@@ -54,9 +58,11 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
   redline: {
     path: "/",
     canvasSelector: "#scene",
+    // No entersFromSplash: redline's overlay is rendered imperatively by the
+    // engine (showStart), which paints the Ignite card directly — no React
+    // "press Enter" splash to dismiss.
     async assertLoaded(page) {
       await expect(page.getByText("Pyre Courier Run")).toBeVisible();
-      await expect(page.getByRole("button", { name: "IGNITE" })).toBeVisible();
       await expect(page.locator("#hud-speed")).toBeVisible();
       await expect(page.locator("#hud-dist")).toBeVisible();
     },
@@ -72,14 +78,15 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
   rothulk: {
     path: "/",
     canvasSelector: "#scene",
+    entersFromSplash: true,
     async assertLoaded(page) {
       await expect(page.getByText("ROTHULK")).toBeVisible();
-      await expect(page.getByRole("button", { name: /^Breach\b/i })).toBeVisible();
       await expect(page.locator("#hud-lives")).toHaveText("x3");
     },
     async exercise(page) {
       await page.getByRole("button", { name: /^Breach\b/i }).click();
-      await expect(page.locator("#banner")).toHaveClass(/hidden/);
+      // The title screen unmounts once the run begins (it is gated on !started).
+      await expect(page.locator("#banner")).toHaveCount(0);
       await expect(page.locator("#hud-obj")).toContainText("REACH");
       await page.waitForFunction(() => Boolean((window as unknown as { __rothulkGame?: unknown }).__rothulkGame));
 
@@ -123,9 +130,9 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
   starblight: {
     path: "/",
     canvasSelector: "#scene",
+    entersFromSplash: true,
     async assertLoaded(page) {
       await expect(page.getByText("STARBLIGHT")).toBeVisible();
-      await expect(page.getByRole("button", { name: "ENGAGE" })).toBeVisible();
       await expect(page.locator("#int-text")).toContainText("100/100");
     },
     async exercise(page) {
@@ -137,17 +144,20 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
   },
   warline: {
     path: "/",
+    entersFromSplash: true,
     ignoredConsoleErrors: [/WebSocket connection to .*localhost:1999/i],
     async assertLoaded(page) {
-      await expect(page.getByRole("heading", { name: "The Front" })).toBeVisible();
-      await expect(page.getByRole("heading", { name: "Command" })).toBeVisible();
-      await expect(page.getByRole("heading", { name: "War Feed" })).toBeVisible();
-      await expect(page.getByRole("img", { name: "War map of the front" })).toBeVisible();
+      // Title splash: the strategic-command hero is up before the menu reveal.
+      await expect(page.getByRole("heading", { name: "WARLINE" })).toBeVisible();
+      await expect(page.getByText("Strategic Command")).toBeVisible();
     },
     async exercise(page) {
-      await page.getByRole("button", { name: /^Open front\b/i }).click();
-      await page.getByRole("button", { name: /^Hold the Lane\b/i }).click();
-      await expect(page.locator("ol li").first()).toContainText("deadlane");
+      // Menu was revealed above; take the Command Table into the war room and
+      // confirm the front map + feed mount.
+      await page.getByRole("button", { name: /^Command Table\b/i }).click();
+      await expect(page.getByRole("heading", { name: "The Front" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "War Feed" })).toBeVisible();
+      await expect(page.getByRole("img", { name: "War map of the front" })).toBeVisible();
     },
   },
 };
@@ -177,7 +187,22 @@ test("boots and responds to core controls", async ({ page }, testInfo) => {
   page.on("pageerror", (error) => pageErrors.push(String(error)));
 
   await page.goto(spec.path);
+
+  // Assert the title screen booted while the splash is still up — the hero copy
+  // (title, kicker) is only visible before the menu is revealed.
   await spec.assertLoaded(page);
+
+  // Dismiss the shared "press Enter to continue" splash so the menu nav
+  // (Deploy/Engage/…) mounts; the start controls are exercised below. Reveal by
+  // *clicking* the prompt rather than pressing Enter — useEnterToReveal does not
+  // stopPropagation, so an Enter/Space keypress also reaches game input systems
+  // that treat it as "confirm/start" and would auto-launch the run.
+  if (spec.entersFromSplash) {
+    const enterPrompt = page.getByText("Press Enter to continue");
+    await expect(enterPrompt).toBeVisible();
+    await enterPrompt.click();
+    await expect(enterPrompt).toBeHidden();
+  }
 
   if (spec.canvasSelector) {
     await expectCanvasToRender(page, spec.canvasSelector);

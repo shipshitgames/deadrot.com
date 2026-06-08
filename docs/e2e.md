@@ -48,6 +48,16 @@ E2E_REUSE_SERVERS=1 bun run e2e
 ```
 
 CI runs cross-game E2E on pull requests, pushes to `develop`, `staging`, `main`,
-or `master`, manual dispatch, and a weekly schedule. The workflow uploads
+or `master`, manual dispatch, and a weekly schedule. Docs-only commits
+(`**/*.md`, `docs/**`, `.agents/**`, `.claude/**`, `skills/**`) are skipped, and
+superseded runs on the same ref are cancelled.
+
+`scripts/changed-e2e-games.mjs` detects which games a change can affect (the
+full set on push to a release branch's first commit, manual dispatch, or the
+weekly cron) and emits them as a JSON array. The `Playwright (<game>)` job fans
+that array onto one runner per game via a matrix, caching the Bun install and
+Playwright browser downloads. The `Dockerized game E2E` job runs only on
+non-pull-request events — it keeps the pinned local-repro image (`bun run
+e2e:docker`) green using a buildx GHA layer cache. The workflow uploads
 Playwright reports, screenshots, videos, and traces from `playwright-report/`,
 `test-results/`, and the Docker runner's `.artifacts/e2e/` directory.

@@ -7,10 +7,15 @@ ARTIFACT_DIR="${E2E_ARTIFACT_DIR:-${ROOT_DIR}/.artifacts/e2e}"
 
 mkdir -p "${ARTIFACT_DIR}"
 
-docker build \
-  --file "${ROOT_DIR}/docker/e2e.Dockerfile" \
-  --tag "${IMAGE_NAME}" \
-  "${ROOT_DIR}"
+# CI builds the image once via buildx (with a GHA layer cache) and sets
+# E2E_SKIP_BUILD=1 so this script just runs the prebuilt image. Locally the
+# script builds it itself.
+if [[ "${E2E_SKIP_BUILD:-0}" != "1" ]]; then
+  docker build \
+    --file "${ROOT_DIR}/docker/e2e.Dockerfile" \
+    --tag "${IMAGE_NAME}" \
+    "${ROOT_DIR}"
+fi
 
 docker run --rm \
   --env CI=1 \
