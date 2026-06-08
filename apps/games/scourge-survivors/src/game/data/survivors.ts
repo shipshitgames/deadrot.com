@@ -321,6 +321,14 @@ export const SURVIVOR_CLASSES: Record<SurvivorClassId, SurvivorClassDef> = {
 
 export const SURVIVOR_CLASS_IDS: SurvivorClassId[] = ["ranger", "heavy", "scout", "medic"];
 
+export function survivorClassFor(classId?: string | null): SurvivorClassDef {
+  return SURVIVOR_CLASSES[classId as SurvivorClassId] ?? SURVIVOR_CLASSES.ranger;
+}
+
+export function survivorStartingWeapon(classId?: string | null): WeaponId {
+  return survivorClassFor(classId).startingWeapon;
+}
+
 // ---- Structured run: a canonical breach descent for Survivors ----------------
 export interface SurvivorRunChapter {
   mapId: string;

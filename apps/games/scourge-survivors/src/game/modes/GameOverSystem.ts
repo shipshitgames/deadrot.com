@@ -2,7 +2,6 @@ import type { GameContext } from "../context";
 import type { GameSystems } from "../systems";
 import { CAMPAIGN_ORDER, DEFAULT_MAP_ID, campaignSequence, getMap } from "../data/maps";
 import { STARTING_WEAPON, WEAPON_ORDER, WEAPONS } from "../constants";
-import { SURVIVOR_CLASSES } from "../data/survivors";
 
 /** Terminal state + the restart / return-to-menu orchestration. */
 export class GameOverSystem {
@@ -36,8 +35,7 @@ export class GameOverSystem {
       this.sys.weapon.applyWeaponModel(STARTING_WEAPON);
     } else if (this.ctx.survivors) {
       this.sys.arena.buildArena(getMap(DEFAULT_MAP_ID));
-      const cls = SURVIVOR_CLASSES[this.sys.survivors.selectedClass] ?? SURVIVOR_CLASSES.ranger;
-      this.sys.player.resetPlayer(cls.startingWeapon);
+      this.sys.player.resetPlayer(this.sys.survivors.selectedStartingWeapon());
       this.sys.survivors.initSurvivorsRun();
     } else {
       this.ctx.campaignStage = 0;
