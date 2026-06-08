@@ -23,11 +23,12 @@
     "e2e:docker": "scripts/run-e2e-docker.sh",
     "e2e:ui": "playwright test --ui",
     "e2e:report": "playwright show-report",
+    "social:check": "node scripts/check-social-metadata.mjs",
     "assets:check": "node scripts/check-assets.mjs",
     "board:hygiene": "node scripts/board-hygiene.mjs",
     "deploy:games:changed": "node scripts/deploy-changed-games.mjs",
     "typecheck": "turbo run typecheck",
-    "ci": "bun run format:check && bun run lint && bun run typecheck && bun run assets:check",
+    "ci": "bun run format:check && bun run lint && bun run typecheck && bun run social:check && bun run assets:check",
     "deps:update": "bunx npm-check-updates -u --deep --cooldown 3h --removeRange && bun install",
     "doctor": "react-doctor",
     "prepare": "git config core.hooksPath .githooks || true"
