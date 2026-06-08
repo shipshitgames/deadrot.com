@@ -44,7 +44,7 @@ Start here, follow the links, open the graph view.
 - [[Zero-Day]] — _the night we lost the sky_ (first-contact space shooter; the origin) — concept
 - [[Scourge-Survivors]] — _survive the swarm_ (first-person horde-survivors shooter) — playable prototype
 - [[Deadlane]] — _hold the lane_ (3D tower defense) — playable prototype
-- [[Pactfall]] — _test the Pact_ (Pyre vs Wardens MOBA) — playable prototype
+- [[Pactfall]] — _test the Pact_ (Pyre vs Wardens MOBA) — playable prototype; [[Bloodlane]] is the one-lane v1 design doc
 - [[Starblight]] — _burn the orbital infection_ (arcade pilot shooter) — playable prototype
 - [[Redline]] — _outrun the Choir_ (high-speed courier platformer) — playable prototype
 - [[Rothulk]] — _burn it from the inside_ (infiltration platformer) — playable prototype
