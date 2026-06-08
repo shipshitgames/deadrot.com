@@ -62,6 +62,8 @@ type HudPanelSample = {
   selector: string;
   visible: boolean;
   maxBackgroundAlpha: number;
+  borderTopWidth: number;
+  borderBottomWidth: number;
   borderLeftWidth: number;
   borderRightWidth: number;
   rect: { left: number; top: number; right: number; bottom: number; width: number; height: number };
@@ -196,6 +198,8 @@ async function sampleHudPanels(page: Page, selectors: string[]): Promise<HudPane
           selector,
           visible: false,
           maxBackgroundAlpha: 0,
+          borderTopWidth: 0,
+          borderBottomWidth: 0,
           borderLeftWidth: 0,
           borderRightWidth: 0,
           rect: { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 },
@@ -207,6 +211,8 @@ async function sampleHudPanels(page: Page, selectors: string[]): Promise<HudPane
         selector,
         visible: rect.width > 0 && rect.height > 0 && styles.visibility !== "hidden" && styles.display !== "none",
         maxBackgroundAlpha: maxAlpha(`${styles.backgroundColor} ${styles.backgroundImage}`),
+        borderTopWidth: Number.parseFloat(styles.borderTopWidth),
+        borderBottomWidth: Number.parseFloat(styles.borderBottomWidth),
         borderLeftWidth: Number.parseFloat(styles.borderLeftWidth),
         borderRightWidth: Number.parseFloat(styles.borderRightWidth),
         rect: {
@@ -631,9 +637,11 @@ test.describe("dev sandbox smoke", () => {
 
     for (const panel of desktopSamples) {
       expect(panel.visible, panel.selector).toBe(true);
+      expect(panel.borderTopWidth, panel.selector).toBeLessThanOrEqual(0.1);
+      expect(panel.borderBottomWidth, panel.selector).toBeLessThanOrEqual(0.1);
       expect(panel.borderLeftWidth, panel.selector).toBeLessThanOrEqual(0.1);
       expect(panel.borderRightWidth, panel.selector).toBeLessThanOrEqual(0.1);
-      expect(panel.maxBackgroundAlpha, panel.selector).toBeLessThanOrEqual(0.24);
+      expect(panel.maxBackgroundAlpha, panel.selector).toBeLessThanOrEqual(0.12);
     }
 
     await page.setViewportSize({ width: 390, height: 780 });
