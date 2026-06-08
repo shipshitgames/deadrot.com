@@ -4,6 +4,7 @@
  * overlays plus start / win / dead card text.
  */
 
+import { warlineLobbyHref } from "@shipshitgames/ui";
 import { RUNNER, STORAGE_KEY } from "../constants";
 import type { Phase, RunnerState } from "../types";
 
@@ -158,6 +159,10 @@ export class Hud {
           <span class="ssg-main-menu-action__label"><span>Sandbox</span></span>
           <span class="ssg-main-menu-action__meta">Route lab</span>
         </button>
+        <a class="ssg-main-menu-action ssg-main-menu-action--default" href="${warlineLobbyHref()}">
+          <span class="ssg-main-menu-action__label"><span>← Back to Warline</span></span>
+          <span class="ssg-main-menu-action__meta">Lobby</span>
+        </a>
       </nav>
     `;
   }

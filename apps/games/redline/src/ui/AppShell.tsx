@@ -1,27 +1,8 @@
 import menuHero from "@shipshitgames/assets/games/redline/ui/menu/title.webp";
-import {
-  GlobalMusicToggle,
-  goToWarlineLobby,
-  MainMenuAction,
-  MainMenuCopy,
-  MainMenuEnterPrompt,
-  MainMenuLayout,
-  MainMenuNav,
-  MainMenuScreen,
-  MainMenuStatus,
-  MainMenuTitle,
-  MainMenuTitleLine,
-  MainMenuTopBar,
-  MenuKicker,
-  useEnterToReveal,
-} from "@shipshitgames/ui";
+import { GlobalMusicToggle, MainMenuLayout, MainMenuScreen, MainMenuTopBar } from "@shipshitgames/ui";
 import { GameOverlays } from "./overlays";
 
 export function AppShell() {
-  // The <MainMenuScreen> overlay is always mounted; the imperative engine toggles
-  // its visibility. Splash on every Enter/Space/click while the title is up.
-  const revealed = useEnterToReveal(true);
-
   return (
     <>
       <canvas id="scene" />
@@ -77,44 +58,7 @@ export function AppShell() {
         <MainMenuTopBar mark="SSG" meta="0 gold" aria-hidden>
           Beacon run
         </MainMenuTopBar>
-        <MainMenuLayout
-          id="overlay-card"
-          className={revealed ? "ssg-main-menu-layout--menu" : "ssg-main-menu-layout--splash"}
-        >
-          <MainMenuCopy hidden={revealed}>
-            <MenuKicker id="overlay-kicker">Pyre Courier Run</MenuKicker>
-            <MainMenuTitle id="overlay-title">
-              <MainMenuTitleLine>RED</MainMenuTitleLine>
-              <MainMenuTitleLine tone="hot">LINE</MainMenuTitleLine>
-            </MainMenuTitle>
-            <p id="overlay-body" className="ssg-main-menu-subtitle">
-              Carry the cargo through the Scourge-rot lane to the BEACON. Beat the clock.
-            </p>
-            <MainMenuStatus>
-              <span>Courier ready</span>
-              <span>Best time armed</span>
-            </MainMenuStatus>
-          </MainMenuCopy>
-          {revealed ? (
-            <MainMenuNav aria-label="Main menu">
-              <MainMenuAction id="overlay-btn" variant="primary" label="Ignite" meta="Run the lane" />
-              <MainMenuAction variant="shop" label="Upgrades" meta="Cargo locked" disabled />
-              <MainMenuAction variant="coop" label="Co-op" meta="Solo route" disabled />
-              <MainMenuAction variant="records" label="Leaderboard" meta="Best time" disabled />
-              <MainMenuAction variant="settings" label="Settings" meta="Audio" />
-              <MainMenuAction variant="dev" label="Sandbox" meta="Route lab" disabled />
-              <MainMenuAction
-                type="button"
-                variant="default"
-                label="← Back to Warline"
-                meta="Lobby"
-                onClick={() => goToWarlineLobby()}
-              />
-            </MainMenuNav>
-          ) : (
-            <MainMenuEnterPrompt />
-          )}
-        </MainMenuLayout>
+        <MainMenuLayout id="overlay-card" />
         <GlobalMusicToggle className="ssg-music-toggle--corner" />
       </MainMenuScreen>
 
