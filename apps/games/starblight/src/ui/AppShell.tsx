@@ -5,7 +5,6 @@ import {
   goToWarlineLobby,
   MainMenuAction,
   MainMenuCopy,
-  MainMenuEnterPrompt,
   MainMenuLayout,
   MainMenuNav,
   MainMenuScreen,
@@ -16,7 +15,6 @@ import {
   MenuKicker,
   MenuPanel,
   PauseMenu,
-  useEnterToReveal,
 } from "@shipshitgames/ui";
 import { useState, useSyncExternalStore } from "react";
 import { getPauseActions, getPauseSnapshot, subscribePause } from "./gameBridge";
@@ -26,9 +24,6 @@ export function AppShell() {
   // bridge so the shared React PauseMenu can render over the canvas.
   const pause = useSyncExternalStore(subscribePause, getPauseSnapshot, getPauseSnapshot);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  // The <MainMenuScreen> banner is always mounted; the imperative engine toggles
-  // its visibility. Splash on every Enter/Space/click while the title is up.
-  const revealed = useEnterToReveal(true);
 
   return (
     <>
@@ -88,8 +83,8 @@ export function AppShell() {
           <MainMenuTopBar mark="SSG" meta="0 salvage" aria-hidden>
             Orbital front
           </MainMenuTopBar>
-          <MainMenuLayout className={revealed ? "ssg-main-menu-layout--menu" : "ssg-main-menu-layout--splash"}>
-            <MainMenuCopy hidden={revealed}>
+          <MainMenuLayout className="ssg-main-menu-layout--menu">
+            <MainMenuCopy>
               <MenuKicker>Orbital Survivors Front</MenuKicker>
               <MainMenuTitle id="banner-title">
                 <MainMenuTitleLine>STAR</MainMenuTitleLine>
@@ -104,31 +99,27 @@ export function AppShell() {
                 <span>Draft systems hot</span>
               </MainMenuStatus>
             </MainMenuCopy>
-            {revealed ? (
-              <MainMenuNav aria-label="Main menu">
-                <MainMenuAction id="banner-btn" variant="primary" label="Engage" meta="Start sortie" />
-                <MainMenuAction variant="shop" label="Upgrades" meta="Draft only" disabled />
-                <MainMenuAction variant="coop" label="Co-op" meta="Solo sortie" disabled />
-                <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
-                <MainMenuAction
-                  type="button"
-                  variant="settings"
-                  label="Settings"
-                  meta="Audio"
-                  onClick={() => setSettingsOpen(true)}
-                />
-                <MainMenuAction variant="dev" label="Sandbox" meta="Orbit lab" disabled />
-                <MainMenuAction
-                  type="button"
-                  variant="default"
-                  label="← Back to Warline"
-                  meta="Lobby"
-                  onClick={() => goToWarlineLobby()}
-                />
-              </MainMenuNav>
-            ) : (
-              <MainMenuEnterPrompt />
-            )}
+            <MainMenuNav aria-label="Main menu">
+              <MainMenuAction id="banner-btn" variant="primary" label="Engage" meta="Start sortie" />
+              <MainMenuAction variant="shop" label="Upgrades" meta="Draft only" disabled />
+              <MainMenuAction variant="coop" label="Co-op" meta="Solo sortie" disabled />
+              <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
+              <MainMenuAction
+                type="button"
+                variant="settings"
+                label="Settings"
+                meta="Audio"
+                onClick={() => setSettingsOpen(true)}
+              />
+              <MainMenuAction variant="dev" label="Sandbox" meta="Orbit lab" disabled />
+              <MainMenuAction
+                type="button"
+                variant="default"
+                label="← Back to Warline"
+                meta="Lobby"
+                onClick={() => goToWarlineLobby()}
+              />
+            </MainMenuNav>
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>

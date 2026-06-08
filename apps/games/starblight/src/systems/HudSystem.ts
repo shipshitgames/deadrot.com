@@ -149,12 +149,6 @@ export class HudSystem {
 
     if (s.phase === "title") {
       this.banner.classList.remove("hidden");
-      this.bannerTitle.innerHTML =
-        '<span class="ssg-main-menu-title-line ssg-main-menu-title-line--bone">STAR</span><span class="ssg-main-menu-title-line ssg-main-menu-title-line--hot">BLIGHT</span>';
-      this.bannerSub.textContent = "THE ORBITAL FRONT";
-      this.bannerHint.innerHTML =
-        "MOVE WITH THE MOUSE &nbsp;&bull;&nbsp; weapons auto-fire &nbsp;&bull;&nbsp; collect gems, draft upgrades, stack combos";
-      this.setBannerButton("Engage", "Start sortie");
       this.bannerBtn.classList.remove("hidden");
     } else if (s.phase === "gameover") {
       this.banner.classList.remove("hidden");
