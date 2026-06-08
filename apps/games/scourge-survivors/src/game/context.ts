@@ -11,6 +11,7 @@ import {
 } from "./constants";
 import { type ArenaMap, DEFAULT_MAP_ID, getMap } from "./data/maps";
 import { createIdleMissionState, type MissionRunState } from "./data/missions";
+import type { MainWeaponVisualTier } from "./data/survivors";
 import { SURV_BASE_MAGNET, type SurvivorClassId } from "./data/survivors";
 import type { Enemy } from "./entities/Enemy";
 import type { GameStatus, StateListener } from "./types";
@@ -131,6 +132,8 @@ export class GameContext {
   reloadTimer = 0;
   fireCooldown = 0;
   dualWeaponTimer = 0;
+  // Sandbox-only override so the dev lab renders weapon tiers identically to a real run.
+  sandboxWeaponTier: MainWeaponVisualTier = "base";
 
   // --- survivor-derived stat multipliers (1 / 0 / SURV_BASE_MAGNET = no effect,
   // so campaign + multiplayer stay unaffected). Written by SurvivorsSystem.recomputeStats. ---

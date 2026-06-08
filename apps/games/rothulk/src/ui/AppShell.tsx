@@ -1,6 +1,11 @@
+import menuHero from "@shipshitgames/assets/games/rothulk/ui/menu/title.webp";
 import {
+  GlobalGameSettingsPanel,
+  GlobalMusicToggle,
+  goToWarlineLobby,
   MainMenuAction,
   MainMenuCopy,
+  MainMenuEnterPrompt,
   MainMenuLayout,
   MainMenuNav,
   MainMenuScreen,
@@ -9,13 +14,90 @@ import {
   MainMenuTitleLine,
   MainMenuTopBar,
   MenuKicker,
+  PauseMenu,
+  useEnterToReveal,
 } from "@shipshitgames/ui";
-import menuHero from "@shipshitgames/assets/games/rothulk/ui/menu/title.webp";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { Game } from "../game/Game";
 
-export function AppShell() {
+interface AppShellProps {
+  createGame: (canvas: HTMLCanvasElement) => Game;
+}
+
+export function AppShell({ createGame }: AppShellProps) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const gameRef = useRef<Game | null>(null);
+  const [started, setStarted] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const revealed = useEnterToReveal(!started);
+  const pauseStatus = useMemo(
+    () => (
+      <>
+        <span>Core at crown</span>
+        <span>Embers held</span>
+      </>
+    ),
+    [],
+  );
+  const pauseActions = useMemo(
+    () => [
+      {
+        id: "settings",
+        label: "Settings",
+        meta: "Audio",
+        variant: "settings" as const,
+        onSelect: () => setShowSettings(true),
+      },
+      {
+        id: "restart",
+        label: "Restart run",
+        meta: "New breach",
+        onSelect: () => gameRef.current?.restart(),
+      },
+    ],
+    [],
+  );
+
+  // Build the Game once the canvas is mounted, and mirror its paused flag into
+  // React (Esc inside the canvas toggles it).
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || gameRef.current) return;
+    const game = createGame(canvas);
+    gameRef.current = game;
+    game.onPauseChange = setPaused;
+    return () => {
+      game.onPauseChange = null;
+    };
+  }, [createGame]);
+
+  // Esc pauses/resumes during an active run; also closes the settings overlay.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== "Escape") return;
+      // Esc always closes the settings overlay first — even on the title screen.
+      if (showSettings) {
+        e.preventDefault();
+        setShowSettings(false);
+        return;
+      }
+      if (!started) return;
+      e.preventDefault();
+      gameRef.current?.togglePause();
+    };
+    window.addEventListener("keydown", onKey, { passive: false });
+    return () => window.removeEventListener("keydown", onKey);
+  }, [started, showSettings]);
+
+  const beginRun = () => {
+    setStarted(true);
+    gameRef.current?.beginRun();
+  };
+
   return (
     <>
-      <canvas id="scene" />
+      <canvas id="scene" ref={canvasRef} />
 
       <div id="hud" aria-hidden="true">
         <div className="hud-top">
@@ -53,35 +135,102 @@ export function AppShell() {
         </div>
       </div>
 
-      <MainMenuScreen id="banner" className="banner" backgroundImage={menuHero}>
-        <MainMenuTopBar mark="SSG" meta="0 gold" aria-hidden>
-          Pyre infiltration
-        </MainMenuTopBar>
-        <MainMenuLayout>
-          <MainMenuCopy>
-            <MenuKicker>Pyre Infiltration</MenuKicker>
-            <MainMenuTitle className="banner-title">
-              <MainMenuTitleLine>ROT</MainMenuTitleLine>
-              <MainMenuTitleLine tone="hot">HULK</MainMenuTitleLine>
-            </MainMenuTitle>
-            <MenuKicker className="banner-sub">
-              Climb the living Scourge hulk. Ignite the breach-core. Escape the severed node.
-            </MenuKicker>
-            <MainMenuStatus>
-              <span>Boarding spike armed</span>
-              <span>Core at crown</span>
-            </MainMenuStatus>
-          </MainMenuCopy>
-          <MainMenuNav aria-label="Main menu">
-            <MainMenuAction id="start-btn" variant="primary" label="Breach the Hulk" meta="Begin run" />
-            <MainMenuAction variant="shop" label="Upgrades" meta="Core locked" disabled />
-            <MainMenuAction variant="coop" label="Co-op" meta="Solo breach" disabled />
-            <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
-            <MainMenuAction variant="settings" label="Settings" meta="Controls" disabled />
-            <MainMenuAction variant="dev" label="Sandbox" meta="Hulk lab" disabled />
-          </MainMenuNav>
-        </MainMenuLayout>
-      </MainMenuScreen>
+      {!started && (
+        <MainMenuScreen id="banner" className="banner" backgroundImage={menuHero}>
+          <MainMenuTopBar mark="SSG" meta="0 gold" aria-hidden>
+            Pyre infiltration
+          </MainMenuTopBar>
+          <MainMenuLayout className={revealed ? "ssg-main-menu-layout--menu" : "ssg-main-menu-layout--splash"}>
+            <MainMenuCopy hidden={revealed}>
+              <MenuKicker>Pyre Infiltration</MenuKicker>
+              <MainMenuTitle className="banner-title">
+                <MainMenuTitleLine>ROT</MainMenuTitleLine>
+                <MainMenuTitleLine tone="hot">HULK</MainMenuTitleLine>
+              </MainMenuTitle>
+              <MenuKicker className="banner-sub">
+                Climb the living Scourge hulk. Ignite the breach-core. Escape the severed node.
+              </MenuKicker>
+              <MainMenuStatus>
+                <span>Boarding spike armed</span>
+                <span>Core at crown</span>
+              </MainMenuStatus>
+            </MainMenuCopy>
+            {/* Nav stays mounted; the splash gate only hides it until
+                Enter/Space/click reveals the menu. */}
+            <MainMenuNav aria-label="Main menu" hidden={!revealed}>
+              <MainMenuAction
+                id="start-btn"
+                type="button"
+                variant="primary"
+                label="Breach the Hulk"
+                meta="Begin run"
+                onClick={beginRun}
+              />
+              <MainMenuAction variant="shop" label="Upgrades" meta="Core locked" disabled />
+              <MainMenuAction variant="coop" label="Co-op" meta="Solo breach" disabled />
+              <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
+              <MainMenuAction
+                type="button"
+                variant="settings"
+                label="Settings"
+                meta="Audio"
+                onClick={() => setShowSettings(true)}
+              />
+              <MainMenuAction variant="dev" label="Sandbox" meta="Hulk lab" disabled />
+              <MainMenuAction
+                type="button"
+                variant="default"
+                label="← Back to Warline"
+                meta="Lobby"
+                onClick={() => goToWarlineLobby()}
+              />
+            </MainMenuNav>
+            {!revealed && <MainMenuEnterPrompt />}
+          </MainMenuLayout>
+          <GlobalMusicToggle className="ssg-music-toggle--corner" />
+        </MainMenuScreen>
+      )}
+
+      {showSettings && (
+        <MainMenuScreen
+          className="rothulk-settings-screen"
+          backgroundImage={menuHero}
+          style={{ position: "fixed", inset: 0, zIndex: 90 }}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Settings"
+        >
+          <MainMenuLayout>
+            <MainMenuCopy>
+              <MenuKicker>{"The Pyre // Console"}</MenuKicker>
+              <MainMenuTitle>
+                <MainMenuTitleLine tone="hot">Settings</MainMenuTitleLine>
+              </MainMenuTitle>
+              <p className="ssg-main-menu-subtitle">Tune the music and effect levels for the breach.</p>
+              <GlobalGameSettingsPanel inline />
+            </MainMenuCopy>
+            <MainMenuNav aria-label="Settings menu">
+              <MainMenuAction
+                type="button"
+                variant="primary"
+                label="Back"
+                meta={paused ? "Paused" : started ? "Resume" : "Main menu"}
+                onClick={() => setShowSettings(false)}
+              />
+            </MainMenuNav>
+          </MainMenuLayout>
+        </MainMenuScreen>
+      )}
+
+      <PauseMenu
+        open={paused}
+        kicker="Pyre Infiltration"
+        title="Paused"
+        subtitle="The hulk stirs while you hold. Resume the breach when ready."
+        status={pauseStatus}
+        onResume={() => gameRef.current?.resume()}
+        actions={pauseActions}
+      />
 
       <div id="toast" className="toast" />
     </>

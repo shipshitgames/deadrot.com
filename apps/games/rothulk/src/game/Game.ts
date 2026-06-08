@@ -52,6 +52,10 @@ export class Game {
   private lastTime = 0;
   private elapsed = 0;
   private running = false;
+  private paused = false;
+
+  // React bridge: fired whenever the paused flag flips so the UI can mirror it.
+  onPauseChange: ((paused: boolean) => void) | null = null;
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new Renderer(canvas);
@@ -72,6 +76,36 @@ export class Game {
     if (this.mode === "playing") return;
     this.resetRun();
     this.mode = "playing";
+  }
+
+  // --- Pause control -------------------------------------------------------
+  // Pausing only halts the gameplay/HUD step; the renderer keeps drawing the
+  // frozen frame so the canvas doesn't go black behind the overlay.
+  isPaused() {
+    return this.paused;
+  }
+
+  setPaused(next: boolean) {
+    if (this.paused === next) return;
+    this.paused = next;
+    this.onPauseChange?.(next);
+  }
+
+  togglePause() {
+    // Pause is only meaningful during an active run.
+    if (this.mode !== "playing" && !this.paused) return;
+    this.setPaused(!this.paused);
+  }
+
+  resume() {
+    this.setPaused(false);
+  }
+
+  // Restart the current run from scratch (used by the pause menu).
+  restart() {
+    this.resetRun();
+    this.mode = "playing";
+    this.resume();
   }
 
   // Full reset (new run from the title or after win/gameover via R).
@@ -146,6 +180,16 @@ export class Game {
   // -------------------------------------------------------------------------
   private loop = (now: number) => {
     if (!this.running) return;
+
+    // While paused, keep the rAF alive and re-draw the frozen frame, but skip
+    // all simulation. Reset lastTime so dt doesn't spike on resume.
+    if (this.paused) {
+      this.lastTime = now;
+      this.renderer.render();
+      requestAnimationFrame(this.loop);
+      return;
+    }
+
     let dt = (now - this.lastTime) / 1000;
     this.lastTime = now;
     if (dt > CONSTANTS.MAX_DELTA) dt = CONSTANTS.MAX_DELTA; // clamp stutters

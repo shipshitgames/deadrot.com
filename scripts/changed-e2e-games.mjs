@@ -30,11 +30,16 @@ const gamePackages = new Map(
   }),
 );
 
+// On the first push to a brand-new branch, github.event.before is the all-zero
+// SHA and there is no base to diff against — fall back to testing every game.
+const noBase = /^0+$/.test(base);
 const reasons = new Map(gameDirs.map((slug) => [slug, []]));
-const changedFiles = all ? [] : gitChangedFiles();
+const changedFiles = all || noBase ? [] : gitChangedFiles();
 
 if (all) {
   markAll("--all");
+} else if (noBase) {
+  markAll("new branch (no base commit)");
 } else {
   for (const file of changedFiles) markAffectedGames(file);
 }
@@ -42,11 +47,15 @@ if (all) {
 const selectedGames = gameDirs.filter((slug) => reasons.get(slug).length > 0);
 const outputs = {
   game_slugs: selectedGames.join(","),
+  // JSON array form for the GitHub Actions matrix (fromJSON). Always a valid
+  // array — "[]" when nothing is affected — so fromJSON never throws.
+  game_slugs_json: JSON.stringify(selectedGames),
   count: String(selectedGames.length),
 };
 
 if (process.env.GITHUB_OUTPUT) {
   appendFileSync(process.env.GITHUB_OUTPUT, `game_slugs=${outputs.game_slugs}\n`);
+  appendFileSync(process.env.GITHUB_OUTPUT, `game_slugs_json=${outputs.game_slugs_json}\n`);
   appendFileSync(process.env.GITHUB_OUTPUT, `count=${outputs.count}\n`);
 }
 

@@ -5,6 +5,7 @@ import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { Game } from "./game/Game";
 import { AppShell } from "./ui/AppShell";
+import { setBridgeGame } from "./ui/gameBridge";
 
 // Entry point. Grab the canvas + HUD root, spin up the Game, and let it own the
 // requestAnimationFrame loop. Everything else lives under src/game.
@@ -28,6 +29,9 @@ if (!canvas || !hud) {
 const game = new Game(canvas, hud);
 game.start();
 document.getElementById("title-start-btn")?.addEventListener("click", () => game.beginRun());
+
+// Hand the running Game to the React shell so it can drive the pause overlay.
+setBridgeGame(game);
 
 // Convenience for poking at the running game from the console.
 (window as unknown as { pactfall?: Game }).pactfall = game;

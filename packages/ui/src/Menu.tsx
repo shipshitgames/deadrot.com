@@ -186,8 +186,17 @@ export function MenuCard({
 export interface UpgradeCardProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "title"> {
   icon?: ReactNode;
   title: ReactNode;
+  /** Short status shown as a corner badge (e.g. "NEW", "LV 2", "EVO"). */
   meta?: ReactNode;
+  /** "new" gives the badge a solid fill; default is the outline level tier. */
+  metaTone?: "new" | "level";
   description?: ReactNode;
+  /** Longer copy revealed on hover over the icon. */
+  tooltip?: string;
+  /** Renders the rarer ember treatment (e.g. evolutions / transforms). */
+  featured?: boolean;
+  /** Optional number-key hint shown in the corner. */
+  index?: number;
 }
 
 export function UpgradeCard({
@@ -195,17 +204,32 @@ export function UpgradeCard({
   icon,
   title,
   meta,
+  metaTone = "level",
   description,
+  tooltip,
+  featured,
+  index,
   children,
   type = "button",
   ...props
 }: UpgradeCardProps) {
   return (
-    <button type={type} className={cn("ssg-upgrade-card", className)} {...props}>
-      <span className="ssg-upgrade-card__top">
-        {icon && <span className="ssg-upgrade-card__icon">{icon}</span>}
-        {meta && <span className="ssg-upgrade-card__meta">{meta}</span>}
-      </span>
+    <button
+      type={type}
+      className={cn("ssg-upgrade-card", featured && "ssg-upgrade-card--featured", className)}
+      {...props}
+    >
+      {index != null && <span className="ssg-upgrade-card__key">{index}</span>}
+      {meta && (
+        <span className={cn("ssg-upgrade-card__badge", metaTone === "new" && "ssg-upgrade-card__badge--new")}>
+          {meta}
+        </span>
+      )}
+      {icon && (
+        <span className="ssg-upgrade-card__plaque" data-tip={tooltip}>
+          {icon}
+        </span>
+      )}
       <b className="ssg-upgrade-card__title">{title}</b>
       {description && <span className="ssg-upgrade-card__desc">{description}</span>}
       {children}

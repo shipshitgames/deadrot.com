@@ -162,6 +162,15 @@ body {
   display: none;
 }
 
+/* ---- settings overlay (audio sliders) ------------------------------------ */
+
+.deadlane-settings-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 75;
+  pointer-events: auto;
+}
+
 #banner-title {
   color: inherit;
 }

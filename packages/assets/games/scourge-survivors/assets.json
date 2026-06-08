@@ -186,232 +186,10 @@
     },
     "weapon-pistol": {
       "type": "sprite",
-      "path": "games/scourge-survivors/weapons/pyre/pistol.webp",
+      "path": "games/scourge-survivors/weapons/pyre/pistol-tiers.webp",
       "dimensions": [
-        1536,
-        1024
-      ],
-      "anchor": [
-        0.5,
-        0.5
-      ],
-      "filter": "nearest",
-      "scale": [
-        0.9,
-        0.6
-      ],
-      "weapon": {
-        "offset": [
-          -0.14,
-          0.16,
-          0
-        ],
-        "muzzle": [
-          -0.25,
-          0.31,
-          -0.1
-        ],
-        "flashScale": 0.24
-      },
-      "license": {
-        "tool": "built-in image_gen",
-        "plan": "Codex built-in",
-        "date": "2026-06-05",
-        "kind": "generated 2D first-person weapon sprite",
-        "scope": "Scourge Survivors runtime"
-      }
-    },
-    "weapon-pistol-tier-2": {
-      "type": "sprite",
-      "path": "games/scourge-survivors/weapons/pyre/pistol-tier-2.webp",
-      "dimensions": [
-        1448,
-        1086
-      ],
-      "anchor": [
-        0.5,
-        0.5
-      ],
-      "filter": "nearest",
-      "scale": [
-        0.9,
-        0.6
-      ],
-      "weapon": {
-        "offset": [
-          -0.14,
-          0.16,
-          0
-        ],
-        "muzzle": [
-          -0.25,
-          0.31,
-          -0.1
-        ],
-        "flashScale": 0.24
-      },
-      "license": {
-        "tool": "gpt-image-2",
-        "plan": "Codex built-in image_gen, chroma-key alpha removal, cwebp WebP",
-        "date": "2026-06-08",
-        "kind": "AI generated Pyre sidearm level-2 sprite",
-        "scope": "Scourge Survivors runtime"
-      }
-    },
-    "weapon-pistol-tier-3": {
-      "type": "sprite",
-      "path": "games/scourge-survivors/weapons/pyre/pistol-tier-3.webp",
-      "dimensions": [
-        1537,
-        1023
-      ],
-      "anchor": [
-        0.5,
-        0.5
-      ],
-      "filter": "nearest",
-      "scale": [
-        0.9,
-        0.6
-      ],
-      "weapon": {
-        "offset": [
-          -0.14,
-          0.16,
-          0
-        ],
-        "muzzle": [
-          -0.25,
-          0.31,
-          -0.1
-        ],
-        "flashScale": 0.24
-      },
-      "license": {
-        "tool": "gpt-image-2",
-        "plan": "Codex built-in image_gen, chroma-key alpha removal, cwebp WebP",
-        "date": "2026-06-08",
-        "kind": "AI generated Pyre sidearm level-3 sprite",
-        "scope": "Scourge Survivors runtime"
-      }
-    },
-    "weapon-pistol-tier-4": {
-      "type": "sprite",
-      "path": "games/scourge-survivors/weapons/pyre/pistol-tier-4.webp",
-      "dimensions": [
-        1536,
-        1024
-      ],
-      "anchor": [
-        0.5,
-        0.5
-      ],
-      "filter": "nearest",
-      "scale": [
-        0.9,
-        0.6
-      ],
-      "weapon": {
-        "offset": [
-          -0.14,
-          0.16,
-          0
-        ],
-        "muzzle": [
-          -0.25,
-          0.31,
-          -0.1
-        ],
-        "flashScale": 0.24
-      },
-      "license": {
-        "tool": "gpt-image-2",
-        "plan": "Codex built-in image_gen, chroma-key alpha removal, cwebp WebP",
-        "date": "2026-06-08",
-        "kind": "AI generated Pyre sidearm level-4 sprite",
-        "scope": "Scourge Survivors runtime"
-      }
-    },
-    "weapon-pistol-evolved": {
-      "type": "sprite",
-      "path": "games/scourge-survivors/weapons/pyre/pistol-evolved.webp",
-      "dimensions": [
-        1448,
-        1086
-      ],
-      "anchor": [
-        0.5,
-        0.5
-      ],
-      "filter": "nearest",
-      "scale": [
-        0.9,
-        0.6
-      ],
-      "weapon": {
-        "offset": [
-          -0.14,
-          0.16,
-          0
-        ],
-        "muzzle": [
-          -0.25,
-          0.31,
-          -0.1
-        ],
-        "flashScale": 0.24
-      },
-      "license": {
-        "tool": "gpt-image-2",
-        "plan": "Codex built-in image_gen, chroma-key alpha removal, cwebp WebP",
-        "date": "2026-06-08",
-        "kind": "AI generated evolved Pyre sidearm sprite",
-        "scope": "Scourge Survivors runtime"
-      }
-    },
-    "weapon-sniper": {
-      "type": "sprite",
-      "path": "games/scourge-survivors/weapons/pyre/sniper.webp",
-      "dimensions": [
-        1024,
-        1536
-      ],
-      "anchor": [
-        0.5,
-        0.5
-      ],
-      "filter": "nearest",
-      "scale": [
-        0.54,
-        0.81
-      ],
-      "weapon": {
-        "offset": [
-          0.02,
-          -0.02,
-          0
-        ],
-        "muzzle": [
-          -0.2,
-          0.3,
-          -0.1
-        ],
-        "flashScale": 0.32
-      },
-      "license": {
-        "tool": "built-in image_gen",
-        "plan": "Codex built-in",
-        "date": "2026-06-05",
-        "kind": "generated 2D first-person sniper sprite",
-        "scope": "Scourge Survivors runtime"
-      }
-    },
-    "weapon-smg": {
-      "type": "sprite",
-      "path": "games/scourge-survivors/weapons/pyre/smg.webp",
-      "dimensions": [
-        1023,
-        1537
+        2172,
+        724
       ],
       "anchor": [
         0.5,
@@ -420,13 +198,107 @@
       "filter": "nearest",
       "scale": [
         0.6,
-        0.9
+        1.0
       ],
       "weapon": {
         "offset": [
-          -0.03,
-          0.02,
-          0
+          0.0,
+          0.0,
+          0.0
+        ],
+        "muzzle": [
+          -0.25,
+          0.31,
+          -0.1
+        ],
+        "flashScale": 0.24
+      },
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "Codex built-in image_gen, reference-anchored 1x5 tier sheet, chroma-key alpha, lossless WebP",
+        "date": "2026-06-08",
+        "kind": "first-person weapon view-model tier sheet (base->evolved)",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-sniper": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/sniper-tiers.webp",
+      "dimensions": [
+        2172,
+        724
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.6,
+        1.0
+      ],
+      "weapon": {
+        "offset": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "muzzle": [
+          -0.2,
+          0.3,
+          -0.1
+        ],
+        "flashScale": 0.32
+      },
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "Codex built-in image_gen, reference-anchored 1x5 tier sheet, chroma-key alpha, lossless WebP",
+        "date": "2026-06-08",
+        "kind": "first-person weapon view-model tier sheet (base->evolved)",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-smg": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/smg-tiers.webp",
+      "dimensions": [
+        2175,
+        724
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.6,
+        1.0
+      ],
+      "weapon": {
+        "offset": [
+          0.0,
+          0.0,
+          0.0
         ],
         "muzzle": [
           -0.23,
@@ -435,20 +307,30 @@
         ],
         "flashScale": 0.2
       },
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
       "license": {
-        "tool": "built-in image_gen",
-        "plan": "Codex built-in",
-        "date": "2026-06-04",
-        "kind": "generated 2D first-person weapon sprite",
+        "tool": "gpt-image-2",
+        "plan": "Codex built-in image_gen, reference-anchored 1x5 tier sheet, chroma-key alpha, lossless WebP",
+        "date": "2026-06-08",
+        "kind": "first-person weapon view-model tier sheet (base->evolved)",
         "scope": "Scourge Survivors runtime"
       }
     },
     "weapon-shotgun": {
       "type": "sprite",
-      "path": "games/scourge-survivors/weapons/pyre/shotgun.webp",
+      "path": "games/scourge-survivors/weapons/pyre/shotgun-tiers.webp",
       "dimensions": [
-        1536,
-        1024
+        2172,
+        724
       ],
       "anchor": [
         0.5,
@@ -456,14 +338,14 @@
       ],
       "filter": "nearest",
       "scale": [
-        0.88,
-        0.59
+        0.6,
+        1.0
       ],
       "weapon": {
         "offset": [
-          0.02,
-          -0.04,
-          0
+          0.0,
+          0.0,
+          0.0
         ],
         "muzzle": [
           -0.25,
@@ -472,20 +354,30 @@
         ],
         "flashScale": 0.42
       },
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
       "license": {
-        "tool": "built-in image_gen",
-        "plan": "Codex built-in",
-        "date": "2026-06-04",
-        "kind": "generated 2D first-person weapon sprite",
+        "tool": "gpt-image-2",
+        "plan": "Codex built-in image_gen, reference-anchored 1x5 tier sheet, chroma-key alpha, lossless WebP",
+        "date": "2026-06-08",
+        "kind": "first-person weapon view-model tier sheet (base->evolved)",
         "scope": "Scourge Survivors runtime"
       }
     },
     "weapon-cannon": {
       "type": "sprite",
-      "path": "games/scourge-survivors/weapons/pyre/cannon.webp",
+      "path": "games/scourge-survivors/weapons/pyre/cannon-tiers.webp",
       "dimensions": [
-        1024,
-        1536
+        2172,
+        724
       ],
       "anchor": [
         0.5,
@@ -493,14 +385,14 @@
       ],
       "filter": "nearest",
       "scale": [
-        0.62,
-        0.93
+        0.6,
+        1.0
       ],
       "weapon": {
         "offset": [
-          0.04,
-          -0.08,
-          0
+          0.0,
+          0.0,
+          0.0
         ],
         "muzzle": [
           -0.2,
@@ -509,11 +401,21 @@
         ],
         "flashScale": 0.54
       },
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
       "license": {
-        "tool": "built-in image_gen",
-        "plan": "Codex built-in",
-        "date": "2026-06-04",
-        "kind": "generated 2D first-person weapon sprite",
+        "tool": "gpt-image-2",
+        "plan": "Codex built-in image_gen, reference-anchored 1x5 tier sheet, chroma-key alpha, lossless WebP",
+        "date": "2026-06-08",
+        "kind": "first-person weapon view-model tier sheet (base->evolved)",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -585,6 +487,29 @@
         "date": "2026-06-02",
         "kind": "generated 2D projectile sprite",
         "scope": "project prototype"
+      }
+    },
+    "projectile-pyre-bolt": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/projectiles/scourge/pyre-bolt.webp",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "scale": [
+        0.9,
+        0.9
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI 2D projectile sprite (white-bg keyed to alpha)",
+        "scope": "embedded in-game use"
       }
     },
     "gib-meat-chunk": {
@@ -1029,6 +954,149 @@
         "date": "2026-06-02",
         "kind": "generated 2D player sprite",
         "scope": "project prototype"
+      }
+    },
+    "projectile-pyre-orb": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/projectiles/scourge/pyre-orb.webp",
+      "dimensions": [
+        96,
+        96
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "scale": [
+        0.8,
+        0.8
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI orbit-orb sprite (Cautery Ring, additive black-bg)",
+        "scope": "embedded in-game use"
+      }
+    },
+    "weapon-pistol-loot": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/pistol-loot.webp",
+      "dimensions": [
+        384,
+        384
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI weapon-only loot pickup sprite (pistol)",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-smg-loot": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/smg-loot.webp",
+      "dimensions": [
+        384,
+        384
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI weapon-only loot pickup sprite (smg)",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-shotgun-loot": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/shotgun-loot.webp",
+      "dimensions": [
+        384,
+        384
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI weapon-only loot pickup sprite (shotgun)",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-cannon-loot": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/cannon-loot.webp",
+      "dimensions": [
+        384,
+        384
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI weapon-only loot pickup sprite (cannon)",
+        "scope": "Scourge Survivors runtime"
+      }
+    },
+    "weapon-sniper-loot": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/sniper-loot.webp",
+      "dimensions": [
+        384,
+        384
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        1,
+        1
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI weapon-only loot pickup sprite (sniper)",
+        "scope": "Scourge Survivors runtime"
       }
     }
   },
@@ -1551,11 +1619,11 @@
         1
       ],
       "license": {
-        "tool": "procedural sprite texture generator",
-        "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific arena prop sprite texture",
-        "scope": "Scourge Survivors runtime"
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI arena prop object (ashgate)",
+        "scope": "embedded in-game use"
       }
     },
     "arena-hollowlanes-prop": {
@@ -1572,11 +1640,11 @@
         1
       ],
       "license": {
-        "tool": "procedural sprite texture generator",
-        "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific arena prop sprite texture",
-        "scope": "Scourge Survivors runtime"
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI arena prop object (hollowlanes)",
+        "scope": "embedded in-game use"
       }
     },
     "arena-maw-prop": {
@@ -1593,11 +1661,11 @@
         1
       ],
       "license": {
-        "tool": "procedural sprite texture generator",
-        "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific arena prop sprite texture",
-        "scope": "Scourge Survivors runtime"
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI arena prop object (maw)",
+        "scope": "embedded in-game use"
       }
     },
     "arena-perdition-prop": {
@@ -1614,11 +1682,11 @@
         1
       ],
       "license": {
-        "tool": "procedural sprite texture generator",
-        "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific arena prop sprite texture",
-        "scope": "Scourge Survivors runtime"
+        "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
+        "plan": "codex",
+        "date": "2026-06-08",
+        "kind": "AI arena prop object (perdition)",
+        "scope": "embedded in-game use"
       }
     }
   },
@@ -1674,31 +1742,31 @@
       "path": "games/scourge-survivors/audio/sfx/weapons/pistol-pyre.webm",
       "category": "sfx",
       "cue": "shoot",
-      "duration": 0.248,
+      "duration": 0.558,
       "volume": 1,
       "loop": false,
       "license": {
-        "tool": "Codex PCM synthesis",
-        "plan": "local",
-        "date": "2026-06-05",
-        "kind": "project-owned sidearm weapon SFX",
-        "scope": "Scourge Survivors runtime"
+        "tool": "ElevenLabs SFX",
+        "plan": "unknown",
+        "date": "2026-06-08",
+        "kind": "AI weapon SFX (gunshot #3, lead-silence trimmed to trigger)",
+        "scope": "embedded in-game use"
       }
     },
-    "sfx-smg-pyre": {
+    "sfx-smg": {
       "type": "audio",
-      "path": "games/scourge-survivors/audio/sfx/weapons/smg-fire-pyre.webm",
+      "path": "games/scourge-survivors/audio/sfx/weapons/smg.webm",
       "category": "sfx",
       "cue": "shootSmg",
-      "duration": 0.128,
+      "duration": 1.368,
       "volume": 1,
       "loop": false,
       "license": {
-        "tool": "ffmpeg synthesis",
-        "plan": "local",
+        "tool": "ElevenLabs SFX",
+        "plan": "unknown",
         "date": "2026-06-04",
-        "kind": "procedural placeholder weapon SFX",
-        "scope": "project-owned placeholder"
+        "kind": "AI weapon SFX",
+        "scope": "embedded in-game use"
       }
     },
     "sfx-shotgun": {
@@ -1731,21 +1799,6 @@
         "date": "2026-06-04",
         "kind": "AI weapon SFX",
         "scope": "embedded in-game use"
-      }
-    },
-    "sfx-smg-legacy": {
-      "type": "audio",
-      "path": "games/scourge-survivors/audio/sfx/weapons/smg.webm",
-      "category": "sfx",
-      "duration": 1.368,
-      "volume": 1,
-      "loop": false,
-      "license": {
-        "tool": "ElevenLabs SFX",
-        "plan": "unknown",
-        "date": "2026-06-04",
-        "kind": "AI weapon SFX",
-        "scope": "legacy unused sample"
       }
     }
   },
@@ -1960,6 +2013,12 @@
       },
       "boss": {
         "sprite": "projectile-boss"
+      },
+      "bolt": {
+        "sprite": "projectile-pyre-bolt"
+      },
+      "orb": {
+        "sprite": "projectile-pyre-orb"
       }
     },
     "fx": {

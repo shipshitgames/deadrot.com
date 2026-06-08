@@ -16,7 +16,7 @@ import {
 } from "../assets/catalog";
 import type { PlayerAvatarId } from "../net/playerAvatars";
 import type { WeaponId } from "./constants";
-import type { MainWeaponVisualTier } from "./data/survivors";
+import { MAIN_WEAPON_VISUAL_TIERS, type MainWeaponVisualTier } from "./data/survivors";
 
 export type EnemySpriteKind = "melee" | "ranged" | "flying" | "boss";
 export type EnemySpriteView = SpriteView;
@@ -38,7 +38,7 @@ function pickupSpriteAssetId(id: "health" | "ammo" | "damage" | "dual" | "xpBloo
   return ASSET_CATALOG.pickup(id).sprite;
 }
 
-function projectileSpriteAssetId(id: "enemy" | "boss"): string {
+function projectileSpriteAssetId(id: "enemy" | "boss" | "bolt" | "orb"): string {
   return ASSET_CATALOG.projectile(id).sprite;
 }
 
@@ -56,13 +56,28 @@ function enemyAnimationAction(kind: EnemySpriteKind, state: EnemySpriteAnimation
   return action;
 }
 
-const PISTOL_TIER_SPRITE_IDS: Record<MainWeaponVisualTier, string> = {
-  base: "weapon-pistol",
-  "tier-2": "weapon-pistol-tier-2",
-  "tier-3": "weapon-pistol-tier-3",
-  "tier-4": "weapon-pistol-tier-4",
-  evolved: "weapon-pistol-evolved",
-};
+// Each weapon ships ONE horizontal tier SHEET (manifest `tierSheet`): the view-model
+// drawn at N escalating tiers, left to right. The runtime UV-samples one equal-width
+// cell per visual tier — so the tiers are generated together (perfectly consistent) and
+// loaded as a single texture. A weapon with no `tierSheet` is treated as a 1-column sheet
+// (the whole image is the only cell), so non-sheet weapons still render correctly.
+
+/** Cell count for a weapon's tier sheet (1 when the weapon has no sheet = single image). */
+export function weaponSheetColumns(id: WeaponId): number {
+  return spriteEntry(weaponSpriteAssetId(id)).tierSheet?.columns ?? 1;
+}
+
+/** Cell index (0-based, left to right) for a visual tier. Falls back to the highest tier
+ *  cell ≤ the requested tier that the sheet actually defines, else cell 0 (base). */
+export function weaponTierCellIndex(id: WeaponId, tier: MainWeaponVisualTier): number {
+  const tiers = spriteEntry(weaponSpriteAssetId(id)).tierSheet?.tiers;
+  if (!tiers || tiers.length === 0) return 0;
+  for (let i = MAIN_WEAPON_VISUAL_TIERS.indexOf(tier); i >= 0; i--) {
+    const cell = tiers.indexOf(MAIN_WEAPON_VISUAL_TIERS[i]);
+    if (cell >= 0) return cell;
+  }
+  return 0;
+}
 
 function textureViews(id: string): Record<EnemySpriteView, THREE.Texture> {
   return {
@@ -190,13 +205,18 @@ export const WEAPON_SPRITE_TEXTURES: Record<WeaponId, THREE.Texture> = {
   cannon: loadSpriteTexture(weaponSpriteAssetId("cannon")),
   sniper: loadSpriteTexture(weaponSpriteAssetId("sniper")),
 };
+// Tier sheets are UV-sampled per cell, so the weapon textures must repeat-wrap on U.
+// (repeat.x = 1/columns, offset.x = cell/columns — see WeaponSystem.applyWeaponModel.)
+for (const tex of Object.values(WEAPON_SPRITE_TEXTURES)) {
+  tex.wrapS = THREE.RepeatWrapping;
+}
 
-export const MAIN_WEAPON_TIER_TEXTURES: Record<MainWeaponVisualTier, THREE.Texture> = {
-  base: WEAPON_SPRITE_TEXTURES.pistol,
-  "tier-2": loadSpriteTexture(PISTOL_TIER_SPRITE_IDS["tier-2"]),
-  "tier-3": loadSpriteTexture(PISTOL_TIER_SPRITE_IDS["tier-3"]),
-  "tier-4": loadSpriteTexture(PISTOL_TIER_SPRITE_IDS["tier-4"]),
-  evolved: loadSpriteTexture(PISTOL_TIER_SPRITE_IDS.evolved),
+/** Weapon-only floor-loot sprites (no hands). Absent weapons fall back to the view-model. */
+export const WEAPON_LOOT_SPRITE_TEXTURES: Partial<Record<WeaponId, THREE.Texture>> = {
+  pistol: loadSpriteTexture("weapon-pistol-loot"),
+  smg: loadSpriteTexture("weapon-smg-loot"),
+  shotgun: loadSpriteTexture("weapon-shotgun-loot"),
+  cannon: loadSpriteTexture("weapon-cannon-loot"),
 };
 
 export const WEAPON_SPRITE_CONFIG: Record<
@@ -216,13 +236,14 @@ export const WEAPON_SPRITE_CONFIG: Record<
   sniper: weaponConfig("sniper"),
 };
 
-export function weaponSpriteTexture(id: WeaponId, tier: MainWeaponVisualTier = "base"): THREE.Texture {
-  if (id === "pistol") return MAIN_WEAPON_TIER_TEXTURES[tier];
+/** The weapon's view-model texture (a tier sheet when `tierSheet` is set). The active
+ *  tier cell is selected by UV offset in WeaponSystem, not by swapping textures. */
+export function weaponSpriteTexture(id: WeaponId): THREE.Texture {
   return WEAPON_SPRITE_TEXTURES[id];
 }
 
-export function weaponSpriteConfig(id: WeaponId, tier: MainWeaponVisualTier = "base") {
-  if (id === "pistol") return weaponConfigForSpriteId(PISTOL_TIER_SPRITE_IDS[tier]);
+/** Per-cell placement config (scale/offset/muzzle) — identical for every tier of a weapon. */
+export function weaponSpriteConfig(id: WeaponId) {
   return WEAPON_SPRITE_CONFIG[id];
 }
 
@@ -231,6 +252,8 @@ export const MUZZLE_FLASH_TEXTURE = loadSpriteTexture(fxSpriteAssetId("muzzleFla
 export const PROJECTILE_SPRITE_TEXTURES = {
   enemy: loadSpriteTexture(projectileSpriteAssetId("enemy")),
   boss: loadSpriteTexture(projectileSpriteAssetId("boss")),
+  bolt: loadSpriteTexture(projectileSpriteAssetId("bolt")),
+  orb: loadSpriteTexture(projectileSpriteAssetId("orb")),
 } as const;
 
 export const PICKUP_SPRITE_TEXTURES = {

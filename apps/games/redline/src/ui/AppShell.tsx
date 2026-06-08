@@ -1,16 +1,6 @@
-import {
-  MainMenuAction,
-  MainMenuCopy,
-  MainMenuLayout,
-  MainMenuNav,
-  MainMenuScreen,
-  MainMenuStatus,
-  MainMenuTitle,
-  MainMenuTitleLine,
-  MainMenuTopBar,
-  MenuKicker,
-} from "@shipshitgames/ui";
 import menuHero from "@shipshitgames/assets/games/redline/ui/menu/title.webp";
+import { GlobalMusicToggle, MainMenuLayout, MainMenuScreen, MainMenuTopBar } from "@shipshitgames/ui";
+import { GameOverlays } from "./overlays";
 
 export function AppShell() {
   return (
@@ -60,39 +50,23 @@ export function AppShell() {
 
         <div id="progress">
           <div id="progress-fill" />
-          <div id="progress-beacon">{"\u26eb"}</div>
+          <div id="progress-beacon">{"⛫"}</div>
         </div>
       </div>
 
+      {/* The imperative HUD engine owns the start / win / dead cards: showStart,
+          showWin, and showDead each rewrite #overlay-card's innerHTML and wire
+          #overlay-btn. React must leave #overlay-card empty so a re-render can
+          never replace the engine's live button mid-click. */}
       <MainMenuScreen id="overlay" backgroundImage={menuHero}>
         <MainMenuTopBar mark="SSG" meta="0 gold" aria-hidden>
           Beacon run
         </MainMenuTopBar>
-        <MainMenuLayout id="overlay-card">
-          <MainMenuCopy>
-            <MenuKicker id="overlay-kicker">Pyre Courier Run</MenuKicker>
-            <MainMenuTitle id="overlay-title">
-              <MainMenuTitleLine>RED</MainMenuTitleLine>
-              <MainMenuTitleLine tone="hot">LINE</MainMenuTitleLine>
-            </MainMenuTitle>
-            <p id="overlay-body" className="ssg-main-menu-subtitle">
-              Carry the cargo through the Scourge-rot lane to the BEACON. Beat the clock.
-            </p>
-            <MainMenuStatus>
-              <span>Courier ready</span>
-              <span>Best time armed</span>
-            </MainMenuStatus>
-          </MainMenuCopy>
-          <MainMenuNav aria-label="Main menu">
-            <MainMenuAction id="overlay-btn" variant="primary" label="Ignite" meta="Run the lane" />
-            <MainMenuAction variant="shop" label="Upgrades" meta="Cargo locked" disabled />
-            <MainMenuAction variant="coop" label="Co-op" meta="Solo route" disabled />
-            <MainMenuAction variant="records" label="Leaderboard" meta="Best time" disabled />
-            <MainMenuAction variant="settings" label="Settings" meta="Keyboard" disabled />
-            <MainMenuAction variant="dev" label="Sandbox" meta="Route lab" disabled />
-          </MainMenuNav>
-        </MainMenuLayout>
+        <MainMenuLayout id="overlay-card" />
+        <GlobalMusicToggle className="ssg-music-toggle--corner" />
       </MainMenuScreen>
+
+      <GameOverlays />
     </>
   );
 }

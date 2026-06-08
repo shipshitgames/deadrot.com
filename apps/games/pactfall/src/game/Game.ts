@@ -1,9 +1,9 @@
 import { CONSTANTS } from "./constants";
-import type { Phase } from "./types";
-import { RenderSystem } from "./systems/RenderSystem";
-import { InputSystem } from "./systems/InputSystem";
 import { EntitySystem } from "./systems/EntitySystem";
 import { HudSystem } from "./systems/HudSystem";
+import { InputSystem } from "./systems/InputSystem";
+import { RenderSystem } from "./systems/RenderSystem";
+import type { Phase } from "./types";
 
 // Thin owner of shared state. It wires the systems together, runs the clamped
 // rAF loop, and exposes a tiny amount of game state the systems mutate.
@@ -17,6 +17,11 @@ export class Game {
   phase: Phase = "title";
   buffTime = 0; // seconds of champion damage buff remaining
   elapsed = 0;
+
+  // Pause is owned by the React shell (Esc-toggled). When set, the loop keeps
+  // rendering but freezes the simulation so the player is never stuck.
+  paused = false;
+  private readonly phaseListeners = new Set<(phase: Phase) => void>();
 
   private running = false;
   private lastTime = 0;
@@ -39,12 +44,34 @@ export class Game {
     this.entities.reset();
   }
 
+  subscribePhaseChange(listener: (phase: Phase) => void): () => void {
+    this.phaseListeners.add(listener);
+    return () => {
+      this.phaseListeners.delete(listener);
+    };
+  }
+
   beginRun(): void {
-    this.phase = "playing";
     this.buffTime = 0;
     this.elapsed = 0;
+    this.paused = false;
     this.entities.reset();
     this.hud.setBanner(null);
+    this.setPhase("playing");
+  }
+
+  pause(): void {
+    if (this.phase === "playing") this.paused = true;
+  }
+
+  resume(): void {
+    this.paused = false;
+  }
+
+  private setPhase(phase: Phase): void {
+    if (this.phase === phase) return;
+    this.phase = phase;
+    for (const listener of this.phaseListeners) listener(phase);
   }
 
   start(): void {
@@ -63,11 +90,17 @@ export class Game {
   }
 
   win(): void {
-    if (this.phase === "playing") this.phase = "won";
+    if (this.phase === "playing") {
+      this.paused = false;
+      this.setPhase("won");
+    }
   }
 
   lose(): void {
-    if (this.phase === "playing") this.phase = "lost";
+    if (this.phase === "playing") {
+      this.paused = false;
+      this.setPhase("lost");
+    }
   }
 
   private frame(now: number): void {
@@ -85,6 +118,13 @@ export class Game {
   }
 
   private update(dt: number): void {
+    // While paused, freeze the whole simulation (and camera drift) but keep the
+    // HUD in sync; the React PauseMenu renders the overlay on top.
+    if (this.paused) {
+      this.hud.update(this);
+      return;
+    }
+
     this.render.update(dt);
 
     if (this.phase === "playing") {

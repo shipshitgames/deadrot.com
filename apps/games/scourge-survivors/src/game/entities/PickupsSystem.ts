@@ -15,7 +15,12 @@ import {
 } from "../constants";
 import type { GameContext } from "../context";
 import { PICKUP_COLORS, type Pickup } from "../data/internalTypes";
-import { PICKUP_SPRITE_SCALES, PICKUP_SPRITE_TEXTURES, WEAPON_SPRITE_TEXTURES } from "../spriteAssets";
+import {
+  PICKUP_SPRITE_SCALES,
+  PICKUP_SPRITE_TEXTURES,
+  WEAPON_LOOT_SPRITE_TEXTURES,
+  WEAPON_SPRITE_TEXTURES,
+} from "../spriteAssets";
 import type { GameSystems } from "../systems";
 
 function isWeaponPickup(kind: PickupKind): kind is WeaponId {
@@ -51,16 +56,20 @@ export class PickupsSystem {
     // The "icon" is child[0]: a billboarded sprite for pickups and weapon drops.
     let icon: THREE.Object3D;
     if (isWeapon) {
+      // Floor loot = the weapon ALONE (no hands). Fall back to the view-model if a
+      // weapon-only sprite hasn't been generated yet.
+      const lootTex = WEAPON_LOOT_SPRITE_TEXTURES[kind];
+      const s: [number, number] = lootTex ? [1.4, 1.4] : [1.5, 1.1];
       const mat = new THREE.SpriteMaterial({
-        map: WEAPON_SPRITE_TEXTURES[kind],
+        map: lootTex ?? WEAPON_SPRITE_TEXTURES[kind],
         transparent: true,
         depthWrite: false,
         toneMapped: false,
       });
       const sprite = new THREE.Sprite(mat);
-      sprite.scale.set(1.5, 1.1, 1);
+      sprite.scale.set(s[0], s[1], 1);
       sprite.position.y = 1.0;
-      sprite.userData = { baseScale: [1.5, 1.1], baseY: 1.0 };
+      sprite.userData = { baseScale: s, baseY: 1.0 };
       icon = sprite;
     } else if (kind === "health" || kind === "ammo" || kind === "damage" || kind === "dual") {
       const mat = new THREE.SpriteMaterial({

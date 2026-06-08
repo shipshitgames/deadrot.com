@@ -33,7 +33,7 @@ export function HelpTooltip({ label, children, side = "top", className = "" }: H
       <span
         id={id}
         role="tooltip"
-        className={`pointer-events-none absolute ${SIDE_CLASS[side]} z-50 w-64 max-w-[calc(100vw-2rem)] border border-hellfire bg-void/95 px-2.5 py-2 text-left font-mono text-[0.65rem] leading-snug text-ash opacity-0 shadow-[var(--shadow-ember)] transition-opacity group-hover:opacity-100 group-focus-within:opacity-100`}
+        className={`pointer-events-none absolute ${SIDE_CLASS[side]} z-50 hidden w-64 max-w-[calc(100vw-2rem)] border border-hellfire bg-void/95 px-2.5 py-2 text-left font-mono text-[0.65rem] leading-snug text-ash shadow-[var(--shadow-ember)] group-hover:block group-focus-within:block`}
       >
         {children}
       </span>

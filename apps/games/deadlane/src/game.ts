@@ -6,6 +6,7 @@ import { HudSystem } from "./systems/hud";
 import { type HoverCell, InputSystem } from "./systems/input";
 import { RenderSystem } from "./systems/render";
 import type { GameState } from "./types";
+import { setPauseSnapshot } from "./ui/pauseBridge";
 
 /**
  * Game — the thin owner of shared state + the systems, per studio convention.
@@ -31,7 +32,7 @@ export class Game {
     this.input = new InputSystem(this.render.rig, this.render.groundPlane, () => this.pauseRun());
     this.hud = new HudSystem();
 
-    this.hud.bannerBtn.addEventListener("click", () => this.onBannerClick());
+    document.addEventListener("click", this.onDocumentClick);
     this.render.rig.on("capture", this.onCapture);
     this.render.rig.on("release", this.onRelease);
 
@@ -58,8 +59,15 @@ export class Game {
     }
   }
 
+  private readonly onDocumentClick = (event: MouseEvent): void => {
+    const target = event.target;
+    if (!(target instanceof Element) || !target.closest("#banner-btn")) return;
+    this.onBannerClick();
+  };
+
   private startRun(): void {
     this.hud.hideBanner();
+    this.clearPauseMenu();
     this.render.placePlayerAtStart();
     this.input.clearTransientInput();
     this.pausedForCapture = false;
@@ -316,14 +324,52 @@ export class Game {
     this.input.setActive(false);
     this.resetBuildProgress();
     this.state.hintText = "CLICK RE-ENTER TO RETURN";
-    this.hud.showBanner("PAUSED", "RE-ENTER THE LANE. THE BREACH WAITS FOR NO ONE.", "RE-ENTER");
+    // The shared cinematic PauseMenu (rendered by the React HUD) replaces the
+    // old bespoke "PAUSED" banner. Push the run-control callbacks across the
+    // bridge so Resume / Exit to title stay wired to the imperative loop.
+    setPauseSnapshot({
+      open: true,
+      onResume: () => {
+        // Don't un-pause optimistically: only resume once pointer lock is
+        // actually re-acquired (onCapture -> resumeRun). Chrome rejects re-lock
+        // during its post-Esc cooldown, which would otherwise leave us un-paused
+        // with dead mouse-look. If the click lands in the cooldown the menu stays
+        // up and a second click (past the cooldown) locks cleanly.
+        void Promise.resolve(this.render.rig.requestCapture()).catch(() => {});
+      },
+      onExitToTitle: () => this.exitToTitle(),
+    });
   }
 
   private resumeRun(): void {
     if (this.state.phase !== "building" && this.state.phase !== "wave") return;
     this.pausedForCapture = false;
+    // Drop the pointerdown that pressed Resume so it can't leak into a queued
+    // tower build on the first live frame.
+    this.input.clearTransientInput();
     this.input.setActive(true);
-    this.hud.hideBanner();
+    this.clearPauseMenu();
+  }
+
+  /** Abandon the current run from the pause menu and return to the title. */
+  private exitToTitle(): void {
+    this.clearPauseMenu();
+    this.pausedForCapture = false;
+    this.input.setActive(false);
+    this.render.rig.releaseCapture(true);
+    this.entities.clear(this.state);
+    Object.assign(this.state, freshState());
+    this.render.placePlayerAtStart();
+    this.hud.update(this.state);
+    this.hud.showBanner(
+      "DEADLANE",
+      "WARDENS - RUN THE LINE, BUILD BY HAND, AND STOP THE SCOURGE BEFORE THE DOOR EMPTIES.",
+      "DEPLOY",
+    );
+  }
+
+  private clearPauseMenu(): void {
+    setPauseSnapshot({ open: false, onResume: null, onExitToTitle: null });
   }
 }
 

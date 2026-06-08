@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type PickupKind, STARTING_WEAPON, WEAPON_ORDER, WEAPONS, type WeaponId } from "../game/constants";
 import { MAP_PICKER } from "../game/data/maps";
+import { MAIN_WEAPON_VISUAL_TIERS, type MainWeaponVisualTier } from "../game/data/survivors";
 import type { SandboxEnemyKind } from "../game/Game";
 import { RUNTIME_AUDIO_ASSET_URLS, RUNTIME_VISUAL_ASSET_URLS, weaponSpriteAssetId } from "../game/spriteAssets";
 import type { HUDState } from "../game/types";
@@ -12,6 +13,7 @@ interface Props {
   onExit: () => void;
   onLock: () => void;
   onWeapon: (id: WeaponId) => void;
+  onWeaponTier: (tier: MainWeaponVisualTier) => void;
   onFire: () => void;
   onRefill: () => void;
   onSpawnEnemy: (kind: SandboxEnemyKind, count?: number) => void;
@@ -164,7 +166,7 @@ const AUDIO_ASSETS: AudioAsset[] = [
   },
   { id: "sfx-pistol-pyre", label: "Pistol SFX", src: RUNTIME_AUDIO_ASSET_URLS["sfx-pistol-pyre"], kind: "sfx" },
   { id: "sfx-sniper", label: "Sniper SFX", src: RUNTIME_AUDIO_ASSET_URLS["sfx-sniper"], kind: "sfx" },
-  { id: "sfx-smg-pyre", label: "Pyre SMG SFX", src: RUNTIME_AUDIO_ASSET_URLS["sfx-smg-pyre"], kind: "sfx" },
+  { id: "sfx-smg", label: "SMG SFX", src: RUNTIME_AUDIO_ASSET_URLS["sfx-smg"], kind: "sfx" },
   { id: "sfx-shotgun", label: "Shotgun SFX", src: RUNTIME_AUDIO_ASSET_URLS["sfx-shotgun"], kind: "sfx" },
   { id: "sfx-cannon", label: "Cannon SFX", src: RUNTIME_AUDIO_ASSET_URLS["sfx-cannon"], kind: "sfx" },
 ];
@@ -212,13 +214,26 @@ function Section({
   title,
   children,
   defaultOpen = true,
+  collapsible = true,
 }: {
   title: string;
   children: ReactNode;
   defaultOpen?: boolean;
+  collapsible?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const panelId = `sandbox-section-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+
+  if (!collapsible) {
+    return (
+      <section className="border-t border-white/10 pt-3">
+        <div className="mb-2 flex min-h-[32px] w-full items-center gap-3 rounded-[6px] border border-white/10 bg-white/[0.035] px-2.5 py-1.5 text-left text-[11px] font-black uppercase tracking-[0.16em] text-[#ffb26b]">
+          <span>{title}</span>
+        </div>
+        <div id={panelId}>{children}</div>
+      </section>
+    );
+  }
 
   return (
     <section className="border-t border-white/10 pt-3">
@@ -289,6 +304,7 @@ export function SandboxPanel({
   onExit,
   onLock,
   onWeapon,
+  onWeaponTier,
   onFire,
   onRefill,
   onSpawnEnemy,
@@ -297,6 +313,7 @@ export function SandboxPanel({
   onClear,
 }: Props) {
   const [spawnCount, setSpawnCount] = useState(3);
+  const [sbTier, setSbTier] = useState<MainWeaponVisualTier>("base");
   const [assetFilter, setAssetFilter] = useState<(typeof ASSET_FILTERS)[number]>("sprite");
   const panelRef = useRef<HTMLDivElement>(null);
   const filteredAssets = useMemo(
@@ -364,7 +381,7 @@ export function SandboxPanel({
           </div>
         </div>
 
-        <Section title="Session">
+        <Section title="Session" collapsible={false}>
           <div className="grid grid-cols-2 gap-2">
             <LabButton active={needsLock} onClick={onLock}>
               {needsLock ? "Resume / Lock" : "Pointer Locked"}
@@ -404,6 +421,27 @@ export function SandboxPanel({
               >
                 <img src={WEAPON_IMAGES[id]} alt="" className="h-[36px] max-w-full object-contain" draggable={false} />
                 {WEAPONS[id].name}
+              </button>
+            ))}
+          </div>
+          <div className="mt-2 text-[10px] uppercase tracking-[0.1em] text-white/45">Visual tier (parity with run)</div>
+          <div className="mt-1 grid grid-cols-5 gap-1.5">
+            {MAIN_WEAPON_VISUAL_TIERS.map((tier) => (
+              <button
+                key={tier}
+                type="button"
+                className={cx(
+                  "pointer-events-auto rounded-[6px] border px-1 py-1.5 text-[9px] font-black uppercase tracking-[0.03em]",
+                  sbTier === tier
+                    ? "border-[#ffb02e] text-[#ffd166]"
+                    : "border-white/10 text-white/60 hover:border-[#ffb02e]/50",
+                )}
+                onClick={() => {
+                  setSbTier(tier);
+                  onWeaponTier(tier);
+                }}
+              >
+                {tier === "base" ? "Base" : tier === "evolved" ? "Evo" : tier.replace("tier-", "T")}
               </button>
             ))}
           </div>
