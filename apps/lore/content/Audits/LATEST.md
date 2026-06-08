@@ -1,63 +1,115 @@
 ---
 type: audit
-date: 2026-06-04
-auditor: claude (re-audit + fix pass)
-branch: chore/lore-audit-fixes
-supersedes: audit/canon-2026-06-04 (canon-guardian-agent)
-status: all audit items resolved or routed; 3 content TODOs carried forward
+date: 2026-06-09
+auditor: codex automation
+automation: weekly-canon-consistency-audit
+branch: audit/canon-2026-06-09
+base: origin/master 458509c
+status: safe fixes applied; human decisions pending
 ---
 
-# Canon Audit — 2026-06-04 (re-audit + fix pass)
+# Canon Consistency Audit - 2026-06-09
 
-**Scope:** full vault — `Universe/`, `Factions/`, `Characters/`, `Bestiary/`, `Locations/`, `Games/`, `Art/`, `Maps.md`, `00-Index.md`, `CANON.md`, `DESIGN.md`. Re-verified the prior canon-guardian audit (the 10 `D-` items below) against the current tree, ran a fresh canon / cross-ref / convention / prose sweep (every finding adversarially verified), and applied the fixes on branch `chore/lore-audit-fixes`.
+**Scope:** full lore vault under `apps/lore/content`, anchored on `CANON.md`, `00-Index.md`,
+`README.md`, `DESIGN.md`, and every `Universe/` page before sweeping `Factions/`,
+`Characters/`, `Bestiary/`, `Locations/`, `Games/`, `Tech/`, `Art/`, and `Templates/`.
 
-**Health:** core fiction is sound — **no CANON contradictions**, no broken wiki-links, no orphaned pages, no duplicate entries (the Ashwall→Ashgate fold is clean). Everything flagged was sync / convention / cross-ref housekeeping.
+**Result:** no hard contradiction against `CANON.md ## Locked` found. Safe mechanical fixes
+were applied for index coverage, one broken path-qualified wikilink, and missing bestiary
+digest structure. The remaining issues require Vincent/art-direction judgment.
 
-**Counts:** all 10 `D-` items resolved or routed · 5 fresh judgment-call items resolved · 37 entries given `At a glance` lines (all categories complete) · 3 TODOs carried forward.
+**Counts:**
+- Broken wikilinks fixed: 1
+- Missing `00-Index.md` links added: 8
+- Structural digest fixes applied: 4
+- Hard CANON contradictions found: 0
+- Drift items needing a human decision: 3
+- Structural/content decision categories carried forward: 4
 
----
+## Auto-fixed
 
-## Fixed on this branch (`chore/lore-audit-fixes`)
+- `00-Index.md` now links the orphaned/deep Art pages:
+  `Art/Prompt-Batches/2026-06-03-gallery-thumbnails-and-menu-ui.md`,
+  `Art/Prompt-Batches/2026-06-03-scourge-host-family-concepts.md`,
+  `Art/Prompt-Batches/2026-06-04-key-art-placeholders.md`,
+  `Art/Prompt-Batches/2026-06-04-website-portrait-placeholders.md`,
+  `Art/Prompt-Batches/2026-06-05-game-og-cards.md`,
+  `Art/Prompt-Batches/2026-06-05-scourge-animation-pack.md`,
+  `Art/Style-Lock-Audit-2026-06-05.md`, and `Art/style-refs/README.md`.
+- `index.md` fixed the broken path-qualified wikilink from `[[Factions/Scourge|Scourge]]`
+  to `[[Bestiary/Scourge|Scourge]]`.
+- Added missing `**At a glance:**` digest lines to four canon bestiary entries that already
+  had full body sections and `Appears In` blocks: `Bestiary/Aeolian.md`,
+  `Bestiary/Bourdon.md`, `Bestiary/Chorister.md`, and `Bestiary/Descant.md`.
 
-### Art pipeline brought into sync with the 2026-06-04 pixel-art lock
-- **D-1** — Removed `pixel art` from `Universe/Style-Bible.md` §12 negative-prompt set (it was telling the generator to avoid the locked house medium). Replaced with the medium-correct exclusions `DESIGN.md` already uses, and added a sync note pointing §12 at `DESIGN.md`'s `assetgen.negativePrompts` as the machine twin.
-- **D-2 / D-9** — `Art/Character-Prompt-Library.md` marked `status: superseded` (+ `superseded_by`) with a banner redirecting to `[[Style-Bible]]`; banner explicitly flags the `#00ff00` chroma-key default as wrong under the lock (default is HERO/VOID + rembg, §11).
-- **D-3** — `Art/Character-Sprite-Direction.md` marked `status: superseded` (+ banner). The chroma-key sub-finding was overstated; the live conflict was the pre-lock 640–704px sizing without the ~110px grid context, now redirected to the locked medium.
-- **D-4** — **Decision (Vincent, 2026-06-04): the locked medium-chunky pixel art governs everything seen by a human — there is NO separate hi-fi/website track.** Recorded explicitly in `Style-Bible.md` §11; the two pre-lock hi-fi batch files (`Art/Prompt-Batches/2026-06-04-key-art-placeholders.md`, `…-website-portrait-placeholders.md`) now carry PRE-LOCK/OFF-CANON banners; the matching `Art/Generation-History.md` entries are annotated with the medium mismatch. The hi-fi placeholder assets they produced are slated for regeneration in the locked pixel style (asset-production task, outside the vault).
-- `00-Index.md` Art Direction entries for both superseded files re-tagged `*(superseded — see [[Style-Bible]])*`.
+## Needs a human decision
 
-### Cross-references reconciled
-- **D-5** — `Bestiary/Render.md`, `Rot-Engine.md`, and `Swarm-Ripper.md` now list `[[Redline]]` in *Appears In* (matching Redline's roster); `Swarm-Spitter.md` now lists `[[Rothulk]]`.
-- **D-10** — Removed the stray `[[Pactfall]]` from `Characters/Field-Engineer.md`, `Lane-Gunner.md`, and `Wallwright.md`; Index and `Games/Pactfall.md` already excluded them.
-- **D-6** — `Style-Bible.md` §1: `[[Premise|Scourge]]` → `[[Scourge]]`.
-- **D-8** — `Characters/Pyre-Saboteur.md`: `[[Scourge|bio-hulk]]` → `[[The-Rothulk|bio-hulk]]`.
+### 1. Active animation prompt has magenta chroma-key drift
 
-### Convention: `At a glance` digest line
-- Added the required `**At a glance:**` one-liner to **37 entries** (11 Bestiary, 3 Factions, 16 Characters, 7 Games; Characters retrofitted per Vincent's call). Coverage now complete: 16/16 Bestiary, 16/16 Characters, 3/3 Factions, 11/11 Locations, 7/7 Games. Tracked by lore #29 (Pass 1); the #29 Pass-2 *voice* rewrite remains open.
+- File: `Art/Prompt-Batches/2026-06-05-scourge-animation-pack.md`
+- Issue: the batch asks for a flat `#ff00ff` background in every cell. `Style-Bible.md`
+  allows HERO/VOID by default and a `#00ff00` GAME-CUTOUT fallback, while `DESIGN.md` and
+  `Style-Bible.md` forbid magenta/cyan/neon drift.
+- Recommended resolution: either change the animation batch to the approved cutout path, or
+  explicitly bless magenta as a tooling-only sprite-sheet key in `Style-Bible.md` so future
+  agents do not treat it as subject palette.
 
-### Fresh judgment-call items (resolved this pass)
-- **Cairn vs Trucebreaker** — removed the Pactfall "neutral Scourge objective" claim from `Bestiary/Cairn.md`; `[[Trucebreaker]]` is the sole neutral objective, matching `Games/Pactfall.md`. Cairn is now Deadlane / Scourge-Survivors only.
-- **The-Rothulk** — demoted in `00-Index.md` from a top-level Location peer to a Cinder-Flats sub-feature (`[[Cinder-Flats]] (incl. [[The-Rothulk]])`); it shares the `cinder` id and is already covered under Cinder-Flats in `Maps.md`.
-- **Ashgate** — added a `## Role in the war` section for parity with the other 10 locations.
+### 2. Active animation prompt has off-palette creature language
 
-### Auto-fixes from the prior (canon-guardian) audit — retained
-00-Index additions and the `Maps.md` Cinder-Flats game-column fix remain in place from commit `b2938d7` (#26).
+- File: `Art/Prompt-Batches/2026-06-05-scourge-animation-pack.md`
+- Issue: the Spitter lane uses "sickly chartreuse / acid yellow-green"; the Winged Host lane
+  uses "bruised violet / purple wing membranes." The locked palette is red/fire/metal/bone
+  with toxic green reserved for Scourge cores, nodes, signal, and breach matter.
+- Recommended resolution: constrain these lanes to `toxic #8bdc1f` only for Scourge organs
+  and keep bodies in blood/rust/gunmetal/bone, or explicitly add a Scourge-wing palette
+  exception before regenerating/expanding animation sheets.
 
----
+### 3. Style Bible still uses demon shorthand in agent-facing prose
 
-## Closed — D-7 (verified already done in the games repo)
+- File: `Universe/Style-Bible.md`
+- Issue: sections such as "destructible-demon system" and "newly-summoned demon" are DOOM
+  art shorthand, but `CANON.md ## Locked` says the Scourge is a host-dependent parasite,
+  not a demon.
+- Recommended resolution: if Vincent wants zero semantic ambiguity for agents, replace the
+  demon shorthand with "DOOM-like creature/subject" language while preserving the gore and
+  material direction.
 
-### D-7 · Legacy warline region ids
-Already reconciled. The `foundry`/`choir` region slugs were renamed to `ashgate`/`perdition` in the games repo (commit *"warline: rename meta-map to canon geography"*); `warline/src/map.ts` now matches the canon ids in `Maps.md` exactly, and no region with id `foundry`/`choir` exists anywhere in the games code. The stale "reconcile map.ts" note + `(ex …)` annotations were removed from `Maps.md` this pass.
+### 4. Art prompt/reference docs need metadata status calls
 
----
+- Files: `Art/Prompt-Batches/2026-06-03-gallery-thumbnails-and-menu-ui.md`,
+  `Art/Prompt-Batches/2026-06-05-game-og-cards.md`,
+  `Art/Prompt-Batches/2026-06-05-scourge-animation-pack.md`, and
+  `Art/style-refs/README.md`
+- Issue: these pages are now indexed, but they lack frontmatter `type`/`status` metadata
+  unlike nearby prompt-batch and audit pages.
+- Recommended resolution: decide whether each is `active`, `historical`, or `superseded`
+  before adding frontmatter. Do not infer this automatically because it affects future asset
+  generation behavior.
 
-## Open TODOs (carried forward, not fixed)
+### 5. Scourge host-family frontmatter remains incomplete on draft/mixed entries
 
-| File | TODO | Tracked |
+- Files: `Bestiary/Breach-Boss.md`, `Bestiary/Orbital-Breach-Carrier.md`,
+  `Bestiary/Scourge-Fighter.md`, `Bestiary/Swarm-Ripper.md`,
+  `Bestiary/Swarm-Spitter.md`, and `Bestiary/Trucebreaker.md`
+- Issue: `Scourge-Host-Families.md` says generation batches should record threat role and
+  host family. These pages either represent draft, mixed, or multi-variant roles where the
+  host-family value is not fully pinned.
+- Recommended resolution: set host-family frontmatter only after the base shipped variant
+  or per-game variants are decided. Do not collapse multi-family concepts into one value
+  unless that is the intended canon.
+
+### 6. Quiet Rooms lacks a prompt seed while matching visual-detail peers have one
+
+- File: `Factions/The-Quiet-Rooms.md`
+- Issue: the page has `Visual / Set Brief` but no `Prompt Seed`, while peer prop/detail pages
+  such as `The-Dead-Air-Liturgy.md` and `The-Last-Manifest.md` include one.
+- Recommended resolution: add a prompt seed if Quiet Rooms are intended for concept-art
+  generation; otherwise leave it as a narrative/set briefing page.
+
+### 7. Open TODOs carried forward
+
+| File | Open item | Recommended resolution |
 |---|---|---|
-| `Universe/Cosmology.md` | "What powers the towers and the Purgers' gear (see Tech)." — Tech folder doesn't exist yet. | lore #8 |
-| `Games/Deadlane.md` | Named non-Ashgate lanes as Locations + their hold/fall outcomes on the Timeline — none exist yet. | lore #6 |
-| `Games/Zero-Day.md` | Name the holdout/evac sites + the fleet; lock fixed last-stand vs roguelike loop — game canon unsettled. | lore #34 |
-
-**Also tracked on GitHub:** At-a-glance *voice* rewrite (Pass 2) → lore #29 · cross-repo asset regen → games #86 (Zero-Day cover), #87 (scourge-survivors sprites), #89 (20 website portrait plates).
+| `Universe/Cosmology.md` | What powers towers and Purgers' gear. | Decide the shared power-source rule and then update Tech pages together. |
+| `Games/Deadlane.md` | Named lanes as Locations plus hold/fall outcomes on `Timeline.md`. | Name only after the lane map is settled. |
+| `Games/Zero-Day.md` | Name holdout/evac sites and fleet; lock fixed last-stand vs roguelike loop. | Decide game loop first so the canon event framing and sites support it. |
