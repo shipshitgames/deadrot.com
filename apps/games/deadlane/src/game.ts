@@ -6,6 +6,7 @@ import { HudSystem } from "./systems/hud";
 import { type HoverCell, InputSystem } from "./systems/input";
 import { RenderSystem } from "./systems/render";
 import type { GameState } from "./types";
+import { setPauseSnapshot } from "./ui/pauseBridge";
 
 /**
  * Game — the thin owner of shared state + the systems, per studio convention.
@@ -60,6 +61,7 @@ export class Game {
 
   private startRun(): void {
     this.hud.hideBanner();
+    this.clearPauseMenu();
     this.render.placePlayerAtStart();
     this.input.clearTransientInput();
     this.pausedForCapture = false;
@@ -316,14 +318,45 @@ export class Game {
     this.input.setActive(false);
     this.resetBuildProgress();
     this.state.hintText = "CLICK RE-ENTER TO RETURN";
-    this.hud.showBanner("PAUSED", "RE-ENTER THE LANE. THE BREACH WAITS FOR NO ONE.", "RE-ENTER");
+    // The shared cinematic PauseMenu (rendered by the React HUD) replaces the
+    // old bespoke "PAUSED" banner. Push the run-control callbacks across the
+    // bridge so Resume / Exit to title stay wired to the imperative loop.
+    setPauseSnapshot({
+      open: true,
+      onResume: () => {
+        this.resumeRun();
+        void Promise.resolve(this.render.rig.requestCapture()).catch(() => {});
+      },
+      onExitToTitle: () => this.exitToTitle(),
+    });
   }
 
   private resumeRun(): void {
     if (this.state.phase !== "building" && this.state.phase !== "wave") return;
     this.pausedForCapture = false;
     this.input.setActive(true);
-    this.hud.hideBanner();
+    this.clearPauseMenu();
+  }
+
+  /** Abandon the current run from the pause menu and return to the title. */
+  private exitToTitle(): void {
+    this.clearPauseMenu();
+    this.pausedForCapture = false;
+    this.input.setActive(false);
+    this.render.rig.releaseCapture(true);
+    this.entities.clear(this.state);
+    Object.assign(this.state, freshState());
+    this.render.placePlayerAtStart();
+    this.hud.update(this.state);
+    this.hud.showBanner(
+      "DEADLANE",
+      "WARDENS - RUN THE LINE, BUILD BY HAND, AND STOP THE SCOURGE BEFORE THE DOOR EMPTIES.",
+      "DEPLOY",
+    );
+  }
+
+  private clearPauseMenu(): void {
+    setPauseSnapshot({ open: false, onResume: null, onExitToTitle: null });
   }
 }
 

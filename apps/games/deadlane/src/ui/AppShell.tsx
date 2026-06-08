@@ -1,4 +1,7 @@
+import menuHero from "@shipshitgames/assets/games/deadlane/ui/menu/title.webp";
 import {
+  GlobalGameSettingsPanel,
+  GlobalMusicToggle,
   MainMenuAction,
   MainMenuCopy,
   MainMenuLayout,
@@ -9,10 +12,25 @@ import {
   MainMenuTitleLine,
   MainMenuTopBar,
   MenuKicker,
+  PauseMenu,
 } from "@shipshitgames/ui";
-import menuHero from "@shipshitgames/assets/games/deadlane/ui/menu/title.webp";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { getPauseSnapshot, subscribePause } from "./pauseBridge";
 
 export function AppShell() {
+  const [showSettings, setShowSettings] = useState(false);
+  const pause = useSyncExternalStore(subscribePause, getPauseSnapshot, getPauseSnapshot);
+
+  // Esc closes the settings overlay so the player is never trapped in it.
+  useEffect(() => {
+    if (!showSettings) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowSettings(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [showSettings]);
+
   return (
     <>
       <canvas id="scene" />
@@ -73,16 +91,76 @@ export function AppShell() {
               <MainMenuAction variant="shop" label="Upgrades" meta="Tower tech" disabled />
               <MainMenuAction variant="coop" label="Co-op" meta="Solo command" disabled />
               <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
-              <MainMenuAction variant="settings" label="Settings" meta="Build grid" disabled />
+              <MainMenuAction
+                type="button"
+                variant="settings"
+                label="Settings"
+                meta="Audio"
+                onClick={() => setShowSettings(true)}
+              />
               <MainMenuAction variant="dev" label="Sandbox" meta="Lane lab" disabled />
             </MainMenuNav>
           </MainMenuLayout>
+          <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>
 
         <div id="hud-hint">
           <span id="hint-text">CLICK A CELL TO BUILD (COST 50)</span>
         </div>
       </div>
+
+      {showSettings && (
+        <MainMenuScreen
+          className="deadlane-settings-screen"
+          backgroundImage={menuHero}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Settings"
+        >
+          <MainMenuLayout>
+            <MainMenuCopy>
+              <MenuKicker>Wardens Console</MenuKicker>
+              <MainMenuTitle>
+                <MainMenuTitleLine tone="hot">Settings</MainMenuTitleLine>
+              </MainMenuTitle>
+              <p className="ssg-main-menu-subtitle">Tune the music and battle SFX for the lane.</p>
+              <GlobalGameSettingsPanel inline />
+            </MainMenuCopy>
+            <MainMenuNav aria-label="Settings menu">
+              <MainMenuAction
+                type="button"
+                variant="primary"
+                label="Back"
+                meta="Main menu"
+                onClick={() => setShowSettings(false)}
+              />
+            </MainMenuNav>
+          </MainMenuLayout>
+        </MainMenuScreen>
+      )}
+
+      <PauseMenu
+        open={pause.open}
+        kicker="Ashgate Lane"
+        title="Paused"
+        subtitle="Re-enter the lane. The breach waits for no one."
+        status={
+          <>
+            <span>Hold the line</span>
+            <span>Click resume to lock view</span>
+          </>
+        }
+        onResume={() => pause.onResume?.()}
+        resumeMeta="Lock view"
+        actions={[
+          {
+            id: "title",
+            label: "Exit to title",
+            meta: "Main menu",
+            onSelect: () => pause.onExitToTitle?.(),
+          },
+        ]}
+      />
     </>
   );
 }

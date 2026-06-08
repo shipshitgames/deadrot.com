@@ -1,4 +1,7 @@
+import menuHero from "@shipshitgames/assets/games/starblight/ui/menu/title.webp";
 import {
+  GlobalGameSettingsPanel,
+  GlobalMusicToggle,
   MainMenuAction,
   MainMenuCopy,
   MainMenuLayout,
@@ -10,10 +13,17 @@ import {
   MainMenuTopBar,
   MenuKicker,
   MenuPanel,
+  PauseMenu,
 } from "@shipshitgames/ui";
-import menuHero from "@shipshitgames/assets/games/starblight/ui/menu/title.webp";
+import { useState, useSyncExternalStore } from "react";
+import { getPauseActions, getPauseSnapshot, subscribePause } from "./gameBridge";
 
 export function AppShell() {
+  // Pause state lives in the imperative Game engine; mirror it here via the
+  // bridge so the shared React PauseMenu can render over the canvas.
+  const pause = useSyncExternalStore(subscribePause, getPauseSnapshot, getPauseSnapshot);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   return (
     <>
       <canvas id="scene" />
@@ -93,31 +103,43 @@ export function AppShell() {
               <MainMenuAction variant="shop" label="Upgrades" meta="Draft only" disabled />
               <MainMenuAction variant="coop" label="Co-op" meta="Solo sortie" disabled />
               <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
-              <MainMenuAction variant="settings" label="Settings" meta="Mouse flight" disabled />
+              <MainMenuAction
+                type="button"
+                variant="settings"
+                label="Settings"
+                meta="Audio"
+                onClick={() => setSettingsOpen(true)}
+              />
               <MainMenuAction variant="dev" label="Sandbox" meta="Orbit lab" disabled />
             </MainMenuNav>
           </MainMenuLayout>
+          <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>
 
-        <div id="pause-menu" className="pause-menu hidden">
-          <MenuPanel className="pause-inner">
-            <h2 className="pause-title ssg-section-heading">PAUSED</h2>
-            <p id="pause-stats" className="pause-stats mono">
-              0:00 - LVL 1 - 0 kills
-            </p>
-            <div className="pause-actions">
-              <button id="pause-resume" className="menu-action primary" type="button">
-                RESUME
+        <PauseMenu
+          open={pause.open}
+          kicker="Orbital Front"
+          title="Paused"
+          subtitle="The Scourge holds at the threshold while you stand down."
+          status={<span>{pause.stats}</span>}
+          onResume={() => getPauseActions().resume()}
+          actions={[
+            { id: "restart", label: "Restart run", meta: "New sortie", onSelect: () => getPauseActions().restart() },
+            { id: "title", label: "Main menu", meta: "Exit to title", onSelect: () => getPauseActions().title() },
+          ]}
+        />
+
+        {settingsOpen && (
+          <div className="settings-overlay">
+            <MenuPanel className="settings-inner">
+              <h2 className="settings-title ssg-section-heading">SETTINGS</h2>
+              <GlobalGameSettingsPanel inline />
+              <button type="button" className="menu-action settings-close" onClick={() => setSettingsOpen(false)}>
+                CLOSE
               </button>
-              <button id="pause-restart" className="menu-action" type="button">
-                RESTART RUN
-              </button>
-              <button id="pause-title-btn" className="menu-action ghost" type="button">
-                MAIN MENU
-              </button>
-            </div>
-          </MenuPanel>
-        </div>
+            </MenuPanel>
+          </div>
+        )}
 
         <div id="draft" className="draft hidden">
           <MenuPanel className="draft-inner">

@@ -1,10 +1,3 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import * as THREE from "three";
-import { clearMoveIntent, firstPersonPointerLock, InputSystem, makeMoveIntent, RectBounds } from "@shipshitgames/engine";
-import { GAME_OPERATIONS, regionById } from "@shipshitgames/warline";
-import type { Faction, GameSlug, HumanFaction, Summary, WorldState } from "@shipshitgames/warline";
-import type { WarlineStatus } from "../store";
-
 import lobbyMusicUrl from "@shipshitgames/assets/games/warline/audio/music/doom-you-got-the-chainsaw.webm";
 import greenGateSpriteUrl from "@shipshitgames/assets/games/warline/props/portal-deck/green-gate.webp";
 import greenLiftSpriteUrl from "@shipshitgames/assets/games/warline/props/portal-deck/green-lift.webp";
@@ -17,6 +10,19 @@ import columnTextureUrl from "@shipshitgames/assets/games/warline/textures/porta
 import decalTextureUrl from "@shipshitgames/assets/games/warline/textures/portal-deck/decal.webp";
 import floorTextureUrl from "@shipshitgames/assets/games/warline/textures/portal-deck/floor.webp";
 import wallTextureUrl from "@shipshitgames/assets/games/warline/textures/portal-deck/wall.webp";
+import {
+  clearMoveIntent,
+  firstPersonPointerLock,
+  InputSystem,
+  makeMoveIntent,
+  RectBounds,
+} from "@shipshitgames/engine";
+import { PauseMenu } from "@shipshitgames/ui";
+import type { Faction, GameSlug, HumanFaction, Summary, WorldState } from "@shipshitgames/warline";
+import { GAME_OPERATIONS, regionById } from "@shipshitgames/warline";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import * as THREE from "three";
+import type { WarlineStatus } from "../store";
 
 interface FrontMap3DProps {
   state: WorldState;
@@ -24,6 +30,7 @@ interface FrontMap3DProps {
   status: WarlineStatus;
   faction: HumanFaction;
   onOpenCommand: () => void;
+  onExitToTitle?: () => void;
 }
 
 interface PortalDef {
@@ -159,15 +166,17 @@ const PLAYER_HEIGHT = 1.7;
 const PLAYER_RADIUS = 0.72;
 const MOVE_SPEED = 8.25;
 const PORTAL_TRIGGER_RADIUS = 4.75;
+const TABLE_TRIGGER_RADIUS = 8;
 const JUMP_VELOCITY = 7.6;
 const GRAVITY = 22;
 const MUSIC_STORAGE_KEY = "warline.front.music";
 
-export function FrontMap3D({ state, summary, status, faction, onOpenCommand }: FrontMap3DProps) {
+export function FrontMap3D({ state, summary, status, faction, onOpenCommand, onExitToTitle }: FrontMap3DProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const stateRef = useRef(state);
   const summaryRef = useRef(summary);
   const nearestRef = useRef<GameSlug | null>(null);
+  const nearTableRef = useRef(false);
   const launchRef = useRef<(slug: GameSlug) => void>(() => {});
   const commandRef = useRef(onOpenCommand);
   const requestCaptureRef = useRef<() => void>(() => {});
@@ -180,8 +189,8 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand }: F
   const pausedRef = useRef(false);
 
   const [nearest, setNearest] = useState<GameSlug | null>(null);
+  const [nearTable, setNearTable] = useState(false);
   const [captured, setCaptured] = useState(false);
-  const [controlActive, setControlActiveState] = useState(false);
   const [paused, setPausedState] = useState(false);
   const [musicEnabled, setMusicEnabledState] = useState(() =>
     typeof window === "undefined" ? true : window.localStorage.getItem(MUSIC_STORAGE_KEY) !== "off",
@@ -274,13 +283,10 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand }: F
     const rig = firstPersonPointerLock(camera, renderer.domElement);
     rig.placeAt(0, PLAYER_HEIGHT, 24, 0, -1);
     rig.setFov(72);
-    let fallbackYaw = rig.yaw;
-    let fallbackPitch = rig.pitch;
     let verticalVelocity = 0;
     let grounded = true;
     const setControlActive = (next: boolean) => {
       controlActiveRef.current = next;
-      setControlActiveState(next);
     };
     const setPaused = (next: boolean) => {
       pausedRef.current = next;
@@ -290,8 +296,6 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand }: F
       setPaused(false);
       setControlActive(true);
       playMusicRef.current();
-      fallbackYaw = rig.yaw;
-      fallbackPitch = rig.pitch;
       try {
         rig.requestCapture();
       } catch {
@@ -310,6 +314,12 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand }: F
     requestCaptureRef.current = activateControls;
     pauseRef.current = pauseControls;
     resumeRef.current = resumeControls;
+
+    // No "Enter Front" gate: WASD movement + E-interaction are live the moment
+    // the lobby mounts. Mouse-look is opt-in by clicking the floor (pointer
+    // lock); the shared pause menu (Esc / Pause) is the only modal.
+    setControlActive(true);
+    playMusicRef.current();
 
     const bounds = RectBounds.square(39);
     const move = makeMoveIntent();
@@ -336,9 +346,17 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand }: F
 
     const input = new InputSystem({
       move,
-      isActive: () => !pausedRef.current && (controlActiveRef.current || rig.captured),
+      isActive: () => !pausedRef.current,
       onPointerDown: (_button, event) => {
-        if (event.target === renderer.domElement && !controlActiveRef.current) activateControls();
+        // Click the floor to grab pointer-lock mouse-look (optional) — never required to move.
+        if (event.target === renderer.domElement && !pausedRef.current && !rig.captured) {
+          playMusicRef.current();
+          try {
+            rig.requestCapture();
+          } catch {
+            /* pointer lock refused — WASD + E still work */
+          }
+        }
       },
       onJump: () => {
         if (!grounded || pausedRef.current) return;
@@ -351,9 +369,15 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand }: F
           pauseControls();
           return;
         }
-        if (code === "KeyE" && nearestRef.current) {
+        if (code === "KeyE") {
           event.preventDefault();
-          launchRef.current(nearestRef.current);
+          // Standing at the Command Table opens the war map; otherwise E enters
+          // the nearest portal.
+          if (nearTableRef.current) {
+            commandRef.current();
+          } else if (nearestRef.current) {
+            launchRef.current(nearestRef.current);
+          }
         }
         if (code === "KeyM" || code === "Tab") {
           event.preventDefault();
@@ -369,21 +393,9 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand }: F
     });
     input.bind();
 
-    const onFallbackMouseMove = (event: MouseEvent) => {
-      if (!controlActiveRef.current || rig.captured) return;
-      fallbackYaw -= event.movementX * 0.0022;
-      fallbackPitch = Math.max(-1.15, Math.min(1.15, fallbackPitch - event.movementY * 0.0022));
-      rig.body.rotation.set(fallbackPitch, fallbackYaw, 0, "YXZ");
-    };
-    window.addEventListener("mousemove", onFallbackMouseMove);
-
     const updateCapture = () => {
       setCaptured(rig.captured);
-      if (rig.captured) {
-        setControlActive(true);
-        fallbackYaw = rig.yaw;
-        fallbackPitch = rig.pitch;
-      }
+      if (rig.captured) setControlActive(true);
     };
     rig.on("capture", updateCapture);
     rig.on("release", updateCapture);
@@ -394,11 +406,17 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand }: F
       const time = (now - startedAt) / 1000;
       lastFrame = now;
       if (!pausedRef.current) {
-        updateJump(rig, delta, () => verticalVelocity, (next) => {
-          verticalVelocity = next;
-        }, (next) => {
-          grounded = next;
-        });
+        updateJump(
+          rig,
+          delta,
+          () => verticalVelocity,
+          (next) => {
+            verticalVelocity = next;
+          },
+          (next) => {
+            grounded = next;
+          },
+        );
         updateMovement(rig, move, bounds, obstacleBoxes, delta);
       }
       updateDynamicScene(sceneRuntime, stateRef.current, time);
@@ -407,6 +425,14 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand }: F
       if (nextNearest !== nearestRef.current) {
         nearestRef.current = nextNearest;
         setNearest(nextNearest);
+      }
+
+      // The Command Table sits at the origin — flag when the player is close
+      // enough to open it with E.
+      const nextNearTable = Math.hypot(rig.body.position.x, rig.body.position.z) < TABLE_TRIGGER_RADIUS;
+      if (nextNearTable !== nearTableRef.current) {
+        nearTableRef.current = nextNearTable;
+        setNearTable(nextNearTable);
       }
 
       const reticleTarget = sceneRuntime.portals.find((portal) => portal.def.slug === nextNearest);
@@ -429,7 +455,6 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand }: F
       sceneRuntime.disposed = true;
       if (raf) cancelAnimationFrame(raf);
       input.unbind();
-      window.removeEventListener("mousemove", onFallbackMouseMove);
       rig.off("capture", updateCapture);
       rig.off("release", updateCapture);
       rig.dispose();
@@ -466,39 +491,58 @@ export function FrontMap3D({ state, summary, status, faction, onOpenCommand }: F
         </div>
       </div>
 
-      {!controlActive && !captured && !paused && (
-        <div className="front-map3d__capture">
-          <button type="button" className="front-map3d__enter" onClick={() => requestCaptureRef.current()}>
-            Enter Front
-          </button>
+      {!captured && !paused && (
+        <div className="front-map3d__hint" aria-hidden="true">
+          <span>
+            <kbd>WASD</kbd> move
+          </span>
+          <span>Click to look</span>
+          <span>
+            <kbd>E</kbd> enter · <kbd>Esc</kbd> pause
+          </span>
         </div>
       )}
 
-      {paused && (
-        <div className="front-map3d__capture">
-          <div className="front-map3d__pause-panel">
-            <span className="front-map3d__kicker">Front Paused</span>
-            <strong>WARLINE HOLD</strong>
-            <div className="front-map3d__pause-actions">
-              <button type="button" className="front-map3d__enter" onClick={() => resumeRef.current()}>
-                Resume
-              </button>
-              <button type="button" className="front-map3d__button" onClick={onOpenCommand}>
-                Command Table
-              </button>
-            </div>
+      <PauseMenu
+        open={paused}
+        kicker="Warline Front"
+        title="Paused"
+        subtitle="The lanes hold while you stand at the threshold."
+        status={
+          <>
+            <span>{summary.regionsHuman} pact sectors holding</span>
+            <span>Threat {Math.round(summary.threat)}%</span>
+          </>
+        }
+        onResume={() => resumeRef.current()}
+        actions={[
+          { id: "command", label: "Command Table", meta: "War map", variant: "shop", onSelect: onOpenCommand },
+          { id: "title", label: "Exit to title", meta: "Main menu", onSelect: () => onExitToTitle?.() },
+        ]}
+      />
+
+      {nearTable && !paused && (
+        <div className="front-map3d__portal-panel" style={{ "--portal-accent": "#ff6a00" } as React.CSSProperties}>
+          <span className="front-map3d__kicker">Warline Command</span>
+          <strong>Command Table</strong>
+          <span>Open the war map for the lanes.</span>
+          <div className="front-map3d__prompt">
+            Press <kbd>E</kbd> to open
           </div>
         </div>
       )}
 
-      {nearestPortal && (
-        <div className="front-map3d__portal-panel" style={{ "--portal-accent": nearestPortal.accentCss } as React.CSSProperties}>
+      {nearestPortal && !nearTable && (
+        <div
+          className="front-map3d__portal-panel"
+          style={{ "--portal-accent": nearestPortal.accentCss } as React.CSSProperties}
+        >
           <span className="front-map3d__kicker">{nearestPortal.bay}</span>
           <strong>{nearestPortal.title}</strong>
           <span>{GAME_OPERATIONS[nearestPortal.slug].label}</span>
-          <button type="button" className="front-map3d__launch" onClick={() => launchPortal(nearestPortal.slug)}>
-            Launch Operation
-          </button>
+          <div className="front-map3d__prompt">
+            Press <kbd>E</kbd> to enter
+          </div>
         </div>
       )}
     </section>
@@ -823,7 +867,12 @@ function mapPointToTable(x: number, y: number) {
   };
 }
 
-function addObstacles(scene: THREE.Scene, blockMat: THREE.Material, columnMat: THREE.Material, colliders: THREE.Mesh[]) {
+function addObstacles(
+  scene: THREE.Scene,
+  blockMat: THREE.Material,
+  columnMat: THREE.Material,
+  colliders: THREE.Mesh[],
+) {
   const defs: Array<{ x: number; z: number; w: number; h: number; d: number; mat: THREE.Material }> = [
     { x: -15, z: 7, w: 6.5, h: 2.2, d: 3.2, mat: blockMat },
     { x: 15, z: -7, w: 6.5, h: 2.2, d: 3.2, mat: blockMat },
@@ -865,7 +914,12 @@ function addDecals(scene: THREE.Scene, texture: THREE.Texture) {
   }
 }
 
-function addPortal(scene: THREE.Scene, loader: THREE.TextureLoader, def: PortalDef, colliders: THREE.Mesh[]): PortalRuntime {
+function addPortal(
+  scene: THREE.Scene,
+  loader: THREE.TextureLoader,
+  def: PortalDef,
+  colliders: THREE.Mesh[],
+): PortalRuntime {
   const group = new THREE.Group();
   const [x, z] = def.position;
   group.position.set(x, 0, z);
@@ -985,11 +1039,7 @@ function makeLabelSprite(title: string, subtitle: string, accent: string) {
   return sprite;
 }
 
-function updateDynamicScene(
-  runtime: ReturnType<typeof buildFrontScene>,
-  state: WorldState,
-  time: number,
-) {
+function updateDynamicScene(runtime: ReturnType<typeof buildFrontScene>, state: WorldState, time: number) {
   for (const portal of runtime.portals) {
     const region = regionById(state, portal.def.regionId);
     const heat = region ? Math.max(0, Math.min(1, region.pressure / 100)) : 0.4;

@@ -1,6 +1,8 @@
 import {
   Button,
   Card,
+  GlobalGameSettingsPanel,
+  GlobalMusicToggle,
   MainMenuAction,
   MainMenuCopy,
   MainMenuLayout,
@@ -10,6 +12,8 @@ import {
   MainMenuTitle,
   MainMenuTitleLine,
   MainMenuTopBar,
+  PauseMenu,
+  type PauseMenuAction,
 } from "@shipshitgames/ui";
 import {
   type MouseEvent as ReactMouseEvent,
@@ -19,7 +23,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { Switch } from "@/components/ui/switch";
 import { SCOURGE_THREAT_TIERS } from "../game/data/enemies";
 import {
   SHOP_UPGRADES,
@@ -31,7 +34,7 @@ import {
 } from "../game/data/survivors";
 import { WEAPON_IDENTITIES } from "../game/data/weaponIdentity";
 import { MENU_HERO_URL, PLAYER_AVATAR_PREVIEW_URLS } from "../game/spriteAssets";
-import type { ScoreEntry, Settings, ShopState } from "../game/storage";
+import type { ScoreEntry, ShopState } from "../game/storage";
 import type { HUDState } from "../game/types";
 import { normalizePlayerAvatar, PLAYER_AVATAR_OPTIONS, type PlayerAvatarId } from "../net/playerAvatars";
 import { PixelIcon, type PixelIconId } from "./PixelIcon";
@@ -39,11 +42,8 @@ import { PixelIcon, type PixelIconId } from "./PixelIcon";
 interface Props {
   state: HUDState;
   scores: ScoreEntry[];
-  settings: Settings;
   onLock: () => void;
   onRestart: () => void;
-  onToggleMusic: () => void;
-  onToggleSfx: () => void;
   onClearScores: () => void;
   onStartMultiplayer: (name: string, room: string, avatar: PlayerAvatarId) => void;
   onLeaveRoom: () => void;
@@ -91,31 +91,6 @@ function IconText({
       <PixelIcon id={icon} size={size} />
       <span className="min-w-0">{children}</span>
     </span>
-  );
-}
-
-function roomShareUrl(room: string): string {
-  return `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(room)}`;
-}
-
-function CopyLinkButton({ room }: { room: string }) {
-  const [copied, setCopied] = useState(false);
-  const copy = () => {
-    const url = roomShareUrl(room);
-    const done = () => {
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1600);
-    };
-    try {
-      navigator.clipboard?.writeText(url).then(done, done);
-    } catch {
-      done();
-    }
-  };
-  return (
-    <Button type="button" variant="default" onClick={copy}>
-      {copied ? <IconText icon="check">Copied!</IconText> : <IconText icon="link">Copy breach link</IconText>}
-    </Button>
   );
 }
 
@@ -635,32 +610,12 @@ function ReloadRing({ progress }: { progress: number }) {
   );
 }
 
-function SettingsRow({
-  settings,
-  onToggleMusic,
-  onToggleSfx,
-  className = "mt-4",
-}: {
-  settings: Settings;
-  onToggleMusic: () => void;
-  onToggleSfx: () => void;
-  className?: string;
-}) {
-  const row = "ssg-settings-row text-[13px] tracking-[0.03em]";
+// Music + SFX volume sliders, sourced from the shared global settings store.
+// Self-subscribing, so it needs no props beyond layout spacing.
+function SettingsRow({ className = "mt-4" }: { className?: string }) {
   return (
-    <div className={`flex gap-3 justify-center ${className}`} onClick={(e) => e.stopPropagation()}>
-      <label className={row}>
-        <IconText icon="music" size={16}>
-          Music
-        </IconText>
-        <Switch checked={settings.music} onCheckedChange={onToggleMusic} aria-label="Toggle music" />
-      </label>
-      <label className={row}>
-        <IconText icon="sfx" size={16}>
-          SFX
-        </IconText>
-        <Switch checked={settings.sfx} onCheckedChange={onToggleSfx} aria-label="Toggle sound effects" />
-      </label>
+    <div className={`pointer-events-auto flex justify-center ${className}`} onClick={(e) => e.stopPropagation()}>
+      <GlobalGameSettingsPanel inline className="w-[min(360px,86vw)]" />
     </div>
   );
 }
@@ -922,11 +877,8 @@ function LevelUpDraft({
 export function HUD({
   state,
   scores,
-  settings,
   onLock,
   onRestart,
-  onToggleMusic,
-  onToggleSfx,
   onClearScores,
   onStartMultiplayer,
   onLeaveRoom,
@@ -1052,6 +1004,63 @@ export function HUD({
   const showLockPrompt = status === "pointerlock-needed" && !suppressMenu && (campaign || survivors || multiplayer);
 
   const menuScreenWrap = "flex flex-col items-center gap-2 mt-[14px] w-full";
+
+  // Status row + real actions for the shared PauseMenu (mirrors the title menu;
+  // no shop affordance). Multiplayer surfaces breach/connection info + Leave.
+  const pauseStatus: ReactNode = multiplayer ? (
+    <>
+      <span>
+        Breach {room || "-"} · {connected ? "connected" : "connecting…"}
+      </span>
+      <span>{kills} frags</span>
+    </>
+  ) : (
+    <>
+      <span>Score {score.toLocaleString()}</span>
+      <span>{bossActive ? SCOURGE_THREAT_TIERS.breachBoss.banner : `Wave ${wave}/${totalWaves}`}</span>
+      <span>{kills} kills</span>
+    </>
+  );
+  const pauseActions: PauseMenuAction[] = [
+    {
+      id: "settings",
+      label: "Settings",
+      meta: "Audio",
+      variant: "settings",
+      onSelect: () => setPausePanel("settings"),
+    },
+    {
+      id: "controls",
+      label: "Controls",
+      meta: "Key bindings",
+      variant: "default",
+      onSelect: () => setPausePanel("controls"),
+    },
+    {
+      id: "restart",
+      label: "Restart Run",
+      meta: "New breach",
+      variant: "default",
+      onSelect: onRestart,
+    },
+    ...(multiplayer
+      ? [
+          {
+            id: "leave",
+            label: "Leave Breach",
+            meta: room || "Co-op room",
+            variant: "coop" as const,
+            onSelect: onLeaveRoom,
+          },
+        ]
+      : []),
+    {
+      id: "title",
+      label: "Exit to Menu",
+      meta: "Main menu",
+      onSelect: onMenu,
+    },
+  ];
 
   return (
     // `hud-paused` freezes every in-flight HUD animation except the pause overlay's own UI (see styles.css).
@@ -1448,7 +1457,7 @@ export function HUD({
                       Settings
                     </IconText>
                   </div>
-                  <SettingsRow settings={settings} onToggleMusic={onToggleMusic} onToggleSfx={onToggleSfx} />
+                  <SettingsRow />
                   <Button
                     type="button"
                     variant="back"
@@ -1480,196 +1489,139 @@ export function HUD({
               )}
             </div>
           )}
+          <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>
       )}
 
-      {status === "paused" && (
+      {status === "paused" && pausePanel === "none" && (
+        <PauseMenu
+          open
+          kicker={multiplayer ? "Breach run" : "Pyre breach"}
+          title="Paused"
+          subtitle={
+            multiplayer
+              ? "Hold the line — the breach keeps churning while you regroup."
+              : "The breach is held in stasis. Catch your breath, operator."
+          }
+          status={pauseStatus}
+          onResume={onLock}
+          actions={pauseActions}
+        />
+      )}
+
+      {status === "paused" && pausePanel === "settings" && (
         <div className={OVERLAY} onClick={onLock}>
-          <h2 className="m-0 mb-[18px] text-[30px] font-bold">Paused</h2>
-          {multiplayer ? (
-            <>
-              <p className="my-1 opacity-85 text-[16px]">
-                Breach <b>{room}</b> · {connected ? "connected" : "connecting..."} · Kills {kills}
-              </p>
-              <div
-                className="pause-ui pointer-events-auto my-[8px] w-[min(460px,86vw)] bg-[rgba(255,106,0,0.08)] border border-[rgba(255,106,0,0.32)] rounded-[10px] px-[14px] py-3 text-center"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="text-[12px] opacity-70 mb-2">Invite a friend to this breach run:</div>
-                <input
-                  className="pointer-events-auto w-full text-[13px] text-[#cbe9f5] bg-black/40 border border-white/[0.18] rounded-[7px] px-[10px] py-2 text-center"
-                  readOnly
-                  value={roomShareUrl(room)}
-                  onFocus={(e) => e.currentTarget.select()}
-                />
-                <div className="flex gap-[10px] justify-center mt-[10px] flex-wrap">
-                  <CopyLinkButton room={room} />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onLeaveRoom();
-                    }}
-                  >
-                    <IconText icon="leave" size={16}>
-                      Leave Breach
-                    </IconText>
-                  </Button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <p className="my-1 opacity-85 text-[16px]">
-              Score {score.toLocaleString()} · Kills {kills} ·{" "}
-              {bossActive ? SCOURGE_THREAT_TIERS.breachBoss.banner : `Wave ${wave}/${totalWaves}`}
-            </p>
-          )}
+          <h2 className="m-0 mb-[18px] text-[30px] font-bold">
+            <IconText icon="settings" size={26}>
+              Settings
+            </IconText>
+          </h2>
+          <SettingsRow className="mt-0" />
           <div
-            className="pause-ui flex flex-col gap-[10px] mt-[22px] w-[min(340px,86vw)] pointer-events-auto"
+            className="pause-ui mt-[22px] w-[min(340px,86vw)] pointer-events-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            {pausePanel === "none" && (
-              <>
-                <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel("settings")}>
-                  <IconText icon="settings" size={16}>
-                    Settings
-                  </IconText>
-                </Button>
-                <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel("controls")}>
-                  <IconText icon="gamepad" size={16}>
-                    Controls
-                  </IconText>
-                </Button>
-                <Button type="button" variant="ghost" className="w-full" onClick={onRestart}>
-                  <IconText icon="restart" size={16}>
-                    Restart Run
-                  </IconText>
-                </Button>
-                <Button type="button" variant="default" className="w-full" onClick={onLock}>
-                  <IconText icon="resume" size={16}>
-                    Resume
-                  </IconText>
-                </Button>
-                <Button type="button" variant="ghost" className="w-full" onClick={onMenu}>
-                  <IconText icon="leave" size={16}>
-                    Exit to Menu
-                  </IconText>
-                </Button>
-              </>
-            )}
+            <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel("none")}>
+              ← Back
+            </Button>
+          </div>
+        </div>
+      )}
 
-            {pausePanel === "settings" && (
-              <>
-                <div className="text-[16px] font-extrabold tracking-[0.04em] text-center mb-[2px]">
-                  <IconText icon="settings" size={17}>
-                    Settings
-                  </IconText>
-                </div>
-                <SettingsRow
-                  settings={settings}
-                  onToggleMusic={onToggleMusic}
-                  onToggleSfx={onToggleSfx}
-                  className="mt-0"
-                />
-                <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel("none")}>
-                  ← Back
-                </Button>
-              </>
-            )}
-
-            {pausePanel === "controls" && (
-              <>
-                <div className="text-[16px] font-extrabold tracking-[0.04em] text-center mb-[2px]">
-                  <IconText icon="gamepad" size={17}>
-                    Controls
-                  </IconText>
-                </div>
-                <div className="flex flex-col gap-2 px-[18px] py-[14px] bg-white/[0.04] border border-white/[0.12] rounded-[10px] text-[14px] [&>div]:flex [&>div]:items-center [&>div]:gap-[10px] [&_span]:shrink-0 [&_span]:w-[110px] [&_span]:text-right [&_span]:opacity-85">
-                  <div>
-                    <span>
-                      <kbd>WASD</kbd>
-                    </span>{" "}
-                    Move
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>Mouse</kbd>
-                    </span>{" "}
-                    Look
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>L-Click</kbd>
-                    </span>{" "}
-                    Fire
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>R-Click</kbd>
-                    </span>{" "}
-                    ADS
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>Wheel</kbd>
-                    </span>{" "}
-                    Weapon switch
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>R-Click</kbd> + <kbd>Wheel</kbd>
-                    </span>{" "}
-                    Scope zoom
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>F</kbd> / <kbd>V</kbd>
-                    </span>{" "}
-                    Melee
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>1</kbd>–<kbd>5</kbd>
-                    </span>{" "}
-                    Weapon
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>Space</kbd>
-                    </span>{" "}
-                    Jump
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>Shift</kbd>
-                    </span>{" "}
-                    Run
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>Ctrl</kbd> / <kbd>C</kbd>
-                    </span>{" "}
-                    Crouch
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>R</kbd>
-                    </span>{" "}
-                    Reload
-                  </div>
-                  <div>
-                    <span>
-                      <kbd>Esc</kbd>
-                    </span>{" "}
-                    Pause / Resume
-                  </div>
-                </div>
-                <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel("none")}>
-                  ← Back
-                </Button>
-              </>
-            )}
+      {status === "paused" && pausePanel === "controls" && (
+        <div className={OVERLAY} onClick={onLock}>
+          <h2 className="m-0 mb-[18px] text-[30px] font-bold">
+            <IconText icon="gamepad" size={26}>
+              Controls
+            </IconText>
+          </h2>
+          <div
+            className="pause-ui flex flex-col gap-[10px] w-[min(340px,86vw)] pointer-events-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col gap-2 px-[18px] py-[14px] bg-white/[0.04] border border-white/[0.12] rounded-[10px] text-[14px] [&>div]:flex [&>div]:items-center [&>div]:gap-[10px] [&_span]:shrink-0 [&_span]:w-[110px] [&_span]:text-right [&_span]:opacity-85">
+              <div>
+                <span>
+                  <kbd>WASD</kbd>
+                </span>{" "}
+                Move
+              </div>
+              <div>
+                <span>
+                  <kbd>Mouse</kbd>
+                </span>{" "}
+                Look
+              </div>
+              <div>
+                <span>
+                  <kbd>L-Click</kbd>
+                </span>{" "}
+                Fire
+              </div>
+              <div>
+                <span>
+                  <kbd>R-Click</kbd>
+                </span>{" "}
+                ADS
+              </div>
+              <div>
+                <span>
+                  <kbd>Wheel</kbd>
+                </span>{" "}
+                Weapon switch
+              </div>
+              <div>
+                <span>
+                  <kbd>R-Click</kbd> + <kbd>Wheel</kbd>
+                </span>{" "}
+                Scope zoom
+              </div>
+              <div>
+                <span>
+                  <kbd>F</kbd> / <kbd>V</kbd>
+                </span>{" "}
+                Melee
+              </div>
+              <div>
+                <span>
+                  <kbd>1</kbd>–<kbd>5</kbd>
+                </span>{" "}
+                Weapon
+              </div>
+              <div>
+                <span>
+                  <kbd>Space</kbd>
+                </span>{" "}
+                Jump
+              </div>
+              <div>
+                <span>
+                  <kbd>Shift</kbd>
+                </span>{" "}
+                Run
+              </div>
+              <div>
+                <span>
+                  <kbd>Ctrl</kbd> / <kbd>C</kbd>
+                </span>{" "}
+                Crouch
+              </div>
+              <div>
+                <span>
+                  <kbd>R</kbd>
+                </span>{" "}
+                Reload
+              </div>
+              <div>
+                <span>
+                  <kbd>Esc</kbd>
+                </span>{" "}
+                Pause / Resume
+              </div>
+            </div>
+            <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel("none")}>
+              ← Back
+            </Button>
           </div>
         </div>
       )}
@@ -1841,7 +1793,7 @@ export function HUD({
               </div>
             </>
           )}
-          <SettingsRow settings={settings} onToggleMusic={onToggleMusic} onToggleSfx={onToggleSfx} />
+          <SettingsRow />
         </div>
       )}
     </div>

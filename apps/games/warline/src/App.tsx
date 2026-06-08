@@ -1,6 +1,6 @@
-import { useState } from "react";
 import menuHero from "@shipshitgames/assets/games/warline/ui/menu/title.webp";
 import {
+  GlobalMusicToggle,
   MainMenuAction,
   MainMenuCopy,
   MainMenuLayout,
@@ -12,15 +12,16 @@ import {
   MainMenuTopBar,
   MenuKicker,
 } from "@shipshitgames/ui";
-import { useWarline } from "./store";
-import { Header } from "./components/Header";
-import { ResourceBar } from "./components/ResourceBar";
-import { WarMap } from "./components/WarMap";
-import { WarFeed } from "./components/WarFeed";
+import { useState } from "react";
 import { CommandPanel } from "./components/CommandPanel";
-import { OpsPanel } from "./components/OpsPanel";
-import { Legend } from "./components/Legend";
 import { FrontMap3D } from "./components/FrontMap3D";
+import { Header } from "./components/Header";
+import { Legend } from "./components/Legend";
+import { OpsPanel } from "./components/OpsPanel";
+import { ResourceBar } from "./components/ResourceBar";
+import { WarFeed } from "./components/WarFeed";
+import { WarMap } from "./components/WarMap";
+import { useWarline } from "./store";
 
 export default function App() {
   const { state, summary, status, faction, setFaction, command, simulate } = useWarline();
@@ -88,6 +89,7 @@ export default function App() {
               <MainMenuAction variant="dev" label="Sandbox" meta="Ops sim" disabled />
             </MainMenuNav>
           </MainMenuLayout>
+          <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>
       )}
 
@@ -101,6 +103,7 @@ export default function App() {
             status={status}
             faction={faction}
             onOpenCommand={() => setMode("command")}
+            onExitToTitle={() => setShowTitle(true)}
           />
         ) : (
           <main className="mx-auto max-w-[1400px] px-4 py-4 sm:px-6">

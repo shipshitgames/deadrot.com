@@ -17,11 +17,12 @@
 import { CAMERA } from "./constants";
 import { generateCourse } from "./course";
 import { Runner } from "./entities/runner";
+import { Hud } from "./systems/hud";
 import { Input } from "./systems/input";
 import { Physics } from "./systems/physics";
 import { Render } from "./systems/render";
-import { Hud } from "./systems/hud";
 import type { Course, Phase } from "./types";
+import { overlayController } from "./ui/overlays";
 
 const FIXED_DT = 1 / 120; // physics step
 const MAX_FRAME = 0.1; // clamp huge deltas (tab switch etc.)
@@ -36,6 +37,7 @@ export class Game {
   private course: Course;
 
   phase: Phase = "ready";
+  private paused = false;
   private time = 0; // run timer (s)
   private embersCollected = 0;
 
@@ -51,9 +53,18 @@ export class Game {
     this.render.buildCourse(this.course, this.runner);
 
     window.addEventListener("resize", this.onResize);
+    window.addEventListener("keydown", this.onKeyDown);
+
+    // Shared pause overlay actions (no shop): Restart + Exit to title.
+    overlayController.onResume = () => this.resume();
+    overlayController.pauseActions = [
+      { id: "restart", label: "Restart run", meta: "Same lane", onSelect: () => this.restartFromPause() },
+      { id: "title", label: "Exit to title", meta: "Main menu", onSelect: () => this.exitToTitle() },
+    ];
 
     this.hud.showStart();
     this.hud.onOverlayButton(() => this.startRun());
+    this.hud.onSettingsButton(() => overlayController.openSettings());
   }
 
   start() {
@@ -64,11 +75,52 @@ export class Game {
   dispose() {
     cancelAnimationFrame(this.raf);
     window.removeEventListener("resize", this.onResize);
+    window.removeEventListener("keydown", this.onKeyDown);
     this.input.dispose();
     this.render.dispose();
   }
 
   private onResize = () => this.render.resize();
+
+  // ---------------------------------------------------------------------------
+  // Pause
+  // ---------------------------------------------------------------------------
+
+  /** Esc toggles pause, but only while a run is live. */
+  private onKeyDown = (e: KeyboardEvent) => {
+    if (e.code !== "Escape") return;
+    if (this.paused) {
+      this.resume();
+    } else if (this.phase === "running") {
+      this.pause();
+    }
+  };
+
+  private pause() {
+    if (this.phase !== "running" || this.paused) return;
+    this.paused = true;
+    overlayController.setPaused(true);
+  }
+
+  private resume() {
+    if (!this.paused) return;
+    this.paused = false;
+    overlayController.setPaused(false);
+  }
+
+  private restartFromPause() {
+    this.resume();
+    this.startRun();
+  }
+
+  /** Drop the live run and return to the title menu. */
+  private exitToTitle() {
+    this.resume();
+    this.phase = "ready";
+    this.hud.showStart();
+    this.hud.onOverlayButton(() => this.startRun());
+    this.hud.onSettingsButton(() => overlayController.openSettings());
+  }
 
   // ---------------------------------------------------------------------------
   // Run lifecycle
@@ -109,6 +161,17 @@ export class Game {
     let dt = (now - this.last) / 1000;
     this.last = now;
     if (dt > MAX_FRAME) dt = MAX_FRAME;
+
+    // While paused, freeze the simulation: drain any buffered input so it does
+    // not fire on resume, keep rendering the frozen scene under the overlay.
+    if (this.paused) {
+      this.input.consumeRestart();
+      this.input.consumeAnyKey();
+      this.acc = 0;
+      this.render.render();
+      this.runner.clearEvents();
+      return;
+    }
 
     // Global: restart hotkey works in any phase.
     if (this.input.consumeRestart()) {
