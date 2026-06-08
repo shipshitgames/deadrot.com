@@ -62,6 +62,7 @@ export const CONSTANTS = {
 
   // --- Enemies -------------------------------------------------------------
   SCOURGE_SPEED: 2.4, // patrol speed of a blood-blob
+  SCOURGE_FERAL_SPEED: 3.4, // severed hosts thrash faster after the Choir path is cut
   SCOURGE_SIZE: 1.1,
 
   // --- Pickups -------------------------------------------------------------
@@ -73,4 +74,6 @@ export const CONSTANTS = {
 
   // --- Loop ----------------------------------------------------------------
   MAX_DELTA: 1 / 30, // clamp dt so a stutter never tunnels the hero
+  CORE_IGNITE_RADIUS: 2,
+  EXIT_RADIUS: 2.2,
 } as const;

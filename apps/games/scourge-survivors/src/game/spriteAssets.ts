@@ -1,58 +1,59 @@
 import * as THREE from "three";
-import type { WeaponId } from "./constants";
-import type { PlayerAvatarId } from "../net/playerAvatars";
 import {
   ANIMATION_MANIFEST,
+  ASSET_CATALOG,
   ASSET_MANIFEST,
   animationFrameUrl,
   assetUrl,
   audioUrl,
   loadSpriteTexture,
   loadTexture,
+  type SpriteView,
   spriteEntry,
   spriteScale,
+  spriteUrl,
   textureEntry,
-  type SpriteView,
 } from "../assets/catalog";
+import type { PlayerAvatarId } from "../net/playerAvatars";
+import type { WeaponId } from "./constants";
 
-type EnemySpriteKind = "melee" | "ranged" | "flying" | "boss";
-type EnemySpriteView = SpriteView;
-export type EnemySpriteAnimationState = "move" | "attack";
+export type EnemySpriteKind = "melee" | "ranged" | "flying" | "boss";
+export type EnemySpriteView = SpriteView;
+export type EnemySpriteAnimationState = "move" | "attack" | "death";
 
-const ENEMY_SPRITE_IDS: Record<EnemySpriteKind, string> = {
-  melee: "enemy-melee",
-  ranged: "enemy-ranged",
-  flying: "enemy-flying",
-  boss: "boss",
-};
+export function enemySpriteAssetId(id: EnemySpriteKind): string {
+  return ASSET_CATALOG.enemy(id).sprite;
+}
 
-const ENEMY_ANIMATION_CONFIG: Record<
-  EnemySpriteKind,
-  {
-    entity: string;
-    actions: Record<EnemySpriteAnimationState, string>;
-  }
-> = {
-  melee: { entity: "host-grunt", actions: { move: "walk", attack: "slash" } },
-  ranged: { entity: "spitter-host", actions: { move: "walk", attack: "spit" } },
-  flying: { entity: "winged-host", actions: { move: "fly", attack: "attack" } },
-  boss: { entity: "breach-boss", actions: { move: "lurch", attack: "barrage" } },
-};
+export function playerAvatarSpriteAssetId(id: PlayerAvatarId): string {
+  return ASSET_CATALOG.player(id).sprite;
+}
 
-const PLAYER_SPRITE_IDS: Record<PlayerAvatarId, string> = {
-  ranger: "player-ranger",
-  heavy: "player-heavy",
-  scout: "player-scout",
-  medic: "player-medic",
-};
+export function weaponSpriteAssetId(id: WeaponId): string {
+  return ASSET_CATALOG.weapon(id).sprite;
+}
 
-const WEAPON_SPRITE_IDS: Record<WeaponId, string> = {
-  pistol: "weapon-pistol",
-  smg: "weapon-smg",
-  shotgun: "weapon-shotgun",
-  cannon: "weapon-cannon",
-  sniper: "weapon-sniper",
-};
+function pickupSpriteAssetId(id: "health" | "ammo" | "damage" | "dual" | "xpBlood"): string {
+  return ASSET_CATALOG.pickup(id).sprite;
+}
+
+function projectileSpriteAssetId(id: "enemy" | "boss"): string {
+  return ASSET_CATALOG.projectile(id).sprite;
+}
+
+function fxSpriteAssetId(id: "muzzleFlash"): string {
+  return ASSET_CATALOG.fx(id).sprite;
+}
+
+function enemyAnimationEntity(kind: EnemySpriteKind): string {
+  return ASSET_CATALOG.enemy(kind).animation.entity;
+}
+
+function enemyAnimationAction(kind: EnemySpriteKind, state: EnemySpriteAnimationState): string {
+  const action = ASSET_CATALOG.enemy(kind).animation.actions[state];
+  if (!action) throw new Error(`Scourge Survivors enemy ${kind} has no ${state} animation action`);
+  return action;
+}
 
 function textureViews(id: string): Record<EnemySpriteView, THREE.Texture> {
   return {
@@ -97,37 +98,53 @@ function animationFrameViews(entity: string, action: string): Record<EnemySprite
 function animationStateViews(
   kind: EnemySpriteKind,
 ): Record<EnemySpriteAnimationState, Record<EnemySpriteView, THREE.Texture[]>> {
-  const config = ENEMY_ANIMATION_CONFIG[kind];
+  const entity = enemyAnimationEntity(kind);
   return {
-    move: animationFrameViews(config.entity, config.actions.move),
-    attack: animationFrameViews(config.entity, config.actions.attack),
+    move: animationFrameViews(entity, enemyAnimationAction(kind, "move")),
+    attack: animationFrameViews(entity, enemyAnimationAction(kind, "attack")),
+    death: animationFrameViews(entity, enemyAnimationAction(kind, "death")),
   };
 }
 
 function animationStateMeta(
   kind: EnemySpriteKind,
 ): Record<EnemySpriteAnimationState, { fps: number; loop: boolean; frameCount: number }> {
-  const config = ENEMY_ANIMATION_CONFIG[kind];
-  const entity = ANIMATION_MANIFEST.entities[config.entity];
+  const entityId = enemyAnimationEntity(kind);
+  const entity = ANIMATION_MANIFEST.entities[entityId];
+  if (!entity) throw new Error(`Scourge Survivors animation manifest has no entity ${entityId}`);
+  const moveAction = enemyAnimationAction(kind, "move");
+  const attackAction = enemyAnimationAction(kind, "attack");
+  const deathAction = enemyAnimationAction(kind, "death");
+  const move = entity.actions[moveAction];
+  const attack = entity.actions[attackAction];
+  const death = entity.actions[deathAction];
+  if (!move) throw new Error(`Scourge Survivors animation manifest has no action ${entityId}/${moveAction}`);
+  if (!attack) throw new Error(`Scourge Survivors animation manifest has no action ${entityId}/${attackAction}`);
+  if (!death) throw new Error(`Scourge Survivors animation manifest has no action ${entityId}/${deathAction}`);
   return {
     move: {
-      fps: entity.actions[config.actions.move].fps,
-      loop: entity.actions[config.actions.move].loop,
+      fps: move.fps,
+      loop: move.loop,
       frameCount: ANIMATION_MANIFEST.framesPerAction,
     },
     attack: {
-      fps: entity.actions[config.actions.attack].fps,
-      loop: entity.actions[config.actions.attack].loop,
+      fps: attack.fps,
+      loop: attack.loop,
+      frameCount: ANIMATION_MANIFEST.framesPerAction,
+    },
+    death: {
+      fps: death.fps,
+      loop: death.loop,
       frameCount: ANIMATION_MANIFEST.framesPerAction,
     },
   };
 }
 
 export const ENEMY_SPRITE_TEXTURES: Record<EnemySpriteKind, Record<EnemySpriteView, THREE.Texture>> = {
-  melee: textureViews(ENEMY_SPRITE_IDS.melee),
-  ranged: textureViews(ENEMY_SPRITE_IDS.ranged),
-  flying: textureViews(ENEMY_SPRITE_IDS.flying),
-  boss: textureViews(ENEMY_SPRITE_IDS.boss),
+  melee: textureViews(enemySpriteAssetId("melee")),
+  ranged: textureViews(enemySpriteAssetId("ranged")),
+  flying: textureViews(enemySpriteAssetId("flying")),
+  boss: textureViews(enemySpriteAssetId("boss")),
 };
 
 export const ENEMY_SPRITE_ANIMATION_TEXTURES: Record<
@@ -151,18 +168,18 @@ export const ENEMY_SPRITE_ANIMATION_META: Record<
 };
 
 export const ENEMY_SPRITE_SCALES: Record<EnemySpriteKind, Record<EnemySpriteView, [number, number]>> = {
-  melee: scaleViews(ENEMY_SPRITE_IDS.melee),
-  ranged: scaleViews(ENEMY_SPRITE_IDS.ranged),
-  flying: scaleViews(ENEMY_SPRITE_IDS.flying),
-  boss: scaleViews(ENEMY_SPRITE_IDS.boss),
+  melee: scaleViews(enemySpriteAssetId("melee")),
+  ranged: scaleViews(enemySpriteAssetId("ranged")),
+  flying: scaleViews(enemySpriteAssetId("flying")),
+  boss: scaleViews(enemySpriteAssetId("boss")),
 };
 
 export const WEAPON_SPRITE_TEXTURES: Record<WeaponId, THREE.Texture> = {
-  pistol: loadSpriteTexture(WEAPON_SPRITE_IDS.pistol),
-  smg: loadSpriteTexture(WEAPON_SPRITE_IDS.smg),
-  shotgun: loadSpriteTexture(WEAPON_SPRITE_IDS.shotgun),
-  cannon: loadSpriteTexture(WEAPON_SPRITE_IDS.cannon),
-  sniper: loadSpriteTexture(WEAPON_SPRITE_IDS.sniper),
+  pistol: loadSpriteTexture(weaponSpriteAssetId("pistol")),
+  smg: loadSpriteTexture(weaponSpriteAssetId("smg")),
+  shotgun: loadSpriteTexture(weaponSpriteAssetId("shotgun")),
+  cannon: loadSpriteTexture(weaponSpriteAssetId("cannon")),
+  sniper: loadSpriteTexture(weaponSpriteAssetId("sniper")),
 };
 
 export const WEAPON_SPRITE_CONFIG: Record<
@@ -182,46 +199,72 @@ export const WEAPON_SPRITE_CONFIG: Record<
   sniper: weaponConfig("sniper"),
 };
 
-export const MUZZLE_FLASH_TEXTURE = loadSpriteTexture("muzzle-flash-pyre");
+export const MUZZLE_FLASH_TEXTURE = loadSpriteTexture(fxSpriteAssetId("muzzleFlash"));
 
 export const PROJECTILE_SPRITE_TEXTURES = {
-  enemy: loadSpriteTexture("projectile-enemy"),
-  boss: loadSpriteTexture("projectile-boss"),
+  enemy: loadSpriteTexture(projectileSpriteAssetId("enemy")),
+  boss: loadSpriteTexture(projectileSpriteAssetId("boss")),
 } as const;
 
 export const PICKUP_SPRITE_TEXTURES = {
-  health: loadSpriteTexture("pickup-health"),
-  ammo: loadSpriteTexture("pickup-ammo"),
-  damage: loadSpriteTexture("pickup-damage"),
-  dual: loadSpriteTexture("pickup-dual"),
+  health: loadSpriteTexture(pickupSpriteAssetId("health")),
+  ammo: loadSpriteTexture(pickupSpriteAssetId("ammo")),
+  damage: loadSpriteTexture(pickupSpriteAssetId("damage")),
+  dual: loadSpriteTexture(pickupSpriteAssetId("dual")),
 } as const;
 
 export const PICKUP_SPRITE_SCALES = {
-  health: spriteScale("pickup-health"),
-  ammo: spriteScale("pickup-ammo"),
-  damage: spriteScale("pickup-damage"),
-  dual: spriteScale("pickup-dual"),
+  health: spriteScale(pickupSpriteAssetId("health")),
+  ammo: spriteScale(pickupSpriteAssetId("ammo")),
+  damage: spriteScale(pickupSpriteAssetId("damage")),
+  dual: spriteScale(pickupSpriteAssetId("dual")),
 } as const;
 
-export const XP_BLOOD_TEXTURE = loadSpriteTexture("pickup-xp-blood");
-export const XP_BLOOD_SCALE = spriteScale("pickup-xp-blood");
+export const XP_BLOOD_TEXTURE = loadSpriteTexture(pickupSpriteAssetId("xpBlood"));
+export const XP_BLOOD_SCALE = spriteScale(pickupSpriteAssetId("xpBlood"));
+
+const CORPSE_PART_SPRITE_IDS = [
+  "gib-meat-chunk",
+  "gib-skull-shard",
+  "gib-bone-blade",
+  "gib-claw-limb",
+  "gib-acid-sac",
+  "gib-wing-membrane",
+] as const;
+
+export type CorpsePartSpriteId = (typeof CORPSE_PART_SPRITE_IDS)[number];
+
+export const CORPSE_PART_SPRITES = CORPSE_PART_SPRITE_IDS.map((id) => ({
+  id,
+  texture: loadSpriteTexture(id),
+  scale: spriteScale(id),
+}));
 
 export const PLAYER_AVATAR_SPRITES: Record<
   PlayerAvatarId,
   { front: THREE.Texture; side: THREE.Texture; back: THREE.Texture }
 > = {
-  ranger: textureViews(PLAYER_SPRITE_IDS.ranger),
-  heavy: textureViews(PLAYER_SPRITE_IDS.heavy),
-  scout: textureViews(PLAYER_SPRITE_IDS.scout),
-  medic: textureViews(PLAYER_SPRITE_IDS.medic),
+  ranger: textureViews(playerAvatarSpriteAssetId("ranger")),
+  heavy: textureViews(playerAvatarSpriteAssetId("heavy")),
+  scout: textureViews(playerAvatarSpriteAssetId("scout")),
+  medic: textureViews(playerAvatarSpriteAssetId("medic")),
 };
 
 export const PLAYER_AVATAR_SCALES: Record<PlayerAvatarId, Record<SpriteView, [number, number]>> = {
-  ranger: scaleViews(PLAYER_SPRITE_IDS.ranger),
-  heavy: scaleViews(PLAYER_SPRITE_IDS.heavy),
-  scout: scaleViews(PLAYER_SPRITE_IDS.scout),
-  medic: scaleViews(PLAYER_SPRITE_IDS.medic),
+  ranger: scaleViews(playerAvatarSpriteAssetId("ranger")),
+  heavy: scaleViews(playerAvatarSpriteAssetId("heavy")),
+  scout: scaleViews(playerAvatarSpriteAssetId("scout")),
+  medic: scaleViews(playerAvatarSpriteAssetId("medic")),
 };
+
+export const PLAYER_AVATAR_PREVIEW_URLS: Record<PlayerAvatarId, string> = {
+  ranger: spriteUrl(playerAvatarSpriteAssetId("ranger"), "front"),
+  heavy: spriteUrl(playerAvatarSpriteAssetId("heavy"), "front"),
+  scout: spriteUrl(playerAvatarSpriteAssetId("scout"), "front"),
+  medic: spriteUrl(playerAvatarSpriteAssetId("medic"), "front"),
+};
+
+export const MENU_HERO_URL = ASSET_CATALOG.runtimeUiUrl("menuTitle");
 
 export const ARENA_TEXTURES = {
   floor: loadTexture("arena-floor"),
@@ -261,6 +304,7 @@ export const RUNTIME_VISUAL_ASSET_URLS = Object.fromEntries([
     return [[id, assetUrl(entry.path)]];
   }),
   ...Object.entries(ASSET_MANIFEST.textures).map(([id, entry]) => [id, assetUrl(entry.path)]),
+  ...Object.entries(ASSET_MANIFEST.ui).map(([id, entry]) => [id, assetUrl(entry.path)]),
 ]) as Record<string, string>;
 
 export const RUNTIME_AUDIO_ASSET_URLS = Object.fromEntries(
@@ -268,7 +312,7 @@ export const RUNTIME_AUDIO_ASSET_URLS = Object.fromEntries(
 ) as Record<string, string>;
 
 function weaponConfig(id: WeaponId) {
-  const entry = spriteEntry(WEAPON_SPRITE_IDS[id]);
+  const entry = spriteEntry(weaponSpriteAssetId(id));
   if (!entry.scale || !entry.weapon) throw new Error(`Weapon sprite ${id} is missing weapon metadata`);
   return {
     scale: entry.scale,

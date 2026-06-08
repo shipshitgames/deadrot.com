@@ -1,8 +1,3 @@
-import playerHeavyPreview from "@shipshitgames/assets/games/scourge-survivors/players/pyre/bulwark/front.webp";
-import playerMedicPreview from "@shipshitgames/assets/games/scourge-survivors/players/pyre/patch/front.webp";
-import playerRangerPreview from "@shipshitgames/assets/games/scourge-survivors/players/pyre/ranger/front.webp";
-import playerScoutPreview from "@shipshitgames/assets/games/scourge-survivors/players/pyre/vector/front.webp";
-import menuHero from "@shipshitgames/assets/games/scourge-survivors/ui/menu/scourge-hero.jpg";
 import {
   Button,
   Card,
@@ -25,6 +20,7 @@ import {
   useState,
 } from "react";
 import { Switch } from "@/components/ui/switch";
+import { SCOURGE_THREAT_TIERS } from "../game/data/enemies";
 import {
   SHOP_UPGRADES,
   SURVIVOR_CLASS_IDS,
@@ -33,6 +29,8 @@ import {
   type SurvivorClassId,
   shopCost,
 } from "../game/data/survivors";
+import { WEAPON_IDENTITIES } from "../game/data/weaponIdentity";
+import { MENU_HERO_URL, PLAYER_AVATAR_PREVIEW_URLS } from "../game/spriteAssets";
 import type { ScoreEntry, Settings, ShopState } from "../game/storage";
 import type { HUDState } from "../game/types";
 import { normalizePlayerAvatar, PLAYER_AVATAR_OPTIONS, type PlayerAvatarId } from "../net/playerAvatars";
@@ -70,12 +68,12 @@ const STAT_VALUE = "ssg-stat-value";
 const MENU_HEADING = "ssg-section-heading";
 const STAT_SUB = "ssg-stat-sub";
 const DRAFT_PRESS_MAX_AGE_MS = 1200;
-const AVATAR_PREVIEWS: Record<PlayerAvatarId, string> = {
-  ranger: playerRangerPreview,
-  heavy: playerHeavyPreview,
-  scout: playerScoutPreview,
-  medic: playerMedicPreview,
-};
+const AVATAR_PREVIEWS: Record<PlayerAvatarId, string> = PLAYER_AVATAR_PREVIEW_URLS;
+
+function savedSurvivorClass(): SurvivorClassId {
+  const saved = localStorage.getItem("scourge-survivors.survivorClass");
+  return SURVIVOR_CLASS_IDS.includes(saved as SurvivorClassId) ? (saved as SurvivorClassId) : "ranger";
+}
 
 function IconText({
   icon,
@@ -116,7 +114,7 @@ function CopyLinkButton({ room }: { room: string }) {
   };
   return (
     <Button type="button" variant="default" onClick={copy}>
-      {copied ? <IconText icon="check">Copied!</IconText> : <IconText icon="link">Copy room link</IconText>}
+      {copied ? <IconText icon="check">Copied!</IconText> : <IconText icon="link">Copy breach link</IconText>}
     </Button>
   );
 }
@@ -181,7 +179,7 @@ function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => void })
         })}
       </div>
       <div className="mt-[10px] text-[11px] opacity-60 text-center">
-        Permanent — applies to every Survivors run. Earn gold by surviving.
+        Permanent upgrades apply to every Survivors run. Earn gold by surviving.
       </div>
     </div>
   );
@@ -191,7 +189,7 @@ function randomRoom(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let s = "";
   for (let i = 0; i < 4; i++) s += chars[Math.floor(Math.random() * chars.length)];
-  return `ARENA-${s}`;
+  return `BREACH-${s}`;
 }
 
 function MultiplayerPanel({
@@ -222,7 +220,7 @@ function MultiplayerPanel({
     >
       <div className="text-[14px] tracking-[0.1em] uppercase text-[#ff8aa0] mb-[10px]">
         <IconText icon="swords" size={18}>
-          Online Rooms
+          Co-op Breach Rooms
         </IconText>
       </div>
       <div className="flex gap-[10px] justify-center flex-wrap">
@@ -235,7 +233,7 @@ function MultiplayerPanel({
         />
         <input
           className={input}
-          placeholder="Room code (blank = random)"
+          placeholder="Breach code (blank = random)"
           maxLength={20}
           value={room}
           onChange={(e) => setRoom(e.target.value)}
@@ -296,10 +294,10 @@ function MultiplayerPanel({
         onClick={join}
       >
         <IconText icon="swords" size={19}>
-          Join Room
+          Join Breach
         </IconText>
       </button>
-      <div className="mt-2 text-[12px] opacity-60">Share the room code so friends can join the same arena.</div>
+      <div className="mt-2 text-[12px] opacity-60">Share the breach code so friends can join the same run.</div>
     </div>
   );
 }
@@ -309,17 +307,17 @@ function SurvivorsPanel({
   onStart,
   onShop,
   onCoop,
+  onLeaderboard,
 }: {
   shop: ShopState;
   onStart: (classId: SurvivorClassId) => void;
   onShop: () => void;
   onCoop: () => void;
+  onLeaderboard: () => void;
 }) {
-  const [classId, setClassId] = useState<SurvivorClassId>(() => {
-    const saved = localStorage.getItem("scourge-survivors.survivorClass");
-    return SURVIVOR_CLASS_IDS.includes(saved as SurvivorClassId) ? (saved as SurvivorClassId) : "ranger";
-  });
+  const [classId, setClassId] = useState<SurvivorClassId>(() => savedSurvivorClass());
   const selected = SURVIVOR_CLASSES[classId];
+  const selectedWeapon = WEAPON_IDENTITIES[selected.startingWeapon];
   const launch = () => {
     localStorage.setItem("scourge-survivors.survivorClass", classId);
     onStart(classId);
@@ -330,6 +328,7 @@ function SurvivorsPanel({
       <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
         {SURVIVOR_CLASS_IDS.map((id) => {
           const cls = SURVIVOR_CLASSES[id];
+          const weapon = WEAPON_IDENTITIES[cls.startingWeapon];
           const active = id === classId;
           return (
             <button
@@ -360,17 +359,21 @@ function SurvivorsPanel({
               </span>
               <span className="block text-[11px] font-bold uppercase tracking-[0.08em] text-[#ffb56b]">{cls.role}</span>
               <span className="mt-1 block text-[12px] leading-[1.35] opacity-70">{cls.desc}</span>
+              <span className="mt-2 block rounded-[6px] border border-white/10 bg-black/25 px-2 py-[6px] text-[11px] leading-[1.25] text-[#ffd2a0]">
+                {weapon.displayName} · {weapon.role}
+              </span>
             </button>
           );
         })}
       </div>
-      <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_auto] md:items-center">
+      <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_auto_auto] md:items-center">
         <div className="rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-left">
           <div className="text-[12px] uppercase tracking-[0.12em] text-[#ffb56b]">Selected</div>
           <div className="text-[22px] font-black tracking-[0.03em]">{selected.name}</div>
           <div className="text-[12px] opacity-65">
-            {Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}:{(SURVIVOR_RUN_GOAL_TIME % 60).toString().padStart(2, "0")} breach
-            descent · {shop.gold.toLocaleString()} gold banked
+            {selectedWeapon.callsign} · {Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}:
+            {(SURVIVOR_RUN_GOAL_TIME % 60).toString().padStart(2, "0")} breach descent · {shop.gold.toLocaleString()}{" "}
+            gold banked
           </div>
         </div>
         <Button type="button" variant="ghost" className="h-full min-h-[58px]" onClick={onShop}>
@@ -379,17 +382,129 @@ function SurvivorsPanel({
         <Button type="button" variant="ghost" className="h-full min-h-[58px]" onClick={onCoop}>
           Co-op
         </Button>
+        <Button type="button" variant="ghost" className="h-full min-h-[58px]" onClick={onLeaderboard}>
+          Leaderboard
+        </Button>
       </div>
       <Button type="button" variant="primary" size="lg" className="mt-4 w-[min(380px,86vw)]" onClick={launch}>
-        Start Run
+        Play a Run
       </Button>
     </div>
   );
 }
 
+function SurvivorsHub({
+  shop,
+  scores,
+  onStart,
+  onOperator,
+  onShop,
+  onCoop,
+  onLeaderboard,
+  onSettings,
+  onStartSandbox,
+}: {
+  shop: ShopState;
+  scores: ScoreEntry[];
+  onStart: (classId: SurvivorClassId) => void;
+  onOperator: () => void;
+  onShop: () => void;
+  onCoop: () => void;
+  onLeaderboard: () => void;
+  onSettings: () => void;
+  onStartSandbox?: () => void;
+}) {
+  const [classId] = useState<SurvivorClassId>(() => savedSurvivorClass());
+  const selected = SURVIVOR_CLASSES[classId];
+  const launch = () => onStart(classId);
+  return (
+    <MainMenuNav label="Survivors Hub" aria-label="Survivors hub">
+      <MainMenuAction
+        type="button"
+        variant="primary"
+        label={
+          <IconText icon="target" size={22}>
+            Play a Run
+          </IconText>
+        }
+        meta={`${selected.name} · ${Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}m breach`}
+        onClick={launch}
+      />
+      <MainMenuAction
+        type="button"
+        variant="default"
+        label={
+          <IconText icon={selected.icon} size={18}>
+            Operator Loadout
+          </IconText>
+        }
+        meta={selected.role}
+        onClick={onOperator}
+      />
+      <MainMenuAction
+        type="button"
+        variant="shop"
+        label={
+          <IconText icon="shop" size={18}>
+            Shop
+          </IconText>
+        }
+        meta={`${shop.gold.toLocaleString()} gold`}
+        onClick={onShop}
+      />
+      <MainMenuAction
+        type="button"
+        variant="coop"
+        label={
+          <IconText icon="swords" size={18}>
+            Co-op
+          </IconText>
+        }
+        meta="Breach rooms"
+        onClick={onCoop}
+      />
+      <MainMenuAction
+        type="button"
+        variant="records"
+        label={
+          <IconText icon="trophy" size={18}>
+            Leaderboard
+          </IconText>
+        }
+        meta={scores.length === 0 ? "No records" : "Local archive"}
+        onClick={onLeaderboard}
+      />
+      <MainMenuAction
+        type="button"
+        variant="settings"
+        label={
+          <IconText icon="settings" size={18}>
+            Settings
+          </IconText>
+        }
+        meta="Audio"
+        onClick={onSettings}
+      />
+      {onStartSandbox && (
+        <MainMenuAction
+          type="button"
+          variant="dev"
+          label={
+            <IconText icon="gamepad" size={18}>
+              Sandbox
+            </IconText>
+          }
+          meta="Dev lab"
+          onClick={onStartSandbox}
+        />
+      )}
+    </MainMenuNav>
+  );
+}
+
 function Scoreboard({ board, room, connected }: { board: HUDState["scoreboard"]; room: string; connected: boolean }) {
   return (
-    <div className="scourge-scoreboard absolute top-[96px] right-[18px] min-w-[190px] border border-white/10 rounded-[10px] px-[10px] py-2 [font-variant-numeric:tabular-nums]">
+    <div className="scourge-scoreboard absolute top-[96px] right-[18px] min-w-[190px] border border-white/10 rounded-[2px] px-[10px] py-2 [font-variant-numeric:tabular-nums]">
       <div className="flex justify-between text-[12px] tracking-[0.06em] opacity-85 mb-[5px] pb-1 border-b border-white/10">
         <IconText icon="swords" size={14}>
           {room || "-"}
@@ -422,6 +537,29 @@ function formatTime(seconds: number): string {
   const m = Math.floor(s / 60);
   const r = s % 60;
   return `${m}:${r.toString().padStart(2, "0")}`;
+}
+
+function runModeLabel(mode?: HUDState["runMode"]): string {
+  switch (mode) {
+    case "structured":
+      return "Structured";
+    case "endless":
+      return "Endless";
+    case "coop":
+      return "Co-op";
+    case "sandbox":
+      return "Sandbox";
+    case "campaign":
+      return "Campaign";
+    default:
+      return "Run";
+  }
+}
+
+function depthLabel(depth?: number, total?: number, name?: string): string {
+  if (!depth) return name || "-";
+  const count = total && total > 0 ? `${depth}/${total}` : `${depth}`;
+  return name ? `${count} · ${name}` : count;
 }
 
 function healthColor(frac: number): string {
@@ -566,9 +704,10 @@ function Leaderboard({
           <thead>
             <tr>
               <th className={`${th} !text-center`}>#</th>
+              <th className={`${th} !text-left`}>Run</th>
               <th className={th}>Score</th>
               <th className={th}>Kills</th>
-              <th className={th}>HS</th>
+              <th className={th}>Lvl</th>
               <th className={th}>Time</th>
               <th className={th}>Result</th>
             </tr>
@@ -587,9 +726,17 @@ function Leaderboard({
                   className={me ? "bg-[rgba(255,106,0,0.14)] outline outline-1 outline-[rgba(255,106,0,0.36)]" : ""}
                 >
                   <td className={`${td} !text-center`}>{i + 1}</td>
+                  <td className={`${td} !text-left`}>
+                    <span className="block text-[12px] font-bold uppercase tracking-[0.04em]">
+                      {runModeLabel(s.mode)}
+                    </span>
+                    <span className="block max-w-[150px] truncate text-[10px] opacity-55">
+                      {depthLabel(s.depthReached, s.depthTotal, s.depthName)}
+                    </span>
+                  </td>
                   <td className={td}>{s.score.toLocaleString()}</td>
                   <td className={td}>{s.kills}</td>
-                  <td className={td}>{s.headshots}</td>
+                  <td className={td}>{s.level ?? "-"}</td>
                   <td className={td}>{formatTime(s.time)}</td>
                   <td className={`${td} ${s.outcome === "win" ? "text-good font-bold" : "text-[#aab4c2]"}`}>
                     {s.outcome === "win" ? "WIN" : "KO"}
@@ -608,17 +755,19 @@ function SurvivorsHud({ state }: { state: HUDState }) {
   const frac = state.xpToNext > 0 ? state.xp / state.xpToNext : 0;
   return (
     <>
-      <div className="ssg-survivor-runline" aria-hidden>
+      <div className="ssg-survivor-runline" data-testid="survivors-run-hud" aria-hidden>
         <div className="ssg-survivor-runline__meta">
           <span>
             <IconText icon={state.survivorClassIcon} size={14}>
               {state.survivorClassName}
             </IconText>
           </span>
-          <span>
-            Breach {state.survivorChapter}/{state.survivorTotalChapters}
+          <span>{runModeLabel(state.runMode)}</span>
+          <span title={state.runDepthName}>
+            Depth {state.runDepth}/{state.runDepthTotal}
           </span>
-          <span>{state.survivorChapterName}</span>
+          <span>{formatTime(state.time)}</span>
+          <span>{state.kills} kills</span>
         </div>
         <div className="ssg-survivor-runline__chapters">
           {Array.from({ length: state.survivorTotalChapters }, (_, i) => (
@@ -644,10 +793,8 @@ function SurvivorsHud({ state }: { state: HUDState }) {
           {state.build.map((b) => (
             <span
               key={b.id}
-              className={`scourge-build-chip inline-flex items-center gap-[3px] border rounded-lg px-[7px] py-[2px] ${
-                b.evolved
-                  ? "border-[#ffd166] text-[#ffd166] shadow-[0_0_14px_rgba(255,209,102,0.35)]"
-                  : "border-white/[0.14]"
+              className={`scourge-build-chip inline-flex items-center gap-[3px] rounded-[2px] px-[7px] py-[2px] ${
+                b.evolved ? "text-[#ffd166] shadow-[0_0_14px_rgba(255,209,102,0.35)]" : ""
               }`}
               title={b.name}
             >
@@ -655,52 +802,6 @@ function SurvivorsHud({ state }: { state: HUDState }) {
               <b className="text-[11px] text-accent ml-[2px] align-super">{b.level}</b>
             </span>
           ))}
-        </div>
-      )}
-      {(state.survivorMaxShield > 0 ||
-        state.survivorArmor > 0 ||
-        state.survivorDodge > 0 ||
-        state.survivorGrace > 0) && (
-        <div
-          className="scourge-survivor-defense absolute left-[18px] bottom-[86px] min-w-[190px] rounded-[10px] border border-white/10 px-[10px] py-2"
-          aria-hidden
-        >
-          {state.survivorMaxShield > 0 && (
-            <div className="mb-[6px]">
-              <div className="mb-[3px] flex justify-between text-[10px] uppercase tracking-[0.1em] opacity-70">
-                <span>Shield</span>
-                <span>
-                  {state.survivorShield}/{state.survivorMaxShield}
-                </span>
-              </div>
-              <div className="scourge-defense-bar h-[7px] overflow-hidden rounded bg-white/[0.12]">
-                <div
-                  className="h-full bg-[#e9e3d6] shadow-[0_0_10px_rgba(255,106,0,0.45)]"
-                  style={{
-                    width: `${state.survivorMaxShield ? (state.survivorShield / state.survivorMaxShield) * 100 : 0}%`,
-                  }}
-                />
-              </div>
-            </div>
-          )}
-          {state.survivorArmor > 0 && (
-            <div className="flex justify-between text-[11px] uppercase tracking-[0.1em]">
-              <span className="opacity-70">Armor</span>
-              <b className="text-[#ffd166]">{state.survivorArmor}%</b>
-            </div>
-          )}
-          {state.survivorDodge > 0 && (
-            <div className="flex justify-between text-[11px] uppercase tracking-[0.1em]">
-              <span className="opacity-70">Evade</span>
-              <b className="text-[#ffd166]">{state.survivorDodge}%</b>
-            </div>
-          )}
-          {state.survivorGrace > 0 && (
-            <div className="flex justify-between text-[11px] uppercase tracking-[0.1em]">
-              <span className="opacity-70">Grace</span>
-              <b className="text-[#ffd166]">{state.survivorGrace.toFixed(2)}s</b>
-            </div>
-          )}
         </div>
       )}
     </>
@@ -846,6 +947,7 @@ export function HUD({
     playerHealth,
     maxPlayerHealth,
     ammo,
+    magazineSize,
     reserve,
     reloading,
     reloadProgress,
@@ -867,6 +969,7 @@ export function HUD({
     outcome,
     weapon,
     weapons,
+    weaponIdentity,
     berserk,
     berserkFrac,
     dualWeapon,
@@ -889,7 +992,7 @@ export function HUD({
     survivors,
   } = state;
 
-  type MenuScreen = "home" | "survivor" | "multiplayer" | "shop" | "settings" | "leaderboard";
+  type MenuScreen = "home" | "operator" | "multiplayer" | "shop" | "settings" | "leaderboard";
   const [menuScreen, setMenuScreen] = useState<MenuScreen>(initialRoom ? "multiplayer" : "home");
   const [pausePanel, setPausePanel] = useState<"none" | "settings" | "controls">("none");
   const [gameOverPanel, setGameOverPanel] = useState<"summary" | "shop">("summary");
@@ -910,9 +1013,19 @@ export function HUD({
     if (status !== "gameover") setGameOverPanel("summary");
   }, [status]);
   const healthFrac = playerHealth / maxPlayerHealth;
+  const shieldFrac = state.survivorMaxShield ? state.survivorShield / state.survivorMaxShield : 0;
+  const integrityStats = [
+    state.survivorArmor > 0 ? { label: "Armor", value: `${state.survivorArmor}%` } : null,
+    state.survivorDodge > 0 ? { label: "Evade", value: `${state.survivorDodge}%` } : null,
+    state.survivorGrace > 0 ? { label: "Grace", value: `${state.survivorGrace.toFixed(2)}s` } : null,
+  ].filter((stat): stat is { label: string; value: string } => Boolean(stat));
   const playing = status === "playing";
   const berserkActive = playing && berserk > 0;
-  const bossLabel = bossShielded ? "SHIELDED" : bossEnraged ? "ENRAGED" : "BOSS";
+  const bossLabel = bossShielded
+    ? `${SCOURGE_THREAT_TIERS.breachBoss.banner} SHIELD`
+    : bossEnraged
+      ? `${SCOURGE_THREAT_TIERS.breachBoss.banner} FRENZY`
+      : SCOURGE_THREAT_TIERS.breachBoss.banner;
   const currentRun: ScoreEntry | null =
     status === "gameover" && outcome
       ? {
@@ -921,6 +1034,12 @@ export function HUD({
           headshots,
           time,
           outcome,
+          mode: state.runMode,
+          level: state.level,
+          depthReached: state.runDepth,
+          depthTotal: state.runDepthTotal,
+          depthName: state.runDepthName,
+          goldEarned: lastRunGold,
           date: scores.find((s) => s.score === score && s.kills === kills && s.time === time)?.date ?? 0,
         }
       : null;
@@ -1025,7 +1144,7 @@ export function HUD({
       )}
       {playing && dualWeapon > 0 && (
         <div
-          className={`scourge-dual-weapon${berserkActive ? " is-berserk-offset" : ""} absolute top-[166px] left-1/2 -translate-x-1/2 px-4 py-[6px] rounded-[18px] border border-[rgba(215,210,196,0.55)] text-[#e7dfca] text-[13px] font-bold [text-shadow:0_0_10px_rgba(215,210,196,0.48)]`}
+          className={`scourge-dual-weapon${berserkActive ? " is-berserk-offset" : ""} absolute top-[166px] left-1/2 -translate-x-1/2 px-4 py-[6px] rounded-[2px] border border-[rgba(215,210,196,0.55)] text-[#e7dfca] text-[13px] font-bold [text-shadow:0_0_10px_rgba(215,210,196,0.48)]`}
           aria-hidden
         >
           <IconText icon="swords" size={16}>
@@ -1037,57 +1156,53 @@ export function HUD({
       {playing && multiplayer && <Scoreboard board={scoreboard} room={room} connected={connected} />}
       {playing && survivors && <SurvivorsHud state={state} />}
 
-      <div
-        className={`${HUD_CORNER} scourge-top-stats top-4 left-1/2 -translate-x-1/2 flex flex-wrap gap-x-[22px] gap-y-[4px] items-center justify-center text-center`}
-      >
-        <div>
-          <div className={STAT_LABEL}>Time</div>
-          <div className={`${STAT_VALUE} text-[30px]`}>{formatTime(time)}</div>
-        </div>
-        {!multiplayer && !survivors && campaignTotalStages > 1 && (
+      {!survivors && (
+        <div
+          className={`${HUD_CORNER} scourge-top-stats top-4 left-1/2 -translate-x-1/2 flex flex-wrap gap-x-[22px] gap-y-[4px] items-center justify-center text-center`}
+        >
           <div>
-            <div className={STAT_LABEL}>Stage</div>
-            <div className={STAT_VALUE}>
-              {campaignStage}/{campaignTotalStages}
+            <div className={STAT_LABEL}>Time</div>
+            <div className={`${STAT_VALUE} text-[30px]`}>{formatTime(time)}</div>
+          </div>
+          {!multiplayer && campaignTotalStages > 1 && (
+            <div>
+              <div className={STAT_LABEL}>Stage</div>
+              <div className={STAT_VALUE}>
+                {campaignStage}/{campaignTotalStages}
+              </div>
+              <div className={STAT_SUB}>{mapName}</div>
             </div>
-            <div className={STAT_SUB}>{mapName}</div>
-          </div>
-        )}
-        {!multiplayer && !survivors && (
-          <div>
-            <div className={STAT_LABEL}>Wave</div>
-            <div className={`${STAT_VALUE}${bossActive ? " text-danger tracking-[0.1em] animate-bosspulse" : ""}`}>
-              {bossActive ? "BOSS" : `${wave}/${totalWaves}`}
+          )}
+          {!multiplayer && (
+            <div>
+              <div className={STAT_LABEL}>Wave</div>
+              <div className={`${STAT_VALUE}${bossActive ? " text-danger tracking-[0.1em] animate-bosspulse" : ""}`}>
+                {bossActive ? SCOURGE_THREAT_TIERS.breachBoss.banner : `${wave}/${totalWaves}`}
+              </div>
             </div>
-          </div>
-        )}
-        {survivors && (
+          )}
+          {!multiplayer && (
+            <div>
+              <div className={STAT_LABEL}>Score</div>
+              <div className={STAT_VALUE}>{score.toLocaleString()}</div>
+            </div>
+          )}
           <div>
-            <div className={STAT_LABEL}>Level</div>
-            <div className={STAT_VALUE}>{state.level}</div>
+            <div className={STAT_LABEL}>{multiplayer ? "Frags" : "Kills"}</div>
+            <div className={STAT_VALUE}>{kills}</div>
           </div>
-        )}
-        {!multiplayer && (
           <div>
-            <div className={STAT_LABEL}>Score</div>
-            <div className={STAT_VALUE}>{score.toLocaleString()}</div>
+            <div className={STAT_LABEL}>HS</div>
+            <div className={STAT_VALUE}>{headshots}</div>
           </div>
-        )}
-        <div>
-          <div className={STAT_LABEL}>{multiplayer ? "Frags" : "Kills"}</div>
-          <div className={STAT_VALUE}>{kills}</div>
+          {!multiplayer && (
+            <div>
+              <div className={STAT_LABEL}>Enemies</div>
+              <div className={STAT_VALUE}>{enemiesAlive}</div>
+            </div>
+          )}
         </div>
-        <div>
-          <div className={STAT_LABEL}>HS</div>
-          <div className={STAT_VALUE}>{headshots}</div>
-        </div>
-        {!multiplayer && (
-          <div>
-            <div className={STAT_LABEL}>Enemies</div>
-            <div className={STAT_VALUE}>{enemiesAlive}</div>
-          </div>
-        )}
-      </div>
+      )}
 
       {bossActive && (
         <div className="absolute top-[96px] left-1/2 -translate-x-1/2 w-[min(620px,70vw)] text-center">
@@ -1115,30 +1230,61 @@ export function HUD({
         </div>
       )}
 
-      <div className={`${HUD_CORNER} scourge-health-panel left-[18px] bottom-[18px] min-w-[190px]`}>
-        <div className={STAT_LABEL}>Health</div>
-        <div className="flex items-center gap-[10px]">
-          <div className="scourge-health-bar relative w-[150px] h-[14px] bg-white/[0.12] rounded-[7px] overflow-hidden">
-            <div
-              className="absolute inset-0 rounded-[7px] [transition:width_0.15s_linear,background_0.2s_linear]"
-              style={{ width: `${Math.max(0, healthFrac) * 100}%`, background: healthColor(healthFrac) }}
-            />
-          </div>
-          <div className={`${STAT_VALUE} !text-[18px]`}>{playerHealth}</div>
+      <div className={`${HUD_CORNER} scourge-health-panel left-[18px] bottom-[18px] min-w-[214px]`}>
+        <div className="scourge-integrity-head">
+          <span className={STAT_LABEL}>{survivors ? "Integrity" : "Health"}</span>
+          {survivors && state.survivorMaxShield > 0 && (
+            <span>
+              Shield {state.survivorShield}/{state.survivorMaxShield}
+            </span>
+          )}
         </div>
+        <div className="scourge-integrity-stack">
+          {survivors && state.survivorMaxShield > 0 && (
+            <div className="scourge-shield-bar">
+              <div style={{ width: `${Math.max(0, Math.min(1, shieldFrac)) * 100}%` }} />
+            </div>
+          )}
+          <div className="flex items-center gap-[10px]">
+            <div className="scourge-health-bar relative w-[150px] h-[14px] overflow-hidden">
+              <div
+                className="absolute inset-0 [transition:width_0.15s_linear,background_0.2s_linear]"
+                style={{ width: `${Math.max(0, healthFrac) * 100}%`, background: healthColor(healthFrac) }}
+              />
+            </div>
+            <div className={`${STAT_VALUE} !text-[18px]`}>{playerHealth}</div>
+          </div>
+        </div>
+        {survivors && integrityStats.length > 0 && (
+          <div className="scourge-integrity-meta">
+            {integrityStats.map((stat) => (
+              <span key={stat.label}>
+                {stat.label} <b>{stat.value}</b>
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className={`${HUD_CORNER} scourge-weapon-panel right-[18px] bottom-[18px] text-right min-w-[150px]`}>
+      <div
+        className={`${HUD_CORNER} scourge-weapon-panel right-[18px] bottom-[18px] text-right min-w-[178px]`}
+        data-testid="weapon-panel"
+      >
         <div className="text-[13px] tracking-[0.12em] uppercase text-accent mb-[2px]">{weapon}</div>
+        <div className="text-[10px] uppercase tracking-[0.08em] text-[#ffb56b]">{weaponIdentity.role}</div>
         <div className="flex items-baseline justify-end gap-[6px]">
           <span className={`text-[30px] font-extrabold${ammo === 0 ? " text-danger" : ""}`}>{ammo}</span>
-          <span className="text-[16px] opacity-70">/ {survivors ? "∞" : reserve}</span>
+          <span className="text-[16px] opacity-70">/ {survivors ? magazineSize : reserve}</span>
+        </div>
+        <div className="mt-[3px] text-[10px] leading-tight opacity-60">
+          {weaponIdentity.callsign} · {weaponIdentity.ads} ·{" "}
+          {weaponIdentity.dualCompatible ? "dual-ready" : "single rig"}
         </div>
         {reloading ? (
           <div className="mt-[6px] flex flex-col items-end gap-[3px] text-warn text-[12px] tracking-[0.08em] uppercase">
-            <div className="w-[120px] h-[5px] bg-white/[0.15] rounded-[3px] overflow-hidden">
+            <div className="w-[120px] h-[5px] bg-white/[0.15] rounded-[2px] overflow-hidden">
               <div
-                className="h-full bg-warn rounded-[3px] transition-[width] duration-100 ease-linear"
+                className="h-full bg-warn rounded-[2px] transition-[width] duration-100 ease-linear"
                 style={{ width: `${reloadProgress * 100}%` }}
               />
             </div>
@@ -1151,6 +1297,9 @@ export function HUD({
             </div>
           )
         )}
+        {survivors && !reloading && (
+          <div className="mt-[3px] text-[10px] font-bold uppercase tracking-[0.08em] opacity-60">Free reloads</div>
+        )}
         {ads && adsZoomLevels > 1 && (
           <div className="mt-[6px] text-[11px] opacity-55 tracking-[0.04em]">
             Zoom {adsZoom}/{adsZoomLevels}
@@ -1161,10 +1310,10 @@ export function HUD({
             {weapons.map((w) => (
               <span
                 key={w.id}
-                className={`text-[11px] px-[7px] py-[2px] rounded-[5px] border whitespace-nowrap ${
+                className={`text-[11px] px-[7px] py-[2px] rounded-[2px] whitespace-nowrap ${
                   w.active
-                    ? "opacity-100 bg-[rgba(255,106,0,0.16)] border-[rgba(255,106,0,0.52)]"
-                    : "opacity-70 bg-white/[0.08] border-white/[0.12]"
+                    ? "opacity-100 bg-[rgba(255,106,0,0.12)] text-[#ffd166] shadow-[0_0_14px_rgba(255,106,0,0.22)]"
+                    : "opacity-70 bg-white/[0.05]"
                 }`}
               >
                 <b className="text-accent mr-[2px]">{w.key}</b> {w.name}
@@ -1186,7 +1335,7 @@ export function HUD({
       )}
 
       {showMainMenu && (
-        <MainMenuScreen className="cursor-default overflow-y-auto" backgroundImage={menuHero}>
+        <MainMenuScreen className="cursor-default overflow-y-auto" backgroundImage={MENU_HERO_URL}>
           <MainMenuTopBar mark="SSG" meta={`${shop.gold.toLocaleString()} gold`} aria-hidden>
             Ashgate breach
           </MainMenuTopBar>
@@ -1194,98 +1343,40 @@ export function HUD({
           {menuScreen === "home" ? (
             <MainMenuLayout>
               <MainMenuCopy>
-                <div className="ssg-menu-kicker">Ship Shit Games</div>
+                <div className="ssg-menu-kicker">Pyre breach hub</div>
                 <MainMenuTitle className="ssg-main-menu-title--pixel">
                   <MainMenuTitleLine>SCOURGE</MainMenuTitleLine>
                   <MainMenuTitleLine tone="hot">SURVIVORS</MainMenuTitleLine>
                 </MainMenuTitle>
                 <MainMenuStatus>
-                  <span>Pyre operator ready</span>
+                  <span>Survivors core online</span>
                   <span>{scores.length === 0 ? "No records" : `${scores.length} local records`}</span>
                 </MainMenuStatus>
               </MainMenuCopy>
 
-              <MainMenuNav aria-label="Main menu">
-                <MainMenuAction
-                  type="button"
-                  variant="primary"
-                  label={
-                    <IconText icon="target" size={22}>
-                      Start Run
-                    </IconText>
-                  }
-                  meta="Choose operator"
-                  onClick={() => setMenuScreen("survivor")}
-                />
-                <MainMenuAction
-                  type="button"
-                  variant="shop"
-                  label={
-                    <IconText icon="shop" size={18}>
-                      Upgrades
-                    </IconText>
-                  }
-                  meta={`${shop.gold.toLocaleString()} gold`}
-                  onClick={() => setMenuScreen("shop")}
-                />
-                <MainMenuAction
-                  type="button"
-                  variant="coop"
-                  label={
-                    <IconText icon="swords" size={18}>
-                      Co-op
-                    </IconText>
-                  }
-                  meta="Online rooms"
-                  onClick={() => setMenuScreen("multiplayer")}
-                />
-                <MainMenuAction
-                  type="button"
-                  variant="records"
-                  label={
-                    <IconText icon="trophy" size={18}>
-                      Leaderboard
-                    </IconText>
-                  }
-                  meta={scores.length === 0 ? "No records" : "Local archive"}
-                  onClick={() => setMenuScreen("leaderboard")}
-                />
-                <MainMenuAction
-                  type="button"
-                  variant="settings"
-                  label={
-                    <IconText icon="settings" size={18}>
-                      Settings
-                    </IconText>
-                  }
-                  meta="Audio"
-                  onClick={() => setMenuScreen("settings")}
-                />
-                {onStartSandbox && (
-                  <MainMenuAction
-                    type="button"
-                    variant="dev"
-                    label={
-                      <IconText icon="gamepad" size={18}>
-                        Sandbox
-                      </IconText>
-                    }
-                    meta="Dev lab"
-                    onClick={onStartSandbox}
-                  />
-                )}
-              </MainMenuNav>
+              <SurvivorsHub
+                shop={shop}
+                scores={scores}
+                onStart={onStartSurvivors}
+                onOperator={() => setMenuScreen("operator")}
+                onShop={() => setMenuScreen("shop")}
+                onCoop={() => setMenuScreen("multiplayer")}
+                onLeaderboard={() => setMenuScreen("leaderboard")}
+                onSettings={() => setMenuScreen("settings")}
+                onStartSandbox={onStartSandbox}
+              />
             </MainMenuLayout>
           ) : (
             <div className="scourge-menu-content">
-              {menuScreen === "survivor" && (
+              {menuScreen === "operator" && (
                 <div className={menuScreenWrap}>
-                  <div className={MENU_HEADING}>Choose Operator</div>
+                  <div className={MENU_HEADING}>Operator Loadout</div>
                   <SurvivorsPanel
                     shop={shop}
                     onStart={onStartSurvivors}
                     onShop={() => setMenuScreen("shop")}
                     onCoop={() => setMenuScreen("multiplayer")}
+                    onLeaderboard={() => setMenuScreen("leaderboard")}
                   />
                   <Button
                     type="button"
@@ -1293,7 +1384,7 @@ export function HUD({
                     className="scourge-menu-back"
                     onClick={() => setMenuScreen("home")}
                   >
-                    ← Back
+                    ← Survivors Hub
                   </Button>
                 </div>
               )}
@@ -1321,7 +1412,7 @@ export function HUD({
                 <div className={menuScreenWrap}>
                   <div className={MENU_HEADING}>
                     <IconText icon="swords" size={18}>
-                      Multiplayer
+                      Co-op
                     </IconText>
                   </div>
                   <MultiplayerPanel onStart={onStartMultiplayer} initialRoom={initialRoom} />
@@ -1384,13 +1475,13 @@ export function HUD({
           {multiplayer ? (
             <>
               <p className="my-1 opacity-85 text-[16px]">
-                Room <b>{room}</b> · {connected ? "connected" : "connecting..."} · Frags {kills}
+                Breach <b>{room}</b> · {connected ? "connected" : "connecting..."} · Kills {kills}
               </p>
               <div
                 className="pause-ui pointer-events-auto my-[8px] w-[min(460px,86vw)] bg-[rgba(255,106,0,0.08)] border border-[rgba(255,106,0,0.32)] rounded-[10px] px-[14px] py-3 text-center"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="text-[12px] opacity-70 mb-2">Invite a friend — share this link:</div>
+                <div className="text-[12px] opacity-70 mb-2">Invite a friend to this breach run:</div>
                 <input
                   className="pointer-events-auto w-full text-[13px] text-[#cbe9f5] bg-black/40 border border-white/[0.18] rounded-[7px] px-[10px] py-2 text-center"
                   readOnly
@@ -1408,7 +1499,7 @@ export function HUD({
                     }}
                   >
                     <IconText icon="leave" size={16}>
-                      Leave Room
+                      Leave Breach
                     </IconText>
                   </Button>
                 </div>
@@ -1416,7 +1507,8 @@ export function HUD({
             </>
           ) : (
             <p className="my-1 opacity-85 text-[16px]">
-              Score {score.toLocaleString()} · Kills {kills} · {bossActive ? "BOSS" : `Wave ${wave}/${totalWaves}`}
+              Score {score.toLocaleString()} · Kills {kills} ·{" "}
+              {bossActive ? SCOURGE_THREAT_TIERS.breachBoss.banner : `Wave ${wave}/${totalWaves}`}
             </p>
           )}
           <div
@@ -1437,7 +1529,7 @@ export function HUD({
                 </Button>
                 <Button type="button" variant="ghost" className="w-full" onClick={onRestart}>
                   <IconText icon="restart" size={16}>
-                    Restart Level
+                    Restart Run
                   </IconText>
                 </Button>
                 <Button type="button" variant="default" className="w-full" onClick={onLock}>
@@ -1600,10 +1692,10 @@ export function HUD({
               <div className="tracking-[0.5em] text-[13px] opacity-60 uppercase mb-[10px]">
                 {survivors
                   ? outcome === "win"
-                    ? "Breach sealed — operator extracted"
-                    : "Run lost — operator signal gone"
+                    ? `${runModeLabel(state.runMode)} run — breach sealed`
+                    : `${runModeLabel(state.runMode)} run — operator signal gone`
                   : outcome === "win"
-                    ? "Boss defeated — you cleared the arena"
+                    ? "Breach-boss down — run cleared"
                     : "You were overrun"}
               </div>
               <h1
@@ -1611,11 +1703,23 @@ export function HUD({
                   outcome === "win" ? "from-good to-[#b6ff8a]" : "from-danger to-[#ff9a3c]"
                 }`}
               >
-                {outcome === "win" ? "VICTORY" : "GAME OVER"}
+                {survivors ? "RUN SUMMARY" : outcome === "win" ? "VICTORY" : "GAME OVER"}
               </h1>
               {survivors && (
                 <div className="mb-[14px] w-[min(720px,92vw)] rounded-lg border border-white/10 bg-black/35 px-4 py-3">
-                  <div className="grid grid-cols-2 gap-3 text-left md:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-3 text-left md:grid-cols-3 lg:grid-cols-6">
+                    <div>
+                      <div className={STAT_LABEL}>Mode</div>
+                      <div className={`${STAT_VALUE} !text-[20px]`}>{runModeLabel(state.runMode)}</div>
+                      <div className={STAT_SUB}>{outcome === "win" ? "sealed" : "lost"}</div>
+                    </div>
+                    <div>
+                      <div className={STAT_LABEL}>Depth</div>
+                      <div className={`${STAT_VALUE} !text-[20px]`}>
+                        {state.runDepth}/{state.runDepthTotal}
+                      </div>
+                      <div className={STAT_SUB}>{state.runDepthName}</div>
+                    </div>
                     <div>
                       <div className={STAT_LABEL}>Operator</div>
                       <div className={`${STAT_VALUE} !text-[20px]`}>
@@ -1626,13 +1730,6 @@ export function HUD({
                       <div className={STAT_SUB}>{state.survivorClassRole}</div>
                     </div>
                     <div>
-                      <div className={STAT_LABEL}>Breach</div>
-                      <div className={`${STAT_VALUE} !text-[20px]`}>
-                        {state.survivorChapter}/{state.survivorTotalChapters}
-                      </div>
-                      <div className={STAT_SUB}>{state.survivorChapterName}</div>
-                    </div>
-                    <div>
                       <div className={STAT_LABEL}>Level</div>
                       <div className={`${STAT_VALUE} !text-[20px]`}>{state.level}</div>
                       <div className={STAT_SUB}>
@@ -1640,11 +1737,18 @@ export function HUD({
                       </div>
                     </div>
                     <div>
-                      <div className={STAT_LABEL}>Defense</div>
+                      <div className={STAT_LABEL}>Kills</div>
+                      <div className={`${STAT_VALUE} !text-[20px]`}>{kills}</div>
+                      <div className={STAT_SUB}>{headshots} headshots</div>
+                    </div>
+                    <div>
+                      <div className={STAT_LABEL}>Gold</div>
                       <div className={`${STAT_VALUE} !text-[20px]`}>
-                        {state.survivorArmor}% / {state.survivorMaxShield} / {state.survivorDodge}%
+                        <IconText icon="gold" size={18}>
+                          +{lastRunGold.toLocaleString()}
+                        </IconText>
                       </div>
-                      <div className={STAT_SUB}>armor / shield / evade</div>
+                      <div className={STAT_SUB}>saved to shop</div>
                     </div>
                   </div>
                   {state.survivorEvolved.length > 0 && (

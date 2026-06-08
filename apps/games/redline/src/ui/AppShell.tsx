@@ -7,8 +7,10 @@ import {
   MainMenuStatus,
   MainMenuTitle,
   MainMenuTitleLine,
+  MainMenuTopBar,
   MenuKicker,
 } from "@shipshitgames/ui";
+import menuHero from "@shipshitgames/assets/games/redline/ui/menu/title.webp";
 
 export function AppShell() {
   return (
@@ -62,7 +64,10 @@ export function AppShell() {
         </div>
       </div>
 
-      <MainMenuScreen id="overlay">
+      <MainMenuScreen id="overlay" backgroundImage={menuHero}>
+        <MainMenuTopBar mark="SSG" meta="0 gold" aria-hidden>
+          Beacon run
+        </MainMenuTopBar>
         <MainMenuLayout id="overlay-card">
           <MainMenuCopy>
             <MenuKicker id="overlay-kicker">Pyre Courier Run</MenuKicker>
@@ -78,22 +83,13 @@ export function AppShell() {
               <span>Best time armed</span>
             </MainMenuStatus>
           </MainMenuCopy>
-          <MainMenuNav label="Route">
-            <ul id="overlay-controls">
-              <li>
-                <kbd>HOLD -&gt;</kbd> / <kbd>D</kbd> Accelerate
-              </li>
-              <li>
-                <kbd>SPACE</kbd> / <kbd>UP</kbd> / <kbd>W</kbd> Jump
-              </li>
-              <li>
-                <kbd>SHIFT</kbd> / <kbd>DOWN</kbd> / <kbd>S</kbd> Dash-roll
-              </li>
-              <li>
-                <kbd>R</kbd> Restart
-              </li>
-            </ul>
-            <MainMenuAction id="overlay-btn" variant="primary" label="IGNITE" meta="Run the lane" />
+          <MainMenuNav aria-label="Main menu">
+            <MainMenuAction id="overlay-btn" variant="primary" label="Ignite" meta="Run the lane" />
+            <MainMenuAction variant="shop" label="Upgrades" meta="Cargo locked" disabled />
+            <MainMenuAction variant="coop" label="Co-op" meta="Solo route" disabled />
+            <MainMenuAction variant="records" label="Leaderboard" meta="Best time" disabled />
+            <MainMenuAction variant="settings" label="Settings" meta="Keyboard" disabled />
+            <MainMenuAction variant="dev" label="Sandbox" meta="Route lab" disabled />
           </MainMenuNav>
         </MainMenuLayout>
       </MainMenuScreen>

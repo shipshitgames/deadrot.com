@@ -25,6 +25,9 @@ if (!canvas) {
 }
 
 const game = new Game(canvas);
+if (import.meta.env.DEV) {
+  (window as unknown as { __rothulkGame?: Game }).__rothulkGame = game;
+}
 game.start();
 
 function beginRun() {

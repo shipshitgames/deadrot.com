@@ -15,7 +15,8 @@
       "types": "./src/scourge-survivors.ts",
       "default": "./src/scourge-survivors.ts"
     },
-    "./games/scourge-survivors/*": "./games/scourge-survivors/*",
+    "./games/*": "./games/*",
+    "./shared/*": "./shared/*",
     "./sites/deadrotcom/*": "./sites/deadrotcom/*",
     "./tokens/*": "./tokens/*"
   },

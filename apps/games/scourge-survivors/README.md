@@ -25,6 +25,9 @@ See [DEPLOY.md](./DEPLOY.md) for the monorepo hub + PartyKit deploy.
 Active game project focused on the Survivors core. Campaign content becomes a "structured run",
 multiplayer becomes co-op, and the game expands with more maps.
 
+The first menu is the Survivors hub: Play a Run, Shop, Co-op, and Leaderboard all support
+the Pyre breach-run loop, with `Game.startSurvivors()` as the primary entrypoint.
+
 ## License
 
 MIT (code). Assets follow the studio style/lore canon.

@@ -5,7 +5,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("@shipshitgames/assets/games/scourge-survivors/fonts/press-start-2p.ttf") format("truetype");
+  src: url("@shipshitgames/assets/shared/fonts/press-start-2p.ttf") format("truetype");
 }
 
 :root {
@@ -20,7 +20,7 @@
   --color-ink: #0a0a0a;
   --color-fg: #e9e3d6;
 
-  --font-sans: Inter, system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  --font-sans: var(--ssg-font-pixel);
 
   --animate-hit: hitpop 0.18s ease-out;
   --animate-hit-kill: hitpop 0.28s ease-out;
@@ -200,6 +200,7 @@
     user-select: none;
     -webkit-user-select: none;
     font-family: var(--font-sans);
+    font-synthesis-weight: none;
   }
 
   /* Three.js injects its <canvas> into .game-root at runtime. */
@@ -231,11 +232,10 @@
     max-width: calc(100vw - 36px);
     padding: 8px 10px;
     color: var(--ssg-bone);
-    background: linear-gradient(180deg, rgba(5, 5, 5, 0.24), rgba(5, 5, 5, 0.12));
-    border: 1px solid rgba(233, 227, 214, 0.14);
-    border-radius: 6px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
-    backdrop-filter: blur(1.5px);
+    background: linear-gradient(180deg, rgba(5, 5, 5, 0.08), rgba(5, 5, 5, 0.02));
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
 
   .game-root .ssg-stat-label {
@@ -247,9 +247,9 @@
   .game-root .ssg-stat-value {
     color: var(--ssg-bone);
     text-shadow:
-      2px 0 0 rgba(0, 0, 0, 0.72),
-      0 2px 0 rgba(0, 0, 0, 0.72),
-      0 0 10px rgba(0, 0, 0, 0.68);
+      2px 0 0 rgba(0, 0, 0, 0.82),
+      0 2px 0 rgba(0, 0, 0, 0.82),
+      0 0 12px rgba(0, 0, 0, 0.72);
   }
 
   .game-root .ssg-stat-sub {
@@ -276,9 +276,9 @@
     gap: 14px;
     min-height: 24px;
     padding: 0 8px;
-    background: linear-gradient(90deg, rgba(5, 5, 5, 0.2), rgba(5, 5, 5, 0.08));
-    border: 1px solid rgba(233, 227, 214, 0.08);
-    border-radius: 6px;
+    background: linear-gradient(90deg, transparent, rgba(5, 5, 5, 0.08) 18%, rgba(5, 5, 5, 0.06) 82%, transparent);
+    border: 0;
+    border-radius: 0;
   }
 
   .ssg-survivor-runline__meta {
@@ -335,7 +335,7 @@
     height: 4px;
     overflow: hidden;
     background: rgba(233, 227, 214, 0.12);
-    border: 1px solid rgba(233, 227, 214, 0.12);
+    border: 0;
   }
 
   .ssg-survivor-xp__fill {
@@ -535,17 +535,19 @@
 }
 
 .game-root .scourge-scoreboard {
-  background: rgba(10, 16, 28, 0.28);
-  border-color: rgba(233, 227, 214, 0.14);
-  backdrop-filter: blur(1.5px);
+  background: rgba(5, 5, 5, 0.06);
+  border: 0;
+  border-radius: 0;
   text-shadow:
     1px 0 0 rgba(0, 0, 0, 0.7),
     0 1px 0 rgba(0, 0, 0, 0.7);
 }
 
 .game-root .scourge-build-chip {
-  background: rgba(5, 5, 5, 0.2);
-  backdrop-filter: blur(1px);
+  background: rgba(5, 5, 5, 0.06);
+  border: 0;
+  border-radius: 0;
+  box-shadow: inset 0 -1px 0 rgba(255, 106, 0, 0.18);
 }
 
 .game-root .scourge-build-strip {
@@ -557,19 +559,12 @@
   top: 190px;
 }
 
-.game-root .scourge-survivor-defense {
-  background: rgba(5, 5, 5, 0.22);
-  border-color: rgba(233, 227, 214, 0.12);
-  backdrop-filter: blur(1.5px);
-  text-shadow:
-    1px 0 0 rgba(0, 0, 0, 0.68),
-    0 1px 0 rgba(0, 0, 0, 0.68);
-}
-
 .game-root .scourge-dual-weapon {
   top: 176px;
-  background: rgba(215, 210, 196, 0.08);
-  backdrop-filter: blur(1px);
+  background: rgba(5, 5, 5, 0.06);
+  border: 0;
+  border-radius: 0;
+  box-shadow: inset 0 -1px 0 rgba(233, 227, 214, 0.22);
 }
 
 .game-root .scourge-dual-weapon.is-berserk-offset {
@@ -661,9 +656,10 @@
   gap: 6px;
   padding: 8px 12px 9px;
   color: #ffd166;
-  background: linear-gradient(180deg, rgba(91, 6, 18, 0.46), rgba(5, 5, 5, 0.34)), rgba(193, 18, 31, 0.12);
-  border: 1px solid rgba(255, 42, 24, 0.46);
-  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(91, 6, 18, 0.14), rgba(5, 5, 5, 0.08)), rgba(193, 18, 31, 0.04);
+  border: 0;
+  border-radius: 0;
+  box-shadow: inset 0 -2px 0 rgba(255, 42, 24, 0.42);
   text-shadow:
     2px 0 0 rgba(5, 5, 5, 0.96),
     0 2px 0 rgba(5, 5, 5, 0.96),
@@ -691,7 +687,7 @@
   height: 5px;
   overflow: hidden;
   background: rgba(5, 5, 5, 0.62);
-  border: 1px solid rgba(255, 209, 102, 0.22);
+  border: 0;
 }
 
 .game-root .scourge-berserk-meter__bar i {
@@ -704,6 +700,78 @@
 .game-root .scourge-damage-boost {
   border-radius: 2px;
   text-transform: uppercase;
+}
+
+.game-root .scourge-health-panel {
+  background: linear-gradient(90deg, rgba(5, 5, 5, 0.13), rgba(5, 5, 5, 0.02));
+  text-shadow:
+    1px 0 0 rgba(0, 0, 0, 0.72),
+    0 1px 0 rgba(0, 0, 0, 0.72);
+}
+
+.game-root .scourge-integrity-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 5px;
+  color: rgba(233, 227, 214, 0.58);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.game-root .scourge-integrity-stack {
+  display: grid;
+  gap: 4px;
+}
+
+.game-root .scourge-shield-bar,
+.game-root .scourge-health-bar {
+  background: linear-gradient(90deg, rgba(5, 5, 5, 0.68), rgba(5, 5, 5, 0.34));
+  border: 0;
+  border-radius: 0;
+  box-shadow:
+    inset 0 -1px 0 rgba(233, 227, 214, 0.12),
+    0 0 18px rgba(0, 0, 0, 0.22);
+}
+
+.game-root .scourge-shield-bar {
+  width: 150px;
+  height: 5px;
+  overflow: hidden;
+}
+
+.game-root .scourge-shield-bar div {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(233, 227, 214, 0.86), rgba(255, 209, 102, 0.84));
+  box-shadow: 0 0 12px rgba(255, 209, 102, 0.38);
+  transition: width 0.15s linear;
+}
+
+.game-root .scourge-integrity-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-top: 7px;
+  color: rgba(233, 227, 214, 0.62);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.game-root .scourge-integrity-meta b {
+  color: #ffd166;
+  font-weight: 900;
+}
+
+.game-root .scourge-weapon-panel {
+  background: linear-gradient(270deg, rgba(5, 5, 5, 0.13), rgba(5, 5, 5, 0.02));
+  text-shadow:
+    1px 0 0 rgba(0, 0, 0, 0.72),
+    0 1px 0 rgba(0, 0, 0, 0.72);
 }
 
 @media (max-width: 720px) {
@@ -773,7 +841,7 @@
   .game-root .scourge-health-panel {
     left: 10px;
     bottom: 10px;
-    min-width: 148px;
+    min-width: 172px;
   }
 
   .game-root .scourge-health-panel .ssg-stat-value {
@@ -785,9 +853,13 @@
     height: 12px;
   }
 
+  .game-root .scourge-shield-bar {
+    width: 104px;
+  }
+
   .game-root .scourge-weapon-panel {
     right: 10px;
-    bottom: 10px;
+    bottom: 92px;
     min-width: 124px;
   }
 
@@ -831,18 +903,13 @@
   }
 
   .game-root .scourge-dual-weapon.is-berserk-offset {
-    top: 286px;
-  }
-
-  .game-root .scourge-survivor-defense {
-    left: 10px;
-    bottom: 62px;
-    min-width: 150px;
+    top: 252px;
   }
 }
 
 .game-root .ssg-hud-corner {
-  background: linear-gradient(180deg, rgba(5, 5, 5, 0.24), rgba(5, 5, 5, 0.12));
-  border: 1px solid rgba(233, 227, 214, 0.14);
-  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(5, 5, 5, 0.08), rgba(5, 5, 5, 0.02));
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }

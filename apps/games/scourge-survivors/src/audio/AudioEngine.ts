@@ -76,10 +76,18 @@ export class AudioEngine {
   private musicSrcNode: MediaElementAudioSourceNode | null = null;
   private currentTrack: MusicTrack | null = null;
   private loadedTrack: MusicTrack | null = null;
+  private autoUnlockArmed = false;
 
   // authored weapon-SFX sample buffers (decoded once; procedural synth is the fallback)
   private sampleBuffers = new Map<SfxName, AudioBuffer>();
   private samplesRequested = false;
+
+  constructor() {
+    if (typeof window !== "undefined") {
+      this.preloadMusic(DEFAULT_TRACK);
+      this.armAutoUnlock();
+    }
+  }
 
   private ensure(): boolean {
     if (this.ctx) return true;
@@ -97,6 +105,7 @@ export class AudioEngine {
       this.sfxBus = this.ctx.createGain();
       this.sfxBus.gain.value = 0.5;
       this.sfxBus.connect(this.master);
+      if (!this.connectMusicElement()) return false;
       this.loadSamples();
       return true;
     } catch {
@@ -108,13 +117,25 @@ export class AudioEngine {
   /** Call from a user gesture (click) so the browser allows audio. */
   unlock() {
     if (!this.ensure() || !this.ctx) return;
-    if (this.ctx.state === "suspended") void this.ctx.resume();
-    if (this.musicEnabled) this.startMusic();
+    const start = () => {
+      if (this.musicEnabled) this.startMusic();
+    };
+    if (this.ctx.state === "suspended") {
+      void this.ctx.resume().then(start, start);
+    } else {
+      start();
+    }
   }
 
   setMusicEnabled(on: boolean) {
     this.musicEnabled = on;
-    if (!this.ctx) return;
+    if (!this.ctx) {
+      if (on) {
+        this.preloadMusic(this.currentTrack ?? DEFAULT_TRACK);
+        this.armAutoUnlock();
+      }
+      return;
+    }
     if (on) {
       if (this.ctx.state === "suspended") void this.ctx.resume();
       this.startMusic();
@@ -130,8 +151,15 @@ export class AudioEngine {
   setMusicMode(mode: MusicMode) {
     if (this.musicMode === mode) return;
     this.musicMode = mode;
-    if (!this.musicEnabled || !this.ctx) return;
-    this.playMusic(this.trackForMode(mode));
+    const track = this.trackForMode(mode);
+    this.currentTrack = track;
+    if (!this.musicEnabled) return;
+    if (!this.ctx) {
+      this.preloadMusic(track);
+      this.armAutoUnlock();
+      return;
+    }
+    this.startMusic();
   }
 
   get musicOn() {
@@ -156,7 +184,13 @@ export class AudioEngine {
   /** Switch the authored bg track; takes effect immediately if music is enabled. */
   playMusic(track: MusicTrack) {
     this.currentTrack = track;
-    if (this.musicEnabled && this.ctx) this.startMusic();
+    if (!this.musicEnabled) return;
+    if (!this.ctx) {
+      this.preloadMusic(track);
+      this.armAutoUnlock();
+      return;
+    }
+    this.startMusic();
   }
 
   /** Start the currently-selected authored music bed. */
@@ -174,38 +208,76 @@ export class AudioEngine {
   private playTrack(track: MusicTrack) {
     if (!this.ctx || !this.musicBus) return;
     this.currentTrack = track;
-    if (!this.musicEl) {
-      const el = new Audio();
-      el.preload = "auto";
-      try {
-        this.musicSrcNode = this.ctx.createMediaElementSource(el);
-        this.musicSrcNode.connect(this.musicBus);
-      } catch {
-        this.handleTrackPlaybackFailure();
-        return;
-      }
-      el.addEventListener("error", () => this.handleTrackPlaybackFailure());
-      el.addEventListener("ended", () => {
-        if (!this.musicEnabled || !this.currentTrack) return;
-        el.currentTime = 0;
-        void el.play().catch(() => this.handleTrackPlaybackFailure());
-      });
-      this.musicEl = el;
-    }
+    this.preloadMusic(track);
+    if (!this.connectMusicElement()) return;
+    const el = this.ensureMusicElement();
     const manifestId = MUSIC_TRACKS[track];
     const entry = audioEntry(manifestId);
-    this.musicEl.loop = entry.loop;
+    el.loop = entry.loop;
     this.musicBus.gain.value = entry.volume;
-    if (this.loadedTrack !== track) {
-      this.musicEl.src = audioUrl(manifestId);
-      this.loadedTrack = track;
-    }
-    void this.musicEl.play().catch(() => this.handleTrackPlaybackFailure());
+    void el.play().catch(() => this.handleTrackPlaybackFailure());
   }
 
   private handleTrackPlaybackFailure() {
     this.loadedTrack = null;
     this.musicEl?.pause();
+  }
+
+  /** Preload the authored bed even before Web Audio is unlocked. */
+  preloadMusic(track: MusicTrack = this.currentTrack ?? DEFAULT_TRACK) {
+    const el = this.ensureMusicElement();
+    const manifestId = MUSIC_TRACKS[track];
+    const entry = audioEntry(manifestId);
+    el.loop = entry.loop;
+    if (this.loadedTrack !== track) {
+      el.src = audioUrl(manifestId);
+      this.loadedTrack = track;
+      el.load();
+    }
+  }
+
+  private ensureMusicElement(): HTMLAudioElement {
+    if (this.musicEl) return this.musicEl;
+    const el = new Audio();
+    el.preload = "auto";
+    el.crossOrigin = "anonymous";
+    el.addEventListener("error", () => this.handleTrackPlaybackFailure());
+    el.addEventListener("ended", () => {
+      if (!this.musicEnabled || !this.currentTrack) return;
+      el.currentTime = 0;
+      void el.play().catch(() => this.handleTrackPlaybackFailure());
+    });
+    this.musicEl = el;
+    return el;
+  }
+
+  private connectMusicElement(): boolean {
+    if (!this.ctx || !this.musicBus) return true;
+    const el = this.ensureMusicElement();
+    if (this.musicSrcNode) return true;
+    try {
+      this.musicSrcNode = this.ctx.createMediaElementSource(el);
+      this.musicSrcNode.connect(this.musicBus);
+      return true;
+    } catch {
+      this.handleTrackPlaybackFailure();
+      return false;
+    }
+  }
+
+  private armAutoUnlock() {
+    if (this.autoUnlockArmed || typeof window === "undefined") return;
+    this.autoUnlockArmed = true;
+    const unlockOnce = () => {
+      window.removeEventListener("pointerdown", unlockOnce);
+      window.removeEventListener("keydown", unlockOnce);
+      window.removeEventListener("touchstart", unlockOnce);
+      this.autoUnlockArmed = false;
+      this.unlock();
+    };
+    window.addEventListener("pointerdown", unlockOnce, { once: true, passive: true });
+    window.addEventListener("keydown", unlockOnce, { once: true });
+    window.addEventListener("touchstart", unlockOnce, { once: true, passive: true });
   }
 
   // ----------------------------------------------------------------- sfx

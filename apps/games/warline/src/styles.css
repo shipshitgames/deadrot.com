@@ -14,8 +14,9 @@
   --color-ash: #9b958a;
   --color-toxic: #8bdc1f;
 
-  --font-display: "Oswald", "Arial Narrow", "Helvetica Neue", sans-serif;
-  --font-body: "Inter", system-ui, sans-serif;
+  --font-pixel: "SSG Press Start", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-display: var(--font-pixel);
+  --font-body: var(--font-pixel);
 
   --shadow-ember: 0 0 0 1px rgba(255, 106, 0, 0.35), 0 0 26px -6px rgba(193, 18, 31, 0.65);
 
@@ -44,7 +45,8 @@ body {
   background-color: var(--color-void);
   color: var(--color-ash);
   font-family: var(--font-body);
-  -webkit-font-smoothing: antialiased;
+  -webkit-font-smoothing: none;
+  font-synthesis-weight: none;
   text-rendering: optimizeLegibility;
 }
 

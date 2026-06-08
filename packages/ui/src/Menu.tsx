@@ -27,7 +27,7 @@ export interface MainMenuScreenProps extends DivProps {
   backgroundImage?: string;
 }
 
-export function MainMenuScreen({ backgroundImage, className, style, ...props }: MainMenuScreenProps) {
+export function MainMenuScreen({ backgroundImage, className, style, children, ...props }: MainMenuScreenProps) {
   const screenStyle = backgroundImage
     ? ({
         "--ssg-main-menu-image": `url(${backgroundImage})`,
@@ -35,7 +35,12 @@ export function MainMenuScreen({ backgroundImage, className, style, ...props }: 
       } as CSSProperties)
     : style;
 
-  return <MenuScreen className={cn("ssg-main-menu-screen", className)} style={screenStyle} {...props} />;
+  return (
+    <MenuScreen className={cn("ssg-main-menu-screen", className)} style={screenStyle} {...props}>
+      <span className="ssg-main-menu-particles" aria-hidden="true" />
+      {children}
+    </MenuScreen>
+  );
 }
 
 export interface MainMenuTopBarProps extends DivProps {

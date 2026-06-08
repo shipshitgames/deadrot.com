@@ -14,8 +14,8 @@
   --bone: #e9e3d6;
   --ash: #9b958a;
   --toxic: #8bdc1f;
-  --display: "Oswald", "Arial Narrow", "Helvetica Neue", sans-serif;
-  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --display: var(--ssg-font-pixel, "SSG Press Start", ui-monospace, monospace);
+  --mono: var(--display);
 }
 
 * {
@@ -32,7 +32,8 @@ body {
   background: var(--void);
   color: var(--bone);
   font-family: var(--display);
-  -webkit-font-smoothing: antialiased;
+  -webkit-font-smoothing: none;
+  font-synthesis-weight: none;
   user-select: none;
   -webkit-user-select: none;
 }

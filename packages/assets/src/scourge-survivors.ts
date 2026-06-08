@@ -61,10 +61,47 @@ export interface AudioEntry {
   license: LicenseRecord;
 }
 
+export interface UiEntry {
+  type: "ui";
+  path: string;
+  role: string;
+  dimensions?: Vec2;
+  license: LicenseRecord;
+}
+
+export interface RuntimeAnimationRef {
+  entity: string;
+  actions: Record<string, string>;
+}
+
+export interface RuntimeSpriteRef {
+  sprite: string;
+}
+
+export interface RuntimeEnemyRef extends RuntimeSpriteRef {
+  animation: RuntimeAnimationRef;
+}
+
+export interface RuntimeUiRef {
+  asset: string;
+}
+
+export interface ScourgeSurvivorsRuntimeManifest {
+  enemies: Record<string, RuntimeEnemyRef>;
+  players: Record<string, RuntimeSpriteRef>;
+  weapons: Record<string, RuntimeSpriteRef>;
+  pickups: Record<string, RuntimeSpriteRef>;
+  projectiles: Record<string, RuntimeSpriteRef>;
+  fx: Record<string, RuntimeSpriteRef>;
+  ui: Record<string, RuntimeUiRef>;
+}
+
 export interface ScourgeSurvivorsAssetManifest {
   sprites: Record<string, SpriteEntry>;
   textures: Record<string, TextureEntry>;
   audio: Record<string, AudioEntry>;
+  ui: Record<string, UiEntry>;
+  runtime: ScourgeSurvivorsRuntimeManifest;
 }
 
 export interface AnimationActionEntry {
@@ -108,7 +145,7 @@ const scourgeSurvivorsAssetModules = import.meta.glob<string>(
     "../games/scourge-survivors/fx/**/*.webp",
     "../games/scourge-survivors/ui/icons/pixel/*.webp",
     "../games/scourge-survivors/ui/cards/**/*.{jpg,png}",
-    "../games/scourge-survivors/ui/menu/**/*.{jpg,png}",
+    "../games/scourge-survivors/ui/menu/**/*.{jpg,png,webp}",
     "../games/scourge-survivors/audio/**/*.webm",
     "../games/scourge-survivors/fonts/*.ttf",
   ],
@@ -144,8 +181,18 @@ export function scourgeSurvivorsAudioEntry(id: string): AudioEntry {
   return entry;
 }
 
+export function scourgeSurvivorsUiEntry(id: string): UiEntry {
+  const entry = SCOURGE_SURVIVORS_ASSET_MANIFEST.ui[id];
+  if (!entry) throw new Error(`Unknown Scourge Survivors UI asset id: ${id}`);
+  return entry;
+}
+
 export function scourgeSurvivorsAudioUrl(id: string): string {
   return scourgeSurvivorsAssetUrl(scourgeSurvivorsAudioEntry(id).path);
+}
+
+export function scourgeSurvivorsUiUrl(id: string): string {
+  return scourgeSurvivorsAssetUrl(scourgeSurvivorsUiEntry(id).path);
 }
 
 export function scourgeSurvivorsSpriteUrl(id: string, view?: SpriteView): string {

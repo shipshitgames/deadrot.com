@@ -12,6 +12,7 @@
     "deps:update": "bunx npm-check-updates -u --cooldown 3h --removeRange && bun install"
   },
   "dependencies": {
+    "@shipshitgames/assets": "workspace:*",
     "@shipshitgames/ui": "workspace:*",
     "react": "19.2.7",
     "react-dom": "19.2.7",

@@ -1,9 +1,10 @@
-import * as THREE from "three";
-import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
+import type * as THREE from "three";
 import { audio } from "../../audio/AudioEngine";
 import { BERSERK_TIME, RELOAD_TIME, TOTAL_WAVES, WEAPON_ORDER, WEAPONS } from "../constants";
+import type { GameContext } from "../context";
 import { EVOLUTIONS, SURVIVOR_CLASSES } from "../data/survivors";
+import { weaponIdentityFor } from "../data/weaponIdentity";
+import type { GameSystems } from "../systems";
 import type { HUDState } from "../types";
 
 export class HudSystem {
@@ -80,11 +81,27 @@ export class HudSystem {
       key: WEAPON_ORDER.indexOf(id) + 1,
       active: id === this.ctx.activeWeapon,
     }));
+    const identity = weaponIdentityFor(this.ctx.activeWeapon);
     const survivorClass = SURVIVOR_CLASSES[this.ctx.survivorClassId] ?? SURVIVOR_CLASSES.ranger;
     const survivorChapter = this.sys.survivors.currentChapter();
     const evolved = Object.entries(this.sys.survivors.evolved)
       .filter(([, on]) => on)
       .map(([id]) => EVOLUTIONS[id as keyof typeof EVOLUTIONS].name);
+    const runMode: HUDState["runMode"] = this.ctx.multiplayer
+      ? "coop"
+      : this.ctx.survivors
+        ? "structured"
+        : this.ctx.sandbox
+          ? "sandbox"
+          : "campaign";
+    const campaignDepthTotal = this.ctx.campaignMaps.length || TOTAL_WAVES;
+    const runDepth = this.ctx.survivors
+      ? this.ctx.survivorChapter + 1
+      : this.ctx.campaignMaps.length
+        ? this.ctx.campaignStage + 1
+        : Math.min(this.sys.pve.waveIndex + 1, TOTAL_WAVES);
+    const runDepthTotal = this.ctx.survivors ? this.ctx.survivorTotalChapters : campaignDepthTotal;
+    const runDepthName = this.ctx.survivors ? survivorChapter.name : this.ctx.currentMap.name;
     const state: HUDState = {
       status: this.ctx.status,
       playerHealth: Math.round(this.ctx.health),
@@ -100,6 +117,10 @@ export class HudSystem {
       enemiesAlive: this.ctx.aliveCount,
       combo: this.ctx.combo,
       time: Math.floor(this.ctx.time),
+      runMode,
+      runDepth,
+      runDepthTotal,
+      runDepthName,
       wave: Math.min(this.sys.pve.waveIndex + 1, TOTAL_WAVES),
       totalWaves: TOTAL_WAVES,
       campaignStage: this.ctx.campaignStage + 1,
@@ -113,6 +134,13 @@ export class HudSystem {
       outcome: this.ctx.outcome,
       weapon: spec.name,
       weapons,
+      weaponIdentity: {
+        callsign: identity.callsign,
+        role: identity.role,
+        fantasy: identity.fantasy,
+        ads: identity.ads.label,
+        dualCompatible: identity.dualCompatible,
+      },
       damageBoost: Math.ceil(this.ctx.damageBoostTimer),
       berserk: Math.ceil(this.ctx.damageBoostTimer),
       berserkFrac: Math.max(0, Math.min(1, this.ctx.damageBoostTimer / BERSERK_TIME)),

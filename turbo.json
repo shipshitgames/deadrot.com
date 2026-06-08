@@ -15,6 +15,14 @@
       "cache": false,
       "outputs": ["playwright-report/**", "test-results/**", "../../.artifacts/e2e/**"]
     },
+    "test:unit": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "test:coverage": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    },
     "lint": {
       "outputs": []
     },

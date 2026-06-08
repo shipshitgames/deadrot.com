@@ -27,6 +27,7 @@ if (!canvas || !hud) {
 
 const game = new Game(canvas, hud);
 game.start();
+document.getElementById("title-start-btn")?.addEventListener("click", () => game.beginRun());
 
 // Convenience for poking at the running game from the console.
 (window as unknown as { pactfall?: Game }).pactfall = game;

@@ -11,6 +11,7 @@ export class HudSystem {
   private readonly buffTime: HTMLElement;
   private readonly banner: HTMLElement;
   private readonly bannerTitle: HTMLElement;
+  private readonly titleScreen: HTMLElement;
 
   constructor(root: HTMLElement) {
     this.elBaseFriendly = this.req(root, "#meter-base-friendly .bar i");
@@ -20,6 +21,7 @@ export class HudSystem {
     this.buffTime = this.req(root, "#buff .buff-time");
     this.banner = this.req(root, "#banner");
     this.bannerTitle = this.req(root, "#banner .banner-title");
+    this.titleScreen = this.req(root, "#title-screen");
 
     // Static canon label — the arena district these duels are sanctioned in.
     const arenaName = root.querySelector("#arena-name");
@@ -49,8 +51,10 @@ export class HudSystem {
       this.buffTime.textContent = "—";
     }
 
-    if (game.phase === "won") this.setBanner("VICTORY — WARDEN BASE FALLS");
-    else if (game.phase === "lost") this.setBanner("DEFEAT — THE PYRE IS EXTINGUISHED");
+    this.titleScreen.classList.toggle("banner--hidden", game.phase !== "title");
+
+    if (game.phase === "won") this.setBanner("VICTORY - WARDEN BASE FALLS");
+    else if (game.phase === "lost") this.setBanner("DEFEAT - THE PYRE IS EXTINGUISHED");
   }
 
   private setBar(fill: HTMLElement, hp: number, max: number): void {

@@ -64,13 +64,13 @@ export const WAVES: WaveConfig[] = [
   { count: 9, concurrent: 5, healthMul: 1.3, speedMul: 1.12 },
   { count: 12, concurrent: 6, healthMul: 1.6, speedMul: 1.25 },
 ];
-export const TOTAL_WAVES = WAVES.length; // boss arrives after the final wave
+export const TOTAL_WAVES = WAVES.length; // breach-boss arrives after the final wave
 
-// ---- Campaign (multi-map journey) -----------------------------------------
-// Each campaign stage runs the full WAVES + boss on a different map; clearing a
-// boss advances to the next map. Difficulty escalates per stage, and the player
-// is patched up a little between maps to reward the push forward.
-export const STAGE_DIFFICULTY_STEP = 0.22; // +22% enemy & boss health per stage
+// ---- Structured descent (multi-map run) ------------------------------------
+// Each descent stage runs the full WAVES + breach-boss on a different map;
+// clearing a breach-boss advances to the next map. Difficulty escalates per
+// stage, and the player is patched up a little between maps to reward the push.
+export const STAGE_DIFFICULTY_STEP = 0.22; // +22% enemy & breach-boss health per stage
 export const STAGE_CLEAR_HEAL = 40; // HP restored when advancing to the next map
 
 export const FIRST_WAVE_DELAY = 2.2; // seconds before wave 1 spawns

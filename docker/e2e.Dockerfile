@@ -20,4 +20,4 @@ RUN PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 bun install --frozen-lockfile
 RUN cd apps/games/scourge-survivors && bun run playwright install chromium
 RUN mkdir -p /root/.cache && ln -sfn /ms-playwright /root/.cache/ms-playwright
 
-CMD ["bun", "run", "e2e"]
+CMD ["bun", "run", "test:e2e"]

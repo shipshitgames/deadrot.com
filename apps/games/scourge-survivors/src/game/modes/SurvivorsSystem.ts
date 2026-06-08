@@ -1,14 +1,12 @@
 import * as THREE from "three";
-import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
 import { audio } from "../../audio/AudioEngine";
-import type { Enemy } from "../entities/Enemy";
-import { XP_BLOOD_SCALE, XP_BLOOD_TEXTURE } from "../spriteAssets";
 import { WEAPONS } from "../constants";
+import type { GameContext } from "../context";
+import { pickWeightedEnemyArchetype, SCOURGE_THREAT_TIERS } from "../data/enemies";
 import { DEFAULT_MAP_ID, getMap } from "../data/maps";
-import { pickWeightedEnemyArchetype } from "../data/enemies";
 import {
   AMP_PER_TIER,
+  availableEvolutionChoice,
   BANISHES_PER_RUN,
   BOLT_DMG,
   BOLT_SPEED,
@@ -25,9 +23,6 @@ import {
   SURV_BASE_MAGNET,
   SURV_ELITE_INTERVAL,
   SURV_ENEMY_BASE_HP,
-  SURVIVOR_CLASSES,
-  SURVIVOR_RUN_CHAPTERS,
-  SURVIVOR_RUN_GOAL_TIME,
   SURV_SPAWN_CAP,
   SURV_SPAWN_MIN,
   SURV_SPAWN_START,
@@ -35,19 +30,26 @@ import {
   SURV_SWELL_COUNT,
   SURV_SWELL_INTERVAL,
   SURV_XP_ELITE_VALUE,
-  UPGRADES,
-  UPGRADE_BY_ID,
-  WEAPON_UPGRADE_IDS,
-  availableEvolutionChoice,
+  SURVIVOR_CLASSES,
+  SURVIVOR_RUN_CHAPTERS,
+  SURVIVOR_RUN_GOAL_TIME,
+  type SurvArchetype,
+  type SurvivorClassId,
   survivorBuildList,
   survivorChapterAt,
   survivorChapterStart,
-  xpForLevel,
-  type SurvArchetype,
-  type SurvivorClassId,
+  survivorClassFor,
+  survivorStartingWeapon,
+  UPGRADE_BY_ID,
+  UPGRADES,
   type UpgradeId,
+  WEAPON_UPGRADE_IDS,
   type WeaponUpgradeId,
+  xpForLevel,
 } from "../data/survivors";
+import type { Enemy } from "../entities/Enemy";
+import { XP_BLOOD_SCALE, XP_BLOOD_TEXTURE } from "../spriteAssets";
+import type { GameSystems } from "../systems";
 import type { BuildEntry, UpgradeChoice } from "../types";
 
 const DEFENSIVE_UPGRADES: UpgradeId[] = [
@@ -95,7 +97,7 @@ export class SurvivorsSystem {
   banishes = 0; // banishes remaining this run
   banished = new Set<UpgradeId>(); // upgrades removed from this run's pool
   evolved: Record<WeaponUpgradeId, boolean> = { orbit: false, bolt: false, nova: false };
-  statAmp = 1; // 'amp' (Overcharge) auto-weapon damage multiplier
+  statAmp = 1; // 'amp' (Cauterizer Feed) auto-weapon damage multiplier
   bastionTimer = 0;
 
   constructor(
@@ -111,12 +113,12 @@ export class SurvivorsSystem {
 
   startSurvivors(classId: SurvivorClassId = this.selectedClass) {
     this.sys.multiplayer.leaveMultiplayer(false);
-    this.selectedClass = SURVIVOR_CLASSES[classId] ? classId : "ranger";
+    this.selectedClass = survivorClassFor(classId).id;
     this.ctx.survivorClassId = this.selectedClass;
     this.ctx.survivors = true;
     this.ctx.campaignStage = 0;
     this.sys.arena.buildArena(getMap(DEFAULT_MAP_ID));
-    this.sys.player.resetPlayer(SURVIVOR_CLASSES[this.selectedClass].startingWeapon);
+    this.sys.player.resetPlayer(survivorStartingWeapon(this.selectedClass));
     this.initSurvivorsRun();
     this.ctx.status = "pointerlock-needed";
     this.sys.hud.emit();
@@ -142,9 +144,9 @@ export class SurvivorsSystem {
     for (const [id, level] of Object.entries(cls.startingUpgrades ?? {}) as [UpgradeId, number][]) {
       this.upgradeLevels[id] = Math.max(this.upgradeLevels[id] ?? 0, level);
     }
-    if ((this.shopTiers["arsenal"] ?? 0) > 0) this.upgradeLevels.orbit = Math.max(this.upgradeLevels.orbit ?? 0, 1); // Arsenal perk
-    if ((this.shopTiers["munitions"] ?? 0) > 0) this.upgradeLevels.bolt = Math.max(this.upgradeLevels.bolt ?? 0, 1); // Munitions perk
-    if ((this.shopTiers["pulsar"] ?? 0) > 0) this.upgradeLevels.nova = Math.max(this.upgradeLevels.nova ?? 0, 1); // Pulsar perk
+    if ((this.shopTiers.arsenal ?? 0) > 0) this.upgradeLevels.orbit = Math.max(this.upgradeLevels.orbit ?? 0, 1); // Arsenal perk
+    if ((this.shopTiers.munitions ?? 0) > 0) this.upgradeLevels.bolt = Math.max(this.upgradeLevels.bolt ?? 0, 1); // Munitions perk
+    if ((this.shopTiers.pulsar ?? 0) > 0) this.upgradeLevels.nova = Math.max(this.upgradeLevels.nova ?? 0, 1); // Pulsar perk
     this.survSpawnTimer = 0.25;
     this.survClock = 0;
     this.eliteTimer = this.currentChapter().eliteInterval;
@@ -194,6 +196,10 @@ export class SurvivorsSystem {
   setShopUpgrades(tiers: Record<string, number>) {
     this.shopTiers = tiers || {};
     if (this.ctx.survivors) this.recomputeStats();
+  }
+
+  selectedStartingWeapon() {
+    return survivorStartingWeapon(this.selectedClass);
   }
 
   setSurvivorClass(classId: SurvivorClassId) {
@@ -272,7 +278,7 @@ export class SurvivorsSystem {
     this.orbitLevel = lv("orbit");
     this.boltLevel = lv("bolt");
     this.novaLevel = lv("nova");
-    // L1 = 2 blades; Split Shot adds blades; Cyclone evolution adds 2 more.
+    // L1 = 2 blades; Splinter Ignition adds blades; Pyre Cyclone adds 2 more.
     const orbitCount = this.orbitLevel
       ? this.orbitLevel + 1 + this.ctx.statMultishot + (this.evolved.orbit ? 2 : 0)
       : 0;
@@ -289,8 +295,8 @@ export class SurvivorsSystem {
     this.orbitOrbs = [];
     const evo = this.evolved.orbit;
     const r = evo ? 0.44 : 0.32;
-    const color = evo ? 0xffd166 : 0x6fe7ff;
-    const emissive = evo ? 0xffae2e : 0x29c5ff;
+    const color = evo ? 0xffd166 : 0xff6a00;
+    const emissive = evo ? 0xffae2e : 0xff2a18;
     for (let i = 0; i < count; i++) {
       const orb = new THREE.Mesh(
         new THREE.SphereGeometry(r, 12, 10),
@@ -420,7 +426,7 @@ export class SurvivorsSystem {
       this.choices = [];
       this.ctx.status = "playing";
       this.sys.hud.emit();
-      this.sys.input.lockPointer();
+      this.sys.input.requestLock();
     }
   }
 
@@ -450,7 +456,7 @@ export class SurvivorsSystem {
     }
     this.eliteTimer -= delta;
     if (this.eliteTimer <= 0) {
-      this.sys.hud.announce("ELITE"); // telegraph the beat (was a silent spawn)
+      this.sys.hud.announce(SCOURGE_THREAT_TIERS.elite.banner); // telegraph the beat (was a silent spawn)
       audio.sfx("boss");
       this.spawnSwarmEnemy(true);
       this.eliteTimer = chapter.eliteInterval;
@@ -504,8 +510,8 @@ export class SurvivorsSystem {
     // spawn on a ring around the player, just out of immediate sight
     const a = Math.random() * Math.PI * 2;
     const r = 26 + Math.random() * 10;
-    let x = this.ctx.camera.position.x + Math.cos(a) * r;
-    let z = this.ctx.camera.position.z + Math.sin(a) * r;
+    let x = this.ctx.body.position.x + Math.cos(a) * r;
+    let z = this.ctx.body.position.z + Math.sin(a) * r;
     x = Math.max(this.ctx.bounds.minX + 2, Math.min(this.ctx.bounds.maxX - 2, x));
     z = Math.max(this.ctx.bounds.minZ + 2, Math.min(this.ctx.bounds.maxZ - 2, z));
     const chapter = this.currentChapter();
@@ -560,7 +566,7 @@ export class SurvivorsSystem {
   autoDamageEnemy(enemy: Enemy, dmg: number) {
     if (!enemy.alive) return;
     const crit = this.ctx.statCrit > 0 && Math.random() < this.ctx.statCrit;
-    // statAmp (Overcharge) + crit make a passive build empower the auto-weapons.
+    // statAmp (Cauterizer Feed) + crit make a passive build empower the auto-weapons.
     const total = dmg * this.ctx.statDamageMul * this.statAmp * (crit ? 2 : 1);
     const res = enemy.takeDamage(total, false);
     this.sys.hud.addDamageNumber(enemy.position.clone().setY(1.6), total, crit ? "crit" : "normal");
@@ -571,8 +577,8 @@ export class SurvivorsSystem {
   onPlayerDamaged(rawDamage: number, healthDamage: number) {
     if (rawDamage <= 0) return;
     if (this.ctx.statRetaliate > 0) {
-      const px = this.ctx.camera.position.x;
-      const pz = this.ctx.camera.position.z;
+      const px = this.ctx.body.position.x;
+      const pz = this.ctx.body.position.z;
       const radius = 5.2;
       const dmg = this.ctx.statRetaliate + rawDamage * 0.6;
       for (const enemy of this.ctx.enemies) {
@@ -609,7 +615,7 @@ export class SurvivorsSystem {
   private castBastionPulse() {
     this.sys.hud.announce("BASTION PULSE");
     audio.sfx("shieldUp");
-    const center = this.ctx.camera.position;
+    const center = this.ctx.body.position;
     const ring = new THREE.Mesh(
       new THREE.RingGeometry(0.78, 1.0, 46),
       new THREE.MeshBasicMaterial({
@@ -643,8 +649,8 @@ export class SurvivorsSystem {
       return;
     }
     this.orbitGroup.visible = true;
-    this.orbitGroup.position.set(this.ctx.camera.position.x, 1.2, this.ctx.camera.position.z);
-    const evo = this.evolved.orbit; // CYCLONE: bigger, faster, deadlier
+    this.orbitGroup.position.set(this.ctx.body.position.x, 1.2, this.ctx.body.position.z);
+    const evo = this.evolved.orbit; // PYRE CYCLONE: bigger, faster, deadlier
     this.orbitAngle += ORBIT_SPEED * (evo ? 1.6 : 1) * delta;
     const ringR = ORBIT_RADIUS * (evo ? 1.25 : 1);
     const n = this.orbitOrbs.length;
@@ -677,7 +683,7 @@ export class SurvivorsSystem {
   updateBolts(delta: number) {
     if (this.boltLevel > 0) {
       this.boltTimer -= delta;
-      const evo = this.evolved.bolt; // HAILSTORM: faster, more, piercing
+      const evo = this.evolved.bolt; // EMBER STORM: faster, more, piercing
       const interval = Math.max(0.12, (0.9 - 0.08 * (this.boltLevel - 1)) * (evo ? 0.55 : 1));
       if (this.boltTimer <= 0) {
         this.boltTimer = interval;
@@ -728,19 +734,19 @@ export class SurvivorsSystem {
   }
 
   fireBolt() {
-    const tgt = this.nearestEnemy(this.ctx.camera.position);
+    const tgt = this.nearestEnemy(this.ctx.body.position);
     if (!tgt) return;
     const mesh = new THREE.Mesh(
       new THREE.SphereGeometry(0.22, 10, 8),
       new THREE.MeshBasicMaterial({
-        color: 0x8affff,
+        color: 0xff6a00,
         transparent: true,
         opacity: 0.95,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       }),
     );
-    mesh.position.set(this.ctx.camera.position.x, 1.3, this.ctx.camera.position.z);
+    mesh.position.set(this.ctx.body.position.x, 1.3, this.ctx.body.position.z);
     const dx = tgt.position.x - mesh.position.x;
     const dz = tgt.position.z - mesh.position.z;
     const d = Math.hypot(dx, dz) || 1;
@@ -762,7 +768,7 @@ export class SurvivorsSystem {
   updateNovas(delta: number) {
     if (this.novaLevel > 0) {
       this.novaTimer -= delta;
-      // SUPERNOVA: erupts roughly twice as often
+      // FURNACE HEART: erupts roughly twice as often
       const interval = Math.max(0.9, (NOVA_INTERVAL - 0.22 * (this.novaLevel - 1)) * (this.evolved.nova ? 0.5 : 1));
       if (this.novaTimer <= 0) {
         this.novaTimer = interval;
@@ -807,7 +813,7 @@ export class SurvivorsSystem {
       }),
     );
     ring.rotation.x = -Math.PI / 2;
-    ring.position.set(this.ctx.camera.position.x, 0.2, this.ctx.camera.position.z);
+    ring.position.set(this.ctx.body.position.x, 0.2, this.ctx.body.position.z);
     ring.scale.setScalar(0.001);
     this.ctx.scene.add(ring);
     this.novas.push({
@@ -861,8 +867,8 @@ export class SurvivorsSystem {
   }
 
   updateXpGems(delta: number) {
-    const px = this.ctx.camera.position.x;
-    const pz = this.ctx.camera.position.z;
+    const px = this.ctx.body.position.x;
+    const pz = this.ctx.body.position.z;
     for (let i = this.xpGems.length - 1; i >= 0; i--) {
       const g = this.xpGems[i];
       g.age += delta;

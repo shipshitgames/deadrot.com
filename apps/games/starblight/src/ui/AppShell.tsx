@@ -7,9 +7,11 @@ import {
   MainMenuStatus,
   MainMenuTitle,
   MainMenuTitleLine,
+  MainMenuTopBar,
   MenuKicker,
   MenuPanel,
 } from "@shipshitgames/ui";
+import menuHero from "@shipshitgames/assets/games/starblight/ui/menu/title.webp";
 
 export function AppShell() {
   return (
@@ -66,7 +68,10 @@ export function AppShell() {
           <div id="build-tray" />
         </div>
 
-        <MainMenuScreen id="banner" className="banner">
+        <MainMenuScreen id="banner" className="banner" backgroundImage={menuHero}>
+          <MainMenuTopBar mark="SSG" meta="0 salvage" aria-hidden>
+            Orbital front
+          </MainMenuTopBar>
           <MainMenuLayout>
             <MainMenuCopy>
               <MenuKicker>Orbital Survivors Front</MenuKicker>
@@ -83,31 +88,16 @@ export function AppShell() {
                 <span>Draft systems hot</span>
               </MainMenuStatus>
             </MainMenuCopy>
-            <MainMenuNav label="Launch">
-              <MainMenuAction id="banner-btn" variant="primary" label="ENGAGE" meta="Start sortie" />
+            <MainMenuNav aria-label="Main menu">
+              <MainMenuAction id="banner-btn" variant="primary" label="Engage" meta="Start sortie" />
+              <MainMenuAction variant="shop" label="Upgrades" meta="Draft only" disabled />
+              <MainMenuAction variant="coop" label="Co-op" meta="Solo sortie" disabled />
+              <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
+              <MainMenuAction variant="settings" label="Settings" meta="Mouse flight" disabled />
+              <MainMenuAction variant="dev" label="Sandbox" meta="Orbit lab" disabled />
             </MainMenuNav>
           </MainMenuLayout>
         </MainMenuScreen>
-
-        <div id="pause-menu" className="pause-menu hidden">
-          <MenuPanel className="pause-inner">
-            <h2 className="pause-title ssg-section-heading">PAUSED</h2>
-            <p id="pause-stats" className="pause-stats mono">
-              0:00 - LVL 1 - 0 kills
-            </p>
-            <div className="pause-actions">
-              <button id="pause-resume" className="menu-action primary" type="button">
-                RESUME
-              </button>
-              <button id="pause-restart" className="menu-action" type="button">
-                RESTART RUN
-              </button>
-              <button id="pause-title-btn" className="menu-action ghost" type="button">
-                MAIN MENU
-              </button>
-            </div>
-          </MenuPanel>
-        </div>
 
         <div id="pause-menu" className="pause-menu hidden">
           <MenuPanel className="pause-inner">

@@ -5,6 +5,7 @@ description: >-
   DOOM-grade visual identity for the Ship Shit Games universe — brutal, metal,
   blood, and hellfire. Dark, heavy, high-contrast. Not neon, not clean sci-fi.
 colors:
+  primary: "#c1121f"
   void: "#0a0a0a"
   coal: "#121214"
   iron: "#1e1e22"
@@ -18,16 +19,16 @@ colors:
   toxic: "#8bdc1f"
 typography:
   display:
-    fontFamily: "Oswald, 'Arial Narrow', 'Helvetica Neue', sans-serif"
-    fontWeight: 700
-    letterSpacing: "-0.01em"
+    fontFamily: "\"SSG Press Start\", ui-monospace, SFMono-Regular, Menlo, monospace"
+    fontWeight: 400
+    letterSpacing: "0em"
     textTransform: "uppercase"
   body:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "\"SSG Press Start\", ui-monospace, SFMono-Regular, Menlo, monospace"
     fontWeight: 400
     lineHeight: 1.6
   mono:
-    fontFamily: "ui-monospace, SFMono-Regular, monospace"
+    fontFamily: "\"SSG Press Start\", ui-monospace, SFMono-Regular, Menlo, monospace"
 rounded:
   none: "0px"
   sm: "2px"
@@ -42,22 +43,105 @@ elevation:
   flat: "none"
   ember: "0 0 0 1px rgba(255,106,0,0.35), 0 0 26px -6px rgba(193,18,31,0.65)"
 components:
-  button.primary:
-    background: "{colors.blood}"
-    color: "{colors.bone}"
+  button-primary:
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.bone}"
+    typography: "{typography.display}"
     rounded: "{rounded.sm}"
-    hoverShadow: "{elevation.ember}"
-  button.ghost:
-    border: "{colors.hellfire}"
-    color: "{colors.hellfire}"
+    padding: "12px 16px"
+  button-secondary:
+    backgroundColor: "{colors.hellfire}"
+    textColor: "{colors.void}"
+    typography: "{typography.display}"
     rounded: "{rounded.sm}"
+    padding: "12px 16px"
   card:
-    background: "{colors.coal}"
-    border: "{colors.gunmetal}"
+    backgroundColor: "{colors.coal}"
+    textColor: "{colors.bone}"
     rounded: "{rounded.sm}"
-  badge.playable: { border: "{colors.hellfire}", color: "{colors.hellfire}" }
-  badge.inDev: { border: "{colors.blood}", color: "{colors.blood}" }
-  badge.concept: { border: "{colors.gunmetal}", color: "{colors.ash}" }
+    padding: "24px"
+  panel-raised:
+    backgroundColor: "{colors.iron}"
+    textColor: "{colors.bone}"
+    rounded: "{rounded.sm}"
+    padding: "16px"
+  panel-metal:
+    backgroundColor: "{colors.gunmetal}"
+    textColor: "{colors.bone}"
+    rounded: "{rounded.none}"
+    padding: "16px"
+  terminal:
+    backgroundColor: "{colors.void}"
+    textColor: "{colors.ash}"
+    typography: "{typography.mono}"
+    rounded: "{rounded.sm}"
+    padding: "16px"
+  badge-blood:
+    backgroundColor: "{colors.blood}"
+    textColor: "{colors.bone}"
+    typography: "{typography.display}"
+    rounded: "{rounded.sm}"
+    padding: "4px 8px"
+  badge-hot:
+    backgroundColor: "{colors.bloodHot}"
+    textColor: "{colors.void}"
+    typography: "{typography.display}"
+    rounded: "{rounded.sm}"
+    padding: "4px 8px"
+  badge-rust:
+    backgroundColor: "{colors.rust}"
+    textColor: "{colors.bone}"
+    typography: "{typography.display}"
+    rounded: "{rounded.sm}"
+    padding: "4px 8px"
+  badge-toxic:
+    backgroundColor: "{colors.toxic}"
+    textColor: "{colors.void}"
+    typography: "{typography.display}"
+    rounded: "{rounded.sm}"
+    padding: "4px 8px"
+
+gameArtDirection:
+  shared:
+    medium: "medium-chunky high-detail pixel art"
+    renderRules: "nearest-neighbor scaling, lossless hard edges, ordered dithering, no anti-aliasing"
+    paletteRules: "void/coal/gunmetal bodies, blood/rust grime, bone highlights, hellfire rim light"
+    enemyRules: "silhouette first; parasites must visibly infest or rewrite a host"
+  scourge-survivors:
+    title: "Scourge Survivors"
+    camera: "first-person billboard sprites, front-facing full-body enemies and pickups"
+    assetFraming: "enemy silhouettes readable at FPS combat distance; weapons and pickups centered and iconic"
+    paletteBias: "blood and hellfire for combat feedback; toxic only for breach cores and Scourge weak points"
+  deadlane:
+    title: "Deadlane"
+    camera: "top-down / high-angle lane-defense sprites"
+    assetFraming: "units, towers, lanes, and projectiles readable from above"
+    paletteBias: "gunmetal lane structures, blood pressure, hellfire tower heat"
+  pactfall:
+    title: "Pactfall"
+    camera: "isometric 3/4-view champion sprites"
+    assetFraming: "MOBA-scale heroes with readable ability silhouettes and faction crests"
+    paletteBias: "faction identity first, then blood/hellfire combat states"
+  starblight:
+    title: "Starblight"
+    camera: "side-on / top-down arcade space-shooter sprites"
+    assetFraming: "ships, projectiles, and orbital threats readable at speed against void"
+    paletteBias: "void and bone for space contrast, hellfire engines, toxic breach matter"
+  redline:
+    title: "Redline"
+    camera: "side-on courier-runner sprites"
+    assetFraming: "profile silhouettes readable at high lane speed"
+    paletteBias: "blood-hot speed marks, rust infrastructure, hellfire exhaust"
+  rothulk:
+    title: "Rothulk"
+    camera: "side-on platformer sprites"
+    assetFraming: "chunky traversal poses, clear hazards, readable Scourge bio-ship parts"
+    paletteBias: "coal/iron interiors, bone highlights, toxic infestation nodes"
+  warline:
+    title: "Warline"
+    camera: "map-first SVG/strategy interface with compact faction icons"
+    assetFraming: "regions, lanes, breaches, pressure, and faction control visible at a glance"
+    paletteBias: "Wardens=blood, Pyre=hellfire, Scourge=toxic, neutral=gunmetal"
 
 assetgen:
   # ── LOCKED house look (2026-06-04): MEDIUM-CHUNKY DETAILED PIXEL ART.
@@ -116,7 +200,7 @@ assetgen:
     - cropped or close-up framing that hides the silhouette
 
   # Per-game camera framing. SUPERSEDES GAME_FRAMING in style.ts L8-16.
-  # All six game slugs + shared. Interpolated as {framing} in the template.
+  # Game slugs + shared. Interpolated as {framing} in the template.
   perGameFraming:
     scourge-survivors: first-person game billboard sprite, front-facing, full body
     deadlane: top-down / high-angle game sprite, silhouette readable from above
@@ -124,6 +208,7 @@ assetgen:
     starblight: side-on / top-down arcade space-shooter sprite, crisp readable silhouette
     redline: side-on Sonic-like runner sprite, profile silhouette readable at courier-lane speed
     rothulk: side-on Mario-like platformer sprite, profile silhouette, clear readable pose
+    warline: map-first strategy icon, faction marker, readable at small scale
     shared: game asset
 
   # {kind} rewrite map (mirrors style.ts L30). Unlisted kinds pass through verbatim.
@@ -266,19 +351,28 @@ negativePromptSet:
   - cropped or close-up framing that hides the silhouette
 ---
 
-# Overview
+## Overview
 
 The single source of design truth for **everything** — the website, every game's HUD and
 menus, and every AI-generated asset. The aesthetic is **DOOM**: brutal, metal, blood, and
 hellfire. Dark, heavy, gritty, high-contrast. This supersedes the earlier "neon-industrial"
 direction — there is **no magenta/cyan neon**. An agent that reads this file should produce
-black-void surfaces, gunmetal panels, bone headlines in heavy uppercase Oswald, and
+black-void surfaces, gunmetal panels, bone headlines in uppercase pixel type, and
 blood-red call-to-action buttons with an ember glow. The lore [[Style-Bible]] points here.
+
+### Game Art Direction
+
+Use `gameArtDirection.shared` as the house style, then layer the matching game
+slug on top. Each game entry defines its camera, asset framing, palette bias,
+and gameplay readability rule. `assetgen.perGameFraming` is the machine prompt
+hook for camera/framing; `gameArtDirection` is the richer direction map for
+agents, artists, and future generators.
 
 ## Colors
 
 | Token | Hex | Use |
 |-------|-----|-----|
+| `primary` | `#c1121f` | machine-readable primary alias for blood |
 | `void` | `#0a0a0a` | page / scene background |
 | `coal` | `#121214` | panels, cards |
 | `iron` | `#1e1e22` | raised surfaces |
@@ -302,9 +396,9 @@ parasite grammar: toxic-green nodes, black chitin, wet tissue, tendrils, and rup
 
 ## Typography
 
-- **Display** — Oswald 700, UPPERCASE, tight tracking. Militaristic, heavy. Titles, HUD labels.
-- **Body** — Inter 400/600. Utilitarian, legible.
-- **Mono** — system monospace. Counters, ammo, timers, HUD numerics.
+- **Display** — SSG Press Start / Press Start 2P 400, UPPERCASE, zero tracking. Pixel title, menu, and HUD labels.
+- **Body** — SSG Press Start / Press Start 2P 400. All player-facing UI should stay pixelized.
+- **Mono** — SSG Press Start / Press Start 2P 400. Counters, ammo, timers, and HUD numerics.
 
 ## Layout
 
@@ -325,14 +419,16 @@ parasite grammar: toxic-green nodes, black chitin, wet tissue, tendrils, and rup
 
 ## Components
 
-- **button.primary** — `blood` bg, `bone` text, `rounded.sm`, `ember` glow on hover. Main CTA.
-- **button.ghost** — transparent, `hellfire` border + text. Secondary (e.g. "Source").
-- **card** — `coal` bg, `gunmetal` border, `rounded.sm`; hover border → `blood`.
-- **badge** — `playable` = hellfire, `inDev` = blood, `concept` = gunmetal/ash.
+- **button-primary** — `primary` bg, `bone` text, `rounded.sm`. Main CTA.
+- **button-secondary** — `hellfire` bg, `void` text, `rounded.sm`. Secondary hot action.
+- **card** — `coal` bg, `bone` text, `rounded.sm`; border in implementation should use `gunmetal`.
+- **panel-raised / panel-metal** — `iron` or `gunmetal` surfaces for HUD and chrome.
+- **terminal** — `void` bg, `ash` mono text, `rounded.sm`.
+- **badge** — `blood`, `bloodHot`, `rust`, and `toxic` variants for status and faction tags.
 
 ## Do's and Don'ts
 
-**Do:** lead with red + fire + metal + bone; UPPERCASE Oswald headers; reserve toxic-green
+**Do:** lead with red + fire + metal + bone; UPPERCASE pixel headers; reserve toxic-green
 for the Scourge; make Scourge forms read as parasitic infestation; use ember glow sparingly;
 keep edges hard and high-contrast.
 

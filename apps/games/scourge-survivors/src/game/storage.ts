@@ -1,11 +1,19 @@
 // localStorage-backed leaderboard + audio settings (no backend required).
 
+import type { RunMode } from "./types";
+
 export interface ScoreEntry {
   score: number;
   kills: number;
   headshots: number;
   time: number;
   outcome: "win" | "dead";
+  mode?: RunMode;
+  level?: number;
+  depthReached?: number;
+  depthTotal?: number;
+  depthName?: string;
+  goldEarned?: number;
   date: number;
 }
 
@@ -18,10 +26,41 @@ export function loadScores(): ScoreEntry[] {
     const raw = localStorage.getItem(SCORES_KEY);
     if (!raw) return [];
     const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr : [];
+    if (!Array.isArray(arr)) return [];
+    return arr
+      .filter((entry) => entry && typeof entry === "object")
+      .map((entry) => {
+        const s = entry as Partial<ScoreEntry>;
+        return {
+          score: Math.max(0, Number(s.score) || 0),
+          kills: Math.max(0, Number(s.kills) || 0),
+          headshots: Math.max(0, Number(s.headshots) || 0),
+          time: Math.max(0, Number(s.time) || 0),
+          outcome: s.outcome === "win" ? "win" : "dead",
+          mode: normalizeRunMode(s.mode),
+          level: positiveNumber(s.level),
+          depthReached: positiveNumber(s.depthReached),
+          depthTotal: positiveNumber(s.depthTotal),
+          depthName: typeof s.depthName === "string" ? s.depthName : undefined,
+          goldEarned: positiveNumber(s.goldEarned),
+          date: Number(s.date) || Date.now(),
+        };
+      });
   } catch {
     return [];
   }
+}
+
+function normalizeRunMode(mode: unknown): RunMode | undefined {
+  return mode === "campaign" || mode === "structured" || mode === "endless" || mode === "coop" || mode === "sandbox"
+    ? mode
+    : undefined;
+}
+
+function positiveNumber(value: unknown): number | undefined {
+  if (value == null) return undefined;
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : undefined;
 }
 
 /** Adds an entry, keeps the top {@link MAX_SCORES} by score, returns the new list. */

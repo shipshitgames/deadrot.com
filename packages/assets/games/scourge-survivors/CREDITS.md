@@ -1,5 +1,33 @@
 # Asset Credits
 
+## 2026-06-07 - Scourge gib sprite set
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Role: transparent body-part / gore billboard sprites for enemy death FX.
+- Tool: `gpt-image-2` via Codex built-in `image_gen`, then Sharp
+  crop/chroma-key post-processing and lossless WebP encoding.
+- Plan: Codex built-in image generation.
+- Kind: generated source sheet cropped into 64x64 transparent WebP gib sprites
+  in the Scourge palette.
+- Source output:
+  `/Users/decod3rslabs/.codex/generated_images/019ea1f0-1ea2-7cf3-b0b6-453bfa0ba6cb/ig_080f82b0f8c0b304016a256fcf02e081919b431d468e6996b8.png`.
+- Preserved source:
+  `packages/assets/sources/generated/scourge-survivors/gibs/2026-06-07/gpt-image-2-gib-source-sheet.png`.
+- Source note: generated as a 3x2 chroma-key source sheet using the locked
+  Scourge visual grammar: blood/crimson meat, cracked bone, black chitin,
+  claw-limb, acid sac, and bruised wing membrane.
+- Final assets:
+  - `fx/gibs/gib-meat-chunk.webp`
+  - `fx/gibs/gib-skull-shard.webp`
+  - `fx/gibs/gib-bone-blade.webp`
+  - `fx/gibs/gib-claw-limb.webp`
+  - `fx/gibs/gib-acid-sac.webp`
+  - `fx/gibs/gib-wing-membrane.webp`
+- Notes: Replaces the rock-like procedural corpse chunk meshes with authored
+  billboard body-part sprites while keeping the existing physics throw/bounce
+  behavior.
+
 ## 2026-06-06 - authored breach-arena texture sets
 
 - Status: promoted into runtime.

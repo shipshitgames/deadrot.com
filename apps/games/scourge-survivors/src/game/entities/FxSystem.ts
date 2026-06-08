@@ -1,20 +1,41 @@
 import * as THREE from "three";
 import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
 import type { Pop, Tracer } from "../data/internalTypes";
+import {
+  CORPSE_PART_SPRITES,
+  ENEMY_SPRITE_ANIMATION_META,
+  ENEMY_SPRITE_ANIMATION_TEXTURES,
+  ENEMY_SPRITE_SCALES,
+  type EnemySpriteKind,
+  type EnemySpriteView,
+} from "../spriteAssets";
+import type { GameSystems } from "../systems";
 
 const CORPSE_PART_SOFT_CAP = 72;
 const CORPSE_PART_HARD_CAP = 96;
 const CORPSE_PART_FADE_SECONDS = 1.35;
 const CORPSE_PART_GRAVITY = 18;
-const CORPSE_PART_COLORS = [0x4b0611, 0x6f0718, 0x9f1024, 0x2b1718, 0x3d241b];
+const DEATH_SPRITE_FADE_SECONDS = 0.6;
+type DeathSpriteKind = EnemySpriteKind;
+type DeathSpriteView = EnemySpriteView;
 
 interface CorpsePart {
-  mesh: THREE.Mesh;
+  mesh: THREE.Mesh | THREE.Sprite;
   age: number;
   ttl: number;
   vel: THREE.Vector3;
   spin: THREE.Vector3;
+  baseOpacity: number;
+}
+
+interface DeathSprite {
+  sprite: THREE.Sprite;
+  material: THREE.SpriteMaterial;
+  kind: DeathSpriteKind;
+  view: DeathSpriteView;
+  age: number;
+  ttl: number;
+  holdStart: number;
   baseOpacity: number;
 }
 
@@ -23,6 +44,7 @@ export class FxSystem {
   tracers: Tracer[] = [];
   pops: Pop[] = [];
   corpseParts: CorpsePart[] = [];
+  deathSprites: DeathSprite[] = [];
   private berserkParticleTimer = 0;
 
   constructor(
@@ -107,10 +129,25 @@ export class FxSystem {
   /** Death FX: hot pop, blood spray, short-lived floor splatter, and chunky leftovers. */
   spawnEnemyDeath(
     pos: THREE.Vector3,
-    opts: { headshot?: boolean; elite?: boolean; scale?: number; color?: number } = {},
+    opts: {
+      headshot?: boolean;
+      elite?: boolean;
+      scale?: number;
+      color?: number;
+      spriteKind?: DeathSpriteKind;
+      spriteView?: DeathSpriteView;
+      spriteFlip?: number;
+    } = {},
   ) {
     const scale = opts.scale ?? (opts.elite ? 1.8 : 1);
     const color = opts.color ?? (opts.elite ? 0xff2d55 : 0xc1121f);
+    this.spawnEnemyDeathSprite(pos, {
+      kind: opts.spriteKind,
+      view: opts.spriteView,
+      flip: opts.spriteFlip,
+      scale,
+      elite: opts.elite,
+    });
     this.spawnDeathPop(pos, color, opts.elite ? scale * 1.15 : scale);
     this.spawnCorpseParts(pos, { headshot: opts.headshot, elite: opts.elite, scale });
 
@@ -181,29 +218,31 @@ export class FxSystem {
 
   private spawnCorpseParts(pos: THREE.Vector3, opts: { headshot?: boolean; elite?: boolean; scale: number }) {
     const scale = Math.max(0.72, opts.scale);
-    const count = opts.elite ? 12 : opts.headshot ? 5 : 3;
+    const count = opts.elite ? 14 : opts.headshot ? 6 : 4;
     const originY = opts.headshot ? 1.45 * scale : 1.05 * scale;
 
     for (let i = 0; i < count; i++) {
-      const mesh = new THREE.Mesh(
-        this.makeCorpsePartGeometry(scale, !!opts.elite),
-        new THREE.MeshStandardMaterial({
-          color: CORPSE_PART_COLORS[Math.floor(Math.random() * CORPSE_PART_COLORS.length)],
-          roughness: 0.88,
-          metalness: 0.02,
-          transparent: true,
-          opacity: opts.elite ? 0.94 : 0.86,
-        }),
-      );
+      const spriteDef = this.pickCorpsePartSprite(opts, i);
+      const material = new THREE.SpriteMaterial({
+        map: spriteDef.texture,
+        color: 0xffffff,
+        transparent: true,
+        opacity: opts.elite ? 0.94 : 0.88,
+        alphaTest: 0.08,
+        depthWrite: true,
+        toneMapped: false,
+      });
+      material.rotation = Math.random() * Math.PI * 2;
+      const mesh = new THREE.Sprite(material);
+      const spriteScale = spriteDef.scale[0] * scale * (0.72 + Math.random() * (opts.elite ? 0.65 : 0.46));
+      mesh.scale.set(spriteScale, spriteScale, 1);
+      mesh.renderOrder = 7;
 
       mesh.position.set(
         pos.x + (Math.random() * 2 - 1) * 0.22 * scale,
         originY + Math.random() * 0.35 * scale,
         pos.z + (Math.random() * 2 - 1) * 0.22 * scale,
       );
-      mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
       this.ctx.scene.add(mesh);
 
       const a = Math.random() * Math.PI * 2;
@@ -225,18 +264,61 @@ export class FxSystem {
     this.enforceCorpsePartBudget();
   }
 
-  private makeCorpsePartGeometry(scale: number, elite: boolean): THREE.BufferGeometry {
-    const size = scale * (elite ? 1.22 : 1);
-    const roll = Math.random();
-    if (roll < 0.34) {
-      return new THREE.BoxGeometry(
-        (0.12 + Math.random() * 0.1) * size,
-        (0.1 + Math.random() * 0.08) * size,
-        (0.36 + Math.random() * 0.26) * size,
-      );
-    }
-    if (roll < 0.68) return new THREE.DodecahedronGeometry((0.13 + Math.random() * 0.1) * size, 0);
-    return new THREE.SphereGeometry((0.12 + Math.random() * 0.09) * size, 7, 5);
+  private pickCorpsePartSprite(opts: { headshot?: boolean; elite?: boolean }, index: number) {
+    if (opts.headshot && index === 0) return CORPSE_PART_SPRITES[1];
+    if (opts.elite && index % 5 === 0) return CORPSE_PART_SPRITES[3];
+    if (opts.elite && index % 7 === 0) return CORPSE_PART_SPRITES[5];
+    return CORPSE_PART_SPRITES[Math.floor(Math.random() * CORPSE_PART_SPRITES.length)];
+  }
+
+  private spawnEnemyDeathSprite(
+    pos: THREE.Vector3,
+    opts: { kind?: DeathSpriteKind; view?: DeathSpriteView; flip?: number; scale: number; elite?: boolean },
+  ) {
+    const kind = opts.kind ?? (opts.elite ? "boss" : "melee");
+    const view = opts.view ?? "front";
+    const meta = ENEMY_SPRITE_ANIMATION_META[kind].death;
+    const frames = ENEMY_SPRITE_ANIMATION_TEXTURES[kind].death[view];
+    const firstFrame = frames[0];
+    if (!firstFrame) return;
+
+    const material = new THREE.SpriteMaterial({
+      map: firstFrame,
+      color: 0xffffff,
+      transparent: true,
+      opacity: opts.elite ? 0.94 : 0.88,
+      alphaTest: 0.06,
+      depthWrite: true,
+      toneMapped: false,
+    });
+    const sprite = new THREE.Sprite(material);
+    sprite.center.set(0.5, 0);
+    const [baseW, baseH] = ENEMY_SPRITE_SCALES[kind][view];
+    const flip = opts.flip && opts.flip < 0 ? -1 : 1;
+    sprite.scale.set(baseW * opts.scale * flip, baseH * opts.scale, 1);
+    sprite.position.set(pos.x, 0.03, pos.z);
+    sprite.renderOrder = 6;
+    this.ctx.scene.add(sprite);
+    const duration = meta.frameCount / meta.fps;
+    const baseOpacity = opts.elite ? 0.94 : 0.88;
+    this.deathSprites.push({
+      sprite,
+      material,
+      kind,
+      view,
+      age: 0,
+      ttl: duration + DEATH_SPRITE_FADE_SECONDS,
+      holdStart: duration,
+      baseOpacity,
+    });
+  }
+
+  private removeDeathSprite(index: number) {
+    const death = this.deathSprites[index];
+    if (!death) return;
+    this.ctx.scene.remove(death.sprite);
+    death.material.dispose();
+    this.deathSprites.splice(index, 1);
   }
 
   private enforceCorpsePartBudget() {
@@ -254,7 +336,7 @@ export class FxSystem {
     const part = this.corpseParts[index];
     if (!part) return;
     this.ctx.scene.remove(part.mesh);
-    part.mesh.geometry.dispose();
+    if (part.mesh instanceof THREE.Mesh) part.mesh.geometry.dispose();
     const mat = part.mesh.material;
     if (Array.isArray(mat)) {
       mat.forEach((m) => {
@@ -283,7 +365,7 @@ export class FxSystem {
 
   /** Blood-rage pickup hit: screen shake plus a hot ring and short-lived spray around the player. */
   triggerBerserkBurst() {
-    const center = this.ctx.camera.position.clone();
+    const center = this.ctx.body.position.clone();
     const ring = new THREE.Mesh(
       new THREE.RingGeometry(0.7, 1.08, 56),
       new THREE.MeshBasicMaterial({
@@ -332,7 +414,7 @@ export class FxSystem {
   }
 
   private spawnBerserkWake() {
-    const center = this.ctx.camera.position;
+    const center = this.ctx.body.position;
     const count = Math.random() < 0.45 ? 2 : 1;
     for (let i = 0; i < count; i++) {
       const a = Math.random() * Math.PI * 2;
@@ -450,6 +532,21 @@ export class FxSystem {
         this.pops.splice(i, 1);
       }
     }
+    for (let i = this.deathSprites.length - 1; i >= 0; i--) {
+      const death = this.deathSprites[i];
+      death.age += delta;
+      const meta = ENEMY_SPRITE_ANIMATION_META[death.kind].death;
+      const frames = ENEMY_SPRITE_ANIMATION_TEXTURES[death.kind].death[death.view];
+      const frame = frames[Math.min(frames.length - 1, Math.floor(death.age * meta.fps))];
+      if (frame && death.material.map !== frame) {
+        death.material.map = frame;
+        death.material.needsUpdate = true;
+      }
+
+      const fade = Math.max(0, Math.min(1, (death.age - death.holdStart) / DEATH_SPRITE_FADE_SECONDS));
+      death.material.opacity = death.baseOpacity * (1 - fade);
+      if (death.age >= death.ttl) this.removeDeathSprite(i);
+    }
     for (let i = this.corpseParts.length - 1; i >= 0; i--) {
       const part = this.corpseParts[i];
       part.age += delta;
@@ -466,14 +563,21 @@ export class FxSystem {
       }
 
       if (Math.abs(part.vel.y) > 0.02 || Math.hypot(part.vel.x, part.vel.z) > 0.035) {
-        part.mesh.rotation.x += part.spin.x * delta;
-        part.mesh.rotation.y += part.spin.y * delta;
-        part.mesh.rotation.z += part.spin.z * delta;
+        if (part.mesh instanceof THREE.Sprite) {
+          part.mesh.material.rotation += part.spin.z * delta;
+        } else {
+          part.mesh.rotation.x += part.spin.x * delta;
+          part.mesh.rotation.y += part.spin.y * delta;
+          part.mesh.rotation.z += part.spin.z * delta;
+        }
       }
 
       const fadeStart = Math.max(0, part.ttl - CORPSE_PART_FADE_SECONDS);
       const fade = Math.max(0, Math.min(1, (part.age - fadeStart) / CORPSE_PART_FADE_SECONDS));
-      (part.mesh.material as THREE.MeshStandardMaterial).opacity = part.baseOpacity * (1 - fade);
+      const material = part.mesh.material;
+      if (Array.isArray(material)) {
+        for (const mat of material) mat.opacity = part.baseOpacity * (1 - fade);
+      } else material.opacity = part.baseOpacity * (1 - fade);
       if (part.age >= part.ttl) this.removeCorpsePart(i);
     }
   }
@@ -491,6 +595,7 @@ export class FxSystem {
       (p.mesh.material as THREE.Material).dispose();
     }
     this.pops = [];
+    while (this.deathSprites.length) this.removeDeathSprite(this.deathSprites.length - 1);
     while (this.corpseParts.length) this.removeCorpsePart(this.corpseParts.length - 1);
     this.sys.projectiles.clearProjectiles();
     while (this.sys.pickups.pickups.length) this.sys.pickups.removePickup(this.sys.pickups.pickups.length - 1);
