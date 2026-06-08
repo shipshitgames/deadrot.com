@@ -104,12 +104,7 @@ export function AppShell() {
             </MainMenuCopy>
             {revealed ? (
               <MainMenuNav aria-label="Main menu">
-                <MainMenuAction
-                  id="banner-btn"
-                  variant="primary"
-                  label={banner.actionLabel}
-                  meta={banner.actionMeta}
-                />
+                <MainMenuAction id="banner-btn" variant="primary" label={banner.actionLabel} meta={banner.actionMeta} />
                 <MainMenuAction variant="shop" label="Upgrades" meta="Tower tech" disabled />
                 <MainMenuAction variant="coop" label="Co-op" meta="Solo command" disabled />
                 <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />

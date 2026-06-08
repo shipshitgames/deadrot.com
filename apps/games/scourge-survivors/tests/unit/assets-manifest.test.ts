@@ -182,7 +182,13 @@ describe("asset manifest", () => {
   });
 
   it("defines weapon sprite metadata needed for first-person runtime placement", () => {
-    const weaponSpriteIds = ["weapon-pistol", "weapon-smg", "weapon-shotgun", "weapon-cannon", "weapon-sniper"] as const;
+    const weaponSpriteIds = [
+      "weapon-pistol",
+      "weapon-smg",
+      "weapon-shotgun",
+      "weapon-cannon",
+      "weapon-sniper",
+    ] as const;
 
     for (const id of weaponSpriteIds) {
       const entry = manifest.sprites[id];
@@ -196,7 +202,13 @@ describe("asset manifest", () => {
   });
 
   it("ships every weapon as a 5-cell tier sheet (base->evolved) UV-sampled per visual tier", () => {
-    const weaponSpriteIds = ["weapon-pistol", "weapon-smg", "weapon-shotgun", "weapon-cannon", "weapon-sniper"] as const;
+    const weaponSpriteIds = [
+      "weapon-pistol",
+      "weapon-smg",
+      "weapon-shotgun",
+      "weapon-cannon",
+      "weapon-sniper",
+    ] as const;
     const expectedTiers = ["base", "tier-2", "tier-3", "tier-4", "evolved"];
 
     for (const id of weaponSpriteIds) {
