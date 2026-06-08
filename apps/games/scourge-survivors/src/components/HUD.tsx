@@ -25,6 +25,7 @@ import {
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -967,19 +968,23 @@ export function HUD({
 
   // Status row + real actions for the shared PauseMenu (mirrors the title menu;
   // no shop affordance). Multiplayer surfaces breach/connection info + Leave.
-  const pauseStatus: ReactNode = multiplayer ? (
-    <>
-      <span>
-        Breach {room || "-"} · {connected ? "connected" : "connecting…"}
-      </span>
-      <span>{kills} frags</span>
-    </>
-  ) : (
-    <>
-      <span>Score {score.toLocaleString()}</span>
-      <span>{bossActive ? SCOURGE_THREAT_TIERS.breachBoss.banner : `Wave ${wave}/${totalWaves}`}</span>
-      <span>{kills} kills</span>
-    </>
+  const pauseStatus = useMemo<ReactNode>(
+    () =>
+      multiplayer ? (
+        <>
+          <span>
+            Breach {room || "-"} · {connected ? "connected" : "connecting…"}
+          </span>
+          <span>{kills} frags</span>
+        </>
+      ) : (
+        <>
+          <span>Score {score.toLocaleString()}</span>
+          <span>{bossActive ? SCOURGE_THREAT_TIERS.breachBoss.banner : `Wave ${wave}/${totalWaves}`}</span>
+          <span>{kills} kills</span>
+        </>
+      ),
+    [bossActive, connected, kills, multiplayer, room, score, totalWaves, wave],
   );
   const pauseActions: PauseMenuAction[] = [
     {

@@ -17,7 +17,7 @@ import {
   PauseMenu,
   useEnterToReveal,
 } from "@shipshitgames/ui";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Game } from "../game/Game";
 
 interface AppShellProps {
@@ -31,6 +31,33 @@ export function AppShell({ createGame }: AppShellProps) {
   const [paused, setPaused] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const revealed = useEnterToReveal(!started);
+  const pauseStatus = useMemo(
+    () => (
+      <>
+        <span>Core at crown</span>
+        <span>Embers held</span>
+      </>
+    ),
+    [],
+  );
+  const pauseActions = useMemo(
+    () => [
+      {
+        id: "settings",
+        label: "Settings",
+        meta: "Audio",
+        variant: "settings" as const,
+        onSelect: () => setShowSettings(true),
+      },
+      {
+        id: "restart",
+        label: "Restart run",
+        meta: "New breach",
+        onSelect: () => gameRef.current?.restart(),
+      },
+    ],
+    [],
+  );
 
   // Build the Game once the canvas is mounted, and mirror its paused flag into
   // React (Esc inside the canvas toggles it).
@@ -200,28 +227,9 @@ export function AppShell({ createGame }: AppShellProps) {
         kicker="Pyre Infiltration"
         title="Paused"
         subtitle="The hulk stirs while you hold. Resume the breach when ready."
-        status={
-          <>
-            <span>Core at crown</span>
-            <span>Embers held</span>
-          </>
-        }
+        status={pauseStatus}
         onResume={() => gameRef.current?.resume()}
-        actions={[
-          {
-            id: "settings",
-            label: "Settings",
-            meta: "Audio",
-            variant: "settings",
-            onSelect: () => setShowSettings(true),
-          },
-          {
-            id: "restart",
-            label: "Restart run",
-            meta: "New breach",
-            onSelect: () => gameRef.current?.restart(),
-          },
-        ]}
+        actions={pauseActions}
       />
 
       <div id="toast" className="toast" />

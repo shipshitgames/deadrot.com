@@ -1,6 +1,25 @@
 import type { HTMLAttributes, ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { cn } from "./cn";
+
+interface EnterRevealState {
+  active: boolean;
+  revealed: boolean;
+}
+
+type EnterRevealAction = { type: "reveal" } | { type: "sync-active"; active: boolean };
+
+function enterRevealReducer(state: EnterRevealState, action: EnterRevealAction): EnterRevealState {
+  switch (action.type) {
+    case "reveal":
+      return state.revealed ? state : { ...state, revealed: true };
+    case "sync-active":
+      return {
+        active: action.active,
+        revealed: action.active ? state.revealed : false,
+      };
+  }
+}
 
 /**
  * Gate a title screen behind an arcade "press enter to continue" splash. The
@@ -11,11 +30,18 @@ import { cn } from "./cn";
  * screen isn't the current view (e.g. mid-run), so the listeners don't fire.
  */
 export function useEnterToReveal(active = true): boolean {
-  const [revealed, setRevealed] = useState(false);
+  const [state, dispatch] = useReducer(enterRevealReducer, {
+    active,
+    revealed: false,
+  });
 
   useEffect(() => {
-    if (!active || revealed) return;
-    const reveal = () => setRevealed(true);
+    dispatch({ type: "sync-active", active });
+  }, [active]);
+
+  useEffect(() => {
+    if (!active || state.revealed) return;
+    const reveal = () => dispatch({ type: "reveal" });
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
@@ -28,14 +54,9 @@ export function useEnterToReveal(active = true): boolean {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("pointerdown", reveal);
     };
-  }, [active, revealed]);
+  }, [active, state.revealed]);
 
-  // Reset the gate whenever the title screen leaves view, so it re-splashes next time.
-  useEffect(() => {
-    if (!active) setRevealed(false);
-  }, [active]);
-
-  return revealed;
+  return active && state.revealed;
 }
 
 export interface MainMenuEnterPromptProps extends HTMLAttributes<HTMLDivElement> {

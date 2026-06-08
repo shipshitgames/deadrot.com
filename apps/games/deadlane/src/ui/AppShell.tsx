@@ -17,7 +17,7 @@ import {
   PauseMenu,
   useEnterToReveal,
 } from "@shipshitgames/ui";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { getBannerSnapshot, subscribeBanner } from "./bannerBridge";
 import { getPauseSnapshot, subscribePause } from "./pauseBridge";
 
@@ -28,6 +28,26 @@ export function AppShell() {
   // The title <MainMenuScreen> is always mounted (visibility toggled via the
   // "hidden" class by the game engine), so the title is always "showing" here.
   const revealed = useEnterToReveal(true);
+  const pauseStatus = useMemo(
+    () => (
+      <>
+        <span>Hold the line</span>
+        <span>Click resume to lock view</span>
+      </>
+    ),
+    [],
+  );
+  const pauseActions = useMemo(
+    () => [
+      {
+        id: "title",
+        label: "Exit to title",
+        meta: "Main menu",
+        onSelect: () => pause.onExitToTitle?.(),
+      },
+    ],
+    [pause.onExitToTitle],
+  );
 
   // Esc closes the settings overlay so the player is never trapped in it.
   useEffect(() => {
@@ -170,22 +190,10 @@ export function AppShell() {
         kicker="Ashgate Lane"
         title="Paused"
         subtitle="Re-enter the lane. The breach waits for no one."
-        status={
-          <>
-            <span>Hold the line</span>
-            <span>Click resume to lock view</span>
-          </>
-        }
+        status={pauseStatus}
         onResume={() => pause.onResume?.()}
         resumeMeta="Lock view"
-        actions={[
-          {
-            id: "title",
-            label: "Exit to title",
-            meta: "Main menu",
-            onSelect: () => pause.onExitToTitle?.(),
-          },
-        ]}
+        actions={pauseActions}
       />
     </>
   );

@@ -17,41 +17,59 @@ import {
   PauseMenu,
   useEnterToReveal,
 } from "@shipshitgames/ui";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState, useSyncExternalStore } from "react";
 import type { Game } from "../game/Game";
 import type { Phase } from "../game/types";
 import { getBridgeGame, subscribeBridgeGame } from "./gameBridge";
+
+interface OverlayState {
+  paused: boolean;
+  showSettings: boolean;
+}
+
+type OverlayAction =
+  | { type: "set"; patch: Partial<OverlayState> }
+  | { type: "toggle-pause"; onPause: () => void; onResume: () => void };
+
+function overlayReducer(state: OverlayState, action: OverlayAction): OverlayState {
+  switch (action.type) {
+    case "set":
+      return { ...state, ...action.patch };
+    case "toggle-pause": {
+      const paused = !state.paused;
+      if (paused) action.onPause();
+      else action.onResume();
+      return { ...state, paused };
+    }
+  }
+}
 
 export function AppShell() {
   // The vanilla Game owns the loop + HUD DOM; it registers itself on the bridge
   // once main.ts has spun it up. We only need it to drive pause/resume.
   const [game, setGame] = useState<Game | null>(() => getBridgeGame());
-  const [phase, setPhase] = useState<Phase>(() => getBridgeGame()?.phase ?? "title");
-  const [paused, setPaused] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
+  const [overlay, dispatchOverlay] = useReducer(overlayReducer, { paused: false, showSettings: false });
+  const { paused, showSettings } = overlay;
+  const subscribePhase = useCallback(
+    (notify: () => void) => {
+      if (!game) return () => {};
+      return game.subscribePhaseChange((next) => {
+        if (next !== "playing") {
+          dispatchOverlay({ type: "set", patch: { paused: false, showSettings: false } });
+        }
+        notify();
+      });
+    },
+    [game],
+  );
+  const readPhase = useCallback((): Phase => game?.phase ?? "title", [game]);
+  const phase = useSyncExternalStore(subscribePhase, readPhase, () => "title");
 
   // Splash gate: the title nav only appears once the player presses Enter/Space/clicks.
   // Re-arms each time the match returns to the title phase.
   const revealed = useEnterToReveal(phase === "title");
 
   useEffect(() => subscribeBridgeGame(setGame), []);
-
-  // Mirror the Game's phase into React so the pause overlay only arms during a
-  // live match and drops the instant a match resolves.
-  useEffect(() => {
-    if (!game) return;
-    setPhase(game.phase);
-    game.onPhaseChange = (next) => {
-      setPhase(next);
-      if (next !== "playing") {
-        setPaused(false);
-        setShowSettings(false);
-      }
-    };
-    return () => {
-      game.onPhaseChange = null;
-    };
-  }, [game]);
 
   // Esc toggles pause, but only while a match is actually in play.
   useEffect(() => {
@@ -62,31 +80,52 @@ export function AppShell() {
       event.preventDefault();
       // Esc closes the settings panel first (back to the pause menu), only then toggles pause.
       if (showSettings) {
-        setShowSettings(false);
+        dispatchOverlay({ type: "set", patch: { showSettings: false } });
         return;
       }
-      setPaused((prev) => {
-        const next = !prev;
-        if (next) game.pause();
-        else game.resume();
-        return next;
+      dispatchOverlay({
+        type: "toggle-pause",
+        onPause: () => game.pause(),
+        onResume: () => game.resume(),
       });
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [game, showSettings]);
 
-  const resume = () => {
+  const resume = useCallback(() => {
     game?.resume();
-    setPaused(false);
-    setShowSettings(false);
-  };
+    dispatchOverlay({ type: "set", patch: { paused: false, showSettings: false } });
+  }, [game]);
 
-  const restart = () => {
-    setPaused(false);
-    setShowSettings(false);
+  const restart = useCallback(() => {
+    dispatchOverlay({ type: "set", patch: { paused: false, showSettings: false } });
     game?.beginRun();
-  };
+  }, [game]);
+
+  const pauseStatus = useMemo(
+    () => (
+      <>
+        <span>Champion armed</span>
+        <span>Scourge prowling</span>
+      </>
+    ),
+    [],
+  );
+
+  const pauseActions = useMemo(
+    () => [
+      { id: "restart", label: "Redeploy", meta: "Restart duel", onSelect: restart },
+      {
+        id: "settings",
+        label: "Settings",
+        meta: "Audio",
+        variant: "settings" as const,
+        onSelect: () => dispatchOverlay({ type: "set", patch: { showSettings: true } }),
+      },
+    ],
+    [restart],
+  );
 
   return (
     <>
@@ -153,7 +192,7 @@ export function AppShell() {
                   variant="settings"
                   label="Settings"
                   meta="Audio"
-                  onClick={() => setShowSettings(true)}
+                  onClick={() => dispatchOverlay({ type: "set", patch: { showSettings: true } })}
                 />
                 <MainMenuAction variant="dev" label="Sandbox" meta="Arena lab" disabled />
                 <MainMenuAction
@@ -197,7 +236,7 @@ export function AppShell() {
                 variant="primary"
                 label="Back"
                 meta="Title menu"
-                onClick={() => setShowSettings(false)}
+                onClick={() => dispatchOverlay({ type: "set", patch: { showSettings: false } })}
               />
             </MainMenuNav>
           </MainMenuLayout>
@@ -210,23 +249,9 @@ export function AppShell() {
         kicker="Ashgate Arena"
         title="Paused"
         subtitle="The duel holds. Catch your breath, then redeploy."
-        status={
-          <>
-            <span>Champion armed</span>
-            <span>Scourge prowling</span>
-          </>
-        }
+        status={pauseStatus}
         onResume={resume}
-        actions={[
-          { id: "restart", label: "Redeploy", meta: "Restart duel", onSelect: restart },
-          {
-            id: "settings",
-            label: "Settings",
-            meta: "Audio",
-            variant: "settings",
-            onSelect: () => setShowSettings(true),
-          },
-        ]}
+        actions={pauseActions}
       />
     </>
   );

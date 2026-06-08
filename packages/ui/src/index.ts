@@ -12,13 +12,13 @@ export type {
   GlobalMusicToggleProps,
 } from "./GameSettings";
 export {
-  DEFAULT_AUDIO_SLIDER_KEYS,
   EffectLevelSlider,
   EffectsLevelSlider,
   GlobalEffectSliders,
   GlobalGameSettingsPanel,
   GlobalMusicToggle,
 } from "./GameSettings";
+export { DEFAULT_AUDIO_SLIDER_KEYS } from "./GameSettings.constants";
 export { goToWarlineLobby, warlineLobbyHref } from "./lobby";
 export type { MainMenuEnterPromptProps } from "./MainMenuEnter";
 export { MainMenuEnterPrompt, useEnterToReveal } from "./MainMenuEnter";
