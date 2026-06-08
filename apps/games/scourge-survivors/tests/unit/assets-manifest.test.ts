@@ -2,9 +2,9 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
 import animationManifest from "@shipshitgames/assets/games/scourge-survivors/animations/scourge/animation-pack.json";
 import manifest from "@shipshitgames/assets/games/scourge-survivors/assets.json";
+import { describe, expect, it } from "vitest";
 import { CAMPAIGN_ORDER, MAPS } from "../../src/game/data/maps";
 
 type Manifest = typeof manifest;
@@ -109,7 +109,7 @@ describe("asset manifest", () => {
       hash.update("\0");
     }
 
-    expect(hash.digest("hex")).toBe("3bd0c4b4e9d7cbb8370860c6c4329bd5acd4d3d2d20c9db1718ae11a7cc108cc");
+    expect(hash.digest("hex")).toBe("6bd4f67a7cf04e6a2657c0c4613e46f2b04b7de7c9c4d62810bceab0279a0f53");
   });
 
   it("defines weapon sprite metadata needed for first-person runtime placement", () => {
