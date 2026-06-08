@@ -7,6 +7,8 @@ export type GameStatus =
   | "levelup" // Survivors mode: choosing an upgrade
   | "gameover";
 
+export type RunMode = "campaign" | "structured" | "endless" | "coop" | "sandbox";
+
 export interface UpgradeChoice {
   id: string;
   name: string;
@@ -27,6 +29,14 @@ export interface BuildEntry {
   evolved?: boolean;
 }
 
+export interface WeaponIdentityState {
+  callsign: string;
+  role: string;
+  fantasy: string;
+  ads: string;
+  dualCompatible: boolean;
+}
+
 export interface HUDState {
   status: GameStatus;
   playerHealth: number;
@@ -43,22 +53,29 @@ export interface HUDState {
   /** Current kill-streak combo (0 when the streak has lapsed). */
   combo: number;
   time: number; // elapsed survival time, seconds
+  /** Current run framing for summaries and leaderboard persistence. */
+  runMode: RunMode;
+  /** 1-based run depth: Survivors chapter, campaign stage, or arena wave. */
+  runDepth: number;
+  runDepthTotal: number;
+  runDepthName: string;
   /** 1-based wave number among the normal waves (clamped to TOTAL_WAVES). */
   wave: number;
   totalWaves: number;
-  /** Campaign multi-map journey: 1-based current stage, total stages, current map name. */
+  /** Structured descent journey: 1-based current stage, total stages, current map name. */
   campaignStage: number;
   campaignTotalStages: number;
   mapName: string;
-  /** True while the boss is on the field. */
+  /** True while the breach-boss or Scourge elite is on the field. */
   bossActive: boolean;
-  /** 0..1 boss health fraction (only meaningful while bossActive). */
+  /** 0..1 breach-boss health fraction (only meaningful while bossActive). */
   bossHealthFrac: number;
   /** Outcome once status === 'gameover'. */
   outcome: "win" | "dead" | null;
   /** Active weapon + the player's unlocked arsenal (for the HUD weapon strip). */
   weapon: string;
   weapons: { id: string; name: string; key: number; active: boolean }[];
+  weaponIdentity: WeaponIdentityState;
   /** Remaining seconds of the damage-boost upgrade (0 when inactive). */
   damageBoost: number;
   /** Remaining seconds and normalized timer for berserk mode (0 when inactive). */
@@ -72,7 +89,7 @@ export interface HUDState {
   adsZoom: number;
   /** Total ADS zoom levels for the current weapon. */
   adsZoomLevels: number;
-  /** Boss ability state (only meaningful while bossActive). */
+  /** Breach-boss ability state (only meaningful while bossActive). */
   bossShielded: boolean;
   bossEnraged: boolean;
   /** Monotonic counters used by the HUD to trigger transient animations. */
@@ -80,7 +97,7 @@ export interface HUDState {
   headshotSeq: number;
   killSeq: number;
   damageSeq: number;
-  /** Transient centre-screen banner ("WAVE 2", "BOSS INCOMING", ...). */
+  /** Transient centre-screen banner ("WAVE 2", "BREACH-BOSS", ...). */
   banner: string;
   bannerSeq: number;
   /** Small transient toast for pickups ("+ SHOTGUN", "+35 HP", ...). */
@@ -88,7 +105,7 @@ export interface HUDState {
   toastSeq: number;
   /** Floating damage numbers, anchored to where the hit landed (screen %). */
   damageNumbers: DamageNumber[];
-  /** Multiplayer (PvP arena) state. */
+  /** Co-op breach room state. */
   multiplayer: boolean;
   connected: boolean;
   room: string;

@@ -51,7 +51,7 @@ On touch: hold anywhere to accelerate, tap the **upper** screen to jump, hold th
 - **Beacon** — a tall **hellfire** pillar.
 - **Camera** — orthographic side view that tracks the runner with a slight lead, pulls
   back a touch at top speed, and shakes on impact.
-- **HUD** — heavy uppercase Oswald; speed, distance, timer + best; speed-lines that
+- **HUD** — uppercase pixel type; speed, distance, timer + best; speed-lines that
   intensify with velocity.
 
 ## Build & deploy

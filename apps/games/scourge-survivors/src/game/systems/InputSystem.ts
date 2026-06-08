@@ -1,7 +1,141 @@
-import { InputSystem as InputBinder, type InputHooks } from "@shipshitgames/engine";
+import {
+  type ActionMap,
+  type CaptureRig,
+  clearMoveIntent,
+  type InputActionHandler,
+  InputSystem as InputBinder,
+  type InputHooks,
+} from "@shipshitgames/engine";
+import { JUMP_VELOCITY, WEAPON_ORDER, type WeaponId } from "../constants";
 import type { GameContext } from "../context";
 import type { GameSystems } from "../systems";
-import { JUMP_VELOCITY, WEAPON_ORDER } from "../constants";
+
+export type FpsAction = "reload" | "melee" | "weapon1" | "weapon2" | "weapon3" | "weapon4" | "weapon5";
+
+export const fpsActionMap = {
+  KeyR: "reload",
+  KeyF: "melee",
+  KeyV: "melee",
+  Digit1: "weapon1",
+  Digit2: "weapon2",
+  Digit3: "weapon3",
+  Digit4: "weapon4",
+  Digit5: "weapon5",
+} satisfies ActionMap<FpsAction>;
+
+const weaponSlot: Record<Extract<FpsAction, `weapon${number}`>, number> = {
+  weapon1: 0,
+  weapon2: 1,
+  weapon3: 2,
+  weapon4: 3,
+  weapon5: 4,
+};
+
+export class FpsActionHandler implements InputActionHandler<FpsAction> {
+  constructor(private readonly sys: Pick<GameSystems, "weapon">) {}
+
+  handleAction(action: FpsAction): void {
+    switch (action) {
+      case "reload":
+        this.sys.weapon.startReload();
+        break;
+      case "melee":
+        this.sys.weapon.tryMelee();
+        break;
+      case "weapon1":
+      case "weapon2":
+      case "weapon3":
+      case "weapon4":
+      case "weapon5": {
+        const weapon = WEAPON_ORDER[weaponSlot[action]] as WeaponId | undefined;
+        if (weapon) this.sys.weapon.switchWeapon(weapon);
+        break;
+      }
+    }
+  }
+}
+
+export class PointerLockRig implements CaptureRig {
+  lockRetry = 0;
+
+  constructor(
+    private readonly ctx: GameContext,
+    private readonly sys: Pick<GameSystems, "hud" | "weapon">,
+  ) {}
+
+  get captured(): boolean {
+    return this.ctx.rig.captured;
+  }
+
+  bind(): void {
+    this.ctx.rig.on("capture", this.onCapture);
+    this.ctx.rig.on("release", this.onRelease);
+  }
+
+  unbind(): void {
+    this.ctx.rig.off("capture", this.onCapture);
+    this.ctx.rig.off("release", this.onRelease);
+    window.clearTimeout(this.lockRetry);
+    this.lockRetry = 0;
+    this.clearLocomotionModifiers();
+  }
+
+  requestCapture(): void {
+    if (this.ctx.status !== "pointerlock-needed" && this.ctx.status !== "paused" && this.ctx.status !== "playing") {
+      return;
+    }
+    if (this.captured) return;
+    this.lockPointer();
+  }
+
+  releaseCapture(silent?: boolean): void {
+    this.ctx.rig.releaseCapture(silent);
+  }
+
+  clearLocomotionModifiers(): void {
+    this.ctx.wantsSprint = false;
+    this.ctx.wantsCrouch = false;
+  }
+
+  private lockPointer(allowRetry = true): void {
+    try {
+      const res = this.ctx.rig.requestCapture();
+      if (res && typeof res.catch === "function") {
+        res.catch(() => this.scheduleLockRetry(allowRetry));
+      }
+    } catch {
+      // Browsers impose a short cooldown after Esc exits pointer lock, during
+      // which requestPointerLock fails. Retry once after the cooldown clears.
+      this.scheduleLockRetry(allowRetry);
+    }
+  }
+
+  private scheduleLockRetry(allowRetry: boolean): void {
+    if (!allowRetry || this.ctx.status !== "paused") return;
+    window.clearTimeout(this.lockRetry);
+    this.lockRetry = window.setTimeout(() => {
+      if (this.ctx.status === "paused") this.lockPointer(false);
+    }, 1300);
+  }
+
+  private onCapture = (): void => {
+    if (this.ctx.status === "pointerlock-needed" || this.ctx.status === "paused") {
+      this.ctx.status = "playing";
+      this.sys.hud.emit();
+    }
+  };
+
+  private onRelease = (): void => {
+    if (this.ctx.status === "playing") {
+      this.ctx.status = "paused";
+      this.ctx.firing = false;
+      this.sys.weapon.stopAds();
+      clearMoveIntent(this.ctx.move);
+      this.clearLocomotionModifiers();
+      this.sys.hud.emit();
+    }
+  };
+}
 
 /**
  * FPS input adapter. The genre-neutral DOM plumbing + WASD/jump movement live in
@@ -10,8 +144,8 @@ import { JUMP_VELOCITY, WEAPON_ORDER } from "../constants";
  * pointer-lock capture lifecycle + retry. Capture events come off `ctx.rig`.
  */
 export class InputSystem {
-  lockRetry = 0;
-  private binder: InputBinder | null = null;
+  private binder: InputBinder<FpsAction> | null = null;
+  private captureRig: PointerLockRig | null = null;
 
   constructor(
     private ctx: GameContext,
@@ -21,13 +155,14 @@ export class InputSystem {
   // ------------------------------------------------------------------- events
 
   bindEvents() {
-    this.binder = new InputBinder(this.hooks());
+    const actionHandler = new FpsActionHandler(this.sys);
+    this.captureRig = new PointerLockRig(this.ctx, this.sys);
+    this.binder = new InputBinder<FpsAction>(this.hooks(actionHandler));
     this.binder.bind();
     window.addEventListener("keydown", this.onLocomotionKeyDown);
     window.addEventListener("keyup", this.onLocomotionKeyUp);
     window.addEventListener("wheel", this.onWheel, { passive: false });
-    this.ctx.rig.on("capture", this.onLock);
-    this.ctx.rig.on("release", this.onUnlock);
+    this.captureRig.bind();
   }
 
   removeListeners() {
@@ -36,48 +171,22 @@ export class InputSystem {
     window.removeEventListener("keydown", this.onLocomotionKeyDown);
     window.removeEventListener("keyup", this.onLocomotionKeyUp);
     window.removeEventListener("wheel", this.onWheel);
-    this.ctx.rig.off("capture", this.onLock);
-    this.ctx.rig.off("release", this.onUnlock);
-    this.clearLocomotionModifiers();
+    this.captureRig?.unbind();
+    this.captureRig = null;
   }
 
   /** The FPS half of input handed to the engine binder. */
-  private hooks(): InputHooks {
+  private hooks(actionHandler: FpsActionHandler): InputHooks<FpsAction> {
     return {
       move: this.ctx.move,
+      actions: fpsActionMap,
+      actionHandler,
       isActive: () => this.ctx.status === "playing",
 
       onJump: () => {
         if (this.ctx.canJump) {
           this.ctx.velocity.y = JUMP_VELOCITY;
           this.ctx.canJump = false;
-        }
-      },
-
-      onActionKey: (code) => {
-        switch (code) {
-          case "KeyR":
-            this.sys.weapon.startReload();
-            break;
-          case "KeyF":
-          case "KeyV":
-            this.sys.weapon.tryMelee();
-            break;
-          case "Digit1":
-            this.sys.weapon.switchWeapon(WEAPON_ORDER[0]);
-            break;
-          case "Digit2":
-            this.sys.weapon.switchWeapon(WEAPON_ORDER[1]);
-            break;
-          case "Digit3":
-            this.sys.weapon.switchWeapon(WEAPON_ORDER[2]);
-            break;
-          case "Digit4":
-            this.sys.weapon.switchWeapon(WEAPON_ORDER[3]);
-            break;
-          case "Digit5":
-            this.sys.weapon.switchWeapon(WEAPON_ORDER[4]);
-            break;
         }
       },
 
@@ -152,52 +261,7 @@ export class InputSystem {
     this.sys.weapon.switchWeapon(next);
   };
 
-  private clearLocomotionModifiers() {
-    this.ctx.wantsSprint = false;
-    this.ctx.wantsCrouch = false;
-  }
-
-  onLock = () => {
-    if (this.ctx.status === "pointerlock-needed" || this.ctx.status === "paused") {
-      this.ctx.status = "playing";
-      this.sys.hud.emit();
-    }
-  };
-
-  onUnlock = () => {
-    if (this.ctx.status === "playing") {
-      this.ctx.status = "paused";
-      this.ctx.firing = false;
-      this.sys.weapon.stopAds();
-      this.ctx.move.forward = this.ctx.move.back = this.ctx.move.left = this.ctx.move.right = false;
-      this.clearLocomotionModifiers();
-      this.sys.hud.emit();
-    }
-  };
-
   requestLock() {
-    if (this.ctx.status !== "pointerlock-needed" && this.ctx.status !== "paused") return;
-    this.lockPointer();
-  }
-
-  lockPointer(allowRetry = true) {
-    try {
-      const res: unknown = this.ctx.renderer.domElement.requestPointerLock();
-      if (res && typeof (res as Promise<void>).catch === "function") {
-        (res as Promise<void>).catch(() => this.scheduleLockRetry(allowRetry));
-      }
-    } catch {
-      // Browsers impose a short cooldown after Esc exits pointer lock, during
-      // which requestPointerLock fails. Retry once after the cooldown clears.
-      this.scheduleLockRetry(allowRetry);
-    }
-  }
-
-  scheduleLockRetry(allowRetry: boolean) {
-    if (!allowRetry || this.ctx.status !== "paused") return;
-    window.clearTimeout(this.lockRetry);
-    this.lockRetry = window.setTimeout(() => {
-      if (this.ctx.status === "paused") this.lockPointer(false);
-    }, 1300);
+    this.captureRig?.requestCapture();
   }
 }

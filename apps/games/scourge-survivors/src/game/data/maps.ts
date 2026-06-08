@@ -9,10 +9,9 @@
 // through the dead Hollow Lanes between holdouts, crosses The Maw spanning the
 // breach throat, and ends at Perdition where the source pulses — few walk out.
 //
-// All maps share the fixed 80x80 footprint (ARENA_HALF = 40) and the four
-// boundary walls — only the INTERIOR obstacle layout and the visual theme
-// differ. The picker lets the player choose a starting point along the descent
-// (the rest follow, wrapping).
+// Current maps share the default 80x80 footprint (ARENA_HALF = 40) and the four
+// boundary walls. Future maps may override `bounds` while keeping the same
+// runtime clamp/cull/spawn seam.
 //
 // Palette is canon DOOM (see DESIGN.md / Style-Bible): blood + fire + metal +
 // bone, no neon. Toxic-green is reserved for the Scourge only.
@@ -20,11 +19,15 @@
 // Layouts were generated + geometrically validated by a multi-agent design
 // pass (no out-of-bounds boxes, no overlaps/slivers, clear player spawns).
 
+import type { MapBounds } from "@shipshitgames/engine";
 import type { PixelIconId } from "../../assets/ui/pixelIcons";
+import { ARENA_HALF } from "../constants";
 
 export type ObstacleMat = "crate" | "pillar" | "wall";
 export type ArenaMaterialRole = "floor" | "wall" | "block" | "column";
 export type ArenaMaterialSet = Record<ArenaMaterialRole, string>;
+
+export const DEFAULT_ARENA_BOUNDS: MapBounds = { kind: "square", half: ARENA_HALF };
 
 export const DEFAULT_ARENA_MATERIALS: ArenaMaterialSet = {
   floor: "arena-floor",
@@ -113,6 +116,7 @@ export interface ArenaMap {
   subtitle: string;
   icon: PixelIconId;
   accent: string; // css hex for the picker card border / glow
+  bounds?: MapBounds; // defaults to DEFAULT_ARENA_BOUNDS so current FPS tuning stays unchanged
   theme: MapTheme;
   materials: ArenaMaterialSet;
   environment: ArenaEnvironment;
@@ -428,7 +432,7 @@ export const MAPS: Record<string, ArenaMap> = {
  */
 export const CAMPAIGN_ORDER: string[] = ["ashgate", "hollowlanes", "maw", "perdition"];
 
-/** Default arena for non-campaign modes (Survivors / Multiplayer / menu). */
+/** Default arena for non-structured modes (Survivors / co-op / menu). */
 export const DEFAULT_MAP_ID = "ashgate";
 
 export function getMap(id: string): ArenaMap {

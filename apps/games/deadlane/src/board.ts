@@ -65,4 +65,26 @@ export const pathPoints: THREE.Vector3[] = path.map(([c, r]) => cellToWorld(c, r
 export const spawnPoint = pathPoints[0];
 export const basePoint = pathPoints[pathPoints.length - 1];
 
+const firstLaneDirection = spawnPoint.clone().sub(pathPoints[1]).normalize();
+
+/** The visible breach door outside the board; mobs emerge here before entering the lane. */
+export const breachDoorPoint = spawnPoint.clone().addScaledVector(firstLaneDirection, cell * 5);
+
+/** Full mob path, including the long approach from the door into the board. */
+export const mobPathPoints: THREE.Vector3[] = [breachDoorPoint, ...pathPoints];
+
 export const boardSize = { worldWidth, worldDepth };
+
+export const boardBounds = {
+  minX: -worldWidth / 2,
+  maxX: worldWidth / 2,
+  minZ: -worldDepth / 2,
+  maxZ: worldDepth / 2,
+};
+
+export const playBounds = {
+  minX: Math.min(boardBounds.minX, breachDoorPoint.x) - cell * 0.8,
+  maxX: boardBounds.maxX + cell * 0.8,
+  minZ: boardBounds.minZ - cell * 0.8,
+  maxZ: boardBounds.maxZ + cell * 0.8,
+};

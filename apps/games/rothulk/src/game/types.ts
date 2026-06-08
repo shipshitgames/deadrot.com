@@ -28,6 +28,8 @@ export interface MovingPlatform {
   // Internal: 0..1 ping-pong phase and direction.
   t: number;
   dir: number;
+  baseX?: number;
+  baseY?: number;
   // Per-frame velocity, so the rider can be carried.
   vx: number;
   vy: number;
@@ -51,6 +53,7 @@ export interface Scourge {
   minX: number; // patrol bounds
   maxX: number;
   alive: boolean;
+  feral: boolean;
   popTimer: number; // >0 while playing the death pop
 }
 
@@ -73,6 +76,13 @@ export interface CoreGoal {
   ignited: boolean;
 }
 
+export interface ExitGoal {
+  x: number;
+  y: number;
+  radius: number;
+  reached: boolean;
+}
+
 export interface LevelData {
   name: string; // canon location name (e.g. 'The Rothulk')
   loreId: string; // cross-game map registry id (e.g. 'cinder')
@@ -85,6 +95,8 @@ export interface LevelData {
   embers: Ember[];
   checkpoint: Checkpoint;
   core: CoreGoal;
+  exit: ExitGoal;
 }
 
 export type GameMode = "title" | "playing" | "dead" | "won" | "gameover";
+export type CoreLoopPhase = "infiltrate" | "escape" | "won";

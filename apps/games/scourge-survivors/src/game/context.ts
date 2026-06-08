@@ -1,6 +1,5 @@
+import { type CameraRig, makeMoveIntent, RectBounds, type WorldBounds } from "@shipshitgames/engine";
 import * as THREE from "three";
-import type { Enemy } from "./entities/Enemy";
-import type { GameStatus, StateListener } from "./types";
 import {
   ARENA_HALF,
   PLAYER_HEIGHT,
@@ -10,9 +9,10 @@ import {
   WEAPONS,
   type WeaponId,
 } from "./constants";
-import { DEFAULT_MAP_ID, getMap, type ArenaMap } from "./data/maps";
+import { type ArenaMap, DEFAULT_MAP_ID, getMap } from "./data/maps";
 import { SURV_BASE_MAGNET, type SurvivorClassId } from "./data/survivors";
-import { RectBounds, type WorldBounds, type CameraRig } from "@shipshitgames/engine";
+import type { Enemy } from "./entities/Enemy";
+import type { GameStatus, StateListener } from "./types";
 
 /**
  * The shared mutable world. Systems are behaviour modules that operate on this
@@ -104,7 +104,7 @@ export class GameContext {
   stanceHeight = PLAYER_HEIGHT;
   wantsSprint = false;
   wantsCrouch = false;
-  move = { forward: false, back: false, left: false, right: false };
+  move = makeMoveIntent();
   firing = false;
   triggerQueued = false;
   aimingDownSights = false;

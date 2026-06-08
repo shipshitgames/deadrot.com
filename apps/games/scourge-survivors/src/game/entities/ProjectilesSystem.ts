@@ -1,10 +1,10 @@
 import * as THREE from "three";
-import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
-import type { Projectile } from "../data/internalTypes";
-import type { Enemy, EnemyShot } from "./Enemy";
-import { PROJECTILE_SPRITE_TEXTURES } from "../spriteAssets";
 import { PROJECTILE_HIT_RADIUS, PROJECTILE_TTL, WALL_THICKNESS } from "../constants";
+import type { GameContext } from "../context";
+import type { Projectile } from "../data/internalTypes";
+import { PROJECTILE_SPRITE_TEXTURES } from "../spriteAssets";
+import type { GameSystems } from "../systems";
+import type { Enemy, EnemyShot } from "./Enemy";
 
 /** Enemy / boss projectiles: spawn, fly, hit the player or get blocked. */
 export class ProjectilesSystem {
@@ -52,7 +52,7 @@ export class ProjectilesSystem {
   }
 
   updateProjectiles(delta: number) {
-    const player = this.ctx.camera.position;
+    const player = this.ctx.body.position;
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
       const pr = this.projectiles[i];
       pr.age += delta;

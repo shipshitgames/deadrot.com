@@ -1,5 +1,5 @@
 import type * as THREE from "three";
-import { Enemy } from "../entities/Enemy";
+import { audio } from "../../audio/AudioEngine";
 import {
   BOSS_ATTACK_DAMAGE,
   BOSS_ATTACK_INTERVAL,
@@ -27,11 +27,11 @@ import {
   WAVES,
   WEAPONS,
 } from "../constants";
-import { CAMPAIGN_ORDER, campaignSequence } from "../data/maps";
-import { campaignArchetypeForWave, ENEMY_ARCHETYPES } from "../data/enemies";
-import { SURV_XP_GEM_VALUE } from "../data/survivors";
-import { audio } from "../../audio/AudioEngine";
 import type { GameContext } from "../context";
+import { campaignArchetypeForWave, ENEMY_ARCHETYPES, SCOURGE_THREAT_TIERS } from "../data/enemies";
+import { CAMPAIGN_ORDER, campaignSequence } from "../data/maps";
+import { SURV_XP_GEM_VALUE } from "../data/survivors";
+import { Enemy } from "../entities/Enemy";
 import type { GameSystems } from "../systems";
 
 export class PveDirectorSystem {
@@ -90,7 +90,7 @@ export class PveDirectorSystem {
       this.sys.hud.announce(`WAVE ${this.waveIndex + 1}`);
     } else {
       this.bossActive = true;
-      this.sys.hud.announce("BOSS");
+      this.sys.hud.announce(SCOURGE_THREAT_TIERS.breachBoss.banner);
       this.spawnBoss();
     }
   }
@@ -103,7 +103,7 @@ export class PveDirectorSystem {
     this.sys.hud.announce(cleared >= TOTAL_WAVES ? "FINAL WAVE CLEARED" : `WAVE ${cleared} CLEARED`);
   }
 
-  /** Per-stage difficulty scalar for the campaign (1.0 on stage 1, no effect elsewhere). */
+  /** Per-stage difficulty scalar for the structured descent (1.0 on stage 1, no effect elsewhere). */
   stageMul(): number {
     return 1 + STAGE_DIFFICULTY_STEP * this.ctx.campaignStage;
   }
@@ -165,6 +165,7 @@ export class PveDirectorSystem {
     const wasBoss = enemy.isBoss;
     const deathPos = enemy.position.clone();
     const deathScale = enemy.isBoss ? 2.4 : Math.max(0.8, enemy.group.scale.x);
+    const deathFx = enemy.deathFx();
     const spec = WEAPONS[this.ctx.activeWeapon];
     this.ctx.kills++;
     // a dead mob's in-flight projectiles should fizzle out
@@ -191,6 +192,9 @@ export class PveDirectorSystem {
         elite: wasBoss,
         scale: wasBoss ? 1.8 : deathScale,
         color: wasBoss ? 0xff2d55 : 0xc1121f,
+        spriteKind: deathFx.kind,
+        spriteView: deathFx.view,
+        spriteFlip: deathFx.flip,
       });
       if (wasBoss) {
         this.bossActive = false;
@@ -206,9 +210,12 @@ export class PveDirectorSystem {
         elite: wasBoss,
         scale: wasBoss ? 1.8 : deathScale,
         color: wasBoss ? 0xff2d55 : 0xc1121f,
+        spriteKind: deathFx.kind,
+        spriteView: deathFx.view,
+        spriteFlip: deathFx.flip,
       });
       this.sys.survivors.dropXpGem(deathPos.clone(), this.sys.survivors.enemyXp.get(enemy) ?? SURV_XP_GEM_VALUE);
-      if (wasBoss) this.sys.survivors.onEliteKilled(deathPos.clone()); // elites also drop health + damage
+      if (wasBoss) this.sys.survivors.onEliteKilled(deathPos.clone()); // Scourge elites also drop health + damage
       this.sys.survivors.onEnemyKilled(enemy, wasBoss);
       this.spawnSplitterChildren(enemy, deathPos);
       // NOTE: no ammo on kill in Survivors — the sidearm is meant to run dry.
@@ -219,14 +226,29 @@ export class PveDirectorSystem {
     if (wasBoss) {
       this.ctx.score += BOSS_SCORE;
       this.ctx.reserve = Math.min(spec.reserveCap, this.ctx.reserve + BOSS_RESERVE_BONUS);
-      this.sys.fx.spawnEnemyDeath(deathPos, { headshot, elite: true, scale: 2.5, color: 0xff2d55 });
+      this.sys.fx.spawnEnemyDeath(deathPos, {
+        headshot,
+        elite: true,
+        scale: 2.5,
+        color: 0xff2d55,
+        spriteKind: deathFx.kind,
+        spriteView: deathFx.view,
+        spriteFlip: deathFx.flip,
+      });
       this.bossActive = false;
       this.bossEnemy = null;
       this.advanceCampaignOrWin();
     } else {
       this.ctx.score += ENEMY_SCORE + (headshot ? 50 : 0);
       this.ctx.reserve = Math.min(spec.reserveCap, this.ctx.reserve + spec.ammoPerKill);
-      this.sys.fx.spawnEnemyDeath(deathPos, { headshot, scale: deathScale, color: headshot ? 0xff415f : 0xc1121f });
+      this.sys.fx.spawnEnemyDeath(deathPos, {
+        headshot,
+        scale: deathScale,
+        color: headshot ? 0xff415f : 0xc1121f,
+        spriteKind: deathFx.kind,
+        spriteView: deathFx.view,
+        spriteFlip: deathFx.flip,
+      });
       this.killsThisWave++;
       this.sys.pickups.maybeDropPickup(enemy.position);
       this.spawnSplitterChildren(enemy, deathPos);
@@ -278,7 +300,7 @@ export class PveDirectorSystem {
     this.sys.input.requestLock();
   }
 
-  /** Boss down: advance to the next campaign map, or win if this was the last. */
+  /** Breach-boss down: advance to the next descent map, or win if this was the last. */
   advanceCampaignOrWin() {
     if (this.ctx.campaignStage < this.ctx.campaignMaps.length - 1) {
       this.ctx.campaignStage++;
@@ -299,11 +321,11 @@ export class PveDirectorSystem {
 
   updateEnemies(delta: number, elapsed: number) {
     let damageToPlayer = 0;
-    const playerPos = this.ctx.camera.position;
-    const quat = this.ctx.camera.quaternion;
+    const playerPos = this.ctx.body.position;
+    const billboardQuat = this.ctx.camera.quaternion;
     for (const enemy of this.ctx.enemies) {
       if (!enemy.alive) continue;
-      const tick = enemy.update(delta, elapsed, playerPos, this.ctx.enemies, quat, this.ctx.bounds);
+      const tick = enemy.update(delta, elapsed, playerPos, this.ctx.enemies, billboardQuat, this.ctx.bounds);
       damageToPlayer += tick.melee;
       for (const shot of tick.shots) this.sys.projectiles.spawnProjectile(shot, enemy);
       this.sys.player.pushOutOfObstacles(enemy.position, enemy.radius);

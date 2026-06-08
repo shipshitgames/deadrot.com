@@ -1,10 +1,11 @@
 import * as THREE from "three";
+import { chooseDirectionalSpriteFrame, type DirectionalSpriteView } from "../game/directionalSprites";
 import { PLAYER_AVATAR_SCALES, PLAYER_AVATAR_SPRITES } from "../game/spriteAssets";
-import { normalizePlayerAvatar, playerColorHex, type PlayerAvatarId } from "./playerAvatars";
+import { normalizePlayerAvatar, type PlayerAvatarId, playerColorHex } from "./playerAvatars";
 
 const HB_WIDTH = 1.4;
 const NAMEPLATE_FONT_FAMILY = '"SSG Press Start", ui-monospace, monospace';
-type PlayerSpriteView = "front" | "side" | "back";
+type PlayerSpriteView = DirectionalSpriteView;
 
 interface RemoteAvatarInfo {
   id: string;
@@ -178,12 +179,14 @@ export class RemoteAvatar {
     const yaw = this.group.rotation.y;
     const forwardX = -Math.sin(yaw);
     const forwardZ = -Math.cos(yaw);
-    const dot = forwardX * toCameraX + forwardZ * toCameraZ;
-    if (dot > 0.48) return { view: "front", flip: 1 };
-    if (dot < -0.48) return { view: "back", flip: 1 };
-
-    const cross = forwardX * toCameraZ - forwardZ * toCameraX;
-    return { view: "side", flip: cross >= 0 ? 1 : -1 };
+    return chooseDirectionalSpriteFrame(forwardX, forwardZ, toCameraX, toCameraZ, {
+      fallback: {
+        sector: this.spriteView === "side" ? (this.spriteFlip >= 0 ? "right" : "left") : this.spriteView,
+        view: this.spriteView,
+        flip: this.spriteFlip,
+      },
+      mirrorBasis: "actor",
+    });
   }
 
   setTarget(x: number, y: number, z: number, yaw: number) {
@@ -232,7 +235,7 @@ export class RemoteAvatar {
     ctx.lineWidth = Math.max(4, Math.round(fontSize * 0.32));
     ctx.strokeStyle = "rgba(0,0,0,0.88)";
     ctx.strokeText(label, 160, 36);
-    ctx.fillStyle = "#" + this.color.getHexString();
+    ctx.fillStyle = `#${this.color.getHexString()}`;
     ctx.fillText(label, 160, 36);
     this.nameTex.needsUpdate = true;
   }

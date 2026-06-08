@@ -104,6 +104,7 @@ export function buildLevel(): LevelData {
     minX: x - range,
     maxX: x + range,
     alive: true,
+    feral: false,
     popTimer: 0,
   });
 
@@ -149,5 +150,11 @@ export function buildLevel(): LevelData {
     embers,
     checkpoint: { x: 60, y: 2.6, reached: false },
     core: { x: 122.5, y: 6.2, ignited: false },
+    exit: {
+      x: CONSTANTS.HERO_SPAWN_X,
+      y: CONSTANTS.HERO_SPAWN_Y,
+      radius: CONSTANTS.EXIT_RADIUS,
+      reached: false,
+    },
   };
 }

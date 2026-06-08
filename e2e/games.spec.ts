@@ -1,6 +1,7 @@
+import { readdirSync } from "node:fs";
+import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-
-type GameSlug = "deadlane" | "pactfall" | "redline" | "rothulk" | "scourge-survivors" | "starblight" | "warline";
+import { allGames, type GameSlug } from "./game-catalog";
 
 interface GameSpec {
   path: string;
@@ -15,24 +16,24 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
     path: "/",
     canvasSelector: "#scene",
     async assertLoaded(page) {
-      await expect(page.getByText("Gold")).toBeVisible();
-      await expect(page.getByText("Wave")).toBeVisible();
-      await expect(page.getByText("Base HP")).toBeVisible();
+      await expect(page.getByText("Gold", { exact: true })).toBeVisible();
+      await expect(page.getByText("Wave", { exact: true })).toBeVisible();
+      await expect(page.getByText("Base HP", { exact: true })).toBeVisible();
       await expect(page.getByRole("button", { name: "DEPLOY" })).toBeVisible();
     },
     async exercise(page) {
       await page.getByRole("button", { name: "DEPLOY" }).click();
       await expect(page.locator("#hud-banner")).toHaveClass(/hidden/);
-      await expect(page.locator("#hint-text")).toContainText(/CLICK A CELL TO BUILD|NOT ENOUGH GOLD/);
+      await expect(page.locator("#hint-text")).toContainText(/PRESS E OR CLICK|MOVE TO TILE|LOOK AT A BUILD TILE/);
     },
   },
   pactfall: {
     path: "/",
     canvasSelector: "#scene",
     async assertLoaded(page) {
-      await expect(page.getByText("PYRE BASE")).toBeVisible();
-      await expect(page.getByText("WARDEN BASE")).toBeVisible();
-      await expect(page.getByText("SCOURGE BUFF")).toBeVisible();
+      await expect(page.getByText("PYRE BASE", { exact: true })).toBeVisible();
+      await expect(page.getByText("WARDEN BASE", { exact: true })).toBeVisible();
+      await expect(page.getByText("SCOURGE BUFF", { exact: true })).toBeVisible();
       await expect(page.locator("#arena-name")).not.toBeEmpty();
     },
     async exercise(page) {
@@ -73,13 +74,26 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
     canvasSelector: "#scene",
     async assertLoaded(page) {
       await expect(page.getByText("ROTHULK")).toBeVisible();
-      await expect(page.getByRole("button", { name: "BREACH THE HULK" })).toBeVisible();
+      await expect(page.getByRole("button", { name: /^Breach\b/i })).toBeVisible();
       await expect(page.locator("#hud-lives")).toHaveText("x3");
     },
     async exercise(page) {
-      await page.getByRole("button", { name: "BREACH THE HULK" }).click();
+      await page.getByRole("button", { name: /^Breach\b/i }).click();
       await expect(page.locator("#banner")).toHaveClass(/hidden/);
       await expect(page.locator("#hud-obj")).toContainText("REACH");
+      await page.waitForFunction(() => Boolean((window as unknown as { __rothulkGame?: unknown }).__rothulkGame));
+
+      await page.evaluate(() => {
+        (window as unknown as { __rothulkGame: { teleportToCore: () => void } }).__rothulkGame.teleportToCore();
+      });
+      await expect.poll(() => rothulkSnapshot(page, "phase")).toBe("escape");
+      await expect(page.locator("#hud-obj")).toContainText("ESCAPE");
+
+      await page.evaluate(() => {
+        (window as unknown as { __rothulkGame: { teleportToExit: () => void } }).__rothulkGame.teleportToExit();
+      });
+      await expect.poll(() => rothulkSnapshot(page, "mode")).toBe("won");
+      await expect(page.locator("#toast")).toContainText("HULK SEVERED");
     },
   },
   "scourge-survivors": {
@@ -131,11 +145,24 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
       await expect(page.getByRole("img", { name: "War map of the front" })).toBeVisible();
     },
     async exercise(page) {
+      await page.getByRole("button", { name: /^Open front\b/i }).click();
       await page.getByRole("button", { name: /^Hold the Lane\b/i }).click();
       await expect(page.locator("ol li").first()).toContainText("deadlane");
     },
   },
 };
+
+test.beforeAll(() => {
+  const shippedGameSlugs = readdirSync(path.resolve("apps/games"), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+  const configuredGameSlugs = allGames.map((game) => game.slug).sort();
+  const testedGameSlugs = Object.keys(gameSpecs).sort();
+
+  expect(configuredGameSlugs).toEqual(shippedGameSlugs);
+  expect(testedGameSlugs).toEqual(shippedGameSlugs);
+});
 
 test("boots and responds to core controls", async ({ page }, testInfo) => {
   const slug = gameSlugFromProject(testInfo.project.name);
@@ -220,4 +247,20 @@ async function expectNoBrokenImages(page: Page) {
       .map((image) => image.currentSrc || image.src),
   );
   expect(brokenImages).toEqual([]);
+}
+
+async function rothulkSnapshot(page: Page, field: "mode" | "phase") {
+  return page.evaluate((key) => {
+    const game = (
+      window as unknown as {
+        __rothulkGame: {
+          debugSnapshot: () => {
+            mode: string;
+            phase: string;
+          };
+        };
+      }
+    ).__rothulkGame;
+    return game.debugSnapshot()[key];
+  }, field);
 }

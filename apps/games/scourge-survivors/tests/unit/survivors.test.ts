@@ -1,13 +1,20 @@
 import { describe, expect, it } from "vitest";
+import { STARTING_WEAPON, WEAPONS } from "../../src/game/constants";
+import { ENEMY_ARCHETYPES, SCOURGE_THREAT_TIERS } from "../../src/game/data/enemies";
 import {
-  EVOLUTIONS,
-  UPGRADE_BY_ID,
   availableEvolutionChoice,
+  EVOLUTIONS,
   runGold,
+  SHOP_BY_ID,
+  SURVIVOR_CLASS_IDS,
+  SURVIVOR_CLASSES,
   survivorBuildList,
-  xpForLevel,
+  survivorStartingWeapon,
+  UPGRADE_BY_ID,
+  UPGRADES,
   type UpgradeId,
   type WeaponUpgradeId,
+  xpForLevel,
 } from "../../src/game/data/survivors";
 
 const noEvolutions: Record<WeaponUpgradeId, boolean> = {
@@ -17,6 +24,21 @@ const noEvolutions: Record<WeaponUpgradeId, boolean> = {
 };
 
 describe("survivors progression data", () => {
+  it("defines an explicit valid starting weapon for every survivor class", () => {
+    for (const id of SURVIVOR_CLASS_IDS) {
+      const startingWeapon = SURVIVOR_CLASSES[id].startingWeapon;
+
+      expect(startingWeapon, id).toBeTruthy();
+      expect(WEAPONS[startingWeapon], id).toBeDefined();
+      expect(survivorStartingWeapon(id), id).toBe(startingWeapon);
+    }
+  });
+
+  it("keeps the default non-class fallback on the sidearm", () => {
+    expect(STARTING_WEAPON).toBe("pistol");
+    expect(survivorStartingWeapon("not-a-class")).toBe(STARTING_WEAPON);
+  });
+
   it("only offers an evolution after the weapon and paired passive are maxed", () => {
     const levels: Partial<Record<UpgradeId, number>> = {
       orbit: UPGRADE_BY_ID.orbit.max,
@@ -55,19 +77,59 @@ describe("survivors progression data", () => {
     );
 
     expect(build.find((entry) => entry.id === "orbit")).toMatchObject({
-      name: "CYCLONE",
+      name: "PYRE CYCLONE",
       evolved: true,
       level: UPGRADE_BY_ID.orbit.max,
     });
     expect(build.find((entry) => entry.id === "bolt")).toMatchObject({
-      name: "Seeker Bolts",
+      name: "Ember-Seeker Bolts",
       evolved: false,
       level: 1,
     });
     expect(build.find((entry) => entry.id === "dmg")).toMatchObject({
-      name: "Heavy Rounds",
+      name: "Incendiary Rounds",
       evolved: false,
       level: 2,
+    });
+  });
+
+  it("keeps auto-weapon draft copy in Pyre fire vocabulary", () => {
+    expect(UPGRADES.filter((upgrade) => upgrade.kind === "weapon").map((upgrade) => upgrade.name)).toEqual([
+      "Cautery Ring",
+      "Ember-Seeker Bolts",
+      "Breachfire Nova",
+    ]);
+    expect(UPGRADE_BY_ID.amp.desc).toContain("Pyre auto-weapons");
+    expect(EVOLUTIONS.orbit).toMatchObject({
+      name: "PYRE CYCLONE",
+      desc: expect.stringContaining("Cautery blades"),
+    });
+    expect(EVOLUTIONS.bolt).toMatchObject({
+      name: "EMBER STORM",
+      desc: expect.stringContaining("Pyre bolts"),
+    });
+    expect(EVOLUTIONS.nova).toMatchObject({
+      name: "FURNACE HEART",
+      desc: expect.stringContaining("Breachfire"),
+    });
+    expect(SHOP_BY_ID.arsenal.desc).toContain("Cautery Ring");
+    expect(SHOP_BY_ID.munitions.desc).toContain("Ember-Seeker Bolts");
+    expect(SHOP_BY_ID.pulsar.desc).toContain("Breachfire Nova");
+  });
+
+  it("maps current Scourge run threats onto canon tiers", () => {
+    expect(new Set(Object.values(ENEMY_ARCHETYPES).map((enemy) => enemy.loreTier))).toEqual(new Set(["swarm"]));
+    expect(SCOURGE_THREAT_TIERS.swarm).toMatchObject({
+      label: "Scourge Swarm",
+      banner: "SCOURGE SWARM",
+    });
+    expect(SCOURGE_THREAT_TIERS.elite).toMatchObject({
+      label: "Scourge Elite",
+      banner: "SCOURGE ELITE",
+    });
+    expect(SCOURGE_THREAT_TIERS.breachBoss).toMatchObject({
+      label: "Breach-Boss",
+      banner: "BREACH-BOSS",
     });
   });
 

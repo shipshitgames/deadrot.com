@@ -36,6 +36,7 @@ Start here, follow the links, open the graph view.
 - [[The-Listeners]] — heresy; understand the Choir _(concept)_
 - [[The-Quiet-Rooms]] — Listener black-room practice; keep severed Choir nodes alive to study
 - [[The-Pact]] — field compact; Pyre/Warden rivalry stops the instant a breach opens
+- [[The-Last-Manifest]] — Pyre run sheet; target, fuel ledger, and Pact handoff
 
 ## Games (entries in the canon)
 
@@ -56,7 +57,8 @@ Start here, follow the links, open the graph view.
 - Starblight: [[Pyre-Interceptor-Pilot]], [[Warden-Defense-Pilot]], [[Scourge-Fighter]], [[Orbital-Breach-Carrier]]
 - Redline: [[Pyre-Courier]], [[Warden-Courier]]
 - Rothulk: [[Pyre-Saboteur]]
-- Core Scourge: [[Swarm-Ripper]], [[Swarm-Spitter]], [[Render]], [[Rot-Engine]], [[Graft-Breacher]], [[Cairn]], [[Sower]], [[Gristle-Vat]], [[Chorister]], [[Cantor]], [[Descant]], [[Bourdon]], [[Aeolian]], [[Carillon]], [[Quaver]], [[Breach-Boss]]
+- Core Scourge: [[Swarm-Ripper]], [[Swarm-Spitter]], [[Wound-Hound]], [[Spore-Lung]], [[Render]], [[Rot-Engine]], [[Graft-Breacher]], [[Cairn]], [[Sower]], [[Gristle-Vat]], [[Chorister]], [[Cantor]], [[Descant]], [[Bourdon]], [[Aeolian]], [[Carillon]], [[Quaver]], [[Breach-Boss]]
+- Scourge support: [[Braid-Worm]]
 
 ## Tech
 
@@ -66,4 +68,4 @@ Start here, follow the links, open the graph view.
 
 ## Compendium
 
-Characters · Locations ([[Ashgate]], [[The-Hush]], [[The-Spire]], [[The-Pyre-Gate]], [[Ash-Reach]], [[Rustmarch]], [[The-Hollow-Lanes]], [[Holdout-Nine|Holdout Nine]], [[The-Skyhook]], [[The-Maw]], [[Cinder-Flats]] (incl. [[The-Rothulk]]), [[Perdition]]) · Bestiary · Tech — scaffold new entries from `Templates/`.
+Characters · Locations ([[Ashgate]], [[The-Cinder-Wells]], [[The-Hush]], [[The-Spire]], [[The-Spire-Causeway]], [[The-Pyre-Gate]], [[Ash-Reach]], [[Rustmarch]], [[The-Hollow-Lanes]], [[The-Switchback]], [[Holdout-Nine|Holdout Nine]], [[The-Skyhook]], [[The-Maw]], [[Cinder-Flats]] (incl. [[The-Rothulk]]), [[Perdition]]) · Bestiary · Tech — scaffold new entries from `Templates/`.

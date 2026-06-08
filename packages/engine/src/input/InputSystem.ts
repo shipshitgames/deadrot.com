@@ -1,19 +1,34 @@
-import { applyMoveKey, type MoveIntent } from "./bindings";
+import {
+  type ActionId,
+  type ActionMap,
+  actionFor,
+  applyMoveKey,
+  type InputActionHandler,
+  isJumpKey,
+  type MoveIntent,
+  type MovementConfig,
+} from "./bindings";
 
 /**
  * Hooks a game supplies to drive the genre-specific half of input. The engine
  * owns the DOM event lifecycle + movement; the game owns *policy* (when input is
  * live, what the verbs mean, how capture works).
  */
-export interface InputHooks {
+export interface InputHooks<A extends ActionId = ActionId> {
   /** Movement intent the binder writes WASD/arrow state into. */
   readonly move: MoveIntent;
+  /** Optional movement/jump key overrides. Omit to use WASD/arrows + Space. */
+  readonly movement?: MovementConfig;
+  /** Optional physical-key → game-action map. */
+  readonly actions?: ActionMap<A>;
+  /** Game-owned action handler for mapped action verbs. */
+  readonly actionHandler?: InputActionHandler<A>;
   /** Gate: gameplay keys/buttons are only processed when this returns true (e.g. status==='playing'). */
   isActive(): boolean;
 
   /** Space pressed while active (jump / primary contextual action). */
   onJump?(): void;
-  /** A non-movement, non-jump key pressed while active. Game maps `code` → its verb. */
+  /** A non-movement, non-jump, unmapped key pressed while active. */
   onActionKey?(code: string, e: KeyboardEvent): void;
   /** Escape pressed while NOT active — e.g. a resume-from-pause re-capture. */
   onResumeKey?(): void;
@@ -35,8 +50,8 @@ export interface InputHooks {
  * cursor) is NOT handled here — that lives on the CameraRig + the game's capture
  * policy, so a free-cursor tower-defense reuses this binder unchanged.
  */
-export class InputSystem {
-  constructor(private readonly hooks: InputHooks) {}
+export class InputSystem<A extends ActionId = ActionId> {
+  constructor(private readonly hooks: InputHooks<A>) {}
 
   bind(): void {
     window.addEventListener("keydown", this.onKeyDown);
@@ -66,10 +81,15 @@ export class InputSystem {
       }
       return;
     }
-    if (applyMoveKey(h.move, e.code, true)) return;
-    if (e.code === "Space") {
+    if (applyMoveKey(h.move, e.code, true, h.movement)) return;
+    if (isJumpKey(e.code, h.movement)) {
       e.preventDefault();
       h.onJump?.();
+      return;
+    }
+    const action = h.actions ? actionFor(h.actions, e.code) : undefined;
+    if (action !== undefined) {
+      h.actionHandler?.handleAction(action, e);
       return;
     }
     h.onActionKey?.(e.code, e);
@@ -78,7 +98,7 @@ export class InputSystem {
   // Movement keys release regardless of active-state, so you never get stuck
   // gliding if the gate flips (pause/levelup) mid-press.
   private onKeyUp = (e: KeyboardEvent): void => {
-    applyMoveKey(this.hooks.move, e.code, false);
+    applyMoveKey(this.hooks.move, e.code, false, this.hooks.movement);
   };
 
   private onMouseDown = (e: MouseEvent): void => {

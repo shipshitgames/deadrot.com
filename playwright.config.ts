@@ -1,20 +1,18 @@
 import { defineConfig, devices } from "@playwright/test";
+import { allGames, parsePortBase, parseSelectedGameSlugs } from "./e2e/game-catalog";
 
 const CI = Boolean(process.env.CI);
-
-const allGames = [
-  { name: "deadlane", port: 5174 },
-  { name: "pactfall", port: 5175 },
-  { name: "redline", port: 5176 },
-  { name: "rothulk", port: 5177 },
-  { name: "scourge-survivors", port: 5178 },
-  { name: "starblight", port: 5179 },
-  { name: "warline", port: 5180 },
-] as const;
-type GameName = (typeof allGames)[number]["name"];
-
-const selectedGameNames = parseSelectedGameNames(process.env.E2E_GAME_SLUGS);
-const games = selectedGameNames.length ? allGames.filter((game) => selectedGameNames.includes(game.name)) : allGames;
+const outputDir = process.env.PLAYWRIGHT_TEST_OUTPUT_DIR ?? "test-results/e2e";
+const htmlReportDir = process.env.PLAYWRIGHT_HTML_REPORT ?? "playwright-report";
+const selectedGameSlugs = parseSelectedGameSlugs(process.env.E2E_GAME_SLUGS);
+const portOffset = parsePortBase(process.env.E2E_PORT_BASE) - 5174;
+const reuseExistingServer = process.env.E2E_REUSE_SERVERS === "1";
+const games = (
+  selectedGameSlugs.length ? allGames.filter((game) => selectedGameSlugs.includes(game.slug)) : allGames
+).map((game) => ({
+  ...game,
+  port: game.port + portOffset,
+}));
 
 const viewports = [
   { name: "desktop", device: devices["Desktop Chrome"] },
@@ -31,10 +29,10 @@ export default defineConfig({
   forbidOnly: CI,
   retries: CI ? 2 : 0,
   workers: 1,
-  outputDir: "test-results/e2e",
+  outputDir,
   reporter: CI
-    ? [["list"], ["html", { open: "never", outputFolder: "playwright-report" }]]
-    : [["list"], ["html", { open: "never", outputFolder: "playwright-report" }]],
+    ? [["list"], ["html", { open: "never", outputFolder: htmlReportDir }]]
+    : [["list"], ["html", { open: "never", outputFolder: htmlReportDir }]],
   use: {
     trace: "on-first-retry",
     screenshot: "only-on-failure",
@@ -42,14 +40,14 @@ export default defineConfig({
     viewport: { width: 1440, height: 1000 },
   },
   webServer: games.map((game) => ({
-    command: `bun run --cwd apps/games/${game.name} dev --host 127.0.0.1 --port ${game.port}`,
+    command: `bun run --cwd apps/games/${game.slug} dev --host 127.0.0.1 --port ${game.port}`,
     url: `http://127.0.0.1:${game.port}`,
-    reuseExistingServer: !CI,
+    reuseExistingServer,
     timeout: 120_000,
   })),
   projects: games.flatMap((game) =>
     viewports.map((viewport) => ({
-      name: `${game.name}:${viewport.name}`,
+      name: `${game.slug}:${viewport.name}`,
       testMatch: /games\.spec\.ts/,
       use: {
         ...viewport.device,
@@ -58,17 +56,3 @@ export default defineConfig({
     })),
   ),
 });
-
-function parseSelectedGameNames(value: string | undefined): GameName[] {
-  if (!value?.trim()) return [];
-
-  const known = new Set<GameName>(allGames.map((game) => game.name));
-  const selected = value
-    .split(",")
-    .map((entry) => entry.trim())
-    .filter(Boolean);
-  const unknown = selected.filter((entry): entry is string => !known.has(entry as GameName));
-  if (unknown.length) throw new Error(`Unknown E2E_GAME_SLUGS entries: ${unknown.join(", ")}`);
-
-  return selected as GameName[];
-}

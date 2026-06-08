@@ -18,19 +18,20 @@ npm i @shipshitgames/engine three
 
 ```ts
 import { RectBounds, makeBounds, type WorldBounds } from '@shipshitgames/engine'
-import { firstPersonPointerLock, type CameraRig } from '@shipshitgames/engine'
+import { firstPersonPointerLock, thirdPersonFollow, type CameraRig } from '@shipshitgames/engine'
 
 // Axis-aligned XZ play-area bounds — clamp/cull/spawn against this, not a global.
 const bounds = RectBounds.square(40)
 bounds.clampXZ(position, /* margin */ 1.5)
 
 // A swappable camera rig: the engine reads body/facing for player logic and
-// treats the camera as render-only. first-person (pointer-lock) ships today;
-// third-person follow is next.
+// treats the camera as render-only.
+const fpsRig = firstPersonPointerLock(camera, canvas)
+const followRig = thirdPersonFollow({ distance: 9, height: 3, followLerp: 12, minDistance: 2.2 })(camera, canvas)
 ```
 
 - **`WorldBounds` / `RectBounds` / `makeBounds`** — genre-neutral horizontal bounds (a centered arena square or an asymmetric rectangle).
-- **`CameraRig` + `firstPersonPointerLock`** — the camera seam. Player systems read `rig.body.position` / `rig.facing`; `rig.camera` is render/projection only.
+- **`CameraRig` + `firstPersonPointerLock` / `thirdPersonFollow`** — the camera seam. Player systems read `rig.body.position` / `rig.facing`; `rig.camera` is render/projection only.
 
 ## License
 

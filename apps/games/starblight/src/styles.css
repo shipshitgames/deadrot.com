@@ -1,7 +1,7 @@
 /* ----------------------------------------------------------------------------
    STARBLIGHT HUD — DOOM aesthetic (apps/lore/content/DESIGN.md):
-   black void, blood red, hellfire orange, gunmetal, bone text. Heavy uppercase
-   Oswald display, mono numerics, hard edges, ember glow used sparingly. Toxic
+   black void, blood red, hellfire orange, gunmetal, bone text. Pixel display,
+   pixel numerics, hard edges, ember glow used sparingly. Toxic
    green is the Scourge's only color.
 ---------------------------------------------------------------------------- */
 
@@ -18,8 +18,8 @@
   --ash: #9b958a;
   --toxic: #8bdc1f;
 
-  --display: "Oswald", "Arial Narrow", "Helvetica Neue", sans-serif;
-  --mono: ui-monospace, "SFMono-Regular", monospace;
+  --display: var(--ssg-font-pixel, "SSG Press Start", ui-monospace, monospace);
+  --mono: var(--display);
   --glow: 0 0 0 1px rgba(255, 106, 0, 0.35), 0 0 26px -6px rgba(193, 18, 31, 0.65);
 }
 
@@ -37,7 +37,8 @@ body {
   background: var(--void);
   color: var(--bone);
   font-family: var(--display);
-  -webkit-font-smoothing: antialiased;
+  -webkit-font-smoothing: none;
+  font-synthesis-weight: none;
 }
 
 #app {

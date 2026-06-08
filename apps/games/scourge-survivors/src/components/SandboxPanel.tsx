@@ -1,59 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
-import type { HUDState } from "../game/types";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { type PickupKind, STARTING_WEAPON, WEAPON_ORDER, WEAPONS, type WeaponId } from "../game/constants";
 import { MAP_PICKER } from "../game/data/maps";
-import { STARTING_WEAPON, WEAPON_ORDER, WEAPONS, type PickupKind, type WeaponId } from "../game/constants";
 import type { SandboxEnemyKind } from "../game/Game";
-import { RUNTIME_AUDIO_ASSET_URLS, RUNTIME_VISUAL_ASSET_URLS } from "../game/spriteAssets";
-
-import bossBack from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/breach-boss/back.webp";
-import bossFront from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/breach-boss/front.webp";
-import bossSide from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/breach-boss/side.webp";
-import enemyMeleeBack from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/host-grunt/back.webp";
-import enemyMeleeFront from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/host-grunt/front.webp";
-import enemyMeleeSide from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/host-grunt/side.webp";
-import enemyFlyingBack from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/winged-host/back.webp";
-import enemyFlyingFront from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/winged-host/front.webp";
-import enemyFlyingSide from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/winged-host/side.webp";
-import enemyRangedBack from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/spitter-host/back.webp";
-import enemyRangedFront from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/spitter-host/front.webp";
-import enemyRangedSide from "@shipshitgames/assets/games/scourge-survivors/enemies/scourge/spitter-host/side.webp";
-import playerHeavyBack from "@shipshitgames/assets/games/scourge-survivors/players/pyre/bulwark/back.webp";
-import playerHeavyFront from "@shipshitgames/assets/games/scourge-survivors/players/pyre/bulwark/front.webp";
-import playerHeavySide from "@shipshitgames/assets/games/scourge-survivors/players/pyre/bulwark/side.webp";
-import playerMedicBack from "@shipshitgames/assets/games/scourge-survivors/players/pyre/patch/back.webp";
-import playerMedicFront from "@shipshitgames/assets/games/scourge-survivors/players/pyre/patch/front.webp";
-import playerMedicSide from "@shipshitgames/assets/games/scourge-survivors/players/pyre/patch/side.webp";
-import playerRangerBack from "@shipshitgames/assets/games/scourge-survivors/players/pyre/ranger/back.webp";
-import playerRangerFront from "@shipshitgames/assets/games/scourge-survivors/players/pyre/ranger/front.webp";
-import playerRangerSide from "@shipshitgames/assets/games/scourge-survivors/players/pyre/ranger/side.webp";
-import playerScoutBack from "@shipshitgames/assets/games/scourge-survivors/players/pyre/vector/back.webp";
-import playerScoutFront from "@shipshitgames/assets/games/scourge-survivors/players/pyre/vector/front.webp";
-import playerScoutSide from "@shipshitgames/assets/games/scourge-survivors/players/pyre/vector/side.webp";
-import projectileBoss from "@shipshitgames/assets/games/scourge-survivors/projectiles/scourge/boss-barrage.webp";
-import projectileEnemy from "@shipshitgames/assets/games/scourge-survivors/projectiles/scourge/enemy-spit.webp";
-import pickupAmmo from "@shipshitgames/assets/games/scourge-survivors/pickups/ammo/bone-cache.webp";
-import pickupDamage from "@shipshitgames/assets/games/scourge-survivors/pickups/bonus/damage-boost.webp";
-import pickupDual from "@shipshitgames/assets/games/scourge-survivors/pickups/bonus/dual-wield.webp";
-import pickupHealth from "@shipshitgames/assets/games/scourge-survivors/pickups/health/blood-vial.webp";
-import pickupXpBlood from "@shipshitgames/assets/games/scourge-survivors/pickups/xp/scourge-ichor.webp";
-import weaponCannon from "@shipshitgames/assets/games/scourge-survivors/weapons/pyre/cannon.webp";
-import weaponPistol from "@shipshitgames/assets/games/scourge-survivors/weapons/pyre/pistol.webp";
-import weaponShotgun from "@shipshitgames/assets/games/scourge-survivors/weapons/pyre/shotgun.webp";
-import weaponSmg from "@shipshitgames/assets/games/scourge-survivors/weapons/pyre/smg.webp";
-import weaponSniper from "@shipshitgames/assets/games/scourge-survivors/weapons/pyre/sniper.webp";
-import arenaBlock from "@shipshitgames/assets/games/scourge-survivors/textures/arenas/generic/block.webp";
-import arenaColumn from "@shipshitgames/assets/games/scourge-survivors/textures/arenas/generic/column.webp";
-import arenaFloor from "@shipshitgames/assets/games/scourge-survivors/textures/arenas/generic/floor.webp";
-import arenaWall from "@shipshitgames/assets/games/scourge-survivors/textures/arenas/generic/wall.webp";
-import menuCardBastion from "@shipshitgames/assets/games/scourge-survivors/ui/cards/codex/bastion.jpg";
-import menuCardBastionPng from "@shipshitgames/assets/games/scourge-survivors/ui/cards/codex/bastion.png";
-import menuCardBreach from "@shipshitgames/assets/games/scourge-survivors/ui/cards/codex/breach.jpg";
-import menuCardBreachPng from "@shipshitgames/assets/games/scourge-survivors/ui/cards/codex/breach.png";
-import menuCardFleshworks from "@shipshitgames/assets/games/scourge-survivors/ui/cards/codex/fleshworks.jpg";
-import menuCardFleshworksPng from "@shipshitgames/assets/games/scourge-survivors/ui/cards/codex/fleshworks.png";
-import menuHeroJpg from "@shipshitgames/assets/games/scourge-survivors/ui/menu/scourge-hero.jpg";
-import menuHeroPng from "@shipshitgames/assets/games/scourge-survivors/ui/menu/scourge-hero.png";
+import { RUNTIME_AUDIO_ASSET_URLS, RUNTIME_VISUAL_ASSET_URLS, weaponSpriteAssetId } from "../game/spriteAssets";
+import type { HUDState } from "../game/types";
 
 interface Props {
   state: HUDState;
@@ -72,6 +23,61 @@ interface Props {
 type AssetKind = "sprite" | "texture" | "ui";
 type VisualAsset = { id: string; label: string; src: string; kind: AssetKind };
 type AudioAsset = { id: string; label: string; src: string; kind: "music" | "sfx" };
+
+function visualAssetUrl(id: string): string {
+  const src = RUNTIME_VISUAL_ASSET_URLS[id];
+  if (!src) throw new Error(`Missing Scourge Survivors visual asset URL for ${id}`);
+  return src;
+}
+
+const weaponPistol = visualAssetUrl(weaponSpriteAssetId("pistol"));
+const weaponSmg = visualAssetUrl(weaponSpriteAssetId("smg"));
+const weaponShotgun = visualAssetUrl(weaponSpriteAssetId("shotgun"));
+const weaponCannon = visualAssetUrl(weaponSpriteAssetId("cannon"));
+const weaponSniper = visualAssetUrl(weaponSpriteAssetId("sniper"));
+const enemyMeleeFront = visualAssetUrl("enemy-melee-front");
+const enemyMeleeSide = visualAssetUrl("enemy-melee-side");
+const enemyMeleeBack = visualAssetUrl("enemy-melee-back");
+const enemyRangedFront = visualAssetUrl("enemy-ranged-front");
+const enemyRangedSide = visualAssetUrl("enemy-ranged-side");
+const enemyRangedBack = visualAssetUrl("enemy-ranged-back");
+const enemyFlyingFront = visualAssetUrl("enemy-flying-front");
+const enemyFlyingSide = visualAssetUrl("enemy-flying-side");
+const enemyFlyingBack = visualAssetUrl("enemy-flying-back");
+const bossFront = visualAssetUrl("boss-front");
+const bossSide = visualAssetUrl("boss-side");
+const bossBack = visualAssetUrl("boss-back");
+const playerRangerFront = visualAssetUrl("player-ranger-front");
+const playerRangerSide = visualAssetUrl("player-ranger-side");
+const playerRangerBack = visualAssetUrl("player-ranger-back");
+const playerHeavyFront = visualAssetUrl("player-heavy-front");
+const playerHeavySide = visualAssetUrl("player-heavy-side");
+const playerHeavyBack = visualAssetUrl("player-heavy-back");
+const playerScoutFront = visualAssetUrl("player-scout-front");
+const playerScoutSide = visualAssetUrl("player-scout-side");
+const playerScoutBack = visualAssetUrl("player-scout-back");
+const playerMedicFront = visualAssetUrl("player-medic-front");
+const playerMedicSide = visualAssetUrl("player-medic-side");
+const playerMedicBack = visualAssetUrl("player-medic-back");
+const projectileEnemy = visualAssetUrl("projectile-enemy");
+const projectileBoss = visualAssetUrl("projectile-boss");
+const pickupHealth = visualAssetUrl("pickup-health");
+const pickupAmmo = visualAssetUrl("pickup-ammo");
+const pickupDamage = visualAssetUrl("pickup-damage");
+const pickupDual = visualAssetUrl("pickup-dual");
+const pickupXpBlood = visualAssetUrl("pickup-xp-blood");
+const arenaFloor = visualAssetUrl("arena-floor");
+const arenaWall = visualAssetUrl("arena-wall");
+const arenaColumn = visualAssetUrl("arena-column");
+const arenaBlock = visualAssetUrl("arena-block");
+const menuHeroJpg = visualAssetUrl("ui-menu-hero-jpg");
+const menuHeroPng = visualAssetUrl("ui-menu-hero-png");
+const menuCardBreach = visualAssetUrl("ui-card-breach-jpg");
+const menuCardBreachPng = visualAssetUrl("ui-card-breach-png");
+const menuCardBastion = visualAssetUrl("ui-card-bastion-jpg");
+const menuCardBastionPng = visualAssetUrl("ui-card-bastion-png");
+const menuCardFleshworks = visualAssetUrl("ui-card-fleshworks-jpg");
+const menuCardFleshworksPng = visualAssetUrl("ui-card-fleshworks-png");
 
 const WEAPON_IMAGES: Record<WeaponId, string> = {
   pistol: weaponPistol,
@@ -120,6 +126,12 @@ const VISUAL_ASSETS: VisualAsset[] = [
   { id: "pickup-damage", label: "Damage pickup", src: pickupDamage, kind: "sprite" },
   { id: "pickup-dual", label: "Dual pickup", src: pickupDual, kind: "sprite" },
   { id: "pickup-xp-blood", label: "XP ichor", src: pickupXpBlood, kind: "sprite" },
+  { id: "gib-meat-chunk", label: "Meat gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-meat-chunk"], kind: "sprite" },
+  { id: "gib-skull-shard", label: "Skull gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-skull-shard"], kind: "sprite" },
+  { id: "gib-bone-blade", label: "Bone gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-bone-blade"], kind: "sprite" },
+  { id: "gib-claw-limb", label: "Claw gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-claw-limb"], kind: "sprite" },
+  { id: "gib-acid-sac", label: "Acid sac gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-acid-sac"], kind: "sprite" },
+  { id: "gib-wing-membrane", label: "Wing gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-wing-membrane"], kind: "sprite" },
   { id: "arena-floor", label: "Arena floor", src: arenaFloor, kind: "texture" },
   { id: "arena-wall", label: "Arena wall", src: arenaWall, kind: "texture" },
   { id: "arena-column", label: "Arena column", src: arenaColumn, kind: "texture" },

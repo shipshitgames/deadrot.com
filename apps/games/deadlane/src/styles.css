@@ -11,8 +11,8 @@
   --hellfire: #ff6a00;
   --bone: #e9e3d6;
   --ash: #9b958a;
-  --display: "Oswald", "Arial Narrow", "Helvetica Neue", sans-serif;
-  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --display: var(--ssg-font-pixel, "SSG Press Start", ui-monospace, monospace);
+  --mono: var(--display);
   --ember: 0 0 0 1px rgba(255, 106, 0, 0.35), 0 0 26px -6px rgba(193, 18, 31, 0.85);
 }
 
@@ -34,6 +34,8 @@ body,
 body {
   font-family: var(--display);
   color: var(--bone);
+  -webkit-font-smoothing: none;
+  font-synthesis-weight: none;
 }
 
 #app {
@@ -61,6 +63,7 @@ body {
 
 #hud-top {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   padding: 16px;
 }
@@ -99,6 +102,33 @@ body {
 }
 #stat-hp {
   color: var(--blood-hot);
+}
+#stat-build,
+#stat-run {
+  color: var(--bone);
+}
+
+/* ---- first-person sight -------------------------------------------------- */
+
+#hud::before,
+#hud::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  background: rgba(233, 227, 214, 0.82);
+  box-shadow: 0 0 12px rgba(255, 106, 0, 0.55);
+}
+
+#hud::before {
+  width: 18px;
+  height: 2px;
+}
+
+#hud::after {
+  width: 2px;
+  height: 18px;
 }
 
 /* ---- build hint ---------------------------------------------------------- */

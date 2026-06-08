@@ -79,5 +79,5 @@ Costs come from `COMMAND_COSTS`; buttons disable when `!canAfford`:
 ## Design
 
 DOOM visual identity (see `/DESIGN.md`): void/coal/iron/gunmetal surfaces, blood/hellfire CTAs,
-bone uppercase Oswald headings, ember glow used sparingly, hard 2px corners. Toxic-green is
+bone uppercase pixel headings, ember glow used sparingly, hard 2px corners. Toxic-green is
 reserved for the Scourge (region fill, pulsing breach markers).

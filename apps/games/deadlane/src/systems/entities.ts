@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { CONSTANTS, COLORS } from "../constants";
-import { cellToWorld, pathPoints } from "../board";
+import { cellToWorld, mobPathPoints } from "../board";
+import { COLORS, CONSTANTS } from "../constants";
 import type { Creep, GameState, Tower } from "../types";
 
 /**
@@ -91,7 +91,7 @@ export class EntitySystem {
         roughness: 0.6,
       }),
     );
-    const start = pathPoints[0];
+    const start = mobPathPoints[0];
     mesh.position.set(start.x, CONSTANTS.creep.radius, start.z);
     this.scene.add(mesh);
 
@@ -122,9 +122,9 @@ export class EntitySystem {
       if (c.dead) continue;
       let remaining = c.speed * dt;
 
-      while (remaining > 0 && c.segment < pathPoints.length - 1) {
-        const a = pathPoints[c.segment];
-        const b = pathPoints[c.segment + 1];
+      while (remaining > 0 && c.segment < mobPathPoints.length - 1) {
+        const a = mobPathPoints[c.segment];
+        const b = mobPathPoints[c.segment + 1];
         const segLen = a.distanceTo(b);
         const distLeftOnSeg = segLen * (1 - c.t);
 
@@ -138,7 +138,7 @@ export class EntitySystem {
         }
       }
 
-      if (c.segment >= pathPoints.length - 1) {
+      if (c.segment >= mobPathPoints.length - 1) {
         // reached the base
         c.reachedBase = true;
         c.dead = true;
@@ -147,8 +147,8 @@ export class EntitySystem {
         continue;
       }
 
-      const a = pathPoints[c.segment];
-      const b = pathPoints[c.segment + 1];
+      const a = mobPathPoints[c.segment];
+      const b = mobPathPoints[c.segment + 1];
       c.mesh.position.lerpVectors(a, b, c.t);
       c.mesh.position.y = CONSTANTS.creep.radius;
       c.mesh.rotation.y += dt * 2.5;

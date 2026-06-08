@@ -22,4 +22,4 @@ export interface Entity {
   cooldown: number; // current time left until next attack
 }
 
-export type Phase = "playing" | "won" | "lost";
+export type Phase = "title" | "playing" | "won" | "lost";

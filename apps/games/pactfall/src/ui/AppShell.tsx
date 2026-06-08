@@ -1,4 +1,16 @@
-import { MainMenuCopy, MainMenuLayout, MainMenuScreen, MainMenuTitle, MenuKicker } from "@shipshitgames/ui";
+import {
+  MainMenuAction,
+  MainMenuCopy,
+  MainMenuLayout,
+  MainMenuNav,
+  MainMenuScreen,
+  MainMenuStatus,
+  MainMenuTitle,
+  MainMenuTitleLine,
+  MainMenuTopBar,
+  MenuKicker,
+} from "@shipshitgames/ui";
+import menuHero from "@shipshitgames/assets/games/pactfall/ui/menu/title.webp";
 
 export function AppShell() {
   return (
@@ -36,7 +48,37 @@ export function AppShell() {
 
         <div id="hint">WASD / TAP TO MOVE - AUTO-ATTACKS NEAREST - KILL THE SCOURGE FOR A BUFF</div>
 
-        <MainMenuScreen id="banner" className="banner banner--hidden ssg-main-menu-screen--compact">
+        <MainMenuScreen id="title-screen" className="banner" backgroundImage={menuHero}>
+          <MainMenuTopBar mark="SSG" meta="0 gold" aria-hidden>
+            Broken concord
+          </MainMenuTopBar>
+          <MainMenuLayout>
+            <MainMenuCopy>
+              <MenuKicker>Pyre vs Warden Arena</MenuKicker>
+              <MainMenuTitle>
+                <MainMenuTitleLine>PACT</MainMenuTitleLine>
+                <MainMenuTitleLine tone="hot">FALL</MainMenuTitleLine>
+              </MainMenuTitle>
+              <p className="ssg-main-menu-subtitle">
+                Break the Warden base before the Scourge turns the duel into a feeding ground.
+              </p>
+              <MainMenuStatus>
+                <span>Champion armed</span>
+                <span>Neutral Scourge buff</span>
+              </MainMenuStatus>
+            </MainMenuCopy>
+            <MainMenuNav aria-label="Main menu">
+              <MainMenuAction id="title-start-btn" variant="primary" label="Enter arena" meta="Begin duel" />
+              <MainMenuAction variant="shop" label="Upgrades" meta="Champion locked" disabled />
+              <MainMenuAction variant="coop" label="Co-op" meta="Local duel" disabled />
+              <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
+              <MainMenuAction variant="settings" label="Settings" meta="Auto attack" disabled />
+              <MainMenuAction variant="dev" label="Sandbox" meta="Arena lab" disabled />
+            </MainMenuNav>
+          </MainMenuLayout>
+        </MainMenuScreen>
+
+        <MainMenuScreen id="banner" className="banner banner--hidden" backgroundImage={menuHero}>
           <MainMenuLayout>
             <MainMenuCopy>
               <MainMenuTitle className="banner-title" />
