@@ -19,7 +19,6 @@ import {
   ENEMY_SPEED_MAX,
   ENEMY_SPEED_MIN,
   FIRST_WAVE_DELAY,
-  STAGE_CLEAR_HEAL,
   STAGE_DIFFICULTY_STEP,
   TOTAL_WAVES,
   WAVE_BREAK,
@@ -29,7 +28,6 @@ import {
 } from "../constants";
 import type { GameContext } from "../context";
 import { campaignArchetypeForWave, ENEMY_ARCHETYPES, SCOURGE_THREAT_TIERS } from "../data/enemies";
-import { CAMPAIGN_ORDER, campaignSequence } from "../data/maps";
 import { SURV_XP_GEM_VALUE } from "../data/survivors";
 import { Enemy } from "../entities/Enemy";
 import type { GameSystems } from "../systems";
@@ -237,7 +235,7 @@ export class PveDirectorSystem {
       });
       this.bossActive = false;
       this.bossEnemy = null;
-      this.advanceCampaignOrWin();
+      this.sys.mission.onBossDefeated();
     } else {
       this.ctx.score += ENEMY_SCORE + (headshot ? 50 : 0);
       this.ctx.reserve = Math.min(spec.reserveCap, this.ctx.reserve + spec.ammoPerKill);
@@ -282,41 +280,6 @@ export class PveDirectorSystem {
       if (this.ctx.survivors) this.sys.survivors.enemyXp.set(child, 1);
     }
     this.sys.hud.showToast("SPLITTER BROOD");
-  }
-
-  startCampaign(startMapId?: string) {
-    this.sys.multiplayer.leaveMultiplayer(false);
-    this.ctx.survivors = false;
-    this.sys.survivors.recomputeStats();
-    this.ctx.campaignMaps = campaignSequence(startMapId ?? CAMPAIGN_ORDER[0]);
-    this.ctx.campaignStage = 0;
-    this.sys.arena.buildArena(this.ctx.campaignMaps[0]);
-    this.sys.player.resetPlayer();
-    this.sys.fx.clearTransientFx();
-    this.sys.survivors.clearSurvivorsEntities();
-    this.startWaveSystem();
-    this.ctx.status = "pointerlock-needed";
-    this.sys.hud.emit();
-    this.sys.input.requestLock();
-  }
-
-  /** Breach-boss down: advance to the next descent map, or win if this was the last. */
-  advanceCampaignOrWin() {
-    if (this.ctx.campaignStage < this.ctx.campaignMaps.length - 1) {
-      this.ctx.campaignStage++;
-      const next = this.ctx.campaignMaps[this.ctx.campaignStage];
-      this.ctx.health = Math.min(this.ctx.maxHealthValue, this.ctx.health + STAGE_CLEAR_HEAL);
-      this.sys.arena.buildArena(next);
-      this.sys.fx.clearTransientFx();
-      this.sys.arena.placeAtSpawn();
-      this.startWaveSystem();
-      this.sys.hud.announce(
-        `STAGE ${this.ctx.campaignStage + 1}/${this.ctx.campaignMaps.length} · ${next.name.toUpperCase()}`,
-      );
-      this.sys.hud.emit();
-    } else {
-      this.sys.gameOver.gameOver("win");
-    }
   }
 
   updateEnemies(delta: number, elapsed: number) {

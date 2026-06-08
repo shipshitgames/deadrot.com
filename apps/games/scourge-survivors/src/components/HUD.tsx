@@ -989,6 +989,11 @@ export function HUD({
     connected,
     room,
     scoreboard,
+    campaign,
+    missionTitle,
+    missionObjective,
+    missionCheckpoint,
+    missionExtractionReady,
     survivors,
   } = state;
 
@@ -1043,8 +1048,8 @@ export function HUD({
           date: scores.find((s) => s.score === score && s.kills === kills && s.time === time)?.date ?? 0,
         }
       : null;
-  const showMainMenu = status === "pointerlock-needed" && !suppressMenu && !survivors && !multiplayer;
-  const showLockPrompt = status === "pointerlock-needed" && !suppressMenu && (survivors || multiplayer);
+  const showMainMenu = status === "pointerlock-needed" && !suppressMenu && !campaign && !survivors && !multiplayer;
+  const showLockPrompt = status === "pointerlock-needed" && !suppressMenu && (campaign || survivors || multiplayer);
 
   const menuScreenWrap = "flex flex-col items-center gap-2 mt-[14px] w-full";
 
@@ -1171,6 +1176,15 @@ export function HUD({
                 {campaignStage}/{campaignTotalStages}
               </div>
               <div className={STAT_SUB}>{mapName}</div>
+            </div>
+          )}
+          {campaign && missionObjective && (
+            <div className="max-w-[220px]" title={missionObjective}>
+              <div className={STAT_LABEL}>{missionTitle || "Mission"}</div>
+              <div className={`${STAT_VALUE} !text-[16px] leading-tight`}>
+                {missionExtractionReady ? "EXTRACT" : "SEVER RELAY"}
+              </div>
+              {missionCheckpoint && <div className={STAT_SUB}>{missionCheckpoint}</div>}
             </div>
           )}
           {!multiplayer && (

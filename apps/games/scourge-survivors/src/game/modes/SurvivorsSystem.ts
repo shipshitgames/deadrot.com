@@ -114,6 +114,7 @@ export class SurvivorsSystem {
 
   startSurvivors(classId: SurvivorClassId = this.selectedClass) {
     this.sys.multiplayer.leaveMultiplayer(false);
+    this.sys.mission.clearMissionState();
     this.selectedClass = survivorClassFor(classId).id;
     this.ctx.survivorClassId = this.selectedClass;
     this.ctx.survivors = true;

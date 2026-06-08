@@ -25,6 +25,7 @@ export class MultiplayerSystem {
 
   startMultiplayer(room: string, name: string, avatar: PlayerAvatarId = "ranger") {
     this.leaveMultiplayer(false); // tear down any prior session/avatars first
+    this.sys.mission.clearMissionState();
     this.ctx.campaignStage = 0;
     this.sys.arena.buildArena(getMap(DEFAULT_MAP_ID)); // Co-op rooms use the default breach arena.
     this.sys.player.resetPlayer();
