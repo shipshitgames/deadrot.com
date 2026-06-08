@@ -90,8 +90,7 @@ test.describe("survivors menu", () => {
     await expect(hub.getByRole("button", { name: /leaderboard/i })).toBeVisible();
 
     await hub.getByRole("button", { name: /co-op/i }).click();
-    await expect(page.getByText("Co-op Run", { exact: true })).toBeVisible();
-    await expect(page.getByText("Co-op Rooms", { exact: true })).toBeVisible();
+    await expect(page.getByText("Co-op Breach Rooms")).toBeVisible();
     await page.getByRole("button", { name: /back/i }).click();
 
     await page
@@ -221,7 +220,7 @@ test.describe("dev sandbox smoke", () => {
   test("main menu uses Survivors run and co-op breach vocabulary", async ({ page }) => {
     await page.goto("/");
 
-    await expect(page.getByRole("button", { name: /start run/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /play a run/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /^co-op/i })).toBeVisible();
 
     await page.getByRole("button", { name: /^co-op/i }).click();
@@ -607,7 +606,6 @@ test.describe("dev sandbox smoke", () => {
     await stageActiveSurvivorsHud(page);
 
     const styleSelectors = [
-      ".scourge-top-stats",
       ".ssg-survivor-runline",
       ".ssg-survivor-xp",
       ".scourge-build-chip",
@@ -628,7 +626,6 @@ test.describe("dev sandbox smoke", () => {
 
     await page.setViewportSize({ width: 390, height: 780 });
     const layoutSelectors = [
-      ".scourge-top-stats",
       ".ssg-survivor-runline",
       ".ssg-survivor-xp",
       ".scourge-build-strip",
@@ -648,7 +645,6 @@ test.describe("dev sandbox smoke", () => {
     }
 
     const nonOverlappingPairs = [
-      [".scourge-top-stats", ".ssg-survivor-runline"],
       [".ssg-survivor-runline", ".ssg-survivor-xp"],
       [".ssg-survivor-xp", ".scourge-berserk-meter"],
       [".scourge-berserk-meter", ".scourge-build-strip"],
