@@ -10,6 +10,8 @@ export const allGames = [
 
 export type GameSlug = (typeof allGames)[number]["slug"];
 
+export const DEFAULT_PORT_BASE = 5174;
+
 export function parseSelectedGameSlugs(value: string | undefined): GameSlug[] {
   if (!value?.trim()) return [];
 
@@ -22,4 +24,15 @@ export function parseSelectedGameSlugs(value: string | undefined): GameSlug[] {
   if (unknown.length) throw new Error(`Unknown E2E_GAME_SLUGS entries: ${unknown.join(", ")}`);
 
   return selected as GameSlug[];
+}
+
+export function parsePortBase(value: string | undefined): number {
+  if (!value?.trim()) return DEFAULT_PORT_BASE;
+
+  const port = Number(value);
+  if (!Number.isInteger(port) || port < 1024 || port > 65_529) {
+    throw new Error(`E2E_PORT_BASE must be an integer from 1024 to 65529. Received: ${value}`);
+  }
+
+  return port;
 }

@@ -1,21 +1,21 @@
 import { describe, expect, it } from "vitest";
+import { STARTING_WEAPON, WEAPONS } from "../../src/game/constants";
 import { ENEMY_ARCHETYPES, SCOURGE_THREAT_TIERS } from "../../src/game/data/enemies";
 import {
   availableEvolutionChoice,
   EVOLUTIONS,
   runGold,
   SHOP_BY_ID,
-  survivorBuildList,
-  survivorStartingWeapon,
   SURVIVOR_CLASS_IDS,
   SURVIVOR_CLASSES,
+  survivorBuildList,
+  survivorStartingWeapon,
   UPGRADE_BY_ID,
   UPGRADES,
   type UpgradeId,
   type WeaponUpgradeId,
   xpForLevel,
 } from "../../src/game/data/survivors";
-import { STARTING_WEAPON, WEAPONS } from "../../src/game/constants";
 
 const noEvolutions: Record<WeaponUpgradeId, boolean> = {
   orbit: false,

@@ -1,5 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-import { allGames, parseSelectedGameSlugs } from "./e2e/game-catalog";
+import { allGames, parsePortBase, parseSelectedGameSlugs } from "./e2e/game-catalog";
 
 const CI = Boolean(process.env.CI);
 const outputDir = process.env.PLAYWRIGHT_TEST_OUTPUT_DIR ?? "test-results/e2e";
@@ -56,14 +56,3 @@ export default defineConfig({
     })),
   ),
 });
-
-function parsePortBase(value: string | undefined): number {
-  if (!value?.trim()) return 5174;
-
-  const port = Number(value);
-  if (!Number.isInteger(port) || port < 1024 || port > 65_529) {
-    throw new Error(`E2E_PORT_BASE must be an integer from 1024 to 65529. Received: ${value}`);
-  }
-
-  return port;
-}
