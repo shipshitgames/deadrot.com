@@ -59,6 +59,10 @@ const INITIAL_STATE: HUDState = {
   enemiesAlive: 0,
   combo: 0,
   time: 0,
+  runMode: "campaign",
+  runDepth: 1,
+  runDepthTotal: TOTAL_WAVES,
+  runDepthName: "Ashgate",
   wave: 1,
   totalWaves: TOTAL_WAVES,
   campaignStage: 1,
@@ -133,7 +137,7 @@ export default function App() {
   const [scores, setScores] = useState<ScoreEntry[]>(() => loadScores());
   const [settings, setSettings] = useState<Settings>(() => loadSettings());
   const [shop, setShop] = useState<ShopState>(() => loadShop());
-  const [lastRunGold, setLastRunGold] = useState(0);
+  const lastRunGoldRef = useRef(0);
   const sandboxAvailable = import.meta.env.DEV;
   const savedRef = useRef(false);
   // A shared link like `?room=BREACH-AB12` lands the player on the join screen.
@@ -186,6 +190,8 @@ export default function App() {
   useEffect(() => {
     if (hud.status === "gameover" && hud.outcome && !hud.sandbox && !savedRef.current) {
       savedRef.current = true;
+      const earnedGold = hud.survivors ? runGold(hud.kills, hud.level, hud.time, shop.tiers.greed ?? 0) : 0;
+      lastRunGoldRef.current = earnedGold;
       setScores(
         saveScore({
           score: hud.score,
@@ -193,24 +199,44 @@ export default function App() {
           headshots: hud.headshots,
           time: hud.time,
           outcome: hud.outcome,
+          mode: hud.runMode,
+          level: hud.level,
+          depthReached: hud.runDepth,
+          depthTotal: hud.runDepthTotal,
+          depthName: hud.runDepthName,
+          goldEarned: earnedGold,
           date: Date.now(),
         }),
       );
       if (hud.survivors) {
         setShop((prev) => {
-          const earned = runGold(hud.kills, hud.level, hud.time, prev.tiers.greed ?? 0);
-          setLastRunGold(earned);
-          const next = { ...prev, gold: prev.gold + earned };
+          const next = { ...prev, gold: prev.gold + earnedGold };
           saveShop(next);
           return next;
         });
       } else {
-        setLastRunGold(0);
+        lastRunGoldRef.current = 0;
       }
     } else if (hud.status !== "gameover") {
       savedRef.current = false;
+      lastRunGoldRef.current = 0;
     }
-  }, [hud.status, hud.outcome, hud.score, hud.kills, hud.headshots, hud.time, hud.survivors, hud.level, hud.sandbox]);
+  }, [
+    hud.status,
+    hud.outcome,
+    hud.score,
+    hud.kills,
+    hud.headshots,
+    hud.time,
+    hud.survivors,
+    hud.level,
+    hud.sandbox,
+    hud.runMode,
+    hud.runDepth,
+    hud.runDepthTotal,
+    hud.runDepthName,
+    shop.tiers.greed,
+  ]);
 
   const handleLock = useCallback(() => {
     audio.unlock();
@@ -368,7 +394,7 @@ export default function App() {
         onBanish={handleBanish}
         onMenu={handleMenu}
         shop={shop}
-        lastRunGold={lastRunGold}
+        lastRunGold={lastRunGoldRef.current}
         onBuyShop={handleBuyShop}
         initialRoom={initialRoom}
         suppressMenu={sandboxActive}

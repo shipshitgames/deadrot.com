@@ -87,6 +87,21 @@ export class HudSystem {
     const evolved = Object.entries(this.sys.survivors.evolved)
       .filter(([, on]) => on)
       .map(([id]) => EVOLUTIONS[id as keyof typeof EVOLUTIONS].name);
+    const runMode: HUDState["runMode"] = this.ctx.multiplayer
+      ? "coop"
+      : this.ctx.survivors
+        ? "structured"
+        : this.ctx.sandbox
+          ? "sandbox"
+          : "campaign";
+    const campaignDepthTotal = this.ctx.campaignMaps.length || TOTAL_WAVES;
+    const runDepth = this.ctx.survivors
+      ? this.ctx.survivorChapter + 1
+      : this.ctx.campaignMaps.length
+        ? this.ctx.campaignStage + 1
+        : Math.min(this.sys.pve.waveIndex + 1, TOTAL_WAVES);
+    const runDepthTotal = this.ctx.survivors ? this.ctx.survivorTotalChapters : campaignDepthTotal;
+    const runDepthName = this.ctx.survivors ? survivorChapter.name : this.ctx.currentMap.name;
     const state: HUDState = {
       status: this.ctx.status,
       playerHealth: Math.round(this.ctx.health),
@@ -102,6 +117,10 @@ export class HudSystem {
       enemiesAlive: this.ctx.aliveCount,
       combo: this.ctx.combo,
       time: Math.floor(this.ctx.time),
+      runMode,
+      runDepth,
+      runDepthTotal,
+      runDepthName,
       wave: Math.min(this.sys.pve.waveIndex + 1, TOTAL_WAVES),
       totalWaves: TOTAL_WAVES,
       campaignStage: this.ctx.campaignStage + 1,
