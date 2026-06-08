@@ -29,6 +29,7 @@ import {
   type SurvivorClassId,
   shopCost,
 } from "../game/data/survivors";
+import { WEAPON_IDENTITIES } from "../game/data/weaponIdentity";
 import { MENU_HERO_URL, PLAYER_AVATAR_PREVIEW_URLS } from "../game/spriteAssets";
 import type { ScoreEntry, Settings, ShopState } from "../game/storage";
 import type { HUDState } from "../game/types";
@@ -316,6 +317,7 @@ function SurvivorsPanel({
 }) {
   const [classId, setClassId] = useState<SurvivorClassId>(() => savedSurvivorClass());
   const selected = SURVIVOR_CLASSES[classId];
+  const selectedWeapon = WEAPON_IDENTITIES[selected.startingWeapon];
   const launch = () => {
     localStorage.setItem("scourge-survivors.survivorClass", classId);
     onStart(classId);
@@ -326,6 +328,7 @@ function SurvivorsPanel({
       <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
         {SURVIVOR_CLASS_IDS.map((id) => {
           const cls = SURVIVOR_CLASSES[id];
+          const weapon = WEAPON_IDENTITIES[cls.startingWeapon];
           const active = id === classId;
           return (
             <button
@@ -356,6 +359,9 @@ function SurvivorsPanel({
               </span>
               <span className="block text-[11px] font-bold uppercase tracking-[0.08em] text-[#ffb56b]">{cls.role}</span>
               <span className="mt-1 block text-[12px] leading-[1.35] opacity-70">{cls.desc}</span>
+              <span className="mt-2 block rounded-[6px] border border-white/10 bg-black/25 px-2 py-[6px] text-[11px] leading-[1.25] text-[#ffd2a0]">
+                {weapon.displayName} · {weapon.role}
+              </span>
             </button>
           );
         })}
@@ -365,8 +371,9 @@ function SurvivorsPanel({
           <div className="text-[12px] uppercase tracking-[0.12em] text-[#ffb56b]">Selected</div>
           <div className="text-[22px] font-black tracking-[0.03em]">{selected.name}</div>
           <div className="text-[12px] opacity-65">
-            {Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}:{(SURVIVOR_RUN_GOAL_TIME % 60).toString().padStart(2, "0")} breach
-            descent · {shop.gold.toLocaleString()} gold banked
+            {selectedWeapon.callsign} · {Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}:
+            {(SURVIVOR_RUN_GOAL_TIME % 60).toString().padStart(2, "0")} breach descent · {shop.gold.toLocaleString()}{" "}
+            gold banked
           </div>
         </div>
         <Button type="button" variant="ghost" className="h-full min-h-[58px]" onClick={onShop}>
@@ -975,6 +982,7 @@ export function HUD({
     outcome,
     weapon,
     weapons,
+    weaponIdentity,
     berserk,
     berserkFrac,
     dualWeapon,
@@ -1240,11 +1248,16 @@ export function HUD({
         </div>
       </div>
 
-      <div className={`${HUD_CORNER} scourge-weapon-panel right-[18px] bottom-[18px] text-right min-w-[150px]`}>
+      <div className={`${HUD_CORNER} scourge-weapon-panel right-[18px] bottom-[18px] text-right min-w-[178px]`}>
         <div className="text-[13px] tracking-[0.12em] uppercase text-accent mb-[2px]">{weapon}</div>
+        <div className="text-[10px] uppercase tracking-[0.08em] text-[#ffb56b]">{weaponIdentity.role}</div>
         <div className="flex items-baseline justify-end gap-[6px]">
           <span className={`text-[30px] font-extrabold${ammo === 0 ? " text-danger" : ""}`}>{ammo}</span>
           <span className="text-[16px] opacity-70">/ {survivors ? "∞" : reserve}</span>
+        </div>
+        <div className="mt-[3px] text-[10px] leading-tight opacity-60">
+          {weaponIdentity.callsign} · {weaponIdentity.ads} ·{" "}
+          {weaponIdentity.dualCompatible ? "dual-ready" : "single rig"}
         </div>
         {reloading ? (
           <div className="mt-[6px] flex flex-col items-end gap-[3px] text-warn text-[12px] tracking-[0.08em] uppercase">

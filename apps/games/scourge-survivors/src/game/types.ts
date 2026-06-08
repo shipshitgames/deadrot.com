@@ -27,6 +27,14 @@ export interface BuildEntry {
   evolved?: boolean;
 }
 
+export interface WeaponIdentityState {
+  callsign: string;
+  role: string;
+  fantasy: string;
+  ads: string;
+  dualCompatible: boolean;
+}
+
 export interface HUDState {
   status: GameStatus;
   playerHealth: number;
@@ -59,6 +67,7 @@ export interface HUDState {
   /** Active weapon + the player's unlocked arsenal (for the HUD weapon strip). */
   weapon: string;
   weapons: { id: string; name: string; key: number; active: boolean }[];
+  weaponIdentity: WeaponIdentityState;
   /** Remaining seconds of the damage-boost upgrade (0 when inactive). */
   damageBoost: number;
   /** Remaining seconds and normalized timer for berserk mode (0 when inactive). */
