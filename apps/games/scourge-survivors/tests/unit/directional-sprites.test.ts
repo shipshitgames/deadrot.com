@@ -41,6 +41,30 @@ describe("directional sprite frame selection", () => {
     });
   });
 
+  it("keeps front/back cones narrow while diagonal sectors use mirrored sides", () => {
+    const angle = (degrees: number): [number, number] => [
+      Math.sin((degrees * Math.PI) / 180),
+      Math.cos((degrees * Math.PI) / 180),
+    ];
+
+    expect(chooseDirectionalSpriteFrame(...angle(20), 0, 1)).toMatchObject({
+      sector: "front",
+      view: "front",
+    });
+    expect(chooseDirectionalSpriteFrame(...angle(30), 0, 1)).toMatchObject({
+      sector: "front-left",
+      view: "side",
+    });
+    expect(chooseDirectionalSpriteFrame(...angle(150), 0, 1)).toMatchObject({
+      sector: "back-left",
+      view: "side",
+    });
+    expect(chooseDirectionalSpriteFrame(...angle(165), 0, 1)).toMatchObject({
+      sector: "back",
+      view: "back",
+    });
+  });
+
   it("supports actor-relative mirroring for camera-relative remote player yaw", () => {
     expect(chooseDirectionalSpriteFrame(1, 0, 0, 1, { mirrorBasis: "actor" })).toMatchObject({
       sector: "right",
