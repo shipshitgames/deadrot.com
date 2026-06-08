@@ -165,6 +165,7 @@ export class PveDirectorSystem {
     const wasBoss = enemy.isBoss;
     const deathPos = enemy.position.clone();
     const deathScale = enemy.isBoss ? 2.4 : Math.max(0.8, enemy.group.scale.x);
+    const deathFx = enemy.deathFx();
     const spec = WEAPONS[this.ctx.activeWeapon];
     this.ctx.kills++;
     // a dead mob's in-flight projectiles should fizzle out
@@ -191,6 +192,9 @@ export class PveDirectorSystem {
         elite: wasBoss,
         scale: wasBoss ? 1.8 : deathScale,
         color: wasBoss ? 0xff2d55 : 0xc1121f,
+        spriteKind: deathFx.kind,
+        spriteView: deathFx.view,
+        spriteFlip: deathFx.flip,
       });
       if (wasBoss) {
         this.bossActive = false;
@@ -206,6 +210,9 @@ export class PveDirectorSystem {
         elite: wasBoss,
         scale: wasBoss ? 1.8 : deathScale,
         color: wasBoss ? 0xff2d55 : 0xc1121f,
+        spriteKind: deathFx.kind,
+        spriteView: deathFx.view,
+        spriteFlip: deathFx.flip,
       });
       this.sys.survivors.dropXpGem(deathPos.clone(), this.sys.survivors.enemyXp.get(enemy) ?? SURV_XP_GEM_VALUE);
       if (wasBoss) this.sys.survivors.onEliteKilled(deathPos.clone()); // Scourge elites also drop health + damage
@@ -219,14 +226,29 @@ export class PveDirectorSystem {
     if (wasBoss) {
       this.ctx.score += BOSS_SCORE;
       this.ctx.reserve = Math.min(spec.reserveCap, this.ctx.reserve + BOSS_RESERVE_BONUS);
-      this.sys.fx.spawnEnemyDeath(deathPos, { headshot, elite: true, scale: 2.5, color: 0xff2d55 });
+      this.sys.fx.spawnEnemyDeath(deathPos, {
+        headshot,
+        elite: true,
+        scale: 2.5,
+        color: 0xff2d55,
+        spriteKind: deathFx.kind,
+        spriteView: deathFx.view,
+        spriteFlip: deathFx.flip,
+      });
       this.bossActive = false;
       this.bossEnemy = null;
       this.advanceCampaignOrWin();
     } else {
       this.ctx.score += ENEMY_SCORE + (headshot ? 50 : 0);
       this.ctx.reserve = Math.min(spec.reserveCap, this.ctx.reserve + spec.ammoPerKill);
-      this.sys.fx.spawnEnemyDeath(deathPos, { headshot, scale: deathScale, color: headshot ? 0xff415f : 0xc1121f });
+      this.sys.fx.spawnEnemyDeath(deathPos, {
+        headshot,
+        scale: deathScale,
+        color: headshot ? 0xff415f : 0xc1121f,
+        spriteKind: deathFx.kind,
+        spriteView: deathFx.view,
+        spriteFlip: deathFx.flip,
+      });
       this.killsThisWave++;
       this.sys.pickups.maybeDropPickup(enemy.position);
       this.spawnSplitterChildren(enemy, deathPos);

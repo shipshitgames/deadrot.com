@@ -439,6 +439,150 @@
         "scope": "project prototype"
       }
     },
+    "gib-meat-chunk": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/fx/gibs/gib-meat-chunk.webp",
+      "dimensions": [
+        64,
+        64
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.54,
+        0.54
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp crop/chroma-key; lossless WebP",
+        "plan": "Codex built-in image_gen",
+        "date": "2026-06-07",
+        "kind": "authored transparent Scourge gib sprite",
+        "scope": "Scourge Survivors runtime death FX"
+      }
+    },
+    "gib-skull-shard": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/fx/gibs/gib-skull-shard.webp",
+      "dimensions": [
+        64,
+        64
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.52,
+        0.52
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp crop/chroma-key; lossless WebP",
+        "plan": "Codex built-in image_gen",
+        "date": "2026-06-07",
+        "kind": "authored transparent Scourge skull gib sprite",
+        "scope": "Scourge Survivors runtime death FX"
+      }
+    },
+    "gib-bone-blade": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/fx/gibs/gib-bone-blade.webp",
+      "dimensions": [
+        64,
+        64
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.64,
+        0.64
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp crop/chroma-key; lossless WebP",
+        "plan": "Codex built-in image_gen",
+        "date": "2026-06-07",
+        "kind": "authored transparent Scourge bone-blade gib sprite",
+        "scope": "Scourge Survivors runtime death FX"
+      }
+    },
+    "gib-claw-limb": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/fx/gibs/gib-claw-limb.webp",
+      "dimensions": [
+        64,
+        64
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.66,
+        0.66
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp crop/chroma-key; lossless WebP",
+        "plan": "Codex built-in image_gen",
+        "date": "2026-06-07",
+        "kind": "authored transparent Scourge claw-limb gib sprite",
+        "scope": "Scourge Survivors runtime death FX"
+      }
+    },
+    "gib-acid-sac": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/fx/gibs/gib-acid-sac.webp",
+      "dimensions": [
+        64,
+        64
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.58,
+        0.58
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp crop/chroma-key; lossless WebP",
+        "plan": "Codex built-in image_gen",
+        "date": "2026-06-07",
+        "kind": "authored transparent Scourge acid-sac gib sprite",
+        "scope": "Scourge Survivors runtime death FX"
+      }
+    },
+    "gib-wing-membrane": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/fx/gibs/gib-wing-membrane.webp",
+      "dimensions": [
+        64,
+        64
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.68,
+        0.68
+      ],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp crop/chroma-key; lossless WebP",
+        "plan": "Codex built-in image_gen",
+        "date": "2026-06-07",
+        "kind": "authored transparent Scourge wing-membrane gib sprite",
+        "scope": "Scourge Survivors runtime death FX"
+      }
+    },
     "pickup-health": {
       "type": "sprite",
       "path": "games/scourge-survivors/pickups/health/blood-vial.webp",
@@ -1575,7 +1719,8 @@
           "entity": "host-grunt",
           "actions": {
             "move": "walk",
-            "attack": "slash"
+            "attack": "slash",
+            "death": "death"
           }
         }
       },
@@ -1585,7 +1730,8 @@
           "entity": "spitter-host",
           "actions": {
             "move": "walk",
-            "attack": "spit"
+            "attack": "spit",
+            "death": "death"
           }
         }
       },
@@ -1595,7 +1741,8 @@
           "entity": "winged-host",
           "actions": {
             "move": "fly",
-            "attack": "attack"
+            "attack": "attack",
+            "death": "death"
           }
         }
       },
@@ -1605,7 +1752,8 @@
           "entity": "breach-boss",
           "actions": {
             "move": "lurch",
-            "attack": "barrage"
+            "attack": "barrage",
+            "death": "death"
           }
         }
       }

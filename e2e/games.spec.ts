@@ -15,9 +15,9 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
     path: "/",
     canvasSelector: "#scene",
     async assertLoaded(page) {
-      await expect(page.getByText("Gold")).toBeVisible();
-      await expect(page.getByText("Wave")).toBeVisible();
-      await expect(page.getByText("Base HP")).toBeVisible();
+      await expect(page.getByText("Gold", { exact: true })).toBeVisible();
+      await expect(page.getByText("Wave", { exact: true })).toBeVisible();
+      await expect(page.getByText("Base HP", { exact: true })).toBeVisible();
       await expect(page.getByRole("button", { name: "DEPLOY" })).toBeVisible();
     },
     async exercise(page) {
@@ -30,9 +30,9 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
     path: "/",
     canvasSelector: "#scene",
     async assertLoaded(page) {
-      await expect(page.getByText("PYRE BASE")).toBeVisible();
-      await expect(page.getByText("WARDEN BASE")).toBeVisible();
-      await expect(page.getByText("SCOURGE BUFF")).toBeVisible();
+      await expect(page.getByText("PYRE BASE", { exact: true })).toBeVisible();
+      await expect(page.getByText("WARDEN BASE", { exact: true })).toBeVisible();
+      await expect(page.getByText("SCOURGE BUFF", { exact: true })).toBeVisible();
       await expect(page.locator("#arena-name")).not.toBeEmpty();
     },
     async exercise(page) {
@@ -73,11 +73,11 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
     canvasSelector: "#scene",
     async assertLoaded(page) {
       await expect(page.getByText("ROTHULK")).toBeVisible();
-      await expect(page.getByRole("button", { name: "BREACH THE HULK" })).toBeVisible();
+      await expect(page.getByRole("button", { name: /^Breach\b/i })).toBeVisible();
       await expect(page.locator("#hud-lives")).toHaveText("x3");
     },
     async exercise(page) {
-      await page.getByRole("button", { name: "BREACH THE HULK" }).click();
+      await page.getByRole("button", { name: /^Breach\b/i }).click();
       await expect(page.locator("#banner")).toHaveClass(/hidden/);
       await expect(page.locator("#hud-obj")).toContainText("REACH");
     },
@@ -131,6 +131,7 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
       await expect(page.getByRole("img", { name: "War map of the front" })).toBeVisible();
     },
     async exercise(page) {
+      await page.getByRole("button", { name: /^Open front\b/i }).click();
       await page.getByRole("button", { name: /^Hold the Lane\b/i }).click();
       await expect(page.locator("ol li").first()).toContainText("deadlane");
     },

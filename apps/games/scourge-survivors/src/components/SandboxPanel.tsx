@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
-import type { HUDState } from "../game/types";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { type PickupKind, STARTING_WEAPON, WEAPON_ORDER, WEAPONS, type WeaponId } from "../game/constants";
 import { MAP_PICKER } from "../game/data/maps";
-import { STARTING_WEAPON, WEAPON_ORDER, WEAPONS, type PickupKind, type WeaponId } from "../game/constants";
 import type { SandboxEnemyKind } from "../game/Game";
 import { RUNTIME_AUDIO_ASSET_URLS, RUNTIME_VISUAL_ASSET_URLS, weaponSpriteAssetId } from "../game/spriteAssets";
+import type { HUDState } from "../game/types";
 
 interface Props {
   state: HUDState;
@@ -126,6 +126,12 @@ const VISUAL_ASSETS: VisualAsset[] = [
   { id: "pickup-damage", label: "Damage pickup", src: pickupDamage, kind: "sprite" },
   { id: "pickup-dual", label: "Dual pickup", src: pickupDual, kind: "sprite" },
   { id: "pickup-xp-blood", label: "XP ichor", src: pickupXpBlood, kind: "sprite" },
+  { id: "gib-meat-chunk", label: "Meat gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-meat-chunk"], kind: "sprite" },
+  { id: "gib-skull-shard", label: "Skull gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-skull-shard"], kind: "sprite" },
+  { id: "gib-bone-blade", label: "Bone gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-bone-blade"], kind: "sprite" },
+  { id: "gib-claw-limb", label: "Claw gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-claw-limb"], kind: "sprite" },
+  { id: "gib-acid-sac", label: "Acid sac gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-acid-sac"], kind: "sprite" },
+  { id: "gib-wing-membrane", label: "Wing gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-wing-membrane"], kind: "sprite" },
   { id: "arena-floor", label: "Arena floor", src: arenaFloor, kind: "texture" },
   { id: "arena-wall", label: "Arena wall", src: arenaWall, kind: "texture" },
   { id: "arena-column", label: "Arena column", src: arenaColumn, kind: "texture" },

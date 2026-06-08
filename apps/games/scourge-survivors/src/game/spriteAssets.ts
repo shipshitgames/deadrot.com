@@ -18,8 +18,8 @@ import type { PlayerAvatarId } from "../net/playerAvatars";
 import type { WeaponId } from "./constants";
 
 export type EnemySpriteKind = "melee" | "ranged" | "flying" | "boss";
-type EnemySpriteView = SpriteView;
-export type EnemySpriteAnimationState = "move" | "attack";
+export type EnemySpriteView = SpriteView;
+export type EnemySpriteAnimationState = "move" | "attack" | "death";
 
 export function enemySpriteAssetId(id: EnemySpriteKind): string {
   return ASSET_CATALOG.enemy(id).sprite;
@@ -102,6 +102,7 @@ function animationStateViews(
   return {
     move: animationFrameViews(entity, enemyAnimationAction(kind, "move")),
     attack: animationFrameViews(entity, enemyAnimationAction(kind, "attack")),
+    death: animationFrameViews(entity, enemyAnimationAction(kind, "death")),
   };
 }
 
@@ -113,10 +114,13 @@ function animationStateMeta(
   if (!entity) throw new Error(`Scourge Survivors animation manifest has no entity ${entityId}`);
   const moveAction = enemyAnimationAction(kind, "move");
   const attackAction = enemyAnimationAction(kind, "attack");
+  const deathAction = enemyAnimationAction(kind, "death");
   const move = entity.actions[moveAction];
   const attack = entity.actions[attackAction];
+  const death = entity.actions[deathAction];
   if (!move) throw new Error(`Scourge Survivors animation manifest has no action ${entityId}/${moveAction}`);
   if (!attack) throw new Error(`Scourge Survivors animation manifest has no action ${entityId}/${attackAction}`);
+  if (!death) throw new Error(`Scourge Survivors animation manifest has no action ${entityId}/${deathAction}`);
   return {
     move: {
       fps: move.fps,
@@ -126,6 +130,11 @@ function animationStateMeta(
     attack: {
       fps: attack.fps,
       loop: attack.loop,
+      frameCount: ANIMATION_MANIFEST.framesPerAction,
+    },
+    death: {
+      fps: death.fps,
+      loop: death.loop,
       frameCount: ANIMATION_MANIFEST.framesPerAction,
     },
   };
@@ -213,6 +222,23 @@ export const PICKUP_SPRITE_SCALES = {
 
 export const XP_BLOOD_TEXTURE = loadSpriteTexture(pickupSpriteAssetId("xpBlood"));
 export const XP_BLOOD_SCALE = spriteScale(pickupSpriteAssetId("xpBlood"));
+
+const CORPSE_PART_SPRITE_IDS = [
+  "gib-meat-chunk",
+  "gib-skull-shard",
+  "gib-bone-blade",
+  "gib-claw-limb",
+  "gib-acid-sac",
+  "gib-wing-membrane",
+] as const;
+
+export type CorpsePartSpriteId = (typeof CORPSE_PART_SPRITE_IDS)[number];
+
+export const CORPSE_PART_SPRITES = CORPSE_PART_SPRITE_IDS.map((id) => ({
+  id,
+  texture: loadSpriteTexture(id),
+  scale: spriteScale(id),
+}));
 
 export const PLAYER_AVATAR_SPRITES: Record<
   PlayerAvatarId,

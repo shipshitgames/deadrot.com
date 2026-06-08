@@ -46,6 +46,15 @@ type ArenaDebugSnapshot = {
   obstacleBoxes: number;
 };
 
+type HudPanelSample = {
+  selector: string;
+  visible: boolean;
+  maxBackgroundAlpha: number;
+  borderLeftWidth: number;
+  borderRightWidth: number;
+  rect: { left: number; top: number; right: number; bottom: number; width: number; height: number };
+};
+
 async function snapshot(page: Page): Promise<HudSnapshot> {
   return page.evaluate(() => (window as unknown as { __hudSnapshot: () => HudSnapshot }).__hudSnapshot());
 }
@@ -96,6 +105,117 @@ test.describe("survivors menu", () => {
     expect(consoleErrors).toEqual([]);
   });
 });
+
+async function stageActiveSurvivorsHud(page: Page) {
+  await page.evaluate(() => {
+    type DevGame = {
+      startSurvivors: (classId?: "heavy") => void;
+      ctx: {
+        aliveCount: number;
+        combo: number;
+        damageBoostTimer: number;
+        dualWeaponTimer: number;
+        headshots: number;
+        kills: number;
+        score: number;
+        statArmor: number;
+        statDodge: number;
+        statGrace: number;
+        statShield: number;
+        statShieldMax: number;
+        status: string;
+        time: number;
+      };
+      sys: {
+        hud: { emit: () => void };
+        survivors: {
+          evolved: { orbit: boolean; bolt: boolean; nova: boolean };
+          level: number;
+          upgradeLevels: Record<string, number>;
+          xp: number;
+          xpToNext: number;
+        };
+      };
+    };
+
+    const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
+    game.startSurvivors("heavy");
+    game.ctx.status = "playing";
+    game.ctx.time = 93;
+    game.ctx.score = 12_500;
+    game.ctx.kills = 42;
+    game.ctx.headshots = 8;
+    game.ctx.aliveCount = 26;
+    game.ctx.combo = 9;
+    game.ctx.statShieldMax = 48;
+    game.ctx.statShield = 32;
+    game.ctx.statArmor = 0.28;
+    game.ctx.statDodge = 0.18;
+    game.ctx.statGrace = 1.6;
+    game.ctx.damageBoostTimer = 6;
+    game.ctx.dualWeaponTimer = 8;
+    game.sys.survivors.level = 6;
+    game.sys.survivors.xp = 18;
+    game.sys.survivors.xpToNext = 42;
+    game.sys.survivors.upgradeLevels = { orbit: 2, bolt: 1, armor: 2, ward: 1, dodge: 1, grace: 1 };
+    game.sys.survivors.evolved = { orbit: true, bolt: false, nova: false };
+    game.sys.hud.emit();
+  });
+
+  await expect.poll(() => snapshot(page).then((state) => state.status)).toBe("playing");
+}
+
+async function sampleHudPanels(page: Page, selectors: string[]): Promise<HudPanelSample[]> {
+  return page.evaluate((panelSelectors) => {
+    function maxAlpha(value: string) {
+      const matches = [...value.matchAll(/rgba?\(([^)]*)\)/g)];
+      let max = 0;
+      for (const match of matches) {
+        const parts = (match[1] ?? "").split(",").map((part) => part.trim());
+        const alpha = parts.length >= 4 ? Number(parts[3]) : 1;
+        if (Number.isFinite(alpha)) max = Math.max(max, alpha);
+      }
+      return max;
+    }
+
+    return panelSelectors.map((selector) => {
+      const element = document.querySelector(selector);
+      if (!element) {
+        return {
+          selector,
+          visible: false,
+          maxBackgroundAlpha: 0,
+          borderLeftWidth: 0,
+          borderRightWidth: 0,
+          rect: { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 },
+        };
+      }
+      const styles = window.getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      return {
+        selector,
+        visible: rect.width > 0 && rect.height > 0 && styles.visibility !== "hidden" && styles.display !== "none",
+        maxBackgroundAlpha: maxAlpha(`${styles.backgroundColor} ${styles.backgroundImage}`),
+        borderLeftWidth: Number.parseFloat(styles.borderLeftWidth),
+        borderRightWidth: Number.parseFloat(styles.borderRightWidth),
+        rect: {
+          left: rect.left,
+          top: rect.top,
+          right: rect.right,
+          bottom: rect.bottom,
+          width: rect.width,
+          height: rect.height,
+        },
+      };
+    });
+  }, selectors);
+}
+
+function overlaps(a: HudPanelSample, b: HudPanelSample) {
+  return (
+    a.rect.left < b.rect.right && a.rect.right > b.rect.left && a.rect.top < b.rect.bottom && a.rect.bottom > b.rect.top
+  );
+}
 
 test.describe("dev sandbox smoke", () => {
   test("main menu uses Survivors run and co-op breach vocabulary", async ({ page }) => {
@@ -265,6 +385,12 @@ test.describe("dev sandbox smoke", () => {
         "Damage pickup",
         "Dual pickup",
         "XP ichor",
+        "Meat gib",
+        "Skull gib",
+        "Bone gib",
+        "Claw gib",
+        "Acid sac gib",
+        "Wing gib",
       ]),
     );
 
@@ -475,6 +601,67 @@ test.describe("dev sandbox smoke", () => {
     expect(consoleErrors).toEqual([]);
   });
 
+  test("keeps active gameplay HUD panels light, edge-neutral, and separated", async ({ page }) => {
+    await page.goto("/?sandbox=1");
+    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
+    await stageActiveSurvivorsHud(page);
+
+    const styleSelectors = [
+      ".scourge-top-stats",
+      ".ssg-survivor-runline",
+      ".ssg-survivor-xp",
+      ".scourge-build-chip",
+      ".scourge-berserk-meter",
+      ".scourge-dual-weapon",
+      ".scourge-health-panel",
+      ".scourge-integrity-meta",
+      ".scourge-weapon-panel",
+    ];
+    const desktopSamples = await sampleHudPanels(page, styleSelectors);
+
+    for (const panel of desktopSamples) {
+      expect(panel.visible, panel.selector).toBe(true);
+      expect(panel.borderLeftWidth, panel.selector).toBeLessThanOrEqual(0.1);
+      expect(panel.borderRightWidth, panel.selector).toBeLessThanOrEqual(0.1);
+      expect(panel.maxBackgroundAlpha, panel.selector).toBeLessThanOrEqual(0.24);
+    }
+
+    await page.setViewportSize({ width: 390, height: 780 });
+    const layoutSelectors = [
+      ".scourge-top-stats",
+      ".ssg-survivor-runline",
+      ".ssg-survivor-xp",
+      ".scourge-build-strip",
+      ".scourge-berserk-meter",
+      ".scourge-dual-weapon",
+      ".scourge-combo-counter",
+      ".scourge-health-panel",
+      ".scourge-weapon-panel",
+    ];
+    const mobileSamples = await sampleHudPanels(page, layoutSelectors);
+    const bySelector = Object.fromEntries(mobileSamples.map((panel) => [panel.selector, panel]));
+
+    for (const panel of mobileSamples) {
+      expect(panel.visible, panel.selector).toBe(true);
+      expect(panel.rect.left, panel.selector).toBeGreaterThanOrEqual(-1);
+      expect(panel.rect.right, panel.selector).toBeLessThanOrEqual(391);
+    }
+
+    const nonOverlappingPairs = [
+      [".scourge-top-stats", ".ssg-survivor-runline"],
+      [".ssg-survivor-runline", ".ssg-survivor-xp"],
+      [".ssg-survivor-xp", ".scourge-berserk-meter"],
+      [".scourge-berserk-meter", ".scourge-build-strip"],
+      [".scourge-build-strip", ".scourge-dual-weapon"],
+      [".scourge-dual-weapon", ".scourge-combo-counter"],
+      [".scourge-health-panel", ".scourge-weapon-panel"],
+    ] as const;
+
+    for (const [a, b] of nonOverlappingPairs) {
+      expect(overlaps(bySelector[a], bySelector[b]), `${a} overlaps ${b}`).toBe(false);
+    }
+  });
+
   test("damage pickup activates a bounded berserk state", async ({ page }) => {
     await page.goto("/?sandbox=1");
     await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
@@ -644,5 +831,82 @@ test.describe("dev sandbox smoke", () => {
       ranged: expect.stringContaining("/spitter-host/spit/"),
     });
     expect(result.attacking.every((sample) => sample.state === "attack")).toBe(true);
+  });
+
+  test("uses death animation frames and sprite gibs for enemy kills", async ({ page }) => {
+    await page.goto("/?sandbox=1");
+    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
+
+    const result = await page.evaluate(async () => {
+      type DevSpriteMaterial = {
+        map?: {
+          image?: {
+            currentSrc?: string;
+            src?: string;
+          };
+        };
+      };
+      type DevGame = {
+        clearSandboxActors: () => void;
+        damageSandboxEnemies: (amount: number, headshot?: boolean, all?: boolean) => void;
+        spawnSandboxEnemy: (kind: "melee", count?: number) => void;
+        startSandbox: () => void;
+        ctx: {
+          body: {
+            position: {
+              x: number;
+              z: number;
+            };
+          };
+          enemies: Array<{
+            alive: boolean;
+            group: {
+              position: {
+                x: number;
+                z: number;
+              };
+            };
+          }>;
+          status: string;
+        };
+        sys: {
+          fx: {
+            corpseParts: Array<{ mesh: { type: string; material: DevSpriteMaterial } }>;
+            deathSprites: Array<{ material: DevSpriteMaterial }>;
+          };
+        };
+      };
+
+      const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
+      const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+      const srcOf = (material?: DevSpriteMaterial) =>
+        material?.map?.image?.currentSrc || material?.map?.image?.src || "";
+
+      game.startSandbox();
+      game.ctx.status = "playing";
+      game.clearSandboxActors();
+      game.spawnSandboxEnemy("melee", 1);
+      const enemy = game.ctx.enemies.find((candidate) => candidate.alive);
+      if (enemy) {
+        enemy.group.position.x = game.ctx.body.position.x;
+        enemy.group.position.z = game.ctx.body.position.z - 8;
+      }
+      game.damageSandboxEnemies(-1, true);
+      await wait(80);
+
+      return {
+        corpseCount: game.sys.fx.corpseParts.length,
+        corpseSources: game.sys.fx.corpseParts.map((part) => srcOf(part.mesh.material)),
+        corpseTypes: game.sys.fx.corpseParts.map((part) => part.mesh.type),
+        deathCount: game.sys.fx.deathSprites.length,
+        deathSrc: srcOf(game.sys.fx.deathSprites[0]?.material),
+      };
+    });
+
+    expect(result.deathCount).toBeGreaterThan(0);
+    expect(result.deathSrc).toContain("/animations/scourge/host-grunt/death/");
+    expect(result.corpseCount).toBeGreaterThan(0);
+    expect(result.corpseTypes.every((type) => type === "Sprite")).toBe(true);
+    expect(result.corpseSources.every((src) => src.includes("/fx/gibs/"))).toBe(true);
   });
 });

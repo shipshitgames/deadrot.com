@@ -400,6 +400,14 @@ export class Enemy extends Agent {
     return meta.frameCount / meta.fps;
   }
 
+  deathFx() {
+    return {
+      kind: this.spriteKind(),
+      view: this.spriteView,
+      flip: this.spriteFlip,
+    };
+  }
+
   private chooseSpriteFrame(
     moveX: number,
     moveZ: number,
