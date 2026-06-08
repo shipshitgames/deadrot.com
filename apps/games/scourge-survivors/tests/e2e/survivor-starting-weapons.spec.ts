@@ -61,14 +61,16 @@ test.describe("survivor starting weapons", () => {
     for (const [classId, weaponName, ammo, weaponId] of cases) {
       await startSurvivors(page, classId);
 
-      await expect.poll(() => snapshot(page)).toMatchObject({
-        survivors: true,
-        survivorClassId: classId,
-        weapon: weaponName,
-        ammo,
-        reserve: 0,
-        weapons: [{ id: weaponId, name: weaponName, active: true }],
-      });
+      await expect
+        .poll(() => snapshot(page))
+        .toMatchObject({
+          survivors: true,
+          survivorClassId: classId,
+          weapon: weaponName,
+          ammo,
+          reserve: 0,
+          weapons: [{ id: weaponId, name: weaponName, active: true }],
+        });
     }
   });
 
@@ -90,13 +92,15 @@ test.describe("survivor starting weapons", () => {
       game.sys.hud.emit();
     });
 
-    await expect.poll(() => snapshot(page)).toMatchObject({
-      survivors: true,
-      survivorClassId: "scout",
-      weapon: "SMG",
-      ammo: 45,
-      reserve: 0,
-      weapons: [{ id: "smg", name: "SMG", active: true }],
-    });
+    await expect
+      .poll(() => snapshot(page))
+      .toMatchObject({
+        survivors: true,
+        survivorClassId: "scout",
+        weapon: "SMG",
+        ammo: 45,
+        reserve: 0,
+        weapons: [{ id: "smg", name: "SMG", active: true }],
+      });
   });
 });
