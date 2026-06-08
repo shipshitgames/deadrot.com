@@ -2,8 +2,10 @@ import menuHero from "@shipshitgames/assets/games/deadlane/ui/menu/title.webp";
 import {
   GlobalGameSettingsPanel,
   GlobalMusicToggle,
+  goToWarlineLobby,
   MainMenuAction,
   MainMenuCopy,
+  MainMenuEnterPrompt,
   MainMenuLayout,
   MainMenuNav,
   MainMenuScreen,
@@ -13,6 +15,7 @@ import {
   MainMenuTopBar,
   MenuKicker,
   PauseMenu,
+  useEnterToReveal,
 } from "@shipshitgames/ui";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { getPauseSnapshot, subscribePause } from "./pauseBridge";
@@ -20,6 +23,9 @@ import { getPauseSnapshot, subscribePause } from "./pauseBridge";
 export function AppShell() {
   const [showSettings, setShowSettings] = useState(false);
   const pause = useSyncExternalStore(subscribePause, getPauseSnapshot, getPauseSnapshot);
+  // The title <MainMenuScreen> is always mounted (visibility toggled via the
+  // "hidden" class by the game engine), so the title is always "showing" here.
+  const revealed = useEnterToReveal(true);
 
   // Esc closes the settings overlay so the player is never trapped in it.
   useEffect(() => {
@@ -72,8 +78,8 @@ export function AppShell() {
           <MainMenuTopBar mark="SSG" meta="150 gold" aria-hidden>
             Ashgate lane
           </MainMenuTopBar>
-          <MainMenuLayout>
-            <MainMenuCopy>
+          <MainMenuLayout className={revealed ? "ssg-main-menu-layout--menu" : "ssg-main-menu-layout--splash"}>
+            <MainMenuCopy hidden={revealed}>
               <MenuKicker>Scourge Lane Defense</MenuKicker>
               <MainMenuTitle id="banner-title">
                 <MainMenuTitleLine>DEAD</MainMenuTitleLine>
@@ -86,20 +92,31 @@ export function AppShell() {
                 <span>Hold the base</span>
               </MainMenuStatus>
             </MainMenuCopy>
-            <MainMenuNav aria-label="Main menu">
-              <MainMenuAction id="banner-btn" variant="primary" label="Deploy" meta="Start wave" />
-              <MainMenuAction variant="shop" label="Upgrades" meta="Tower tech" disabled />
-              <MainMenuAction variant="coop" label="Co-op" meta="Solo command" disabled />
-              <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
-              <MainMenuAction
-                type="button"
-                variant="settings"
-                label="Settings"
-                meta="Audio"
-                onClick={() => setShowSettings(true)}
-              />
-              <MainMenuAction variant="dev" label="Sandbox" meta="Lane lab" disabled />
-            </MainMenuNav>
+            {revealed ? (
+              <MainMenuNav aria-label="Main menu">
+                <MainMenuAction id="banner-btn" variant="primary" label="Deploy" meta="Start wave" />
+                <MainMenuAction variant="shop" label="Upgrades" meta="Tower tech" disabled />
+                <MainMenuAction variant="coop" label="Co-op" meta="Solo command" disabled />
+                <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
+                <MainMenuAction
+                  type="button"
+                  variant="settings"
+                  label="Settings"
+                  meta="Audio"
+                  onClick={() => setShowSettings(true)}
+                />
+                <MainMenuAction variant="dev" label="Sandbox" meta="Lane lab" disabled />
+                <MainMenuAction
+                  type="button"
+                  variant="default"
+                  label="← Back to Warline"
+                  meta="Lobby"
+                  onClick={() => goToWarlineLobby()}
+                />
+              </MainMenuNav>
+            ) : (
+              <MainMenuEnterPrompt />
+            )}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>

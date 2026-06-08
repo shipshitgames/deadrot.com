@@ -2,8 +2,10 @@ import menuHero from "@shipshitgames/assets/games/rothulk/ui/menu/title.webp";
 import {
   GlobalGameSettingsPanel,
   GlobalMusicToggle,
+  goToWarlineLobby,
   MainMenuAction,
   MainMenuCopy,
+  MainMenuEnterPrompt,
   MainMenuLayout,
   MainMenuNav,
   MainMenuScreen,
@@ -13,6 +15,7 @@ import {
   MainMenuTopBar,
   MenuKicker,
   PauseMenu,
+  useEnterToReveal,
 } from "@shipshitgames/ui";
 import { useEffect, useRef, useState } from "react";
 import type { Game } from "../game/Game";
@@ -27,6 +30,7 @@ export function AppShell({ createGame }: AppShellProps) {
   const [started, setStarted] = useState(false);
   const [paused, setPaused] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const revealed = useEnterToReveal(!started);
 
   // Build the Game once the canvas is mounted, and mirror its paused flag into
   // React (Esc inside the canvas toggles it).
@@ -109,8 +113,8 @@ export function AppShell({ createGame }: AppShellProps) {
           <MainMenuTopBar mark="SSG" meta="0 gold" aria-hidden>
             Pyre infiltration
           </MainMenuTopBar>
-          <MainMenuLayout>
-            <MainMenuCopy>
+          <MainMenuLayout className={revealed ? "ssg-main-menu-layout--menu" : "ssg-main-menu-layout--splash"}>
+            <MainMenuCopy hidden={revealed}>
               <MenuKicker>Pyre Infiltration</MenuKicker>
               <MainMenuTitle className="banner-title">
                 <MainMenuTitleLine>ROT</MainMenuTitleLine>
@@ -124,27 +128,38 @@ export function AppShell({ createGame }: AppShellProps) {
                 <span>Core at crown</span>
               </MainMenuStatus>
             </MainMenuCopy>
-            <MainMenuNav aria-label="Main menu">
-              <MainMenuAction
-                id="start-btn"
-                type="button"
-                variant="primary"
-                label="Breach the Hulk"
-                meta="Begin run"
-                onClick={beginRun}
-              />
-              <MainMenuAction variant="shop" label="Upgrades" meta="Core locked" disabled />
-              <MainMenuAction variant="coop" label="Co-op" meta="Solo breach" disabled />
-              <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
-              <MainMenuAction
-                type="button"
-                variant="settings"
-                label="Settings"
-                meta="Audio"
-                onClick={() => setShowSettings(true)}
-              />
-              <MainMenuAction variant="dev" label="Sandbox" meta="Hulk lab" disabled />
-            </MainMenuNav>
+            {revealed ? (
+              <MainMenuNav aria-label="Main menu">
+                <MainMenuAction
+                  id="start-btn"
+                  type="button"
+                  variant="primary"
+                  label="Breach the Hulk"
+                  meta="Begin run"
+                  onClick={beginRun}
+                />
+                <MainMenuAction variant="shop" label="Upgrades" meta="Core locked" disabled />
+                <MainMenuAction variant="coop" label="Co-op" meta="Solo breach" disabled />
+                <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
+                <MainMenuAction
+                  type="button"
+                  variant="settings"
+                  label="Settings"
+                  meta="Audio"
+                  onClick={() => setShowSettings(true)}
+                />
+                <MainMenuAction variant="dev" label="Sandbox" meta="Hulk lab" disabled />
+                <MainMenuAction
+                  type="button"
+                  variant="default"
+                  label="← Back to Warline"
+                  meta="Lobby"
+                  onClick={() => goToWarlineLobby()}
+                />
+              </MainMenuNav>
+            ) : (
+              <MainMenuEnterPrompt />
+            )}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>

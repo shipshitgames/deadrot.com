@@ -2,8 +2,10 @@ import menuHero from "@shipshitgames/assets/games/pactfall/ui/menu/title.webp";
 import {
   GlobalGameSettingsPanel,
   GlobalMusicToggle,
+  goToWarlineLobby,
   MainMenuAction,
   MainMenuCopy,
+  MainMenuEnterPrompt,
   MainMenuLayout,
   MainMenuNav,
   MainMenuScreen,
@@ -13,6 +15,7 @@ import {
   MainMenuTopBar,
   MenuKicker,
   PauseMenu,
+  useEnterToReveal,
 } from "@shipshitgames/ui";
 import { useEffect, useState } from "react";
 import type { Game } from "../game/Game";
@@ -26,6 +29,10 @@ export function AppShell() {
   const [phase, setPhase] = useState<Phase>(() => getBridgeGame()?.phase ?? "title");
   const [paused, setPaused] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+
+  // Splash gate: the title nav only appears once the player presses Enter/Space/clicks.
+  // Re-arms each time the match returns to the title phase.
+  const revealed = useEnterToReveal(phase === "title");
 
   useEffect(() => subscribeBridgeGame(setGame), []);
 
@@ -120,8 +127,8 @@ export function AppShell() {
           <MainMenuTopBar mark="SSG" meta="0 gold" aria-hidden>
             Broken concord
           </MainMenuTopBar>
-          <MainMenuLayout>
-            <MainMenuCopy>
+          <MainMenuLayout className={revealed ? "ssg-main-menu-layout--menu" : "ssg-main-menu-layout--splash"}>
+            <MainMenuCopy hidden={revealed}>
               <MenuKicker>Pyre vs Warden Arena</MenuKicker>
               <MainMenuTitle>
                 <MainMenuTitleLine>PACT</MainMenuTitleLine>
@@ -135,20 +142,31 @@ export function AppShell() {
                 <span>Neutral Scourge buff</span>
               </MainMenuStatus>
             </MainMenuCopy>
-            <MainMenuNav aria-label="Main menu">
-              <MainMenuAction id="title-start-btn" variant="primary" label="Enter arena" meta="Begin duel" />
-              <MainMenuAction variant="shop" label="Upgrades" meta="Champion locked" disabled />
-              <MainMenuAction variant="coop" label="Co-op" meta="Local duel" disabled />
-              <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
-              <MainMenuAction
-                type="button"
-                variant="settings"
-                label="Settings"
-                meta="Audio"
-                onClick={() => setShowSettings(true)}
-              />
-              <MainMenuAction variant="dev" label="Sandbox" meta="Arena lab" disabled />
-            </MainMenuNav>
+            {revealed ? (
+              <MainMenuNav aria-label="Main menu">
+                <MainMenuAction id="title-start-btn" variant="primary" label="Enter arena" meta="Begin duel" />
+                <MainMenuAction variant="shop" label="Upgrades" meta="Champion locked" disabled />
+                <MainMenuAction variant="coop" label="Co-op" meta="Local duel" disabled />
+                <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
+                <MainMenuAction
+                  type="button"
+                  variant="settings"
+                  label="Settings"
+                  meta="Audio"
+                  onClick={() => setShowSettings(true)}
+                />
+                <MainMenuAction variant="dev" label="Sandbox" meta="Arena lab" disabled />
+                <MainMenuAction
+                  type="button"
+                  variant="default"
+                  label="← Back to Warline"
+                  meta="Lobby"
+                  onClick={() => goToWarlineLobby()}
+                />
+              </MainMenuNav>
+            ) : (
+              <MainMenuEnterPrompt />
+            )}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>
