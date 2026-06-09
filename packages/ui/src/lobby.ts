@@ -1,11 +1,16 @@
 // Warline is the lobby / main entry to every game (see the warline-is-lobby
 // architecture). These helpers let any game send the player back to it.
 
-const WARLINE_DEV_PORT = "5180";
-// The per-game Vite dev ports (deadlane..starblight). When the page is served
+import { GAME_APPS, LOBBY_SLUG } from "@deadrot/catalog";
+
+// Ports come from the single source of truth in @deadrot/catalog.
+const WARLINE_DEV_PORT = String(GAME_APPS.find((game) => game.slug === LOBBY_SLUG)?.devPort);
+// The per-game Vite dev ports excluding Warline's own. When the page is served
 // from one of these on localhost we're in the dev fleet and Warline is on 5180;
 // otherwise (prod, or Warline itself) the hub serves it at /warline/.
-const GAME_DEV_PORTS = new Set(["5174", "5175", "5176", "5177", "5178", "5179"]);
+const GAME_DEV_PORTS = new Set(
+  GAME_APPS.filter((game) => game.slug !== LOBBY_SLUG).map((game) => String(game.devPort)),
+);
 
 /**
  * Absolute URL of the Warline lobby:
