@@ -9,20 +9,15 @@
  * every game.
  */
 
+import type { PlayableGameSlug } from "@deadrot/catalog";
+import { PLAYABLE_GAME_SLUGS } from "@deadrot/catalog";
 import catalogJson from "../assets-catalog.json" with { type: "json" };
 
 /** The six games in the shared Scourge universe. */
-export type GameSlug = "scourge-survivors" | "deadlane" | "pactfall" | "starblight" | "redline" | "rothulk";
+export type GameSlug = PlayableGameSlug;
 
 /** Ordered list of every game slug, for iteration/validation. */
-export const GAME_SLUGS: readonly GameSlug[] = [
-  "scourge-survivors",
-  "deadlane",
-  "pactfall",
-  "starblight",
-  "redline",
-  "rothulk",
-] as const;
+export const GAME_SLUGS: readonly GameSlug[] = PLAYABLE_GAME_SLUGS;
 
 /** What an asset represents. */
 export type AssetKind = "entity" | "boss" | "fx" | "ui" | "font" | "audio";

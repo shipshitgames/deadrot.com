@@ -1,8 +1,16 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { applyCommand, applyOperation, createInitialWorld, summarize, tick, TICK_MS } from "@shipshitgames/warline";
 import type { Command, GameSlug, HumanFaction, OperationResult, Summary, WorldState } from "@shipshitgames/warline";
-import { connectWarline } from "@shipshitgames/warline/client";
+import {
+  applyCommand,
+  applyOperation,
+  createInitialWorld,
+  GAME_SLUGS,
+  summarize,
+  TICK_MS,
+  tick,
+} from "@shipshitgames/warline";
 import type { WarlineSocket } from "@shipshitgames/warline/client";
+import { connectWarline } from "@shipshitgames/warline/client";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // Resolve the server host. Empty host => skip connecting => local mode.
 const WARLINE_HOST: string = import.meta.env.VITE_WARLINE_HOST || (import.meta.env.DEV ? "localhost:1999" : "");
@@ -24,8 +32,6 @@ export interface WarlineStore {
   simulate: (game?: GameSlug) => void;
   connected: boolean;
 }
-
-const GAME_SLUGS: GameSlug[] = ["scourge-survivors", "deadlane", "pactfall", "starblight", "redline", "rothulk"];
 
 function loadFaction(): HumanFaction {
   if (typeof localStorage === "undefined") return "wardens";

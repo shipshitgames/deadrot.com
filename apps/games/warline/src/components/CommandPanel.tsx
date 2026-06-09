@@ -1,5 +1,5 @@
 import type { Command, CommandKind, HumanFaction, Region, WorldState } from "@shipshitgames/warline";
-import { canAfford, COMMAND_COSTS, regionById } from "@shipshitgames/warline";
+import { COMMAND_COSTS, canAfford, HUMAN_FACTIONS, regionById } from "@shipshitgames/warline";
 import { HelpTooltip } from "./HelpTooltip";
 
 interface CommandPanelProps {
@@ -58,8 +58,6 @@ function costLabel(kind: CommandKind): string {
   return parts.join(" · ");
 }
 
-const FACTIONS: HumanFaction[] = ["pyre", "wardens"];
-
 function isHuman(r: Region): boolean {
   return r.faction === "pyre" || r.faction === "wardens";
 }
@@ -105,7 +103,7 @@ export function CommandPanel({ state, faction, setFaction, selectedId, command }
         </HelpTooltip>
       </div>
       <div className="mb-3 flex border-2 border-gunmetal">
-        {FACTIONS.map((f) => {
+        {HUMAN_FACTIONS.map((f) => {
           const active = f === faction;
           const activeClass = f === "pyre" ? "bg-hellfire text-bone" : "bg-blood text-bone";
           return (

@@ -33,7 +33,6 @@ export class Runner {
   // event flags raised this frame (read + cleared by game for juice/audio)
   justJumped = false;
   justDashed = false;
-  justLanded = false;
   justHit = false;
 
   reset() {
@@ -56,7 +55,6 @@ export class Runner {
   clearEvents() {
     this.justJumped = false;
     this.justDashed = false;
-    this.justLanded = false;
     this.justHit = false;
   }
 
@@ -155,17 +153,10 @@ export class Runner {
 
   /** Physics calls this when the capsule rests on a surface at surfaceTopY. */
   land(surfaceTopY: number) {
-    const wasAir = !this.onGround;
     this.y = surfaceTopY + RUNNER.radius;
     this.vy = 0;
-    if (wasAir) {
-      this.onGround = true;
-      this.coyote = RUNNER.coyoteTime;
-      this.justLanded = true;
-    } else {
-      this.onGround = true;
-      this.coyote = RUNNER.coyoteTime;
-    }
+    this.onGround = true;
+    this.coyote = RUNNER.coyoteTime;
   }
 
   /** Physics calls this the moment the runner walks off an edge. */

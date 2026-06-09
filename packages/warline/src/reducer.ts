@@ -5,21 +5,16 @@
  * treated as frozen. No Date.now() inside — callers pass `now`.
  */
 
-import type { Breach, Faction, Lane, OperationResult, Region, ResourceBag, WarEvent, WorldState } from "./types";
-import { ECON, FEED_MAX, TICK } from "./types";
-import { clamp, createInitialWorld } from "./map";
+import { breachById, clamp, createInitialWorld, laneById, neighborsOf, regionById } from "./map";
 import { GAME_OPERATIONS } from "./operations";
+import type { Breach, Faction, Lane, OperationResult, Region, ResourceBag, WarEvent, WorldState } from "./types";
+import { ECON, TICK } from "./types";
+import { cloneWorld, isHuman, pushEvent } from "./world";
 
 export interface ApplyResult {
   state: WorldState;
   event: WarEvent;
   credited: Partial<ResourceBag>;
-}
-
-const HUMAN_FACTIONS: Faction[] = ["pyre", "wardens"];
-
-function isHuman(f: Faction): boolean {
-  return f === "pyre" || f === "wardens";
 }
 
 /**
@@ -37,18 +32,6 @@ export function magnitude(result: OperationResult): number {
   const base = result.outcome === "victory" ? 1 : 0.35;
   const scale = 0.6 + (Math.min(Math.max(result.score, 0), 4000) / 4000) * 0.8;
   return base * scale;
-}
-
-// ---- internal clone (deep enough: every mutated array/object copied) ----
-function cloneWorld(state: WorldState): WorldState {
-  return {
-    ...state,
-    resources: { ...state.resources },
-    regions: state.regions.map((r) => ({ ...r })),
-    lanes: state.lanes.map((l) => ({ ...l })),
-    breaches: state.breaches.map((b) => ({ ...b })),
-    feed: state.feed.slice(),
-  };
 }
 
 // ---- credit resources into the shared pool ----
@@ -73,14 +56,6 @@ function clampWorld(state: WorldState): void {
   }
 }
 
-// ---- push a feed event, newest-first, capped ----
-function pushEvent(state: WorldState, event: WarEvent): void {
-  state.feed.unshift(event);
-  if (state.feed.length > FEED_MAX) {
-    state.feed.length = FEED_MAX;
-  }
-}
-
 // ---- target resolution helpers (spec §4 default-target column) ----
 function hottestActiveBreach(state: WorldState): Breach | undefined {
   let best: Breach | undefined;
@@ -101,8 +76,8 @@ function highestPressureRegion(state: WorldState): Region | undefined {
 
 function laneEndpoints(state: WorldState, lane: Lane): { a: Region | undefined; b: Region | undefined } {
   return {
-    a: state.regions.find((r) => r.id === lane.from),
-    b: state.regions.find((r) => r.id === lane.to),
+    a: regionById(state, lane.from),
+    b: regionById(state, lane.to),
   };
 }
 
@@ -123,18 +98,7 @@ function bestHoldLane(state: WorldState): Lane | undefined {
 function contestableRegion(state: WorldState, faction: Faction): Region | undefined {
   for (const r of state.regions) {
     if (r.faction !== "neutral") continue;
-    const adjacentToFaction = state.lanes.some((lane) => {
-      if (lane.from === r.id) {
-        const other = state.regions.find((x) => x.id === lane.to);
-        return other?.faction === faction;
-      }
-      if (lane.to === r.id) {
-        const other = state.regions.find((x) => x.id === lane.from);
-        return other?.faction === faction;
-      }
-      return false;
-    });
-    if (adjacentToFaction) return r;
+    if (neighborsOf(state, r.id).some((n) => n.faction === faction)) return r;
   }
   return undefined;
 }
@@ -155,15 +119,15 @@ export function applyOperation(state: WorldState, result: OperationResult, now: 
 
   // Explicit target lookups (may be undefined; default rules below fall back).
   const targetId = result.targetId;
-  const findRegion = (id?: string) => (id ? next.regions.find((r) => r.id === id) : undefined);
-  const findLane = (id?: string) => (id ? next.lanes.find((l) => l.id === id) : undefined);
-  const findBreach = (id?: string) => (id ? next.breaches.find((b) => b.id === id) : undefined);
+  const findRegion = (id?: string) => (id ? regionById(next, id) : undefined);
+  const findLane = (id?: string) => (id ? laneById(next, id) : undefined);
+  const findBreach = (id?: string) => (id ? breachById(next, id) : undefined);
 
   switch (meta.kind) {
     case "purge-breach": {
       const breach = findBreach(targetId) ?? hottestActiveBreach(next);
       if (breach) {
-        const region = next.regions.find((r) => r.id === breach.regionId);
+        const region = regionById(next, breach.regionId);
         if (victory) {
           breach.intensity -= 22 * m;
           if (region) region.pressure -= 14 * m;
@@ -256,7 +220,7 @@ export function applyOperation(state: WorldState, result: OperationResult, now: 
         if (victory) {
           breach.intensity -= 30 * m;
           breach.sabotaged += 4;
-          const region = next.regions.find((r) => r.id === breach.regionId);
+          const region = regionById(next, breach.regionId);
           if (region) region.defense += 4 * m;
           credited.biomass = (credited.biomass ?? 0) + 50 * m;
         }
@@ -310,7 +274,7 @@ export function tick(state: WorldState, now: number): WorldState {
   //    regrow intensity toward 100.
   for (const b of next.breaches) {
     if (b.active) {
-      const region = next.regions.find((r) => r.id === b.regionId);
+      const region = regionById(next, b.regionId);
       if (region) {
         const sabFactor = b.sabotaged > 0 ? 0.5 : 1;
         const mitigate = 1 - region.defense / TICK.defenseMitigate;
@@ -324,8 +288,8 @@ export function tick(state: WorldState, now: number): WorldState {
 
   // 3. Lane spread: transfer pressure from the higher endpoint to the lower.
   for (const lane of next.lanes) {
-    const a = next.regions.find((r) => r.id === lane.from);
-    const b = next.regions.find((r) => r.id === lane.to);
+    const a = regionById(next, lane.from);
+    const b = regionById(next, lane.to);
     if (!a || !b) continue;
     const hi = a.pressure >= b.pressure ? a : b;
     const lo = hi === a ? b : a;
@@ -362,17 +326,7 @@ export function tick(state: WorldState, now: number): WorldState {
   for (const r of next.regions) {
     if (r.faction !== "scourge") continue;
     if (r.pressure > 25) continue;
-    const hasHumanNeighbor = next.lanes.some((lane) => {
-      if (lane.from === r.id) {
-        const other = next.regions.find((x) => x.id === lane.to);
-        return other ? isHuman(other.faction) : false;
-      }
-      if (lane.to === r.id) {
-        const other = next.regions.find((x) => x.id === lane.from);
-        return other ? isHuman(other.faction) : false;
-      }
-      return false;
-    });
+    const hasHumanNeighbor = neighborsOf(next, r.id).some((n) => isHuman(n.faction));
     if (hasHumanNeighbor) {
       r.faction = "neutral";
       pushEvent(next, {
@@ -423,6 +377,3 @@ export function resetWorld(now: number, prevEpoch?: number): WorldState {
   next.updatedAt = now;
   return next;
 }
-
-// Re-export for downstream convenience (kept here so reducer is self-contained).
-export { HUMAN_FACTIONS };

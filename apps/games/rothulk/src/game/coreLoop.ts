@@ -3,51 +3,36 @@ import type { CoreGoal, CoreLoopPhase, ExitGoal } from "./types";
 
 export interface CoreLoopState {
   phase: CoreLoopPhase;
-  coreIgnited: boolean;
-  scourgeSevered: boolean;
-  exitReached: boolean;
 }
 
 export function createCoreLoopState(): CoreLoopState {
-  return {
-    phase: "infiltrate",
-    coreIgnited: false,
-    scourgeSevered: false,
-    exitReached: false,
-  };
+  return { phase: "infiltrate" };
 }
 
 export function igniteBreachCore(state: CoreLoopState): CoreLoopState {
   if (state.phase !== "infiltrate") return state;
-  return {
-    phase: "escape",
-    coreIgnited: true,
-    scourgeSevered: true,
-    exitReached: false,
-  };
+  return { phase: "escape" };
 }
 
 export function completeEscape(state: CoreLoopState): CoreLoopState {
   if (state.phase !== "escape") return state;
-  return {
-    ...state,
-    phase: "won",
-    exitReached: true,
-  };
+  return { phase: "won" };
 }
 
-export function shouldIgniteCore(heroX: number, heroY: number, core: CoreGoal): boolean {
-  return !core.ignited && distance(heroX, heroY, core.x, core.y) < CONSTANTS.CORE_IGNITE_RADIUS;
+export function shouldIgniteCore(heroX: number, heroY: number, core: CoreGoal, phase: CoreLoopPhase): boolean {
+  // The core is ignited in every phase past infiltrate.
+  return phase === "infiltrate" && distance(heroX, heroY, core.x, core.y) < CONSTANTS.CORE_IGNITE_RADIUS;
 }
 
-export function shouldCompleteEscape(heroX: number, heroY: number, exit: ExitGoal): boolean {
-  return !exit.reached && distance(heroX, heroY, exit.x, exit.y) < exit.radius;
+export function shouldCompleteEscape(heroX: number, heroY: number, exit: ExitGoal, phase: CoreLoopPhase): boolean {
+  // The exit is only reached once the run is won.
+  return phase !== "won" && distance(heroX, heroY, exit.x, exit.y) < exit.radius;
 }
 
-export function objectiveForPhase(phase: CoreLoopPhase): string {
+export function objectiveForPhase(phase: CoreLoopPhase, checkpointReached: boolean): string {
   if (phase === "escape") return "ESCAPE THE SEVERED HULK";
   if (phase === "won") return "HULK SEVERED // LANE CLEARED";
-  return "REACH + IGNITE THE CORE";
+  return checkpointReached ? "PUSH DEEPER // IGNITE THE CORE" : "REACH + IGNITE THE CORE";
 }
 
 export function progressForPhase(heroX: number, levelWidth: number, phase: CoreLoopPhase): number {

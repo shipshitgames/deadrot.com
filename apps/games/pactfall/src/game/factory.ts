@@ -6,18 +6,25 @@ import type { Entity } from "./types";
 // Three.js primitives with emissive materials in the DOOM palette.
 
 let meshSeed = 0;
-function baseEntity(partial: Partial<Entity> & Pick<Entity, "kind" | "team" | "mesh" | "maxHp" | "radius">): Entity {
+function baseEntity(
+  req: Pick<Entity, "kind" | "team" | "mesh" | "maxHp" | "radius"> &
+    Partial<Pick<Entity, "attackRange" | "attackDamage" | "attackCooldown">>,
+): Entity {
   return {
     id: meshSeed++,
     pos: new THREE.Vector3(),
-    hp: partial.maxHp,
+    hp: req.maxHp,
     alive: true,
-    attackRange: 0,
-    attackDamage: 0,
-    attackCooldown: 0,
     cooldown: 0,
-    ...partial,
-  } as Entity;
+    attackRange: req.attackRange ?? 0,
+    attackDamage: req.attackDamage ?? 0,
+    attackCooldown: req.attackCooldown ?? 0,
+    kind: req.kind,
+    team: req.team,
+    mesh: req.mesh,
+    maxHp: req.maxHp,
+    radius: req.radius,
+  };
 }
 
 export function makeChampion(team: Team = "pyre"): Entity {

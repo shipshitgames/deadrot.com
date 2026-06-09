@@ -1,6 +1,4 @@
 export interface GlobalGameSettings {
-  /** Back-compat aggregate for callers that have not moved to per-channel levels. */
-  effectsLevel: number;
   effectLevels: GlobalEffectLevels;
   musicMuted: boolean;
 }
@@ -24,7 +22,6 @@ export const DEFAULT_GLOBAL_EFFECT_LEVELS: GlobalEffectLevels = {
   shake: DEFAULT_EFFECTS_LEVEL,
 };
 export const DEFAULT_GLOBAL_GAME_SETTINGS: GlobalGameSettings = {
-  effectsLevel: DEFAULT_EFFECTS_LEVEL,
   effectLevels: DEFAULT_GLOBAL_EFFECT_LEVELS,
   musicMuted: false,
 };
@@ -49,17 +46,9 @@ export function normalizeGlobalEffectLevels(
   };
 }
 
-function aggregateEffectsLevel(effectLevels: GlobalEffectLevels): number {
-  const total = GLOBAL_EFFECT_KEYS.reduce((sum, key) => sum + effectLevels[key], 0);
-  return clampEffectsLevel(total / GLOBAL_EFFECT_KEYS.length);
-}
-
 function normalizeGlobalGameSettings(value: Partial<GlobalGameSettings> | null | undefined): GlobalGameSettings {
-  const fallbackLevel = clampEffectsLevel(value?.effectsLevel);
-  const effectLevels = normalizeGlobalEffectLevels(value?.effectLevels, fallbackLevel);
   return {
-    effectsLevel: aggregateEffectsLevel(effectLevels),
-    effectLevels,
+    effectLevels: normalizeGlobalEffectLevels(value?.effectLevels),
     musicMuted: value?.musicMuted === true,
   };
 }
@@ -79,13 +68,7 @@ export function loadGlobalGameSettings(): GlobalGameSettings {
 
 export function saveGlobalGameSettings(settings: GlobalGameSettingsPatch): GlobalGameSettings {
   const current = loadGlobalGameSettings();
-  const nextEffectLevels =
-    settings.effectsLevel === undefined
-      ? normalizeGlobalEffectLevels({ ...current.effectLevels, ...settings.effectLevels }, current.effectsLevel)
-      : normalizeGlobalEffectLevels(
-          { ...normalizeGlobalEffectLevels(null, settings.effectsLevel), ...settings.effectLevels },
-          settings.effectsLevel,
-        );
+  const nextEffectLevels = normalizeGlobalEffectLevels({ ...current.effectLevels, ...settings.effectLevels });
   const next = normalizeGlobalGameSettings({
     ...current,
     ...settings,
@@ -102,14 +85,6 @@ export function saveGlobalGameSettings(settings: GlobalGameSettingsPatch): Globa
   }
 
   return next;
-}
-
-export function getGlobalEffectsLevel(): number {
-  return loadGlobalGameSettings().effectsLevel;
-}
-
-export function setGlobalEffectsLevel(effectsLevel: number): GlobalGameSettings {
-  return saveGlobalGameSettings({ effectsLevel });
 }
 
 export function getGlobalEffectLevel(key: GlobalEffectKey): number {

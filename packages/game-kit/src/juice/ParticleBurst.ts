@@ -6,6 +6,8 @@
 import { getGlobalEffectLevel } from "@shipshitgames/ui";
 import * as THREE from "three";
 
+import { type BoundedPool, createBoundedPool } from "../core/pool";
+
 export interface BurstOptions {
   position: { x: number; y: number; z: number };
   color?: THREE.ColorRepresentation;
@@ -46,16 +48,19 @@ export interface ParticleBurstsOptions {
 }
 
 export class ParticleBursts {
-  private readonly bursts: Burst[] = [];
-  private readonly maxBursts: number;
+  private readonly pool: BoundedPool<Burst>;
   private readonly getLevel: () => number;
 
   constructor(
     private readonly scene: THREE.Scene,
     opts: ParticleBurstsOptions = {},
   ) {
-    this.maxBursts = opts.maxBursts ?? 24;
     this.getLevel = opts.getLevel ?? (() => getGlobalEffectLevel("particles"));
+    // When all bursts are live, recycle the one closest to expiring.
+    this.pool = createBoundedPool(opts.maxBursts ?? 24, () => this.create(), {
+      isActive: (b) => b.active,
+      recyclePriority: (b) => -b.life,
+    });
   }
 
   spawn(opts: BurstOptions) {
@@ -63,7 +68,7 @@ export class ParticleBursts {
     const count = Math.min(MAX_PARTICLES, Math.round((opts.count ?? 14) * level));
     if (count <= 0) return;
 
-    const burst = this.acquire();
+    const burst = this.pool.acquire();
     if (!burst) return;
 
     const speed = opts.speed ?? 4;
@@ -97,13 +102,13 @@ export class ParticleBursts {
   }
 
   update(dt: number) {
-    for (const burst of this.bursts) {
-      if (!burst.active) continue;
+    this.pool.forEach((burst) => {
+      if (!burst.active) return;
       burst.life -= dt;
       if (burst.life <= 0) {
         burst.active = false;
         burst.points.visible = false;
-        continue;
+        return;
       }
       for (let i = 0; i < burst.count; i++) {
         burst.velocities[i * 3 + 1]! -= burst.gravity * dt;
@@ -113,33 +118,16 @@ export class ParticleBursts {
       }
       burst.material.opacity = burst.life / burst.maxLife;
       burst.geometry.attributes.position!.needsUpdate = true;
-    }
+    });
   }
 
   dispose() {
-    for (const burst of this.bursts) {
+    this.pool.forEach((burst) => {
       this.scene.remove(burst.points);
       burst.geometry.dispose();
       burst.material.dispose();
-    }
-    this.bursts.length = 0;
-  }
-
-  private acquire(): Burst | null {
-    for (const burst of this.bursts) {
-      if (!burst.active) return burst;
-    }
-    if (this.bursts.length < this.maxBursts) {
-      const burst = this.create();
-      this.bursts.push(burst);
-      return burst;
-    }
-    // All busy: recycle the one closest to expiring.
-    let oldest: Burst | null = null;
-    for (const burst of this.bursts) {
-      if (!oldest || burst.life < oldest.life) oldest = burst;
-    }
-    return oldest;
+    });
+    this.pool.items.length = 0;
   }
 
   private create(): Burst {

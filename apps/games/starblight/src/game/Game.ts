@@ -4,15 +4,16 @@ import { InputSystem } from "../systems/InputSystem";
 import { RenderSystem } from "../systems/RenderSystem";
 import { WeaponSystem } from "../systems/WeaponSystem";
 import { clearPauseActions, emitRunEnd, setPauseActions, subscribeDrydockTiers } from "../ui/gameBridge";
+import { BossEncounter } from "./BossEncounter";
 import { COLORS, CONSTANTS, type EnemyType, WORLD } from "./constants";
 import type { ShopTiers } from "./drydock";
+import { clamp, TAU } from "./math";
 import type { DraftCard, Enemy, GamePhase, HudState } from "./types";
 import { ALL_UPGRADES, computeStats, defOf, maxLevelOf, type Stats, type UpgradeId, xpForLevel } from "./upgrades";
 
-const TAU = Math.PI * 2;
-
 // Survivors orchestrator: owns run-state (XP / level / integrity / draft), the
-// time-driven director, the boss state machine, collisions, and the rAF loop.
+// time-driven director, collisions, and the rAF loop. The boss state machine
+// lives in BossEncounter.
 export class Game {
   private render: RenderSystem;
   private input: InputSystem;
@@ -46,17 +47,7 @@ export class Game {
   private eliteT = 0;
 
   // --- boss --------------------------------------------------------------
-  private boss: Enemy | null = null;
-  private bossTriggered = false;
-  private bossBurstT = 0;
-  private bossDashT = 0;
-  private bossSpiralT = 0;
-  private bossSummonT = 0;
-  private bossOrbit = 0;
-  private bossDashState: "none" | "telegraph" | "charge" = "none";
-  private bossDashTime = 0;
-  private bossDashX = 0;
-  private bossDashY = 0;
+  private bossEncounter: BossEncounter;
 
   private raf = 0;
   private prev = 0;
@@ -68,6 +59,17 @@ export class Game {
     this.entities = new EntitySystem(this.render);
     this.weapons = new WeaponSystem(this.render, this.entities);
     this.weapons.damageEnemy = (e, dmg, allowCrit) => this.damageEnemy(e, dmg, allowCrit);
+    this.bossEncounter = new BossEncounter(this.entities, this.render, {
+      ringPoint: () => this.ringPoint(),
+      spawnAt: (type, x, y) => this.spawnAt(type, x, y),
+      onDefeated: () => {
+        this.kills++;
+        this.vacuum = true;
+        this.phase = "victory";
+        emitRunEnd(Math.round(this.salvage)); // bank salvage as Drydock wreckage
+        this.emitHud();
+      },
+    });
     this.hud = new HudSystem(
       () => this.startRun(),
       (id) => this.pickById(id),
@@ -98,6 +100,7 @@ export class Game {
     clearPauseActions();
     this.input.dispose();
     this.weapons.dispose();
+    this.bossEncounter.dispose(); // bespoke boss mesh, before the entity pools
     this.entities.dispose();
     this.hud.dispose();
     this.render.dispose();
@@ -106,7 +109,15 @@ export class Game {
   // --- run lifecycle -----------------------------------------------------
 
   private startRun() {
-    this.phase = "playing";
+    const levels = new Map<UpgradeId, number>([["seeker", 1]]); // start armed
+    // Drydock: Phalanx Cache starts the sortie with the orbiting drones too.
+    if ((this.shopTiers.phalanxcache ?? 0) > 0) levels.set("phalanx", 1);
+    this.resetRun("playing", levels);
+  }
+
+  /** Shared reset sequence for a new sortie ("playing") or the menu ("title"). */
+  private resetRun(phase: GamePhase, startingLevels: Map<UpgradeId, number>) {
+    this.phase = phase;
     this.clock = 0;
     this.level = 1;
     this.currentXP = 0;
@@ -117,25 +128,22 @@ export class Game {
     this.vacuum = false;
     this.draft = null;
 
-    this.levels = new Map<UpgradeId, number>([["seeker", 1]]); // start armed
-    // Drydock: Phalanx Cache starts the sortie with the orbiting drones too.
-    if ((this.shopTiers.phalanxcache ?? 0) > 0) this.levels.set("phalanx", 1);
+    this.levels = startingLevels;
     this.recomputeStats();
     this.integrity = this.stats.maxIntegrity;
 
+    this.bossEncounter.reset(); // before clearEnemies: the boss mesh is bespoke
     this.entities.clearEnemies();
     this.entities.clearProjectiles();
     this.entities.clearGems();
     this.entities.clearParticles();
     this.entities.resetShip();
     this.weapons.reset();
-    this.weapons.setLoadout(this.levels, this.stats);
     this.render.resetFocus(0, 0);
 
-    this.boss = null;
-    this.bossTriggered = false;
-    this.spawnT = 0.6;
-    this.eliteT = CONSTANTS.director.eliteEvery;
+    const playing = phase === "playing";
+    this.spawnT = playing ? 0.6 : 0;
+    this.eliteT = playing ? CONSTANTS.director.eliteEvery : 0;
 
     this.emitHud();
   }
@@ -153,35 +161,7 @@ export class Game {
   }
 
   private returnToTitle() {
-    this.phase = "title";
-    this.clock = 0;
-    this.level = 1;
-    this.currentXP = 0;
-    this.pendingLevels = 0;
-    this.kills = 0;
-    this.salvage = 0;
-    this.invuln = 0;
-    this.vacuum = false;
-    this.draft = null;
-
-    this.levels = new Map();
-    this.recomputeStats();
-    this.integrity = this.stats.maxIntegrity;
-
-    this.entities.clearEnemies();
-    this.entities.clearProjectiles();
-    this.entities.clearGems();
-    this.entities.clearParticles();
-    this.entities.resetShip();
-    this.weapons.reset();
-    this.render.resetFocus(0, 0);
-
-    this.boss = null;
-    this.bossTriggered = false;
-    this.spawnT = 0;
-    this.eliteT = 0;
-
-    this.emitHud();
+    this.resetRun("title", new Map());
   }
 
   private recomputeStats() {
@@ -259,8 +239,8 @@ export class Game {
 
     // 2. director + 3. enemy AI
     this.director(dt);
-    this.entities.updateEnemies(dt, this.clock);
-    if (this.boss) this.updateBoss(dt);
+    this.entities.updateEnemies(dt, this.clock, this.bossEncounter.enemy());
+    this.bossEncounter.update(dt, this.clock);
 
     // 4. weapons fire / deal damage
     this.weapons.update(dt, this.clock);
@@ -295,19 +275,17 @@ export class Game {
   private director(dt: number) {
     const d = CONSTANTS.director;
     // Boss trigger.
-    if (!this.bossTriggered && this.clock >= CONSTANTS.boss.spawnAt) {
-      this.spawnBoss();
-    }
+    this.bossEncounter.maybeTrigger(this.clock);
 
-    // Alive-cap ramps over the run.
+    // Alive-cap ramps over the run (the boss counts itself out).
     const ramp = Math.min(1, this.clock / d.aliveRampTime);
     const aliveCap = d.aliveMin + (d.aliveMax - d.aliveMin) * ramp;
-    const aliveCount = this.boss ? this.entities.enemies.length - 1 : this.entities.enemies.length;
+    const aliveCount = this.entities.enemies.length - this.bossEncounter.aliveAdjustment();
 
     this.spawnT -= dt;
     if (this.spawnT <= 0 && aliveCount < aliveCap) {
-      let interval = Math.max(d.spawnFloor, d.spawnBase - this.clock * d.spawnSlope);
-      if (this.boss) interval *= 3; // the fight reads as a duel
+      const interval =
+        Math.max(d.spawnFloor, d.spawnBase - this.clock * d.spawnSlope) * this.bossEncounter.spawnIntervalMul();
       this.spawnT = interval;
       const batch = Math.min(d.batchCap, d.batchBase + Math.floor(this.clock / d.batchPer));
       // Respect remaining headroom each pick so a swarmling cluster can't blow
@@ -319,7 +297,7 @@ export class Game {
     }
 
     this.eliteT -= dt;
-    if (!this.boss && this.eliteT <= 0) {
+    if (!this.bossEncounter.isActive() && this.eliteT <= 0) {
       this.eliteT = d.eliteEvery;
       const p = this.ringPoint();
       this.entities.pop(p.x, p.y, COLORS.toxicHot, 16); // spawn flare
@@ -389,8 +367,8 @@ export class Game {
   }
 
   private onKill(e: Enemy) {
-    if (e.boss) {
-      this.bossDefeated(e);
+    if (this.bossEncounter.owns(e)) {
+      this.bossEncounter.defeated(e);
       return;
     }
     this.kills++;
@@ -545,134 +523,6 @@ export class Game {
     }
   }
 
-  // --- boss --------------------------------------------------------------
-
-  private spawnBoss() {
-    this.bossTriggered = true;
-    const b = CONSTANTS.boss;
-    const p = this.ringPoint();
-    this.boss = this.entities.spawnBoss(p.x, p.y, b.baseHP, b.contactDmg, 5);
-    this.bossBurstT = 1.5;
-    this.bossDashT = b.dashEvery;
-    this.bossSpiralT = 0;
-    this.bossSummonT = b.summonEvery;
-    this.bossOrbit = Math.random() * TAU;
-    this.bossDashState = "none";
-    this.render.addShake(CONSTANTS.fx.shake.bossSpawn);
-    this.entities.pop(p.x, p.y, COLORS.toxicHot, 40);
-  }
-
-  private bossPhase(): 1 | 2 | 3 {
-    if (!this.boss) return 1;
-    const pct = this.boss.health / this.boss.maxHealth;
-    if (pct > CONSTANTS.boss.phase2Pct) return 1;
-    if (pct > CONSTANTS.boss.phase3Pct) return 2;
-    return 3;
-  }
-
-  private updateBoss(dt: number) {
-    const boss = this.boss;
-    if (!boss || boss.dead) return;
-    const b = CONSTANTS.boss;
-    const sx = this.entities.ship.position.x;
-    const sy = this.entities.ship.position.y;
-    const phase = this.bossPhase();
-
-    // Movement: orbit the ship, unless dashing.
-    if (this.bossDashState === "charge") {
-      boss.mesh.position.x += this.bossDashX * dt;
-      boss.mesh.position.y += this.bossDashY * dt;
-      this.bossDashTime -= dt;
-      if (this.bossDashTime <= 0) this.bossDashState = "none";
-    } else {
-      this.bossOrbit += b.orbitSpeed * dt;
-      const tx = sx + Math.cos(this.bossOrbit) * b.orbitR;
-      const ty = sy + Math.sin(this.bossOrbit) * b.orbitR;
-      boss.mesh.position.x += (tx - boss.mesh.position.x) * Math.min(1, dt * 1.4);
-      boss.mesh.position.y += (ty - boss.mesh.position.y) * Math.min(1, dt * 1.4);
-    }
-    const bx = boss.mesh.position.x;
-    const by = boss.mesh.position.y;
-
-    // Radial spore bursts (all phases, faster later).
-    this.bossBurstT -= dt;
-    if (this.bossBurstT <= 0) {
-      this.bossBurstT = b.burstEvery * (phase === 1 ? 1 : phase === 2 ? 0.75 : 0.55);
-      boss.flash = 0.12;
-      const off = Math.random() * TAU;
-      for (let i = 0; i < b.burstCount; i++) {
-        const a = off + (i / b.burstCount) * TAU;
-        this.entities.spawnGlob(bx, by, Math.cos(a) * b.bulletSpeed, Math.sin(a) * b.bulletSpeed, b.bulletDmg);
-      }
-    }
-
-    // Summons.
-    this.bossSummonT -= dt;
-    if (this.bossSummonT <= 0) {
-      this.bossSummonT = b.summonEvery;
-      const type: EnemyType = phase === 3 ? "spitter" : phase === 2 ? "swarmling" : "grunt";
-      for (let i = 0; i < (phase === 1 ? 2 : 3); i++) {
-        this.spawnAt(type, bx + (Math.random() - 0.5) * 8, by + (Math.random() - 0.5) * 8);
-      }
-    }
-
-    // Charge-dash (all phases; rarer in phase 1). The lunge is the boss's
-    // contact threat — it travels just past the ship so it crosses the hull.
-    this.bossDashT -= dt;
-    if (this.bossDashState === "none" && this.bossDashT <= 0) {
-      this.bossDashState = "telegraph";
-      this.bossDashTime = b.dashTelegraph;
-      boss.flash = b.dashTelegraph;
-    } else if (this.bossDashState === "telegraph") {
-      this.bossDashTime -= dt;
-      if (this.bossDashTime <= 0) {
-        const ddx = sx - bx;
-        const ddy = sy - by;
-        const dist = Math.hypot(ddx, ddy) || 1;
-        this.bossDashX = (ddx / dist) * b.dashSpeed;
-        this.bossDashY = (ddy / dist) * b.dashSpeed;
-        this.bossDashState = "charge";
-        // Travel just past the ship so the lunge actually crosses the hull.
-        this.bossDashTime = Math.min(0.8, (dist + 4) / b.dashSpeed);
-        this.bossDashT = b.dashEvery * (phase === 1 ? 1.6 : 1);
-        this.render.addShake(CONSTANTS.fx.shake.bossCharge);
-      }
-    }
-
-    // Phase 3: rotating spiral of globs.
-    if (phase === 3) {
-      this.bossSpiralT -= dt;
-      if (this.bossSpiralT <= 0) {
-        this.bossSpiralT = b.spiralEvery;
-        this.bossOrbit += 0.4;
-        for (let k = 0; k < b.spiralCount; k++) {
-          const a = this.bossOrbit + (k / b.spiralCount) * TAU;
-          this.entities.spawnGlob(bx, by, Math.cos(a) * b.bulletSpeed, Math.sin(a) * b.bulletSpeed, b.bulletDmg);
-        }
-      }
-    }
-  }
-
-  private bossDefeated(e: Enemy) {
-    const x = e.mesh.position.x;
-    const y = e.mesh.position.y;
-    this.entities.killEnemy(e);
-    this.boss = null;
-    this.kills++;
-    // Triumphant gem shower + storm.
-    for (let i = 0; i < 10; i++) {
-      this.entities.spawnGem(x + (Math.random() - 0.5) * 12, y + (Math.random() - 0.5) * 12, 25);
-    }
-    this.entities.pop(x, y, COLORS.hellfire, 40);
-    this.entities.pop(x, y, COLORS.bone, 30);
-    this.entities.pop(x, y, COLORS.bloodHot, 30);
-    this.render.addShake(CONSTANTS.fx.shake.bossDeath);
-    this.vacuum = true;
-    this.phase = "victory";
-    emitRunEnd(Math.round(this.salvage)); // bank salvage as Drydock wreckage
-    this.emitHud();
-  }
-
   // --- HUD bridge --------------------------------------------------------
 
   private emitHud() {
@@ -689,7 +539,7 @@ export class Game {
       kills: this.kills,
       build,
       draft: this.draft,
-      bossHp01: this.boss && !this.boss.dead ? Math.max(0, this.boss.health / this.boss.maxHealth) : null,
+      bossHp01: this.bossEncounter.hp01(),
       lowIntegrity: this.integrity > 0 && this.integrity < this.stats.maxIntegrity * 0.25,
     };
     this.hud.update(state);
@@ -713,8 +563,4 @@ export class Game {
     out.sort((a, b) => (a.kind === b.kind ? 0 : a.kind === "weapon" ? -1 : 1));
     return out;
   }
-}
-
-function clamp(v: number, lo: number, hi: number): number {
-  return v < lo ? lo : v > hi ? hi : v;
 }

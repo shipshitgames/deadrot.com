@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { cellToWorld, inBounds, isPathCell, playBounds, worldToCell } from "./board";
 import { CONSTANTS } from "./constants";
+import { buildSpeedMul, runSpeedMul } from "./stats";
 import { EntitySystem } from "./systems/entities";
 import { HudSystem } from "./systems/hud";
 import { type HoverCell, InputSystem } from "./systems/input";
@@ -36,11 +37,7 @@ export class Game {
     this.render.rig.on("capture", this.onCapture);
     this.render.rig.on("release", this.onRelease);
 
-    this.hud.showBanner(
-      "DEADLANE",
-      "WARDENS - RUN THE LINE, BUILD BY HAND, AND STOP THE SCOURGE BEFORE THE DOOR EMPTIES.",
-      "DEPLOY",
-    );
+    this.showTitleBanner();
     this.hud.update(this.state);
 
     requestAnimationFrame((t) => this.frame(t));
@@ -117,7 +114,7 @@ export class Game {
   private step(dt: number): void {
     const s = this.state;
 
-    if ((s.phase === "building" || s.phase === "wave") && !this.pausedForCapture) {
+    if (this.isRunLive() && !this.pausedForCapture) {
       this.updatePlayer(dt);
       this.handleBuild(dt);
       this.entities.update(s, dt, this.elapsed);
@@ -140,7 +137,7 @@ export class Game {
     if (moving) {
       const len = Math.hypot(x, z);
       const sprint = this.input.wantsSprint ? CONSTANTS.player.sprintMultiplier : 1;
-      const speed = CONSTANTS.player.moveSpeed * sprint * this.runSpeedMul();
+      const speed = CONSTANTS.player.moveSpeed * sprint * runSpeedMul(this.state);
       this.render.rig.movePlanar((x / len) * speed * dt, (z / len) * speed * dt);
     }
 
@@ -205,7 +202,7 @@ export class Game {
         s.buildTargetKey = targetKey;
         s.buildProgress = 0;
       }
-      s.buildProgress += dt * this.buildSpeedMul();
+      s.buildProgress += dt * buildSpeedMul(s);
       const pct = Math.min(100, Math.floor((s.buildProgress / CONSTANTS.build.time) * 100));
       s.hintText = `BUILDING TOWER ${pct}%`;
 
@@ -273,22 +270,27 @@ export class Game {
     this.state.buildTargetKey = null;
   }
 
-  private buildSpeedMul(): number {
-    return 1 + this.state.buildSpeedLevel * CONSTANTS.bonuses.buildSpeedPerLevel;
-  }
-
-  private runSpeedMul(): number {
-    return 1 + this.state.runSpeedLevel * CONSTANTS.bonuses.runSpeedPerLevel;
-  }
-
   private grantWaveBonus(): void {
     if (this.state.wave % 2 === 1) {
       this.state.buildSpeedLevel += 1;
-      this.state.lastBonus = `BUILD SPEED x${this.buildSpeedMul().toFixed(2)}`;
+      this.state.lastBonus = `BUILD SPEED x${buildSpeedMul(this.state).toFixed(2)}`;
     } else {
       this.state.runSpeedLevel += 1;
-      this.state.lastBonus = `RUN SPEED x${this.runSpeedMul().toFixed(2)}`;
+      this.state.lastBonus = `RUN SPEED x${runSpeedMul(this.state).toFixed(2)}`;
     }
+  }
+
+  /** A run is live while waves are being built for or fought. */
+  private isRunLive(): boolean {
+    return this.state.phase === "building" || this.state.phase === "wave";
+  }
+
+  private showTitleBanner(): void {
+    this.hud.showBanner(
+      "DEADLANE",
+      "WARDENS - RUN THE LINE, BUILD BY HAND, AND STOP THE SCOURGE BEFORE THE DOOR EMPTIES.",
+      "DEPLOY",
+    );
   }
 
   private win(): void {
@@ -309,7 +311,7 @@ export class Game {
   }
 
   private onCapture = (): void => {
-    if (this.state.phase !== "building" && this.state.phase !== "wave") return;
+    if (!this.isRunLive()) return;
     this.resumeRun();
   };
 
@@ -318,7 +320,7 @@ export class Game {
   };
 
   private pauseRun(): void {
-    if (this.state.phase !== "building" && this.state.phase !== "wave") return;
+    if (!this.isRunLive()) return;
     if (this.pausedForCapture) return;
     this.pausedForCapture = true;
     this.input.setActive(false);
@@ -342,7 +344,7 @@ export class Game {
   }
 
   private resumeRun(): void {
-    if (this.state.phase !== "building" && this.state.phase !== "wave") return;
+    if (!this.isRunLive()) return;
     this.pausedForCapture = false;
     // Drop the pointerdown that pressed Resume so it can't leak into a queued
     // tower build on the first live frame.
@@ -361,11 +363,7 @@ export class Game {
     Object.assign(this.state, freshState());
     this.render.placePlayerAtStart();
     this.hud.update(this.state);
-    this.hud.showBanner(
-      "DEADLANE",
-      "WARDENS - RUN THE LINE, BUILD BY HAND, AND STOP THE SCOURGE BEFORE THE DOOR EMPTIES.",
-      "DEPLOY",
-    );
+    this.showTitleBanner();
   }
 
   private clearPauseMenu(): void {

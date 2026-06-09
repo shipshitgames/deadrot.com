@@ -4,6 +4,8 @@
 
 import { getGlobalEffectLevel } from "@shipshitgames/ui";
 
+import { createOverlayElement, ensurePositioningContext } from "./domLayer";
+
 export interface FlashOverlayOptions {
   /** Override the intensity scalar; defaults to the global "flash" effect level. */
   getLevel?: () => number;
@@ -27,9 +29,7 @@ export class FlashOverlay {
 
   constructor(container: HTMLElement, opts: FlashOverlayOptions = {}) {
     this.getLevel = opts.getLevel ?? (() => getGlobalEffectLevel("flash"));
-    if (getComputedStyle(container).position === "static") {
-      container.style.position = "relative";
-    }
+    ensurePositioningContext(container);
     this.flashEl = this.makeLayer(container, opts.zIndex ?? 30);
     this.vignetteEl = this.makeLayer(container, (opts.zIndex ?? 30) - 1);
   }
@@ -69,13 +69,10 @@ export class FlashOverlay {
   }
 
   private makeLayer(container: HTMLElement, zIndex: number): HTMLDivElement {
-    const el = document.createElement("div");
-    el.style.position = "absolute";
-    el.style.inset = "0";
-    el.style.pointerEvents = "none";
-    el.style.opacity = "0";
-    el.style.zIndex = String(zIndex);
-    container.appendChild(el);
-    return el;
+    return createOverlayElement(container, "div", {
+      inset: "0",
+      opacity: "0",
+      zIndex: String(zIndex),
+    });
   }
 }

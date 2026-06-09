@@ -9,7 +9,6 @@ import {
   type GlobalGameSettings,
   loadGlobalGameSettings,
   setGlobalEffectLevel,
-  setGlobalEffectsLevel,
   subscribeGlobalGameSettings,
   toggleGlobalMusicMuted,
 } from "./settings";
@@ -56,12 +55,6 @@ export function EffectLevelSlider({
       />
     </label>
   );
-}
-
-export interface EffectsLevelSliderProps extends EffectLevelSliderProps {}
-
-export function EffectsLevelSlider(props: EffectsLevelSliderProps) {
-  return <EffectLevelSlider {...props} />;
 }
 
 export interface GlobalEffectSlidersProps extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
@@ -138,14 +131,12 @@ export function GlobalMusicToggle({
 
 export interface GlobalGameSettingsPanelProps extends HTMLAttributes<HTMLDivElement> {
   inline?: boolean;
-  label?: ReactNode;
   sliderKeys?: readonly GlobalEffectKey[];
 }
 
 export function GlobalGameSettingsPanel({
   className,
   inline = false,
-  label,
   sliderKeys,
   onPointerDown,
   role,
@@ -165,19 +156,11 @@ export function GlobalGameSettingsPanel({
       role={role ?? "group"}
       {...props}
     >
-      {label ? (
-        <EffectsLevelSlider
-          label={label}
-          value={settings.effectsLevel}
-          onChange={(level) => setGlobalEffectsLevel(level)}
-        />
-      ) : (
-        <GlobalEffectSliders
-          settings={settings}
-          keys={sliderKeys}
-          onChange={(key, value) => setGlobalEffectLevel(key, value)}
-        />
-      )}
+      <GlobalEffectSliders
+        settings={settings}
+        keys={sliderKeys}
+        onChange={(key, value) => setGlobalEffectLevel(key, value)}
+      />
     </div>
   );
 }

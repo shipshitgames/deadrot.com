@@ -36,6 +36,9 @@
     "typecheck": "tsc --noEmit",
     "deps:update": "bunx npm-check-updates -u --cooldown 3h --removeRange && bun install"
   },
+  "dependencies": {
+    "@deadrot/catalog": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "6.0.3"
   }

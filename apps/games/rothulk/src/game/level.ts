@@ -1,5 +1,5 @@
 import { CONSTANTS } from "../constants";
-import type { LevelData, Platform, Scourge, Ember, Hazard, MovingPlatform } from "./types";
+import type { Ember, Hazard, LevelData, MovingPlatform, Platform, Scourge } from "./types";
 
 // Canon location: see apps/lore/content/Locations/The-Rothulk.md and
 // apps/lore/content/Locations/Cinder-Flats.md and apps/lore/content/Maps.md (cross-game map registry).
@@ -68,6 +68,8 @@ export function buildLevel(): LevelData {
       toY: 6,
       t: 0,
       dir: 1,
+      baseX: 99,
+      baseY: 2,
       vx: 0,
       vy: 0,
     },
@@ -81,6 +83,8 @@ export function buildLevel(): LevelData {
       toY: 4,
       t: 0,
       dir: 1,
+      baseX: 112,
+      baseY: 4,
       vx: 0,
       vy: 0,
     },
@@ -149,12 +153,11 @@ export function buildLevel(): LevelData {
     scourge,
     embers,
     checkpoint: { x: 60, y: 2.6, reached: false },
-    core: { x: 122.5, y: 6.2, ignited: false },
+    core: { x: 122.5, y: 6.2 },
     exit: {
       x: CONSTANTS.HERO_SPAWN_X,
       y: CONSTANTS.HERO_SPAWN_Y,
       radius: CONSTANTS.EXIT_RADIUS,
-      reached: false,
     },
   };
 }

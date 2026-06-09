@@ -4,13 +4,24 @@
  * overlays plus start / win / dead card text.
  */
 
+import { createLocalStore } from "@deadrot/game-kit";
 import { warlineLobbyHref } from "@shipshitgames/ui";
 import { RUNNER, STORAGE_KEY } from "../constants";
-import type { Phase, RunnerState } from "../types";
+import type { RunnerState } from "../types";
 
 function fmtTime(s: number): string {
   return s.toFixed(2);
 }
+
+// Best-time persistence. The migrate callback is load-bearing: existing players
+// have a legacy bare number string under STORAGE_KEY, and createLocalStore
+// routes unversioned payloads through migrate — without it best times reset.
+const bestStore = createLocalStore<number | null>(STORAGE_KEY, null, {
+  migrate: (raw) => {
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  },
+});
 
 export class Hud {
   private elSpeed = document.getElementById("hud-speed")!;
@@ -30,20 +41,8 @@ export class Hud {
   best: number | null = null;
 
   constructor() {
-    this.best = this.loadBest();
+    this.best = bestStore.get();
     this.elBest.textContent = this.best === null ? "--.--" : fmtTime(this.best);
-  }
-
-  // --- best time persistence ------------------------------------------------
-  private loadBest(): number | null {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      const n = Number(raw);
-      return Number.isFinite(n) && n > 0 ? n : null;
-    } catch {
-      return null;
-    }
   }
 
   /** Returns true if this is a new record. */
@@ -51,11 +50,7 @@ export class Hud {
     const record = this.best === null || t < this.best;
     if (record) {
       this.best = t;
-      try {
-        localStorage.setItem(STORAGE_KEY, String(t));
-      } catch {
-        /* ignore quota / privacy mode */
-      }
+      bestStore.set(t);
       this.elBest.textContent = fmtTime(t);
     }
     return record;
@@ -116,7 +111,7 @@ export class Hud {
   }
 
   // --- overlays -------------------------------------------------------------
-  showStart() {
+  showStart(opts: { onIgnite: () => void; onSettings: () => void }) {
     this.overlay.classList.remove("is-hidden");
     this.overlayCard.innerHTML = `
       <div class="ssg-main-menu-copy">
@@ -165,9 +160,14 @@ export class Hud {
         </a>
       </nav>
     `;
+    this.wireOverlayButton(opts.onIgnite);
+    // Settings is only present on the start card; { once: true } preserves the
+    // current behavior exactly (do not fix the settings re-open quirk here).
+    const settingsBtn = document.getElementById("overlay-settings-btn");
+    if (settingsBtn) settingsBtn.addEventListener("click", opts.onSettings, { once: true });
   }
 
-  showWin(time: number, isRecord: boolean, embers: number) {
+  showWin(time: number, isRecord: boolean, embers: number, onAgain: () => void) {
     this.overlay.classList.remove("is-hidden");
     const bestStr = this.best === null ? "--.--" : fmtTime(this.best);
     this.overlayCard.innerHTML = `
@@ -192,9 +192,10 @@ export class Hud {
         </button>
       </nav>
     `;
+    this.wireOverlayButton(onAgain);
   }
 
-  showDead(reason: string) {
+  showDead(reason: string, onRetry: () => void) {
     this.overlay.classList.remove("is-hidden");
     this.overlayCard.innerHTML = `
       <div class="ssg-main-menu-copy">
@@ -213,28 +214,16 @@ export class Hud {
         </button>
       </nav>
     `;
+    this.wireOverlayButton(onRetry);
   }
 
   hideOverlay() {
     this.overlay.classList.add("is-hidden");
   }
 
-  /** Wire the (re)created overlay button to a callback. */
-  onOverlayButton(cb: () => void) {
+  /** Wire the freshly created primary overlay button to a callback. */
+  private wireOverlayButton(cb: () => void) {
     const btn = document.getElementById("overlay-btn");
     if (btn) btn.addEventListener("click", cb, { once: true });
-  }
-
-  /**
-   * Wire the start-screen Settings button to a callback. Only present on the
-   * start card (re-created by showStart), so re-wire each time it is shown.
-   */
-  onSettingsButton(cb: () => void) {
-    const btn = document.getElementById("overlay-settings-btn");
-    if (btn) btn.addEventListener("click", cb, { once: true });
-  }
-
-  isOverlayVisible(phase: Phase): boolean {
-    return phase !== "running";
   }
 }

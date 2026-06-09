@@ -6,7 +6,7 @@ import {
   makeMoveIntent,
 } from "@shipshitgames/engine";
 import * as THREE from "three";
-import { inBounds, isPathCell, worldToCell } from "../board";
+import { inBounds, worldToCell } from "../board";
 
 export interface HoverCell {
   col: number;
@@ -102,12 +102,4 @@ export class InputSystem {
       this.wantsSprint = false;
     }
   };
-
-  /** True if the hovered cell could legally hold a tower (empty, off-path). */
-  static isBuildable(cell: HoverCell | null, occupied: Set<string>): boolean {
-    if (!cell) return false;
-    if (isPathCell(cell.col, cell.row)) return false;
-    if (occupied.has(`${cell.col},${cell.row}`)) return false;
-    return true;
-  }
 }

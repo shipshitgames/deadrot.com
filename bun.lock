@@ -17,6 +17,7 @@
       "name": "deadlane",
       "version": "0.1.0",
       "dependencies": {
+        "@deadrot/game-kit": "workspace:*",
         "@shipshitgames/assets": "workspace:*",
         "@shipshitgames/engine": "^0.2.0",
         "@shipshitgames/ui": "workspace:*",
@@ -37,6 +38,7 @@
       "name": "pactfall",
       "version": "0.1.0",
       "dependencies": {
+        "@deadrot/game-kit": "workspace:*",
         "@shipshitgames/assets": "workspace:*",
         "@shipshitgames/ui": "workspace:*",
         "react": "19.2.7",
@@ -77,6 +79,7 @@
       "name": "rothulk",
       "version": "0.1.0",
       "dependencies": {
+        "@deadrot/game-kit": "workspace:*",
         "@shipshitgames/assets": "workspace:*",
         "@shipshitgames/ui": "workspace:*",
         "react": "19.2.7",
@@ -130,6 +133,7 @@
       "name": "starblight",
       "version": "0.1.0",
       "dependencies": {
+        "@deadrot/game-kit": "workspace:*",
         "@shipshitgames/assets": "workspace:*",
         "@shipshitgames/ui": "workspace:*",
         "react": "19.2.7",
@@ -173,7 +177,6 @@
     },
     "apps/lore": {
       "name": "lore",
-      "version": "4.5.2",
       "bin": {
         "quartz": "./quartz/bootstrap-cli.mjs",
       },
@@ -287,6 +290,9 @@
     "packages/assets": {
       "name": "@shipshitgames/assets",
       "version": "0.1.0",
+      "dependencies": {
+        "@deadrot/catalog": "workspace:*",
+      },
       "devDependencies": {
         "typescript": "6.0.3",
       },
@@ -338,6 +344,7 @@
       "name": "@shipshitgames/warline",
       "version": "0.0.0",
       "dependencies": {
+        "@deadrot/catalog": "workspace:*",
         "partysocket": "^1.1.19",
       },
       "devDependencies": {

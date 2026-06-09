@@ -4,6 +4,8 @@
  * Pure data shapes for the shared "War for the Lanes" front. No runtime deps.
  */
 
+import type { PlayableGameSlug } from "@deadrot/catalog";
+
 // ---- factions ----
 export type HumanFaction = "pyre" | "wardens";
 export type Faction = HumanFaction | "scourge" | "neutral";
@@ -13,7 +15,7 @@ export type ResourceKind = "scrap" | "biomass" | "fuel" | "intel";
 export type ResourceBag = Record<ResourceKind, number>;
 
 // ---- games & operations ----
-export type GameSlug = "scourge-survivors" | "deadlane" | "pactfall" | "starblight" | "redline" | "rothulk";
+export type GameSlug = PlayableGameSlug;
 
 export type OperationKind =
   | "purge-breach" // scourge-survivors

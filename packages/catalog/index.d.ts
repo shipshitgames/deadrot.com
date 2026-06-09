@@ -4,6 +4,9 @@
 
 export type GameSlug = "deadlane" | "pactfall" | "redline" | "rothulk" | "scourge-survivors" | "starblight" | "warline";
 
+// The six playable front games — every roster game except the warline lobby.
+export type PlayableGameSlug = Exclude<GameSlug, "warline">;
+
 export type GameStatus = "PLAYABLE" | "IN DEV" | "CONCEPT";
 
 export interface GameApp {
@@ -25,3 +28,4 @@ export declare function gameRoute(slug: string): string;
 export declare const gameDeploys: Record<string, string>;
 export declare const gameDevPorts: Record<string, number>;
 export declare const gameSlugs: readonly GameSlug[];
+export declare const PLAYABLE_GAME_SLUGS: readonly PlayableGameSlug[];

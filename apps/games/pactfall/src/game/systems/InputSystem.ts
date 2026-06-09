@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { CONSTANTS } from "../constants";
+import { clampToLane } from "./movement";
 import type { RenderSystem } from "./RenderSystem";
 
 // Translates raw keyboard + pointer events into a normalized move intent and a
@@ -79,9 +80,7 @@ export class InputSystem {
     if (this.raycaster.ray.intersectPlane(this.ground, hit)) {
       // Clamp into the legal play area so the target is always reachable
       // (otherwise an off-lane click leaves a sticky, never-cleared order).
-      const clamp = CONSTANTS.arena.laneClamp;
-      hit.x = THREE.MathUtils.clamp(hit.x, -clamp, clamp);
-      hit.z = THREE.MathUtils.clamp(hit.z, CONSTANTS.champion.retreatZ, CONSTANTS.base.enemyZ - 1);
+      clampToLane(hit, CONSTANTS.champion.retreatZ);
       this.clickTarget = hit;
     } else {
       this.clickTarget = null;

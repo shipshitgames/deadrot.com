@@ -1,8 +1,9 @@
 import * as THREE from "three";
 import { COLORS, CONSTANTS, MARCH_DIR, type Team } from "../constants";
-import type { Entity } from "../types";
+import { makeBase, makeChampion, makeMinion, makeScourge } from "../factory";
 import type { Game } from "../Game";
-import { makeChampion, makeMinion, makeScourge, makeBase } from "../factory";
+import type { Entity } from "../types";
+import { clampToLane, stepToward } from "./movement";
 
 // Owns every entity, the spawn cadence, movement, targeting, combat, and the
 // transient attack beams. This is where the core loop actually lives.
@@ -143,23 +144,17 @@ export class EntitySystem {
       c.pos.x += input.move.x * speed * dt;
       c.pos.z += input.move.y * speed * dt;
     } else if (input.clickTarget) {
-      const dx = input.clickTarget.x - c.pos.x;
-      const dz = input.clickTarget.z - c.pos.z;
-      const dist = Math.hypot(dx, dz);
-      if (dist < 0.2) {
+      const t = input.clickTarget;
+      if (Math.hypot(t.x - c.pos.x, t.z - c.pos.z) < 0.2) {
         input.clickTarget = null;
       } else {
-        const step = Math.min(speed * dt, dist);
-        c.pos.x += (dx / dist) * step;
-        c.pos.z += (dz / dist) * step;
+        stepToward(c.pos, t.x, t.z, speed, dt);
       }
     }
 
-    const clamp = CONSTANTS.arena.laneClamp;
-    c.pos.x = THREE.MathUtils.clamp(c.pos.x, -clamp, clamp);
     // Don't let the player walk back onto its own base (that would wall the camera);
     // retreatZ keeps the base safely behind the follow-cam.
-    c.pos.z = THREE.MathUtils.clamp(c.pos.z, CONSTANTS.champion.retreatZ, CONSTANTS.base.enemyZ - 1);
+    clampToLane(c.pos, CONSTANTS.champion.retreatZ);
   }
 
   // Simple lane AI for the Warden champion: chase the nearest Pyre unit to
@@ -183,18 +178,8 @@ export class EntitySystem {
       stop = CONSTANTS.base.championRange + this.friendlyBase.radius - 0.6;
     }
 
-    const dx = tx - c.pos.x;
-    const dz = tz - c.pos.z;
-    const dist = Math.hypot(dx, dz);
-    if (dist > stop) {
-      const step = Math.min(speed * dt, dist - stop);
-      c.pos.x += (dx / dist) * step;
-      c.pos.z += (dz / dist) * step;
-    }
-
-    const clamp = CONSTANTS.arena.laneClamp;
-    c.pos.x = THREE.MathUtils.clamp(c.pos.x, -clamp, clamp);
-    c.pos.z = THREE.MathUtils.clamp(c.pos.z, CONSTANTS.base.friendlyZ - 1, CONSTANTS.base.enemyZ - 1);
+    stepToward(c.pos, tx, tz, speed, dt, stop);
+    clampToLane(c.pos, CONSTANTS.base.friendlyZ - 1);
   }
 
   private moveMinions(dt: number): void {

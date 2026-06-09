@@ -1,3 +1,4 @@
+import { InputLatch } from "@deadrot/game-kit/core";
 import { CONSTANTS } from "../constants";
 import {
   type CoreLoopState,
@@ -10,7 +11,6 @@ import {
   shouldIgniteCore,
 } from "./coreLoop";
 import { Hud } from "./hud";
-import { Input } from "./input";
 import { buildLevel } from "./level";
 import { aabbOverlap, platformToAABB, rectToAABB, resolveAgainstSolids } from "./physics";
 import { Renderer } from "./render";
@@ -20,7 +20,20 @@ import type { AABB, GameMode, LevelData } from "./types";
 // delta and routes update/draw through the renderer, input, physics and HUD.
 export class Game {
   private renderer: Renderer;
-  private input = new Input();
+  private input = new InputLatch<"jump" | "left" | "right" | "restart">({
+    keys: {
+      Space: "jump",
+      KeyW: "jump",
+      ArrowUp: "jump",
+      ArrowLeft: "left",
+      KeyA: "left",
+      ArrowRight: "right",
+      KeyD: "right",
+      KeyR: "restart",
+    },
+    // Only jump keys had preventDefault in the bespoke Input class.
+    preventDefault: (code) => code === "Space" || code === "KeyW" || code === "ArrowUp",
+  });
   private hud = new Hud();
 
   private level: LevelData = buildLevel();
@@ -63,7 +76,14 @@ export class Game {
     this.renderer.buildHero();
     this.renderer.setHeroTransform(this.hx, this.hy, this.facing, 1);
     this.refreshHud();
-    this.hud.setObjective(objectiveForPhase(this.coreLoop.phase));
+  }
+
+  /** -1 left, +1 right, 0 none. */
+  private get moveAxis(): number {
+    let axis = 0;
+    if (this.input.isHeld("left")) axis -= 1;
+    if (this.input.isHeld("right")) axis += 1;
+    return axis;
   }
 
   start() {
@@ -119,7 +139,6 @@ export class Game {
     this.spawnX = CONSTANTS.HERO_SPAWN_X;
     this.spawnY = CONSTANTS.HERO_SPAWN_Y;
     this.hud.clearBigToast();
-    this.hud.setObjective(objectiveForPhase(this.coreLoop.phase));
     this.respawnHero();
     this.refreshHud();
   }
@@ -140,6 +159,7 @@ export class Game {
     this.hud.setLives(this.lives);
     this.hud.setHp(this.hp);
     this.hud.setEmbers(this.embers);
+    this.hud.setObjective(objectiveForPhase(this.coreLoop.phase, this.level.checkpoint.reached));
     this.hud.setProgress(progressForPhase(this.hx, this.level.width, this.coreLoop.phase));
   }
 
@@ -147,11 +167,11 @@ export class Game {
     return {
       mode: this.mode,
       phase: this.coreLoop.phase,
-      coreIgnited: this.level.core.ignited,
-      scourgeSevered: this.coreLoop.scourgeSevered,
-      exitReached: this.level.exit.reached,
+      coreIgnited: this.coreLoop.phase !== "infiltrate",
+      scourgeSevered: this.coreLoop.phase !== "infiltrate",
+      exitReached: this.coreLoop.phase === "won",
       feralScourge: this.level.scourge.filter((s) => s.feral).length,
-      objective: objectiveForPhase(this.coreLoop.phase),
+      objective: objectiveForPhase(this.coreLoop.phase, false),
       hero: {
         x: this.hx,
         y: this.hy,
@@ -195,7 +215,7 @@ export class Game {
     if (dt > CONSTANTS.MAX_DELTA) dt = CONSTANTS.MAX_DELTA; // clamp stutters
     this.elapsed += dt;
 
-    if (this.input.restartPressed && this.mode !== "title") {
+    if (this.input.isHeld("restart") && this.mode !== "title") {
       this.resetRun();
       this.mode = "playing";
     }
@@ -237,7 +257,7 @@ export class Game {
     if (this.invuln > 0) this.invuln -= dt;
 
     // --- Horizontal input ---
-    const axis = this.input.moveAxis;
+    const axis = this.moveAxis;
     if (axis !== 0) this.facing = axis;
     const target = axis * CONSTANTS.MOVE_SPEED;
     const accel = this.grounded ? CONSTANTS.ACCEL : CONSTANTS.AIR_ACCEL;
@@ -257,7 +277,7 @@ export class Game {
     if (this.grounded) this.coyote = CONSTANTS.COYOTE_TIME;
     else if (this.coyote > 0) this.coyote -= dt;
 
-    if (this.input.consumeJump()) this.jumpBuffer = CONSTANTS.JUMP_BUFFER;
+    if (this.input.consume("jump")) this.jumpBuffer = CONSTANTS.JUMP_BUFFER;
     else if (this.jumpBuffer > 0) this.jumpBuffer -= dt;
 
     if (this.jumpBuffer > 0 && this.coyote > 0) {
@@ -272,7 +292,7 @@ export class Game {
     let g = CONSTANTS.GRAVITY;
     if (this.vy < 0) {
       g *= CONSTANTS.FALL_GRAVITY_MULT;
-    } else if (this.vy > 0 && !this.input.jumpHeld) {
+    } else if (this.vy > 0 && !this.input.isHeld("jump")) {
       g *= CONSTANTS.LOW_JUMP_MULT; // cut the jump short on release
     }
     this.vy -= g * dt;
@@ -341,18 +361,9 @@ export class Game {
   }
 
   private updateMovers(dt: number) {
-    for (let i = 0; i < this.level.movers.length; i++) {
-      const mv = this.level.movers[i];
-      const dx = mv.toX - mv.x;
-      const dy = mv.toY - mv.y;
-      const len = Math.hypot(dx, dy) || 1;
-      // We track position along the segment via t in [0,1] using the ORIGINAL
-      // endpoints; store base on first run.
-      const baseX = mv.baseX ?? mv.x;
-      const baseY = mv.baseY ?? mv.y;
-      mv.baseX = baseX;
-      mv.baseY = baseY;
-      const segLen = Math.hypot(mv.toX - baseX, mv.toY - baseY) || 1;
+    for (const mv of this.level.movers) {
+      // Position along the authored segment via t in [0,1], ping-ponging.
+      const segLen = Math.hypot(mv.toX - mv.baseX, mv.toY - mv.baseY) || 1;
 
       mv.t += (mv.dir * CONSTANTS.MOVER_SPEED * dt) / segLen;
       if (mv.t >= 1) {
@@ -362,15 +373,12 @@ export class Game {
         mv.t = 0;
         mv.dir = 1;
       }
-      const nx = baseX + (mv.toX - baseX) * mv.t;
-      const ny = baseY + (mv.toY - baseY) * mv.t;
+      const nx = mv.baseX + (mv.toX - mv.baseX) * mv.t;
+      const ny = mv.baseY + (mv.toY - mv.baseY) * mv.t;
       mv.vx = (nx - mv.x) / dt;
       mv.vy = (ny - mv.y) / dt;
       mv.x = nx;
       mv.y = ny;
-      void len;
-      void dx;
-      void dy;
     }
   }
 
@@ -457,35 +465,25 @@ export class Game {
       this.spawnY = cp.y + 1.5;
       this.renderer.setCheckpointReached();
       this.hud.flashToast("CHECKPOINT SECURED", 1.4);
-      this.hud.setObjective(
-        this.coreLoop.phase === "infiltrate"
-          ? "PUSH DEEPER // IGNITE THE CORE"
-          : objectiveForPhase(this.coreLoop.phase),
-      );
     }
   }
 
   private checkCore() {
     if (this.coreLoop.phase !== "infiltrate") return;
-    const core = this.level.core;
-    if (!shouldIgniteCore(this.hx, this.hy, core)) return;
+    if (!shouldIgniteCore(this.hx, this.hy, this.level.core, this.coreLoop.phase)) return;
 
     this.coreLoop = igniteBreachCore(this.coreLoop);
-    core.ignited = true;
     this.armFeralEscape();
   }
 
   private checkExit() {
     if (this.coreLoop.phase !== "escape") return;
-    const exit = this.level.exit;
-    if (!shouldCompleteEscape(this.hx, this.hy, exit)) return;
+    if (!shouldCompleteEscape(this.hx, this.hy, this.level.exit, this.coreLoop.phase)) return;
 
     this.coreLoop = completeEscape(this.coreLoop);
-    exit.reached = true;
     this.mode = "won";
     this.renderer.triggerFlash();
     this.renderer.setExitArmed(false);
-    this.hud.setObjective(objectiveForPhase(this.coreLoop.phase));
     this.hud.setProgress(1);
     this.hud.showBigToast("won");
   }
@@ -503,7 +501,6 @@ export class Game {
       this.renderer.setScourgeFeral(i, true);
     }
     this.hud.flashToast("NODE SEVERED // ESCAPE", 1.8);
-    this.hud.setObjective(objectiveForPhase(this.coreLoop.phase));
   }
 
   private checkFatalFall() {

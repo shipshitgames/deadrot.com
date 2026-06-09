@@ -18,6 +18,7 @@ import {
   useEnterToReveal,
 } from "@shipshitgames/ui";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { objectiveForPhase } from "../game/coreLoop";
 import type { Game } from "../game/Game";
 
 interface AppShellProps {
@@ -116,7 +117,7 @@ export function AppShell({ createGame }: AppShellProps) {
           <div className="hud-block hud-grow ssg-hud-corner">
             <span className="hud-label ssg-stat-label">Objective</span>
             <span className="hud-value hud-obj" id="hud-obj">
-              REACH + IGNITE THE CORE
+              {objectiveForPhase("infiltrate", false)}
             </span>
           </div>
           <div className="hud-block hud-right ssg-hud-corner">

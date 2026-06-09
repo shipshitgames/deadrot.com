@@ -66,7 +66,7 @@ export class Renderer {
     this.scourgeMeshes.length = 0;
     this.emberMeshes.length = 0;
     this.moverMeshes.length = 0;
-    this.coreIgnited = level.core.ignited;
+    this.coreIgnited = false;
     this.exitArmed = false;
 
     // Backdrop: a huge dark void plane far behind everything.
