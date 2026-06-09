@@ -18,14 +18,44 @@ import {
   PauseMenu,
   useEnterToReveal,
 } from "@shipshitgames/ui";
-import { useMemo, useState, useSyncExternalStore } from "react";
-import { getPauseActions, getPauseSnapshot, subscribePause } from "./gameBridge";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { applyBuy, loadDrydock, saveDrydock, type ShopId } from "../game/drydock";
+import { DrydockScreen } from "./DrydockScreen";
+import { getPauseActions, getPauseSnapshot, pushDrydockTiers, setRunEndHandler, subscribePause } from "./gameBridge";
 
 export function AppShell() {
   // Pause state lives in the imperative Game engine; mirror it here via the
   // bridge so the shared React PauseMenu can render over the canvas.
   const pause = useSyncExternalStore(subscribePause, getPauseSnapshot, getPauseSnapshot);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [drydock, setDrydock] = useState(() => loadDrydock());
+  const [drydockOpen, setDrydockOpen] = useState(false);
+  // The run-end banking handler registers once; read live tiers through a ref so
+  // the Salvage Tithe multiplier reflects purchases made after mount.
+  const drydockRef = useRef(drydock);
+  drydockRef.current = drydock;
+  useEffect(() => {
+    pushDrydockTiers(drydockRef.current.tiers);
+    setRunEndHandler((salvage) => {
+      const tithe = drydockRef.current.tiers.tithe ?? 0;
+      const earned = Math.round(salvage * (1 + 0.12 * tithe));
+      if (earned <= 0) return;
+      setDrydock((prev) => {
+        const next = { ...prev, wreckage: prev.wreckage + earned };
+        saveDrydock(next);
+        return next;
+      });
+    });
+  }, []);
+  const handleBuy = useCallback((id: ShopId) => {
+    setDrydock((prev) => {
+      const next = applyBuy(prev, id);
+      if (next === prev) return prev;
+      saveDrydock(next);
+      pushDrydockTiers(next.tiers);
+      return next;
+    });
+  }, []);
   // The #banner screen is reused for the title, game-over, and victory states
   // (the engine writes #banner-title/#banner-sub for the latter two). Gate the
   // splash/menu behaviour on the title phase so the hero copy hides once the
@@ -125,7 +155,13 @@ export function AppShell() {
                 banner (which un-hides #banner-btn as "Re-engage"). */}
             <MainMenuNav aria-label="Main menu" hidden={onSplash}>
               <MainMenuAction id="banner-btn" variant="primary" label="Engage" meta="Start sortie" />
-              <MainMenuAction variant="shop" label="Upgrades" meta="Draft only" disabled />
+              <MainMenuAction
+                type="button"
+                variant="shop"
+                label="Upgrades"
+                meta="Drydock"
+                onClick={() => setDrydockOpen(true)}
+              />
               <MainMenuAction variant="coop" label="Co-op" meta="Solo sortie" disabled />
               <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
               <MainMenuAction
@@ -160,6 +196,15 @@ export function AppShell() {
         />
 
         {settingsOpen && <GameSettingsScreen open onClose={() => setSettingsOpen(false)} backgroundImage={menuHero} />}
+        {drydockOpen && (
+          <DrydockScreen
+            open
+            onClose={() => setDrydockOpen(false)}
+            backgroundImage={menuHero}
+            state={drydock}
+            onBuy={handleBuy}
+          />
+        )}
 
         <div id="draft" className="draft hidden">
           <MenuPanel className="draft-inner">
