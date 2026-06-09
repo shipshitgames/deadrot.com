@@ -183,7 +183,14 @@ export function AppShell() {
             </MainMenuCopy>
             {revealed ? (
               <MainMenuNav aria-label="Main menu">
-                <MainMenuAction id="title-start-btn" variant="primary" label="Enter arena" meta="Begin duel" />
+                <MainMenuAction
+                  type="button"
+                  id="title-start-btn"
+                  variant="primary"
+                  label="Enter arena"
+                  meta="Begin duel"
+                  onClick={() => game?.beginRun()}
+                />
                 <MainMenuAction variant="shop" label="Upgrades" meta="Champion locked" disabled />
                 <MainMenuAction variant="coop" label="Co-op" meta="Local duel" disabled />
                 <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />

@@ -28,7 +28,6 @@ if (!canvas || !hud) {
 
 const game = new Game(canvas, hud);
 game.start();
-document.getElementById("title-start-btn")?.addEventListener("click", () => game.beginRun());
 
 // Hand the running Game to the React shell so it can drive the pause overlay.
 setBridgeGame(game);
