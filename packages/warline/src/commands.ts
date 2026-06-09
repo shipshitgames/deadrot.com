@@ -5,10 +5,10 @@
  * against COMMAND_COSTS, deduct, apply effect, push a `command` event.
  */
 
-import type { Command, CommandKind, Region, ResourceKind, WarEvent, WorldState } from "./types";
-import { COMMAND_COSTS, COMMAND_EFFECT, FEED_MAX } from "./types";
 import { clamp } from "./map";
 import { makeEventId } from "./reducer";
+import type { Command, CommandKind, Region, ResourceKind, WarEvent, WorldState } from "./types";
+import { COMMAND_COSTS, COMMAND_EFFECT, FEED_MAX } from "./types";
 
 export interface CommandResult {
   ok: boolean;

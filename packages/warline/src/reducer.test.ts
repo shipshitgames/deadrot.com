@@ -1,8 +1,8 @@
-import { test } from "node:test";
 import assert from "node:assert/strict";
+import { test } from "node:test";
 
-import { createInitialWorld, regionById, breachById, laneById } from "./map";
-import { applyOperation, tick, resetWorld, magnitude } from "./reducer";
+import { breachById, createInitialWorld, laneById, regionById } from "./map";
+import { applyOperation, magnitude, resetWorld, tick } from "./reducer";
 import type { OperationResult, WorldState } from "./types";
 import { SCHEMA_VERSION, TICK } from "./types";
 

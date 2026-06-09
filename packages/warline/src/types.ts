@@ -58,11 +58,13 @@ export interface WarEvent {
   id: string; // caller-supplied unique id (server uses crypto/uuid; tests use a counter)
   t: number; // tick number
   at: number; // ms epoch
-  kind: OperationKind | "command" | "tick" | "fall" | "seal" | "reset" | "system";
+  kind: OperationKind | "command" | "tick" | "fall" | "seal" | "reset" | "system" | "story";
   faction: Faction;
   game?: GameSlug;
   text: string;
   sealed?: boolean; // a breach was sealed
+  /** Transparent math (operations) or canon anchor (story beats). */
+  detail?: string;
 }
 
 export interface WorldState {
@@ -110,6 +112,20 @@ export interface Summary {
   activeBreaches: number;
   army: number;
   resources: ResourceBag;
+  /** Choir escalation multiplier (doom clock) — see ESCALATION. */
+  escalation: number;
+}
+
+/** Transparent math for one applied operation: how the magnitude was built. */
+export interface OperationBreakdown {
+  /** Outcome base: 1 for victory, 0.35 for defeat. */
+  base: number;
+  /** Score scaling 0.6..1.4 from the reported score. */
+  scoreScale: number;
+  /** base × scoreScale — the `m` every effect multiplies. */
+  magnitude: number;
+  /** The actual deltas applied to the world (post-magnitude). */
+  effects: { label: string; value: number }[];
 }
 
 // ============================================================================
@@ -139,6 +155,15 @@ export const TICK = {
   defenseDecay: 1, // defense -= this per tick (floor 0)
   intensityRegen: 1.5, // breach.intensity climbs back toward 100 by this (×0 if sabotaged)
   fallThreshold: 100, // human region falls to scourge at/above this pressure
+} as const;
+
+// The doom clock: the Choir escalates as the war drags on. Breach output and
+// intensity regen multiply by 1 + floor(tick/rampTicks) × perRamp, capped.
+// Step-wise (not continuous) so early-war math is exactly 1×.
+export const ESCALATION = {
+  rampTicks: 240, // ~1 hour of 15s ticks per escalation step
+  perRamp: 0.25, // +25% Choir output per step
+  max: 2.5, // hard ceiling
 } as const;
 
 export const COMMAND_COSTS: Record<CommandKind, Partial<ResourceBag> & { army?: number }> = {

@@ -1,5 +1,4 @@
 import lobbyMusicUrl from "@shipshitgames/assets/games/warline/audio/music/doom-you-got-the-chainsaw.webm";
-import menuHero from "@shipshitgames/assets/games/warline/ui/menu/title.webp";
 import greenGateSpriteUrl from "@shipshitgames/assets/games/warline/props/portal-deck/green-gate.webp";
 import greenLiftSpriteUrl from "@shipshitgames/assets/games/warline/props/portal-deck/green-lift.webp";
 import mawSpireSpriteUrl from "@shipshitgames/assets/games/warline/props/portal-deck/maw-spire.webp";
@@ -11,6 +10,7 @@ import columnTextureUrl from "@shipshitgames/assets/games/warline/textures/porta
 import decalTextureUrl from "@shipshitgames/assets/games/warline/textures/portal-deck/decal.webp";
 import floorTextureUrl from "@shipshitgames/assets/games/warline/textures/portal-deck/floor.webp";
 import wallTextureUrl from "@shipshitgames/assets/games/warline/textures/portal-deck/wall.webp";
+import menuHero from "@shipshitgames/assets/games/warline/ui/menu/title.webp";
 import {
   clearMoveIntent,
   firstPersonPointerLock,

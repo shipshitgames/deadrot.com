@@ -1,7 +1,7 @@
-import { useState } from "react";
-import type { KeyboardEvent } from "react";
 import type { Faction, Region, WorldState } from "@shipshitgames/warline";
 import { breachById, regionById } from "@shipshitgames/warline";
+import type { KeyboardEvent } from "react";
+import { useState } from "react";
 import { HelpTooltip } from "./HelpTooltip";
 
 interface WarMapProps {
