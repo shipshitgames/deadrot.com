@@ -11,7 +11,7 @@ import {
   WEAPONS,
 } from "../constants";
 import type { GameContext } from "../context";
-import { eliteCountForWave, eliteXpValue, isEliteWave, rollEliteAffix, takeSplitAllowance } from "../data/eliteWaves";
+import { eliteCountForWave, eliteXpValue, planSurge, rollEliteAffix, takeSplitAllowance } from "../data/eliteWaves";
 import { pickWeightedEnemyArchetype, SCOURGE_THREAT_TIERS } from "../data/enemies";
 import { DEFAULT_MAP_ID, getMap } from "../data/maps";
 import {
@@ -593,16 +593,19 @@ export class SurvivorsSystem {
 
   /** Burst-spawn a wall of fodder (ignores the steady cap up to SURV_SWELL_CAP). */
   private triggerSwell() {
-    this.surgeIndex++;
-    const headroom = SURV_SWELL_CAP - this.ctx.aliveCount;
-    const n = Math.min(SURV_SWELL_COUNT, Math.max(0, headroom));
-    if (isEliteWave(this.surgeIndex)) {
-      this.triggerEliteWave(n);
+    const plan = planSurge(this.surgeIndex, SURV_SWELL_CAP - this.ctx.aliveCount, SURV_SWELL_COUNT);
+    this.surgeIndex = plan.nextSurgeIndex;
+    // Arena already at the swell cap: skip the beat entirely — no banner, no
+    // cues, and the elite cadence slot is preserved for the next surge that
+    // can actually field enemies (the swell timer was already re-armed).
+    if (plan.spawnCount <= 0) return;
+    if (plan.elite) {
+      this.triggerEliteWave(plan.spawnCount);
       return;
     }
     this.sys.hud.announce("BREACH SURGE");
     audio.sfx("wave");
-    for (let i = 0; i < n; i++) this.spawnSwarmEnemy(false);
+    for (let i = 0; i < plan.spawnCount; i++) this.spawnSwarmEnemy(false);
   }
 
   /** Every Nth surge lands as an ELITE WAVE: one rolled affix shared by the whole batch. */
@@ -684,7 +687,11 @@ export class SurvivorsSystem {
         if (d > radius + enemy.radius) continue;
         const k = d > 0.001 ? 1 / d : 1;
         const res = enemy.takeDamage(dmg, false, 4, dx * k, dz * k);
-        this.sys.hud.addDamageNumber(enemy.position.clone().setY(1.5), dmg, "normal");
+        if (res.blocked) {
+          audio.sfx("shieldhit"); // overshield ate the retaliation — no damage feedback
+        } else {
+          this.sys.hud.addDamageNumber(enemy.position.clone().setY(1.5), dmg, "normal");
+        }
         if (res.died) this.sys.pve.onEnemyDeath(enemy, false);
       }
     }

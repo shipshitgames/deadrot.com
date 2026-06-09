@@ -295,8 +295,10 @@ export class Game {
 
     if (this.phase === "playing") this.simulate(dt);
 
-    // Camera follows the ship (also keeps the menu backdrop alive).
-    this.render.update(dt, this.entities.ship.position.x, this.entities.ship.position.y);
+    // Camera follows the ship (also keeps the menu backdrop alive). Kill-pop
+    // bursts only advance while simulating — same gate as the legacy particle
+    // sim in simulate() — so all FX freeze together on pause / level-up.
+    this.render.update(dt, this.entities.ship.position.x, this.entities.ship.position.y, this.phase === "playing");
     this.render.render();
     this.emitHud();
 
