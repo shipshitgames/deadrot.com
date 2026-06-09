@@ -12,6 +12,7 @@ import {
   BOSS_SCALE,
   BOSS_SCORE,
   BOSS_SPEED,
+  ELITE_AFFIXES,
   ENEMY_MAX_HEALTH,
   ENEMY_PROJECTILE_DAMAGE,
   ENEMY_PROJECTILE_SPEED,
@@ -27,6 +28,7 @@ import {
   WEAPONS,
 } from "../constants";
 import type { GameContext } from "../context";
+import { rollEliteSplitCount } from "../data/eliteWaves";
 import { campaignArchetypeForWave, ENEMY_ARCHETYPES, SCOURGE_THREAT_TIERS } from "../data/enemies";
 import { SURV_XP_GEM_VALUE } from "../data/survivors";
 import { Enemy } from "../entities/Enemy";
@@ -202,12 +204,13 @@ export class PveDirectorSystem {
     }
 
     if (this.ctx.survivors) {
+      const affixed = enemy.eliteAffix !== null;
       this.ctx.score += wasBoss ? 250 : 10;
       this.sys.fx.spawnEnemyDeath(deathPos, {
         headshot,
-        elite: wasBoss,
+        elite: wasBoss || affixed,
         scale: wasBoss ? 1.8 : deathScale,
-        color: wasBoss ? 0xff2d55 : 0xc1121f,
+        color: wasBoss ? 0xff2d55 : enemy.eliteAffix ? ELITE_AFFIXES[enemy.eliteAffix].tint : 0xc1121f,
         spriteKind: deathFx.kind,
         spriteView: deathFx.view,
         spriteFlip: deathFx.flip,
@@ -215,7 +218,8 @@ export class PveDirectorSystem {
       this.sys.survivors.dropXpGem(deathPos.clone(), this.sys.survivors.enemyXp.get(enemy) ?? SURV_XP_GEM_VALUE);
       if (wasBoss) this.sys.survivors.onEliteKilled(deathPos.clone()); // Scourge elites also drop health + damage
       this.sys.survivors.onEnemyKilled(enemy, wasBoss);
-      this.spawnSplitterChildren(enemy, deathPos);
+      if (enemy.eliteAffix === "splitting") this.spawnEliteSplitChildren(enemy, deathPos);
+      else this.spawnSplitterChildren(enemy, deathPos);
       // NOTE: no ammo on kill in Survivors — the sidearm is meant to run dry.
       return;
     }
@@ -255,9 +259,26 @@ export class PveDirectorSystem {
 
   private spawnSplitterChildren(parent: Enemy, pos: THREE.Vector3) {
     if (parent.isBoss || parent.archetype !== "splitter" || parent.splitCount <= 0) return;
-    const maxChildren = this.ctx.survivors ? Math.max(0, 72 - this.ctx.aliveCount) : 4;
-    const count = Math.min(parent.splitCount, maxChildren);
+    const count = Math.min(parent.splitCount, this.splitChildHeadroom());
     if (count <= 0) return;
+    this.spawnSplitChildren(parent, pos, count);
+    this.sys.hud.showToast("SPLITTER BROOD");
+  }
+
+  /** A dying "splitting" elite sheds standard enemies, capped per elite wave to avoid runaway. */
+  private spawnEliteSplitChildren(parent: Enemy, pos: THREE.Vector3) {
+    const desired = Math.min(rollEliteSplitCount(Math.random), this.splitChildHeadroom());
+    const count = this.sys.survivors.takeEliteSplitAllowance(desired);
+    if (count <= 0) return;
+    this.spawnSplitChildren(parent, pos, count);
+    this.sys.hud.showToast("ELITE BROOD");
+  }
+
+  private splitChildHeadroom(): number {
+    return this.ctx.survivors ? Math.max(0, 72 - this.ctx.aliveCount) : 4;
+  }
+
+  private spawnSplitChildren(parent: Enemy, pos: THREE.Vector3, count: number) {
     const childDef = ENEMY_ARCHETYPES.swarmling;
     for (let i = 0; i < count; i++) {
       const child = this.getFreeEnemy();
@@ -279,7 +300,6 @@ export class PveDirectorSystem {
       );
       if (this.ctx.survivors) this.sys.survivors.enemyXp.set(child, 1);
     }
-    this.sys.hud.showToast("SPLITTER BROOD");
   }
 
   updateEnemies(delta: number, elapsed: number) {
