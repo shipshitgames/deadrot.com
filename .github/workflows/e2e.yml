@@ -63,16 +63,18 @@ jobs:
           fi
 
   games:
-    name: Playwright (${{ matrix.game }})
+    name: Playwright (${{ matrix.game }}:${{ matrix.view }})
     needs: affected-games
     if: needs.affected-games.outputs.count != '0'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
       fail-fast: false
-      # One runner per affected game (desktop + mobile run within the shard).
+      # One runner per affected game × viewport, so desktop and mobile run in
+      # parallel instead of serially within a single shard.
       matrix:
         game: ${{ fromJSON(needs.affected-games.outputs.game_slugs_json) }}
+        view: [desktop, mobile]
 
     steps:
       - name: Checkout
@@ -105,17 +107,18 @@ jobs:
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
 
-      - name: Run E2E (${{ matrix.game }})
+      - name: Run E2E (${{ matrix.game }}:${{ matrix.view }})
         run: bun run test:e2e
         env:
           CI: true
           E2E_GAME_SLUGS: ${{ matrix.game }}
+          E2E_VIEWPORT: ${{ matrix.view }}
 
       - name: Upload Playwright artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-${{ matrix.game }}-${{ github.run_id }}
+          name: e2e-${{ matrix.game }}-${{ matrix.view }}-${{ github.run_id }}
           path: |
             playwright-report/
             test-results/
