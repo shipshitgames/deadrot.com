@@ -101,8 +101,10 @@ export function AppShell() {
                 <MainMenuTitleLine>STAR</MainMenuTitleLine>
                 <MainMenuTitleLine tone="hot">BLIGHT</MainMenuTitleLine>
               </MainMenuTitle>
-              <MenuKicker id="banner-sub">THE ORBITAL FRONT</MenuKicker>
-              <p className="hint" id="banner-hint">
+              <p className="ssg-main-menu-subtitle" id="banner-sub">
+                THE ORBITAL FRONT
+              </p>
+              <p className="ssg-main-menu-subtitle" id="banner-hint">
                 MOVE WITH THE MOUSE - weapons auto-fire - collect gems, draft upgrades, stack combos
               </p>
               <MainMenuStatus>

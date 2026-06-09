@@ -257,29 +257,6 @@ body {
   width: 100%;
 }
 
-#overlay-kicker {
-  font-size: 12px;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: var(--hellfire);
-}
-
-#overlay-title {
-  margin-top: 8px;
-  color: var(--bone);
-}
-
-#overlay-title .accent {
-  color: var(--blood);
-}
-
-#overlay-body {
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--ash);
-  margin-bottom: 0;
-}
-
 #overlay-controls {
   list-style: none;
   display: grid;
