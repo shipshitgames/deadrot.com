@@ -139,6 +139,11 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
       // The hero title hides once the menu is revealed (it stays mounted for the
       // engine-written game-over banner, which reuses #banner-title).
       await expect(page.locator("#banner-title")).toBeHidden();
+      // The Drydock (meta-upgrade shop) opens from the Upgrades action and lists upgrades.
+      await page.getByRole("button", { name: /^Upgrades\b/i }).click();
+      await expect(page.getByText("REINFORCED FRAME")).toBeVisible();
+      await page.getByRole("button", { name: /^Back\b/i }).click();
+      await expect(page.getByText("REINFORCED FRAME")).toBeHidden();
       await page.getByRole("button", { name: "ENGAGE" }).click();
       await expect(page.locator("#banner")).toHaveClass(/hidden/);
       await expect(page.locator("#level")).toHaveText("1");

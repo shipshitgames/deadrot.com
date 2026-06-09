@@ -3,8 +3,9 @@ import { HudSystem } from "../systems/HudSystem";
 import { InputSystem } from "../systems/InputSystem";
 import { RenderSystem } from "../systems/RenderSystem";
 import { WeaponSystem } from "../systems/WeaponSystem";
-import { clearPauseActions, setPauseActions } from "../ui/gameBridge";
+import { clearPauseActions, emitRunEnd, setPauseActions, subscribeDrydockTiers } from "../ui/gameBridge";
 import { COLORS, CONSTANTS, type EnemyType, WORLD } from "./constants";
+import type { ShopTiers } from "./drydock";
 import type { DraftCard, Enemy, GamePhase, HudState } from "./types";
 import { ALL_UPGRADES, computeStats, defOf, maxLevelOf, type Stats, type UpgradeId, xpForLevel } from "./upgrades";
 
@@ -34,6 +35,11 @@ export class Game {
   private levels = new Map<UpgradeId, number>();
   private stats: Stats = computeStats(new Map(), CONSTANTS.xp.baseMagnet, CONSTANTS.player.startIntegrity);
   private draft: DraftCard[] | null = null;
+
+  // Persisted Drydock meta-upgrade tiers (pushed from React via the bridge),
+  // folded into a run's starting stats + loadout.
+  private shopTiers: ShopTiers = {};
+  private unsubTiers: () => void = () => {};
 
   // --- director ----------------------------------------------------------
   private spawnT = 0;
@@ -73,6 +79,8 @@ export class Game {
       restart: () => this.startRun(),
       title: () => this.returnToTitle(),
     });
+    // React pushes persisted Drydock tiers through the bridge (replayed on subscribe).
+    this.unsubTiers = subscribeDrydockTiers((tiers) => this.setShopTiers(tiers));
   }
 
   start() {
@@ -86,6 +94,7 @@ export class Game {
   dispose() {
     this.disposed = true;
     cancelAnimationFrame(this.raf);
+    this.unsubTiers();
     clearPauseActions();
     this.input.dispose();
     this.weapons.dispose();
@@ -109,6 +118,8 @@ export class Game {
     this.draft = null;
 
     this.levels = new Map<UpgradeId, number>([["seeker", 1]]); // start armed
+    // Drydock: Phalanx Cache starts the sortie with the orbiting drones too.
+    if ((this.shopTiers.phalanxcache ?? 0) > 0) this.levels.set("phalanx", 1);
     this.recomputeStats();
     this.integrity = this.stats.maxIntegrity;
 
@@ -174,9 +185,26 @@ export class Game {
   }
 
   private recomputeStats() {
-    this.stats = computeStats(this.levels, CONSTANTS.xp.baseMagnet, CONSTANTS.player.startIntegrity);
+    this.stats = computeStats(this.levels, this.baseMagnet(), this.baseIntegrity());
     if (this.integrity > this.stats.maxIntegrity) this.integrity = this.stats.maxIntegrity;
     this.weapons.setLoadout(this.levels, this.stats);
+  }
+
+  // Drydock meta-upgrades bias only the START of a run: Reinforced Frame raises
+  // base integrity, Salvage Magnet scales base magnet. They fold into the base
+  // args of computeStats — its signature is unchanged so in-run draft math is
+  // untouched. Picked up by the next startRun()/recomputeStats().
+  private baseIntegrity(): number {
+    return CONSTANTS.player.startIntegrity + 20 * (this.shopTiers.frame ?? 0);
+  }
+
+  private baseMagnet(): number {
+    return CONSTANTS.xp.baseMagnet * (1 + 0.15 * (this.shopTiers.magnet ?? 0));
+  }
+
+  /** React side (via bridge): store the latest purchased tiers for the next run. */
+  private setShopTiers(tiers: ShopTiers) {
+    this.shopTiers = tiers ?? {};
   }
 
   // --- main loop ---------------------------------------------------------
@@ -257,6 +285,7 @@ export class Game {
     if (this.integrity <= 0 && this.phase === "playing") {
       this.integrity = 0;
       this.phase = "gameover";
+      emitRunEnd(Math.round(this.salvage)); // bank salvage as Drydock wreckage
       this.emitHud();
     }
   }
@@ -640,6 +669,7 @@ export class Game {
     this.render.addShake(CONSTANTS.fx.shake.bossDeath);
     this.vacuum = true;
     this.phase = "victory";
+    emitRunEnd(Math.round(this.salvage)); // bank salvage as Drydock wreckage
     this.emitHud();
   }
 

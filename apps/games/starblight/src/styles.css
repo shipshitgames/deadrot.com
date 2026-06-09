@@ -420,3 +420,17 @@ body {
   color: var(--gunmetal);
   pointer-events: none;
 }
+
+/* The Drydock meta-upgrade shop: a responsive grid of buyable upgrade cards. */
+.ssg-drydock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  width: min(720px, 86vw);
+  margin: 18px 0 4px;
+}
+
+.ssg-drydock-grid .ssg-upgrade-card:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
