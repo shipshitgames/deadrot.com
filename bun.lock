@@ -292,6 +292,8 @@
       "name": "@shipshitgames/assets",
       "version": "0.1.0",
       "devDependencies": {
+        "@deadrot/catalog": "workspace:*",
+        "@types/node": "25.9.1",
         "typescript": "6.0.3",
       },
     },
@@ -303,6 +305,7 @@
       "name": "@deadrot/game-kit",
       "version": "0.1.0",
       "dependencies": {
+        "@shipshitgames/assets": "workspace:*",
         "@shipshitgames/ui": "workspace:*",
       },
       "devDependencies": {
