@@ -7,6 +7,7 @@ export interface BannerSnapshot {
   gold: string;
   wave: string;
   hp: string;
+  tower: string;
   build: string;
   run: string;
   hint: string;
@@ -21,6 +22,7 @@ let snapshot: BannerSnapshot = {
   gold: "0",
   wave: "0 / 0",
   hp: "0",
+  tower: "EMBER TURRET (50)",
   build: "100%",
   run: "100%",
   hint: "CLICK A CELL TO BUILD (COST 50)",

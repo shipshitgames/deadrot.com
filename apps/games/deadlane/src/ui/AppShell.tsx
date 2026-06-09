@@ -83,6 +83,12 @@ export function AppShell() {
             </span>
           </div>
           <div className="stat ssg-hud-corner">
+            <span className="stat-label ssg-stat-label">Tower [1-3]</span>
+            <span className="stat-value ssg-stat-value ssg-stat-value--text" id="stat-tower">
+              {banner.tower}
+            </span>
+          </div>
+          <div className="stat ssg-hud-corner">
             <span className="stat-label ssg-stat-label">Build</span>
             <span className="stat-value ssg-stat-value" id="stat-build">
               {banner.build}

@@ -8,20 +8,14 @@
     "tagline": "The professional zealot you learn the breach with.",
     "accent": "hellfire",
     "overview": "Start here. The Ranger is the Pyre's baseline Purger, the balanced operator every player should understand first: medium armor, rifle up, average everything and reliable in all of it.\n\nNot a clean sci-fi marine. A professional zealot in scorched gunmetal who does the job and walks back out of the breach.",
-    "gameplayRead": [
-      "Medium armor",
-      "Rifle-first silhouette",
-      "Average mobility, health, and damage"
-    ],
+    "gameplayRead": ["Medium armor", "Rifle-first silhouette", "Average mobility, health, and damage"],
     "visualMotifs": [
       "Scorched gunmetal armor",
       "Bone-white heat-baked ceramic plates",
       "Furnace visor with blood-hot and hellfire orange heat lines",
       "Dim diagnostics only, no neon"
     ],
-    "appearsIn": [
-      "scourge-survivors"
-    ],
+    "appearsIn": ["scourge-survivors"],
     "spriteBase": "player-ranger-front"
   },
   {
@@ -44,9 +38,7 @@
       "Blood-hot red heat scars under blackened armor",
       "Cracked bone-ceramic panels from repeated breach descents"
     ],
-    "appearsIn": [
-      "scourge-survivors"
-    ],
+    "appearsIn": ["scourge-survivors"],
     "spriteBase": "player-heavy-front"
   },
   {
@@ -58,20 +50,14 @@
     "tagline": "Stays alive by never standing still.",
     "accent": "toxic",
     "overview": "A breach runner with a death wish and a sensor suite. Vector is the Pyre's fast, light scout, sent in to mark breaches and kite swarms while everyone slower tries to keep up.\n\nSlim armor over a black pressure suit, long running legs, and ember accents kept thin and quick. Speed is the build, and the build is staying alive.",
-    "gameplayRead": [
-      "Slim silhouette",
-      "Compact SMG or carbine",
-      "Sensor fins, grapnel, or breach-marker gear"
-    ],
+    "gameplayRead": ["Slim silhouette", "Compact SMG or carbine", "Sensor fins, grapnel, or breach-marker gear"],
     "visualMotifs": [
       "Light scorched armor over a black pressure suit",
       "Long running-leg silhouette",
       "Narrow furnace visor",
       "Thin, fast-looking ember accents"
     ],
-    "appearsIn": [
-      "scourge-survivors"
-    ],
+    "appearsIn": ["scourge-survivors"],
     "spriteBase": "player-scout-front"
   },
   {
@@ -94,9 +80,7 @@
       "Hellfire orange medical heat glow",
       "Blood-stained utility pouches and field repairs"
     ],
-    "appearsIn": [
-      "scourge-survivors"
-    ],
+    "appearsIn": ["scourge-survivors"],
     "spriteBase": "player-medic-front"
   },
   {
@@ -118,9 +102,7 @@
       "Blood-hot Pyre heat lines",
       "Abstract ritual-industrial marks"
     ],
-    "appearsIn": [
-      "pactfall"
-    ],
+    "appearsIn": ["pactfall"],
     "spriteBase": "portrait-pyre-duelist"
   },
   {
@@ -143,9 +125,7 @@
       "Blood-hot red and hellfire orange heat scars",
       "Blackened armor and bone-ceramic plates"
     ],
-    "appearsIn": [
-      "pactfall"
-    ],
+    "appearsIn": ["pactfall"],
     "spriteBase": "portrait-pyre-cauterizer"
   },
   {
@@ -168,9 +148,7 @@
       "Compact life-support rig",
       "Blood-hot warning lamps and hellfire weapon cues"
     ],
-    "appearsIn": [
-      "starblight"
-    ],
+    "appearsIn": ["starblight"],
     "spriteBase": "portrait-pyre-interceptor-pilot"
   },
   {
@@ -193,9 +171,7 @@
       "Ember-lit shield hardware",
       "Grease, scratches, weld scars, and field repairs"
     ],
-    "appearsIn": [
-      "deadlane"
-    ],
+    "appearsIn": ["deadlane"],
     "spriteBase": "portrait-field-engineer"
   },
   {
@@ -218,9 +194,7 @@
       "Ember targeting lamps",
       "Boxy, modular Warden shape language"
     ],
-    "appearsIn": [
-      "deadlane"
-    ],
+    "appearsIn": ["deadlane"],
     "spriteBase": "portrait-lane-gunner"
   },
   {
@@ -243,9 +217,7 @@
       "Industrial hazard stripes used sparingly",
       "Ember-lit field nodes"
     ],
-    "appearsIn": [
-      "deadlane"
-    ],
+    "appearsIn": ["deadlane"],
     "spriteBase": "portrait-wallwright"
   },
   {
@@ -257,20 +229,14 @@
     "tagline": "Brings siege math into sanctioned arena combat.",
     "accent": "rust",
     "overview": "Aggression is for amateurs. The Artillerist is the Wardens' long-range arena hero, dropping controlled firepower from a braced stance while everyone else scrambles in the open.\n\nShoulder targeting rig, compact launcher, and a calm that comes from doing the math before the round even starts. You don't chase the fight. You range it.",
-    "gameplayRead": [
-      "Shoulder targeting rig",
-      "Compact artillery launcher",
-      "Stable, braced stance"
-    ],
+    "gameplayRead": ["Shoulder targeting rig", "Compact artillery launcher", "Stable, braced stance"],
     "visualMotifs": [
       "Gunmetal and worn steel",
       "Industrial yellow markings",
       "Ember rangefinder lamps",
       "Square modular armor"
     ],
-    "appearsIn": [
-      "pactfall"
-    ],
+    "appearsIn": ["pactfall"],
     "spriteBase": "portrait-warden-artillerist"
   },
   {
@@ -282,19 +248,13 @@
     "tagline": "Turns a duel into a fortified position.",
     "accent": "rust",
     "overview": "The line holds, even inside a blood-arena. The Bastion is the Wardens' arena tank and support, deploying a shield projector to turn open ground into a position your team can actually live on.\n\nHeavy but organized, square and deliberate. Where the Pyre heavy burns through, you simply refuse to give the ground back.",
-    "gameplayRead": [
-      "Shield projector",
-      "Square silhouette",
-      "Heavy but organized armor geometry"
-    ],
+    "gameplayRead": ["Shield projector", "Square silhouette", "Heavy but organized armor geometry"],
     "visualMotifs": [
       "Worn gunmetal slab armor with industrial yellow",
       "Ember barrier hardware",
       "Riveted plates and utility braces"
     ],
-    "appearsIn": [
-      "pactfall"
-    ],
+    "appearsIn": ["pactfall"],
     "spriteBase": "portrait-warden-bastion"
   },
   {
@@ -317,9 +277,7 @@
       "Ember-lit shield hardware",
       "Practical, repaired cockpit gear"
     ],
-    "appearsIn": [
-      "starblight"
-    ],
+    "appearsIn": ["starblight"],
     "spriteBase": "portrait-warden-defense-pilot"
   },
   {
@@ -342,9 +300,7 @@
       "Furnace visor and a hellfire message canister",
       "Rust-and-gunmetal road grime, no neon"
     ],
-    "appearsIn": [
-      "redline"
-    ],
+    "appearsIn": ["redline"],
     "spriteBase": "portrait-pyre-courier"
   },
   {
@@ -367,9 +323,7 @@
       "Ember rangefinder lamps, worn steel, weld scars",
       "Boxy, modular Warden shape language"
     ],
-    "appearsIn": [
-      "redline"
-    ],
+    "appearsIn": ["redline"],
     "spriteBase": "portrait-warden-courier"
   },
   {
@@ -392,9 +346,7 @@
       "A hellfire ignition charge at the hip",
       "Bone-ceramic grips, blood-hot scars, rust and gore from the climb"
     ],
-    "appearsIn": [
-      "rothulk"
-    ],
+    "appearsIn": ["rothulk"],
     "spriteBase": "portrait-pyre-saboteur"
   }
 ]

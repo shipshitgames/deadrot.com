@@ -19,7 +19,7 @@ import {
   useEnterToReveal,
 } from "@shipshitgames/ui";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { applyBuy, loadDrydock, saveDrydock, type ShopId } from "../game/drydock";
+import { applyBuy, loadDrydock, type ShopId, saveDrydock } from "../game/drydock";
 import { DrydockScreen } from "./DrydockScreen";
 import { getPauseActions, getPauseSnapshot, pushDrydockTiers, setRunEndHandler, subscribePause } from "./gameBridge";
 

@@ -110,7 +110,8 @@ const gameState: Record<
       "Playable prototype. The strategy-lite campaign layer: a living front, four resources, simple commands, and a game-to-operation loop.",
     canonRole:
       "The war console of the Resistance era: it tracks where the Pact is holding, where the Scourge pressures the lanes, and which operations buy the world more time.",
-    warline: "IS the front. Every other game reports its operation here; commands spend the shared resources they earn.",
+    warline:
+      "IS the front. Every other game reports its operation here; commands spend the shared resources they earn.",
   },
   "zero-day": {
     state:

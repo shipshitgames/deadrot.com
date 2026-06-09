@@ -22,17 +22,8 @@
         "desc": "Every chamber of the breach is its own arena of rooms and levels, with the deepest reaches of Perdition waiting below."
       }
     ],
-    "characterSlugs": [
-      "ranger",
-      "bulwark",
-      "vector",
-      "patch"
-    ],
-    "enemySlugs": [
-      "swarm-ripper",
-      "swarm-spitter",
-      "breach-boss"
-    ]
+    "characterSlugs": ["ranger", "bulwark", "vector", "patch"],
+    "enemySlugs": ["swarm-ripper", "swarm-spitter", "breach-boss"]
   },
   {
     "slug": "deadlane",
@@ -57,16 +48,8 @@
         "desc": "Shares the horde and the look of Scourge Survivors — where they go in, you keep the wall standing behind them."
       }
     ],
-    "characterSlugs": [
-      "field-engineer",
-      "lane-gunner",
-      "wallwright"
-    ],
-    "enemySlugs": [
-      "swarm-ripper",
-      "swarm-spitter",
-      "breach-boss"
-    ]
+    "characterSlugs": ["field-engineer", "lane-gunner", "wallwright"],
+    "enemySlugs": ["swarm-ripper", "swarm-spitter", "breach-boss"]
   },
   {
     "slug": "pactfall",
@@ -91,15 +74,8 @@
         "desc": "Escalating lane pressure, XP and blood drops, 1-of-3 drafts, build synergies, and boss-objective gates pulled straight from canon."
       }
     ],
-    "characterSlugs": [
-      "pyre-duelist",
-      "pyre-cauterizer",
-      "warden-bastion",
-      "warden-artillerist"
-    ],
-    "enemySlugs": [
-      "trucebreaker"
-    ]
+    "characterSlugs": ["pyre-duelist", "pyre-cauterizer", "warden-bastion", "warden-artillerist"],
+    "enemySlugs": ["trucebreaker"]
   },
   {
     "slug": "starblight",
@@ -124,14 +100,8 @@
         "desc": "Toxic-green breach organs, chitin over rusted hulls, living spore mines, and carrier-bosses grown around breach hearts."
       }
     ],
-    "characterSlugs": [
-      "pyre-interceptor-pilot",
-      "warden-defense-pilot"
-    ],
-    "enemySlugs": [
-      "scourge-fighter",
-      "orbital-breach-carrier"
-    ]
+    "characterSlugs": ["pyre-interceptor-pilot", "warden-defense-pilot"],
+    "enemySlugs": ["scourge-fighter", "orbital-breach-carrier"]
   },
   {
     "slug": "redline",
@@ -156,15 +126,8 @@
         "desc": "Chitin over the asphalt, spore-walls blooming across the lane, Render-class horrors at the junctions, and repeater-pylons that drag your redline down."
       }
     ],
-    "characterSlugs": [
-      "pyre-courier",
-      "warden-courier"
-    ],
-    "enemySlugs": [
-      "swarm-ripper",
-      "render",
-      "rot-engine"
-    ]
+    "characterSlugs": ["pyre-courier", "warden-courier"],
+    "enemySlugs": ["swarm-ripper", "render", "rot-engine"]
   },
   {
     "slug": "rothulk",
@@ -189,14 +152,8 @@
         "desc": "Reach the breach-core, burn it, then platform back out ahead of the collapse as the severed node goes feral around you."
       }
     ],
-    "characterSlugs": [
-      "pyre-saboteur"
-    ],
-    "enemySlugs": [
-      "graft-breacher",
-      "swarm-spitter",
-      "breach-boss"
-    ]
+    "characterSlugs": ["pyre-saboteur"],
+    "enemySlugs": ["graft-breacher", "swarm-spitter", "breach-boss"]
   },
   {
     "slug": "warline",
@@ -226,9 +183,7 @@
       }
     ],
     "characterSlugs": [],
-    "enemySlugs": [
-      "scourge"
-    ]
+    "enemySlugs": ["scourge"]
   },
   {
     "slug": "zero-day",

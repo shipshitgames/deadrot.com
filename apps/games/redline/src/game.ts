@@ -14,13 +14,15 @@
  * stays stable regardless of frame rate.
  */
 
-import { CAMERA } from "./constants";
+import { audio } from "./audio";
+import { CAMERA, FEEDBACK, RUNNER } from "./constants";
 import { generateCourse } from "./course";
 import { Runner } from "./entities/runner";
 import { Hud } from "./systems/hud";
 import { Input } from "./systems/input";
 import { Physics } from "./systems/physics";
 import { Render } from "./systems/render";
+import { detectNearMisses, ScoreSystem } from "./systems/score";
 import type { Course, Phase } from "./types";
 import { overlayController } from "./ui/overlayController";
 
@@ -39,11 +41,17 @@ export class Game {
   phase: Phase = "ready";
   private paused = false;
   private time = 0; // run timer (s)
-  private embersCollected = 0;
+  private score = new ScoreSystem();
 
   private last = 0;
   private acc = 0;
   private raf = 0;
+
+  // Per-displayed-frame feedback accumulators. Runner event flags (justJumped
+  // etc.) stay raised across the fixed sub-steps of a frame, so audio reads
+  // them once per frame (after the step loop) instead of per step.
+  private frameMinVy = 0; // fastest fall speed seen this frame (for landing weight)
+  private emberChainQueue: number[] = []; // chain value at each pickup this frame
 
   constructor(canvas: HTMLCanvasElement) {
     this.input = new Input(canvas);
@@ -64,7 +72,7 @@ export class Game {
 
     this.hud.showStart();
     this.hud.onOverlayButton(() => this.startRun());
-    this.hud.onSettingsButton(() => overlayController.openSettings());
+    this.hud.onSettingsButton(() => this.openSettings());
   }
 
   start() {
@@ -116,10 +124,16 @@ export class Game {
   /** Drop the live run and return to the title menu. */
   private exitToTitle() {
     this.resume();
+    audio.sfx("uiSelect");
     this.phase = "ready";
     this.hud.showStart();
     this.hud.onOverlayButton(() => this.startRun());
-    this.hud.onSettingsButton(() => overlayController.openSettings());
+    this.hud.onSettingsButton(() => this.openSettings());
+  }
+
+  private openSettings() {
+    audio.sfx("uiSelect");
+    overlayController.openSettings();
   }
 
   // ---------------------------------------------------------------------------
@@ -127,24 +141,31 @@ export class Game {
   // ---------------------------------------------------------------------------
 
   private startRun() {
+    audio.unlock(); // start screens are reached via gesture; arm music + cues
+    audio.sfx("uiSelect");
     this.course = generateCourse(); // same seed -> identical, fair course
     this.runner.reset();
+    this.score.reset();
     this.render.buildCourse(this.course, this.runner);
     this.time = 0;
-    this.embersCollected = 0;
+    this.frameMinVy = 0;
+    this.emberChainQueue.length = 0;
     this.phase = "running";
     this.hud.hideOverlay();
   }
 
   private win() {
     this.phase = "won";
-    const record = this.hud.submitTime(this.time);
-    this.hud.showWin(this.time, record, this.embersCollected);
+    audio.sfx("victory");
+    const summary = this.score.summary(this.time);
+    const records = this.hud.submitRun(this.time, summary.total);
+    this.hud.showWin(summary, records);
     this.hud.onOverlayButton(() => this.startRun());
   }
 
   private die(reason: string) {
     this.phase = "dead";
+    audio.sfx("defeat");
     this.render.kickShake(0.8);
     this.hud.flashHit();
     this.hud.showDead(reason);
@@ -204,6 +225,9 @@ export class Game {
       this.acc = 0;
     }
 
+    // Audio reads the frame-scoped runner events once, before they're cleared.
+    this.playFrameAudio();
+
     // Render + HUD always update (so overlays animate, camera settles).
     this.render.update(dt, this.runner, this.course);
     this.updateHud();
@@ -215,8 +239,15 @@ export class Game {
   private fixedStep(dt: number) {
     this.time += dt;
 
+    const prevX = this.runner.x;
+    // Track the fastest fall this frame so a landing knows its impact weight.
+    if (!this.runner.onGround) {
+      this.frameMinVy = Math.min(this.frameMinVy, this.runner.vy);
+    }
+
     this.runner.updateHorizontal(dt, this.input);
     const res = this.physics.step(dt, this.runner, this.course);
+    this.score.update(dt);
 
     // --- juice driven by physics events ------------------------------------
     if (this.runner.justHit) {
@@ -224,9 +255,29 @@ export class Game {
       this.hud.flashHit();
     }
     if (res.collectedEmbers > 0) {
-      this.embersCollected += res.collectedEmbers;
+      for (let i = 0; i < res.collectedEmbers; i++) {
+        this.score.collectEmber();
+        this.emberChainQueue.push(this.score.chain);
+      }
       this.hud.flashEmber();
+      this.render.emitEmberBurst(this.runner.x, this.runner.y);
     }
+
+    // --- style: hazards skimmed cleanly this step ---------------------------
+    this.score.addNearMisses(
+      detectNearMisses(
+        {
+          prevX,
+          x: this.runner.x,
+          y: this.runner.y,
+          crouch: this.runner.crouch,
+          radius: RUNNER.radius,
+          staggered: this.runner.staggered,
+          invulnerable: this.runner.invuln > 0,
+        },
+        this.course.hazards,
+      ),
+    );
 
     // --- terminal states ----------------------------------------------------
     if (res.fellInPit) {
@@ -239,6 +290,33 @@ export class Game {
     }
   }
 
+  /**
+   * One-shot cues for this displayed frame, capped so layered events never
+   * stack into noise. Pitch carries the information: gems climb with the
+   * chain, jumps get a hair of variation.
+   */
+  private playFrameAudio() {
+    let budget = FEEDBACK.sfxFrameCap;
+    const play = (name: Parameters<typeof audio.sfx>[0], pitch?: number) => {
+      if (budget <= 0) return;
+      budget--;
+      audio.sfx(name, pitch === undefined ? undefined : { pitch });
+    };
+
+    if (this.runner.justJumped) play("jump", 1 + (Math.random() - 0.5) * FEEDBACK.jumpPitchJitter);
+    if (this.runner.justDashed) play("dash");
+    if (this.runner.justLanded && this.frameMinVy <= FEEDBACK.landFallVy) {
+      play("land");
+      this.render.emitLandingDust(this.runner.x, this.runner.y - RUNNER.radius * this.runner.crouch);
+    }
+    if (this.runner.justHit) play("hurt");
+    for (const chain of this.emberChainQueue) {
+      play("gem", 1 + (chain - 1) * FEEDBACK.gemChainPitchStep);
+    }
+    this.emberChainQueue.length = 0;
+    if (this.runner.onGround || this.runner.justLanded) this.frameMinVy = 0;
+  }
+
   private updateHud() {
     this.hud.update({
       speed: this.runner.vx + (this.runner.dashing ? 14 : 0),
@@ -247,6 +325,9 @@ export class Game {
       distance: this.physics.distance(this.runner),
       progress: this.physics.progress(this.runner, this.course),
       state: this.runner.state,
+      score: this.score.earned,
+      chain: this.score.chain,
+      chainFrac: this.score.chainFrac,
     });
   }
 

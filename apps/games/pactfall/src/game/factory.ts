@@ -16,6 +16,9 @@ function baseEntity(partial: Partial<Entity> & Pick<Entity, "kind" | "team" | "m
     attackDamage: 0,
     attackCooldown: 0,
     cooldown: 0,
+    mana: 0,
+    maxMana: 0,
+    slowTimer: 0,
     ...partial,
   } as Entity;
 }
@@ -63,6 +66,8 @@ export function makeChampion(team: Team = "pyre"): Entity {
     attackRange: CONSTANTS.champion.attackRange,
     attackDamage: CONSTANTS.champion.attackDamage,
     attackCooldown: CONSTANTS.champion.attackCooldown,
+    mana: CONSTANTS.champion.maxMana,
+    maxMana: CONSTANTS.champion.maxMana,
   });
 }
 

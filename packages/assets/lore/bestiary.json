@@ -18,15 +18,7 @@
       "Tendrils and rupture seams",
       "Host material being overwritten — flesh, metal, bone, fungus"
     ],
-    "appearsIn": [
-      "zero-day",
-      "scourge-survivors",
-      "deadlane",
-      "pactfall",
-      "starblight",
-      "redline",
-      "rothulk"
-    ],
+    "appearsIn": ["zero-day", "scourge-survivors", "deadlane", "pactfall", "starblight", "redline", "rothulk"],
     "spriteBase": "portrait-scourge"
   },
   {
@@ -42,17 +34,8 @@
       "Hunched-forward silhouette with clear claws reads instantly in a crowd.",
       "Small toxic-green breach organs glow under the chitin."
     ],
-    "visualMotifs": [
-      "Black chitin",
-      "Raw red muscle and wet gore",
-      "Exposed sinew",
-      "No human armor layout"
-    ],
-    "appearsIn": [
-      "scourge-survivors",
-      "deadlane",
-      "redline"
-    ],
+    "visualMotifs": ["Black chitin", "Raw red muscle and wet gore", "Exposed sinew", "No human armor layout"],
+    "appearsIn": ["scourge-survivors", "deadlane", "redline"],
     "spriteBase": "enemy-melee"
   },
   {
@@ -74,11 +57,7 @@
       "Rusted stolen tech embedded in flesh",
       "Wet, parasitic surfaces"
     ],
-    "appearsIn": [
-      "scourge-survivors",
-      "deadlane",
-      "rothulk"
-    ],
+    "appearsIn": ["scourge-survivors", "deadlane", "rothulk"],
     "spriteBase": "enemy-ranged"
   },
   {
@@ -100,11 +79,7 @@
       "Parasite tissue bulging through shoulder joints and faceplate",
       "No eyes — sensory organs replaced by breach nodes"
     ],
-    "appearsIn": [
-      "scourge-survivors",
-      "deadlane",
-      "redline"
-    ],
+    "appearsIn": ["scourge-survivors", "deadlane", "redline"],
     "spriteBase": "portrait-render"
   },
   {
@@ -126,11 +101,7 @@
       "Toxic-green nodes where the gauge panels used to be",
       "Rust and barely-legible warning-stripe paint under the growth"
     ],
-    "appearsIn": [
-      "deadlane",
-      "scourge-survivors",
-      "rothulk"
-    ],
+    "appearsIn": ["deadlane", "scourge-survivors", "rothulk"],
     "spriteBase": "portrait-graft-breacher"
   },
   {
@@ -152,11 +123,7 @@
       "Wet organic ducts pulsing through axle joints and exhaust ports",
       "Hollow breached cockpit — no glass, no operator, something wet inside"
     ],
-    "appearsIn": [
-      "deadlane",
-      "scourge-survivors",
-      "redline"
-    ],
+    "appearsIn": ["deadlane", "scourge-survivors", "redline"],
     "spriteBase": "portrait-rot-engine"
   },
   {
@@ -178,11 +145,7 @@
       "Horn or mandible crown",
       "Asymmetry and parasite growth, never a larger soldier"
     ],
-    "appearsIn": [
-      "scourge-survivors",
-      "deadlane",
-      "rothulk"
-    ],
+    "appearsIn": ["scourge-survivors", "deadlane", "rothulk"],
     "spriteBase": "boss"
   },
   {
@@ -204,9 +167,7 @@
       "Living spore pods",
       "No clean sci-fi glow"
     ],
-    "appearsIn": [
-      "starblight"
-    ],
+    "appearsIn": ["starblight"],
     "spriteBase": "portrait-scourge-fighter"
   },
   {
@@ -228,9 +189,7 @@
       "Raw tissue in broken engines",
       "Toxic-green breach heart as the weak point"
     ],
-    "appearsIn": [
-      "starblight"
-    ],
+    "appearsIn": ["starblight"],
     "spriteBase": "portrait-orbital-breach-carrier"
   },
   {
@@ -252,9 +211,7 @@
       "Bone-like protrusions",
       "Toxic-green breach organ at the center"
     ],
-    "appearsIn": [
-      "pactfall"
-    ],
+    "appearsIn": ["pactfall"],
     "spriteBase": "portrait-trucebreaker"
   },
   {
@@ -276,15 +233,7 @@
       "Bulging sacs and fibrous spore growth on mycelial hosts",
       "Metal as a shell grown through, not technology"
     ],
-    "appearsIn": [
-      "zero-day",
-      "scourge-survivors",
-      "deadlane",
-      "starblight",
-      "pactfall",
-      "redline",
-      "rothulk"
-    ],
+    "appearsIn": ["zero-day", "scourge-survivors", "deadlane", "starblight", "pactfall", "redline", "rothulk"],
     "spriteBase": "portrait-scourge-host-families"
   }
 ]

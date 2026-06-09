@@ -1,7 +1,4 @@
 import * as THREE from "three";
-import { COLORS, CONSTANTS, ENEMIES, SPITTER, WORLD, type EnemyType } from "../game/constants";
-import type { Bullet, Enemy, EnemyBullet, Gem, Particle } from "../game/types";
-import type { RenderSystem } from "./RenderSystem";
 import orbitalBreachCarrierUrl from "../assets/sprites/runtime/orbital-breach-carrier.webp";
 import playerInterceptorUrl from "../assets/sprites/runtime/player-interceptor.webp";
 import salvageShardUrl from "../assets/sprites/runtime/salvage-shard.webp";
@@ -10,6 +7,9 @@ import scourgeGruntUrl from "../assets/sprites/runtime/scourge-grunt.webp";
 import scourgeSpitterUrl from "../assets/sprites/runtime/scourge-spitter.webp";
 import scourgeSwarmlingUrl from "../assets/sprites/runtime/scourge-swarmling.webp";
 import scourgeWeaverUrl from "../assets/sprites/runtime/scourge-weaver.webp";
+import { COLORS, CONSTANTS, ENEMIES, type EnemyType, SPITTER, WORLD } from "../game/constants";
+import type { Bullet, Enemy, EnemyBullet, Gem, Particle } from "../game/types";
+import type { RenderSystem } from "./RenderSystem";
 
 const TAU = Math.PI * 2;
 const HIT_FLASH = 0.09;
@@ -92,6 +92,26 @@ export class EntitySystem {
   private gemBigMat = this.spriteMaterial("salvage");
   private particleGeom = new THREE.BoxGeometry(0.42, 0.42, 0.42);
   private trailGeom = new THREE.PlaneGeometry(0.9, 0.9);
+
+  // Boss beam telegraph: a faint warning line, then the hot burning beam.
+  // Scourge threat => toxic palette (readability rule in constants.ts).
+  private bossBeamGeom = new THREE.PlaneGeometry(1, 1);
+  private bossBeamWarnMat = new THREE.MeshBasicMaterial({
+    color: COLORS.toxic,
+    transparent: true,
+    opacity: 0.25,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  private bossBeamFireMat = new THREE.MeshBasicMaterial({
+    color: COLORS.toxicHot,
+    transparent: true,
+    opacity: 0.85,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  private bossBeamWarn: THREE.Mesh | null = null;
+  private bossBeamFire: THREE.Mesh | null = null;
 
   private enemyGeom: Record<EnemyType, THREE.PlaneGeometry> = {
     grunt: spritePlane("grunt", ENEMIES.grunt.size * 1.65),
@@ -251,6 +271,7 @@ export class EntitySystem {
       contactDmg: def.contactDmg,
       radius: def.size * 0.7,
       flash: 0,
+      telegraph: 0,
       phase: Math.random() * TAU,
       fireCooldown: SPITTER.fireEvery * (0.4 + Math.random() * 0.8),
       vx: 0,
@@ -282,6 +303,7 @@ export class EntitySystem {
       contactDmg,
       radius: size,
       flash: 0,
+      telegraph: 0,
       phase: 0,
       fireCooldown: 0,
       vx: 0,
@@ -299,13 +321,19 @@ export class EntitySystem {
     const sy = this.ship.position.y;
     for (const e of this.enemies) {
       if (e.dead) continue;
-      // The boss is steered by the Game; it only needs flash/pulse here.
+      // The boss is steered by the Game; it only needs flash/glow/pulse here.
       if (e.boss) {
         const dx = sx - e.mesh.position.x;
         const dy = sy - e.mesh.position.y;
         e.mesh.rotation.z = Math.atan2(dy, dx) + Math.PI / 2;
-        if (e.flash > 0) {
-          e.flash = Math.max(0, e.flash - dt);
+        if (e.flash > 0) e.flash = Math.max(0, e.flash - dt);
+        if (e.telegraph > 0) {
+          // Attack-windup glow: blink toward hot toxic so the ring volley
+          // reads clearly before it fires (overrides the hit flash).
+          const blink = 0.55 + 0.45 * Math.sin(time * 16);
+          e.material.color.setHex(0xffffff).lerp(TOXIC_HOT, clamp(e.telegraph, 0, 1) * blink);
+          e.material.opacity = 1;
+        } else if (e.flash > 0) {
           const t = clamp(e.flash / HIT_FLASH, 0, 1);
           e.material.color.setHex(0xffffff).lerp(BONE, t);
         } else {
@@ -552,6 +580,46 @@ export class EntitySystem {
     this.bullets.length = 0;
     for (const b of this.enemyBullets) this.releaseEnemyBolt(b.mesh);
     this.enemyBullets.length = 0;
+    this.hideBossBeam();
+  }
+
+  // --- boss beam telegraph + burn -----------------------------------------
+
+  /** Warning line along the locked beam path; t01 ramps urgency 0 -> 1. */
+  showBossBeamWarn(x1: number, y1: number, x2: number, y2: number, width: number, t01: number) {
+    this.bossBeamWarn ??= this.makeBossBeam(this.bossBeamWarnMat);
+    if (this.bossBeamFire) this.bossBeamFire.visible = false;
+    // A thin line that solidifies as firing approaches.
+    this.layoutBossBeam(this.bossBeamWarn, x1, y1, x2, y2, width * 0.35);
+    this.bossBeamWarnMat.opacity = 0.18 + 0.3 * clamp(t01, 0, 1);
+  }
+
+  /** The burning beam along the same locked path; t01 is remaining life 1 -> 0. */
+  showBossBeamFire(x1: number, y1: number, x2: number, y2: number, width: number, t01: number) {
+    this.bossBeamFire ??= this.makeBossBeam(this.bossBeamFireMat);
+    if (this.bossBeamWarn) this.bossBeamWarn.visible = false;
+    this.layoutBossBeam(this.bossBeamFire, x1, y1, x2, y2, width);
+    this.bossBeamFireMat.opacity = 0.45 + 0.45 * clamp(t01, 0, 1);
+  }
+
+  hideBossBeam() {
+    if (this.bossBeamWarn) this.bossBeamWarn.visible = false;
+    if (this.bossBeamFire) this.bossBeamFire.visible = false;
+  }
+
+  private makeBossBeam(mat: THREE.MeshBasicMaterial): THREE.Mesh {
+    const mesh = new THREE.Mesh(this.bossBeamGeom, mat);
+    mesh.visible = false;
+    this.render.add(mesh);
+    return mesh;
+  }
+
+  private layoutBossBeam(mesh: THREE.Mesh, x1: number, y1: number, x2: number, y2: number, width: number) {
+    const len = Math.hypot(x2 - x1, y2 - y1) || 1;
+    mesh.visible = true;
+    mesh.position.set((x1 + x2) / 2, (y1 + y2) / 2, -0.3);
+    mesh.rotation.z = Math.atan2(y2 - y1, x2 - x1);
+    mesh.scale.set(len, width, 1);
   }
 
   // --- gems --------------------------------------------------------------
@@ -801,12 +869,17 @@ export class EntitySystem {
         s.mat.dispose();
       }
     }
+    if (this.bossBeamWarn) this.render.remove(this.bossBeamWarn);
+    if (this.bossBeamFire) this.render.remove(this.bossBeamFire);
     // Shared geometry/materials.
     this.boltGeom.dispose();
     this.enemyBoltGeom.dispose();
     this.gemGeom.dispose();
     this.particleGeom.dispose();
     this.trailGeom.dispose();
+    this.bossBeamGeom.dispose();
+    this.bossBeamWarnMat.dispose();
+    this.bossBeamFireMat.dispose();
     for (const g of Object.values(this.enemyGeom)) g.dispose();
     for (const t of Object.values(this.spriteTextures)) t.dispose();
     this.boltMat.dispose();
@@ -829,3 +902,4 @@ export class EntitySystem {
 
 // Scratch colors (avoid `new THREE.Color` in hot loops).
 const BONE = new THREE.Color(COLORS.bone);
+const TOXIC_HOT = new THREE.Color(COLORS.toxicHot);

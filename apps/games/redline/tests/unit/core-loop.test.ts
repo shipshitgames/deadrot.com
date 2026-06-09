@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { EMBER, RUNNER, WORLD } from "./constants.ts";
-import { generateCourse } from "./course.ts";
-import { Runner } from "./entities/runner.ts";
-import type { Input } from "./systems/input.ts";
-import { Physics } from "./systems/physics.ts";
-import type { Course } from "./types.ts";
+import { EMBER, RUNNER, WORLD } from "../../src/constants.ts";
+import { generateCourse } from "../../src/course.ts";
+import { Runner } from "../../src/entities/runner.ts";
+import type { Input } from "../../src/systems/input.ts";
+import { Physics } from "../../src/systems/physics.ts";
+import type { Course } from "../../src/types.ts";
 
 class TestInput {
   accelerate = false;

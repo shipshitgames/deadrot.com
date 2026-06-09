@@ -260,6 +260,39 @@ export const ENEMY_PROJECTILE_DAMAGE = 8;
 export const PROJECTILE_HIT_RADIUS = 0.9; // distance to player that counts as a hit
 export const PROJECTILE_TTL = 4;
 
+// ---- Elite wave affixes (Survivors) ----------------------------------------
+// Every Nth breach surge arrives as an ELITE WAVE: a fraction of its spawns are
+// promoted to larger, tinted elites that all share one rolled affix.
+export type EliteAffixId = "shielded" | "frenzied" | "splitting";
+
+export interface EliteAffixDef {
+  id: EliteAffixId;
+  name: string; // toast copy shown when the elite wave lands
+  tint: number; // sprite/death-FX tint (DOOM palette only)
+  cue: "shieldUp" | "berserk" | null; // played once per elite batch, not per enemy
+}
+
+export const ELITE_WAVE_EVERY = 3; // every Nth breach surge is an ELITE WAVE
+export const ELITE_WAVE_FRACTION = 0.18; // fraction of the surge promoted to elites
+export const ELITE_WAVE_MIN_ELITES = 2; // an elite wave always fields at least this many
+export const ELITE_SCALE_MUL = 1.25; // elites are visibly larger than their archetype
+export const ELITE_HP_MUL = 2.2; // elite health over the archetype baseline
+export const ELITE_XP_MUL = 3; // elite gems pay out triple the archetype value
+export const ELITE_SHIELD_HP = 70; // overshield absorbed before health (scaled by run time)
+export const ELITE_FRENZY_SPEED_MUL = 1.4; // frenzied: +40% move speed
+export const ELITE_FRENZY_DAMAGE_MUL = 1.2; // frenzied: +20% damage
+export const ELITE_SPLIT_COUNT_MIN = 2; // splitting elites shed 2-3 standard enemies on death
+export const ELITE_SPLIT_COUNT_MAX = 3;
+export const ELITE_SPLIT_CAP_PER_WAVE = 12; // total split children allowed per elite wave
+
+export const ELITE_AFFIXES: Record<EliteAffixId, EliteAffixDef> = {
+  shielded: { id: "shielded", name: "SHIELDED ELITES", tint: 0xe9e3d6, cue: "shieldUp" }, // bone
+  frenzied: { id: "frenzied", name: "FRENZIED ELITES", tint: 0xff2a18, cue: "berserk" }, // bloodHot
+  splitting: { id: "splitting", name: "SPLITTING ELITES", tint: 0x8bdc1f, cue: null }, // toxic (Scourge-only)
+};
+
+export const ELITE_AFFIX_IDS: EliteAffixId[] = ["shielded", "frenzied", "splitting"];
+
 // ---- Boss skills ----------------------------------------------------------
 export const BOSS_SKILL_INTERVAL = 7; // seconds between boss abilities
 export const BOSS_SHIELD_DURATION = 4;

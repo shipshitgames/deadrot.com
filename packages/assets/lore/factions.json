@@ -9,13 +9,7 @@
     "playstyle": "Aggressive high-risk DPS and infiltration. Drop into the breach, push deeper room by room, and torch the Choir repeaters from the inside.",
     "rivalry": "We call the Wardens cowards who prolong the rot one wall at a time — and we'd be lying if we said they didn't hold the line for us every single time the swarm surges. The feud is real. It just gets settled in the arena at Pactfall, never in the field. When a breach opens, we stand together. That's the Pact.",
     "crestMotif": "an upward-pointing wedge wreathed in jagged flame tongues, a severed circular node-ring broken at the base, scorched edges bleeding into ember",
-    "gameSlugs": [
-      "scourge-survivors",
-      "pactfall",
-      "starblight",
-      "redline",
-      "rothulk"
-    ]
+    "gameSlugs": ["scourge-survivors", "pactfall", "starblight", "redline", "rothulk"]
   },
   {
     "slug": "the-wardens",
@@ -27,12 +21,7 @@
     "playstyle": "Defensive, economic, building. Place towers, fortify the chokepoints, and grind the swarm down through attrition before it ever reaches the line.",
     "rivalry": "We see the Pyre for what they are — reckless fanatics burning lives on suicide runs into breaches that reopen behind them. And we hold the line for them anyway, every time the Scourge surges. The grudge gets paid in the arena at Pactfall, not on the field. Whatever the feud, when a breach opens we stand together. That's the Pact.",
     "crestMotif": "a heavy interlocking gear-and-shield, three horizontal bars suggesting a layered wall, riveted gunmetal frame with corroded edges",
-    "gameSlugs": [
-      "deadlane",
-      "pactfall",
-      "starblight",
-      "redline"
-    ]
+    "gameSlugs": ["deadlane", "pactfall", "starblight", "redline"]
   },
   {
     "slug": "the-listeners",
