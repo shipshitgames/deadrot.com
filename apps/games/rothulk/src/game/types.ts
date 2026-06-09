@@ -57,6 +57,45 @@ export interface Scourge {
   popTimer: number; // >0 while playing the death pop
 }
 
+// Stationary lobber: arcs a toxic glob at the hero on a cooldown when in range.
+export interface Spitter {
+  x: number;
+  y: number;
+  size: number;
+  cooldown: number; // seconds until the next lob is allowed
+  alive: boolean;
+  popTimer: number; // >0 while playing the death pop
+}
+
+// Pooled spitter projectile (runtime state, not level data).
+export interface ToxicGlob {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  active: boolean;
+}
+
+export type ChargerState = "patrol" | "charge" | "stunned";
+
+// Patroller that charges horizontally when the hero shares its row; stomp from
+// above kills it, side contact hurts, and a wall impact briefly stuns it.
+export interface Charger {
+  x: number;
+  y: number;
+  vx: number;
+  w: number;
+  h: number;
+  minX: number; // traversal bounds — also the walls that stun a charge
+  maxX: number;
+  facing: number; // -1 | 1
+  state: ChargerState;
+  stunTimer: number;
+  alive: boolean;
+  popTimer: number;
+}
+
 export interface Ember {
   x: number;
   y: number;
@@ -88,10 +127,13 @@ export interface LevelData {
   loreId: string; // cross-game map registry id (e.g. 'cinder')
   front: "hulk"; // which war-front this level belongs to
   width: number; // total level length in world-units
+  spawn: { x: number; y: number }; // hero entry point (also the escape exit)
   platforms: Platform[];
   movers: MovingPlatform[];
   hazards: Hazard[];
   scourge: Scourge[];
+  spitters: Spitter[];
+  chargers: Charger[];
   embers: Ember[];
   checkpoint: Checkpoint;
   core: CoreGoal;
