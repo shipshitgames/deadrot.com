@@ -24,4 +24,5 @@ export function buildLevelAt(index: number): LevelData {
   return entry.build();
 }
 
-export { buildLevel1, buildLevel2 };
+// Re-exported for the unit suite that locks level 1's layout.
+export { buildLevel1 };
