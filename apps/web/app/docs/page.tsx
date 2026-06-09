@@ -544,7 +544,7 @@ export default function DocsPage() {
                 variant="outline"
                 className="mt-6 border-toxic/50 font-display uppercase tracking-widest text-toxic hover:bg-toxic/10 hover:text-toxic"
               >
-                <a href="https://github.com/shipshitgames/lore" target="_blank" rel="noreferrer">
+                <a href="https://lore.deadrot.com" target="_blank" rel="noreferrer">
                   <ScrollText aria-hidden />
                   Lore Vault
                 </a>
