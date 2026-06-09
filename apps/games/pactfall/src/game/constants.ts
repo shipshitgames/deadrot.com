@@ -45,6 +45,61 @@ export const CONSTANTS = {
     respawnZ: -16, // spawn out in the lane, ahead of the friendly base (which stays behind the camera)
     respawnDelay: 5, // seconds a slain champion stays down before redeploying
     retreatZ: -20, // how far back toward the base the player may walk (keeps the base behind the cam)
+    maxMana: 100,
+    manaRegen: 7, // mana / sec while alive
+    lowHpFraction: 0.25, // below this HP fraction the low-health heartbeat + vignette kick in
+  },
+
+  // Q/W/E abilities — every cost, cooldown, and damage knob lives here so the
+  // ability system stays declarative. Tuned so abilities clearly out-damage
+  // autos (22/hit) but are aimable / dodge-able.
+  abilities: {
+    q: {
+      name: "Cinder Lance",
+      damage: 75, // ~3.4 autos in one skillshot
+      range: 16, // longer than auto range so landing it feels like a pick
+      width: 1.6, // total corridor width (forgiveness on each side)
+      cooldown: 6,
+      manaCost: 25,
+    },
+    w: {
+      name: "Pact Brand",
+      radius: 3.5,
+      castRange: 8, // max distance from the champion the brand can be placed
+      duration: 2.5,
+      slowFactor: 0.6, // enemies in the zone move at 60% speed (~40% slow)
+      tickDamage: 9, // light damage per tick (5 ticks ≈ 45 total)
+      tickInterval: 0.5,
+      slowLinger: 0.2, // seconds the slow persists after leaving the zone
+      cooldown: 10,
+      manaCost: 35,
+    },
+    e: {
+      name: "Vault",
+      distance: 7, // dash length toward move direction / cursor
+      cooldown: 7,
+      manaCost: 15,
+    },
+  },
+
+  // Warden champion AI: a simple, deterministic caster — Q on cooldown when the
+  // player is in range, telegraphed so the shot can be side-stepped.
+  ai: {
+    qWindup: 0.55, // seconds the aim line shows before the locked shot fires
+    qRangeFactor: 0.85, // cast once the player is inside q.range * factor
+  },
+
+  // Juice/feedback tunables (presentation only — never touches the sim).
+  feedback: {
+    hurtSfxCooldown: 0.25, // throttle the hurt cue so minion chip isn't a siren
+    heartbeatInterval: 1.1, // seconds between low-health heartbeats
+    maxHitSfxPerFrame: 4,
+    maxKillSfxPerFrame: 3,
+    shake: {
+      championKill: 0.5,
+      playerHit: 0.16,
+      playerDeath: 0.7,
+    },
   },
 
   // Minions (the steady lane trickle)

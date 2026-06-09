@@ -38,6 +38,7 @@
       "name": "pactfall",
       "version": "0.1.0",
       "dependencies": {
+        "@deadrot/game-kit": "workspace:*",
         "@shipshitgames/assets": "workspace:*",
         "@shipshitgames/ui": "workspace:*",
         "react": "19.2.7",

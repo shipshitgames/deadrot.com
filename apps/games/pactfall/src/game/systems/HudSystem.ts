@@ -1,5 +1,11 @@
 import { CONSTANTS } from "../constants";
 import type { Game } from "../Game";
+import { ABILITY_KEYS, type AbilityKey } from "./abilities";
+
+interface AbilitySlot {
+  root: HTMLElement;
+  cd: HTMLElement;
+}
 
 // HUD adapter. React renders the shell; this system reads game state each frame
 // and writes into cached element refs so the game loop stays independent.
@@ -7,6 +13,9 @@ export class HudSystem {
   private readonly elBaseFriendly: HTMLElement;
   private readonly elBaseEnemy: HTMLElement;
   private readonly elHp: HTMLElement;
+  private readonly elMana: HTMLElement;
+  private readonly elManaValue: HTMLElement;
+  private readonly abilitySlots: Record<AbilityKey, AbilitySlot>;
   private readonly buff: HTMLElement;
   private readonly buffTime: HTMLElement;
   private readonly banner: HTMLElement;
@@ -17,6 +26,13 @@ export class HudSystem {
     this.elBaseFriendly = this.req(root, "#meter-base-friendly .bar i");
     this.elBaseEnemy = this.req(root, "#meter-base-enemy .bar i");
     this.elHp = this.req(root, "#meter-hp .bar i");
+    this.elMana = this.req(root, "#meter-mana .bar i");
+    this.elManaValue = this.req(root, "#meter-mana .mana-value");
+    this.abilitySlots = {
+      q: this.abilitySlot(root, "q"),
+      w: this.abilitySlot(root, "w"),
+      e: this.abilitySlot(root, "e"),
+    };
     this.buff = this.req(root, "#buff");
     this.buffTime = this.req(root, "#buff .buff-time");
     this.banner = this.req(root, "#banner");
@@ -26,6 +42,18 @@ export class HudSystem {
     // Static canon label — the arena district these duels are sanctioned in.
     const arenaName = root.querySelector("#arena-name");
     if (arenaName) arenaName.textContent = CONSTANTS.arena.name;
+    // Ability names come from the data, like every other tunable.
+    for (const key of ABILITY_KEYS) {
+      const name = root.querySelector(`#ability-${key} .ability-name`);
+      if (name) name.textContent = CONSTANTS.abilities[key].name;
+    }
+  }
+
+  private abilitySlot(root: HTMLElement, key: AbilityKey): AbilitySlot {
+    return {
+      root: this.req(root, `#ability-${key}`),
+      cd: this.req(root, `#ability-${key} .ability-cd`),
+    };
   }
 
   private req(root: HTMLElement, sel: string): HTMLElement {
@@ -38,8 +66,20 @@ export class HudSystem {
     const ent = game.entities;
 
     this.setBar(this.elHp, ent.champion.hp, CONSTANTS.champion.maxHp);
+    this.setBar(this.elMana, ent.champion.mana, Math.max(1, ent.champion.maxMana));
+    this.elManaValue.textContent = `${Math.round(ent.champion.mana)}`;
     this.setBar(this.elBaseFriendly, ent.friendlyBase.hp, CONSTANTS.base.maxHp);
     this.setBar(this.elBaseEnemy, ent.enemyBase.hp, CONSTANTS.base.maxHp);
+
+    for (const key of ABILITY_KEYS) {
+      const slot = this.abilitySlots[key];
+      const cd = game.abilities.player.cooldowns[key];
+      const cooling = cd > 0;
+      const oom = !cooling && ent.champion.mana < CONSTANTS.abilities[key].manaCost;
+      slot.cd.textContent = cooling ? `${cd.toFixed(1)}` : oom ? "MANA" : "RDY";
+      slot.root.classList.toggle("ability--cooling", cooling);
+      slot.root.classList.toggle("ability--oom", oom);
+    }
 
     if (game.buffed) {
       this.buff.classList.remove("buff--off");
