@@ -15,6 +15,8 @@ import {
   worldToCell,
 } from "../../src/board";
 import { CONSTANTS } from "../../src/constants";
+import type { CreepKind, TowerKind } from "../../src/types";
+import { creepStatsForWave, isBossWave, spawnCountForWave, waveComposition } from "../../src/waves";
 
 /**
  * Gameplay unit tests for Deadlane (tower-defense lane holder).
@@ -22,32 +24,17 @@ import { CONSTANTS } from "../../src/constants";
  * Scope note: Deadlane keeps its simulation in `src/systems/entities.ts` and
  * `src/game.ts`, but both eagerly construct THREE meshes / WebGL render systems
  * and cannot be imported under `bun test`. Those files derive every gameplay
- * number purely from `CONSTANTS`, so we test:
- *   1. the genuinely pure exports in `src/board.ts` (THREE.Vector3 math only), and
- *   2. the constant-driven formulas (economy, wave schedule, creep scaling,
- *      build/bonus state machine, targeting range) by replicating the exact
- *      arithmetic the systems run, asserting it against `CONSTANTS`.
+ * number purely from `CONSTANTS` (and the pure wave director data in
+ * `src/waves.ts`), so we test:
+ *   1. the genuinely pure exports in `src/board.ts` (THREE.Vector3 math only),
+ *   2. the wave composition / scaling helpers in `src/waves.ts`, and
+ *   3. the constant-driven formulas (economy, build/bonus state machine,
+ *      targeting range) by replicating the exact arithmetic the systems run.
  * If a balance constant changes, these tests fail — which is the point.
  */
 
-// --- helpers that mirror the EXACT arithmetic in entities.ts / game.ts --------
-
-/** entities.spawnCreep: hp scales by hpGrowth^(wave-1), wave clamped to >=1. */
-function creepHpForWave(wave: number): number {
-  const w = Math.max(1, wave);
-  return CONSTANTS.creep.baseHp * CONSTANTS.creep.hpGrowth ** (w - 1);
-}
-
-/** entities.spawnCreep: speed scales by speedGrowth^(wave-1). */
-function creepSpeedForWave(wave: number): number {
-  const w = Math.max(1, wave);
-  return CONSTANTS.creep.baseSpeed * CONSTANTS.creep.speedGrowth ** (w - 1);
-}
-
-/** game.beginWave: spawnQueue = baseCount + (wave-1)*countGrowth (wave is 1-based). */
-function spawnCountForWave(wave: number): number {
-  return CONSTANTS.waves.baseCount + (wave - 1) * CONSTANTS.waves.countGrowth;
-}
+const TOWER_KINDS = Object.keys(CONSTANTS.towers) as TowerKind[];
+const CREEP_KINDS = Object.keys(CONSTANTS.creeps) as CreepKind[];
 
 /** game.buildSpeedMul / runSpeedMul. */
 function buildSpeedMul(level: number): number {
@@ -138,47 +125,46 @@ describe("lane / path", () => {
 });
 
 describe("economy", () => {
-  test("starting gold buys a known number of towers", () => {
-    const { startGold, towerCost } = CONSTANTS.economy;
-    const affordable = Math.floor(startGold / towerCost);
+  test("starting gold buys a known number of ember turrets", () => {
+    const { startGold } = CONSTANTS.economy;
+    const cost = CONSTANTS.towers.ember.cost;
+    const affordable = Math.floor(startGold / cost);
     expect(affordable).toBe(3); // 175 / 50
     // ...but not four.
-    expect(towerCost * 4).toBeGreaterThan(startGold);
+    expect(cost * 4).toBeGreaterThan(startGold);
   });
 
-  test("buying a tower deducts exactly the tower cost", () => {
-    const { startGold, towerCost } = CONSTANTS.economy;
-    let gold = startGold;
-    gold -= towerCost;
-    expect(gold).toBe(startGold - towerCost);
+  test("tower archetypes cost more as their utility grows", () => {
+    expect(CONSTANTS.towers.stasis.cost).toBeGreaterThan(CONSTANTS.towers.ember.cost);
+    expect(CONSTANTS.towers.mortar.cost).toBeGreaterThan(CONSTANTS.towers.stasis.cost);
   });
 
-  test("cannot build when gold is below cost (entities.buildTower guard)", () => {
-    const canBuild = (gold: number) => gold >= CONSTANTS.economy.towerCost;
-    expect(canBuild(CONSTANTS.economy.towerCost)).toBe(true);
-    expect(canBuild(CONSTANTS.economy.towerCost - 1)).toBe(false);
+  test("cannot build when gold is below the selected tower's cost", () => {
+    for (const kind of TOWER_KINDS) {
+      const cost = CONSTANTS.towers[kind].cost;
+      const canBuild = (gold: number) => gold >= cost;
+      expect(canBuild(cost)).toBe(true);
+      expect(canBuild(cost - 1)).toBe(false);
+    }
   });
 
-  test("kills and wave-clears credit gold", () => {
-    const { killReward, waveClearBonus } = CONSTANTS.economy;
-    let gold = 0;
-    gold += killReward; // one kill
-    gold += killReward; // another
-    expect(gold).toBe(killReward * 2);
-    gold += waveClearBonus; // clear the wave
-    expect(gold).toBe(killReward * 2 + waveClearBonus);
+  test("kill rewards scale with creep toughness", () => {
+    expect(CONSTANTS.creeps.ripper.reward).toBeLessThan(CONSTANTS.creeps.shambler.reward);
+    expect(CONSTANTS.creeps.hulk.reward).toBeGreaterThan(CONSTANTS.creeps.shambler.reward);
+    expect(CONSTANTS.creeps.boss.reward).toBeGreaterThan(CONSTANTS.creeps.hulk.reward);
   });
 
-  test("a fully-cleared first wave funds at least one fresh tower", () => {
-    const { killReward, waveClearBonus, towerCost } = CONSTANTS.economy;
-    const earned = killReward * spawnCountForWave(1) + waveClearBonus;
-    expect(earned).toBeGreaterThanOrEqual(towerCost);
+  test("a fully-cleared first wave funds at least one fresh ember turret", () => {
+    const earned =
+      waveComposition(1).reduce((sum, kind) => sum + CONSTANTS.creeps[kind].reward, 0) +
+      CONSTANTS.economy.waveClearBonus;
+    expect(earned).toBeGreaterThanOrEqual(CONSTANTS.towers.ember.cost);
   });
 });
 
 describe("wave director schedule", () => {
   test("there are the configured number of waves", () => {
-    expect(CONSTANTS.waves.total).toBe(8);
+    expect(CONSTANTS.waves.total).toBe(10);
   });
 
   test("wave size escalates strictly with each wave", () => {
@@ -188,13 +174,6 @@ describe("wave director schedule", () => {
       expect(counts[i]).toBeGreaterThan(counts[i - 1]);
       expect(counts[i] - counts[i - 1]).toBe(CONSTANTS.waves.countGrowth);
     }
-  });
-
-  test("final wave is the largest", () => {
-    const first = spawnCountForWave(1);
-    const last = spawnCountForWave(CONSTANTS.waves.total);
-    expect(last).toBeGreaterThan(first);
-    expect(last).toBe(CONSTANTS.waves.baseCount + (CONSTANTS.waves.total - 1) * CONSTANTS.waves.countGrowth);
   });
 
   test("inter-wave timer counts down and triggers the next wave at zero", () => {
@@ -208,8 +187,6 @@ describe("wave director schedule", () => {
     }
     expect(ticks).toBeGreaterThan(0);
     expect(timer).toBeLessThanOrEqual(0);
-    // The breathing room is long enough to span many frames (~delay/dt,
-    // within one tick of float accumulation either way).
     const expected = CONSTANTS.waves.interWaveDelay / dt;
     expect(Math.abs(ticks - expected)).toBeLessThanOrEqual(1);
     expect(ticks).toBeGreaterThan(100);
@@ -217,12 +194,10 @@ describe("wave director schedule", () => {
 
   test("spawn pacing: spawnInterval gates each creep release", () => {
     // game.director: after a spawn, spawnTimer resets to spawnInterval.
-    const wave = 1;
-    const queue = spawnCountForWave(wave);
+    const queue = waveComposition(1).length;
     let spawned = 0;
     let timer = 0;
     const dt = 0.1;
-    // Run enough simulated time to drain the whole queue.
     const horizon = CONSTANTS.waves.spawnInterval * queue + 1;
     for (let t = 0; t < horizon && spawned < queue; t += dt) {
       timer -= dt;
@@ -235,41 +210,86 @@ describe("wave director schedule", () => {
   });
 });
 
+describe("wave composition", () => {
+  test("is deterministic", () => {
+    for (let w = 1; w <= CONSTANTS.waves.total; w++) {
+      expect(waveComposition(w)).toEqual(waveComposition(w));
+    }
+  });
+
+  test("early waves are pure shamblers", () => {
+    expect(new Set(waveComposition(1))).toEqual(new Set(["shambler"]));
+    expect(new Set(waveComposition(2))).toEqual(new Set(["shambler"]));
+  });
+
+  test("rippers join from wave 3, hulks from wave 4", () => {
+    expect(waveComposition(3)).toContain("ripper");
+    expect(waveComposition(3)).not.toContain("hulk");
+    expect(waveComposition(4)).toContain("hulk");
+  });
+
+  test("a Lane Tyrant leads every Nth wave and arrives last", () => {
+    for (let w = 1; w <= CONSTANTS.waves.total; w++) {
+      const comp = waveComposition(w);
+      if (w % CONSTANTS.waves.bossEvery === 0) {
+        expect(isBossWave(w)).toBe(true);
+        expect(comp[comp.length - 1]).toBe("boss");
+        expect(comp.filter((k) => k === "boss")).toHaveLength(1);
+      } else {
+        expect(isBossWave(w)).toBe(false);
+        expect(comp).not.toContain("boss");
+      }
+    }
+    // The final wave is a boss wave — the run ends on a climax.
+    expect(isBossWave(CONSTANTS.waves.total)).toBe(true);
+  });
+
+  test("composition size matches the escalating spawn count (+1 on boss waves)", () => {
+    for (let w = 1; w <= CONSTANTS.waves.total; w++) {
+      const expected = spawnCountForWave(w) + (isBossWave(w) ? 1 : 0);
+      expect(waveComposition(w)).toHaveLength(expected);
+    }
+  });
+});
+
 describe("creep scaling", () => {
-  test("wave 1 creep uses the base stats", () => {
-    expect(creepHpForWave(1)).toBeCloseTo(CONSTANTS.creep.baseHp, 10);
-    expect(creepSpeedForWave(1)).toBeCloseTo(CONSTANTS.creep.baseSpeed, 10);
+  test("wave 1 uses each archetype's base stats", () => {
+    for (const kind of CREEP_KINDS) {
+      const { hp, speed } = creepStatsForWave(kind, 1);
+      expect(hp).toBeCloseTo(CONSTANTS.creeps[kind].hp, 10);
+      expect(speed).toBeCloseTo(CONSTANTS.creeps[kind].speed, 10);
+    }
   });
 
   test("hp and speed grow monotonically across waves", () => {
-    let prevHp = creepHpForWave(1);
-    let prevSpeed = creepSpeedForWave(1);
-    for (let w = 2; w <= CONSTANTS.waves.total; w++) {
-      const hp = creepHpForWave(w);
-      const speed = creepSpeedForWave(w);
-      expect(hp).toBeGreaterThan(prevHp);
-      expect(speed).toBeGreaterThan(prevSpeed);
-      prevHp = hp;
-      prevSpeed = speed;
+    for (const kind of CREEP_KINDS) {
+      let prev = creepStatsForWave(kind, 1);
+      for (let w = 2; w <= CONSTANTS.waves.total; w++) {
+        const cur = creepStatsForWave(kind, w);
+        expect(cur.hp).toBeGreaterThan(prev.hp);
+        expect(cur.speed).toBeGreaterThan(prev.speed);
+        prev = cur;
+      }
     }
   });
 
   test("hp growth matches the configured compounding ratio", () => {
-    const ratio = creepHpForWave(3) / creepHpForWave(2);
-    expect(ratio).toBeCloseTo(CONSTANTS.creep.hpGrowth, 10);
+    const ratio = creepStatsForWave("shambler", 3).hp / creepStatsForWave("shambler", 2).hp;
+    expect(ratio).toBeCloseTo(CONSTANTS.creepScaling.hpGrowth, 10);
   });
 
-  test("a final-wave creep takes more tower shots than a wave-1 creep", () => {
-    const shots = (hp: number) => Math.ceil(hp / CONSTANTS.tower.damage);
-    const early = shots(creepHpForWave(1));
-    const late = shots(creepHpForWave(CONSTANTS.waves.total));
-    expect(early).toBe(Math.ceil(CONSTANTS.creep.baseHp / CONSTANTS.tower.damage));
-    expect(late).toBeGreaterThan(early);
+  test("archetype identities hold: rippers fast+fragile, hulks slow+tough", () => {
+    const { shambler, ripper, hulk, boss } = CONSTANTS.creeps;
+    expect(ripper.speed).toBeGreaterThan(shambler.speed);
+    expect(ripper.hp).toBeLessThan(shambler.hp);
+    expect(hulk.speed).toBeLessThan(shambler.speed);
+    expect(hulk.hp).toBeGreaterThan(shambler.hp);
+    expect(boss.hp).toBeGreaterThan(hulk.hp);
+    expect(boss.breachDamage).toBeGreaterThan(hulk.breachDamage);
   });
 
   test("wave is clamped to >= 1 (pre-first-wave is treated as wave 1)", () => {
-    expect(creepHpForWave(0)).toBe(creepHpForWave(1));
-    expect(creepSpeedForWave(0)).toBe(creepSpeedForWave(1));
+    expect(creepStatsForWave("shambler", 0)).toEqual(creepStatsForWave("shambler", 1));
   });
 });
 
@@ -278,82 +298,73 @@ describe("base HP / lose condition", () => {
     expect(CONSTANTS.base.startHp).toBe(20);
   });
 
-  test("each breach removes exactly 1 HP and clamps at 0", () => {
-    // entities.moveCreeps: baseHp = max(0, baseHp - 1) when a creep reaches base.
+  test("breach damage is per-archetype and clamps at 0", () => {
+    // entities.moveCreeps: baseHp = max(0, baseHp - breachDamage).
     let hp = CONSTANTS.base.startHp;
-    for (let i = 0; i < CONSTANTS.base.startHp; i++) {
-      hp = Math.max(0, hp - 1);
-    }
-    expect(hp).toBe(0);
-    // Further breaches never go negative.
-    hp = Math.max(0, hp - 1);
+    hp = Math.max(0, hp - CONSTANTS.creeps.hulk.breachDamage);
+    expect(hp).toBe(CONSTANTS.base.startHp - 3);
+    hp = Math.max(0, hp - 999);
     expect(hp).toBe(0);
   });
 
-  test("the base survives a partial leak of the first wave", () => {
-    // If only some creeps leak, the lane is not yet lost.
-    const leaked = Math.min(spawnCountForWave(1), CONSTANTS.base.startHp - 1);
-    const hp = CONSTANTS.base.startHp - leaked;
-    expect(hp).toBeGreaterThan(0); // baseHp > 0 => not lost
+  test("a leaked boss hurts but does not single-handedly end a healthy base", () => {
+    expect(CONSTANTS.creeps.boss.breachDamage).toBeLessThan(CONSTANTS.base.startHp);
   });
 });
 
 describe("tower targeting & combat", () => {
-  test("targeting uses squared distance against squared range", () => {
-    // entities.runTowers compares dx*dx+dz*dz <= range*range.
-    const rangeSq = CONSTANTS.tower.range * CONSTANTS.tower.range;
-    const inside = { dx: CONSTANTS.tower.range - 0.5, dz: 0 };
-    const outside = { dx: CONSTANTS.tower.range + 0.5, dz: 0 };
-    expect(inside.dx * inside.dx + inside.dz * inside.dz).toBeLessThanOrEqual(rangeSq);
-    expect(outside.dx * outside.dx + outside.dz * outside.dz).toBeGreaterThan(rangeSq);
-  });
-
-  test("nearestCreep picks the closer of two in-range creeps", () => {
-    const rangeSq = CONSTANTS.tower.range ** 2;
-    const candidates = [
-      { id: "far", d: 4 ** 2 },
-      { id: "near", d: 2 ** 2 },
-    ].filter((c) => c.d <= rangeSq);
-    const best = candidates.reduce((a, b) => (b.d < a.d ? b : a));
-    expect(best.id).toBe("near");
+  test("targeting uses squared distance against squared range (per archetype)", () => {
+    for (const kind of TOWER_KINDS) {
+      const range = CONSTANTS.towers[kind].range;
+      const rangeSq = range * range;
+      expect((range - 0.5) ** 2).toBeLessThanOrEqual(rangeSq);
+      expect((range + 0.5) ** 2).toBeGreaterThan(rangeSq);
+    }
   });
 
   test("cooldown after firing equals 1 / fireRate", () => {
-    const cooldown = 1 / CONSTANTS.tower.fireRate;
-    expect(cooldown).toBeCloseTo(0.625, 10); // 1 / 1.6
-    expect(cooldown).toBeGreaterThan(0);
+    expect(1 / CONSTANTS.towers.ember.fireRate).toBeCloseTo(0.625, 10);
+    for (const kind of TOWER_KINDS) {
+      expect(1 / CONSTANTS.towers[kind].fireRate).toBeGreaterThan(0);
+    }
   });
 
-  test("a tower's damage-per-second is fireRate * damage", () => {
-    const dps = CONSTANTS.tower.fireRate * CONSTANTS.tower.damage;
-    expect(dps).toBeCloseTo(25.6, 10);
-    // One tower out-DPS-es a wave-1 creep's effective HP within a second.
-    expect(dps).toBeGreaterThan(0);
+  test("archetype roles hold in the stat table", () => {
+    const { ember, stasis, mortar } = CONSTANTS.towers;
+    const dps = (t: { fireRate: number; damage: number }) => t.fireRate * t.damage;
+    // Ember is the single-target damage baseline.
+    expect(dps(ember)).toBeGreaterThan(dps(stasis));
+    expect(dps(ember)).toBeGreaterThan(dps(mortar));
+    // Stasis trades damage for the slow.
+    expect(stasis.slowFactor).toBeGreaterThan(0);
+    expect(stasis.slowFactor).toBeLessThan(1);
+    expect(stasis.slowDuration).toBeGreaterThan(0);
+    // Mortar trades fire rate for splash + the longest reach.
+    expect(mortar.aoeRadius).toBeGreaterThan(0);
+    expect(mortar.range).toBeGreaterThan(ember.range);
+    expect(mortar.fireRate).toBeLessThan(ember.fireRate);
   });
 
-  test("turret yaw step is clamped to turnSpeed * dt", () => {
-    // entities.aimTurret clamps the per-frame rotation step.
-    const dt = 1 / 60;
-    const step = CONSTANTS.tower.turnSpeed * dt;
-    const apply = (diff: number) => Math.max(-step, Math.min(step, diff));
-    expect(apply(Math.PI)).toBeCloseTo(step, 10); // big diff -> clamped to +step
-    expect(apply(-Math.PI)).toBeCloseTo(-step, 10);
-    expect(apply(step / 2)).toBeCloseTo(step / 2, 10); // small diff -> exact
+  test("stasis slow leaves creeps moving (never a full stop)", () => {
+    const slowed = CONSTANTS.creeps.shambler.speed * (1 - CONSTANTS.towers.stasis.slowFactor);
+    expect(slowed).toBeGreaterThan(0);
+    expect(slowed).toBeLessThan(CONSTANTS.creeps.shambler.speed);
+  });
+
+  test("mortar splash covers more than one lane tile width at the center", () => {
+    expect(CONSTANTS.towers.mortar.aoeRadius * 2).toBeGreaterThan(CONSTANTS.board.cell);
   });
 
   test("projectile registers a hit within step + creep radius", () => {
-    // entities.moveProjectiles: hit when dist <= step + creep.radius.
     const dt = 1 / 60;
-    const step = CONSTANTS.tower.projectileSpeed * dt;
-    const threshold = step + CONSTANTS.creep.radius;
-    expect(threshold - 0.01 <= threshold).toBe(true);
-    expect(threshold).toBeGreaterThan(CONSTANTS.creep.radius);
+    const step = CONSTANTS.towers.ember.projectileSpeed * dt;
+    const threshold = step + CONSTANTS.creeps.shambler.radius;
+    expect(threshold).toBeGreaterThan(CONSTANTS.creeps.shambler.radius);
   });
 });
 
 describe("build readiness state machine", () => {
   test("build range gates whether a tile is buildable", () => {
-    // game.buildReadiness: distance > buildRange => not ready.
     const within = CONSTANTS.player.buildRange - 0.1;
     const beyond = CONSTANTS.player.buildRange + 0.1;
     expect(within <= CONSTANTS.player.buildRange).toBe(true);
@@ -362,13 +373,12 @@ describe("build readiness state machine", () => {
 
   test("an occupied tile is never ready, even with gold and in range", () => {
     const occupied = new Set<string>(["3,3"]);
-    const ready = (key: string, gold: number) => !occupied.has(key) && gold >= CONSTANTS.economy.towerCost;
+    const ready = (key: string, gold: number) => !occupied.has(key) && gold >= CONSTANTS.towers.ember.cost;
     expect(ready("3,3", 999)).toBe(false);
     expect(ready("4,3", 999)).toBe(true);
   });
 
   test("build progress accumulates over time and completes at build.time", () => {
-    // game.handleBuild: buildProgress += dt * buildSpeedMul; done at build.time.
     let progress = 0;
     const dt = 0.1;
     let frames = 0;
@@ -391,7 +401,6 @@ describe("build readiness state machine", () => {
 
 describe("wave-clear bonuses", () => {
   test("odd waves grant build speed, even waves grant run speed", () => {
-    // game.grantWaveBonus: wave % 2 === 1 => build speed, else run speed.
     const isBuildBonus = (wave: number) => wave % 2 === 1;
     expect(isBuildBonus(1)).toBe(true);
     expect(isBuildBonus(2)).toBe(false);
@@ -426,17 +435,17 @@ describe("wave-clear bonuses", () => {
 });
 
 describe("loop integration constants", () => {
-  test("delta is clamped so a tab-out can't fling the sim", () => {
-    // game.frame: dt = min(raw, loop.maxDelta).
-    const clampDt = (raw: number) => Math.min(raw, CONSTANTS.loop.maxDelta);
-    expect(clampDt(10)).toBe(CONSTANTS.loop.maxDelta);
-    expect(clampDt(0.01)).toBe(0.01);
+  test("the fixed step subdivides the clamped frame budget", () => {
+    // game uses the shared fixed loop: fixedDt steps inside a maxDelta-clamped frame.
+    expect(CONSTANTS.loop.fixedDt).toBeLessThan(CONSTANTS.loop.maxDelta);
+    expect(CONSTANTS.loop.fixedDt).toBeCloseTo(1 / 120, 10);
     expect(CONSTANTS.loop.maxDelta).toBeGreaterThan(0);
   });
 
   test("a creep cannot skip the whole board in a single clamped frame", () => {
-    // Max distance a final-wave creep moves in one clamped step.
-    const maxStep = creepSpeedForWave(CONSTANTS.waves.total) * CONSTANTS.loop.maxDelta;
+    // Max distance the fastest final-wave creep moves in one clamped step.
+    const fastest = Math.max(...CREEP_KINDS.map((kind) => creepStatsForWave(kind, CONSTANTS.waves.total).speed));
+    const maxStep = fastest * CONSTANTS.loop.maxDelta;
     const laneLength = mobPathPoints.slice(1).reduce((sum, p, i) => sum + p.distanceTo(mobPathPoints[i]), 0);
     expect(maxStep).toBeLessThan(laneLength);
   });

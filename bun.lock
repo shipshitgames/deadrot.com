@@ -17,6 +17,7 @@
       "name": "deadlane",
       "version": "0.1.0",
       "dependencies": {
+        "@deadrot/game-kit": "workspace:*",
         "@shipshitgames/assets": "workspace:*",
         "@shipshitgames/engine": "^0.2.0",
         "@shipshitgames/ui": "workspace:*",
