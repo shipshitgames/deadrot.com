@@ -26,7 +26,13 @@ export function AppShell() {
   // bridge so the shared React PauseMenu can render over the canvas.
   const pause = useSyncExternalStore(subscribePause, getPauseSnapshot, getPauseSnapshot);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const revealed = useEnterToReveal(true);
+  // The #banner screen is reused for the title, game-over, and victory states
+  // (the engine writes #banner-title/#banner-sub for the latter two). Gate the
+  // splash/menu behaviour on the title phase so the hero copy hides once the
+  // menu is revealed, but stays visible for the engine-written result banners.
+  const onTitle = pause.phase === "title";
+  const revealed = useEnterToReveal(onTitle);
+  const onSplash = onTitle && !revealed;
   const pauseStatus = useMemo(() => <span>{pause.stats}</span>, [pause.stats]);
   const pauseActions = useMemo(
     () => [
@@ -95,7 +101,9 @@ export function AppShell() {
             Orbital front
           </MainMenuTopBar>
           <MainMenuLayout className="ssg-main-menu-layout--menu">
-            <MainMenuCopy>
+            {/* Hidden once the title menu is revealed, but shown again for the
+                engine-written game-over / victory banner (phase leaves "title"). */}
+            <MainMenuCopy hidden={onTitle && revealed}>
               <MenuKicker>Orbital Survivors Front</MenuKicker>
               <MainMenuTitle id="banner-title">
                 <MainMenuTitleLine>STAR</MainMenuTitleLine>
@@ -112,9 +120,10 @@ export function AppShell() {
                 <span>Draft systems hot</span>
               </MainMenuStatus>
             </MainMenuCopy>
-            {/* Nav stays mounted (engine grabs #banner-btn at boot); the splash
-                gate only hides it until Enter/Space/click reveals the menu. */}
-            <MainMenuNav aria-label="Main menu" hidden={!revealed}>
+            {/* Nav stays mounted (engine grabs #banner-btn at boot). Hidden only
+                on the title splash; shown for the menu and the engine's game-over
+                banner (which un-hides #banner-btn as "Re-engage"). */}
+            <MainMenuNav aria-label="Main menu" hidden={onSplash}>
               <MainMenuAction id="banner-btn" variant="primary" label="Engage" meta="Start sortie" />
               <MainMenuAction variant="shop" label="Upgrades" meta="Draft only" disabled />
               <MainMenuAction variant="coop" label="Co-op" meta="Solo sortie" disabled />
@@ -135,7 +144,7 @@ export function AppShell() {
                 onClick={() => goToWarlineLobby()}
               />
             </MainMenuNav>
-            {!revealed && <MainMenuEnterPrompt />}
+            {onSplash && <MainMenuEnterPrompt />}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>
