@@ -136,6 +136,9 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
       await expect(page.locator("#int-text")).toContainText("100/100");
     },
     async exercise(page) {
+      // The hero title hides once the menu is revealed (it stays mounted for the
+      // engine-written game-over banner, which reuses #banner-title).
+      await expect(page.locator("#banner-title")).toBeHidden();
       await page.getByRole("button", { name: "ENGAGE" }).click();
       await expect(page.locator("#banner")).toHaveClass(/hidden/);
       await expect(page.locator("#level")).toHaveText("1");

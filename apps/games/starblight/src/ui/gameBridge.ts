@@ -9,6 +9,10 @@ export interface PauseSnapshot {
   open: boolean;
   /** Pre-formatted "0:00 - LVL 1 - 0 kills" status line for the overlay. */
   stats: string;
+  /** Current game phase ("title" | "playing" | "paused" | "gameover" | ...).
+   *  The title menu uses this to hide the hero copy once the menu is revealed,
+   *  while still showing the engine-written game-over/victory banner. */
+  phase: string;
 }
 
 export interface PauseActions {
@@ -25,13 +29,13 @@ const noopActions: PauseActions = {
   title: () => {},
 };
 
-let snapshot: PauseSnapshot = { open: false, stats: "" };
+let snapshot: PauseSnapshot = { open: false, stats: "", phase: "title" };
 let actions: PauseActions = noopActions;
 const listeners = new Set<Listener>();
 
 /** Game side: publish the latest pause snapshot (cheap; dirty-checked here). */
 export function publishPause(next: PauseSnapshot) {
-  if (next.open === snapshot.open && next.stats === snapshot.stats) return;
+  if (next.open === snapshot.open && next.stats === snapshot.stats && next.phase === snapshot.phase) return;
   snapshot = next;
   for (const listener of listeners) listener(snapshot);
 }
