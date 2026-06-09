@@ -15,7 +15,7 @@
       "variants": {
         "scourge-survivors": "entities/scourge-swarm/scourge-survivors.webp",
         "deadlane": "entities/scourge-swarm/deadlane.webp",
-        "pactfall": null,
+        "pactfall": "entities/scourge-swarm/pactfall.webp",
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -51,7 +51,7 @@
       "variants": {
         "scourge-survivors": "entities/scourge-elite/scourge-survivors.webp",
         "deadlane": "entities/scourge-elite/deadlane.webp",
-        "pactfall": null,
+        "pactfall": "entities/scourge-elite/pactfall.webp",
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -105,7 +105,7 @@
       "variants": {
         "scourge-survivors": "entities/breach-boss/scourge-survivors.webp",
         "deadlane": "entities/breach-boss/deadlane.webp",
-        "pactfall": null,
+        "pactfall": "entities/breach-boss/pactfall.webp",
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -177,7 +177,7 @@
       "variants": {
         "scourge-survivors": "entities/pyre-ranger/scourge-survivors.webp",
         "deadlane": null,
-        "pactfall": null,
+        "pactfall": "entities/pyre-ranger/pactfall.webp",
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -195,7 +195,7 @@
       "variants": {
         "scourge-survivors": "entities/pyre-bulwark/scourge-survivors.webp",
         "deadlane": null,
-        "pactfall": null,
+        "pactfall": "entities/pyre-bulwark/pactfall.webp",
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -213,7 +213,7 @@
       "variants": {
         "scourge-survivors": "entities/pyre-vector/scourge-survivors.webp",
         "deadlane": null,
-        "pactfall": null,
+        "pactfall": "entities/pyre-vector/pactfall.webp",
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -231,7 +231,7 @@
       "variants": {
         "scourge-survivors": "entities/pyre-patch/scourge-survivors.webp",
         "deadlane": null,
-        "pactfall": null,
+        "pactfall": "entities/pyre-patch/pactfall.webp",
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -303,7 +303,7 @@
       "variants": {
         "scourge-survivors": null,
         "deadlane": "entities/warden-field-engineer/deadlane.webp",
-        "pactfall": null,
+        "pactfall": "entities/warden-field-engineer/pactfall.webp",
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -321,7 +321,7 @@
       "variants": {
         "scourge-survivors": null,
         "deadlane": "entities/warden-lane-gunner/deadlane.webp",
-        "pactfall": null,
+        "pactfall": "entities/warden-lane-gunner/pactfall.webp",
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -339,7 +339,7 @@
       "variants": {
         "scourge-survivors": null,
         "deadlane": "entities/warden-wallwright/deadlane.webp",
-        "pactfall": null,
+        "pactfall": "entities/warden-wallwright/pactfall.webp",
         "starblight": null,
         "redline": null,
         "rothulk": null
