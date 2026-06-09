@@ -19,6 +19,16 @@ const viewports = [
   { name: "mobile", device: devices["Pixel 7"] },
 ] as const;
 
+// Optional viewport filter (mirrors E2E_GAME_SLUGS). Empty/unset = all viewports,
+// so local runs and the Docker image are unchanged; CI sets one per matrix shard.
+const selectedViewports = (process.env.E2E_VIEWPORT ?? "")
+  .split(",")
+  .map((value) => value.trim().toLowerCase())
+  .filter(Boolean);
+const activeViewports = selectedViewports.length
+  ? viewports.filter((viewport) => selectedViewports.includes(viewport.name))
+  : viewports;
+
 export default defineConfig({
   testDir: "./e2e",
   timeout: 45_000,
@@ -46,7 +56,7 @@ export default defineConfig({
     timeout: 120_000,
   })),
   projects: games.flatMap((game) =>
-    viewports.map((viewport) => ({
+    activeViewports.map((viewport) => ({
       name: `${game.slug}:${viewport.name}`,
       testMatch: /games\.spec\.ts/,
       use: {
