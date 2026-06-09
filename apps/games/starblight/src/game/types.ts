@@ -55,6 +55,7 @@ export interface Enemy {
   contactDmg: number;
   radius: number;
   flash: number; // hit-flash timer (seconds remaining)
+  telegraph: number; // attack-windup glow 0..1 (boss ring volley)
   phase: number; // weave/pulse phase offset
   fireCooldown: number; // spitter shot timer
   vx: number; // knockback drift

@@ -1,9 +1,19 @@
+import { audio } from "../audio";
 import { EntitySystem } from "../systems/EntitySystem";
 import { HudSystem } from "../systems/HudSystem";
 import { InputSystem } from "../systems/InputSystem";
 import { RenderSystem } from "../systems/RenderSystem";
 import { WeaponSystem } from "../systems/WeaponSystem";
 import { clearPauseActions, emitRunEnd, setPauseActions, subscribeDrydockTiers } from "../ui/gameBridge";
+import {
+  type BossPhase,
+  beamPlan,
+  bossPhaseFor,
+  pointSegDist,
+  radialBurstAngles,
+  ringBurstPlan,
+  ringOffset,
+} from "./bossPatterns";
 import { COLORS, CONSTANTS, type EnemyType, WORLD } from "./constants";
 import type { ShopTiers } from "./drydock";
 import type { DraftCard, Enemy, GamePhase, HudState } from "./types";
@@ -57,6 +67,34 @@ export class Game {
   private bossDashTime = 0;
   private bossDashX = 0;
   private bossDashY = 0;
+  private bossPhaseSeen: BossPhase = 1;
+
+  // Telegraphed radial ring volley (bossPatterns.ts owns the math).
+  private bossRingState: "idle" | "windup" | "volley" = "idle";
+  private bossRingT = 0; // cooldown until the next volley may start
+  private bossRingTime = 0; // timer inside the current windup/volley
+  private bossRingIndex = 0; // next ring to fire within the volley
+  private bossRingCount = 1; // rings in the current volley
+  private bossRingAngle = 0; // base rotation of the current volley
+
+  // Telegraphed beam (warning line -> burn along the locked path).
+  private bossBeamState: "idle" | "warn" | "fire" = "idle";
+  private bossBeamT = 0;
+  private bossBeamTime = 0;
+  private bossBeamX1 = 0;
+  private bossBeamY1 = 0;
+  private bossBeamX2 = 0;
+  private bossBeamY2 = 0;
+
+  // --- audio / juice throttles --------------------------------------------
+  private laserT = 0;
+  private laserQueued = false;
+  private explosionT = 0;
+  private gemSfxT = 0;
+  private gemStreak = 0;
+  private lastGemAt = -999;
+  private lowHealthT = 0;
+  private bossHitFxT = 0;
 
   private raf = 0;
   private prev = 0;
@@ -68,6 +106,10 @@ export class Game {
     this.entities = new EntitySystem(this.render);
     this.weapons = new WeaponSystem(this.render, this.entities);
     this.weapons.damageEnemy = (e, dmg, allowCrit) => this.damageEnemy(e, dmg, allowCrit);
+    // Weapon fire is voiced once per frame at most, throttled in simulate().
+    this.weapons.onFire = () => {
+      this.laserQueued = true;
+    };
     this.hud = new HudSystem(
       () => this.startRun(),
       (id) => this.pickById(id),
@@ -136,8 +178,36 @@ export class Game {
     this.bossTriggered = false;
     this.spawnT = 0.6;
     this.eliteT = CONSTANTS.director.eliteEvery;
+    this.resetBossAttacks();
+    this.resetFeedback();
 
+    audio.unlock(); // started from a click/keypress — the gesture allows audio
     this.emitHud();
+  }
+
+  /** Clear the telegraphed-attack machines (run start/exit, boss death). */
+  private resetBossAttacks() {
+    this.bossPhaseSeen = 1;
+    this.bossRingState = "idle";
+    this.bossRingT = 0;
+    this.bossRingTime = 0;
+    this.bossRingIndex = 0;
+    this.bossBeamState = "idle";
+    this.bossBeamT = 0;
+    this.bossBeamTime = 0;
+    this.entities.hideBossBeam();
+  }
+
+  /** Reset the audio/juice throttles so a fresh run starts quiet. */
+  private resetFeedback() {
+    this.laserT = 0;
+    this.laserQueued = false;
+    this.explosionT = 0;
+    this.gemSfxT = 0;
+    this.gemStreak = 0;
+    this.lastGemAt = -999;
+    this.lowHealthT = 0;
+    this.bossHitFxT = 0;
   }
 
   private pauseRun() {
@@ -180,6 +250,8 @@ export class Game {
     this.bossTriggered = false;
     this.spawnT = 0;
     this.eliteT = 0;
+    this.resetBossAttacks();
+    this.resetFeedback();
 
     this.emitHud();
   }
@@ -251,6 +323,10 @@ export class Game {
   private simulate(dt: number) {
     this.clock += dt;
     if (this.invuln > 0) this.invuln = Math.max(0, this.invuln - dt);
+    this.laserT = Math.max(0, this.laserT - dt);
+    this.explosionT = Math.max(0, this.explosionT - dt);
+    this.gemSfxT = Math.max(0, this.gemSfxT - dt);
+    this.bossHitFxT = Math.max(0, this.bossHitFxT - dt);
 
     // 1. flight
     const aim = this.render.screenToWorld(this.input.ndcX, this.input.ndcY);
@@ -264,6 +340,7 @@ export class Game {
 
     // 4. weapons fire / deal damage
     this.weapons.update(dt, this.clock);
+    this.voiceWeaponFire();
 
     // 5. player bolts vs enemies
     this.entities.updateBullets(dt);
@@ -281,12 +358,38 @@ export class Game {
 
     this.entities.updateParticles(dt);
     this.entities.sweepEnemies();
+    this.updateLowHealthWarning(dt);
 
     if (this.integrity <= 0 && this.phase === "playing") {
       this.integrity = 0;
       this.phase = "gameover";
+      audio.sfx("defeat");
       emitRunEnd(Math.round(this.salvage)); // bank salvage as Drydock wreckage
       this.emitHud();
+    }
+  }
+
+  /** Throttled weapon-fire cue: at most 1/laserMinInterval plays per second. */
+  private voiceWeaponFire() {
+    if (!this.laserQueued) return;
+    this.laserQueued = false;
+    if (this.laserT > 0) return;
+    const a = CONSTANTS.audio;
+    this.laserT = a.laserMinInterval;
+    audio.sfx("laser", { pitch: a.laserPitchLo + Math.random() * (a.laserPitchHi - a.laserPitchLo) });
+  }
+
+  /** Periodic warning ping while integrity sits under the danger threshold. */
+  private updateLowHealthWarning(dt: number) {
+    const a = CONSTANTS.audio;
+    if (this.integrity > 0 && this.integrity < this.stats.maxIntegrity * a.lowHealthPct) {
+      this.lowHealthT -= dt;
+      if (this.lowHealthT <= 0) {
+        this.lowHealthT = a.lowHealthEvery;
+        audio.sfx("lowhealth");
+      }
+    } else {
+      this.lowHealthT = 0; // re-crossing the threshold pings immediately
     }
   }
 
@@ -323,7 +426,7 @@ export class Game {
       this.eliteT = d.eliteEvery;
       const p = this.ringPoint();
       this.entities.pop(p.x, p.y, COLORS.toxicHot, 16); // spawn flare
-      this.render.addShake(0.25);
+      this.render.addShake(CONSTANTS.fx.shake.eliteSpawn);
       this.spawnAt("elite", p.x, p.y);
     }
   }
@@ -385,7 +488,24 @@ export class Game {
     const dmg = baseDmg * this.stats.damageMul * (crit ? 2 : 1);
     e.health -= dmg;
     this.entities.hitFlash(e);
+    // Boss-hit sparks, throttled — continuous beams hit every frame.
+    if (e.boss && this.bossHitFxT <= 0) {
+      this.bossHitFxT = CONSTANTS.fx.burst.bossHit.every;
+      this.burst(e.mesh.position.x, e.mesh.position.y, COLORS.bone, CONSTANTS.fx.burst.bossHit);
+    }
     if (e.health <= 0) this.onKill(e);
+  }
+
+  /** Kit ParticleBursts spawn with the data-driven sizing from fx.burst. */
+  private burst(x: number, y: number, color: number, b: { count: number; speed: number; life: number; size: number }) {
+    this.render.bursts.spawn({
+      position: { x, y, z: 0.5 },
+      color,
+      count: b.count,
+      speed: b.speed,
+      life: b.life,
+      size: b.size,
+    });
   }
 
   private onKill(e: Enemy) {
@@ -402,13 +522,17 @@ export class Game {
       for (let i = 0; i < shards; i++) {
         this.entities.spawnGem(x + (Math.random() - 0.5) * 4, y + (Math.random() - 0.5) * 4, 3);
       }
-      this.entities.pop(x, y, COLORS.bone, 18);
-      this.entities.pop(x, y, COLORS.hellfire, 12);
+      // BLIGHT-BOIL elites blow big: a fat toxic burst plus a hellfire core.
+      this.burst(x, y, COLORS.toxicHot, CONSTANTS.fx.burst.elite);
+      this.burst(x, y, COLORS.hellfire, CONSTANTS.fx.burst.enemy);
+      if (this.explosionT <= 0) {
+        this.explosionT = CONSTANTS.audio.explosionMinInterval;
+        audio.sfx("explosion");
+      }
       this.render.addShake(CONSTANTS.fx.shake.eliteKill);
     } else {
       this.entities.spawnGem(x, y, e.gemValue);
-      const ichor = e.type === "spitter" || e.type === "weaver" ? COLORS.toxic : COLORS.hellfire;
-      this.entities.pop(x, y, ichor, 8);
+      this.burst(x, y, COLORS.toxic, CONSTANTS.fx.burst.enemy); // ichor pop
       this.render.addShake(CONSTANTS.fx.shake.gruntKill);
     }
     this.entities.killEnemy(e);
@@ -475,12 +599,22 @@ export class Game {
     this.invuln = CONSTANTS.player.invulnTime;
     this.entities.pop(this.entities.ship.position.x, this.entities.ship.position.y, COLORS.blood, 18);
     this.render.addShake(CONSTANTS.fx.shake.playerHit);
+    audio.sfx("hurt");
   }
 
   // --- XP + draft --------------------------------------------------------
 
   private gainXp(raw: number) {
     this.salvage += raw;
+    // Rising salvage ding: the pitch climbs while pickups keep streaking in.
+    const a = CONSTANTS.audio;
+    if (this.clock - this.lastGemAt <= a.gemStreakWindow) this.gemStreak++;
+    else this.gemStreak = 0;
+    this.lastGemAt = this.clock;
+    if (this.gemSfxT <= 0) {
+      this.gemSfxT = a.gemMinInterval;
+      audio.sfx("gem", { pitch: Math.min(a.gemPitchMax, 1 + this.gemStreak * a.gemPitchStep) });
+    }
     this.currentXP += raw * this.stats.xpGainMul;
     let leveled = false;
     while (this.currentXP >= xpForLevel(this.level)) {
@@ -495,6 +629,7 @@ export class Game {
   private triggerLevelUp() {
     this.phase = "levelup";
     this.vacuum = true; // salvage pulse: vacuum the field
+    audio.sfx("levelup");
     this.rollDraft();
     this.emitHud();
   }
@@ -532,6 +667,7 @@ export class Game {
     if (!this.draft.some((c) => c.id === id)) return;
     const prev = this.levels.get(id) ?? 0;
     this.levels.set(id, prev + 1);
+    audio.sfx(defOf(id).kind === "passive" ? "powerup" : "uiSelect");
     this.recomputeStats();
     if (id === "hull") this.integrity = this.stats.maxIntegrity; // full repair
     this.pendingLevels = Math.max(0, this.pendingLevels - 1);
@@ -558,16 +694,17 @@ export class Game {
     this.bossSummonT = b.summonEvery;
     this.bossOrbit = Math.random() * TAU;
     this.bossDashState = "none";
+    this.resetBossAttacks();
+    this.bossRingT = b.ring.firstDelay;
+    this.bossBeamT = b.beam.firstDelay;
+    audio.sfx("boss");
     this.render.addShake(CONSTANTS.fx.shake.bossSpawn);
     this.entities.pop(p.x, p.y, COLORS.toxicHot, 40);
   }
 
-  private bossPhase(): 1 | 2 | 3 {
+  private bossPhase(): BossPhase {
     if (!this.boss) return 1;
-    const pct = this.boss.health / this.boss.maxHealth;
-    if (pct > CONSTANTS.boss.phase2Pct) return 1;
-    if (pct > CONSTANTS.boss.phase3Pct) return 2;
-    return 3;
+    return bossPhaseFor(this.boss.health / this.boss.maxHealth);
   }
 
   private updateBoss(dt: number) {
@@ -577,6 +714,15 @@ export class Game {
     const sx = this.entities.ship.position.x;
     const sy = this.entities.ship.position.y;
     const phase = this.bossPhase();
+
+    // Phase transition: vents blow, the attack mix changes.
+    if (phase > this.bossPhaseSeen) {
+      this.bossPhaseSeen = phase;
+      audio.sfx("boss");
+      audio.sfx("explosion", { pitch: 0.8 });
+      this.render.addShake(CONSTANTS.fx.shake.bossPhase);
+      this.burst(boss.mesh.position.x, boss.mesh.position.y, COLORS.toxicHot, CONSTANTS.fx.burst.bossPhase);
+    }
 
     // Movement: orbit the ship, unless dashing.
     if (this.bossDashState === "charge") {
@@ -618,8 +764,10 @@ export class Game {
 
     // Charge-dash (all phases; rarer in phase 1). The lunge is the boss's
     // contact threat — it travels just past the ship so it crosses the hull.
+    // Never overlaps the ring windup or the beam so telegraphs stay readable.
     this.bossDashT -= dt;
-    if (this.bossDashState === "none" && this.bossDashT <= 0) {
+    const otherAttackActive = this.bossRingState !== "idle" || this.bossBeamState !== "idle";
+    if (this.bossDashState === "none" && this.bossDashT <= 0 && !otherAttackActive) {
       this.bossDashState = "telegraph";
       this.bossDashTime = b.dashTelegraph;
       boss.flash = b.dashTelegraph;
@@ -639,6 +787,10 @@ export class Game {
       }
     }
 
+    // Telegraphed attacks: ring volleys + the beam (each phase mixes its own).
+    this.updateBossRing(dt, boss, phase, bx, by);
+    this.updateBossBeam(dt, phase, bx, by, sx, sy);
+
     // Phase 3: rotating spiral of globs.
     if (phase === 3) {
       this.bossSpiralT -= dt;
@@ -653,20 +805,124 @@ export class Game {
     }
   }
 
+  /** Telegraphed radial ring volley: glow windup, then staggered slow rings.
+   *  Rings per volley and the cooldown scale with the boss phase. */
+  private updateBossRing(dt: number, boss: Enemy, phase: BossPhase, bx: number, by: number) {
+    const r = CONSTANTS.boss.ring;
+    if (this.bossRingState === "idle") {
+      this.bossRingT -= dt;
+      // Hold while dashing so the glow windup is never masked by the lunge.
+      if (this.bossRingT <= 0 && this.bossDashState === "none" && this.bossBeamState === "idle") {
+        const plan = ringBurstPlan(phase);
+        this.bossRingState = "windup";
+        this.bossRingTime = r.telegraph;
+        this.bossRingCount = plan.rings;
+        this.bossRingIndex = 0;
+        this.bossRingAngle = Math.random() * TAU;
+        this.bossRingT = plan.cooldown;
+        audio.sfx("shieldUp"); // charge-up cue alongside the glow
+      }
+      return;
+    }
+    if (this.bossRingState === "windup") {
+      this.bossRingTime -= dt;
+      boss.telegraph = 1 - Math.max(0, this.bossRingTime) / r.telegraph;
+      if (this.bossRingTime <= 0) {
+        boss.telegraph = 0;
+        this.bossRingState = "volley";
+        this.bossRingTime = 0; // first ring fires immediately
+      } else {
+        return;
+      }
+    }
+    // volley: fire rings on the stagger cadence.
+    this.bossRingTime -= dt;
+    while (this.bossRingTime <= 0 && this.bossRingIndex < this.bossRingCount) {
+      this.fireBossRing(bx, by, this.bossRingAngle + ringOffset(this.bossRingIndex, r.count));
+      this.bossRingIndex++;
+      this.bossRingTime += r.ringInterval;
+    }
+    if (this.bossRingIndex >= this.bossRingCount) this.bossRingState = "idle";
+  }
+
+  /** One evenly-spaced ring of slow spores (weavable at base player speed). */
+  private fireBossRing(bx: number, by: number, offset: number) {
+    const r = CONSTANTS.boss.ring;
+    for (const a of radialBurstAngles(r.count, offset)) {
+      this.entities.spawnGlob(bx, by, Math.cos(a) * r.bulletSpeed, Math.sin(a) * r.bulletSpeed, r.bulletDmg);
+    }
+    this.entities.pop(bx, by, COLORS.toxic, 10);
+    audio.sfx("shootCannon", { pitch: 0.75 });
+  }
+
+  /** Telegraphed beam: a warning line locks onto the ship's position, renders
+   *  for the telegraph window, then burns along the SAME line (dodge by
+   *  leaving the corridor). Offline in phase 1; faster in phase 3. */
+  private updateBossBeam(dt: number, phase: BossPhase, bx: number, by: number, sx: number, sy: number) {
+    const bm = CONSTANTS.boss.beam;
+    if (this.bossBeamState === "idle") {
+      const plan = beamPlan(phase);
+      if (!plan) return; // offline this phase — the timer holds
+      this.bossBeamT -= dt;
+      if (this.bossBeamT <= 0 && this.bossDashState === "none" && this.bossRingState === "idle") {
+        this.bossBeamT = plan.cooldown;
+        this.bossBeamState = "warn";
+        this.bossBeamTime = bm.telegraph;
+        // Lock the firing line: from the boss through the ship, full length.
+        const dx = sx - bx;
+        const dy = sy - by;
+        const d = Math.hypot(dx, dy) || 1;
+        this.bossBeamX1 = bx;
+        this.bossBeamY1 = by;
+        this.bossBeamX2 = bx + (dx / d) * bm.length;
+        this.bossBeamY2 = by + (dy / d) * bm.length;
+        audio.sfx("berserk"); // warning klaxon while the line renders
+      }
+      return;
+    }
+    if (this.bossBeamState === "warn") {
+      this.bossBeamTime -= dt;
+      const t01 = 1 - Math.max(0, this.bossBeamTime) / bm.telegraph;
+      this.entities.showBossBeamWarn(this.bossBeamX1, this.bossBeamY1, this.bossBeamX2, this.bossBeamY2, bm.width, t01);
+      if (this.bossBeamTime <= 0) {
+        this.bossBeamState = "fire";
+        this.bossBeamTime = bm.duration;
+        audio.sfx("laser", { pitch: 0.6 });
+        this.render.addShake(CONSTANTS.fx.shake.bossCharge);
+      }
+      return;
+    }
+    // fire: burn along the locked line; the ship's i-frames gate repeat ticks.
+    this.bossBeamTime -= dt;
+    const left = Math.max(0, this.bossBeamTime) / bm.duration;
+    this.entities.showBossBeamFire(this.bossBeamX1, this.bossBeamY1, this.bossBeamX2, this.bossBeamY2, bm.width, left);
+    if (this.invuln <= 0) {
+      const d = pointSegDist(sx, sy, this.bossBeamX1, this.bossBeamY1, this.bossBeamX2, this.bossBeamY2);
+      if (d < bm.width / 2 + CONSTANTS.player.width * 0.5) this.hitPlayer(bm.damage);
+    }
+    if (this.bossBeamTime <= 0) {
+      this.bossBeamState = "idle";
+      this.entities.hideBossBeam();
+    }
+  }
+
   private bossDefeated(e: Enemy) {
     const x = e.mesh.position.x;
     const y = e.mesh.position.y;
     this.entities.killEnemy(e);
     this.boss = null;
     this.kills++;
+    this.resetBossAttacks();
     // Triumphant gem shower + storm.
     for (let i = 0; i < 10; i++) {
       this.entities.spawnGem(x + (Math.random() - 0.5) * 12, y + (Math.random() - 0.5) * 12, 25);
     }
-    this.entities.pop(x, y, COLORS.hellfire, 40);
-    this.entities.pop(x, y, COLORS.bone, 30);
+    this.burst(x, y, COLORS.hellfire, CONSTANTS.fx.burst.bossDeath);
+    this.burst(x, y, COLORS.bone, CONSTANTS.fx.burst.bossPhase);
     this.entities.pop(x, y, COLORS.bloodHot, 30);
     this.render.addShake(CONSTANTS.fx.shake.bossDeath);
+    audio.sfx("explosion", { pitch: 0.7 });
+    audio.sfx("victory");
     this.vacuum = true;
     this.phase = "victory";
     emitRunEnd(Math.round(this.salvage)); // bank salvage as Drydock wreckage

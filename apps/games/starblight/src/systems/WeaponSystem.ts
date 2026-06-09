@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { COLORS, CONSTANTS } from "../game/constants";
-import { WEAPONS, atLevel, type Stats, type UpgradeId } from "../game/upgrades";
 import type { Enemy } from "../game/types";
+import { atLevel, type Stats, type UpgradeId, WEAPONS } from "../game/upgrades";
 import type { EntitySystem } from "./EntitySystem";
 import type { RenderSystem } from "./RenderSystem";
 
@@ -36,6 +36,8 @@ interface Mine {
 // (so kills, gems, score, and shake stay centralized).
 export class WeaponSystem {
   damageEnemy: DamageFn = () => {};
+  /** Fired once per bolt volley/shot so the Game can voice (throttled) fire SFX. */
+  onFire: () => void = () => {};
   private levels = new Map<UpgradeId, number>();
   private stats!: Stats;
 
@@ -175,6 +177,7 @@ export class WeaponSystem {
       if (t) picked.push(t);
       this.entities.spawnBolt(sx, sy, t, dmg, pierce, 34, 4);
     }
+    this.onFire();
   }
 
   private nearestExcluding(x: number, y: number, exclude: Enemy[]): Enemy | null {
@@ -282,6 +285,7 @@ export class WeaponSystem {
         if (t) {
           wgt.fireT = interval;
           this.entities.spawnBolt(wgt.mesh.position.x, wgt.mesh.position.y, t, dmg, pierce, 36, 3);
+          this.onFire();
         }
       }
     }
