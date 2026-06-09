@@ -7,6 +7,8 @@ import {
   BOSS_ENRAGE_SPEED_MULT,
   BOSS_SHIELD_DURATION,
   BOSS_SKILL_INTERVAL,
+  ELITE_AFFIXES,
+  type EliteAffixId,
   ENEMY_ATTACK_DAMAGE,
   ENEMY_ATTACK_INTERVAL,
   ENEMY_ATTACK_RANGE,
@@ -67,6 +69,10 @@ export interface SpawnConfig {
   flying?: boolean;
   hoverHeight?: number;
   splitCount?: number;
+  /** Elite wave affix: tints the sprite and drives affix behaviour (Survivors). */
+  eliteAffix?: EliteAffixId | null;
+  /** Damage absorbed before health (the "shielded" elite affix). */
+  overshield?: number;
   attackDamage?: number;
   attackInterval?: number;
   attackRange?: number;
@@ -94,6 +100,11 @@ export class Enemy extends Agent {
   hoverHeight = 0;
   archetype: EnemyArchetypeId = "grunt";
   splitCount = 0;
+  /** Elite wave affix (left intact through kill() so death handlers can read it). */
+  eliteAffix: EliteAffixId | null = null;
+  /** Remaining overshield (the "shielded" elite affix absorbs hits before health). */
+  overshield = 0;
+  private eliteTint = new THREE.Color();
   /** Set by the steering strategy: a ranged bot backing off holds its fire. */
   retreating = false;
 
@@ -283,7 +294,14 @@ export class Enemy extends Agent {
     this.shieldTimer = 0;
     this.skillTimer = BOSS_SKILL_INTERVAL;
     this.skillToggle = 0;
-    this.shieldMesh.visible = false;
+    this.eliteAffix = cfg.eliteAffix ?? null;
+    this.overshield = Math.max(0, cfg.overshield ?? 0);
+    if (this.eliteAffix) this.eliteTint.setHex(ELITE_AFFIXES[this.eliteAffix].tint).multiplyScalar(1.35);
+    // The boss bubble doubles as the elite overshield (bone-tinted, depletes on hits).
+    const shieldMat = this.shieldMesh.material as THREE.MeshBasicMaterial;
+    shieldMat.color.setHex(this.overshield > 0 ? ELITE_AFFIXES.shielded.tint : 0x39c7ff);
+    shieldMat.opacity = 0.25;
+    this.shieldMesh.visible = this.overshield > 0;
     this.hitFlash = 0;
     this.staggerTimer = 0;
     this.telegraphTimer = 0;
@@ -340,6 +358,9 @@ export class Enemy extends Agent {
       this.spriteMat.color.setHex(this.archetype === "shooter" ? 0xbdefff : 0xffd166);
     } else if (flash <= 0 && this.staggerTimer > 0) {
       this.spriteMat.color.setRGB(1.2, 0.78, 0.78);
+    } else if (flash <= 0 && this.eliteAffix) {
+      // elite affix tint (boosted past 1 in spawnAt so it reads emissive)
+      this.spriteMat.color.copy(this.eliteTint);
     }
     this.spriteMat.rotation = moving ? step * 0.035 * flip : 0;
     this.sprite.scale.set(baseW * (1 + squash * 0.025) * flip * punch, baseH * (1 - squash * 0.035) * punch, 1);
@@ -529,6 +550,11 @@ export class Enemy extends Agent {
     // knockback shove from being shot — decays fast so it reads as a flinch
     this.applyKnockback(delta);
     if (this.hitFlash > 0) this.hitFlash = Math.max(0, this.hitFlash - delta);
+    if (this.overshield > 0 && this.shieldMesh.visible) {
+      // ease the absorb-ping flash back down to the resting shimmer
+      const m = this.shieldMesh.material as THREE.MeshBasicMaterial;
+      if (m.opacity > 0.25) m.opacity = Math.max(0.25, m.opacity - delta * 1.4);
+    }
     if (this.forcedSpriteAnimationTimer > 0) {
       this.forcedSpriteAnimationTimer = Math.max(0, this.forcedSpriteAnimationTimer - delta);
       if (this.forcedSpriteAnimationTimer <= 0) this.forcedSpriteAnimation = null;
@@ -689,6 +715,14 @@ export class Enemy extends Agent {
       // flash the shield to acknowledge the blocked hit
       const m = this.shieldMesh.material as THREE.MeshBasicMaterial;
       m.opacity = 0.6;
+      return { died: false, headshot, blocked: true };
+    }
+    if (this.overshield > 0) {
+      // elite overshield: absorb the hit, ping the bubble, drop it once spent
+      this.overshield = Math.max(0, this.overshield - amount);
+      const m = this.shieldMesh.material as THREE.MeshBasicMaterial;
+      m.opacity = 0.6;
+      if (this.overshield <= 0) this.shieldMesh.visible = false;
       return { died: false, headshot, blocked: true };
     }
     this.health = Math.max(0, this.health - amount);

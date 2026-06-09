@@ -1,7 +1,17 @@
 import * as THREE from "three";
 import { audio } from "../../audio/AudioEngine";
-import { WEAPONS } from "../constants";
+import {
+  ELITE_FRENZY_DAMAGE_MUL,
+  ELITE_FRENZY_SPEED_MUL,
+  ELITE_HP_MUL,
+  ELITE_SCALE_MUL,
+  ELITE_SHIELD_HP,
+  ELITE_SPLIT_CAP_PER_WAVE,
+  type EliteAffixDef,
+  WEAPONS,
+} from "../constants";
 import type { GameContext } from "../context";
+import { eliteCountForWave, eliteXpValue, isEliteWave, rollEliteAffix, takeSplitAllowance } from "../data/eliteWaves";
 import { pickWeightedEnemyArchetype, SCOURGE_THREAT_TIERS } from "../data/enemies";
 import { DEFAULT_MAP_ID, getMap } from "../data/maps";
 import {
@@ -88,6 +98,8 @@ export class SurvivorsSystem {
   survClock = 0;
   eliteTimer = SURV_ELITE_INTERVAL;
   swellTimer = SURV_SWELL_INTERVAL; // next breach-surge horde swell
+  surgeIndex = 0; // 1-based count of breach surges fired this run (drives elite cadence)
+  eliteSplitBudget = 0; // split children remaining for the current elite wave
   xpGems: { sprite: THREE.Sprite; value: number; age: number }[] = [];
   enemyXp = new WeakMap<Enemy, number>();
   shopTiers: Record<string, number> = {}; // permanent meta-upgrades
@@ -153,6 +165,8 @@ export class SurvivorsSystem {
     this.survClock = 0;
     this.eliteTimer = this.currentChapter().eliteInterval;
     this.swellTimer = this.currentChapter().swellInterval;
+    this.surgeIndex = 0;
+    this.eliteSplitBudget = 0;
     this.boltTimer = 0;
     this.novaTimer = NOVA_INTERVAL;
     this.ctx.damageGraceTimer = 0;
@@ -524,15 +538,20 @@ export class SurvivorsSystem {
     audio.sfx("breach");
   }
 
-  spawnSwarmEnemy(elite: boolean) {
-    const enemy = this.sys.pve.getFreeEnemy();
-    // spawn on a ring around the player, just out of immediate sight
+  /** A point on a ring around the player, just out of immediate sight, clamped in-bounds. */
+  private swarmSpawnPoint(): { x: number; z: number } {
     const a = Math.random() * Math.PI * 2;
     const r = 26 + Math.random() * 10;
     let x = this.ctx.body.position.x + Math.cos(a) * r;
     let z = this.ctx.body.position.z + Math.sin(a) * r;
     x = Math.max(this.ctx.bounds.minX + 2, Math.min(this.ctx.bounds.maxX - 2, x));
     z = Math.max(this.ctx.bounds.minZ + 2, Math.min(this.ctx.bounds.maxZ - 2, z));
+    return { x, z };
+  }
+
+  spawnSwarmEnemy(elite: boolean) {
+    const enemy = this.sys.pve.getFreeEnemy();
+    const { x, z } = this.swarmSpawnPoint();
     const chapter = this.currentChapter();
     const timeScale = (1 + this.survClock * 0.01) * chapter.hpMul; // HP scales with time + chapter
     const speedScale = (1 + this.survClock * 0.0035) * chapter.speedMul;
@@ -574,11 +593,64 @@ export class SurvivorsSystem {
 
   /** Burst-spawn a wall of fodder (ignores the steady cap up to SURV_SWELL_CAP). */
   private triggerSwell() {
-    this.sys.hud.announce("BREACH SURGE");
-    audio.sfx("wave");
+    this.surgeIndex++;
     const headroom = SURV_SWELL_CAP - this.ctx.aliveCount;
     const n = Math.min(SURV_SWELL_COUNT, Math.max(0, headroom));
+    if (isEliteWave(this.surgeIndex)) {
+      this.triggerEliteWave(n);
+      return;
+    }
+    this.sys.hud.announce("BREACH SURGE");
+    audio.sfx("wave");
     for (let i = 0; i < n; i++) this.spawnSwarmEnemy(false);
+  }
+
+  /** Every Nth surge lands as an ELITE WAVE: one rolled affix shared by the whole batch. */
+  private triggerEliteWave(spawnCount: number) {
+    const affix = rollEliteAffix(Math.random);
+    this.eliteSplitBudget = affix.id === "splitting" ? ELITE_SPLIT_CAP_PER_WAVE : 0;
+    this.sys.hud.announce("ELITE WAVE");
+    this.sys.hud.showToast(affix.name);
+    audio.sfx("wave");
+    if (affix.cue) audio.sfx(affix.cue); // once per elite batch, not per enemy
+    const elites = eliteCountForWave(spawnCount);
+    for (let i = 0; i < spawnCount; i++) {
+      if (i < elites) this.spawnAffixedElite(affix);
+      else this.spawnSwarmEnemy(false);
+    }
+  }
+
+  /** Promoted spawn for an ELITE WAVE: bigger, tinted, affix-modified, triple gem value. */
+  spawnAffixedElite(affix: EliteAffixDef) {
+    const enemy = this.sys.pve.getFreeEnemy();
+    const { x, z } = this.swarmSpawnPoint();
+    const chapter = this.currentChapter();
+    const timeScale = (1 + this.survClock * 0.01) * chapter.hpMul;
+    const speedScale = (1 + this.survClock * 0.0035) * chapter.speedMul;
+    const arch = this.rollArchetype();
+    const frenzied = affix.id === "frenzied";
+    enemy.spawnAt(x, z, {
+      maxHealth: SURV_ENEMY_BASE_HP * timeScale * arch.hpMul * ELITE_HP_MUL,
+      speed: (2.6 + Math.random() * 1.0) * arch.speedMul * speedScale * (frenzied ? ELITE_FRENZY_SPEED_MUL : 1),
+      archetype: arch.id,
+      color: arch.color,
+      scale: arch.scale * ELITE_SCALE_MUL,
+      ranged: arch.ranged,
+      flying: arch.flying,
+      hoverHeight: arch.hoverHeight,
+      attackDamage: Math.ceil(arch.attackDamage * (frenzied ? ELITE_FRENZY_DAMAGE_MUL : 1)),
+      projectileDamage: Math.ceil((arch.projectileDamage ?? 7) * (frenzied ? ELITE_FRENZY_DAMAGE_MUL : 1)),
+      eliteAffix: affix.id,
+      overshield: affix.id === "shielded" ? Math.round(ELITE_SHIELD_HP * timeScale) : 0,
+    });
+    this.enemyXp.set(enemy, eliteXpValue(arch.xp));
+  }
+
+  /** Spend split budget for a dying splitting elite (capped per elite wave). */
+  takeEliteSplitAllowance(desired: number): number {
+    const { allowed, remaining } = takeSplitAllowance(this.eliteSplitBudget, desired);
+    this.eliteSplitBudget = remaining;
+    return allowed;
   }
 
   /** Apply damage from an auto-weapon (handles death + XP, no crosshair marker). */
@@ -588,6 +660,10 @@ export class SurvivorsSystem {
     // statAmp (Cauterizer Feed) + crit make a passive build empower the auto-weapons.
     const total = dmg * this.ctx.statDamageMul * this.statAmp * (crit ? 2 : 1);
     const res = enemy.takeDamage(total, false);
+    if (res.blocked) {
+      audio.sfx("shieldhit"); // elite overshield (or boss shield) ate the hit
+      return;
+    }
     this.sys.hud.addDamageNumber(enemy.position.clone().setY(1.6), total, crit ? "crit" : "normal");
     this.sys.fx.spawnBloodHit(enemy.position.clone().setY(1.35), crit);
     if (res.died) this.sys.pve.onEnemyDeath(enemy, false);
