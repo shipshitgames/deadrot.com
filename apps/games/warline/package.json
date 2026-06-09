@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@shipshitgames/assets": "workspace:*",
-    "@shipshitgames/engine": "workspace:*",
+    "@shipshitgames/engine": "^0.2.0",
     "@shipshitgames/ui": "workspace:*",
     "@shipshitgames/warline": "workspace:*",
     "partysocket": "^1.1.19",
