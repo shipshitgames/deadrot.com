@@ -1,1 +1,224 @@
-[]
+[
+  {
+    "slug": "ash-reach",
+    "name": "Ash-Reach",
+    "kind": "holdout",
+    "control": "pyre",
+    "accent": "hellfire",
+    "tagline": "The wind is always at your back, and it carries the burns with it.",
+    "overview": "A stretch of road and ground the Pyre hold downwind of their own fires, past the Pyre Gate, where everything wears a skin of grey ash. Purgers call the lane through it Pyre Road, because that is the only direction the road goes — down, toward the breach. It is held the way the Pyre hold anything: thinly, hotly, by people who weren't planning to leave.",
+    "warRole": "The Pyre's deepest forward holding on the Ashgate descent — keep it and the road to the breach stays walkable; lose it and the descent is re-bought in fire.",
+    "appearsIn": ["scourge-survivors"],
+    "boss": null
+  },
+  {
+    "slug": "ashgate",
+    "name": "Ashgate",
+    "kind": "holdout",
+    "control": "wardens",
+    "accent": "bone",
+    "tagline": "The Warden capital holds for the one reason that never fails: nowhere behind it to go.",
+    "overview": "Ashgate made things before Zero-Day — foundries, fabrication yards, and not one defensive structure worth the name — and after the fall its output saved it. The Wardens made it their capital for the foundries that arm the Resistance, the repeater crown that keeps the Choir cut to pieces at the city's edge, and the fact that three lanes converge here. The eastern approach is sealed under a rampart of towers and kill-corridors, the Pyre keep a camp at the eastern gate, and the two factions settle their feud in the arena district under sanctioned Pactfall bouts.",
+    "warRole": "Hold Ashgate and the lane network stays coherent; lose it and the Resistance splinters into pockets the Choir can swallow one at a time.",
+    "appearsIn": ["deadlane", "scourge-survivors", "pactfall"],
+    "boss": {
+      "name": "Lane Tyrant",
+      "entitySlug": "breach-boss",
+      "hostFamily": "chitin",
+      "coined": false
+    }
+  },
+  {
+    "slug": "cinder-flats",
+    "name": "Cinder Flats",
+    "kind": "wreck",
+    "control": "scourge",
+    "accent": "toxic",
+    "tagline": "The Scourge doesn't always burrow in. Sometimes it falls.",
+    "overview": "A dead plain east of the lanes where the breach-ships came down, burned through the sky, and went on burning where they landed. The ground is scorched glass and clinker studded with hulls the size of hills, each one a breach in its own right, close enough that the Choir runs hull to hull across the open flat — the Pyre chart the whole field as one wound, the Cinder Breach. The biggest wreck sank deepest and grew into the earth; they call it the Rothulk.",
+    "warRole": "An approach and a staging field — the burned ground a Pyre saboteur crosses to reach the Rothulk's base alive and ignite its core.",
+    "appearsIn": ["rothulk"],
+    "boss": null
+  },
+  {
+    "slug": "holdout-nine",
+    "name": "Holdout Nine",
+    "kind": "holdout",
+    "control": "wardens",
+    "accent": "bone",
+    "tagline": "Too small to look important from the lanes. That is why it is still there.",
+    "overview": "A Warden signals holdout under a collapsed exchange tower at the western mouth of the Hollow Lanes — half bunker, half switchboard, every aerial cut short. Nine's job is counting: charting every dead-air pocket and pylon bloom passively, with Tuning Forks, buried taps, and courier slates, because anything that broadcasts too loudly becomes bait. The redline number came from here — about ninety seconds from first contact inside a repeater-pylon's radius to both ends of the road being walled.",
+    "warRole": "Keeps the western Hollow Lanes from going silent by mapping exactly where the Choir's radius begins, then sending humans through the gaps faster than the signal can coordinate.",
+    "appearsIn": ["redline", "deadlane"],
+    "boss": null
+  },
+  {
+    "slug": "perdition",
+    "name": "Perdition",
+    "kind": "breach-city",
+    "control": "scourge",
+    "accent": "toxic",
+    "tagline": "Where the names run out and the source pulses.",
+    "overview": "The deepest known breach-region — not a place so much as a depth, where the walls stop being rock with growth on them and become growth with no rock left. The air is so dense with the Scourge that the Choir is a pressure behind the eyes, and there is no severing a single repeater because the repeaters are the ground. On the war-map it is one mark: the Choir Node, the densest repeater-heart ever charted, where the signal is made rather than relayed. Only one squad has ever come back from its edge.",
+    "warRole": "The far end of the Purge — isolation is unwinnable at this depth, so a burned wound in the Choir Node buys a quiet lane for a season and never closes the breach.",
+    "appearsIn": ["scourge-survivors"],
+    "boss": {
+      "name": "The Choir Node",
+      "entitySlug": "breach-boss",
+      "hostFamily": "rot-flesh",
+      "coined": false
+    }
+  },
+  {
+    "slug": "rustmarch",
+    "name": "Rustmarch",
+    "kind": "lane",
+    "control": "contested",
+    "accent": "rust",
+    "tagline": "You don't hold Rustmarch. You rent it, and the rent is everybody you brought.",
+    "overview": "An iron march on the north front — foundry stacks, ore lines, slag fields, and a horizon of dead machines gone the deep oxblood color that names the place. Machine-graft hosts come up out of the wreck-fields wearing the same iron the Wardens walk on, and in failing light you can't always tell which heaps are dead and which are about to stand. The line trades hands every few shifts; there is no wall, and nowhere to put one the rust won't eat.",
+    "warRole": "The open, attritional ground between the Spire and the breaches — fought across rather than held, feeding the Spire the way the eastern lanes feed Ashgate.",
+    "appearsIn": [],
+    "boss": null
+  },
+  {
+    "slug": "the-cinder-wells",
+    "name": "The Cinder Wells",
+    "kind": "landmark",
+    "control": "contested",
+    "accent": "hellfire",
+    "tagline": "Every wall wants current. Every Purger wants flame. Both kneel here.",
+    "overview": "A furnace district below Ashgate's Foundry Wards — deep thermal taps, induction stacks, and slag exchangers the Wardens turned from industrial heat into the grid that keeps the line alive. Tower capacitors, Beacon cells, Nail cautery cores, and Pyre breach tanks all drink from the Wells, which is why they became Pact ground: Warden meters on one wall, Pyre tank racks on the other. The Wells don't bottle the Choir — they force old-world heat through salvage, ash, copper, and ceramic cells until the output is steady enough to build a wall around.",
+    "warRole": "The power source that makes local isolation practical — if the Wells drop, the tower hum thins, the Beacon cells come off the rack half-hot, and the next wave arrives coordinated.",
+    "appearsIn": ["deadlane", "scourge-survivors", "pactfall"],
+    "boss": null
+  },
+  {
+    "slug": "the-hollow-lanes",
+    "name": "The Hollow Lanes",
+    "kind": "lane",
+    "control": "dead",
+    "accent": "toxic",
+    "tagline": "Nobody holds the Hollow Lanes. You cross them, or you don't.",
+    "overview": "The dead roads between holdouts after the Scourge took the comms — corridors where the asphalt grows chitin, spore-walls seal junctions overnight, and whole blocks have dropped into breach-flooded undertunnels. What makes them hollow is the jamming: repeater-pylons rooted through the road, and inside their radius the Choir hears everything and routes the horde to meet you before you've decided to move. From first contact in pylon range, the lane closes in about ninety seconds.",
+    "warRole": "The chokepoints that fell — severed, flooded, pylon-seeded, contested by passage alone, and still run because a severed holdout is a dead holdout.",
+    "appearsIn": ["redline", "scourge-survivors"],
+    "boss": {
+      "name": "Junction Knell",
+      "entitySlug": "breach-boss",
+      "hostFamily": "machine-graft",
+      "coined": true
+    }
+  },
+  {
+    "slug": "the-hush",
+    "name": "The Hush",
+    "kind": "holdout",
+    "control": "contested",
+    "accent": "bone",
+    "tagline": "It holds because nobody can find it to push.",
+    "overview": "A drowned river-delta holdout across the Hollow Lanes from Ashgate — a thousand stilt-shacks and boat-runs scattered over flooded fen, no two lights ever lit close enough together to read as one place. There is no wall; the discipline is the wall: no broadcasts, no massed signal, nothing dense enough for a Choir repeater to root in, so the Scourge that crosses the water arrives severed and feral. Both factions shelter their dependents here under the Pact — it is the thing the wall at Ashgate is for.",
+    "warRole": "Isolation chosen and kept — the civilian reservoir that survives by giving the Choir nothing to hear and nowhere to stand.",
+    "appearsIn": ["redline"],
+    "boss": null
+  },
+  {
+    "slug": "the-maw",
+    "name": "The Maw",
+    "kind": "breach-city",
+    "control": "scourge",
+    "accent": "blood",
+    "tagline": "The lanes are where the war is fought. The Maw is where it comes from.",
+    "overview": "Somewhere under the lane-floor the ground opened, and what came up was the swarm in numbers that don't end, climbing a shaft nobody has measured the bottom of. The Pyre charted the top of it and named it Breach Primus: the first throat, the mouth the Scourge feeds the lanes through. You don't fight the Maw — you cross it, on a span of fused host-bone and salvaged Warden gantry strung over the dark, the only way down toward Perdition.",
+    "warRole": "The gate stage of the descent — everything that reaches the lanes climbed out of here first, and the breach can't be capped, only crossed.",
+    "appearsIn": ["scourge-survivors"],
+    "boss": {
+      "name": "Maw Shepherd",
+      "entitySlug": "breach-boss",
+      "hostFamily": "bone-titan",
+      "coined": true
+    }
+  },
+  {
+    "slug": "the-pyre-gate",
+    "name": "The Pyre Gate",
+    "kind": "holdout",
+    "control": "pyre",
+    "accent": "hellfire",
+    "tagline": "A camp that never finishes packing. There is always a next manifest.",
+    "overview": "The Pyre's forward camp just east of Ashgate, outside the Foundry Wards — tents over scorched ground, cauterizer tanks racked and topped, and the mouth of Pyre Road open at the eastern edge like something waiting to be fed. This is where a Purger stops being a name on a roster and becomes a number on a manifest. The burn-off runs day and night, and its ash is what gave Ashgate its name.",
+    "warRole": "The hinge between the wall and the descent — offense staged at a defensive city, the door every run toward Perdition leaves through.",
+    "appearsIn": ["scourge-survivors", "pactfall"],
+    "boss": null
+  },
+  {
+    "slug": "the-rothulk",
+    "name": "The Rothulk",
+    "kind": "wreck",
+    "control": "scourge",
+    "accent": "blood",
+    "tagline": "A wreck doesn't pull air. This one does.",
+    "overview": "The named beached breach-ship of Cinder Flats — a mountain of rotting host-flesh grown up around the bones of the dead-world machinery that brought the Scourge here, swelling and settling on a count too long for anything that should be alive. It is a breach turned vertical: every level a gut, every gut feeding the one above it, mass-clusters glowing with Choir-coordination up and down the spine. Near the crown sits the breach-core, the repeater-heart that keeps the hulk connected to the wider mind.",
+    "warRole": "A self-contained nest whose death frees one lane — climb in, ignite the breach-core, and the severed hulk turns feral; the kill is local and never touches the deeper source at Perdition.",
+    "appearsIn": ["rothulk"],
+    "boss": {
+      "name": "Hull Chorus",
+      "entitySlug": "breach-boss",
+      "hostFamily": "voidship",
+      "coined": true
+    }
+  },
+  {
+    "slug": "the-skyhook",
+    "name": "The Skyhook",
+    "kind": "orbital",
+    "control": "contested",
+    "accent": "hellfire",
+    "tagline": "Every carrier broken in orbit is a breach that never opens at Ashgate's wall.",
+    "overview": "A battered orbital ring and the tether that anchors it — what humanity still holds of the sky, salvaged and re-crewed after Zero-Day took it and never gave it back. The Scourge never stops arriving: spores, infected wreckage, living carrier-ships, and raw breach-matter drifting down to seed fresh nests, and the Skyhook's whole purpose is to catch it up here, where it's thin and scattered. Every interception is breach-matter that never roots in the lanes.",
+    "warRole": "The highest lane — the orbital interdiction line that starves the ground of fresh hosts and fresh nests; lose it and the sky becomes a breach again.",
+    "appearsIn": ["starblight", "zero-day"],
+    "boss": {
+      "name": "The Blight-Maw",
+      "entitySlug": "orbital-breach-carrier",
+      "hostFamily": "voidship",
+      "coined": false
+    }
+  },
+  {
+    "slug": "the-spire-causeway",
+    "name": "The Spire Causeway",
+    "kind": "lane",
+    "control": "wardens",
+    "accent": "rust",
+    "tagline": "Useful enough to keep, broken enough to deny.",
+    "overview": "The Warden high-road climbing north out of Ashgate to the Spire — fire-control corridor, evacuation route, and artillery spine over the northern lanes. The Choir loves anything continuous, so the causeway is built to come apart: breaker spans on black winches, cable runs cut and bridged only by manual plates, signal shutters that slam when a Tuning Fork trembles. A crew doesn't defend the whole road; it defends the next joint, the next place a line can be broken before it becomes a nerve.",
+    "warRole": "The sectional spine that keeps Ashgate and the Spire one defense network without handing the Choir a clean carrier pointed at both.",
+    "appearsIn": ["deadlane", "redline", "warline"],
+    "boss": null
+  },
+  {
+    "slug": "the-spire",
+    "name": "The Spire",
+    "kind": "holdout",
+    "control": "wardens",
+    "accent": "bone",
+    "tagline": "It has never fallen — not a boast, a load-bearing fact.",
+    "overview": "The Wardens' command bastion and long-gun battery on the one piece of high ground that mattered, north of Ashgate up the causeway. A spotter on its crown reads the eastern approach a full shift before the wall does, and the long guns drop fire on kill-corridors the gunners never see. Lose the Spire and Ashgate goes blind, then the guns turn the wrong way, then there's no wall.",
+    "warRole": "The rearward command-and-fire node of the Ashgate network — early warning and artillery that fragments the swarm before the Choir can mass it densely enough to coordinate.",
+    "appearsIn": ["deadlane", "scourge-survivors"],
+    "boss": null
+  },
+  {
+    "slug": "the-switchback",
+    "name": "The Switchback",
+    "kind": "lane",
+    "control": "contested",
+    "accent": "rust",
+    "tagline": "Not a road anymore. A decision the Wardens keep rebuilding.",
+    "overview": "A broken freight interchange inside the Hollow Lanes, cut on purpose into doglegs, dead ends, and sacrificial spans — half the road lifts on winches, half the rail bed is rigged to drop. When the junction starts to sing, the drill is old: a Tuning Fork finds the loud side, a Blackout Nail cuts the carrier, a span drops, and a Dead-Air Beacon holds the wound while the local swarm forgets how to be an army. It never lasts — but a few minutes of dead air is enough for guns to rotate, a courier to cross, or a Pyre cell to vanish down the maintenance throat.",
+    "warRole": "A Pact-shared choke that attacks the Choir's carrier paths — cut the path, hold the dead air, and the local node drops feral long enough for humans to move.",
+    "appearsIn": ["deadlane", "redline", "scourge-survivors"],
+    "boss": null
+  }
+]
