@@ -1,6 +1,6 @@
 import menuHero from "@shipshitgames/assets/games/starblight/ui/menu/title.webp";
 import {
-  GlobalGameSettingsPanel,
+  GameSettingsScreen,
   GlobalMusicToggle,
   goToWarlineLobby,
   MainMenuAction,
@@ -148,17 +148,7 @@ export function AppShell() {
           actions={pauseActions}
         />
 
-        {settingsOpen && (
-          <div className="settings-overlay">
-            <MenuPanel className="settings-inner">
-              <h2 className="settings-title ssg-section-heading">SETTINGS</h2>
-              <GlobalGameSettingsPanel inline />
-              <button type="button" className="menu-action settings-close" onClick={() => setSettingsOpen(false)}>
-                CLOSE
-              </button>
-            </MenuPanel>
-          </div>
-        )}
+        {settingsOpen && <GameSettingsScreen open onClose={() => setSettingsOpen(false)} backgroundImage={menuHero} />}
 
         <div id="draft" className="draft hidden">
           <MenuPanel className="draft-inner">

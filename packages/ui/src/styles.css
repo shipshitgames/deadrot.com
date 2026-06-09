@@ -116,6 +116,15 @@
   text-transform: uppercase;
 }
 
+/* Shared game settings screen: a full-screen menu screen (same MainMenuScreen /
+   MainMenuTitle components, fonts, and spacing as the main menu — not a popup)
+   wrapping the self-stateful GlobalGameSettingsPanel. See GameSettingsScreen.
+   Only tweak: keep the audio panel from stretching across the wide screen. */
+.ssg-settings-screen .ssg-game-settings-panel {
+  width: min(440px, calc(100vw - 48px));
+  margin-inline: auto;
+}
+
 .ssg-main-menu-screen {
   display: block;
   align-items: stretch;

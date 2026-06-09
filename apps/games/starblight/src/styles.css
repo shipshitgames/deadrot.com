@@ -347,40 +347,6 @@ body {
   display: none;
 }
 
-/* --- settings overlay -------------------------------------------------- */
-/* The pause overlay is now the shared <PauseMenu>; this is the title-menu
-   Settings panel (music + SFX sliders). */
-
-.settings-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 90;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(8, 8, 10, 0.78);
-  backdrop-filter: blur(3px);
-  pointer-events: auto;
-}
-.settings-inner {
-  width: min(440px, calc(100vw - 32px));
-  display: grid;
-  gap: 18px;
-  padding: 30px clamp(20px, 5vw, 44px);
-  text-align: center;
-  background: var(--coal);
-  border: 1px solid var(--gunmetal);
-  border-top: 3px solid var(--hellfire);
-}
-.settings-title {
-  font-size: clamp(26px, 6vw, 40px);
-  line-height: 0.95;
-  letter-spacing: 0.12em;
-  color: var(--bone);
-}
-.settings-close {
-  justify-self: stretch;
-}
 .menu-action {
   pointer-events: auto;
   cursor: pointer;

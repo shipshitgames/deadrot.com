@@ -1,6 +1,7 @@
 import {
   Button,
   Card,
+  GameSettingsScreen,
   GlobalGameSettingsPanel,
   GlobalMusicToggle,
   goToWarlineLobby,
@@ -1405,22 +1406,7 @@ export function HUD({
               )}
 
               {menuScreen === "settings" && (
-                <div className={menuScreenWrap}>
-                  <div className={MENU_HEADING}>
-                    <IconText icon="settings" size={18}>
-                      Settings
-                    </IconText>
-                  </div>
-                  <SettingsRow />
-                  <Button
-                    type="button"
-                    variant="back"
-                    className="w-[min(260px,80vw)] self-center mt-[14px]"
-                    onClick={() => setMenuScreen("home")}
-                  >
-                    ← Back
-                  </Button>
-                </div>
+                <GameSettingsScreen open onClose={() => setMenuScreen("home")} backgroundImage={MENU_HERO_URL} />
               )}
 
               {menuScreen === "leaderboard" && (
@@ -1465,22 +1451,7 @@ export function HUD({
       )}
 
       {status === "paused" && !suppressMenu && pausePanel === "settings" && (
-        <div className={OVERLAY} onClick={onLock}>
-          <h2 className="m-0 mb-[18px] text-[30px] font-bold">
-            <IconText icon="settings" size={26}>
-              Settings
-            </IconText>
-          </h2>
-          <SettingsRow className="mt-0" />
-          <div
-            className="pause-ui mt-[22px] w-[min(340px,86vw)] pointer-events-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Button type="button" variant="ghost" className="w-full" onClick={() => setPausePanel("none")}>
-              ← Back
-            </Button>
-          </div>
-        </div>
+        <GameSettingsScreen open onClose={() => setPausePanel("none")} backgroundImage={MENU_HERO_URL} />
       )}
 
       {status === "paused" && !suppressMenu && pausePanel === "controls" && (
