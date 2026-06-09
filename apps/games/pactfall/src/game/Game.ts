@@ -83,6 +83,9 @@ export class Game {
     this.paused = false;
     this.entities.reset();
     this.abilities.reset();
+    // Q/W/E pressed on the title / victory / pause screens stay latched in the
+    // input queue; drop them so a fresh run never opens with stale casts.
+    this.input.clearAbilities();
     this.hurtSfxIn = 0;
     this.heartbeatIn = 0;
     this.lowHpActive = false;
@@ -98,6 +101,9 @@ export class Game {
 
   resume(): void {
     this.paused = false;
+    // Presses buffered while the sim was frozen would all fire on the first
+    // unpaused frame — discard them, same as beginRun().
+    this.input.clearAbilities();
   }
 
   private setPhase(phase: Phase): void {
@@ -269,9 +275,11 @@ export class Game {
     }
     if (ab.dryfire) audio.sfx("dryfire");
 
-    // Low-health heartbeat + vignette (throttled, state-edge driven).
+    // Low-health heartbeat + vignette (throttled, state-edge driven). Gated on
+    // !paused too so the heartbeat can never thump over the pause menu.
     const c = this.entities.champion;
-    const low = this.phase === "playing" && c.alive && c.hp <= c.maxHp * CONSTANTS.champion.lowHpFraction;
+    const low =
+      this.phase === "playing" && !this.paused && c.alive && c.hp <= c.maxHp * CONSTANTS.champion.lowHpFraction;
     if (low !== this.lowHpActive) {
       this.lowHpActive = low;
       this.flash.setVignette(low ? 0.5 : 0);
@@ -292,7 +300,7 @@ export class Game {
     // Advance the juice once per displayed frame; shake offsets ride on the
     // follow-cam pose computed just above.
     this.shake.update(dt);
-    if (this.phase === "playing") {
+    if (this.phase === "playing" && !this.paused) {
       this.render.camera.position.x += this.shake.offsetX;
       this.render.camera.position.y += this.shake.offsetY;
     }

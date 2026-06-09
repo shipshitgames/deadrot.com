@@ -24,10 +24,14 @@ and a pulsing toxic-green Scourge blob at the heart of the lane.
 
 | Input | Action |
 | --- | --- |
-| `W` `A` `S` `D` / Arrows | Move the champion |
+| Arrows | Move the champion |
 | Click / tap ground | Click-to-move (also works on touch) |
+| `Q` / tap HUD box | Cinder Lance — line nuke toward the cursor (or lane facing) |
+| `W` / tap HUD box | Pact Brand — slowing ground zone at the cursor (or your feet) |
+| `E` / tap HUD box | Vault — short dash along your move direction |
 | (auto) | Auto-attack nearest enemy in range |
 | `R` / click | Redeploy after a win or loss |
+| `Esc` | Pause |
 
 ## Run it
 
@@ -71,8 +75,9 @@ src/
     factory.ts             # primitive meshes for each entity
     systems/
       RenderSystem.ts      # renderer, scene, lights, arena, follow-cam
-      InputSystem.ts       # WASD + click-to-move intent
+      InputSystem.ts       # arrows + click/tap move intent, latched Q/W/E ability presses
       EntitySystem.ts      # spawns, movement, targeting, combat (the loop)
+      abilities.ts         # Q/W/E casts: cooldown/mana gates, skillshots, brand zones
       HudSystem.ts         # reads state, updates the React-rendered HUD shell
 ```
 

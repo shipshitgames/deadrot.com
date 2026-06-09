@@ -56,7 +56,7 @@ export class InputSystem {
     }
     if (k === "q" || k === "w" || k === "e") {
       e.preventDefault();
-      if (down && !e.repeat && this.abilityPresses.length < 4) this.abilityPresses.push(k);
+      if (down && !e.repeat) this.pressAbility(k);
       return;
     }
     const tracked = ["arrowup", "arrowdown", "arrowleft", "arrowright"];
@@ -108,12 +108,29 @@ export class InputSystem {
     }
   }
 
+  /**
+   * Latch one ability press. Keyboard Q/W/E and the HUD tap-to-cast buttons
+   * both funnel through here so touch and keys share one queue (capped so a
+   * mash never builds a backlog of stale casts).
+   */
+  pressAbility(key: AbilityKey): void {
+    if (this.abilityPresses.length < 4) this.abilityPresses.push(key);
+  }
+
   /** Drain this tick's edge-latched Q/W/E presses. */
   takeAbilities(): AbilityKey[] {
     if (this.abilityPresses.length === 0) return [];
     const out = this.abilityPresses.slice();
     this.abilityPresses.length = 0;
     return out;
+  }
+
+  /**
+   * Drop any buffered presses. Called on run start and pause-resume so casts
+   * latched on the title / end / pause screens never fire on the first live frame.
+   */
+  clearAbilities(): void {
+    this.abilityPresses.length = 0;
   }
 
   /** Where the cursor currently points on the ground plane (null = unknown). */

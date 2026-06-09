@@ -197,12 +197,22 @@ body {
   justify-content: center;
 }
 
+/* Real buttons now (tap-to-cast on touch), so reset the UA button chrome and
+   re-enable pointer events under the HUD's pointer-events: none overlay. */
 .ability {
+  appearance: none;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  color: inherit;
   border: 1px solid var(--gunmetal);
   background: var(--coal);
   padding: 5px 10px;
   min-width: 84px;
   text-align: center;
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
 }
 
 .ability-key {

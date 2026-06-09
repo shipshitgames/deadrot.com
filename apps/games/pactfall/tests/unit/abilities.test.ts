@@ -303,6 +303,24 @@ describe("AbilitySystem — casts through the live sim", () => {
     expect(lost % w.tickDamage).toBeCloseTo(0, 5); // damage arrives in whole ticks
   });
 
+  test("a queued W with no cursor (tap-to-cast path) brands the champion's own feet", () => {
+    const game = makeStubGame();
+    game.abilities.enemy.cooldowns.q = 999;
+    const player = game.entities.champion;
+    const foe = game.entities.enemyChampion;
+    // Park the foe on the champion: if the cursor-less cast falls back to the
+    // caster's feet (how HUD tap-casts resolve), the foe sits inside the zone.
+    foe.pos.set(player.pos.x, foe.pos.y, player.pos.z);
+
+    game.input.queue.push("w"); // aimPoint() is null in the stub — the touch case
+    advanceAbilities(game, 1);
+
+    expect(game.abilities.events.playerCasts).toEqual(["w"]);
+    expect(game.abilities.player.ready("w")).toBe(false); // the cast really went out
+    expect(foe.slowTimer).toBeGreaterThan(0);
+    expect(foe.hp).toBeLessThan(foe.maxHp); // ticks land at the fallback point
+  });
+
   test("the brand zone expires after its duration and stops ticking", () => {
     const game = makeStubGame();
     game.abilities.enemy.cooldowns.q = 999;

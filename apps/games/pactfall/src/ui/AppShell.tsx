@@ -17,8 +17,17 @@ import {
   PauseMenu,
   useEnterToReveal,
 } from "@shipshitgames/ui";
-import { useCallback, useEffect, useMemo, useReducer, useState, useSyncExternalStore } from "react";
+import {
+  type PointerEvent as ReactPointerEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import type { Game } from "../game/Game";
+import { ABILITY_KEYS, type AbilityKey } from "../game/systems/abilities";
 import type { Phase } from "../game/types";
 import { getBridgeGame, subscribeBridgeGame } from "./gameBridge";
 
@@ -103,6 +112,18 @@ export function AppShell() {
     game?.beginRun();
   }, [game]);
 
+  // Tap-to-cast: HUD ability buttons latch a press through the same queue the
+  // keyboard uses, so touch players can cast Q/W/E. pointerdown (not click)
+  // keeps it instant, and preventDefault stops the button from taking focus
+  // away from the canvas / synthesizing a click-to-move underneath.
+  const castAbility = useCallback(
+    (key: AbilityKey, event: ReactPointerEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      game?.input.pressAbility(key);
+    },
+    [game],
+  );
+
   const pauseStatus = useMemo(
     () => (
       <>
@@ -148,21 +169,20 @@ export function AppShell() {
         </div>
 
         <div id="hud-abilities">
-          <div className="ability" id="ability-q">
-            <span className="ability-key">Q</span>
-            <span className="ability-name" />
-            <span className="ability-cd">RDY</span>
-          </div>
-          <div className="ability" id="ability-w">
-            <span className="ability-key">W</span>
-            <span className="ability-name" />
-            <span className="ability-cd">RDY</span>
-          </div>
-          <div className="ability" id="ability-e">
-            <span className="ability-key">E</span>
-            <span className="ability-name" />
-            <span className="ability-cd">RDY</span>
-          </div>
+          {ABILITY_KEYS.map((key) => (
+            <button
+              key={key}
+              type="button"
+              className="ability"
+              id={`ability-${key}`}
+              tabIndex={-1}
+              onPointerDown={(event) => castAbility(key, event)}
+            >
+              <span className="ability-key">{key.toUpperCase()}</span>
+              <span className="ability-name" />
+              <span className="ability-cd">RDY</span>
+            </button>
+          ))}
           <div className="mana-block" id="meter-mana">
             <span className="mana-label">
               MANA <span className="mana-value">100</span>
