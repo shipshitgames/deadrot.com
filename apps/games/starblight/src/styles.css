@@ -292,60 +292,6 @@ body {
 .banner.hidden {
   display: none;
 }
-.banner-inner {
-  text-align: center;
-  padding: 36px clamp(24px, 6vw, 64px);
-  background: var(--coal);
-  border: 1px solid var(--gunmetal);
-  border-top: 3px solid var(--blood);
-  max-width: 640px;
-}
-#banner-title {
-  color: var(--bone);
-}
-#banner-sub {
-  margin-top: 10px;
-  font-size: clamp(15px, 2.4vw, 20px);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--blood);
-}
-.hint {
-  margin-top: 18px;
-  font-family: var(--mono);
-  font-size: 13px;
-  letter-spacing: 0.04em;
-  color: var(--ash);
-  text-transform: uppercase;
-}
-.cta {
-  margin-top: 26px;
-  pointer-events: auto;
-  cursor: pointer;
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: 20px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--bone);
-  background: var(--blood);
-  border: 0;
-  border-radius: 2px;
-  padding: 14px 38px;
-  transition:
-    box-shadow 120ms ease,
-    background 120ms ease;
-}
-.cta:hover {
-  background: var(--blood-hot);
-  box-shadow: var(--glow);
-}
-.cta:active {
-  transform: translateY(1px);
-}
-.cta.hidden {
-  display: none;
-}
 
 .menu-action {
   pointer-events: auto;

@@ -173,7 +173,7 @@ export class Hud {
     this.overlayCard.innerHTML = `
       <div class="ssg-main-menu-copy">
         <div id="overlay-kicker" class="ssg-menu-kicker">${isRecord ? "New Personal Best" : "Delivery Complete"}</div>
-        <h1 id="overlay-title" class="ssg-main-menu-title" style="font-size:clamp(40px,9vw,72px)">${
+        <h1 id="overlay-title" class="ssg-main-menu-title">${
           isRecord
             ? "<span class='ssg-main-menu-title-line ssg-main-menu-title-line--bone'>RED</span><span class='ssg-main-menu-title-line ssg-main-menu-title-line--hot'>LINED</span>"
             : "DELIVERED"
@@ -199,7 +199,7 @@ export class Hud {
     this.overlayCard.innerHTML = `
       <div class="ssg-main-menu-copy">
         <div id="overlay-kicker" class="ssg-menu-kicker">Run Failed</div>
-        <h1 id="overlay-title" class="ssg-main-menu-title" style="font-size:clamp(40px,9vw,72px)">
+        <h1 id="overlay-title" class="ssg-main-menu-title">
           <span class="ssg-main-menu-title-line ssg-main-menu-title-line--bone">DOWN</span>
           <span class="ssg-main-menu-title-line ssg-main-menu-title-line--hot">.</span>
         </h1>

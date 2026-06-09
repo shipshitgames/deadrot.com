@@ -143,13 +143,13 @@ export function AppShell({ createGame }: AppShellProps) {
           <MainMenuLayout className={revealed ? "ssg-main-menu-layout--menu" : "ssg-main-menu-layout--splash"}>
             <MainMenuCopy hidden={revealed}>
               <MenuKicker>Pyre Infiltration</MenuKicker>
-              <MainMenuTitle className="banner-title">
+              <MainMenuTitle>
                 <MainMenuTitleLine>ROT</MainMenuTitleLine>
                 <MainMenuTitleLine tone="hot">HULK</MainMenuTitleLine>
               </MainMenuTitle>
-              <MenuKicker className="banner-sub">
+              <p className="ssg-main-menu-subtitle">
                 Climb the living Scourge hulk. Ignite the breach-core. Escape the severed node.
-              </MenuKicker>
+              </p>
               <MainMenuStatus>
                 <span>Boarding spike armed</span>
                 <span>Core at crown</span>

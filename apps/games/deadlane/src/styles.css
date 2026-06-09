@@ -162,19 +162,6 @@ body {
   display: none;
 }
 
-#banner-title {
-  color: inherit;
-}
-
-#banner-sub {
-  max-width: 36rem;
-  font-size: 15px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-weight: 400;
-  color: var(--ash);
-}
-
 .btn-primary {
   pointer-events: auto;
   cursor: pointer;

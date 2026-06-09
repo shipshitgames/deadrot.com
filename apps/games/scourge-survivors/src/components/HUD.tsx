@@ -15,6 +15,7 @@ import {
   MainMenuTitle,
   MainMenuTitleLine,
   MainMenuTopBar,
+  MenuKicker,
   PauseMenu,
   type PauseMenuAction,
   PixelConfetti,
@@ -1332,11 +1333,12 @@ export function HUD({
           {menuScreen === "home" ? (
             <MainMenuLayout className={menuRevealed ? "ssg-main-menu-layout--menu" : "ssg-main-menu-layout--splash"}>
               <MainMenuCopy hidden={menuRevealed}>
-                <div className="ssg-menu-kicker">Pyre breach hub</div>
-                <MainMenuTitle className="ssg-main-menu-title--pixel">
+                <MenuKicker>Pyre breach hub</MenuKicker>
+                <MainMenuTitle>
                   <MainMenuTitleLine>SCOURGE</MainMenuTitleLine>
                   <MainMenuTitleLine tone="hot">SURVIVORS</MainMenuTitleLine>
                 </MainMenuTitle>
+                <p className="ssg-main-menu-subtitle">Descend the breach. Burn the source nodes. Hold Ashgate.</p>
                 <MainMenuStatus>
                   <span>Survivors core online</span>
                   <span>{scores.length === 0 ? "No records" : `${scores.length} local records`}</span>
