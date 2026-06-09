@@ -65,6 +65,26 @@ export const CONSTANTS = {
   SCOURGE_FERAL_SPEED: 3.4, // severed hosts thrash faster after the Choir path is cut
   SCOURGE_SIZE: 1.1,
 
+  // --- Spitter (stationary lobber) ------------------------------------------
+  SPITTER_SIZE: 1.2,
+  SPITTER_RANGE: 11, // engages when the hero is within this distance
+  SPITTER_COOLDOWN: 2.2, // seconds between lobs
+  GLOB_SIZE: 0.45, // toxic projectile body
+  GLOB_ARC_TIME: 1.1, // seconds for a lob to arc onto the hero's position
+  GLOB_GRAVITY: 22, // gentler than hero gravity so the arc reads (and dodges)
+  GLOB_LIFE: 3.5, // failsafe lifetime in seconds
+  GLOB_DAMAGE: 1,
+  MAX_GLOBS: 6, // pooled projectiles per level
+
+  // --- Charger ---------------------------------------------------------------
+  CHARGER_WIDTH: 1.3,
+  CHARGER_HEIGHT: 1.0,
+  CHARGER_PATROL_SPEED: 1.8,
+  CHARGER_CHARGE_SPEED: 11,
+  CHARGER_TRIGGER_RANGE: 9, // horizontal engage distance
+  CHARGER_ROW_TOLERANCE: 1.2, // vertical band that counts as "same row"
+  CHARGER_STUN_TIME: 1.4, // wall-impact stun — the safe stomp window
+
   // --- Pickups -------------------------------------------------------------
   EMBER_SIZE: 0.5,
   EMBER_VALUE: 1,
@@ -76,4 +96,13 @@ export const CONSTANTS = {
   MAX_DELTA: 1 / 30, // clamp dt so a stutter never tunnels the hero
   CORE_IGNITE_RADIUS: 2,
   EXIT_RADIUS: 2.2,
+
+  // --- Juice / feedback ------------------------------------------------------
+  SHAKE_STOMP: 0.3, // ScreenShake kick on a stomp kill
+  SHAKE_HURT: 0.45, // kick when the hero takes damage
+  SHAKE_DEATH: 0.6, // kick on hero death
+  SHAKE_IGNITE: 0.6, // kick on core ignition / hulk severance
+  SHAKE_WALLHIT: 0.2, // kick when a charger slams a wall nearby
+  LAND_DUST_MIN_FALL: 6, // landing speed that kicks dust + the land cue
+  SFX_FRAME_CAP: 4, // max one-shot cues per displayed frame
 } as const;
