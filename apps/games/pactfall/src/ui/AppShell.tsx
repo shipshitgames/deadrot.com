@@ -147,6 +147,32 @@ export function AppShell() {
           </div>
         </div>
 
+        <div id="hud-abilities">
+          <div className="ability" id="ability-q">
+            <span className="ability-key">Q</span>
+            <span className="ability-name" />
+            <span className="ability-cd">RDY</span>
+          </div>
+          <div className="ability" id="ability-w">
+            <span className="ability-key">W</span>
+            <span className="ability-name" />
+            <span className="ability-cd">RDY</span>
+          </div>
+          <div className="ability" id="ability-e">
+            <span className="ability-key">E</span>
+            <span className="ability-name" />
+            <span className="ability-cd">RDY</span>
+          </div>
+          <div className="mana-block" id="meter-mana">
+            <span className="mana-label">
+              MANA <span className="mana-value">100</span>
+            </span>
+            <div className="bar bar--mana">
+              <i />
+            </div>
+          </div>
+        </div>
+
         <div id="hud-bottom">
           <div className="meter meter--wide" id="meter-hp">
             <span className="meter-label">CHAMPION HP</span>
@@ -160,7 +186,7 @@ export function AppShell() {
           </div>
         </div>
 
-        <div id="hint">WASD / TAP TO MOVE - AUTO-ATTACKS NEAREST - KILL THE SCOURGE FOR A BUFF</div>
+        <div id="hint">CLICK / ARROWS TO MOVE - Q LANCE - W BRAND - E VAULT - SLAY THE SCOURGE FOR A BUFF</div>
 
         <MainMenuScreen id="title-screen" className="banner" backgroundImage={menuHero}>
           <MainMenuTopBar mark="SSG" meta="0 gold" aria-hidden>
