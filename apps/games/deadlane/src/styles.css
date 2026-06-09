@@ -96,6 +96,12 @@ body {
   line-height: 1;
 }
 
+/* word-sized stat values (selected tower) read at a smaller size */
+.ssg-stat-value--text {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+
 /* tint key stats */
 #stat-gold {
   color: var(--hellfire);
