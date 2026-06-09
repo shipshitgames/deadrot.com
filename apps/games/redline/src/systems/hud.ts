@@ -5,11 +5,18 @@
  */
 
 import { warlineLobbyHref } from "@shipshitgames/ui";
-import { RUNNER, STORAGE_KEY } from "../constants";
+import { COURSE, RUNNER, SCORE } from "../constants";
 import type { Phase, RunnerState } from "../types";
+import { applyRunRecord, bestFor, createBestsStore, type RunSummary } from "./score";
 
 function fmtTime(s: number): string {
   return s.toFixed(2);
+}
+
+/** Which records a finished run broke (returned by submitRun). */
+export interface RunRecords {
+  newBestTime: boolean;
+  newBestScore: boolean;
 }
 
 export class Hud {
@@ -18,8 +25,14 @@ export class Hud {
   private elTime = document.getElementById("hud-time")!;
   private elBest = document.getElementById("hud-best")!;
   private elDist = document.getElementById("hud-dist")!;
+  private elScore = document.getElementById("hud-score")!;
   private elStatus = document.getElementById("hud-status")!;
   private elProgressFill = document.getElementById("progress-fill")!;
+
+  private elChain = document.getElementById("chain")!;
+  private elChainMult = document.getElementById("chain-mult")!;
+  private elChainFill = document.getElementById("chain-meter-fill")!;
+  private lastChain = 1;
 
   private speedlines = document.getElementById("speedlines")!;
   private flash = document.getElementById("flash")!;
@@ -27,38 +40,29 @@ export class Hud {
   private overlay = document.getElementById("overlay")!;
   private overlayCard = document.getElementById("overlay-card")!;
 
+  // Per-seed bests, persisted through the versioned game-kit store (which
+  // migrates the legacy raw best-time payload on first read).
+  private readonly store = createBestsStore();
   best: number | null = null;
+  bestScore: number | null = null;
 
   constructor() {
-    this.best = this.loadBest();
+    const seedBest = bestFor(this.store.get(), COURSE.seed);
+    this.best = seedBest.time;
+    this.bestScore = seedBest.score;
     this.elBest.textContent = this.best === null ? "--.--" : fmtTime(this.best);
   }
 
-  // --- best time persistence ------------------------------------------------
-  private loadBest(): number | null {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      const n = Number(raw);
-      return Number.isFinite(n) && n > 0 ? n : null;
-    } catch {
-      return null;
-    }
-  }
-
-  /** Returns true if this is a new record. */
-  submitTime(t: number): boolean {
-    const record = this.best === null || t < this.best;
-    if (record) {
-      this.best = t;
-      try {
-        localStorage.setItem(STORAGE_KEY, String(t));
-      } catch {
-        /* ignore quota / privacy mode */
-      }
-      this.elBest.textContent = fmtTime(t);
-    }
-    return record;
+  // --- best run persistence ---------------------------------------------------
+  /** Fold a finished run into the per-seed bests; reports broken records. */
+  submitRun(time: number, score: number): RunRecords {
+    const { next, newBestTime, newBestScore } = applyRunRecord(this.store.get(), COURSE.seed, time, score);
+    this.store.set(next);
+    const seedBest = bestFor(next, COURSE.seed);
+    this.best = seedBest.time;
+    this.bestScore = seedBest.score;
+    this.elBest.textContent = this.best === null ? "--.--" : fmtTime(this.best);
+    return { newBestTime, newBestScore };
   }
 
   // --- per-frame ------------------------------------------------------------
@@ -69,11 +73,32 @@ export class Hud {
     distance: number;
     progress: number;
     state: RunnerState;
+    score: number;
+    chain: number;
+    chainFrac: number;
   }) {
     this.elSpeed.textContent = String(Math.round(opts.speed));
     this.elTime.textContent = fmtTime(opts.time);
     this.elDist.textContent = String(Math.round(opts.distance));
+    this.elScore.textContent = String(opts.score);
     this.elProgressFill.style.width = `${(opts.progress * 100).toFixed(1)}%`;
+
+    // ember chain badge: visible while the multiplier is hot
+    const live = opts.chain > 1;
+    this.elChain.classList.toggle("is-live", live);
+    this.elChain.classList.toggle("is-max", opts.chain >= SCORE.chainMax);
+    if (live) {
+      this.elChainMult.textContent = `x${opts.chain}`;
+      this.elChainFill.style.width = `${(opts.chainFrac * 100).toFixed(1)}%`;
+    }
+    if (opts.chain > this.lastChain && live) {
+      // pop on each chain step up
+      this.elChain.animate([{ transform: "scale(1.18)" }, { transform: "scale(1)" }], {
+        duration: 160,
+        easing: "ease-out",
+      });
+    }
+    this.lastChain = opts.chain;
 
     // heat the speed readout
     this.elSpeedWrap.classList.toggle("is-hot", opts.speedFrac > 0.5);
@@ -115,6 +140,15 @@ export class Hud {
     );
   }
 
+  /** "Best 23.45 · 5200 pts" (whichever records exist), or "No record". */
+  private bestLabel(): string {
+    if (this.best === null && this.bestScore === null) return "No record";
+    const parts: string[] = [];
+    if (this.best !== null) parts.push(`Best ${fmtTime(this.best)}`);
+    if (this.bestScore !== null) parts.push(`${this.bestScore} pts`);
+    return parts.join(" · ");
+  }
+
   // --- overlays -------------------------------------------------------------
   showStart() {
     this.overlay.classList.remove("is-hidden");
@@ -131,7 +165,7 @@ export class Hud {
         </p>
         <div class="ssg-main-menu-status">
           <span>Courier ready</span>
-          <span>${this.best === null ? "No record" : `Best ${fmtTime(this.best)}`}</span>
+          <span>${this.bestLabel()}</span>
         </div>
       </div>
       <nav class="ssg-main-menu-nav" aria-label="Main menu">
@@ -149,7 +183,7 @@ export class Hud {
         </button>
         <button class="ssg-main-menu-action ssg-main-menu-action--records" disabled>
           <span class="ssg-main-menu-action__label"><span>Leaderboard</span></span>
-          <span class="ssg-main-menu-action__meta">${this.best === null ? "No record" : `Best ${fmtTime(this.best)}`}</span>
+          <span class="ssg-main-menu-action__meta">${this.bestLabel()}</span>
         </button>
         <button id="overlay-settings-btn" class="ssg-main-menu-action ssg-main-menu-action--settings">
           <span class="ssg-main-menu-action__label"><span>Settings</span></span>
@@ -167,28 +201,42 @@ export class Hud {
     `;
   }
 
-  showWin(time: number, isRecord: boolean, embers: number) {
+  showWin(summary: RunSummary, records: RunRecords) {
     this.overlay.classList.remove("is-hidden");
-    const bestStr = this.best === null ? "--.--" : fmtTime(this.best);
+    const isRecord = records.newBestTime || records.newBestScore;
+    const kicker = records.newBestTime
+      ? "New Personal Best"
+      : records.newBestScore
+        ? "New High Score"
+        : "Delivery Complete";
+    const bestTimeStr = this.best === null ? "--.--" : fmtTime(this.best);
+    const bestScoreStr = this.bestScore === null ? "--" : String(this.bestScore);
     this.overlayCard.innerHTML = `
       <div class="ssg-main-menu-copy">
-        <div id="overlay-kicker" class="ssg-menu-kicker">${isRecord ? "New Personal Best" : "Delivery Complete"}</div>
+        <div id="overlay-kicker" class="ssg-menu-kicker">${kicker}</div>
         <h1 id="overlay-title" class="ssg-main-menu-title">${
           isRecord
             ? "<span class='ssg-main-menu-title-line ssg-main-menu-title-line--bone'>RED</span><span class='ssg-main-menu-title-line ssg-main-menu-title-line--hot'>LINED</span>"
             : "DELIVERED"
         }</h1>
+        <div id="overlay-grade" class="grade-${summary.grade.toLowerCase()}">
+          <span class="grade-letter">${summary.grade}</span>
+          <span class="grade-score">${summary.total} pts</span>
+        </div>
       </div>
       <nav class="ssg-main-menu-nav" aria-label="Run summary">
         <div class="ssg-main-menu-nav__label">Summary</div>
         <div id="overlay-stats">
-          <div class="stat"><span class="k">Time</span><span class="v ${isRecord ? "gold" : ""}">${fmtTime(time)}</span></div>
-          <div class="stat"><span class="k">Best</span><span class="v">${bestStr}</span></div>
-          <div class="stat"><span class="k">Embers</span><span class="v">${embers}</span></div>
+          <div class="stat"><span class="k">Time</span><span class="v ${records.newBestTime ? "gold" : ""}">${fmtTime(summary.time)}</span></div>
+          <div class="stat"><span class="k">Score</span><span class="v ${records.newBestScore ? "gold" : ""}">${summary.total}</span></div>
+          <div class="stat"><span class="k">Time bonus</span><span class="v">${summary.timeBonus}</span></div>
+          <div class="stat"><span class="k">Embers · pts</span><span class="v">${summary.embers} · ${summary.emberPoints}</span></div>
+          <div class="stat"><span class="k">Near-miss · pts</span><span class="v">${summary.nearMisses} · ${summary.stylePoints}</span></div>
+          <div class="stat"><span class="k">Best · pts</span><span class="v">${bestTimeStr} · ${bestScoreStr}</span></div>
         </div>
         <button id="overlay-btn" class="ssg-main-menu-action ssg-main-menu-action--primary">
           <span class="ssg-main-menu-action__label"><span>RUN AGAIN</span></span>
-          <span class="ssg-main-menu-action__meta">Beat the clock</span>
+          <span class="ssg-main-menu-action__meta">Beat the score</span>
         </button>
       </nav>
     `;
