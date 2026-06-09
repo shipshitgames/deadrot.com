@@ -1,4 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { GAME_APPS } from "@deadrot/catalog";
 import { allGames, DEFAULT_PORT_BASE, parsePortBase, parseSelectedGameSlugs } from "./game-catalog";
 
 // Issue #7 — cross-game E2E coverage: unit coverage for the pure catalog/selection
@@ -69,5 +72,26 @@ describe("parsePortBase", () => {
     expect(() => parsePortBase("1023")).toThrow(/E2E_PORT_BASE/);
     expect(() => parsePortBase("65530")).toThrow(/E2E_PORT_BASE/);
     expect(() => parsePortBase("5174.5")).toThrow(/E2E_PORT_BASE/);
+  });
+});
+
+describe("catalog ↔ vite.config drift guard", () => {
+  test("each game app's vite.config.ts server.port matches its catalog devPort", () => {
+    for (const game of GAME_APPS) {
+      const configPath = join(import.meta.dir, "..", "apps", "games", game.slug, "vite.config.ts");
+      const config = readFileSync(configPath, "utf8");
+      const match = config.match(/port:\s*(\d+)/);
+      expect(match?.[1]).toBe(String(game.devPort));
+    }
+  });
+});
+
+describe("catalog runtime facts", () => {
+  test("every app has a unique https deploy URL", () => {
+    const urls = GAME_APPS.map((game) => game.deployUrl);
+    expect(new Set(urls).size).toBe(urls.length);
+    for (const url of urls) {
+      expect(url).toMatch(/^https:\/\//);
+    }
   });
 });

@@ -1,3 +1,4 @@
+import { CONCEPTS, GAME_APPS, gameRoute } from "@deadrot/catalog";
 import type { CSSProperties } from "react";
 import data from "./data.json";
 
@@ -77,15 +78,16 @@ export interface Universe {
 const GAME_SOURCE_ROOT = "https://github.com/shipshitgames/deadrot.com/tree/master/apps/games";
 const gameSource = (slug: string) => `${GAME_SOURCE_ROOT}/${slug}`;
 
-const GAME_META: Record<string, { repo?: string; demo?: string; status: GameStatus }> = {
-  "scourge-survivors": { repo: gameSource("scourge-survivors"), demo: "/scourge-survivors/", status: "PLAYABLE" },
-  deadlane: { repo: gameSource("deadlane"), demo: "/deadlane/", status: "PLAYABLE" },
-  pactfall: { repo: gameSource("pactfall"), demo: "/pactfall/", status: "PLAYABLE" },
-  starblight: { repo: gameSource("starblight"), demo: "/starblight/", status: "PLAYABLE" },
-  redline: { repo: gameSource("redline"), demo: "/redline/", status: "PLAYABLE" },
-  rothulk: { repo: gameSource("rothulk"), demo: "/rothulk/", status: "PLAYABLE" },
-  "zero-day": { status: "CONCEPT" },
-};
+// Derived from @deadrot/catalog (the single source of truth) rather than re-listed
+// here: each game app gets a source link + same-origin demo route + its status;
+// concept titles (e.g. zero-day) get status only.
+const GAME_META: Record<string, { repo?: string; demo?: string; status: GameStatus }> = {};
+for (const game of GAME_APPS) {
+  GAME_META[game.slug] = { repo: gameSource(game.slug), demo: gameRoute(game.slug), status: game.status };
+}
+for (const concept of CONCEPTS) {
+  GAME_META[concept.slug] = { status: concept.status };
+}
 
 const raw = data as unknown as {
   games: Omit<Game, "repo" | "demo" | "status">[];
