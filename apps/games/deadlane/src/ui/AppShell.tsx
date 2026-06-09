@@ -1,6 +1,6 @@
 import menuHero from "@shipshitgames/assets/games/deadlane/ui/menu/title.webp";
 import {
-  GlobalGameSettingsPanel,
+  GameSettingsScreen,
   GlobalMusicToggle,
   goToWarlineLobby,
   MainMenuAction,
@@ -156,33 +156,12 @@ export function AppShell() {
       </div>
 
       {showSettings && (
-        <MainMenuScreen
-          className="deadlane-settings-screen"
+        <GameSettingsScreen
+          open
+          onClose={() => setShowSettings(false)}
+          kicker="Wardens Console"
           backgroundImage={menuHero}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Settings"
-        >
-          <MainMenuLayout>
-            <MainMenuCopy>
-              <MenuKicker>Wardens Console</MenuKicker>
-              <MainMenuTitle>
-                <MainMenuTitleLine tone="hot">Settings</MainMenuTitleLine>
-              </MainMenuTitle>
-              <p className="ssg-main-menu-subtitle">Tune the music and battle SFX for the lane.</p>
-              <GlobalGameSettingsPanel inline />
-            </MainMenuCopy>
-            <MainMenuNav aria-label="Settings menu">
-              <MainMenuAction
-                type="button"
-                variant="primary"
-                label="Back"
-                meta="Main menu"
-                onClick={() => setShowSettings(false)}
-              />
-            </MainMenuNav>
-          </MainMenuLayout>
-        </MainMenuScreen>
+        />
       )}
 
       <PauseMenu

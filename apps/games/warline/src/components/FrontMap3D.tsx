@@ -1,4 +1,5 @@
 import lobbyMusicUrl from "@shipshitgames/assets/games/warline/audio/music/doom-you-got-the-chainsaw.webm";
+import menuHero from "@shipshitgames/assets/games/warline/ui/menu/title.webp";
 import greenGateSpriteUrl from "@shipshitgames/assets/games/warline/props/portal-deck/green-gate.webp";
 import greenLiftSpriteUrl from "@shipshitgames/assets/games/warline/props/portal-deck/green-lift.webp";
 import mawSpireSpriteUrl from "@shipshitgames/assets/games/warline/props/portal-deck/maw-spire.webp";
@@ -18,7 +19,7 @@ import {
   RectBounds,
 } from "@shipshitgames/engine";
 import {
-  GlobalGameSettingsPanel,
+  GameSettingsScreen,
   loadGlobalGameSettings,
   MusicDirector,
   PauseMenu,
@@ -577,16 +578,12 @@ export function FrontMap3D({
       />
 
       {paused && pauseSettings && (
-        <dialog className="front-map3d__settings" open aria-modal="true" aria-label="Settings">
-          <div className="front-map3d__settings-inner">
-            <span className="front-map3d__kicker">Audio Settings</span>
-            <strong>WARLINE</strong>
-            <GlobalGameSettingsPanel inline />
-            <button type="button" className="front-map3d__button" onClick={() => setPauseSettings(false)}>
-              ← Back
-            </button>
-          </div>
-        </dialog>
+        <GameSettingsScreen
+          open
+          onClose={() => setPauseSettings(false)}
+          kicker="Audio Settings"
+          backgroundImage={menuHero}
+        />
       )}
 
       {nearTable && !paused && (

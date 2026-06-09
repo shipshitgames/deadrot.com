@@ -1,6 +1,6 @@
 import menuHero from "@shipshitgames/assets/games/rothulk/ui/menu/title.webp";
 import {
-  GlobalGameSettingsPanel,
+  GameSettingsScreen,
   GlobalMusicToggle,
   goToWarlineLobby,
   MainMenuAction,
@@ -192,34 +192,12 @@ export function AppShell({ createGame }: AppShellProps) {
       )}
 
       {showSettings && (
-        <MainMenuScreen
-          className="rothulk-settings-screen"
+        <GameSettingsScreen
+          open
+          onClose={() => setShowSettings(false)}
+          kicker="The Pyre // Console"
           backgroundImage={menuHero}
-          style={{ position: "fixed", inset: 0, zIndex: 90 }}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Settings"
-        >
-          <MainMenuLayout>
-            <MainMenuCopy>
-              <MenuKicker>{"The Pyre // Console"}</MenuKicker>
-              <MainMenuTitle>
-                <MainMenuTitleLine tone="hot">Settings</MainMenuTitleLine>
-              </MainMenuTitle>
-              <p className="ssg-main-menu-subtitle">Tune the music and effect levels for the breach.</p>
-              <GlobalGameSettingsPanel inline />
-            </MainMenuCopy>
-            <MainMenuNav aria-label="Settings menu">
-              <MainMenuAction
-                type="button"
-                variant="primary"
-                label="Back"
-                meta={paused ? "Paused" : started ? "Resume" : "Main menu"}
-                onClick={() => setShowSettings(false)}
-              />
-            </MainMenuNav>
-          </MainMenuLayout>
-        </MainMenuScreen>
+        />
       )}
 
       <PauseMenu

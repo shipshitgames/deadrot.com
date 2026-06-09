@@ -19,6 +19,8 @@ export {
   GlobalMusicToggle,
 } from "./GameSettings";
 export { DEFAULT_AUDIO_SLIDER_KEYS } from "./GameSettings.constants";
+export { GameSettingsScreen } from "./GameSettingsScreen";
+export type { GameSettingsScreenProps } from "./GameSettingsScreen";
 export { goToWarlineLobby, warlineLobbyHref } from "./lobby";
 export type { MainMenuEnterPromptProps } from "./MainMenuEnter";
 export { MainMenuEnterPrompt, useEnterToReveal } from "./MainMenuEnter";

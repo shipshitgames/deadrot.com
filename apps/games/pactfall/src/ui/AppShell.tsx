@@ -1,6 +1,6 @@
 import menuHero from "@shipshitgames/assets/games/pactfall/ui/menu/title.webp";
 import {
-  GlobalGameSettingsPanel,
+  GameSettingsScreen,
   GlobalMusicToggle,
   goToWarlineLobby,
   MainMenuAction,
@@ -228,27 +228,12 @@ export function AppShell() {
       </div>
 
       {showSettings && (
-        <MainMenuScreen className="banner" backgroundImage={menuHero} style={{ position: "fixed", zIndex: 90 }}>
-          <MainMenuLayout>
-            <MainMenuCopy>
-              <MenuKicker>Arena Settings</MenuKicker>
-              <MainMenuTitle>
-                <MainMenuTitleLine>AUDIO</MainMenuTitleLine>
-              </MainMenuTitle>
-              <GlobalGameSettingsPanel inline />
-            </MainMenuCopy>
-            <MainMenuNav aria-label="Settings">
-              <MainMenuAction
-                type="button"
-                variant="primary"
-                label="Back"
-                meta="Title menu"
-                onClick={() => dispatchOverlay({ type: "set", patch: { showSettings: false } })}
-              />
-            </MainMenuNav>
-          </MainMenuLayout>
-          <GlobalMusicToggle className="ssg-music-toggle--corner" />
-        </MainMenuScreen>
+        <GameSettingsScreen
+          open
+          onClose={() => dispatchOverlay({ type: "set", patch: { showSettings: false } })}
+          kicker="Arena Settings"
+          backgroundImage={menuHero}
+        />
       )}
 
       <PauseMenu
