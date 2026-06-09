@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { ArrowUpRight, Menu, X } from "lucide-react";
 
 import { DeadrotBrand } from "@/components/site/deadrot-brand";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,9 @@ const NAV = [
   { label: "Bestiary", href: "/universe#bestiary" },
 ];
 const WATCH = "https://youtube.com/@shipshitshow";
+// The full canon lives in the published Quartz vault (apps/lore -> lore.deadrot.com),
+// a separate static deploy from this Next hub.
+const CANON = "https://lore.deadrot.com";
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
@@ -51,6 +54,15 @@ export function SiteHeader() {
               {i.label}
             </Link>
           ))}
+          <a
+            href={CANON}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 font-display text-sm font-bold uppercase tracking-widest text-ash transition-colors hover:text-bone"
+          >
+            Canon
+            <ArrowUpRight className="size-3.5" aria-hidden />
+          </a>
           {/* The Warline lobby is the live entry into every game. Plain <a> — /warline/
               is a rewrite to the SPA (apps/games/warline), not a Next route. */}
           <a
@@ -63,9 +75,10 @@ export function SiteHeader() {
             href={WATCH}
             target="_blank"
             rel="noreferrer"
-            className="font-display text-sm font-bold uppercase tracking-widest text-hellfire transition-colors hover:text-blood"
+            className="inline-flex items-center gap-1 font-display text-sm font-bold uppercase tracking-widest text-hellfire transition-colors hover:text-blood"
           >
-            Watch ↗
+            Watch
+            <ArrowUpRight className="size-3.5" aria-hidden />
           </a>
         </nav>
 
@@ -92,6 +105,16 @@ export function SiteHeader() {
             </Link>
           ))}
           <a
+            href={CANON}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => setOpen(false)}
+            className="inline-flex items-center gap-1 py-2 font-display text-sm font-bold uppercase tracking-widest text-ash hover:text-bone"
+          >
+            Canon
+            <ArrowUpRight className="size-3.5" aria-hidden />
+          </a>
+          <a
             href="/warline/"
             onClick={() => setOpen(false)}
             className="py-2 font-display text-sm font-bold uppercase tracking-widest text-toxic hover:text-bone"
@@ -102,9 +125,10 @@ export function SiteHeader() {
             href={WATCH}
             target="_blank"
             rel="noreferrer"
-            className="py-2 font-display text-sm font-bold uppercase tracking-widest text-hellfire"
+            className="inline-flex items-center gap-1 py-2 font-display text-sm font-bold uppercase tracking-widest text-hellfire"
           >
-            Watch ↗
+            Watch
+            <ArrowUpRight className="size-3.5" aria-hidden />
           </a>
         </nav>
       ) : null}
