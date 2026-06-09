@@ -7,7 +7,7 @@
  *   - reports outcomes (won / fell) back to the caller
  */
 
-import { RUNNER, WORLD, EMBER, COURSE } from "../constants";
+import { COURSE, EMBER, RUNNER, WORLD } from "../constants";
 import type { Runner } from "../entities/runner";
 import type { Course } from "../types";
 

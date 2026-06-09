@@ -39,6 +39,20 @@ export function AppShell() {
             <span id="hud-dist">0</span>
             <span className="hud-unit">m</span>
           </div>
+          <div className="hud-sub ssg-stat-sub">
+            Score{" "}
+            <span id="hud-score" className="mono">
+              0
+            </span>
+          </div>
+        </div>
+
+        <div id="chain" aria-hidden="true">
+          <span id="chain-mult">x1</span>
+          <span id="chain-label">Ember chain</span>
+          <div id="chain-meter">
+            <div id="chain-meter-fill" />
+          </div>
         </div>
 
         <div className="hud-corner hud-br ssg-hud-corner">

@@ -207,6 +207,67 @@ body {
   color: var(--hellfire);
 }
 
+/* ---- Ember chain badge ------------------------------------------------------ */
+/* Centered above the progress bar; only visible while the multiplier is hot.
+   Positioned with `translate` (not transform) so the JS scale-pop animation
+   never fights the centering. */
+#chain {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(34px, 5vw, 56px);
+  translate: -50% 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 12px 6px;
+  background: linear-gradient(180deg, rgba(18, 18, 20, 0.82), rgba(10, 10, 10, 0.5));
+  border: 1px solid var(--gunmetal);
+  border-bottom: none;
+  opacity: 0;
+  transition: opacity 0.15s ease-out;
+  pointer-events: none;
+}
+
+#chain.is-live {
+  opacity: 1;
+}
+
+#chain-mult {
+  font-family: var(--font-mono);
+  font-size: clamp(18px, 2.6vw, 30px);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--hellfire);
+  text-shadow: 0 0 12px rgba(255, 106, 0, 0.5);
+}
+
+#chain.is-max #chain-mult {
+  color: var(--blood-hot);
+  text-shadow: 0 0 16px rgba(255, 42, 24, 0.7);
+}
+
+#chain-label {
+  font-size: clamp(9px, 1.1vw, 11px);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+
+#chain-meter {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--iron);
+}
+
+#chain-meter-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--blood), var(--hellfire));
+}
+
 /* ---- Progress bar ---------------------------------------------------------- */
 #progress {
   position: absolute;
@@ -347,6 +408,43 @@ kbd {
 
 #overlay-stats .stat .v.gold {
   color: var(--hellfire);
+}
+
+/* Letter grade on the win screen (S hottest -> C coldest, DOOM palette only) */
+#overlay-grade {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+#overlay-grade .grade-letter {
+  font-size: clamp(44px, 7vw, 84px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+#overlay-grade .grade-score {
+  font-family: var(--font-mono);
+  font-size: clamp(14px, 2vw, 20px);
+  color: var(--ash);
+  letter-spacing: 0.08em;
+}
+
+#overlay-grade.grade-s .grade-letter {
+  color: var(--blood-hot);
+  text-shadow: 0 0 22px rgba(255, 42, 24, 0.65);
+}
+#overlay-grade.grade-a .grade-letter {
+  color: var(--hellfire);
+  text-shadow: 0 0 18px rgba(255, 106, 0, 0.5);
+}
+#overlay-grade.grade-b .grade-letter {
+  color: var(--bone);
+}
+#overlay-grade.grade-c .grade-letter {
+  color: var(--ash);
 }
 
 @media (max-width: 480px) {
