@@ -14,6 +14,7 @@
  * stays stable regardless of frame rate.
  */
 
+import { recordWarResult } from "@deadrot/game-kit/core";
 import { audio } from "./audio";
 import { CAMERA, FEEDBACK, RUNNER } from "./constants";
 import { generateCourse } from "./course";
@@ -159,6 +160,13 @@ export class Game {
     audio.sfx("victory");
     const summary = this.score.summary(this.time);
     const records = this.hud.submitRun(this.time, summary.total);
+    // Bank the delivery into the cross-game war record (Warline shows it).
+    // Redline's only terminal record is the finish — there is no defeat state.
+    recordWarResult(
+      "redline",
+      { outcome: "victory", timeMs: Math.round(this.time * 1000), score: summary.total },
+      Date.now(),
+    );
     this.hud.showWin(summary, records);
     this.hud.onOverlayButton(() => this.startRun());
   }

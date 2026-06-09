@@ -118,6 +118,7 @@ export class HudSystem {
       score: this.ctx.score,
       kills: this.ctx.kills,
       headshots: this.ctx.headshots,
+      bossKills: this.ctx.bossKills,
       enemiesAlive: this.ctx.aliveCount,
       combo: this.ctx.combo,
       time: Math.floor(this.ctx.time),

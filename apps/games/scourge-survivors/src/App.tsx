@@ -1,3 +1,4 @@
+import { recordWarResult } from "@deadrot/game-kit/core";
 import { GlobalMusicToggle, subscribeGlobalGameSettings } from "@shipshitgames/ui";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { audio } from "./audio/AudioEngine";
@@ -57,6 +58,7 @@ const INITIAL_STATE: HUDState = {
   score: 0,
   kills: 0,
   headshots: 0,
+  bossKills: 0,
   enemiesAlive: 0,
   combo: 0,
   time: 0,
@@ -229,6 +231,18 @@ export default function App() {
           date: Date.now(),
         }),
       );
+      // Mirror the run into the shared cross-game war record (display-only;
+      // Warline's "Your War Record" card reads it back).
+      recordWarResult(
+        "scourge-survivors",
+        {
+          outcome: hud.outcome === "win" ? "victory" : "defeat",
+          score: hud.score,
+          wave: hud.wave,
+          bossKill: hud.bossKills,
+        },
+        Date.now(),
+      );
       if (hud.survivors) {
         setShop((prev) => {
           const next = { ...prev, gold: prev.gold + earnedGold };
@@ -248,6 +262,7 @@ export default function App() {
     hud.score,
     hud.kills,
     hud.headshots,
+    hud.bossKills,
     hud.time,
     hud.survivors,
     hud.level,
@@ -256,6 +271,7 @@ export default function App() {
     hud.runDepth,
     hud.runDepthTotal,
     hud.runDepthName,
+    hud.wave,
     shop.tiers.greed,
   ]);
 

@@ -1,3 +1,4 @@
+import { recordWarResult } from "@deadrot/game-kit/core";
 import { audio } from "../audio";
 import { EntitySystem } from "../systems/EntitySystem";
 import { HudSystem } from "../systems/HudSystem";
@@ -365,6 +366,8 @@ export class Game {
       this.phase = "gameover";
       audio.sfx("defeat");
       emitRunEnd(Math.round(this.salvage)); // bank salvage as Drydock wreckage
+      // Bank the loss into the cross-game war record (Warline shows it).
+      recordWarResult("starblight", { outcome: "defeat", score: this.level }, Date.now());
       this.emitHud();
     }
   }
@@ -926,6 +929,8 @@ export class Game {
     this.vacuum = true;
     this.phase = "victory";
     emitRunEnd(Math.round(this.salvage)); // bank salvage as Drydock wreckage
+    // Bank the boss kill into the cross-game war record (Warline shows it).
+    recordWarResult("starblight", { outcome: "victory", score: this.level, bossKill: true }, Date.now());
     this.emitHud();
   }
 
