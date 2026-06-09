@@ -5,15 +5,35 @@
  * treated as frozen. No Date.now() inside — callers pass `now`.
  */
 
-import type { Breach, Faction, Lane, OperationResult, Region, ResourceBag, WarEvent, WorldState } from "./types";
-import { ECON, FEED_MAX, TICK } from "./types";
+import { applyNarrative } from "./events";
 import { clamp, createInitialWorld } from "./map";
 import { GAME_OPERATIONS } from "./operations";
+import type {
+  Breach,
+  Faction,
+  Lane,
+  OperationBreakdown,
+  OperationResult,
+  Region,
+  ResourceBag,
+  WarEvent,
+  WorldState,
+} from "./types";
+import { ECON, ESCALATION, FEED_MAX, TICK } from "./types";
 
 export interface ApplyResult {
   state: WorldState;
   event: WarEvent;
   credited: Partial<ResourceBag>;
+  breakdown: OperationBreakdown;
+}
+
+/**
+ * The doom clock: Choir output multiplier at a given tick. Step-wise so the
+ * early war is exactly 1× (and existing balance/tests hold).
+ */
+export function escalationFactor(tick: number): number {
+  return Math.min(ESCALATION.max, 1 + Math.floor(tick / ESCALATION.rampTicks) * ESCALATION.perRamp);
 }
 
 const HUMAN_FACTIONS: Faction[] = ["pyre", "wardens"];
@@ -150,6 +170,11 @@ export function applyOperation(state: WorldState, result: OperationResult, now: 
   const victory = result.outcome === "victory";
   const meta = GAME_OPERATIONS[result.game];
   const credited: Partial<ResourceBag> = {};
+  // Transparent math: every world delta this operation applies, post-magnitude.
+  const effects: { label: string; value: number }[] = [];
+  const fx = (label: string, value: number) => {
+    effects.push({ label, value: Math.round(value * 10) / 10 });
+  };
   let sealed = false;
   let text = "";
 
@@ -166,12 +191,17 @@ export function applyOperation(state: WorldState, result: OperationResult, now: 
         const region = next.regions.find((r) => r.id === breach.regionId);
         if (victory) {
           breach.intensity -= 22 * m;
-          if (region) region.pressure -= 14 * m;
+          fx(`${breach.name} intensity`, -22 * m);
+          if (region) {
+            region.pressure -= 14 * m;
+            fx(`${region.name} pressure`, -14 * m);
+          }
           if (breach.intensity <= 0) {
             breach.intensity = 0;
             breach.active = false;
             sealed = true;
             credited.intel = (credited.intel ?? 0) + 120;
+            fx("seal bonus intel", 120);
           }
           credited.biomass = (credited.biomass ?? 0) + 60 * m;
           credited.intel = (credited.intel ?? 0) + 25 * m;
@@ -192,13 +222,21 @@ export function applyOperation(state: WorldState, result: OperationResult, now: 
       if (lane) {
         if (victory) {
           lane.flow -= 20 * m;
+          fx(`${lane.name} flow`, -20 * m);
           const { a, b } = laneEndpoints(next, lane);
-          if (a && isHuman(a.faction)) a.defense += 8 * m;
-          if (b && isHuman(b.faction)) b.defense += 8 * m;
+          if (a && isHuman(a.faction)) {
+            a.defense += 8 * m;
+            fx(`${a.name} defense`, 8 * m);
+          }
+          if (b && isHuman(b.faction)) {
+            b.defense += 8 * m;
+            fx(`${b.name} defense`, 8 * m);
+          }
           credited.scrap = (credited.scrap ?? 0) + 70 * m;
           credited.fuel = (credited.fuel ?? 0) + 20 * m;
         } else {
           lane.flow += 8;
+          fx(`${lane.name} flow`, 8);
         }
         text = victory ? `${result.faction} held ${lane.name}.` : `${result.faction} lost ground on ${lane.name}.`;
       } else {
@@ -212,6 +250,7 @@ export function applyOperation(state: WorldState, result: OperationResult, now: 
       if (region && victory) {
         region.faction = result.faction;
         region.revealed = true;
+        fx(`${region.name} claimed`, 1);
         credited.intel = (credited.intel ?? 0) + 50 * m;
         text = `${result.faction} claimed ${region.name}.`;
       } else if (region) {
@@ -224,11 +263,19 @@ export function applyOperation(state: WorldState, result: OperationResult, now: 
 
     case "orbital-intercept": {
       if (victory) {
+        let struck = 0;
         for (const b of next.breaches) {
-          if (b.active) b.intensity -= 8 * m;
+          if (b.active) {
+            b.intensity -= 8 * m;
+            struck += 1;
+          }
         }
+        if (struck > 0) fx(`all ${struck} breach intensities`, -8 * m);
         const hot = highestPressureRegion(next);
-        if (hot) hot.pressure -= 18 * m;
+        if (hot) {
+          hot.pressure -= 18 * m;
+          fx(`${hot.name} pressure`, -18 * m);
+        }
         credited.fuel = (credited.fuel ?? 0) + 55 * m;
         credited.intel = (credited.intel ?? 0) + 15 * m;
         text = `${result.faction} ran an orbital intercept.`;
@@ -241,6 +288,7 @@ export function applyOperation(state: WorldState, result: OperationResult, now: 
     case "run-logistics": {
       if (victory) {
         next.pactArmy += 6 * m;
+        fx("pact army", 6 * m);
         credited.scrap = (credited.scrap ?? 0) + 90 * m;
         credited.fuel = (credited.fuel ?? 0) + 70 * m;
         text = `${result.faction} delivered war logistics.`;
@@ -255,9 +303,14 @@ export function applyOperation(state: WorldState, result: OperationResult, now: 
       if (breach) {
         if (victory) {
           breach.intensity -= 30 * m;
+          fx(`${breach.name} intensity`, -30 * m);
           breach.sabotaged += 4;
+          fx(`${breach.name} sabotaged ticks`, 4);
           const region = next.regions.find((r) => r.id === breach.regionId);
-          if (region) region.defense += 4 * m;
+          if (region) {
+            region.defense += 4 * m;
+            fx(`${region.name} defense`, 4 * m);
+          }
           credited.biomass = (credited.biomass ?? 0) + 50 * m;
         }
         text = victory
@@ -279,6 +332,20 @@ export function applyOperation(state: WorldState, result: OperationResult, now: 
   if (next.pactArmy < 0) next.pactArmy = 0;
   clampWorld(next);
 
+  // Transparent math, shown to every client in the feed: how `m` was built
+  // and what it actually did to the world.
+  const base = victory ? 1 : 0.35;
+  const breakdown: OperationBreakdown = {
+    base,
+    scoreScale: m / base,
+    magnitude: m,
+    effects,
+  };
+  const effectText = effects.map((e) => `${e.label} ${e.value > 0 ? "+" : ""}${e.value}`).join(", ");
+  const detail = `m=${m.toFixed(2)} (${victory ? "victory" : "defeat"} ${base} × score ${(m / base).toFixed(2)})${
+    effectText ? ` → ${effectText}` : ""
+  }`;
+
   const event: WarEvent = {
     id: makeEventId(state, now),
     t: next.tick,
@@ -287,12 +354,13 @@ export function applyOperation(state: WorldState, result: OperationResult, now: 
     faction: result.faction,
     game: result.game,
     text,
+    detail,
     ...(sealed ? { sealed: true } : {}),
   };
   pushEvent(next, event);
   next.updatedAt = now;
 
-  return { state: next, event, credited };
+  return { state: next, event, credited, breakdown };
 }
 
 /**
@@ -307,17 +375,19 @@ export function tick(state: WorldState, now: number): WorldState {
   next.updatedAt = now;
 
   // 2. Breach output: pump pressure into the breach's region, decay sabotage,
-  //    regrow intensity toward 100.
+  //    regrow intensity toward 100. The Choir escalates as the war drags on
+  //    (the doom clock) — see escalationFactor / ESCALATION.
+  const esc = escalationFactor(next.tick);
   for (const b of next.breaches) {
     if (b.active) {
       const region = next.regions.find((r) => r.id === b.regionId);
       if (region) {
         const sabFactor = b.sabotaged > 0 ? 0.5 : 1;
         const mitigate = 1 - region.defense / TICK.defenseMitigate;
-        region.pressure += b.intensity * TICK.breachToPressure * sabFactor * mitigate;
+        region.pressure += b.intensity * TICK.breachToPressure * sabFactor * mitigate * esc;
       }
       const regenFactor = b.sabotaged > 0 ? 0 : 1;
-      b.intensity += TICK.intensityRegen * regenFactor;
+      b.intensity += TICK.intensityRegen * regenFactor * esc;
     }
     if (b.sabotaged > 0) b.sabotaged -= 1;
   }
@@ -398,7 +468,11 @@ export function tick(state: WorldState, now: number): WorldState {
   next.resources.intel += ECON.intelPerHuman * human;
   next.resources.biomass += ECON.biomassPerScourge * scourge;
 
-  // 8. Final clamp of all per-entity fields.
+  // 8. Narrative beats: deterministic story events fire from the simulation
+  //    itself (same seed on every client/server — replay-safe).
+  applyNarrative(next, now);
+
+  // 9. Final clamp of all per-entity fields.
   clampWorld(next);
 
   return next;

@@ -1,5 +1,5 @@
 import type { Command, CommandKind, HumanFaction, Region, WorldState } from "@shipshitgames/warline";
-import { canAfford, COMMAND_COSTS, regionById } from "@shipshitgames/warline";
+import { COMMAND_COSTS, canAfford, regionById } from "@shipshitgames/warline";
 import { HelpTooltip } from "./HelpTooltip";
 
 interface CommandPanelProps {
