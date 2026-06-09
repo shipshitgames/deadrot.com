@@ -105,6 +105,14 @@ const gameState: Record<
       "A saboteur climbs a beached Scourge breach-ship, reaches the breach-core, ignites it, and severs the local node.",
     warline: "Reports sabotage operations: damage breach hearts and make local Scourge clusters feral.",
   },
+  warline: {
+    state:
+      "Playable prototype. The strategy-lite campaign layer: a living front, four resources, simple commands, and a game-to-operation loop.",
+    canonRole:
+      "The war console of the Resistance era: it tracks where the Pact is holding, where the Scourge pressures the lanes, and which operations buy the world more time.",
+    warline:
+      "IS the front. Every other game reports its operation here; commands spend the shared resources they earn.",
+  },
   "zero-day": {
     state:
       "Concept only. This is the origin title and should stay unwinnable by design until the first-contact loop is locked.",
