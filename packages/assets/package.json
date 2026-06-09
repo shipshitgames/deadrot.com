@@ -15,6 +15,10 @@
       "types": "./src/scourge-survivors.ts",
       "default": "./src/scourge-survivors.ts"
     },
+    "./lore": {
+      "types": "./src/lore.ts",
+      "default": "./src/lore.ts"
+    },
     "./games/*": "./games/*",
     "./shared/*": "./shared/*",
     "./sites/deadrotcom/*": "./sites/deadrotcom/*",
@@ -25,6 +29,7 @@
     "assets-catalog.schema.json",
     "entities",
     "games",
+    "lore",
     "shared",
     "sites",
     "sources",
@@ -34,9 +39,13 @@
   "scripts": {
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
+    "test": "bun test tests",
+    "test:unit": "bun test tests",
     "deps:update": "bunx npm-check-updates -u --cooldown 3h --removeRange && bun install"
   },
   "devDependencies": {
+    "@deadrot/catalog": "workspace:*",
+    "@types/node": "25.9.1",
     "typescript": "6.0.3"
   }
 }

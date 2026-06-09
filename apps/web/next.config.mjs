@@ -22,6 +22,8 @@ const useLocalGames = process.env.NODE_ENV !== "production" && process.env.DEADR
 const nextConfig = {
   reactStrictMode: true,
   trailingSlash: true,
+  // The lore data layer (@shipshitgames/assets/lore) ships as workspace TS source.
+  transpilePackages: ["@shipshitgames/assets"],
   async rewrites() {
     if (useLocalGames) return [];
     return Object.entries(GAME_DEPLOYS).flatMap(([slug, url]) => [

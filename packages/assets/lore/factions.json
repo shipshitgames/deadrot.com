@@ -1,0 +1,49 @@
+[
+  {
+    "slug": "the-pyre",
+    "name": "The Pyre",
+    "doctrine": "offense — burn the source",
+    "tagline": "The only cure is fire. Get close enough to use it.",
+    "accent": "hellfire",
+    "overview": "While the rest of humanity holds the line and calls it survival, we go down. Into the breach, into the dark, into the wet heart of the Scourge — and we burn it where it lives. The Wardens watch their walls and count the generations they've bought. We count the nodes we've cut. That's the difference between us: they outlast the rot, we make it bleed for every world it takes.\n\nWe're cells, not chains of command. No generals to lose, no orders to wait on. A Purger's life is fuel — spend it gladly, sever one more repeater, send the local horde feral before the Choir can stitch it back together. Starve what it feeds on. Kill what keeps it whole. Walk out the way you came in, or don't walk out at all.\n\nThe Choir fears exactly one thing: us, close enough to burn the source.",
+    "playstyle": "Aggressive high-risk DPS and infiltration. Drop into the breach, push deeper room by room, and torch the Choir repeaters from the inside.",
+    "rivalry": "We call the Wardens cowards who prolong the rot one wall at a time — and we'd be lying if we said they didn't hold the line for us every single time the swarm surges. The feud is real. It just gets settled in the arena at Pactfall, never in the field. When a breach opens, we stand together. That's the Pact.",
+    "crestMotif": "an upward-pointing wedge wreathed in jagged flame tongues, a severed circular node-ring broken at the base, scorched edges bleeding into ember",
+    "gameSlugs": [
+      "scourge-survivors",
+      "pactfall",
+      "starblight",
+      "redline",
+      "rothulk"
+    ]
+  },
+  {
+    "slug": "the-wardens",
+    "name": "The Wardens",
+    "doctrine": "defense — hold the line",
+    "tagline": "Every wall held is a generation bought.",
+    "accent": "rust",
+    "overview": "We are what the old-world armies became after the night we lost the sky. We kept the chain of command, the hardware, the discipline — and we built the closest thing humanity still has to a state. Hierarchical. Patient. Impossible to rout. While the Pyre throws bodies into breaches that just reopen, we hold the lanes that keep the species breathing.\n\nThe species doesn't survive by charging the swarm. It survives by outlasting it. So we hold the chokepoints, break the swarm's density at the narrowest point, and cut it off from the Choir until whatever gets through arrives feral and alone. Towers. Walls. Attrition. Fragment the horde, isolate the horde, and let the math do the killing.\n\nSurvival over glory. Every wall held is a generation bought, and we intend to buy them all.",
+    "playstyle": "Defensive, economic, building. Place towers, fortify the chokepoints, and grind the swarm down through attrition before it ever reaches the line.",
+    "rivalry": "We see the Pyre for what they are — reckless fanatics burning lives on suicide runs into breaches that reopen behind them. And we hold the line for them anyway, every time the Scourge surges. The grudge gets paid in the arena at Pactfall, not on the field. Whatever the feud, when a breach opens we stand together. That's the Pact.",
+    "crestMotif": "a heavy interlocking gear-and-shield, three horizontal bars suggesting a layered wall, riveted gunmetal frame with corroded edges",
+    "gameSlugs": [
+      "deadlane",
+      "pactfall",
+      "starblight",
+      "redline"
+    ]
+  },
+  {
+    "slug": "the-listeners",
+    "name": "The Listeners",
+    "doctrine": "heresy — understand the Choir",
+    "tagline": "Fire and walls have never killed it once. They only buy time.",
+    "accent": "toxic",
+    "overview": "We are the third answer nobody wanted. Not the Pyre's fire, not the Wardens' walls — a question. The Choir is not a monster to be destroyed. It is a thing to be understood. The Scourge isn't evil. It only optimizes to survive. So we ask the question both other factions are too afraid to: what happens if we change what it's optimizing for?\n\nTo understand the Choir, you have to get close. Tap its signal. Keep severed nodes alive long enough to watch them. Sometimes — under control — let it in. The Pyre call that consorting with our own extinction. The Wardens call it a breach in the line waiting to happen. Both hunt us. Both exile us. Neither has an answer to the only fact that matters: fire and walls have never once killed the Scourge. They only buy time.\n\nThe path that actually ends it runs through its mind. We're the only ones walking it.",
+    "playstyle": "A narrative thread woven through missions rather than a fourth banner — heretics who drive the war's hardest questions from the inside.",
+    "rivalry": "Heretics to the Pyre and the Wardens alike, protected by neither. We keep to the Pact in the field — when a breach opens we hold with everyone else — but we're tolerated, not trusted. Both sides would rather we didn't exist. We'd rather they were right. They aren't.",
+    "crestMotif": "a concentric ring of broken arcs like a captured signal waveform, a single open eye at the center, thin acid-green linework on dark",
+    "gameSlugs": []
+  }
+]

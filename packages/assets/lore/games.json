@@ -1,0 +1,259 @@
+[
+  {
+    "slug": "scourge-survivors",
+    "title": "Scourge Survivors",
+    "tagline": "Drop into the breach. Get swarmed. Burn your way deeper until it's over.",
+    "genre": "First-person horde-survivors shooter",
+    "factionSlug": "the-pyre",
+    "factionName": "The Pyre",
+    "accent": "hellfire",
+    "overview": "You are a lone Pyre operator dropped into a breach with one job: survive the Scourge. The horde never stops growing, so neither can you. Auto-scaling weapons, XP, and level-up drafts meet DOOM-fast gunfeel and gore.",
+    "features": [
+      {
+        "title": "Survive, then go deeper",
+        "desc": "Drop in, get swarmed, grind the Scourge, level up, draft upgrades, and push room to room until you're overrun."
+      },
+      {
+        "title": "The loop IS the game",
+        "desc": "No side-mode filler. The Vampire-Survivors core — orbit, bolt, nova — wears DOOM's skin and never lets up."
+      },
+      {
+        "title": "Breach-arena maps",
+        "desc": "Every chamber of the breach is its own arena of rooms and levels, with the deepest reaches of Perdition waiting below."
+      }
+    ],
+    "characterSlugs": [
+      "ranger",
+      "bulwark",
+      "vector",
+      "patch"
+    ],
+    "enemySlugs": [
+      "swarm-ripper",
+      "swarm-spitter",
+      "breach-boss"
+    ]
+  },
+  {
+    "slug": "deadlane",
+    "title": "Deadlane",
+    "tagline": "Hold the lane. The breach is open and the Scourge is already coming.",
+    "genre": "3D tower defense",
+    "factionSlug": "the-wardens",
+    "factionName": "The Wardens",
+    "accent": "rust",
+    "overview": "You are the Wardens, and the line is yours to hold. The Scourge floods every chokepoint in numbers no charge could ever clear — so you build, you wall, and you bleed the horde dry. Every lane held is a generation bought.",
+    "features": [
+      {
+        "title": "Hold the chokepoint",
+        "desc": "Each level is a named lane. Lay down Warden tech, break the swarm's density, and make the breach pay for every step."
+      },
+      {
+        "title": "Draft and synergize",
+        "desc": "Wave pressure earns scrap, scrap funds 1-of-3 tower and commander drafts, and the right builds chain into something brutal."
+      },
+      {
+        "title": "One war, two fronts",
+        "desc": "Shares the horde and the look of Scourge Survivors — where they go in, you keep the wall standing behind them."
+      }
+    ],
+    "characterSlugs": [
+      "field-engineer",
+      "lane-gunner",
+      "wallwright"
+    ],
+    "enemySlugs": [
+      "swarm-ripper",
+      "swarm-spitter",
+      "breach-boss"
+    ]
+  },
+  {
+    "slug": "pactfall",
+    "title": "Pactfall",
+    "tagline": "Settle the grudge in the arena. Just don't let the Pact break.",
+    "genre": "Lane-based PvP MOBA",
+    "factionSlug": "",
+    "factionName": "The Pyre vs The Wardens",
+    "accent": "blood",
+    "overview": "The current playable prototype tests the first arena slice: Pyre pressure, a Warden opponent, lane minions, and a neutral Scourge problem in the center. The design target is still the full human rivalry made playable — Pyre and Wardens settling doctrine grudges in sanctioned blood-arenas, fought over lanes, never as real war.",
+    "features": [
+      {
+        "title": "Pyre vs Wardens",
+        "desc": "Current build proves the arena pressure first; the target is hero play for both creeds once the loop earns the extra roster work."
+      },
+      {
+        "title": "The Scourge twist",
+        "desc": "Ignore the neutral horde in the center and it overruns both teams. A big enough surge can force a momentary truce — because humans always unite against it."
+      },
+      {
+        "title": "Built on the run loop",
+        "desc": "Escalating lane pressure, XP and blood drops, 1-of-3 drafts, build synergies, and boss-objective gates pulled straight from canon."
+      }
+    ],
+    "characterSlugs": [
+      "pyre-duelist",
+      "pyre-cauterizer",
+      "warden-bastion",
+      "warden-artillerist"
+    ],
+    "enemySlugs": [
+      "trucebreaker"
+    ]
+  },
+  {
+    "slug": "starblight",
+    "title": "Starblight",
+    "tagline": "Burn the infection out of the sky before it falls into the war.",
+    "genre": "Arcade pilot shooter",
+    "factionSlug": "",
+    "factionName": "The Pyre & The Wardens",
+    "accent": "toxic",
+    "overview": "Starblight is Scourge contamination loose in orbit — spores, infected wreckage, living carrier-ships, and breach matter spreading through the void. The current playable prototype foregrounds a lone Warden interceptor; the design target expands that into Pyre and Warden pilot identities intercepting the rot before it touches the ground war below.",
+    "features": [
+      {
+        "title": "Clean, readable carnage",
+        "desc": "Top-down mouse-flight survivors on the shared run loop: launch, survive escalating swarms, stack weapon synergies, and kill the orbital boss."
+      },
+      {
+        "title": "Two pilot creeds",
+        "desc": "Current build proves the Warden-front prototype first; Pyre burn pilots and Warden defense pilots are the target roster."
+      },
+      {
+        "title": "Parasite conquest in space",
+        "desc": "Toxic-green breach organs, chitin over rusted hulls, living spore mines, and carrier-bosses grown around breach hearts."
+      }
+    ],
+    "characterSlugs": [
+      "pyre-interceptor-pilot",
+      "warden-defense-pilot"
+    ],
+    "enemySlugs": [
+      "scourge-fighter",
+      "orbital-breach-carrier"
+    ]
+  },
+  {
+    "slug": "redline",
+    "title": "Redline",
+    "tagline": "Outrun the Choir. Stop moving and the swarm catches up.",
+    "genre": "High-speed courier platformer",
+    "factionSlug": "",
+    "factionName": "The Pyre & The Wardens",
+    "accent": "rust",
+    "overview": "When the Scourge cuts the lanes and chokes the comms between holdouts, the message still has to get through — so you carry it on foot, faster than the horde can close. The current playable prototype follows a Pyre courier first; the full target adds the Warden courier identity once the speed loop is strong enough to carry both creeds.",
+    "features": [
+      {
+        "title": "Speed beats omniscience",
+        "desc": "The massed Scourge is near-omniscient, but its coordination has a tempo. Hold full redline and you outpace the swarm before it can cut you off."
+      },
+      {
+        "title": "Lanes as racecourses",
+        "desc": "Chain ramps, rail-grinds, and breach-debris boost pads through collapsing chokepoints to reach the next holdout before the gate closes."
+      },
+      {
+        "title": "The road turns on you",
+        "desc": "Chitin over the asphalt, spore-walls blooming across the lane, Render-class horrors at the junctions, and repeater-pylons that drag your redline down."
+      }
+    ],
+    "characterSlugs": [
+      "pyre-courier",
+      "warden-courier"
+    ],
+    "enemySlugs": [
+      "swarm-ripper",
+      "render",
+      "rot-engine"
+    ]
+  },
+  {
+    "slug": "rothulk",
+    "title": "Rothulk",
+    "tagline": "Burn it from the inside. Climb the spine of the nest and light the core.",
+    "genre": "Infiltration platformer",
+    "factionSlug": "the-pyre",
+    "factionName": "The Pyre",
+    "accent": "bone",
+    "overview": "A rothulk is a beached Scourge breach-ship grown into the ground — a mountain of rotting host-flesh and dead-world machinery with a heartbeat. The current playable prototype tests the lone Pyre saboteur climb first: platform up its spine, reach the breach-core, and set it on fire.",
+    "features": [
+      {
+        "title": "The level is the enemy",
+        "desc": "Ascend chambers of pulsing host-flesh, ride spore-geysers, and crush living platforms on the way to the heart that keeps the nest connected."
+      },
+      {
+        "title": "Stay out of the light",
+        "desc": "While the core is lit, the whole hulk knows where you are. Route around the Choir's massed clusters — the gaps between them are your path."
+      },
+      {
+        "title": "Ignite and run",
+        "desc": "Reach the breach-core, burn it, then platform back out ahead of the collapse as the severed node goes feral around you."
+      }
+    ],
+    "characterSlugs": [
+      "pyre-saboteur"
+    ],
+    "enemySlugs": [
+      "graft-breacher",
+      "swarm-spitter",
+      "breach-boss"
+    ]
+  },
+  {
+    "slug": "warline",
+    "title": "Warline",
+    "tagline": "The war console. Every breach purged, lane held, and run delivered feeds the same front.",
+    "genre": "Strategy-Lite Campaign Layer",
+    "factionSlug": "",
+    "factionName": "The Pact",
+    "accent": "bone",
+    "overview": "Warline is the strategic layer that makes the other games matter to the same war. It tracks where the Pact is holding, where the Scourge is pressuring the lanes, and which operations buy the world more time — spend shared resources, fortify regions, muster the Pact, recon dark sectors, and push back the Scourge.",
+    "features": [
+      {
+        "title": "One Living Front",
+        "desc": "A shared persistent map of regions, lanes, and breaches that every player sees and shapes."
+      },
+      {
+        "title": "Operation Contract",
+        "desc": "Each game reports an operation: purge a breach, hold the lane, contest territory, intercept orbit, run logistics, sabotage a breach."
+      },
+      {
+        "title": "Four Resources",
+        "desc": "Scrap, fuel, biomass, and intel — earned by play, spent on Fortify, Muster, Deploy, and Recon commands."
+      },
+      {
+        "title": "Scourge Pressure",
+        "desc": "The Choir pushes back. Ignore a front and the pressure meters climb until a lane falls."
+      }
+    ],
+    "characterSlugs": [],
+    "enemySlugs": [
+      "scourge"
+    ]
+  },
+  {
+    "slug": "zero-day",
+    "title": "Zero Day",
+    "tagline": "The night we lost the sky. You do not win — you just hold.",
+    "genre": "Arcade space shooter (last-stand)",
+    "factionSlug": "",
+    "factionName": "Humanity (pre-schism)",
+    "accent": "blood",
+    "overview": "This is humanity's first contact with the Scourge, fought in orbit and atmosphere over a dying world. You will not win. You hold the line as long as you can, save who you can, and then it falls. Everything else in the universe happens after this.",
+    "features": [
+      {
+        "title": "The unwinnable battle",
+        "desc": "Waves escalate past any sustainable defense. Buy minutes, save some evacuations, witness the fall — heroism inside doom."
+      },
+      {
+        "title": "Before the schism",
+        "desc": "This is the loss that breaks humanity into 'burn the source' and 'hold the line' — the origin of the Pyre and the Wardens both."
+      },
+      {
+        "title": "First sight of the Choir",
+        "desc": "The orbital relays appear here for the first time — the repeaters that every later war is fought to sever."
+      }
+    ],
+    "characterSlugs": [],
+    "enemySlugs": []
+  }
+]
