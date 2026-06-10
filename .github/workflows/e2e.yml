@@ -35,6 +35,7 @@ jobs:
   affected-games:
     name: Detect affected games
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       game_slugs: ${{ steps.detect.outputs.game_slugs }}
       game_slugs_json: ${{ steps.detect.outputs.game_slugs_json }}
