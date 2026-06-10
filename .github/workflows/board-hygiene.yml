@@ -23,6 +23,11 @@ concurrency:
   group: board-hygiene
   cancel-in-progress: false
 
+env:
+  # All JS actions on Node 24 ahead of the 2026-06-16 default switch
+  # (covers third-party actions still declaring node20, e.g. setup-bun).
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   hygiene:
     runs-on: ubuntu-latest
