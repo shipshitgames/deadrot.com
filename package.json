@@ -23,7 +23,7 @@
     "test:e2e:unit": "bun test e2e/game-catalog.test.ts",
     "test:coverage": "turbo run test:coverage",
     "e2e": "bun run test:e2e",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright install chromium && playwright test",
     "test:e2e:workspaces": "turbo run test:e2e",
     "e2e:docker": "scripts/run-e2e-docker.sh",
     "e2e:ui": "playwright test --ui",
