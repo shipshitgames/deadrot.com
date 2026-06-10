@@ -30,7 +30,7 @@ test("creature entries carry tier kicker + threat/visual sections", () => {
   const entries = codexEntriesForGame("deadlane");
   const ripper = entries.find((e) => e.slug === "swarm-ripper");
   assert.ok(ripper);
-  assert.equal(ripper.kicker, "SCOURGE — TIER SWARM");
+  assert.equal(ripper.kicker, "SCOURGE — SWARM");
   assert.equal(ripper.accentHex, CODEX_ACCENT_HEX.blood);
   assert.deepEqual(
     ripper.sections?.map((s) => s.label),

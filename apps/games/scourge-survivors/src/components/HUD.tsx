@@ -71,6 +71,10 @@ interface Props {
 }
 
 // ----------------------------------------------------------------- shared utility class strings
+// Static lore mapping — hoisted so the per-frame HUD re-renders don't rebuild
+// the entry objects (and CodexScreen's internal memo keeps a stable identity).
+const CODEX_ENTRIES = codexEntriesForGame("scourge-survivors");
+
 const OVERLAY = "ssg-menu-screen";
 const HUD_CORNER = "ssg-hud-corner";
 const STAT_LABEL = "ssg-stat-label";
@@ -1433,7 +1437,7 @@ export function HUD({
                   onClose={() => setMenuScreen("home")}
                   kicker="Pyre Breach Hub"
                   backgroundImage={MENU_HERO_URL}
-                  entries={codexEntriesForGame("scourge-survivors")}
+                  entries={CODEX_ENTRIES}
                 />
               )}
 

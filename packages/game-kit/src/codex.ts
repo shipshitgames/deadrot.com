@@ -54,7 +54,9 @@ export function codexEntriesForGame(gameSlug: string, opts: CodexEntriesOptions 
       (creature): CodexEntryData => ({
         slug: creature.slug,
         name: creature.name,
-        kicker: `SCOURGE — TIER ${creature.tier.toUpperCase()}`,
+        // Bestiary tiers are descriptive (swarm/elite/breach-boss/overview),
+        // so they stand alone — "TIER OVERVIEW" would read as nonsense copy.
+        kicker: `SCOURGE — ${creature.tier.toUpperCase()}`,
         tagline: creature.tagline,
         overview: creature.overview,
         sections: sections(["Threat Read", creature.gameplayRead], ["Recognize It", creature.visualMotifs]),

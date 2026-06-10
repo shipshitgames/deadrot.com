@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { afterAll, describe, expect, test } from "bun:test";
 
 /**
  * Codex discovery persistence (src/codexUnlocks.ts): creep kinds unlock once,
@@ -23,6 +23,11 @@ let writes = 0;
 };
 
 const { CREEP_BESTIARY_SLUGS, recordCreepKill, unlockedBestiarySlugs } = await import("../../src/codexUnlocks");
+
+// Don't leak the fake window into other test files in the same process.
+afterAll(() => {
+  delete (globalThis as { window?: unknown }).window;
+});
 
 describe("codex unlocks", () => {
   test("starts with nothing unlocked", () => {
