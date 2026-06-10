@@ -362,12 +362,14 @@ export interface SurvivorRunChapter {
   swellInterval: number;
 }
 
+// Chapter durations sum to 600s: the run no longer ends on a timer — at the
+// 10:00 mark the breach sends its named reaper instead (#278, data/reaper.ts).
 export const SURVIVOR_RUN_CHAPTERS: SurvivorRunChapter[] = [
   {
     mapId: "ashgate",
     name: "Ashgate Drop",
     subtitle: "Hold the foundry wall while the breach wakes.",
-    duration: 60,
+    duration: 135,
     spawnMul: 1.15,
     hpMul: 1,
     speedMul: 1,
@@ -379,7 +381,7 @@ export const SURVIVOR_RUN_CHAPTERS: SurvivorRunChapter[] = [
     mapId: "hollowlanes",
     name: "Hollow Lanes",
     subtitle: "Thread the dead corridors as the swarm starts folding in.",
-    duration: 65,
+    duration: 145,
     spawnMul: 1.35,
     hpMul: 1.12,
     speedMul: 1.06,
@@ -391,7 +393,7 @@ export const SURVIVOR_RUN_CHAPTERS: SurvivorRunChapter[] = [
     mapId: "maw",
     name: "The Maw",
     subtitle: "Fight across the breach throat under Scourge glow.",
-    duration: 70,
+    duration: 155,
     spawnMul: 1.55,
     hpMul: 1.32,
     speedMul: 1.12,
@@ -403,7 +405,7 @@ export const SURVIVOR_RUN_CHAPTERS: SurvivorRunChapter[] = [
     mapId: "perdition",
     name: "Perdition",
     subtitle: "Seal the source before the host-mass swallows the arena.",
-    duration: 75,
+    duration: 165,
     spawnMul: 1.8,
     hpMul: 1.58,
     speedMul: 1.2,
@@ -447,6 +449,13 @@ export const SURV_SPAWN_START = 0.82; // seconds between spawns at t=0
 export const SURV_SPAWN_MIN = 0.18; // fastest spawn interval
 export const SURV_ELITE_INTERVAL = 22; // seconds between elite spawns
 export const SURV_ENEMY_BASE_HP = 28;
+// Swarm time-scaling, renormalized for the 600s reaper timeline (#278) so the
+// old 270s curve ENDPOINT is preserved, just stretched: hp 270*0.01 = 2.7 ≈
+// 600*0.0045; speed 270*0.0035 = 0.945 ≈ 600*0.0016 = 0.96. The spawn-interval
+// ramp (0.01/s) is deliberately untouched — it already saturates at its
+// SURV_SPAWN_MIN floor ~64s in, so stretching it would thin early-game density.
+export const SURV_HP_RAMP_PER_SEC = 0.0045;
+export const SURV_SPEED_RAMP_PER_SEC = 0.0016;
 export const SURV_XP_GEM_VALUE = 2;
 export const SURV_XP_ELITE_VALUE = 24; // Scourge elites are a big XP payout
 

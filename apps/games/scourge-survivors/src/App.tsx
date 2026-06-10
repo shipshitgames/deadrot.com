@@ -71,6 +71,7 @@ const INITIAL_STATE: HUDState = {
   mapName: "Ashgate",
   bossActive: false,
   bossHealthFrac: 0,
+  bossName: null,
   outcome: null,
   weapon: WEAPONS[STARTING_WEAPON].name,
   weapons: [{ id: STARTING_WEAPON, name: WEAPONS[STARTING_WEAPON].name, key: 1, active: true }],

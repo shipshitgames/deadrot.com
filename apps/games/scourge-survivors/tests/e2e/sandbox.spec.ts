@@ -96,6 +96,9 @@ test.describe("survivors menu", () => {
 
     await expect(page.getByText("SCOURGE", { exact: true })).toBeVisible();
     await expect(page.getByText("SURVIVORS", { exact: true })).toBeVisible();
+    // The title screen holds the menu behind a "press enter to continue" splash.
+    await expect(page.getByText("Press Enter to continue")).toBeVisible();
+    await page.keyboard.press("Enter");
     const hub = page.getByRole("navigation", { name: /survivors hub/i });
     await expect(hub).toBeVisible();
     await expect(hub.getByRole("button", { name: /play a run/i })).toBeVisible();
@@ -107,10 +110,17 @@ test.describe("survivors menu", () => {
     await expect(page.getByText("Co-op Breach Rooms")).toBeVisible();
     await page.getByRole("button", { name: /back/i }).click();
 
+    // Leaving the home screen re-arms the enter-to-continue splash.
+    await expect(page.getByText("Press Enter to continue")).toBeVisible();
+    await page.keyboard.press("Enter");
+
     await page
       .getByRole("navigation", { name: /survivors hub/i })
       .getByRole("button", { name: /play a run/i })
       .click();
+    // The hub's primary action opens the operator-loadout screen; launch from it.
+    await expect(page.getByText("Operator Loadout")).toBeVisible();
+    await page.getByRole("button", { name: /^play a run$/i }).click();
     await expect(page.getByRole("button", { name: /click to lock/i })).toBeVisible();
     await expect.poll(() => snapshot(page).then((state) => state.status)).toBe("pointerlock-needed");
     await expect.poll(() => snapshot(page).then((state) => state.survivors)).toBe(true);
@@ -238,6 +248,10 @@ test.describe("dev sandbox smoke", () => {
   test("main menu uses Survivors run and co-op breach vocabulary", async ({ page }) => {
     await page.goto("/");
 
+    // The title screen holds the menu behind a "press enter to continue" splash.
+    await expect(page.getByText("Press Enter to continue")).toBeVisible();
+    await page.keyboard.press("Enter");
+
     await expect(page.getByRole("button", { name: /play a run/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /^co-op/i })).toBeVisible();
 
@@ -287,7 +301,10 @@ test.describe("dev sandbox smoke", () => {
       game.sys.survivors.level = 7;
       game.sys.survivors.xp = 9;
       game.sys.survivors.xpToNext = 30;
-      game.sys.survivors.survClock = 130;
+      // Mid-Maw on the 600s reaper timeline (chapter 2 spans 280–435s): the live
+      // frame loop recomputes the chapter from survClock, so it must agree with
+      // the staged survivorChapter or advanceChapter() stomps this setup.
+      game.sys.survivors.survClock = 300;
       game.sys.hud.emit();
     });
 

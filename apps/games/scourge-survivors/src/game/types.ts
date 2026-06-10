@@ -70,6 +70,8 @@ export interface HUDState {
   bossActive: boolean;
   /** 0..1 breach-boss health fraction (only meaningful while bossActive). */
   bossHealthFrac: number;
+  /** Lore-given boss name for the bar label (null → the generic breach-boss banner). */
+  bossName: string | null;
   /** Outcome once status === 'gameover'. */
   outcome: "win" | "dead" | null;
   /** Active weapon + the player's unlocked arsenal (for the HUD weapon strip). */

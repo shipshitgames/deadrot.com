@@ -939,11 +939,9 @@ export function HUD({
   ].filter((stat): stat is { label: string; value: string } => Boolean(stat));
   const playing = status === "playing";
   const berserkActive = playing && berserk > 0;
-  const bossLabel = bossShielded
-    ? `${SCOURGE_THREAT_TIERS.breachBoss.banner} SHIELD`
-    : bossEnraged
-      ? `${SCOURGE_THREAT_TIERS.breachBoss.banner} FRENZY`
-      : SCOURGE_THREAT_TIERS.breachBoss.banner;
+  // Survivors' toll carries a lore-given name; campaign bosses fall back to the banner.
+  const bossBanner = state.bossName ?? SCOURGE_THREAT_TIERS.breachBoss.banner;
+  const bossLabel = bossShielded ? `${bossBanner} SHIELD` : bossEnraged ? `${bossBanner} FRENZY` : bossBanner;
   const currentRun: ScoreEntry | null =
     status === "gameover" && outcome
       ? {

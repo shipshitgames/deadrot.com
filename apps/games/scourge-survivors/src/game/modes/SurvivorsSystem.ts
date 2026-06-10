@@ -8,12 +8,19 @@ import {
   ELITE_SHIELD_HP,
   ELITE_SPLIT_CAP_PER_WAVE,
   type EliteAffixDef,
+  REAPER_ATTACK_INTERVAL,
+  REAPER_ATTACK_RANGE,
+  REAPER_HEALTH,
+  REAPER_PROJECTILE_DAMAGE,
+  REAPER_SCALE,
+  REAPER_SPEED,
   WEAPONS,
 } from "../constants";
 import type { GameContext } from "../context";
 import { eliteCountForWave, eliteXpValue, isEliteWave, rollEliteAffix, takeSplitAllowance } from "../data/eliteWaves";
 import { pickWeightedEnemyArchetype, SCOURGE_THREAT_TIERS } from "../data/enemies";
 import { DEFAULT_MAP_ID, getMap } from "../data/maps";
+import { canResistReaper, reaperForMap, reaperTouchDamage, reaperWarningDue, shouldSpawnReaper } from "../data/reaper";
 import {
   AMP_PER_TIER,
   availableEvolutionChoice,
@@ -34,9 +41,11 @@ import {
   SURV_BASE_MAGNET,
   SURV_ELITE_INTERVAL,
   SURV_ENEMY_BASE_HP,
+  SURV_HP_RAMP_PER_SEC,
   SURV_SPAWN_CAP,
   SURV_SPAWN_MIN,
   SURV_SPAWN_START,
+  SURV_SPEED_RAMP_PER_SEC,
   SURV_SWELL_CAP,
   SURV_SWELL_COUNT,
   SURV_SWELL_INTERVAL,
@@ -103,6 +112,10 @@ export class SurvivorsSystem {
   xpGems: { sprite: THREE.Sprite; value: number; age: number }[] = [];
   enemyXp = new WeakMap<Enemy, number>();
   shopTiers: Record<string, number> = {}; // permanent meta-upgrades
+  // The toll: the named breach reaper that arrives at the goal time. Survivors
+  // elites also carry isBoss, so reaper logic keys off this reference, never the flag.
+  reaper: Enemy | null = null;
+  reaperWarned = false; // "SOMETHING VAST APPROACHES" fired for this run
 
   // --- draft agency + build identity ---
   selectedClass: SurvivorClassId = "ranger";
@@ -167,6 +180,13 @@ export class SurvivorsSystem {
     this.swellTimer = this.currentChapter().swellInterval;
     this.surgeIndex = 0;
     this.eliteSplitBudget = 0;
+    // A prior run's toll must not linger on a restart HUD: the Survivors restart
+    // path skips startWaveSystem (which is what clears the campaign boss bar).
+    this.reaper = null;
+    this.reaperWarned = false;
+    this.sys.pve.bossActive = false;
+    this.sys.pve.bossEnemy = null;
+    this.sys.pve.bossName = null;
     this.boltTimer = 0;
     this.novaTimer = NOVA_INTERVAL;
     this.ctx.damageGraceTimer = 0;
@@ -187,6 +207,7 @@ export class SurvivorsSystem {
   }
 
   clearSurvivorsEntities() {
+    this.reaper = null; // returnToMenu routes through here — drop the stale pooled ref
     this.clearXpGems();
     for (const b of this.bolts) {
       this.ctx.scene.remove(b.mesh);
@@ -510,14 +531,21 @@ export class SurvivorsSystem {
   }
 
   private updateStructuredRun() {
-    if (this.survClock >= SURVIVOR_RUN_GOAL_TIME) {
-      this.sys.hud.announce("BREACH SEALED");
-      this.sys.gameOver.gameOver("win");
+    // Chapter advance first (early-return): a large clock jump lands on the final
+    // arena one frame and the toll arrives on a later frame, after the rebuild —
+    // so advanceChapter's kill-all sweep can never wipe the reaper.
+    const nextChapter = survivorChapterAt(this.survClock);
+    if (nextChapter !== this.ctx.survivorChapter) {
+      this.advanceChapter(nextChapter);
       return;
     }
-
-    const nextChapter = survivorChapterAt(this.survClock);
-    if (nextChapter !== this.ctx.survivorChapter) this.advanceChapter(nextChapter);
+    if (reaperWarningDue(this.survClock, this.reaperWarned)) {
+      this.reaperWarned = true;
+      this.sys.hud.showToast("SOMETHING VAST APPROACHES");
+      audio.sfx("lowhealth");
+    } else if (shouldSpawnReaper(this.survClock, this.reaper !== null)) {
+      this.spawnReaper();
+    }
   }
 
   private advanceChapter(index: number) {
@@ -538,6 +566,48 @@ export class SurvivorsSystem {
     audio.sfx("breach");
   }
 
+  /** The toll: the named breach reaper arrives at the goal time and ends the run
+   *  one way or the other. Identity (name/host/tint) comes from the lore layer. */
+  private spawnReaper() {
+    const identity = reaperForMap(this.ctx.currentMap?.id ?? DEFAULT_MAP_ID);
+    const enemy = this.sys.pve.getFreeEnemy();
+    const { x, z } = this.swarmSpawnPoint();
+    enemy.spawnAt(x, z, {
+      archetype: "tank",
+      isBoss: true,
+      ranged: false,
+      scale: REAPER_SCALE,
+      maxHealth: REAPER_HEALTH,
+      speed: REAPER_SPEED,
+      color: identity.tint,
+      attackDamage: reaperTouchDamage(this.shopTiers),
+      attackInterval: REAPER_ATTACK_INTERVAL,
+      attackRange: REAPER_ATTACK_RANGE,
+      // The boss ability cycle barrages for ANY isBoss enemy regardless of `ranged`,
+      // so its projectiles stay modest — the TOUCH is the killer, never a chip shot.
+      projectileDamage: REAPER_PROJECTILE_DAMAGE,
+    });
+    this.reaper = enemy;
+    this.sys.pve.bossActive = true;
+    this.sys.pve.bossEnemy = enemy;
+    this.sys.pve.bossMaxHealth = REAPER_HEALTH;
+    this.sys.pve.bossName = identity.name;
+    // Arrival must be unmistakable: banner + stakes toast + layered sfx + FX burst.
+    this.sys.hud.announce(identity.name.toUpperCase());
+    this.sys.hud.showToast(canResistReaper(this.shopTiers) ? "YOUR SCARS HOLD — IT CAN BLEED" : "THE BREACH TOLLS");
+    audio.sfx("breach");
+    audio.sfx("boss"); // announce() only auto-plays this for "BOSS" banners; lore names aren't
+    this.sys.fx.addShake(0.5);
+    this.sys.fx.hitstop(0.06);
+    this.sys.fx.spawnEnemyDeath(new THREE.Vector3(x, 0, z), { scale: REAPER_SCALE, color: identity.tint });
+  }
+
+  /** Reaper checks key off the director-held reference (elites also carry isBoss);
+   *  the ref is dropped on death/restart so a recycled pooled enemy never matches. */
+  isReaper(enemy: Enemy): boolean {
+    return this.reaper !== null && enemy === this.reaper;
+  }
+
   /** A point on a ring around the player, just out of immediate sight, clamped in-bounds. */
   private swarmSpawnPoint(): { x: number; z: number } {
     const a = Math.random() * Math.PI * 2;
@@ -553,8 +623,8 @@ export class SurvivorsSystem {
     const enemy = this.sys.pve.getFreeEnemy();
     const { x, z } = this.swarmSpawnPoint();
     const chapter = this.currentChapter();
-    const timeScale = (1 + this.survClock * 0.01) * chapter.hpMul; // HP scales with time + chapter
-    const speedScale = (1 + this.survClock * 0.0035) * chapter.speedMul;
+    const timeScale = (1 + this.survClock * SURV_HP_RAMP_PER_SEC) * chapter.hpMul; // HP scales with time + chapter
+    const speedScale = (1 + this.survClock * SURV_SPEED_RAMP_PER_SEC) * chapter.speedMul;
 
     if (elite) {
       enemy.spawnAt(x, z, {
@@ -625,8 +695,8 @@ export class SurvivorsSystem {
     const enemy = this.sys.pve.getFreeEnemy();
     const { x, z } = this.swarmSpawnPoint();
     const chapter = this.currentChapter();
-    const timeScale = (1 + this.survClock * 0.01) * chapter.hpMul;
-    const speedScale = (1 + this.survClock * 0.0035) * chapter.speedMul;
+    const timeScale = (1 + this.survClock * SURV_HP_RAMP_PER_SEC) * chapter.hpMul;
+    const speedScale = (1 + this.survClock * SURV_SPEED_RAMP_PER_SEC) * chapter.speedMul;
     const arch = this.rollArchetype();
     const frenzied = affix.id === "frenzied";
     enemy.spawnAt(x, z, {
