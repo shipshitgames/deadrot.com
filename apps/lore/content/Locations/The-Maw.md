@@ -20,6 +20,9 @@ Everything that reaches the lanes climbed out of here first. That's the thing th
 ## Role in the war
 **Breach** — the mouth of the descent, the shaft the [[Scourge]] pours the groundside war up through. It holds [[CANON|Breach Primus]], the primary throat below the lanes. In the descent it is the gate stage: the crossing between the surface fight and the deep nest, the way down toward [[Perdition]] and [[CANON|the Choir Node]]. Per [[Cosmology]], breaches are physical entrenched nests, not rifts — the Maw is the most literal nest there is, a hole that vomits horde and cannot be capped, only crossed.
 
+## Named Threats
+- **Maw Shepherd** *(provisional — coined for the runtime lore data; promote or rename freely)* — the bone-titan host that walks the span. Megafauna rebuilt into a gatekeeper, it herds the climbing swarm up the throat and onto the crossing; killing it is the only way the span stays a bridge instead of a feeding line. Runtime data anchors it to [[Breach-Boss]] under the bone-titan host family.
+
 ## Appears In
 - [[Scourge-Survivors]] — the span-over-the-throat stage; the Purger crosses the open shaft of Breach Primus under fire to descend toward [[Perdition]].
 
