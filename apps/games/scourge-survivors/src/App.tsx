@@ -167,8 +167,67 @@ export default function App() {
     const url = active ? `${window.location.pathname}?sandbox=1` : window.location.pathname;
     window.history.replaceState(null, "", url);
   }, []);
+  // Latest shop tiers for the engine-facing callbacks below — the Game holds
+  // one stable setHud reference for its whole life, so it can't close over
+  // `shop` directly without going stale.
+  const shopTiersRef = useRef(shop.tiers);
+  useEffect(() => {
+    shopTiersRef.current = shop.tiers;
+  }, [shop.tiers]);
+
+  // Record a run on the leaderboard (and award Survivors gold) once per
+  // game-over, right where the engine pushes the HUD snapshot — the game-over
+  // "event" originates here, not in a React render.
   const setHud = useCallback((next: HUDState) => {
     hudRef.current = next;
+    if (next.status === "gameover" && next.outcome && !next.sandbox && !savedRef.current) {
+      savedRef.current = true;
+      const earnedGold = next.survivors
+        ? runGold(next.kills, next.level, next.time, shopTiersRef.current.greed ?? 0)
+        : 0;
+      lastRunGoldRef.current = earnedGold;
+      setScores(
+        saveScore({
+          score: next.score,
+          kills: next.kills,
+          headshots: next.headshots,
+          time: next.time,
+          outcome: next.outcome,
+          mode: next.runMode,
+          level: next.level,
+          depthReached: next.runDepth,
+          depthTotal: next.runDepthTotal,
+          depthName: next.runDepthName,
+          goldEarned: earnedGold,
+          date: Date.now(),
+        }),
+      );
+      // Mirror the run into the shared cross-game war record (display-only;
+      // Warline's "Your War Record" card reads it back). Survivors chapter runs
+      // progress by depth, not the clamped arena wave — report the deeper number.
+      recordWarResult(
+        "scourge-survivors",
+        {
+          outcome: next.outcome === "win" ? "victory" : "defeat",
+          score: next.score,
+          wave: next.survivors ? Math.max(next.runDepth, next.wave) : next.wave,
+          bossKill: next.bossKills,
+        },
+        Date.now(),
+      );
+      if (next.survivors) {
+        setShop((prev) => {
+          const nextShop = { ...prev, gold: prev.gold + earnedGold };
+          saveShop(nextShop);
+          return nextShop;
+        });
+      } else {
+        lastRunGoldRef.current = 0;
+      }
+    } else if (next.status !== "gameover") {
+      savedRef.current = false;
+      lastRunGoldRef.current = 0;
+    }
     setHudState(next);
   }, []);
 
@@ -188,7 +247,7 @@ export default function App() {
     if (!container) return;
     const game = new Game(container, setHud);
     gameRef.current = game;
-    game.setShopUpgrades(shop.tiers);
+    game.setShopUpgrades(shopTiersRef.current);
     game.start();
     if (initialSandbox) game.startSandbox();
     if (import.meta.env.DEV) {
@@ -201,75 +260,7 @@ export default function App() {
       game.dispose();
       gameRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Record a run on the leaderboard (and award Survivors gold) once per game-over.
-  useEffect(() => {
-    if (hud.status === "gameover" && hud.outcome && !hud.sandbox && !savedRef.current) {
-      savedRef.current = true;
-      const earnedGold = hud.survivors ? runGold(hud.kills, hud.level, hud.time, shop.tiers.greed ?? 0) : 0;
-      lastRunGoldRef.current = earnedGold;
-      setScores(
-        saveScore({
-          score: hud.score,
-          kills: hud.kills,
-          headshots: hud.headshots,
-          time: hud.time,
-          outcome: hud.outcome,
-          mode: hud.runMode,
-          level: hud.level,
-          depthReached: hud.runDepth,
-          depthTotal: hud.runDepthTotal,
-          depthName: hud.runDepthName,
-          goldEarned: earnedGold,
-          date: Date.now(),
-        }),
-      );
-      // Mirror the run into the shared cross-game war record (display-only;
-      // Warline's "Your War Record" card reads it back). Survivors chapter runs
-      // progress by depth, not the clamped arena wave — report the deeper number.
-      recordWarResult(
-        "scourge-survivors",
-        {
-          outcome: hud.outcome === "win" ? "victory" : "defeat",
-          score: hud.score,
-          wave: hud.survivors ? Math.max(hud.runDepth, hud.wave) : hud.wave,
-          bossKill: hud.bossKills,
-        },
-        Date.now(),
-      );
-      if (hud.survivors) {
-        setShop((prev) => {
-          const next = { ...prev, gold: prev.gold + earnedGold };
-          saveShop(next);
-          return next;
-        });
-      } else {
-        lastRunGoldRef.current = 0;
-      }
-    } else if (hud.status !== "gameover") {
-      savedRef.current = false;
-      lastRunGoldRef.current = 0;
-    }
-  }, [
-    hud.status,
-    hud.outcome,
-    hud.score,
-    hud.kills,
-    hud.headshots,
-    hud.bossKills,
-    hud.time,
-    hud.survivors,
-    hud.level,
-    hud.sandbox,
-    hud.runMode,
-    hud.runDepth,
-    hud.runDepthTotal,
-    hud.runDepthName,
-    hud.wave,
-    shop.tiers.greed,
-  ]);
+  }, [initialSandbox, setHud]);
 
   const handleLock = useCallback(() => {
     audio.unlock();
@@ -297,12 +288,12 @@ export default function App() {
     gameRef.current?.leaveMultiplayer(true);
   }, [setRoomInUrl]);
   const handleStartSurvivors = useCallback(
-    (classId?: SurvivorClassId) => {
+    (classId?: SurvivorClassId, mapId?: string) => {
       audio.unlock();
       audio.setMusicMode("survivors");
       setSandboxActive(false);
       setSandboxInUrl(false);
-      gameRef.current?.startSurvivors(classId);
+      gameRef.current?.startSurvivors(classId, mapId);
     },
     [setSandboxInUrl],
   );
