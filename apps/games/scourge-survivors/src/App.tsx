@@ -297,12 +297,12 @@ export default function App() {
     gameRef.current?.leaveMultiplayer(true);
   }, [setRoomInUrl]);
   const handleStartSurvivors = useCallback(
-    (classId?: SurvivorClassId) => {
+    (classId?: SurvivorClassId, mapId?: string) => {
       audio.unlock();
       audio.setMusicMode("survivors");
       setSandboxActive(false);
       setSandboxInUrl(false);
-      gameRef.current?.startSurvivors(classId);
+      gameRef.current?.startSurvivors(classId, mapId);
     },
     [setSandboxInUrl],
   );

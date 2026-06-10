@@ -19,7 +19,7 @@ interface Props {
   onClearScores: () => void;
   onStartMultiplayer: (name: string, room: string, avatar: PlayerAvatarId) => void;
   onLeaveRoom: () => void;
-  onStartSurvivors: (classId?: SurvivorClassId) => void;
+  onStartSurvivors: (classId?: SurvivorClassId, mapId?: string) => void;
   onStartSandbox?: () => void;
   onPickUpgrade: (id: string) => void;
   onReroll: () => void;

@@ -13,7 +13,7 @@ import {
 import type { GameContext } from "../context";
 import { eliteCountForWave, eliteXpValue, planSurge, rollEliteAffix, takeSplitAllowance } from "../data/eliteWaves";
 import { pickWeightedEnemyArchetype, SCOURGE_THREAT_TIERS } from "../data/enemies";
-import { DEFAULT_MAP_ID, getMap } from "../data/maps";
+import { DEFAULT_MAP_ID, getMap, normalizeMapId } from "../data/maps";
 import {
   AMP_PER_TIER,
   availableEvolutionChoice,
@@ -85,6 +85,8 @@ export class SurvivorsSystem {
 
   // --- draft agency + build identity ---
   selectedClass: SurvivorClassId = "ranger";
+  /** Breach site picked on the pre-run map select — holds for the whole run (#276). */
+  selectedMapId: string = DEFAULT_MAP_ID;
   rerolls = 0; // free re-rolls remaining for the open draft
   banishes = 0; // banishes remaining this run
   banished = new Set<UpgradeId>(); // upgrades removed from this run's pool
@@ -103,14 +105,15 @@ export class SurvivorsSystem {
     this.aw.init();
   }
 
-  startSurvivors(classId: SurvivorClassId = this.selectedClass) {
+  startSurvivors(classId: SurvivorClassId = this.selectedClass, mapId: string = this.selectedMapId) {
     this.sys.multiplayer.leaveMultiplayer(false);
     this.sys.mission.clearMissionState();
     this.selectedClass = survivorClassFor(classId).id;
     this.ctx.survivorClassId = this.selectedClass;
+    this.selectedMapId = normalizeMapId(mapId);
     this.ctx.survivors = true;
     this.ctx.campaignStage = 0;
-    this.sys.arena.buildArena(getMap(DEFAULT_MAP_ID));
+    this.sys.arena.buildArena(getMap(this.selectedMapId));
     this.sys.player.resetPlayer(survivorStartingWeapon(this.selectedClass));
     this.initSurvivorsRun();
     this.ctx.status = "pointerlock-needed";
@@ -447,18 +450,17 @@ export class SurvivorsSystem {
     if (nextChapter !== this.ctx.survivorChapter) this.advanceChapter(nextChapter);
   }
 
+  /**
+   * Chapter advances are pacing beats on a fixed arena — the picked map never
+   * changes mid-run (#276). The fight keeps flowing (no wipe, no teleport);
+   * the small heal/shield refund is the breather as the pressure steps up.
+   */
   private advanceChapter(index: number) {
     const chapter = SURVIVOR_RUN_CHAPTERS[index];
     if (!chapter) return;
     this.ctx.survivorChapter = index;
-    this.sys.projectiles.clearProjectiles();
-    for (const e of this.ctx.enemies) e.kill();
-    this.clearXpGems();
-    this.sys.arena.buildArena(getMap(chapter.mapId));
-    this.sys.arena.placeAtSpawn();
     this.ctx.health = Math.min(this.ctx.maxHealthValue, this.ctx.health + 32);
     this.ctx.statShield = Math.min(this.ctx.statShieldMax, this.ctx.statShield + 24);
-    this.survSpawnTimer = 0.35;
     this.eliteTimer = Math.min(this.eliteTimer, chapter.eliteInterval);
     this.swellTimer = Math.min(this.swellTimer, chapter.swellInterval);
     this.sys.hud.announce(`${index + 1}/${SURVIVOR_RUN_CHAPTERS.length} · ${chapter.name.toUpperCase()}`);

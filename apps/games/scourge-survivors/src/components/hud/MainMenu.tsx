@@ -20,6 +20,7 @@ import {
   useEnterToReveal,
 } from "@shipshitgames/ui";
 import { useEffect, useRef, useState } from "react";
+import { MAP_PICKER, normalizeMapId } from "../../game/data/maps";
 import {
   SHOP_UPGRADES,
   SURVIVOR_CLASS_IDS,
@@ -45,6 +46,10 @@ const AVATAR_PREVIEWS: Record<PlayerAvatarId, string> = PLAYER_AVATAR_PREVIEW_UR
 function savedSurvivorClass(): SurvivorClassId {
   const saved = localStorage.getItem("scourge-survivors.survivorClass");
   return SURVIVOR_CLASS_IDS.includes(saved as SurvivorClassId) ? (saved as SurvivorClassId) : "ranger";
+}
+
+function savedMapId(): string {
+  return normalizeMapId(localStorage.getItem("scourge-survivors.mapId"));
 }
 
 export function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => void }) {
@@ -231,13 +236,13 @@ function MultiplayerPanel({
   );
 }
 
-function SurvivorsPanel({ onStart, onBack }: { onStart: (classId: SurvivorClassId) => void; onBack: () => void }) {
+function SurvivorsPanel({ onNext, onBack }: { onNext: (classId: SurvivorClassId) => void; onBack: () => void }) {
   const [classId, setClassId] = useState<SurvivorClassId>(() => savedSurvivorClass());
   const selected = SURVIVOR_CLASSES[classId];
   const selectedWeapon = WEAPON_IDENTITIES[selected.startingWeapon];
-  const launch = () => {
+  const next = () => {
     localStorage.setItem("scourge-survivors.survivorClass", classId);
-    onStart(classId);
+    onNext(classId);
   };
 
   return (
@@ -286,6 +291,80 @@ function SurvivorsPanel({ onStart, onBack }: { onStart: (classId: SurvivorClassI
         <div className="text-[12px] opacity-65">
           {selectedWeapon.callsign} · {Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}:
           {(SURVIVOR_RUN_GOAL_TIME % 60).toString().padStart(2, "0")} breach descent
+        </div>
+      </div>
+      <div className="mt-4 flex items-stretch gap-3">
+        <Button type="button" variant="back" onClick={onBack}>
+          ← Back
+        </Button>
+        <Button type="button" variant="primary" size="lg" className="flex-1" onClick={next}>
+          Choose Breach Site →
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/** Pre-run map select: the picked breach site holds for the entire run (#276). */
+function MapSelectPanel({
+  classId,
+  onStart,
+  onBack,
+}: {
+  classId: SurvivorClassId;
+  onStart: (classId: SurvivorClassId, mapId: string) => void;
+  onBack: () => void;
+}) {
+  const [mapId, setMapId] = useState<string>(() => savedMapId());
+  const selected = MAP_PICKER.find((m) => m.id === mapId) ?? MAP_PICKER[0];
+  const selectedClass = SURVIVOR_CLASSES[classId];
+  const launch = () => {
+    localStorage.setItem("scourge-survivors.mapId", selected.id);
+    onStart(classId, selected.id);
+  };
+
+  return (
+    <div className="pointer-events-auto w-[min(940px,92vw)]" onClick={(e) => e.stopPropagation()}>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+        {MAP_PICKER.map((m) => {
+          const active = m.id === selected.id;
+          return (
+            <button
+              key={m.id}
+              type="button"
+              title={m.subtitle}
+              className={`pointer-events-auto cursor-pointer min-h-[168px] rounded-lg border bg-black/30 px-3 py-3 text-left transition-[border-color,background,transform,box-shadow] hover:-translate-y-px ${
+                active
+                  ? "border-accent bg-accent/12 shadow-[0_0_0_1px_rgba(255,106,0,0.22),0_18px_44px_-28px_rgba(255,106,0,0.9)]"
+                  : "border-white/15 hover:bg-white/10"
+              }`}
+              onClick={() => setMapId(m.id)}
+              aria-pressed={active}
+            >
+              <span
+                className={`relative mb-3 flex h-[96px] items-center justify-center overflow-hidden rounded-md border bg-black/35 ${
+                  active ? "border-accent/60" : "border-white/10"
+                }`}
+              >
+                <span
+                  className="absolute inset-0 opacity-25"
+                  style={{ background: `radial-gradient(circle at 50% 70%, ${m.accent}, transparent 72%)` }}
+                />
+                <PixelIcon id={m.icon} size={56} label={m.name} />
+              </span>
+              <span className="mb-1 block">
+                <b className="text-[16px] leading-tight">{m.name}</b>
+              </span>
+              <span className="block text-[11px] leading-snug opacity-65 normal-case">{m.subtitle}</span>
+            </button>
+          );
+        })}
+      </div>
+      <div className="mt-4 rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-left">
+        <div className="text-[12px] uppercase tracking-[0.12em] text-[#ffb56b]">Breach Site</div>
+        <div className="text-[22px] font-black tracking-[0.03em]">{selected.name}</div>
+        <div className="text-[12px] opacity-65">
+          {selectedClass.name} · the site holds for the whole descent — no mid-run map swaps
         </div>
       </div>
       <div className="mt-4 flex items-stretch gap-3">
@@ -433,7 +512,7 @@ export function MainMenu({
   shop: ShopState;
   suppressMenu: boolean;
   initialRoom: string;
-  onStartSurvivors: (classId?: SurvivorClassId) => void;
+  onStartSurvivors: (classId?: SurvivorClassId, mapId?: string) => void;
   onStartSandbox?: () => void;
   onStartMultiplayer: (name: string, room: string, avatar: PlayerAvatarId) => void;
   onClearScores: () => void;
@@ -441,8 +520,10 @@ export function MainMenu({
 }) {
   const { status, campaign, survivors, multiplayer } = state;
 
-  type MenuScreen = "home" | "operator" | "multiplayer" | "shop" | "settings" | "leaderboard" | "codex";
+  type MenuScreen = "home" | "operator" | "mapselect" | "multiplayer" | "shop" | "settings" | "leaderboard" | "codex";
   const [menuScreen, setMenuScreen] = useState<MenuScreen>(initialRoom ? "multiplayer" : "home");
+  // Class confirmed on the operator screen, carried into the map select step.
+  const [pendingClassId, setPendingClassId] = useState<SurvivorClassId>(() => savedSurvivorClass());
   const firstMenuShow = useRef(true);
   // Reset to the root menu whenever the menu is (re)shown — but a shared
   // `?room=` link drops you straight on the join screen the first time.
@@ -503,7 +584,24 @@ export function MainMenu({
           {menuScreen === "operator" && (
             <div className={menuScreenWrap}>
               <div className={MENU_HEADING}>Operator Loadout</div>
-              <SurvivorsPanel onStart={onStartSurvivors} onBack={() => setMenuScreen("home")} />
+              <SurvivorsPanel
+                onNext={(classId) => {
+                  setPendingClassId(classId);
+                  setMenuScreen("mapselect");
+                }}
+                onBack={() => setMenuScreen("home")}
+              />
+            </div>
+          )}
+
+          {menuScreen === "mapselect" && (
+            <div className={menuScreenWrap}>
+              <div className={MENU_HEADING}>Breach Site</div>
+              <MapSelectPanel
+                classId={pendingClassId}
+                onStart={onStartSurvivors}
+                onBack={() => setMenuScreen("operator")}
+              />
             </div>
           )}
 
