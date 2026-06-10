@@ -1,5 +1,13 @@
 import type { Command, GameSlug, HumanFaction, OperationResult, Summary, WorldState } from "@shipshitgames/warline";
-import { applyCommand, applyOperation, createInitialWorld, summarize, TICK_MS, tick } from "@shipshitgames/warline";
+import {
+  applyCommand,
+  applyOperation,
+  createInitialWorld,
+  GAME_SLUGS,
+  summarize,
+  TICK_MS,
+  tick,
+} from "@shipshitgames/warline";
 import type { WarlineSocket } from "@shipshitgames/warline/client";
 import { connectWarline } from "@shipshitgames/warline/client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -24,8 +32,6 @@ export interface WarlineStore {
   simulate: (game?: GameSlug) => void;
   connected: boolean;
 }
-
-const GAME_SLUGS: GameSlug[] = ["scourge-survivors", "deadlane", "pactfall", "starblight", "redline", "rothulk"];
 
 function loadFaction(): HumanFaction {
   if (typeof localStorage === "undefined") return "wardens";

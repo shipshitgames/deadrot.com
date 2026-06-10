@@ -28,8 +28,7 @@ export interface GameSettingsScreenProps {
   /** Back action label / meta. */
   backLabel?: ReactNode;
   backMeta?: ReactNode;
-  /** Passthrough to GlobalGameSettingsPanel: single aggregate slider (label) vs per-channel (sliderKeys). */
-  label?: ReactNode;
+  /** Passthrough to GlobalGameSettingsPanel: which per-channel sliders to show. */
   sliderKeys?: readonly GlobalEffectKey[];
   /** Extra body rendered under the audio panel. */
   children?: ReactNode;
@@ -52,7 +51,6 @@ export function GameSettingsScreen({
   title = "Settings",
   backLabel = "Back",
   backMeta = "Title menu",
-  label,
   sliderKeys,
   children,
   className,
@@ -84,7 +82,7 @@ export function GameSettingsScreen({
           <MainMenuTitle>
             <MainMenuTitleLine>{title}</MainMenuTitleLine>
           </MainMenuTitle>
-          <GlobalGameSettingsPanel inline label={label} sliderKeys={sliderKeys} />
+          <GlobalGameSettingsPanel inline sliderKeys={sliderKeys} />
           {children}
         </MainMenuCopy>
         <MainMenuNav aria-label="Settings">

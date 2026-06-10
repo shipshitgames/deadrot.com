@@ -67,6 +67,9 @@ export const GAME_OPERATIONS: Record<GameSlug, GameOperationMeta> = {
   },
 };
 
+/** All game slugs, in GAME_OPERATIONS declaration order. */
+export const GAME_SLUGS = Object.keys(GAME_OPERATIONS) as GameSlug[];
+
 /** The OperationKind a given game reports. */
 export function operationKindFor(game: GameSlug): OperationKind {
   return GAME_OPERATIONS[game].kind;

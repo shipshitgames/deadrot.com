@@ -23,7 +23,9 @@ export {
 } from "./map";
 // operations (spec §4)
 export type { GameOperationMeta } from "./operations";
-export { GAME_OPERATIONS, operationKindFor } from "./operations";
+export { GAME_OPERATIONS, GAME_SLUGS, operationKindFor } from "./operations";
+// palette
+export { FACTION_COLOR } from "./palette";
 // reducer (spec §5)
 export type { ApplyResult } from "./reducer";
 export {
@@ -66,3 +68,4 @@ export {
   TICK,
   TICK_MS,
 } from "./types";
+export { HUMAN_FACTIONS } from "./world";

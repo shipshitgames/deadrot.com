@@ -22,7 +22,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useReducer,
   useState,
   useSyncExternalStore,
 } from "react";
@@ -31,41 +30,16 @@ import { ABILITY_KEYS, type AbilityKey } from "../game/systems/abilities";
 import type { Phase } from "../game/types";
 import { getBridgeGame, subscribeBridgeGame } from "./gameBridge";
 
-interface OverlayState {
-  paused: boolean;
-  showSettings: boolean;
-}
-
-type OverlayAction =
-  | { type: "set"; patch: Partial<OverlayState> }
-  | { type: "toggle-pause"; onPause: () => void; onResume: () => void };
-
-function overlayReducer(state: OverlayState, action: OverlayAction): OverlayState {
-  switch (action.type) {
-    case "set":
-      return { ...state, ...action.patch };
-    case "toggle-pause": {
-      const paused = !state.paused;
-      if (paused) action.onPause();
-      else action.onResume();
-      return { ...state, paused };
-    }
-  }
-}
-
 export function AppShell() {
   // The vanilla Game owns the loop + HUD DOM; it registers itself on the bridge
   // once main.ts has spun it up. We only need it to drive pause/resume.
   const [game, setGame] = useState<Game | null>(() => getBridgeGame());
-  const [overlay, dispatchOverlay] = useReducer(overlayReducer, { paused: false, showSettings: false });
-  const { paused, showSettings } = overlay;
+  const [showSettings, setShowSettings] = useState(false);
   const subscribePhase = useCallback(
     (notify: () => void) => {
       if (!game) return () => {};
       return game.subscribePhaseChange((next) => {
-        if (next !== "playing") {
-          dispatchOverlay({ type: "set", patch: { paused: false, showSettings: false } });
-        }
+        if (next !== "playing") setShowSettings(false);
         notify();
       });
     },
@@ -73,6 +47,14 @@ export function AppShell() {
   );
   const readPhase = useCallback((): Phase => game?.phase ?? "title", [game]);
   const phase = useSyncExternalStore(subscribePhase, readPhase, () => "title");
+
+  // Pause lives on the Game (the single owner); mirror it the same way as phase.
+  const subscribePause = useCallback(
+    (notify: () => void) => (game ? game.subscribePauseChange(() => notify()) : () => {}),
+    [game],
+  );
+  const readPaused = useCallback((): boolean => game?.paused ?? false, [game]);
+  const paused = useSyncExternalStore(subscribePause, readPaused, () => false);
 
   // Splash gate: the title nav only appears once the player presses Enter/Space/clicks.
   // Re-arms each time the match returns to the title phase.
@@ -89,14 +71,11 @@ export function AppShell() {
       event.preventDefault();
       // Esc closes the settings panel first (back to the pause menu), only then toggles pause.
       if (showSettings) {
-        dispatchOverlay({ type: "set", patch: { showSettings: false } });
+        setShowSettings(false);
         return;
       }
-      dispatchOverlay({
-        type: "toggle-pause",
-        onPause: () => game.pause(),
-        onResume: () => game.resume(),
-      });
+      if (game.paused) game.resume();
+      else game.pause();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -104,11 +83,11 @@ export function AppShell() {
 
   const resume = useCallback(() => {
     game?.resume();
-    dispatchOverlay({ type: "set", patch: { paused: false, showSettings: false } });
+    setShowSettings(false);
   }, [game]);
 
   const restart = useCallback(() => {
-    dispatchOverlay({ type: "set", patch: { paused: false, showSettings: false } });
+    setShowSettings(false);
     game?.beginRun();
   }, [game]);
 
@@ -142,7 +121,7 @@ export function AppShell() {
         label: "Settings",
         meta: "Audio",
         variant: "settings" as const,
-        onSelect: () => dispatchOverlay({ type: "set", patch: { showSettings: true } }),
+        onSelect: () => setShowSettings(true),
       },
     ],
     [restart],
@@ -208,7 +187,11 @@ export function AppShell() {
 
         <div id="hint">CLICK / ARROWS TO MOVE - Q LANCE - W BRAND - E VAULT - SLAY THE SCOURGE FOR A BUFF</div>
 
-        <MainMenuScreen id="title-screen" className="banner" backgroundImage={menuHero}>
+        <MainMenuScreen
+          id="title-screen"
+          className={phase === "title" ? "banner" : "banner banner--hidden"}
+          backgroundImage={menuHero}
+        >
           <MainMenuTopBar mark="SSG" meta="0 gold" aria-hidden>
             Broken concord
           </MainMenuTopBar>
@@ -245,7 +228,7 @@ export function AppShell() {
                   variant="settings"
                   label="Settings"
                   meta="Audio"
-                  onClick={() => dispatchOverlay({ type: "set", patch: { showSettings: true } })}
+                  onClick={() => setShowSettings(true)}
                 />
                 <MainMenuAction variant="dev" label="Sandbox" meta="Arena lab" disabled />
                 <MainMenuAction
@@ -263,20 +246,24 @@ export function AppShell() {
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>
 
-        <MainMenuScreen id="banner" className="banner banner--hidden" backgroundImage={menuHero}>
-          <MainMenuLayout>
-            <MainMenuCopy>
-              <MainMenuTitle className="banner-title" />
-              <MenuKicker className="banner-sub">PRESS R OR CLICK TO REDEPLOY</MenuKicker>
-            </MainMenuCopy>
-          </MainMenuLayout>
-        </MainMenuScreen>
+        {(phase === "won" || phase === "lost") && (
+          <MainMenuScreen id="banner" className="banner" backgroundImage={menuHero}>
+            <MainMenuLayout>
+              <MainMenuCopy>
+                <MainMenuTitle className="banner-title">
+                  {phase === "won" ? "VICTORY - WARDEN BASE FALLS" : "DEFEAT - THE PYRE IS EXTINGUISHED"}
+                </MainMenuTitle>
+                <MenuKicker className="banner-sub">PRESS R OR CLICK TO REDEPLOY</MenuKicker>
+              </MainMenuCopy>
+            </MainMenuLayout>
+          </MainMenuScreen>
+        )}
       </div>
 
       {showSettings && (
         <GameSettingsScreen
           open
-          onClose={() => dispatchOverlay({ type: "set", patch: { showSettings: false } })}
+          onClose={() => setShowSettings(false)}
           kicker="Arena Settings"
           backgroundImage={menuHero}
         />

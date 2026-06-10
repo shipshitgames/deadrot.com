@@ -1,11 +1,11 @@
 import * as THREE from "three";
 import { COLORS, CONSTANTS } from "../game/constants";
+import { TAU } from "../game/math";
 import type { Enemy } from "../game/types";
 import { atLevel, type Stats, type UpgradeId, WEAPONS } from "../game/upgrades";
 import type { EntitySystem } from "./EntitySystem";
 import type { RenderSystem } from "./RenderSystem";
 
-const TAU = Math.PI * 2;
 const SEEKER_RANGE = 28; // seeker only locks the Scourge once they're near/in view
 
 export type DamageFn = (e: Enemy, dmg: number, allowCrit?: boolean) => void;

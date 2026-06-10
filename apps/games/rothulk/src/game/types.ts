@@ -28,8 +28,9 @@ export interface MovingPlatform {
   // Internal: 0..1 ping-pong phase and direction.
   t: number;
   dir: number;
-  baseX?: number;
-  baseY?: number;
+  // Authored start position; t interpolates from (baseX,baseY) to (toX,toY).
+  baseX: number;
+  baseY: number;
   // Per-frame velocity, so the rider can be carried.
   vx: number;
   vy: number;
@@ -112,14 +113,12 @@ export interface Checkpoint {
 export interface CoreGoal {
   x: number;
   y: number;
-  ignited: boolean;
 }
 
 export interface ExitGoal {
   x: number;
   y: number;
   radius: number;
-  reached: boolean;
 }
 
 export interface LevelData {

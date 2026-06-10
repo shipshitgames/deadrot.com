@@ -46,12 +46,10 @@ describe("Rothulk level list", () => {
       expect(level.checkpoint.x).toBeLessThan(level.width);
       expect(hasFootingUnder(level, level.checkpoint.x, level.checkpoint.y)).toBe(true);
 
-      expect(level.core.ignited).toBe(false);
       expect(level.core.x).toBeGreaterThan(level.checkpoint.x); // checkpoint precedes the core
       expect(level.core.x).toBeLessThanOrEqual(level.width);
       expect(hasFootingUnder(level, level.core.x, level.core.y)).toBe(true);
 
-      expect(level.exit.reached).toBe(false);
       expect(level.exit.radius).toBeGreaterThan(0);
       expect(hasFootingUnder(level, level.exit.x, level.exit.y)).toBe(true);
 
@@ -90,7 +88,7 @@ describe("Rothulk level list", () => {
     expect(level.width).toBe(130);
     expect(level.spawn).toEqual({ x: CONSTANTS.HERO_SPAWN_X, y: CONSTANTS.HERO_SPAWN_Y });
     expect(level.checkpoint).toEqual({ x: 60, y: 2.6, reached: false });
-    expect(level.core).toEqual({ x: 122.5, y: 6.2, ignited: false });
+    expect(level.core).toEqual({ x: 122.5, y: 6.2 });
     expect(level.platforms.filter((p) => p.kind === "slab").length).toBe(14);
     expect(level.platforms.filter((p) => p.kind === "flesh").length).toBe(14);
     expect(level.movers.length).toBe(2);

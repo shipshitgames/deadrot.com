@@ -1,3 +1,4 @@
+import { createFixedLoop, type FixedLoop } from "@deadrot/game-kit/core";
 import { DamageNumbers, FlashOverlay, ParticleBursts, ScreenShake } from "@deadrot/game-kit/juice";
 import { audio } from "../audio";
 import { COLORS, CONSTANTS } from "./constants";
@@ -30,10 +31,12 @@ export class Game {
   buffTime = 0; // seconds of champion damage buff remaining
   elapsed = 0;
 
-  // Pause is owned by the React shell (Esc-toggled). When set, the loop keeps
-  // rendering but freezes the simulation so the player is never stuck.
+  // Pause is owned by the Game (Esc-toggled via the React shell). When set,
+  // the loop keeps rendering but freezes the simulation so the player is
+  // never stuck.
   paused = false;
   private readonly phaseListeners = new Set<(phase: Phase) => void>();
+  private readonly pauseListeners = new Set<(paused: boolean) => void>();
 
   // Juice (presentation only): shake/bursts/numbers/flash consumed once per frame.
   private readonly shake = new ScreenShake();
@@ -44,9 +47,16 @@ export class Game {
   private heartbeatIn = 0; // low-health heartbeat cadence
   private lowHpActive = false;
 
-  private running = false;
-  private lastTime = 0;
-  private readonly tick = (now: number) => this.frame(now);
+  // Pactfall is a variable-step sim: run it in the render callback so the
+  // shared loop only contributes the clamped rAF cadence, not fixed stepping.
+  private readonly loop: FixedLoop = createFixedLoop({
+    maxFrame: CONSTANTS.maxDelta,
+    update: () => {},
+    render: (_alpha, frameDt) => {
+      this.update(Math.min(frameDt, CONSTANTS.maxDelta));
+      this.render.draw();
+    },
+  });
 
   constructor(canvas: HTMLCanvasElement, hudRoot: HTMLElement) {
     this.render = new RenderSystem(canvas);
@@ -77,10 +87,17 @@ export class Game {
     };
   }
 
+  subscribePauseChange(listener: (paused: boolean) => void): () => void {
+    this.pauseListeners.add(listener);
+    return () => {
+      this.pauseListeners.delete(listener);
+    };
+  }
+
   beginRun(): void {
     this.buffTime = 0;
     this.elapsed = 0;
-    this.paused = false;
+    this.setPaused(false);
     this.entities.reset();
     this.abilities.reset();
     // Q/W/E pressed on the title / victory / pause screens stay latched in the
@@ -90,20 +107,25 @@ export class Game {
     this.heartbeatIn = 0;
     this.lowHpActive = false;
     this.flash.setVignette(0);
-    this.hud.setBanner(null);
     audio.unlock(); // beginRun always follows a user gesture (click / Enter / R)
     this.setPhase("playing");
   }
 
   pause(): void {
-    if (this.phase === "playing") this.paused = true;
+    if (this.phase === "playing") this.setPaused(true);
   }
 
   resume(): void {
-    this.paused = false;
+    this.setPaused(false);
     // Presses buffered while the sim was frozen would all fire on the first
     // unpaused frame — discard them, same as beginRun().
     this.input.clearAbilities();
+  }
+
+  private setPaused(paused: boolean): void {
+    if (this.paused === paused) return;
+    this.paused = paused;
+    for (const listener of this.pauseListeners) listener(paused);
   }
 
   private setPhase(phase: Phase): void {
@@ -113,10 +135,11 @@ export class Game {
   }
 
   start(): void {
-    if (this.running) return;
-    this.running = true;
-    this.lastTime = performance.now();
-    requestAnimationFrame(this.tick);
+    this.loop.start();
+  }
+
+  stop(): void {
+    this.loop.stop();
   }
 
   get buffed(): boolean {
@@ -129,7 +152,7 @@ export class Game {
 
   win(): void {
     if (this.phase === "playing") {
-      this.paused = false;
+      this.setPaused(false);
       this.setPhase("won");
       audio.sfx("victory");
     }
@@ -137,24 +160,10 @@ export class Game {
 
   lose(): void {
     if (this.phase === "playing") {
-      this.paused = false;
+      this.setPaused(false);
       this.setPhase("lost");
       audio.sfx("defeat");
     }
-  }
-
-  private frame(now: number): void {
-    if (!this.running) return;
-    requestAnimationFrame(this.tick);
-
-    // Clamp delta: large gaps (tab switch) become a single safe step.
-    let dt = (now - this.lastTime) / 1000;
-    this.lastTime = now;
-    if (!Number.isFinite(dt) || dt < 0) dt = 0;
-    dt = Math.min(dt, CONSTANTS.maxDelta);
-
-    this.update(dt);
-    this.render.draw();
   }
 
   private update(dt: number): void {

@@ -1,5 +1,5 @@
 import type { Faction, Region, WorldState } from "@shipshitgames/warline";
-import { breachById, regionById } from "@shipshitgames/warline";
+import { breachById, FACTION_COLOR, regionById } from "@shipshitgames/warline";
 import type { KeyboardEvent } from "react";
 import { useState } from "react";
 import { HelpTooltip } from "./HelpTooltip";
@@ -9,13 +9,6 @@ interface WarMapProps {
   selectedId: string | null;
   onSelect: (id: string) => void;
 }
-
-const FACTION_COLOR: Record<Faction, string> = {
-  wardens: "#c1121f",
-  pyre: "#ff6a00",
-  scourge: "#8bdc1f",
-  neutral: "#34343c",
-};
 
 function laneStroke(control: Faction): string {
   return FACTION_COLOR[control];

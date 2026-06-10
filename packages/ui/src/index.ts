@@ -8,14 +8,12 @@ export type { ClassValue } from "./cn";
 export { cn } from "./cn";
 export type {
   EffectLevelSliderProps,
-  EffectsLevelSliderProps,
   GlobalEffectSlidersProps,
   GlobalGameSettingsPanelProps,
   GlobalMusicToggleProps,
 } from "./GameSettings";
 export {
   EffectLevelSlider,
-  EffectsLevelSlider,
   GlobalEffectSliders,
   GlobalGameSettingsPanel,
   GlobalMusicToggle,
@@ -73,12 +71,10 @@ export {
   clampEffectsLevel,
   DEFAULT_GLOBAL_GAME_SETTINGS,
   getGlobalEffectLevel,
-  getGlobalEffectsLevel,
   loadGlobalGameSettings,
   saveGlobalGameSettings,
   setGlobalEffectLevel,
   setGlobalEffectLevels,
-  setGlobalEffectsLevel,
   setGlobalMusicMuted,
   subscribeGlobalGameSettings,
   toggleGlobalMusicMuted,

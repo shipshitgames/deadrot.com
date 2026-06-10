@@ -155,17 +155,11 @@ export class Runner {
 
   /** Physics calls this when the capsule rests on a surface at surfaceTopY. */
   land(surfaceTopY: number) {
-    const wasAir = !this.onGround;
     this.y = surfaceTopY + RUNNER.radius;
     this.vy = 0;
-    if (wasAir) {
-      this.onGround = true;
-      this.coyote = RUNNER.coyoteTime;
-      this.justLanded = true;
-    } else {
-      this.onGround = true;
-      this.coyote = RUNNER.coyoteTime;
-    }
+    if (!this.onGround) this.justLanded = true;
+    this.onGround = true;
+    this.coyote = RUNNER.coyoteTime;
   }
 
   /** Physics calls this the moment the runner walks off an edge. */

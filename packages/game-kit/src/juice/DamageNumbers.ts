@@ -4,6 +4,9 @@
 
 import * as THREE from "three";
 
+import { type BoundedPool, createBoundedPool } from "../core/pool";
+import { createOverlayElement, ensurePositioningContext } from "./domLayer";
+
 export type DamageNumberKind = "normal" | "head" | "crit";
 
 export interface DamageNumbersOptions {
@@ -33,8 +36,7 @@ const DEFAULT_COLORS: Record<DamageNumberKind, string> = {
 };
 
 export class DamageNumbers {
-  private readonly numbers: FloatingNumber[] = [];
-  private readonly max: number;
+  private readonly pool: BoundedPool<FloatingNumber>;
   private readonly ttl: number;
   private readonly rise: number;
   private readonly fontFamily: string;
@@ -49,14 +51,16 @@ export class DamageNumbers {
     private camera: THREE.Camera,
     opts: DamageNumbersOptions = {},
   ) {
-    this.max = opts.max ?? 40;
     this.ttl = opts.ttl ?? 0.7;
     this.rise = opts.rise ?? 46;
     this.fontFamily = opts.fontFamily ?? '"Courier New", monospace';
     this.colors = { ...DEFAULT_COLORS, ...opts.colors };
-    if (getComputedStyle(container).position === "static") {
-      container.style.position = "relative";
-    }
+    ensurePositioningContext(container);
+    // When all numbers are live, recycle the oldest.
+    this.pool = createBoundedPool(opts.max ?? 40, () => this.createNumber(), {
+      isActive: (n) => n.active,
+      recyclePriority: (n) => n.age,
+    });
   }
 
   /** Swap the projection camera (e.g. after a mode change). */
@@ -66,7 +70,8 @@ export class DamageNumbers {
 
   /** Spawn a floating number at a world position. */
   spawn(world: { x: number; y: number; z: number }, text: string | number, kind: DamageNumberKind = "normal") {
-    const n = this.acquire();
+    const n = this.pool.acquire();
+    if (!n) return;
     n.world = { ...world };
     n.age = 0;
     n.active = true;
@@ -81,26 +86,28 @@ export class DamageNumbers {
   /** Re-project live numbers; call once per rendered frame. */
   update(dt: number) {
     let any = false;
-    for (const n of this.numbers) {
-      if (!n.active) continue;
+    this.pool.forEach((n) => {
+      if (!n.active) return;
       n.age += dt;
       if (n.age >= this.ttl) {
         n.active = false;
         n.el.style.display = "none";
-        continue;
+        return;
       }
       any = true;
-    }
+    });
     if (!any) return;
     this.refreshView();
-    for (const n of this.numbers) {
+    this.pool.forEach((n) => {
       if (n.active) this.place(n);
-    }
+    });
   }
 
   dispose() {
-    for (const n of this.numbers) n.el.remove();
-    this.numbers.length = 0;
+    this.pool.forEach((n) => {
+      n.el.remove();
+    });
+    this.pool.items.length = 0;
   }
 
   private refreshView() {
@@ -126,31 +133,16 @@ export class DamageNumbers {
     n.el.style.transform = `translate(-50%, -100%) translate(${px.toFixed(1)}px, ${py.toFixed(1)}px)`;
   }
 
-  private acquire(): FloatingNumber {
-    for (const n of this.numbers) {
-      if (!n.active) return n;
-    }
-    if (this.numbers.length < this.max) {
-      const el = document.createElement("span");
-      el.style.position = "absolute";
-      el.style.left = "0";
-      el.style.top = "0";
-      el.style.pointerEvents = "none";
-      el.style.whiteSpace = "nowrap";
-      el.style.fontFamily = this.fontFamily;
-      el.style.textShadow = "0 1px 2px rgba(0,0,0,0.9)";
-      el.style.willChange = "transform, opacity";
-      el.style.display = "none";
-      this.container.appendChild(el);
-      const n: FloatingNumber = { el, world: { x: 0, y: 0, z: 0 }, age: 0, active: false };
-      this.numbers.push(n);
-      return n;
-    }
-    // All busy: recycle the oldest.
-    let oldest = this.numbers[0]!;
-    for (const n of this.numbers) {
-      if (n.age > oldest.age) oldest = n;
-    }
-    return oldest;
+  private createNumber(): FloatingNumber {
+    const el = createOverlayElement(this.container, "span", {
+      left: "0",
+      top: "0",
+      whiteSpace: "nowrap",
+      fontFamily: this.fontFamily,
+      textShadow: "0 1px 2px rgba(0,0,0,0.9)",
+      willChange: "transform, opacity",
+      display: "none",
+    });
+    return { el, world: { x: 0, y: 0, z: 0 }, age: 0, active: false };
   }
 }

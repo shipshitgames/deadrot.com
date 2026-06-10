@@ -6,7 +6,7 @@
 
 import { warlineLobbyHref } from "@shipshitgames/ui";
 import { COURSE, RUNNER, SCORE } from "../constants";
-import type { Phase, RunnerState } from "../types";
+import type { RunnerState } from "../types";
 import { applyRunRecord, bestFor, createBestsStore, type RunSummary } from "./score";
 
 function fmtTime(s: number): string {
@@ -150,7 +150,7 @@ export class Hud {
   }
 
   // --- overlays -------------------------------------------------------------
-  showStart() {
+  showStart(opts: { onIgnite: () => void; onSettings: () => void }) {
     this.overlay.classList.remove("is-hidden");
     this.overlayCard.innerHTML = `
       <div class="ssg-main-menu-copy">
@@ -199,9 +199,14 @@ export class Hud {
         </a>
       </nav>
     `;
+    this.wireOverlayButton(opts.onIgnite);
+    // Settings is only present on the start card; { once: true } preserves the
+    // current behavior exactly (do not fix the settings re-open quirk here).
+    const settingsBtn = document.getElementById("overlay-settings-btn");
+    if (settingsBtn) settingsBtn.addEventListener("click", opts.onSettings, { once: true });
   }
 
-  showWin(summary: RunSummary, records: RunRecords) {
+  showWin(summary: RunSummary, records: RunRecords, onAgain: () => void) {
     this.overlay.classList.remove("is-hidden");
     const isRecord = records.newBestTime || records.newBestScore;
     const kicker = records.newBestTime
@@ -240,9 +245,10 @@ export class Hud {
         </button>
       </nav>
     `;
+    this.wireOverlayButton(onAgain);
   }
 
-  showDead(reason: string) {
+  showDead(reason: string, onRetry: () => void) {
     this.overlay.classList.remove("is-hidden");
     this.overlayCard.innerHTML = `
       <div class="ssg-main-menu-copy">
@@ -261,28 +267,16 @@ export class Hud {
         </button>
       </nav>
     `;
+    this.wireOverlayButton(onRetry);
   }
 
   hideOverlay() {
     this.overlay.classList.add("is-hidden");
   }
 
-  /** Wire the (re)created overlay button to a callback. */
-  onOverlayButton(cb: () => void) {
+  /** Wire the freshly created primary overlay button to a callback. */
+  private wireOverlayButton(cb: () => void) {
     const btn = document.getElementById("overlay-btn");
     if (btn) btn.addEventListener("click", cb, { once: true });
-  }
-
-  /**
-   * Wire the start-screen Settings button to a callback. Only present on the
-   * start card (re-created by showStart), so re-wire each time it is shown.
-   */
-  onSettingsButton(cb: () => void) {
-    const btn = document.getElementById("overlay-settings-btn");
-    if (btn) btn.addEventListener("click", cb, { once: true });
-  }
-
-  isOverlayVisible(phase: Phase): boolean {
-    return phase !== "running";
   }
 }

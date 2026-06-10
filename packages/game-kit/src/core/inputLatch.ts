@@ -15,11 +15,18 @@ export class InputLatch<A extends string> {
   private readonly heldActions = new Set<A>();
   private readonly queued = new Set<A>();
   private readonly heldCodes = new Set<string>();
+  private readonly codesByAction = new Map<A, string[]>();
   private readonly target: Window | HTMLElement;
   private disposed = false;
 
   constructor(private readonly opts: InputLatchOptions<A>) {
     this.target = opts.target ?? window;
+    // opts.keys is immutable, so precompute the action → codes index once.
+    for (const [code, action] of Object.entries(opts.keys) as [string, A][]) {
+      const codes = this.codesByAction.get(action);
+      if (codes) codes.push(code);
+      else this.codesByAction.set(action, [code]);
+    }
     this.target.addEventListener("keydown", this.onKeyDown as EventListener);
     this.target.addEventListener("keyup", this.onKeyUp as EventListener);
     window.addEventListener("blur", this.onBlur);
@@ -81,9 +88,8 @@ export class InputLatch<A extends string> {
     if (!action) return;
     this.heldCodes.delete(e.code);
     // Only release the action if no other bound code still holds it.
-    for (const [code, a] of Object.entries(this.opts.keys)) {
-      if (a === action && this.heldCodes.has(code)) return;
-    }
+    const codes = this.codesByAction.get(action);
+    if (codes?.some((code) => this.heldCodes.has(code))) return;
     this.heldActions.delete(action);
   };
 

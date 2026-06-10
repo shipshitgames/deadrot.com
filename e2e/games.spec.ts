@@ -1,7 +1,8 @@
 import { readdirSync } from "node:fs";
 import path from "node:path";
+import { GAME_APPS } from "@deadrot/catalog";
 import { expect, type Page, test } from "@playwright/test";
-import { allGames, type GameSlug } from "./game-catalog";
+import type { GameSlug } from "./game-catalog";
 
 interface GameSpec {
   path: string;
@@ -175,7 +176,7 @@ test.beforeAll(() => {
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .sort();
-  const configuredGameSlugs = allGames.map((game) => game.slug).sort();
+  const configuredGameSlugs = GAME_APPS.map((game) => game.slug).sort();
   const testedGameSlugs = Object.keys(gameSpecs).sort();
 
   expect(configuredGameSlugs).toEqual(shippedGameSlugs);

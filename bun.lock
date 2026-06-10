@@ -292,6 +292,9 @@
     "packages/assets": {
       "name": "@shipshitgames/assets",
       "version": "0.1.0",
+      "dependencies": {
+        "@deadrot/catalog": "workspace:*",
+      },
       "devDependencies": {
         "@deadrot/catalog": "workspace:*",
         "@types/node": "25.9.1",
@@ -346,6 +349,7 @@
       "name": "@shipshitgames/warline",
       "version": "0.0.0",
       "dependencies": {
+        "@deadrot/catalog": "workspace:*",
         "partysocket": "^1.1.19",
       },
       "devDependencies": {

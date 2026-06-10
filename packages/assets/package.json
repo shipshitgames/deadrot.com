@@ -43,6 +43,9 @@
     "test:unit": "bun test tests",
     "deps:update": "bunx npm-check-updates -u --cooldown 3h --removeRange && bun install"
   },
+  "dependencies": {
+    "@deadrot/catalog": "workspace:*"
+  },
   "devDependencies": {
     "@deadrot/catalog": "workspace:*",
     "@types/node": "25.9.1",

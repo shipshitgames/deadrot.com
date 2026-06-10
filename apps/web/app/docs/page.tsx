@@ -1,15 +1,4 @@
-import {
-  BookOpen,
-  Boxes,
-  ExternalLink,
-  Gamepad2,
-  GitBranch,
-  type LucideIcon,
-  RadioTower,
-  ScrollText,
-  Terminal,
-  Wrench,
-} from "lucide-react";
+import { BookOpen, Boxes, ExternalLink, Gamepad2, GitBranch, ScrollText, Terminal } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { StatusBadge } from "@/components/game/game-card";
@@ -21,14 +10,25 @@ import {
   bestiary,
   characters,
   factions,
-  type GameStatus,
   games,
+  gamesByStatus,
   getCharacter,
   getCreature,
   playableGames,
   universe,
 } from "@/lib/content";
 import { createSocialMetadata } from "@/lib/social";
+import {
+  appSurfaces,
+  commands,
+  contents,
+  getGameDocState,
+  hostFamilies,
+  nextDocs,
+  packages,
+  principles,
+  scourgeFacts,
+} from "./content";
 
 export const metadata: Metadata = createSocialMetadata({
   title: "Docs",
@@ -37,221 +37,6 @@ export const metadata: Metadata = createSocialMetadata({
   path: "/docs",
   openGraphTitle: "DEADROT Docs",
 });
-
-const STATUS_RANK: Record<GameStatus, number> = {
-  PLAYABLE: 0,
-  "IN DEV": 1,
-  CONCEPT: 2,
-};
-
-const sortedGames = [...games].sort((a, b) => STATUS_RANK[a.status] - STATUS_RANK[b.status]);
-
-const contents = [
-  { label: "Start", href: "#start" },
-  { label: "Apps", href: "#apps" },
-  { label: "Game State", href: "#games" },
-  { label: "Packages", href: "#packages" },
-  { label: "Lore", href: "#canon" },
-  { label: "Workflow", href: "#workflow" },
-];
-
-const gameState: Record<
-  string,
-  {
-    state: string;
-    canonRole: string;
-    warline: string;
-  }
-> = {
-  "scourge-survivors": {
-    state:
-      "Flagship Pyre horde-survivors FPS. Public build is playable; canon frames it as the offensive breach-descent front.",
-    canonRole:
-      "A lone Purger goes where the Wardens can only hold the line: down into the breach, room by room, to burn source nodes.",
-    warline: "Reports purge-breach operations: seal or weaken breaches and lower local Scourge pressure.",
-  },
-  deadlane: {
-    state: "Warden 3D tower defense. Public build is playable; canon frames it as the defensive lane-holding front.",
-    canonRole:
-      "Each level is a named chokepoint where engineers, gunners, and wall-builders fragment the horde before it reaches holdouts.",
-    warline: "Reports hold-lane operations: reduce lane flow, raise defenses, and keep regions from falling.",
-  },
-  pactfall: {
-    state:
-      "Playable prototype. Current build tests the arena/minion/neutral-Scourge loop first; the full PvP hero pillar is still the design target.",
-    canonRole:
-      "The Pyre and Wardens settle doctrine grudges in sanctioned arenas. The Pact bends, but it must not break.",
-    warline: "Maps to contest-territory operations: arena victories help claim or stabilize contested ground.",
-  },
-  starblight: {
-    state:
-      "Playable orbital prototype. Lore records the current pivot: lock style first, then push toward momentum-flight pilot buildcraft.",
-    canonRole:
-      "Pilots burn Scourge spores, infected wreckage, and living carrier-ships out of orbit before they fall into the surface war.",
-    warline: "Reports orbital-intercept operations: weaken active breaches from above and cut incoming infection.",
-  },
-  redline: {
-    state:
-      "Playable prototype. Current build focuses on a Pyre courier first; Warden courier expression remains part of the design target.",
-    canonRole:
-      "Speed beats omniscience: couriers outrun the Choir's prediction tempo to keep severed holdouts talking.",
-    warline:
-      "Reports run-logistics operations: move orders, fuel, scrap, and people through lanes the Scourge is trying to close.",
-  },
-  rothulk: {
-    state:
-      "Playable prototype. Current build tests the Pyre saboteur climb and breach-core ignition loop before the full enemy ecology is locked.",
-    canonRole:
-      "A saboteur climbs a beached Scourge breach-ship, reaches the breach-core, ignites it, and severs the local node.",
-    warline: "Reports sabotage operations: damage breach hearts and make local Scourge clusters feral.",
-  },
-  warline: {
-    state:
-      "Playable prototype. The strategy-lite campaign layer: a living front, four resources, simple commands, and a game-to-operation loop.",
-    canonRole:
-      "The war console of the Resistance era: it tracks where the Pact is holding, where the Scourge pressures the lanes, and which operations buy the world more time.",
-    warline:
-      "IS the front. Every other game reports its operation here; commands spend the shared resources they earn.",
-  },
-  "zero-day": {
-    state:
-      "Concept only. This is the origin title and should stay unwinnable by design until the first-contact loop is locked.",
-    canonRole: "The night humanity lost the sky: first contact in orbit and atmosphere, before the Pyre/Warden schism.",
-    warline:
-      "No normal Warline operation yet. It is the historical anchor that explains why every later game is Resistance-era.",
-  },
-};
-
-const principles = [
-  "Canon lives in the sibling lore repo. This site reflects it; it does not replace it.",
-  "The Scourge are parasites and host-takeover organisms, never generic monsters.",
-  "Toxic green belongs to Scourge infection, breach cores, and parasite nodes.",
-  "React owns shells and HUDs. Gameplay loops stay imperative and Three.js-centered.",
-  "Bun and Turbo are the default workspace tools.",
-];
-
-const scourgeFacts = [
-  "Host-dependent parasite with no native form. It wears flesh, machines, ships, fungus, and dead-world biology.",
-  "Not evil in the moral sense. It is an AI-like survival optimizer with no off-switch and no mercy.",
-  "The Choir is the connection, not a single boss. There is no general to assassinate.",
-  "The Choir has limited radius. Repeaters and dense swarm mass extend it; sever them and the local horde goes feral.",
-  "Humanity wins locally through isolation and starvation. You buy the world time; you do not erase the whole Scourge.",
-];
-
-const hostFamilies = [
-  "Rot-infested flesh hosts",
-  "Chitin warhosts",
-  "Mycelial spore hosts",
-  "Machine-graft hosts",
-  "Bone titan hosts",
-  "Voidship hosts",
-];
-
-const appSurfaces: {
-  icon: LucideIcon;
-  path: string;
-  title: string;
-  href?: string;
-  description: string;
-}[] = [
-  {
-    icon: BookOpen,
-    path: "apps/web",
-    title: "Public Site And Docs",
-    href: "/",
-    description:
-      "The deadrot.com surface: studio home, game gallery, universe pages, bestiary, characters, and this public docs route.",
-  },
-  {
-    icon: RadioTower,
-    path: "apps/games/warline",
-    title: "Warline",
-    href: "/warline/",
-    description:
-      "The playable strategy-lite War for the Lanes campaign layer. Every game can report operations into one shared front.",
-  },
-  {
-    icon: Wrench,
-    path: "apps/desktop",
-    title: "Desktop Studio",
-    description: "The Electron generator hub for maps, sprites, research, and local Codex-driven production workflows.",
-  },
-];
-
-const packages = [
-  {
-    name: "@shipshitgames/ui",
-    path: "packages/ui",
-    description:
-      "Shared React components and CSS-first game UI classes for menus, HUD corners, buttons, and upgrade cards.",
-  },
-  {
-    name: "@shipshitgames/engine",
-    path: "packages/engine",
-    description:
-      "Shared Three.js game systems: world bounds, camera rigs, input seams, and the embodied game engine baseline.",
-  },
-  {
-    name: "@shipshitgames/assets",
-    path: "packages/assets",
-    description: "Canon asset catalog, entity matrix, shared FX/UI/audio/font records, and typed asset resolvers.",
-  },
-  {
-    name: "@shipshitgames/assetgen",
-    path: "packages/assetgen",
-    description:
-      "Prompt-to-asset CLI for sprite generation, matrix renders, provider routing, post-processing, and game sync.",
-  },
-  {
-    name: "@shipshitgames/warline",
-    path: "packages/warline",
-    description: "Pure world-state model, reducers, commands, operation contract, summary helpers, and client SDK.",
-  },
-  {
-    name: "@shipshitgames/research",
-    path: "packages/research",
-    description: "YouTube tutorial research pipeline that distills transcripts into reusable build rulesets.",
-  },
-  {
-    name: "@shipshitgames/shared",
-    path: "packages/shared",
-    description: "Reserved shared types and utilities for code that belongs across app and package boundaries.",
-  },
-];
-
-const commands = [
-  {
-    title: "Install And Build",
-    lines: ["bun install", "bun run build", "bun run typecheck"],
-  },
-  {
-    title: "Package Checks",
-    lines: [
-      "cd packages/ui && bun run typecheck",
-      "cd packages/engine && bun run typecheck",
-      "cd packages/warline && bun run test",
-    ],
-  },
-  {
-    title: "Asset Matrix",
-    lines: [
-      "bun packages/assetgen/src/cli.ts matrix --provider mock",
-      "bun packages/assetgen/src/cli.ts matrix --provider codex --only-missing",
-    ],
-  },
-  {
-    title: "Research Rules",
-    lines: [
-      'bun packages/research/src/cli.ts --url "https://www.youtube.com/watch?v=..." --provider mock --out rules.md',
-    ],
-  },
-];
-
-const nextDocs = [
-  "Split this page into /docs/games, /docs/engine, /docs/assets, and /docs/warline when the material gets deeper.",
-  "Promote package README content into public docs while keeping code-level API details close to each package.",
-  "Add contribution docs once the open-core repo, game repos, and lore repo policies settle.",
-];
 
 export default function DocsPage() {
   return (
@@ -395,8 +180,9 @@ export default function DocsPage() {
               </p>
             </div>
             <div className="grid gap-5">
-              {sortedGames.map((game) => {
-                const state = gameState[game.slug];
+              {gamesByStatus.map((game) => {
+                const state = getGameDocState(game.slug);
+                if (!state) return null;
                 const humanRoster = game.characterSlugs.flatMap((slug) => {
                   const character = getCharacter(slug);
                   return character ? [character.name] : [];

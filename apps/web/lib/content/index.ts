@@ -76,11 +76,27 @@ export { charactersByFaction, getCharacter, getCreature, getFaction };
 
 export const playableGames = games.filter((g) => g.status === "PLAYABLE");
 
-export const factionGames = (f: Faction) => f.gameSlugs.map(getGame).filter(Boolean) as Game[];
-export const gameCharacters = (g: Game) => g.characterSlugs.map(getCharacter).filter(Boolean) as Character[];
-export const gameCreatures = (g: Game) => g.enemySlugs.map(getCreature).filter(Boolean) as Creature[];
-export const characterGames = (c: Character) => c.appearsIn.map(getGame).filter(Boolean) as Game[];
-export const creatureGames = (b: Creature) => b.appearsIn.map(getGame).filter(Boolean) as Game[];
+const STATUS_RANK: Record<GameStatus, number> = {
+  PLAYABLE: 0,
+  "IN DEV": 1,
+  CONCEPT: 2,
+};
+
+/** All games ordered playable-first, then in-dev, then concept. */
+export const gamesByStatus: Game[] = [...games].sort((a, b) => STATUS_RANK[a.status] - STATUS_RANK[b.status]);
+
+/** Resolve slugs through a lookup, dropping any that are unknown. */
+const resolve = <T>(slugs: string[], lookup: (s: string) => T | undefined): T[] =>
+  slugs.flatMap((s) => {
+    const v = lookup(s);
+    return v ? [v] : [];
+  });
+
+export const factionGames = (f: Faction) => resolve(f.gameSlugs, getGame);
+export const gameCharacters = (g: Game) => resolve(g.characterSlugs, getCharacter);
+export const gameCreatures = (g: Game) => resolve(g.enemySlugs, getCreature);
+export const characterGames = (c: Character) => resolve(c.appearsIn, getGame);
+export const creatureGames = (b: Creature) => resolve(b.appearsIn, getGame);
 
 export const spriteUrl = (base: string | null) =>
   base ? `/sprites/${base.includes(".") ? base : `${base}.webp`}` : null;

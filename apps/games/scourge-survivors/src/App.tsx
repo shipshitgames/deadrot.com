@@ -29,10 +29,8 @@ import { Game } from "./game/Game";
 import {
   clearScores,
   loadScores,
-  loadSettings,
   loadShop,
   type ScoreEntry,
-  type Settings,
   type ShopState,
   saveScore,
   saveShop,
@@ -147,7 +145,6 @@ export default function App() {
   const hudRef = useRef<HUDState>(INITIAL_STATE);
   const [hud, setHudState] = useState<HUDState>(INITIAL_STATE);
   const [scores, setScores] = useState<ScoreEntry[]>(() => loadScores());
-  const [settings] = useState<Settings>(() => loadSettings());
   const [shop, setShop] = useState<ShopState>(() => loadShop());
   const lastRunGoldRef = useRef(0);
   const sandboxAvailable = import.meta.env.DEV;
@@ -189,8 +186,6 @@ export default function App() {
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    audio.setMusicEnabled(settings.music);
-    audio.setSfxEnabled(settings.sfx);
     const game = new Game(container, setHud);
     gameRef.current = game;
     game.setShopUpgrades(shop.tiers);

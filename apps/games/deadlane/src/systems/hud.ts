@@ -1,4 +1,5 @@
 import { CONSTANTS } from "../constants";
+import { buildSpeedMul, runSpeedMul } from "../stats";
 import type { GameState } from "../types";
 import { patchBannerSnapshot } from "../ui/bannerBridge";
 
@@ -14,8 +15,8 @@ export class HudSystem {
       wave: `${Math.max(0, state.wave)} / ${CONSTANTS.waves.total}`,
       hp: String(state.baseHp),
       tower: `${tower.label} (${tower.cost})`,
-      build: `${Math.round((1 + state.buildSpeedLevel * CONSTANTS.bonuses.buildSpeedPerLevel) * 100)}%`,
-      run: `${Math.round((1 + state.runSpeedLevel * CONSTANTS.bonuses.runSpeedPerLevel) * 100)}%`,
+      build: `${Math.round(buildSpeedMul(state) * 100)}%`,
+      run: `${Math.round(runSpeedMul(state) * 100)}%`,
       hint: state.hintText,
     });
   }

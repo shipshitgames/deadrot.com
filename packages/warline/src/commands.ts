@@ -7,32 +7,15 @@
 
 import { clamp } from "./map";
 import { makeEventId } from "./reducer";
-import type { Command, CommandKind, Region, ResourceKind, WarEvent, WorldState } from "./types";
-import { COMMAND_COSTS, COMMAND_EFFECT, FEED_MAX } from "./types";
+import type { Command, CommandKind, ResourceKind, WarEvent, WorldState } from "./types";
+import { COMMAND_COSTS, COMMAND_EFFECT } from "./types";
+import { cloneWorld, isHuman, pushEvent } from "./world";
 
 export interface CommandResult {
   ok: boolean;
   state: WorldState;
   error?: string;
   event?: WarEvent;
-}
-
-function cloneWorld(state: WorldState): WorldState {
-  return {
-    ...state,
-    resources: { ...state.resources },
-    regions: state.regions.map((r) => ({ ...r })),
-    lanes: state.lanes.map((l) => ({ ...l })),
-    breaches: state.breaches.map((b) => ({ ...b })),
-    feed: state.feed.slice(),
-  };
-}
-
-function pushEvent(state: WorldState, event: WarEvent): void {
-  state.feed.unshift(event);
-  if (state.feed.length > FEED_MAX) {
-    state.feed.length = FEED_MAX;
-  }
 }
 
 /** Whether the shared pool (and army, for deploy) can pay for `kind`. */
@@ -59,10 +42,6 @@ function deduct(state: WorldState, kind: CommandKind): void {
       state.resources[k as ResourceKind] -= need;
     }
   }
-}
-
-function isHuman(faction: Region["faction"]): boolean {
-  return faction === "pyre" || faction === "wardens";
 }
 
 /**

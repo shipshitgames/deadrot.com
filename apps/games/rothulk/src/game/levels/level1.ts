@@ -68,6 +68,8 @@ export function buildLevel1(): LevelData {
       toY: 6,
       t: 0,
       dir: 1,
+      baseX: 99,
+      baseY: 2,
       vx: 0,
       vy: 0,
     },
@@ -81,6 +83,8 @@ export function buildLevel1(): LevelData {
       toY: 4,
       t: 0,
       dir: 1,
+      baseX: 112,
+      baseY: 4,
       vx: 0,
       vy: 0,
     },
@@ -152,12 +156,11 @@ export function buildLevel1(): LevelData {
     chargers: [],
     embers,
     checkpoint: { x: 60, y: 2.6, reached: false },
-    core: { x: 122.5, y: 6.2, ignited: false },
+    core: { x: 122.5, y: 6.2 },
     exit: {
       x: CONSTANTS.HERO_SPAWN_X,
       y: CONSTANTS.HERO_SPAWN_Y,
       radius: CONSTANTS.EXIT_RADIUS,
-      reached: false,
     },
   };
 }

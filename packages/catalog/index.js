@@ -43,3 +43,8 @@ export const gameDevPorts = Object.fromEntries(GAME_APPS.map((g) => [g.slug, g.d
 
 // Ordered app slugs.
 export const gameSlugs = GAME_APPS.map((g) => g.slug);
+
+// The six playable front games (everything except the warline lobby), in the
+// canonical Scourge-universe order shared by @shipshitgames/assets and
+// @shipshitgames/warline. NOT the dev-port order of GAME_APPS above.
+export const PLAYABLE_GAME_SLUGS = ["scourge-survivors", "deadlane", "pactfall", "starblight", "redline", "rothulk"];

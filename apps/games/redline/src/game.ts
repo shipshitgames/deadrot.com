@@ -10,10 +10,11 @@
  * Entities:
  *   Runner   — the Pyre courier (momentum / jump / dash / stagger)
  *
- * The loop uses a clamped delta and a small fixed-step accumulator so physics
- * stays stable regardless of frame rate.
+ * The loop uses @deadrot/game-kit's createFixedLoop (clamped delta + fixed-step
+ * accumulator) so physics stays stable regardless of frame rate.
  */
 
+import { createFixedLoop, type FixedLoop } from "@deadrot/game-kit";
 import { recordWarResult } from "@deadrot/game-kit/core";
 import { audio } from "./audio";
 import { CAMERA, FEEDBACK, RUNNER } from "./constants";
@@ -27,8 +28,8 @@ import { detectNearMisses, ScoreSystem } from "./systems/score";
 import type { Course, Phase } from "./types";
 import { overlayController } from "./ui/overlayController";
 
-const FIXED_DT = 1 / 120; // physics step
-const MAX_FRAME = 0.1; // clamp huge deltas (tab switch etc.)
+// Cap fixed-step catch-up per frame so a long stall can't spiral the sim.
+const MAX_STEPS_PER_FRAME = 8;
 
 export class Game {
   private input: Input;
@@ -44,9 +45,17 @@ export class Game {
   private time = 0; // run timer (s)
   private score = new ScoreSystem();
 
-  private last = 0;
-  private acc = 0;
-  private raf = 0;
+  // Kit defaults match the old hand-rolled loop: 1/120 fixed dt, 0.1s max frame.
+  private loop: FixedLoop = createFixedLoop({
+    update: (dt) => {
+      if (this.phase === "running" && !this.paused && this.frameSteps < MAX_STEPS_PER_FRAME) {
+        this.fixedStep(dt);
+        this.frameSteps++;
+      }
+    },
+    render: (_alpha, dt) => this.perFrame(dt),
+  });
+  private frameSteps = 0;
 
   // Per-displayed-frame feedback accumulators. Runner event flags (justJumped
   // etc.) stay raised across the fixed sub-steps of a frame, so audio reads
@@ -71,18 +80,15 @@ export class Game {
       { id: "title", label: "Exit to title", meta: "Main menu", onSelect: () => this.exitToTitle() },
     ];
 
-    this.hud.showStart();
-    this.hud.onOverlayButton(() => this.startRun());
-    this.hud.onSettingsButton(() => this.openSettings());
+    this.showTitle();
   }
 
   start() {
-    this.last = performance.now();
-    this.raf = requestAnimationFrame(this.frame);
+    this.loop.start();
   }
 
   dispose() {
-    cancelAnimationFrame(this.raf);
+    this.loop.stop();
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("keydown", this.onKeyDown);
     this.input.dispose();
@@ -127,9 +133,14 @@ export class Game {
     this.resume();
     audio.sfx("uiSelect");
     this.phase = "ready";
-    this.hud.showStart();
-    this.hud.onOverlayButton(() => this.startRun());
-    this.hud.onSettingsButton(() => this.openSettings());
+    this.showTitle();
+  }
+
+  private showTitle() {
+    this.hud.showStart({
+      onIgnite: () => this.startRun(),
+      onSettings: () => this.openSettings(),
+    });
   }
 
   private openSettings() {
@@ -166,8 +177,7 @@ export class Game {
       { outcome: "victory", timeMs: Math.round(this.time * 1000), score: summary.total },
       Date.now(),
     );
-    this.hud.showWin(summary, records);
-    this.hud.onOverlayButton(() => this.startRun());
+    this.hud.showWin(summary, records, () => this.startRun());
   }
 
   private die(reason: string) {
@@ -177,31 +187,21 @@ export class Game {
     recordWarResult("redline", { outcome: "defeat" }, Date.now());
     this.render.kickShake(0.8);
     this.hud.flashHit();
-    this.hud.showDead(reason);
-    this.hud.onOverlayButton(() => this.startRun());
+    this.hud.showDead(reason, () => this.startRun());
   }
 
   // ---------------------------------------------------------------------------
   // Loop
   // ---------------------------------------------------------------------------
 
-  private frame = (now: number) => {
-    this.raf = requestAnimationFrame(this.frame);
-
-    let dt = (now - this.last) / 1000;
-    this.last = now;
-    if (dt > MAX_FRAME) dt = MAX_FRAME;
+  /** Runs once per animation frame after the fixed-step updates. */
+  private perFrame(dt: number) {
+    this.frameSteps = 0;
 
     // While paused, freeze the simulation: drain any buffered input so it does
     // not fire on resume, keep rendering the frozen scene under the overlay.
     if (this.paused) {
-      this.input.consumeRestart();
-      this.input.consumeAnyKey();
-      // Also drain action edges so a jump/dash pressed while paused doesn't fire
-      // the instant play resumes (could cause an unfair death).
-      this.input.consumeJump();
-      this.input.consumeDash();
-      this.acc = 0;
+      this.input.clear();
       this.render.render();
       this.runner.clearEvents();
       return;
@@ -220,20 +220,6 @@ export class Game {
       this.input.consumeAnyKey();
     }
 
-    if (this.phase === "running") {
-      this.acc += dt;
-      let steps = 0;
-      while (this.acc >= FIXED_DT && steps < 8) {
-        this.fixedStep(FIXED_DT);
-        this.acc -= FIXED_DT;
-        steps++;
-        if (this.phase !== "running") break;
-      }
-    } else {
-      // drain accumulator so we don't fast-forward after un-pausing
-      this.acc = 0;
-    }
-
     // Audio reads the frame-scoped runner events once, before they're cleared.
     this.playFrameAudio();
 
@@ -243,7 +229,7 @@ export class Game {
     this.render.render();
 
     this.runner.clearEvents();
-  };
+  }
 
   private fixedStep(dt: number) {
     this.time += dt;
