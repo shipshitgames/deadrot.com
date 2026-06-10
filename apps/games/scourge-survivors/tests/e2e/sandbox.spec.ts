@@ -81,6 +81,12 @@ async function arenaSnapshot(page: Page): Promise<ArenaDebugSnapshot> {
   );
 }
 
+/** The title screen gates the menu nav behind an arcade "press enter" splash. */
+async function dismissTitleSplash(page: Page) {
+  await expect(page.getByText("Press Enter to continue")).toBeVisible();
+  await page.keyboard.press("Enter");
+}
+
 test.describe("survivors menu", () => {
   test("opens on the Survivors hub and starts a run from the primary action", async ({ page }) => {
     const consoleErrors: string[] = [];
@@ -97,6 +103,8 @@ test.describe("survivors menu", () => {
     await expect(page.getByText("SCOURGE", { exact: true })).toBeVisible();
     await expect(page.getByText("SURVIVORS", { exact: true })).toBeVisible();
     const hub = page.getByRole("navigation", { name: /survivors hub/i });
+    await expect(hub).toHaveCount(0);
+    await dismissTitleSplash(page);
     await expect(hub).toBeVisible();
     await expect(hub.getByRole("button", { name: /play a run/i })).toBeVisible();
     await expect(hub.getByRole("button", { name: /shop/i })).toBeVisible();
@@ -107,10 +115,19 @@ test.describe("survivors menu", () => {
     await expect(page.getByText("Co-op Breach Rooms")).toBeVisible();
     await page.getByRole("button", { name: /back/i }).click();
 
+    // Leaving the home screen re-arms the splash, so reveal the hub again.
+    await dismissTitleSplash(page);
+
     await page
       .getByRole("navigation", { name: /survivors hub/i })
       .getByRole("button", { name: /play a run/i })
       .click();
+
+    // The hub's primary action opens the operator loadout; the run launches
+    // from the loadout's own primary button.
+    await expect(page.getByText("Operator Loadout")).toBeVisible();
+    await page.getByRole("button", { name: /play a run/i }).click();
+
     await expect(page.getByRole("button", { name: /click to lock/i })).toBeVisible();
     await expect.poll(() => snapshot(page).then((state) => state.status)).toBe("pointerlock-needed");
     await expect.poll(() => snapshot(page).then((state) => state.survivors)).toBe(true);
@@ -237,6 +254,8 @@ function overlaps(a: HudPanelSample, b: HudPanelSample) {
 test.describe("dev sandbox smoke", () => {
   test("main menu uses Survivors run and co-op breach vocabulary", async ({ page }) => {
     await page.goto("/");
+
+    await dismissTitleSplash(page);
 
     await expect(page.getByRole("button", { name: /play a run/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /^co-op/i })).toBeVisible();
