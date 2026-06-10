@@ -23,6 +23,10 @@
     "./core": {
       "types": "./src/core/index.ts",
       "default": "./src/core/index.ts"
+    },
+    "./maps": {
+      "types": "./src/maps/index.ts",
+      "default": "./src/maps/index.ts"
     }
   },
   "files": [

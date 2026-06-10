@@ -96,6 +96,8 @@ test.describe("survivors menu", () => {
 
     await expect(page.getByText("SCOURGE", { exact: true })).toBeVisible();
     await expect(page.getByText("SURVIVORS", { exact: true })).toBeVisible();
+    await expect(page.getByText("Press Enter to continue")).toBeVisible();
+    await page.keyboard.press("Enter");
     const hub = page.getByRole("navigation", { name: /survivors hub/i });
     await expect(hub).toBeVisible();
     await expect(hub.getByRole("button", { name: /play a run/i })).toBeVisible();
@@ -107,10 +109,17 @@ test.describe("survivors menu", () => {
     await expect(page.getByText("Co-op Breach Rooms")).toBeVisible();
     await page.getByRole("button", { name: /back/i }).click();
 
+    // The enter gate re-arms whenever the title screen stops being the current view.
+    await expect(page.getByText("Press Enter to continue")).toBeVisible();
+    await page.keyboard.press("Enter");
+
     await page
       .getByRole("navigation", { name: /survivors hub/i })
       .getByRole("button", { name: /play a run/i })
       .click();
+    // The hub's primary action opens the operator select screen; launch from there.
+    await expect(page.getByText("Selected", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: /play a run/i }).click();
     await expect(page.getByRole("button", { name: /click to lock/i })).toBeVisible();
     await expect.poll(() => snapshot(page).then((state) => state.status)).toBe("pointerlock-needed");
     await expect.poll(() => snapshot(page).then((state) => state.survivors)).toBe(true);
@@ -238,6 +247,8 @@ test.describe("dev sandbox smoke", () => {
   test("main menu uses Survivors run and co-op breach vocabulary", async ({ page }) => {
     await page.goto("/");
 
+    await expect(page.getByText("Press Enter to continue")).toBeVisible();
+    await page.keyboard.press("Enter");
     await expect(page.getByRole("button", { name: /play a run/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /^co-op/i })).toBeVisible();
 

@@ -1,3 +1,4 @@
+import { anchorsOfKind, flattenObstacles } from "@deadrot/game-kit/maps";
 import { makeBounds } from "@shipshitgames/engine";
 import * as THREE from "three";
 import { PLAYER_HEIGHT, WALL_HEIGHT, WALL_THICKNESS } from "../constants";
@@ -22,6 +23,16 @@ export interface ArenaDebugSnapshot {
   solidMeshes: number;
   raycastTargets: number;
   obstacleBoxes: number;
+  /** v2 adapter observability — null when the current map has no normalized layout.
+   *  Field names are the contract #82's e2e extends. */
+  layout: {
+    rooms: number;
+    levels: number;
+    ramps: number;
+    platforms: number;
+    flattenedObstacles: number;
+    anchors: { playerSpawn: number; breachSpawn: number; objective: number; extraction: number };
+  } | null;
 }
 
 export class ArenaSystem {
@@ -211,6 +222,7 @@ export class ArenaSystem {
   debugSnapshot(): ArenaDebugSnapshot {
     const materialIds = this.ctx.currentMap.materials ?? DEFAULT_ARENA_MATERIALS;
     const bounds = this.ctx.bounds;
+    const layout = this.ctx.currentMap.layout;
     return {
       mapId: this.ctx.currentMap.id,
       bounds: {
@@ -227,6 +239,21 @@ export class ArenaSystem {
       solidMeshes: this.ctx.solidMeshes.length,
       raycastTargets: this.ctx.raycastTargets.length,
       obstacleBoxes: this.ctx.obstacleBoxes.length,
+      layout: layout
+        ? {
+            rooms: layout.rooms.length,
+            levels: layout.levels.length,
+            ramps: layout.ramps.length,
+            platforms: layout.platforms.length,
+            flattenedObstacles: flattenObstacles(layout).length,
+            anchors: {
+              playerSpawn: anchorsOfKind(layout, "playerSpawn").length,
+              breachSpawn: anchorsOfKind(layout, "breachSpawn").length,
+              objective: anchorsOfKind(layout, "objective").length,
+              extraction: anchorsOfKind(layout, "extraction").length,
+            },
+          }
+        : null,
     };
   }
 

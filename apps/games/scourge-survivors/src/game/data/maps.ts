@@ -13,12 +13,31 @@
 // boundary walls. Future maps may override `bounds` while keeping the same
 // runtime clamp/cull/spawn seam.
 //
+// v2 structural layer: the game-agnostic schema (rooms, floor levels, ramps,
+// platforms, typed anchors) lives in `@deadrot/game-kit/maps`. The MAPS
+// registry attaches the normalized view as `layout` at module load via
+// `normalizeArenaLayout`, so every map handed out by MAPS/getMap/
+// campaignSequence is a NormalizedArenaMap. v1 maps author none of the v2
+// fields — the adapter synthesizes a whole-bounds root room, a ground level,
+// and a playerSpawn anchor from `spawn`. Note: `elevated` obstacle stacking is
+// a render-only quirk that floor levels will subsume in #82.
+//
 // Palette is canon DOOM (see DESIGN.md / Style-Bible): blood + fire + metal +
 // bone, no neon. Toxic-green is reserved for the Scourge only.
 //
 // Layouts were generated + geometrically validated by a multi-agent design
 // pass (no out-of-bounds boxes, no overlaps/slivers, clear player spawns).
 
+import {
+  type ArenaAnchor,
+  type ArenaBounds,
+  type ArenaFloorLevel,
+  type ArenaLayout,
+  type ArenaPlatform,
+  type ArenaRamp,
+  type ArenaRoom,
+  normalizeArenaLayout,
+} from "@deadrot/game-kit/maps";
 import type { MapBounds } from "@shipshitgames/engine";
 import type { PixelIconId } from "../../assets/ui/pixelIcons";
 import { ARENA_HALF } from "../constants";
@@ -122,7 +141,31 @@ export interface ArenaMap {
   environment: ArenaEnvironment;
   spawn: { x: number; z: number }; // player start (faces the arena centre)
   obstacles: MapObstacle[];
+  // --- v2 structural authoring (all optional; v1 maps author none of them) ---
+  /** Named sub-regions with world-space bounds + their own obstacles. Omit for a single
+   *  open arena (a whole-bounds root room is synthesized). Data only until #82 — the
+   *  runtime still builds geometry from the flat `obstacles` list. */
+  rooms?: ArenaRoom<MapObstacle>[];
+  /** Floor planes. Omit for flat maps (ground level at y=0 is synthesized). `elevated`
+   *  obstacles remain a render-only stacking quirk, NOT levels — #82 subsumes them. */
+  levels?: ArenaFloorLevel[];
+  /** Ramps/stairs between levels. Data only until #82. */
+  ramps?: ArenaRamp[];
+  /** Raised walkable slabs. Data only until #82. */
+  platforms?: ArenaPlatform[];
+  /** Typed points (playerSpawn/breachSpawn/objective/extraction). Until #82 the runtime
+   *  reads `spawn` for placement (placeAtSpawn) and scatter-spawns enemies procedurally;
+   *  keep an authored playerSpawn consistent with `spawn`. No breachSpawns = procedural
+   *  scatter (v1 behavior). NOTE: missions.ts MissionCheckpoint.spawn is a dead copy of
+   *  `spawn` today; #82 re-points it at the playerSpawn anchor. */
+  anchors?: ArenaAnchor[];
+  /** Normalized v2 view — populated by the MAPS registry at module load; always present
+   *  on maps from MAPS/getMap/campaignSequence. Do not author directly. */
+  layout?: ArenaLayout<MapObstacle>;
 }
+
+/** An ArenaMap whose layout has been populated — what the registry hands out. */
+export type NormalizedArenaMap = ArenaMap & { layout: ArenaLayout<MapObstacle> };
 
 function arenaMaterials(mapId: string): ArenaMaterialSet {
   return {
@@ -418,12 +461,17 @@ const PERDITION: ArenaMap = {
 
 // ----------------------------------------------------------------------------
 
+/** v1→v2 adapter entry point: attaches the normalized structural layout. */
+function normalizeMap(map: ArenaMap): NormalizedArenaMap {
+  return { ...map, layout: normalizeArenaLayout<MapObstacle>(map, { defaultBounds: DEFAULT_ARENA_BOUNDS }) };
+}
+
 /** All campaign maps, keyed by id. */
-export const MAPS: Record<string, ArenaMap> = {
-  ashgate: ASHGATE,
-  hollowlanes: HOLLOWLANES,
-  maw: MAW,
-  perdition: PERDITION,
+export const MAPS: Record<string, NormalizedArenaMap> = {
+  ashgate: normalizeMap(ASHGATE),
+  hollowlanes: normalizeMap(HOLLOWLANES),
+  maw: normalizeMap(MAW),
+  perdition: normalizeMap(PERDITION),
 };
 
 /**
@@ -435,7 +483,7 @@ export const CAMPAIGN_ORDER: string[] = ["ashgate", "hollowlanes", "maw", "perdi
 /** Default arena for non-structured modes (Survivors / co-op / menu). */
 export const DEFAULT_MAP_ID = "ashgate";
 
-export function getMap(id: string): ArenaMap {
+export function getMap(id: string): NormalizedArenaMap {
   return MAPS[id] ?? MAPS[DEFAULT_MAP_ID];
 }
 
@@ -443,7 +491,7 @@ export function getMap(id: string): ArenaMap {
  * Build the campaign stage sequence starting from `startId`: that map first,
  * then the remaining maps in canonical order (wrapping around).
  */
-export function campaignSequence(startId: string): ArenaMap[] {
+export function campaignSequence(startId: string): NormalizedArenaMap[] {
   const start = CAMPAIGN_ORDER.indexOf(startId);
   const order = start < 0 ? CAMPAIGN_ORDER : [...CAMPAIGN_ORDER.slice(start), ...CAMPAIGN_ORDER.slice(0, start)];
   return order.map((id) => MAPS[id]);
@@ -461,3 +509,12 @@ export const MAP_PICKER: MapMeta[] = CAMPAIGN_ORDER.map((id) => {
   const m = MAPS[id];
   return { id: m.id, name: m.name, subtitle: m.subtitle, icon: m.icon, accent: m.accent };
 });
+
+/** Compile-time drift gate: engine MapBounds ⇄ game-kit ArenaBounds must stay mutually
+ *  assignable (game-kit duplicates the union to stay engine-free). If either side
+ *  changes shape, this line stops compiling. */
+export const ARENA_BOUNDS_PARITY: ArenaBounds extends MapBounds
+  ? MapBounds extends ArenaBounds
+    ? true
+    : never
+  : never = true;
