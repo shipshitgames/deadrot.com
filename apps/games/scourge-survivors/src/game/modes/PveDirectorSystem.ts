@@ -179,6 +179,7 @@ export class PveDirectorSystem {
       audio.sfx("combo", { pitch: 1 + Math.min(combo, 50) * 0.008 });
     }
     if (wasBoss) {
+      this.ctx.bossKills++;
       this.sys.fx.addShake(0.45);
       this.sys.fx.hitstop(0.06);
       audio.sfx("explosion");
