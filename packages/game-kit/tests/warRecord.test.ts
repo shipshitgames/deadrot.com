@@ -118,8 +118,9 @@ test("garbage entry shapes are dropped on read and reset on write", () => {
     WAR_RECORD_KEY,
     JSON.stringify({ v: 1, data: { redline: "bogus", starblight: { plays: "x", victories: 2, updatedAt: 7 } } }),
   );
-  // Unrecognizable entries vanish; recognizable fields are coerced.
-  assert.deepEqual(readWarRecord(), { starblight: { plays: 0, victories: 2, updatedAt: 7 } });
+  // Unrecognizable entries vanish; recognizable fields are coerced, and
+  // victories clamp to plays so a tampered payload can't render negative losses.
+  assert.deepEqual(readWarRecord(), { starblight: { plays: 0, victories: 0, updatedAt: 7 } });
   recordWarResult("redline", { outcome: "defeat" }, 8);
   assert.deepEqual(entryOf(readWarRecord(), "redline"), { plays: 1, victories: 0, updatedAt: 8 });
 });

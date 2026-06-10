@@ -65,9 +65,11 @@ function counter(value: unknown): number {
 function sanitizeEntry(raw: unknown): WarRecordEntry | undefined {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
   const e = raw as Record<string, unknown>;
+  const plays = counter(e.plays);
   const entry: WarRecordEntry = {
-    plays: counter(e.plays),
-    victories: counter(e.victories),
+    plays,
+    // Clamp so a tampered payload can never render negative losses (W/L math).
+    victories: Math.min(counter(e.victories), plays),
     updatedAt: num(e.updatedAt) ?? 0,
   };
   const bestScore = num(e.bestScore);

@@ -232,13 +232,14 @@ export default function App() {
         }),
       );
       // Mirror the run into the shared cross-game war record (display-only;
-      // Warline's "Your War Record" card reads it back).
+      // Warline's "Your War Record" card reads it back). Survivors chapter runs
+      // progress by depth, not the clamped arena wave — report the deeper number.
       recordWarResult(
         "scourge-survivors",
         {
           outcome: hud.outcome === "win" ? "victory" : "defeat",
           score: hud.score,
-          wave: hud.wave,
+          wave: hud.survivors ? Math.max(hud.runDepth, hud.wave) : hud.wave,
           bossKill: hud.bossKills,
         },
         Date.now(),
