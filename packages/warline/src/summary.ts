@@ -2,8 +2,9 @@
  * @shipshitgames/warline — derived snapshot for HUDs (spec §7).
  */
 
-import type { Summary, WorldState } from "./types";
 import { clamp } from "./map";
+import { escalationFactor } from "./reducer";
+import type { Summary, WorldState } from "./types";
 
 /** Pure derivation of headline war stats from a WorldState. */
 export function summarize(state: WorldState): Summary {
@@ -50,5 +51,6 @@ export function summarize(state: WorldState): Summary {
     activeBreaches,
     army: state.pactArmy,
     resources: { ...state.resources },
+    escalation: escalationFactor(state.tick),
   };
 }

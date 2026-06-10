@@ -1,5 +1,6 @@
 import menuHero from "@shipshitgames/assets/games/warline/ui/menu/title.webp";
 import {
+  GameSettingsScreen,
   GlobalMusicToggle,
   MainMenuAction,
   MainMenuCopy,
@@ -23,6 +24,7 @@ import { OpsPanel } from "./components/OpsPanel";
 import { ResourceBar } from "./components/ResourceBar";
 import { WarFeed } from "./components/WarFeed";
 import { WarMap } from "./components/WarMap";
+import { WarRecord } from "./components/WarRecord";
 import { useWarline } from "./store";
 
 export default function App() {
@@ -32,6 +34,7 @@ export default function App() {
   // The Front is the walkable 3D lobby (portals to every game); the Command
   // Table swaps in the Warline strategy UI. Title menu enters the Front.
   const [mode, setMode] = useState<"front" | "command">("front");
+  const [titleSettings, setTitleSettings] = useState(false);
   const revealed = useEnterToReveal(showTitle);
 
   return (
@@ -88,15 +91,27 @@ export default function App() {
                   meta={status === "LIVE" ? "Shared room" : "Offline"}
                   disabled
                 />
-                <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
-                <MainMenuAction variant="settings" label="Settings" meta="Simulation" disabled />
-                <MainMenuAction variant="dev" label="Sandbox" meta="Ops sim" disabled />
+                <MainMenuAction
+                  type="button"
+                  variant="settings"
+                  label="Settings"
+                  meta="Audio"
+                  onClick={() => setTitleSettings(true)}
+                />
               </MainMenuNav>
             ) : (
               <MainMenuEnterPrompt />
             )}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
+          {titleSettings && (
+            <GameSettingsScreen
+              open
+              onClose={() => setTitleSettings(false)}
+              kicker="Audio Settings"
+              backgroundImage={menuHero}
+            />
+          )}
         </MainMenuScreen>
       )}
 
@@ -143,6 +158,7 @@ export default function App() {
                 command={command}
               />
               <OpsPanel simulate={simulate} />
+              <WarRecord />
               <Legend />
               <div className="h-64 shrink-0">
                 <WarFeed feed={state.feed} />

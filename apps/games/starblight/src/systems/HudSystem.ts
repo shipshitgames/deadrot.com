@@ -73,7 +73,7 @@ export class HudSystem {
       this.intText.textContent = `${s.integrity}/${s.maxIntegrity}`;
       this.pauseStatsText = `${fmtTime(s.timeSec)} - LVL ${s.level} - ${s.kills} kills`;
       // Keep the (open) overlay's status line live as the run clock ticks.
-      if (s.phase === "paused") publishPause({ open: true, stats: this.pauseStatsText });
+      if (s.phase === "paused") publishPause({ open: true, stats: this.pauseStatsText, phase: s.phase });
       if (s.bossHp01 == null) {
         this.bossBar.classList.add("hidden");
       } else {
@@ -176,7 +176,7 @@ export class HudSystem {
   private renderPause(s: HudState) {
     this.pauseBtn.classList.toggle("hidden", s.phase !== "playing");
     // The pause overlay itself is the shared React PauseMenu, driven via the bridge.
-    publishPause({ open: s.phase === "paused", stats: this.pauseStatsText });
+    publishPause({ open: s.phase === "paused", stats: this.pauseStatsText, phase: s.phase });
   }
 
   private flashTimer = 0;

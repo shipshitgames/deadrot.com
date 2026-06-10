@@ -1,17 +1,23 @@
+import { createFixedLoop, type FixedLoop } from "@deadrot/game-kit/core";
+import { FlashOverlay } from "@deadrot/game-kit/juice";
 import * as THREE from "three";
+import { audio } from "./audio";
 import { cellToWorld, inBounds, isPathCell, playBounds, worldToCell } from "./board";
-import { CONSTANTS } from "./constants";
+import { recordCreepKill } from "./codexUnlocks";
+import { COLORS, CONSTANTS } from "./constants";
+import { buildSpeedMul, runSpeedMul } from "./stats";
 import { EntitySystem } from "./systems/entities";
 import { HudSystem } from "./systems/hud";
 import { type HoverCell, InputSystem } from "./systems/input";
 import { RenderSystem } from "./systems/render";
-import type { GameState } from "./types";
+import type { GameState, KillEvent } from "./types";
 import { setPauseSnapshot } from "./ui/pauseBridge";
+import { isBossWave, waveComposition } from "./waves";
 
 /**
  * Game — the thin owner of shared state + the systems, per studio convention.
- * It runs a single requestAnimationFrame loop with a clamped delta and drives
- * the wave director (the only "AI" in the build).
+ * Simulation runs on the shared fixed-step loop (1/120) for determinism; HUD
+ * writes, juice, and rendering happen once per displayed frame.
  */
 export class Game {
   private readonly state: GameState = freshState();
@@ -20,9 +26,14 @@ export class Game {
   private readonly entities: EntitySystem;
   private readonly input: InputSystem;
   private readonly hud: HudSystem;
+  private readonly flash: FlashOverlay;
+  private readonly loop: FixedLoop;
   private readonly forward = new THREE.Vector3();
 
-  private last = 0;
+  // gameplay events accumulated across the fixed steps of one displayed frame
+  private readonly frameKills: KillEvent[] = [];
+  private frameBreachDamage = 0;
+
   private elapsed = 0;
   private pausedForCapture = false;
 
@@ -31,19 +42,25 @@ export class Game {
     this.entities = new EntitySystem(this.render.scene);
     this.input = new InputSystem(this.render.rig, this.render.groundPlane, () => this.pauseRun());
     this.hud = new HudSystem();
+    this.flash = new FlashOverlay(canvas.parentElement ?? document.body);
 
     document.addEventListener("click", this.onDocumentClick);
     this.render.rig.on("capture", this.onCapture);
     this.render.rig.on("release", this.onRelease);
 
-    this.hud.showBanner(
-      "DEADLANE",
-      "WARDENS - RUN THE LINE, BUILD BY HAND, AND STOP THE SCOURGE BEFORE THE DOOR EMPTIES.",
-      "DEPLOY",
-    );
+    this.showTitleBanner();
     this.hud.update(this.state);
 
-    requestAnimationFrame((t) => this.frame(t));
+    this.loop = createFixedLoop({
+      fixedDt: CONSTANTS.loop.fixedDt,
+      maxFrame: CONSTANTS.loop.maxDelta,
+      update: (dt) => {
+        this.elapsed += dt;
+        this.step(dt);
+      },
+      render: (_alpha, frameDt) => this.renderFrame(frameDt),
+    });
+    this.loop.start();
   }
 
   // ---- state transitions ----------------------------------------------------
@@ -75,6 +92,7 @@ export class Game {
     this.state.hintText = "CLICK THE GAME TO LOCK VIEW";
     this.beginInterWave(CONSTANTS.waves.interWaveDelay);
     this.input.setActive(true);
+    audio.unlock();
     void Promise.resolve(this.render.rig.requestCapture()).catch(() => {});
   }
 
@@ -92,44 +110,93 @@ export class Game {
   }
 
   private beginWave(): void {
-    this.state.wave += 1;
-    this.state.phase = "wave";
-    this.state.spawnQueue = CONSTANTS.waves.baseCount + (this.state.wave - 1) * CONSTANTS.waves.countGrowth;
-    this.state.spawnTimer = 0;
+    const s = this.state;
+    s.wave += 1;
+    s.phase = "wave";
+    s.spawnList = waveComposition(s.wave);
+    s.spawnTimer = 0;
+    if (isBossWave(s.wave)) {
+      s.hintText = `WAVE ${s.wave} — ${CONSTANTS.creeps.boss.label} INBOUND. HOLD THE LINE.`;
+      audio.sfx("boss");
+      this.render.kickShake(0.35);
+    } else {
+      audio.sfx("wave");
+    }
   }
 
-  // ---- main loop ------------------------------------------------------------
-
-  private frame(now: number): void {
-    const raw = (now - this.last) / 1000;
-    this.last = now;
-    const dt = Math.min(raw, CONSTANTS.loop.maxDelta);
-    this.elapsed += dt;
-
-    this.step(dt);
-
-    this.render.update(dt, this.elapsed, this.entities.baseHitThisFrame);
-    this.render.render();
-
-    requestAnimationFrame((t) => this.frame(t));
-  }
+  // ---- fixed-step simulation --------------------------------------------------
 
   private step(dt: number): void {
     const s = this.state;
 
-    if ((s.phase === "building" || s.phase === "wave") && !this.pausedForCapture) {
+    if (this.isRunLive() && !this.pausedForCapture) {
+      this.handleTowerSelect();
       this.updatePlayer(dt);
       this.handleBuild(dt);
       this.entities.update(s, dt, this.elapsed);
+      this.collectEvents();
       this.director(dt);
       this.checkEndConditions();
     } else {
       // menu / won / lost: keep entities frozen but still let hover idle off
       this.render.setHover(null, null, false, 0);
     }
-
-    this.hud.update(s);
   }
+
+  /** Merge this step's entity events into the per-frame accumulators. */
+  private collectEvents(): void {
+    const ev = this.entities.events;
+    if (ev.kills.length > 0) this.frameKills.push(...ev.kills);
+    this.frameBreachDamage += ev.breachDamage;
+  }
+
+  // ---- per-displayed-frame: juice, HUD, render --------------------------------
+
+  private renderFrame(frameDt: number): void {
+    const baseHit = this.frameBreachDamage > 0;
+
+    if (this.frameKills.length > 0) {
+      for (const kill of this.frameKills) {
+        // Codex discovery — recordCreepKill only persists the first kill of a kind.
+        recordCreepKill(kill.kind);
+        const boss = kill.kind === "boss";
+        this.render.bursts.spawn({
+          position: { x: kill.x, y: 0.7, z: kill.z },
+          color: boss ? COLORS.bloodHot : COLORS.toxic,
+          count: boss ? 42 : kill.kind === "hulk" ? 24 : 14,
+          speed: boss ? 7 : 4.5,
+          life: boss ? 0.8 : 0.45,
+          gravity: 6,
+          upwardBias: 0.6,
+          size: boss ? 0.3 : 0.16,
+        });
+      }
+      // cap the audio layering; pitch sells the size difference
+      for (const kill of this.frameKills.slice(0, 4)) {
+        if (kill.kind === "boss") {
+          audio.sfx("explosion");
+          this.render.kickShake(0.55);
+        } else {
+          audio.sfx("kill", { pitch: kill.kind === "hulk" ? 0.78 : kill.kind === "ripper" ? 1.3 : 1 });
+        }
+      }
+      this.frameKills.length = 0;
+    }
+
+    if (this.frameBreachDamage > 0) {
+      audio.sfx("breach");
+      this.render.kickShake(0.22 + 0.06 * this.frameBreachDamage);
+      this.flash.flash("#c1121f", { alpha: 0.32 + 0.04 * this.frameBreachDamage, duration: 0.35 });
+      this.frameBreachDamage = 0;
+    }
+
+    this.hud.update(this.state);
+    this.flash.update(frameDt);
+    this.render.update(frameDt, this.elapsed, baseHit);
+    this.render.render();
+  }
+
+  // ---- player / build ----------------------------------------------------------
 
   private updatePlayer(dt: number): void {
     if (!this.input.active) return;
@@ -140,7 +207,7 @@ export class Game {
     if (moving) {
       const len = Math.hypot(x, z);
       const sprint = this.input.wantsSprint ? CONSTANTS.player.sprintMultiplier : 1;
-      const speed = CONSTANTS.player.moveSpeed * sprint * this.runSpeedMul();
+      const speed = CONSTANTS.player.moveSpeed * sprint * runSpeedMul(this.state);
       this.render.rig.movePlanar((x / len) * speed * dt, (z / len) * speed * dt);
     }
 
@@ -149,6 +216,16 @@ export class Game {
     pos.x = clamp(pos.x, playBounds.minX + radius, playBounds.maxX - radius);
     pos.z = clamp(pos.z, playBounds.minZ + radius, playBounds.maxZ - radius);
     pos.y = CONSTANTS.player.height;
+  }
+
+  private handleTowerSelect(): void {
+    const select = this.input.takeSelectAction();
+    if (!select || select === this.state.selectedTower) return;
+    this.state.selectedTower = select;
+    this.resetBuildProgress();
+    const def = CONSTANTS.towers[select];
+    this.state.hintText = `${def.label} SELECTED (${def.cost})`;
+    audio.sfx("uiSelect");
   }
 
   /** Wave director: spawns creeps, paces waves, declares victory. */
@@ -170,16 +247,17 @@ export class Game {
 
     if (s.phase === "wave") {
       // spawn the queue
-      if (s.spawnQueue > 0) {
+      if (s.spawnList.length > 0) {
         s.spawnTimer -= dt;
         if (s.spawnTimer <= 0) {
-          this.entities.spawnCreep(s);
-          s.spawnQueue -= 1;
+          const kind = s.spawnList.shift();
+          if (kind) this.entities.spawnCreep(s, kind);
           s.spawnTimer = CONSTANTS.waves.spawnInterval;
         }
       } else if (s.creeps.length === 0) {
         // wave cleared
         s.gold += CONSTANTS.economy.waveClearBonus;
+        audio.sfx("gold");
         if (s.wave >= CONSTANTS.waves.total) {
           this.win();
         } else {
@@ -205,12 +283,14 @@ export class Game {
         s.buildTargetKey = targetKey;
         s.buildProgress = 0;
       }
-      s.buildProgress += dt * this.buildSpeedMul();
+      s.buildProgress += dt * buildSpeedMul(s);
       const pct = Math.min(100, Math.floor((s.buildProgress / CONSTANTS.build.time) * 100));
-      s.hintText = `BUILDING TOWER ${pct}%`;
+      s.hintText = `BUILDING ${CONSTANTS.towers[s.selectedTower].label} ${pct}%`;
 
       if (s.buildProgress >= CONSTANTS.build.time && target) {
-        this.entities.buildTower(s, target.col, target.row);
+        if (this.entities.buildTower(s, target.col, target.row, s.selectedTower)) {
+          audio.sfx("build");
+        }
         s.hintText = s.lastBonus ? `${s.lastBonus} - TOWER ONLINE` : "TOWER ONLINE";
         this.resetBuildProgress();
       }
@@ -250,12 +330,13 @@ export class Game {
   }
 
   private buildReadiness(cell: HoverCell | null, occupied: Set<string>): { ready: boolean; hint: string } {
-    const cost = CONSTANTS.economy.towerCost;
+    const def = CONSTANTS.towers[this.state.selectedTower];
+    const cost = def.cost;
     if (!this.input.active) return { ready: false, hint: "CLICK THE GAME TO LOCK VIEW" };
     if (!cell) return { ready: false, hint: "LOOK AT A BUILD TILE" };
     if (isPathCell(cell.col, cell.row)) return { ready: false, hint: "LANE TILE BLOCKED" };
     if (occupied.has(`${cell.col},${cell.row}`)) return { ready: false, hint: "TOWER ONLINE - MOVE TO NEXT TILE" };
-    if (this.state.gold < cost) return { ready: false, hint: `NEED ${cost} GOLD` };
+    if (this.state.gold < cost) return { ready: false, hint: `NEED ${cost} GOLD FOR ${def.label}` };
 
     const p = cellToWorld(cell.col, cell.row);
     const body = this.render.rig.body.position;
@@ -265,7 +346,7 @@ export class Game {
     }
 
     const bonus = this.state.lastBonus ? `${this.state.lastBonus} - ` : "";
-    return { ready: true, hint: `${bonus}PRESS E OR CLICK TO BUILD (${cost})` };
+    return { ready: true, hint: `${bonus}PRESS E OR CLICK TO BUILD ${def.label} (${cost})` };
   }
 
   private resetBuildProgress(): void {
@@ -273,22 +354,27 @@ export class Game {
     this.state.buildTargetKey = null;
   }
 
-  private buildSpeedMul(): number {
-    return 1 + this.state.buildSpeedLevel * CONSTANTS.bonuses.buildSpeedPerLevel;
-  }
-
-  private runSpeedMul(): number {
-    return 1 + this.state.runSpeedLevel * CONSTANTS.bonuses.runSpeedPerLevel;
-  }
-
   private grantWaveBonus(): void {
     if (this.state.wave % 2 === 1) {
       this.state.buildSpeedLevel += 1;
-      this.state.lastBonus = `BUILD SPEED x${this.buildSpeedMul().toFixed(2)}`;
+      this.state.lastBonus = `BUILD SPEED x${buildSpeedMul(this.state).toFixed(2)}`;
     } else {
       this.state.runSpeedLevel += 1;
-      this.state.lastBonus = `RUN SPEED x${this.runSpeedMul().toFixed(2)}`;
+      this.state.lastBonus = `RUN SPEED x${runSpeedMul(this.state).toFixed(2)}`;
     }
+  }
+
+  /** A run is live while waves are being built for or fought. */
+  private isRunLive(): boolean {
+    return this.state.phase === "building" || this.state.phase === "wave";
+  }
+
+  private showTitleBanner(): void {
+    this.hud.showBanner(
+      "DEADLANE",
+      "WARDENS - RUN THE LINE, BUILD BY HAND, AND STOP THE SCOURGE BEFORE THE DOOR EMPTIES.",
+      "DEPLOY",
+    );
   }
 
   private win(): void {
@@ -296,6 +382,7 @@ export class Game {
     this.state.phase = "won";
     this.input.setActive(false);
     this.render.rig.releaseCapture(true);
+    audio.sfx("victory");
     this.hud.showBanner("LINE HELD", "THE SCOURGE IS SPENT. THE WARDENS STAND. WELL FOUGHT.", "RUN IT BACK");
   }
 
@@ -305,11 +392,12 @@ export class Game {
     this.input.setActive(false);
     this.render.rig.releaseCapture(true);
     this.entities.clear(this.state);
+    audio.sfx("defeat");
     this.hud.showBanner("BREACH", "THE BASE IS OVERRUN. THE LANE IS LOST.", "TRY AGAIN");
   }
 
   private onCapture = (): void => {
-    if (this.state.phase !== "building" && this.state.phase !== "wave") return;
+    if (!this.isRunLive()) return;
     this.resumeRun();
   };
 
@@ -318,7 +406,7 @@ export class Game {
   };
 
   private pauseRun(): void {
-    if (this.state.phase !== "building" && this.state.phase !== "wave") return;
+    if (!this.isRunLive()) return;
     if (this.pausedForCapture) return;
     this.pausedForCapture = true;
     this.input.setActive(false);
@@ -342,7 +430,7 @@ export class Game {
   }
 
   private resumeRun(): void {
-    if (this.state.phase !== "building" && this.state.phase !== "wave") return;
+    if (!this.isRunLive()) return;
     this.pausedForCapture = false;
     // Drop the pointerdown that pressed Resume so it can't leak into a queued
     // tower build on the first live frame.
@@ -361,11 +449,7 @@ export class Game {
     Object.assign(this.state, freshState());
     this.render.placePlayerAtStart();
     this.hud.update(this.state);
-    this.hud.showBanner(
-      "DEADLANE",
-      "WARDENS - RUN THE LINE, BUILD BY HAND, AND STOP THE SCOURGE BEFORE THE DOOR EMPTIES.",
-      "DEPLOY",
-    );
+    this.showTitleBanner();
   }
 
   private clearPauseMenu(): void {
@@ -380,6 +464,7 @@ function freshState(): GameState {
     wave: 0,
     baseHp: CONSTANTS.base.startHp,
     hintText: "PRESS E OR CLICK TO BUILD",
+    selectedTower: "ember",
     towers: [],
     creeps: [],
     projectiles: [],
@@ -388,7 +473,7 @@ function freshState(): GameState {
     buildSpeedLevel: 0,
     runSpeedLevel: 0,
     lastBonus: null,
-    spawnQueue: 0,
+    spawnList: [],
     spawnTimer: 0,
     interWaveTimer: 0,
   };

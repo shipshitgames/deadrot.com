@@ -1,15 +1,16 @@
-import type * as Party from "partykit/server";
+import type { Command, GameSlug, OperationResult, WorldState } from "@shipshitgames/warline";
 import {
   applyCommand,
   applyOperation,
   createInitialWorld,
+  GAME_SLUGS,
+  HUMAN_FACTIONS,
   resetWorld,
   summarize,
-  tick,
   TICK_MS,
-  GAME_OPERATIONS,
+  tick,
 } from "@shipshitgames/warline";
-import type { Command, GameSlug, HumanFaction, OperationResult, WorldState } from "@shipshitgames/warline";
+import type * as Party from "partykit/server";
 
 // Warline front room (spec §12). Singleton room `front` on party `main`.
 // Holds the authoritative WorldState, ticks the living world on an alarm, and
@@ -22,8 +23,6 @@ interface WarlineEnv {
 }
 
 const STORAGE_KEY = "world";
-const GAME_SLUGS = Object.keys(GAME_OPERATIONS) as GameSlug[];
-const HUMAN_FACTIONS: HumanFaction[] = ["pyre", "wardens"];
 
 const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -84,10 +83,39 @@ export default class Warline implements Party.Server {
     this.room.broadcast(JSON.stringify({ t: "state", state: this.state }));
   }
 
-  async onAlarm() {
-    this.state = tick(this.state, Date.now());
+  /** Persist the world then fan the new state out to every connection. */
+  private async commit() {
     await this.persist();
     this.broadcast();
+  }
+
+  /** Shared command pipeline for the WS and HTTP paths (framing stays per-caller). */
+  private async runCommand(command: Command | undefined): Promise<{ ok: boolean; error?: string }> {
+    if (!command) return { ok: false, error: "missing command" };
+    const result = applyCommand(this.state, command, Date.now());
+    if (result.ok) {
+      this.state = result.state;
+      await this.commit();
+    }
+    return { ok: result.ok, error: result.error };
+  }
+
+  /** Admin-token gate shared by the WS and HTTP reset paths. */
+  private authorizeReset(token: string | undefined): boolean {
+    const admin = this.env.WARLINE_ADMIN_TOKEN;
+    if (admin) return token === admin;
+    console.warn("[warline] WARLINE_ADMIN_TOKEN unset — allowing reset (dev-permissive)");
+    return true;
+  }
+
+  private async doReset() {
+    this.state = resetWorld(Date.now(), this.state.epoch);
+    await this.commit();
+  }
+
+  async onAlarm() {
+    this.state = tick(this.state, Date.now());
+    await this.commit();
     await this.room.storage.setAlarm(Date.now() + TICK_MS);
   }
 
@@ -104,17 +132,7 @@ export default class Warline implements Party.Server {
     }
 
     if (msg.t === "command") {
-      const command = msg.command as Command | undefined;
-      if (!command) {
-        sender.send(JSON.stringify({ t: "cmdresult", ok: false, error: "missing command" }));
-        return;
-      }
-      const result = applyCommand(this.state, command, Date.now());
-      if (result.ok) {
-        this.state = result.state;
-        await this.persist();
-        this.broadcast();
-      }
+      const result = await this.runCommand(msg.command as Command | undefined);
       sender.send(JSON.stringify({ t: "cmdresult", ok: result.ok, error: result.error }));
       return;
     }
@@ -124,24 +142,17 @@ export default class Warline implements Party.Server {
       const op = this.synthOperation(sender.id, requested);
       const { state } = applyOperation(this.state, op, Date.now());
       this.state = state;
-      await this.persist();
-      this.broadcast();
+      await this.commit();
       return;
     }
 
     if (msg.t === "reset") {
       const token = typeof msg.token === "string" ? msg.token : "";
-      const admin = this.env.WARLINE_ADMIN_TOKEN;
-      if (admin && token !== admin) {
+      if (!this.authorizeReset(token)) {
         sender.send(JSON.stringify({ t: "cmdresult", ok: false, error: "unauthorized" }));
         return;
       }
-      if (!admin) {
-        console.warn("[warline] WARLINE_ADMIN_TOKEN unset — allowing reset (dev-permissive)");
-      }
-      this.state = resetWorld(Date.now(), this.state.epoch);
-      await this.persist();
-      this.broadcast();
+      await this.doReset();
       return;
     }
   }
@@ -194,8 +205,7 @@ export default class Warline implements Party.Server {
         }
         const applied = applyOperation(this.state, result, Date.now());
         this.state = applied.state;
-        await this.persist();
-        this.broadcast();
+        await this.commit();
         return jsonResponse({
           ok: true,
           summary: summarize(this.state),
@@ -209,12 +219,7 @@ export default class Warline implements Party.Server {
         if (!command) {
           return jsonResponse({ ok: false, error: "missing command" }, 400);
         }
-        const result = applyCommand(this.state, command, Date.now());
-        if (result.ok) {
-          this.state = result.state;
-          await this.persist();
-          this.broadcast();
-        }
+        const result = await this.runCommand(command);
         return jsonResponse({
           ok: result.ok,
           error: result.error,
@@ -223,17 +228,10 @@ export default class Warline implements Party.Server {
       }
 
       if (body.type === "reset") {
-        const expected = this.env.WARLINE_ADMIN_TOKEN;
-        if (expected) {
-          if (bearer(req) !== expected) {
-            return jsonResponse({ ok: false, error: "unauthorized" }, 401);
-          }
-        } else {
-          console.warn("[warline] WARLINE_ADMIN_TOKEN unset — accepting reset (dev-permissive)");
+        if (!this.authorizeReset(bearer(req))) {
+          return jsonResponse({ ok: false, error: "unauthorized" }, 401);
         }
-        this.state = resetWorld(Date.now(), this.state.epoch);
-        await this.persist();
-        this.broadcast();
+        await this.doReset();
         return jsonResponse({ ok: true, summary: summarize(this.state) });
       }
 

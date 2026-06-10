@@ -2,23 +2,25 @@ export type { ButtonProps, ButtonSize, ButtonVariant } from "./Button";
 export { Button } from "./Button";
 export type { CardProps } from "./Card";
 export { Card, CardBody, CardTitle } from "./Card";
+export type { CodexEntry, CodexScreenProps } from "./Codex";
+export { CodexScreen } from "./Codex";
 export type { ClassValue } from "./cn";
 export { cn } from "./cn";
 export type {
   EffectLevelSliderProps,
-  EffectsLevelSliderProps,
   GlobalEffectSlidersProps,
   GlobalGameSettingsPanelProps,
   GlobalMusicToggleProps,
 } from "./GameSettings";
 export {
   EffectLevelSlider,
-  EffectsLevelSlider,
   GlobalEffectSliders,
   GlobalGameSettingsPanel,
   GlobalMusicToggle,
 } from "./GameSettings";
 export { DEFAULT_AUDIO_SLIDER_KEYS } from "./GameSettings.constants";
+export type { GameSettingsScreenProps } from "./GameSettingsScreen";
+export { GameSettingsScreen } from "./GameSettingsScreen";
 export { goToWarlineLobby, warlineLobbyHref } from "./lobby";
 export type { MainMenuEnterPromptProps } from "./MainMenuEnter";
 export { MainMenuEnterPrompt, useEnterToReveal } from "./MainMenuEnter";
@@ -33,8 +35,6 @@ export type {
   MenuItemProps,
   UpgradeCardProps,
 } from "./Menu";
-export { PixelConfetti } from "./PixelConfetti";
-export type { PixelConfettiProps } from "./PixelConfetti";
 export {
   MainMenuAction,
   MainMenuCopy,
@@ -58,6 +58,8 @@ export type { MusicSceneDef, MusicTrackDef } from "./MusicDirector";
 export { MusicDirector } from "./MusicDirector";
 export type { PauseMenuAction, PauseMenuProps } from "./PauseMenu";
 export { PauseMenu } from "./PauseMenu";
+export type { PixelConfettiProps } from "./PixelConfetti";
+export { PixelConfetti } from "./PixelConfetti";
 export type {
   GlobalEffectKey,
   GlobalEffectLevels,
@@ -69,12 +71,10 @@ export {
   clampEffectsLevel,
   DEFAULT_GLOBAL_GAME_SETTINGS,
   getGlobalEffectLevel,
-  getGlobalEffectsLevel,
   loadGlobalGameSettings,
   saveGlobalGameSettings,
   setGlobalEffectLevel,
   setGlobalEffectLevels,
-  setGlobalEffectsLevel,
   setGlobalMusicMuted,
   subscribeGlobalGameSettings,
   toggleGlobalMusicMuted,

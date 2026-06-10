@@ -1,6 +1,8 @@
+import { codexEntriesForGame } from "@deadrot/game-kit";
 import menuHero from "@shipshitgames/assets/games/starblight/ui/menu/title.webp";
 import {
-  GlobalGameSettingsPanel,
+  CodexScreen,
+  GameSettingsScreen,
   GlobalMusicToggle,
   goToWarlineLobby,
   MainMenuAction,
@@ -18,15 +20,54 @@ import {
   PauseMenu,
   useEnterToReveal,
 } from "@shipshitgames/ui";
-import { useMemo, useState, useSyncExternalStore } from "react";
-import { getPauseActions, getPauseSnapshot, subscribePause } from "./gameBridge";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { applyBuy, loadDrydock, type ShopId, saveDrydock } from "../game/drydock";
+import { DrydockScreen } from "./DrydockScreen";
+import { getPauseActions, getPauseSnapshot, pushDrydockTiers, setRunEndHandler, subscribePause } from "./gameBridge";
 
 export function AppShell() {
   // Pause state lives in the imperative Game engine; mirror it here via the
   // bridge so the shared React PauseMenu can render over the canvas.
   const pause = useSyncExternalStore(subscribePause, getPauseSnapshot, getPauseSnapshot);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const revealed = useEnterToReveal(true);
+  const [codexOpen, setCodexOpen] = useState(false);
+  // No discovery wiring in starblight: every dossier ships unlocked.
+  const codexEntries = useMemo(() => codexEntriesForGame("starblight"), []);
+  const [drydock, setDrydock] = useState(() => loadDrydock());
+  const [drydockOpen, setDrydockOpen] = useState(false);
+  // The run-end banking handler registers once; read live tiers through a ref so
+  // the Salvage Tithe multiplier reflects purchases made after mount.
+  const drydockRef = useRef(drydock);
+  drydockRef.current = drydock;
+  useEffect(() => {
+    pushDrydockTiers(drydockRef.current.tiers);
+    setRunEndHandler((salvage) => {
+      const tithe = drydockRef.current.tiers.tithe ?? 0;
+      const earned = Math.round(salvage * (1 + 0.12 * tithe));
+      if (earned <= 0) return;
+      setDrydock((prev) => {
+        const next = { ...prev, wreckage: prev.wreckage + earned };
+        saveDrydock(next);
+        return next;
+      });
+    });
+  }, []);
+  const handleBuy = useCallback((id: ShopId) => {
+    setDrydock((prev) => {
+      const next = applyBuy(prev, id);
+      if (next === prev) return prev;
+      saveDrydock(next);
+      pushDrydockTiers(next.tiers);
+      return next;
+    });
+  }, []);
+  // The #banner screen is reused for the title, game-over, and victory states
+  // (the engine writes #banner-title/#banner-sub for the latter two). Gate the
+  // splash/menu behaviour on the title phase so the hero copy hides once the
+  // menu is revealed, but stays visible for the engine-written result banners.
+  const onTitle = pause.phase === "title";
+  const revealed = useEnterToReveal(onTitle);
+  const onSplash = onTitle && !revealed;
   const pauseStatus = useMemo(() => <span>{pause.stats}</span>, [pause.stats]);
   const pauseActions = useMemo(
     () => [
@@ -95,14 +136,18 @@ export function AppShell() {
             Orbital front
           </MainMenuTopBar>
           <MainMenuLayout className="ssg-main-menu-layout--menu">
-            <MainMenuCopy>
+            {/* Hidden once the title menu is revealed, but shown again for the
+                engine-written game-over / victory banner (phase leaves "title"). */}
+            <MainMenuCopy hidden={onTitle && revealed}>
               <MenuKicker>Orbital Survivors Front</MenuKicker>
               <MainMenuTitle id="banner-title">
                 <MainMenuTitleLine>STAR</MainMenuTitleLine>
                 <MainMenuTitleLine tone="hot">BLIGHT</MainMenuTitleLine>
               </MainMenuTitle>
-              <MenuKicker id="banner-sub">THE ORBITAL FRONT</MenuKicker>
-              <p className="hint" id="banner-hint">
+              <p className="ssg-main-menu-subtitle" id="banner-sub">
+                THE ORBITAL FRONT
+              </p>
+              <p className="ssg-main-menu-subtitle" id="banner-hint">
                 MOVE WITH THE MOUSE - weapons auto-fire - collect gems, draft upgrades, stack combos
               </p>
               <MainMenuStatus>
@@ -110,13 +155,27 @@ export function AppShell() {
                 <span>Draft systems hot</span>
               </MainMenuStatus>
             </MainMenuCopy>
-            {/* Nav stays mounted (engine grabs #banner-btn at boot); the splash
-                gate only hides it until Enter/Space/click reveals the menu. */}
-            <MainMenuNav aria-label="Main menu" hidden={!revealed}>
+            {/* Nav stays mounted (engine grabs #banner-btn at boot). Hidden only
+                on the title splash; shown for the menu and the engine's game-over
+                banner (which un-hides #banner-btn as "Re-engage"). */}
+            <MainMenuNav aria-label="Main menu" hidden={onSplash}>
               <MainMenuAction id="banner-btn" variant="primary" label="Engage" meta="Start sortie" />
-              <MainMenuAction variant="shop" label="Upgrades" meta="Draft only" disabled />
+              <MainMenuAction
+                type="button"
+                variant="shop"
+                label="Upgrades"
+                meta="Drydock"
+                onClick={() => setDrydockOpen(true)}
+              />
               <MainMenuAction variant="coop" label="Co-op" meta="Solo sortie" disabled />
               <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
+              <MainMenuAction
+                type="button"
+                variant="default"
+                label="Codex"
+                meta="War dossiers"
+                onClick={() => setCodexOpen(true)}
+              />
               <MainMenuAction
                 type="button"
                 variant="settings"
@@ -133,7 +192,7 @@ export function AppShell() {
                 onClick={() => goToWarlineLobby()}
               />
             </MainMenuNav>
-            {!revealed && <MainMenuEnterPrompt />}
+            {onSplash && <MainMenuEnterPrompt />}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>
@@ -148,16 +207,24 @@ export function AppShell() {
           actions={pauseActions}
         />
 
-        {settingsOpen && (
-          <div className="settings-overlay">
-            <MenuPanel className="settings-inner">
-              <h2 className="settings-title ssg-section-heading">SETTINGS</h2>
-              <GlobalGameSettingsPanel inline />
-              <button type="button" className="menu-action settings-close" onClick={() => setSettingsOpen(false)}>
-                CLOSE
-              </button>
-            </MenuPanel>
-          </div>
+        {settingsOpen && <GameSettingsScreen open onClose={() => setSettingsOpen(false)} backgroundImage={menuHero} />}
+        {codexOpen && (
+          <CodexScreen
+            open
+            onClose={() => setCodexOpen(false)}
+            kicker="Orbital Front"
+            backgroundImage={menuHero}
+            entries={codexEntries}
+          />
+        )}
+        {drydockOpen && (
+          <DrydockScreen
+            open
+            onClose={() => setDrydockOpen(false)}
+            backgroundImage={menuHero}
+            state={drydock}
+            onBuy={handleBuy}
+          />
         )}
 
         <div id="draft" className="draft hidden">

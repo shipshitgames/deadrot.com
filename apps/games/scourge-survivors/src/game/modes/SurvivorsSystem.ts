@@ -1,25 +1,24 @@
 import * as THREE from "three";
 import { audio } from "../../audio/AudioEngine";
-import { WEAPONS } from "../constants";
+import {
+  ELITE_FRENZY_DAMAGE_MUL,
+  ELITE_FRENZY_SPEED_MUL,
+  ELITE_HP_MUL,
+  ELITE_SCALE_MUL,
+  ELITE_SHIELD_HP,
+  ELITE_SPLIT_CAP_PER_WAVE,
+  type EliteAffixDef,
+  WEAPONS,
+} from "../constants";
 import type { GameContext } from "../context";
+import { eliteCountForWave, eliteXpValue, planSurge, rollEliteAffix, takeSplitAllowance } from "../data/eliteWaves";
 import { pickWeightedEnemyArchetype, SCOURGE_THREAT_TIERS } from "../data/enemies";
 import { DEFAULT_MAP_ID, getMap } from "../data/maps";
 import {
   AMP_PER_TIER,
   availableEvolutionChoice,
   BANISHES_PER_RUN,
-  BOLT_DMG,
-  BOLT_SPEED,
-  BOLT_TTL,
   mainWeaponVisualTier,
-  NOVA_DMG,
-  NOVA_INTERVAL,
-  NOVA_RADIUS,
-  ORBIT_DMG,
-  ORBIT_HIT_CD,
-  ORBIT_HIT_RADIUS,
-  ORBIT_RADIUS,
-  ORBIT_SPEED,
   REROLLS_PER_LEVEL,
   SURV_BASE_MAGNET,
   SURV_ELITE_INTERVAL,
@@ -49,9 +48,10 @@ import {
   xpForLevel,
 } from "../data/survivors";
 import type { Enemy } from "../entities/Enemy";
-import { PROJECTILE_SPRITE_TEXTURES, XP_BLOOD_SCALE, XP_BLOOD_TEXTURE } from "../spriteAssets";
+import { XP_BLOOD_SCALE, XP_BLOOD_TEXTURE } from "../spriteAssets";
 import type { GameSystems } from "../systems";
 import type { BuildEntry, UpgradeChoice } from "../types";
+import { SurvivorsAutoWeapons } from "./SurvivorsAutoWeapons";
 
 const DEFENSIVE_UPGRADES: UpgradeId[] = [
   "maxhp",
@@ -72,22 +72,13 @@ export class SurvivorsSystem {
   pendingLevels = 0;
   choices: UpgradeChoice[] = [];
   upgradeLevels: Partial<Record<UpgradeId, number>> = {};
-  orbitLevel = 0;
-  boltLevel = 0;
-  novaLevel = 0;
-  // auto-weapon runtime
-  orbitGroup!: THREE.Group;
-  orbitOrbs: THREE.Sprite[] = [];
-  orbitAngle = 0;
-  orbitCd = new WeakMap<Enemy, number>();
-  bolts: { mesh: THREE.Sprite; vel: THREE.Vector3; dmg: number; age: number; pierce: number }[] = [];
-  boltTimer = 0;
-  novas: { mesh: THREE.Mesh; age: number; ttl: number; hit: Set<Enemy>; dmg: number; maxR: number }[] = [];
-  novaTimer = NOVA_INTERVAL;
+  aw: SurvivorsAutoWeapons;
   survSpawnTimer = 0;
   survClock = 0;
   eliteTimer = SURV_ELITE_INTERVAL;
   swellTimer = SURV_SWELL_INTERVAL; // next breach-surge horde swell
+  surgeIndex = 0; // 1-based count of breach surges fired this run (drives elite cadence)
+  eliteSplitBudget = 0; // split children remaining for the current elite wave
   xpGems: { sprite: THREE.Sprite; value: number; age: number }[] = [];
   enemyXp = new WeakMap<Enemy, number>();
   shopTiers: Record<string, number> = {}; // permanent meta-upgrades
@@ -104,12 +95,12 @@ export class SurvivorsSystem {
   constructor(
     private ctx: GameContext,
     private sys: GameSystems,
-  ) {}
+  ) {
+    this.aw = new SurvivorsAutoWeapons(ctx, (enemy, dmg) => this.autoDamageEnemy(enemy, dmg));
+  }
 
   init() {
-    this.orbitGroup = new THREE.Group();
-    this.orbitGroup.visible = false;
-    this.ctx.scene.add(this.orbitGroup);
+    this.aw.init();
   }
 
   startSurvivors(classId: SurvivorClassId = this.selectedClass) {
@@ -153,8 +144,9 @@ export class SurvivorsSystem {
     this.survClock = 0;
     this.eliteTimer = this.currentChapter().eliteInterval;
     this.swellTimer = this.currentChapter().swellInterval;
-    this.boltTimer = 0;
-    this.novaTimer = NOVA_INTERVAL;
+    this.surgeIndex = 0;
+    this.eliteSplitBudget = 0;
+    this.aw.resetTimers();
     this.ctx.damageGraceTimer = 0;
     for (const e of this.ctx.enemies) e.kill();
     this.clearSurvivorsEntities();
@@ -174,20 +166,7 @@ export class SurvivorsSystem {
 
   clearSurvivorsEntities() {
     this.clearXpGems();
-    for (const b of this.bolts) {
-      this.ctx.scene.remove(b.mesh);
-      b.mesh.geometry.dispose();
-      (b.mesh.material as THREE.Material).dispose();
-    }
-    this.bolts = [];
-    for (const n of this.novas) {
-      this.ctx.scene.remove(n.mesh);
-      n.mesh.geometry.dispose();
-      (n.mesh.material as THREE.Material).dispose();
-    }
-    this.novas = [];
-    this.rebuildOrbit(0);
-    this.orbitGroup.visible = false;
+    this.aw.clear();
   }
 
   clearXpGems() {
@@ -281,43 +260,7 @@ export class SurvivorsSystem {
       this.ctx.statShield = Math.min(this.ctx.statShield, this.ctx.statShieldMax);
     }
     this.statAmp = 1 + AMP_PER_TIER * lv("amp"); // synergy: buffs the 3 auto-weapons
-    this.orbitLevel = lv("orbit");
-    this.boltLevel = lv("bolt");
-    this.novaLevel = lv("nova");
-    // L1 = 2 blades; Splinter Ignition adds blades; Pyre Cyclone adds 2 more.
-    const orbitCount = this.orbitLevel
-      ? this.orbitLevel + 1 + this.ctx.statMultishot + (this.evolved.orbit ? 2 : 0)
-      : 0;
-    this.rebuildOrbit(orbitCount);
-    if (this.ctx.survivors) this.orbitGroup.visible = this.orbitLevel > 0;
-  }
-
-  rebuildOrbit(count: number) {
-    for (const o of this.orbitOrbs) {
-      this.orbitGroup.remove(o);
-      // Sprites share an internal geometry; only the per-orb material is ours to free
-      // (the map is the shared PROJECTILE_SPRITE_TEXTURES.orb and must NOT be disposed).
-      (o.material as THREE.Material).dispose();
-    }
-    this.orbitOrbs = [];
-    const evo = this.evolved.orbit;
-    const r = evo ? 0.44 : 0.32;
-    const color = evo ? 0xffd166 : 0xffffff;
-    for (let i = 0; i < count; i++) {
-      const orb = new THREE.Sprite(
-        new THREE.SpriteMaterial({
-          map: PROJECTILE_SPRITE_TEXTURES.orb,
-          color,
-          transparent: true,
-          depthWrite: false,
-          blending: THREE.AdditiveBlending,
-          toneMapped: false,
-        }),
-      );
-      orb.scale.setScalar(r * 2.4);
-      this.orbitGroup.add(orb);
-      this.orbitOrbs.push(orb);
-    }
+    this.aw.recompute({ orbit: lv("orbit"), bolt: lv("bolt"), nova: lv("nova") }, this.evolved, this.ctx.statMultishot);
   }
 
   gainXp(v: number) {
@@ -489,9 +432,7 @@ export class SurvivorsSystem {
       this.triggerSwell();
     }
 
-    this.updateOrbit(delta);
-    this.updateBolts(delta);
-    this.updateNovas(delta);
+    this.aw.update(delta, this.survClock);
     this.updateXpGems(delta);
   }
 
@@ -524,20 +465,66 @@ export class SurvivorsSystem {
     audio.sfx("breach");
   }
 
-  spawnSwarmEnemy(elite: boolean) {
-    const enemy = this.sys.pve.getFreeEnemy();
-    // spawn on a ring around the player, just out of immediate sight
+  /** A point on a ring around the player, just out of immediate sight, clamped in-bounds. */
+  private swarmSpawnPoint(): { x: number; z: number } {
     const a = Math.random() * Math.PI * 2;
     const r = 26 + Math.random() * 10;
     let x = this.ctx.body.position.x + Math.cos(a) * r;
     let z = this.ctx.body.position.z + Math.sin(a) * r;
     x = Math.max(this.ctx.bounds.minX + 2, Math.min(this.ctx.bounds.maxX - 2, x));
     z = Math.max(this.ctx.bounds.minZ + 2, Math.min(this.ctx.bounds.maxZ - 2, z));
+    return { x, z };
+  }
+
+  /**
+   * Shared spawn config for a swarm archetype: applies the time/chapter HP and
+   * speed scaling once, with optional elite multipliers layered on top.
+   */
+  private swarmSpawnOptions(
+    arch: SurvArchetype,
+    {
+      hpMul = 1,
+      speedMul = 1,
+      dmgMul = 1,
+      scaleMul = 1,
+      affix,
+      overshield,
+    }: {
+      hpMul?: number;
+      speedMul?: number;
+      dmgMul?: number;
+      scaleMul?: number;
+      affix?: EliteAffixDef["id"];
+      overshield?: number;
+    } = {},
+  ) {
     const chapter = this.currentChapter();
     const timeScale = (1 + this.survClock * 0.01) * chapter.hpMul; // HP scales with time + chapter
     const speedScale = (1 + this.survClock * 0.0035) * chapter.speedMul;
+    return {
+      maxHealth: SURV_ENEMY_BASE_HP * timeScale * arch.hpMul * hpMul,
+      speed: (2.6 + Math.random() * 1.0) * arch.speedMul * speedScale * speedMul,
+      archetype: arch.id,
+      color: arch.color,
+      scale: arch.scale * scaleMul,
+      ranged: arch.ranged,
+      flying: arch.flying,
+      hoverHeight: arch.hoverHeight,
+      attackDamage: Math.ceil(arch.attackDamage * dmgMul),
+      projectileDamage: Math.ceil((arch.projectileDamage ?? 7) * dmgMul),
+      eliteAffix: affix,
+      overshield,
+    };
+  }
+
+  spawnSwarmEnemy(elite: boolean) {
+    const enemy = this.sys.pve.getFreeEnemy();
+    const { x, z } = this.swarmSpawnPoint();
 
     if (elite) {
+      const chapter = this.currentChapter();
+      const timeScale = (1 + this.survClock * 0.01) * chapter.hpMul; // HP scales with time + chapter
+      const speedScale = (1 + this.survClock * 0.0035) * chapter.speedMul;
       enemy.spawnAt(x, z, {
         maxHealth: SURV_ENEMY_BASE_HP * timeScale * 9,
         speed: 2.2 * speedScale,
@@ -552,18 +539,7 @@ export class SurvivorsSystem {
     }
 
     const arch = this.rollArchetype();
-    enemy.spawnAt(x, z, {
-      maxHealth: SURV_ENEMY_BASE_HP * timeScale * arch.hpMul,
-      speed: (2.6 + Math.random() * 1.0) * arch.speedMul * speedScale,
-      archetype: arch.id,
-      color: arch.color,
-      scale: arch.scale,
-      ranged: arch.ranged,
-      flying: arch.flying,
-      hoverHeight: arch.hoverHeight,
-      attackDamage: arch.attackDamage,
-      projectileDamage: arch.projectileDamage ?? 7,
-    });
+    enemy.spawnAt(x, z, this.swarmSpawnOptions(arch));
     this.enemyXp.set(enemy, arch.xp);
   }
 
@@ -574,11 +550,64 @@ export class SurvivorsSystem {
 
   /** Burst-spawn a wall of fodder (ignores the steady cap up to SURV_SWELL_CAP). */
   private triggerSwell() {
+    const plan = planSurge(this.surgeIndex, SURV_SWELL_CAP - this.ctx.aliveCount, SURV_SWELL_COUNT);
+    this.surgeIndex = plan.nextSurgeIndex;
+    // Arena already at the swell cap: skip the beat entirely — no banner, no
+    // cues, and the elite cadence slot is preserved for the next surge that
+    // can actually field enemies (the swell timer was already re-armed).
+    if (plan.spawnCount <= 0) return;
+    if (plan.elite) {
+      this.triggerEliteWave(plan.spawnCount);
+      return;
+    }
     this.sys.hud.announce("BREACH SURGE");
     audio.sfx("wave");
-    const headroom = SURV_SWELL_CAP - this.ctx.aliveCount;
-    const n = Math.min(SURV_SWELL_COUNT, Math.max(0, headroom));
-    for (let i = 0; i < n; i++) this.spawnSwarmEnemy(false);
+    for (let i = 0; i < plan.spawnCount; i++) this.spawnSwarmEnemy(false);
+  }
+
+  /** Every Nth surge lands as an ELITE WAVE: one rolled affix shared by the whole batch. */
+  private triggerEliteWave(spawnCount: number) {
+    const affix = rollEliteAffix(Math.random);
+    this.eliteSplitBudget = affix.id === "splitting" ? ELITE_SPLIT_CAP_PER_WAVE : 0;
+    this.sys.hud.announce("ELITE WAVE");
+    this.sys.hud.showToast(affix.name);
+    audio.sfx("wave");
+    if (affix.cue) audio.sfx(affix.cue); // once per elite batch, not per enemy
+    const elites = eliteCountForWave(spawnCount);
+    for (let i = 0; i < spawnCount; i++) {
+      if (i < elites) this.spawnAffixedElite(affix);
+      else this.spawnSwarmEnemy(false);
+    }
+  }
+
+  /** Promoted spawn for an ELITE WAVE: bigger, tinted, affix-modified, triple gem value. */
+  spawnAffixedElite(affix: EliteAffixDef) {
+    const enemy = this.sys.pve.getFreeEnemy();
+    const { x, z } = this.swarmSpawnPoint();
+    const chapter = this.currentChapter();
+    const timeScale = (1 + this.survClock * 0.01) * chapter.hpMul;
+    const arch = this.rollArchetype();
+    const frenzied = affix.id === "frenzied";
+    enemy.spawnAt(
+      x,
+      z,
+      this.swarmSpawnOptions(arch, {
+        hpMul: ELITE_HP_MUL,
+        speedMul: frenzied ? ELITE_FRENZY_SPEED_MUL : 1,
+        dmgMul: frenzied ? ELITE_FRENZY_DAMAGE_MUL : 1,
+        scaleMul: ELITE_SCALE_MUL,
+        affix: affix.id,
+        overshield: affix.id === "shielded" ? Math.round(ELITE_SHIELD_HP * timeScale) : 0,
+      }),
+    );
+    this.enemyXp.set(enemy, eliteXpValue(arch.xp));
+  }
+
+  /** Spend split budget for a dying splitting elite (capped per elite wave). */
+  takeEliteSplitAllowance(desired: number): number {
+    const { allowed, remaining } = takeSplitAllowance(this.eliteSplitBudget, desired);
+    this.eliteSplitBudget = remaining;
+    return allowed;
   }
 
   /** Apply damage from an auto-weapon (handles death + XP, no crosshair marker). */
@@ -588,6 +617,10 @@ export class SurvivorsSystem {
     // statAmp (Cauterizer Feed) + crit make a passive build empower the auto-weapons.
     const total = dmg * this.ctx.statDamageMul * this.statAmp * (crit ? 2 : 1);
     const res = enemy.takeDamage(total, false);
+    if (res.blocked) {
+      audio.sfx("shieldhit"); // elite overshield (or boss shield) ate the hit
+      return;
+    }
     this.sys.hud.addDamageNumber(enemy.position.clone().setY(1.6), total, crit ? "crit" : "normal");
     this.sys.fx.spawnBloodHit(enemy.position.clone().setY(1.35), crit);
     if (res.died) this.sys.pve.onEnemyDeath(enemy, false);
@@ -608,7 +641,11 @@ export class SurvivorsSystem {
         if (d > radius + enemy.radius) continue;
         const k = d > 0.001 ? 1 / d : 1;
         const res = enemy.takeDamage(dmg, false, 4, dx * k, dz * k);
-        this.sys.hud.addDamageNumber(enemy.position.clone().setY(1.5), dmg, "normal");
+        if (res.blocked) {
+          audio.sfx("shieldhit"); // overshield ate the retaliation — no damage feedback
+        } else {
+          this.sys.hud.addDamageNumber(enemy.position.clone().setY(1.5), dmg, "normal");
+        }
         if (res.died) this.sys.pve.onEnemyDeath(enemy, false);
       }
     }
@@ -635,231 +672,20 @@ export class SurvivorsSystem {
     this.sys.hud.announce("BASTION PULSE");
     audio.sfx("shieldUp");
     const center = this.ctx.body.position;
-    const ring = new THREE.Mesh(
-      new THREE.RingGeometry(0.78, 1.0, 46),
-      new THREE.MeshBasicMaterial({
-        color: 0xffd166,
-        transparent: true,
-        opacity: 0.65,
-        side: THREE.DoubleSide,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      }),
-    );
-    ring.rotation.x = -Math.PI / 2;
-    ring.position.set(center.x, 0.22, center.z);
-    ring.scale.setScalar(0.001);
-    this.ctx.scene.add(ring);
-    this.novas.push({
-      mesh: ring,
-      age: 0,
+    this.aw.castRing({
+      x: center.x,
+      z: center.z,
+      y: 0.22,
+      innerRadius: 0.78,
+      segments: 46,
+      color: 0xffd166,
+      opacity: 0.65,
       ttl: 0.45,
-      hit: new Set(),
       dmg: 36 + this.ctx.statBastion * 24,
       maxR: 8 + this.ctx.statBastion * 1.6,
     });
     this.ctx.statShield = Math.min(this.ctx.statShieldMax, this.ctx.statShield + 12 + this.ctx.statBastion * 8);
     this.sys.fx.addShake(0.24);
-  }
-
-  updateOrbit(delta: number) {
-    if (this.orbitLevel <= 0) {
-      this.orbitGroup.visible = false;
-      return;
-    }
-    this.orbitGroup.visible = true;
-    this.orbitGroup.position.set(this.ctx.body.position.x, 1.2, this.ctx.body.position.z);
-    const evo = this.evolved.orbit; // PYRE CYCLONE: bigger, faster, deadlier
-    this.orbitAngle += ORBIT_SPEED * (evo ? 1.6 : 1) * delta;
-    const ringR = ORBIT_RADIUS * (evo ? 1.25 : 1);
-    const n = this.orbitOrbs.length;
-    for (let i = 0; i < n; i++) {
-      const ang = this.orbitAngle + (i / n) * Math.PI * 2;
-      this.orbitOrbs[i].position.set(Math.cos(ang) * ringR, 0, Math.sin(ang) * ringR);
-    }
-    const dmg = ORBIT_DMG * (1 + 0.25 * (this.orbitLevel - 1)) * (evo ? 1.6 : 1);
-    const hitR = ORBIT_HIT_RADIUS * (evo ? 1.8 : 1);
-    const now = this.survClock;
-    for (const enemy of this.ctx.enemies) {
-      if (!enemy.alive) continue;
-      const ep = enemy.position;
-      let near = false;
-      for (const orb of this.orbitOrbs) {
-        const ox = this.orbitGroup.position.x + orb.position.x;
-        const oz = this.orbitGroup.position.z + orb.position.z;
-        if (Math.hypot(ep.x - ox, ep.z - oz) < hitR + enemy.radius) {
-          near = true;
-          break;
-        }
-      }
-      if (near && (this.orbitCd.get(enemy) ?? 0) <= now) {
-        this.orbitCd.set(enemy, now + ORBIT_HIT_CD);
-        this.autoDamageEnemy(enemy, dmg);
-      }
-    }
-  }
-
-  updateBolts(delta: number) {
-    if (this.boltLevel > 0) {
-      this.boltTimer -= delta;
-      const evo = this.evolved.bolt; // EMBER STORM: faster, more, piercing
-      const interval = Math.max(0.12, (0.9 - 0.08 * (this.boltLevel - 1)) * (evo ? 0.55 : 1));
-      if (this.boltTimer <= 0) {
-        this.boltTimer = interval;
-        const count = 1 + Math.floor((this.boltLevel - 1) / 2) + this.ctx.statMultishot + (evo ? 2 : 0);
-        for (let i = 0; i < count; i++) this.fireBolt();
-      }
-    }
-    const eyeY = 1.3;
-    for (let i = this.bolts.length - 1; i >= 0; i--) {
-      const b = this.bolts[i];
-      b.age += delta;
-      // light homing toward nearest enemy
-      const tgt = this.nearestEnemy(b.mesh.position);
-      if (tgt) {
-        const dx = tgt.position.x - b.mesh.position.x;
-        const dz = tgt.position.z - b.mesh.position.z;
-        const d = Math.hypot(dx, dz) || 1;
-        const cur = b.vel.length() || BOLT_SPEED;
-        b.vel.x += (dx / d) * cur * 2.5 * delta;
-        b.vel.z += (dz / d) * cur * 2.5 * delta;
-        b.vel.setLength(cur);
-      }
-      b.mesh.position.addScaledVector(b.vel, delta);
-      b.mesh.position.y = eyeY;
-      let hitEnemy: Enemy | null = null;
-      for (const enemy of this.ctx.enemies) {
-        if (!enemy.alive) continue;
-        if (
-          Math.hypot(enemy.position.x - b.mesh.position.x, enemy.position.z - b.mesh.position.z) <
-          0.8 + enemy.radius
-        ) {
-          hitEnemy = enemy;
-          break;
-        }
-      }
-      if (hitEnemy) {
-        this.autoDamageEnemy(hitEnemy, b.dmg);
-        b.pierce -= 1;
-        if (b.pierce < 0) {
-          this.removeBolt(i);
-          continue;
-        }
-      }
-      if (b.age > BOLT_TTL || !this.ctx.bounds.containsXZ(b.mesh.position.x, b.mesh.position.z, 1)) {
-        this.removeBolt(i);
-      }
-    }
-  }
-
-  fireBolt() {
-    const tgt = this.nearestEnemy(this.ctx.body.position);
-    if (!tgt) return;
-    const mesh = new THREE.Sprite(
-      new THREE.SpriteMaterial({
-        map: PROJECTILE_SPRITE_TEXTURES.bolt,
-        color: this.evolved.bolt ? 0xffd166 : 0xffffff,
-        transparent: true,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-        toneMapped: false,
-      }),
-    );
-    mesh.scale.setScalar(this.evolved.bolt ? 1.35 : 1.1);
-    mesh.position.set(this.ctx.body.position.x, 1.3, this.ctx.body.position.z);
-    const dx = tgt.position.x - mesh.position.x;
-    const dz = tgt.position.z - mesh.position.z;
-    const d = Math.hypot(dx, dz) || 1;
-    const vel = new THREE.Vector3((dx / d) * BOLT_SPEED, 0, (dz / d) * BOLT_SPEED);
-    this.ctx.scene.add(mesh);
-    const pierce = Math.floor((this.boltLevel - 1) / 2) + (this.evolved.bolt ? 2 : 0);
-    this.bolts.push({ mesh, vel, dmg: BOLT_DMG * (1 + 0.18 * (this.boltLevel - 1)), age: 0, pierce });
-    audio.sfx("hit");
-  }
-
-  removeBolt(i: number) {
-    const b = this.bolts[i];
-    this.ctx.scene.remove(b.mesh);
-    // Sprites share an internal geometry; only the per-bolt material is ours to free
-    // (the map texture is shared via PROJECTILE_SPRITE_TEXTURES and must NOT be disposed).
-    (b.mesh.material as THREE.Material).dispose();
-    this.bolts.splice(i, 1);
-  }
-
-  updateNovas(delta: number) {
-    if (this.novaLevel > 0) {
-      this.novaTimer -= delta;
-      // FURNACE HEART: erupts roughly twice as often
-      const interval = Math.max(0.9, (NOVA_INTERVAL - 0.22 * (this.novaLevel - 1)) * (this.evolved.nova ? 0.5 : 1));
-      if (this.novaTimer <= 0) {
-        this.novaTimer = interval;
-        this.castNova();
-      }
-    }
-    for (let i = this.novas.length - 1; i >= 0; i--) {
-      const nv = this.novas[i];
-      nv.age += delta;
-      const t = nv.age / nv.ttl;
-      const radius = nv.maxR * t;
-      nv.mesh.scale.setScalar(Math.max(0.001, radius));
-      (nv.mesh.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 0.6 * (1 - t));
-      // damage enemies the ring has reached (once each)
-      for (const enemy of this.ctx.enemies) {
-        if (!enemy.alive || nv.hit.has(enemy)) continue;
-        const d = Math.hypot(enemy.position.x - nv.mesh.position.x, enemy.position.z - nv.mesh.position.z);
-        if (d <= radius) {
-          nv.hit.add(enemy);
-          this.autoDamageEnemy(enemy, nv.dmg);
-        }
-      }
-      if (nv.age >= nv.ttl) {
-        this.ctx.scene.remove(nv.mesh);
-        nv.mesh.geometry.dispose();
-        (nv.mesh.material as THREE.Material).dispose();
-        this.novas.splice(i, 1);
-      }
-    }
-  }
-
-  castNova() {
-    const ring = new THREE.Mesh(
-      new THREE.RingGeometry(0.82, 1.0, 40),
-      new THREE.MeshBasicMaterial({
-        color: 0xff7a3c,
-        transparent: true,
-        opacity: 0.6,
-        side: THREE.DoubleSide,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      }),
-    );
-    ring.rotation.x = -Math.PI / 2;
-    ring.position.set(this.ctx.body.position.x, 0.2, this.ctx.body.position.z);
-    ring.scale.setScalar(0.001);
-    this.ctx.scene.add(ring);
-    this.novas.push({
-      mesh: ring,
-      age: 0,
-      ttl: 0.55,
-      hit: new Set(),
-      dmg: NOVA_DMG * (1 + 0.3 * (this.novaLevel - 1)) * (this.evolved.nova ? 1.4 : 1),
-      maxR: NOVA_RADIUS * (1 + 0.12 * (this.novaLevel - 1)) * (this.evolved.nova ? 1.5 : 1),
-    });
-    audio.sfx("boss");
-  }
-
-  nearestEnemy(from: THREE.Vector3): Enemy | null {
-    let best: Enemy | null = null;
-    let bestD = Infinity;
-    for (const e of this.ctx.enemies) {
-      if (!e.alive) continue;
-      const d = (e.position.x - from.x) ** 2 + (e.position.z - from.z) ** 2;
-      if (d < bestD) {
-        bestD = d;
-        best = e;
-      }
-    }
-    return best;
   }
 
   /** Elites ("bosses") drop survival rewards on top of their big XP gem. */

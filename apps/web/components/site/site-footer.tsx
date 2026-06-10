@@ -1,15 +1,16 @@
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 import { DeadrotBrand } from "@/components/site/deadrot-brand";
 
 const LINKS: { label: string; href: string; ext?: boolean }[] = [
   { label: "Docs", href: "/docs" },
   { label: "Universe / Lore", href: "/universe" },
-  { label: "Ship Shit Games ↗", href: "https://shipshitgames.com", ext: true },
-  { label: "GitHub ↗", href: "https://github.com/shipshitgames", ext: true },
-  { label: "Lore Vault ↗", href: "https://github.com/shipshitgames/lore", ext: true },
-  { label: "Skills ↗", href: "https://github.com/shipshitgames/skills", ext: true },
-  { label: "shipshitshow ↗", href: "https://youtube.com/@shipshitshow", ext: true },
+  { label: "Ship Shit Games", href: "https://shipshitgames.com", ext: true },
+  { label: "GitHub", href: "https://github.com/shipshitgames", ext: true },
+  { label: "Lore Vault", href: "https://lore.deadrot.com", ext: true },
+  { label: "Skills", href: "https://github.com/shipshitgames/skills", ext: true },
+  { label: "shipshitshow", href: "https://youtube.com/@shipshitshow", ext: true },
 ];
 
 export function SiteFooter() {
@@ -35,9 +36,10 @@ export function SiteFooter() {
                 href={l.href}
                 target="_blank"
                 rel="noreferrer"
-                className="text-hellfire transition-colors hover:text-blood"
+                className="inline-flex items-center gap-1 text-hellfire transition-colors hover:text-blood"
               >
                 {l.label}
+                <ArrowUpRight className="size-3" aria-hidden />
               </a>
             ) : (
               <Link key={l.label} href={l.href} className="text-hellfire transition-colors hover:text-blood">

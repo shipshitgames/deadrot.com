@@ -1,3 +1,5 @@
+import { createSnapshotStore } from "@deadrot/game-kit/core";
+
 /**
  * pauseBridge — a tiny store that lets the imperative Game push pause state into
  * the React HUD shell. The game loop stays vanilla; React only mirrors a flag
@@ -11,21 +13,16 @@ export interface PauseSnapshot {
   onExitToTitle: (() => void) | null;
 }
 
-let snapshot: PauseSnapshot = { open: false, onResume: null, onExitToTitle: null };
-const listeners = new Set<(snapshot: PauseSnapshot) => void>();
+const store = createSnapshotStore<PauseSnapshot>({ open: false, onResume: null, onExitToTitle: null });
 
 export function getPauseSnapshot(): PauseSnapshot {
-  return snapshot;
+  return store.get();
 }
 
 export function subscribePause(listener: (snapshot: PauseSnapshot) => void): () => void {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
+  return store.subscribe(() => listener(store.get()));
 }
 
 export function setPauseSnapshot(next: PauseSnapshot): void {
-  snapshot = next;
-  for (const listener of listeners) listener(snapshot);
+  store.set(next);
 }

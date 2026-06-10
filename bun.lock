@@ -6,6 +6,7 @@
       "name": "deadrotcom",
       "devDependencies": {
         "@biomejs/biome": "2.4.16",
+        "@deadrot/catalog": "workspace:*",
         "@playwright/test": "^1.60.0",
         "react-doctor": "^0.4.0",
         "turbo": "2.9.16",
@@ -16,8 +17,9 @@
       "name": "deadlane",
       "version": "0.1.0",
       "dependencies": {
+        "@deadrot/game-kit": "workspace:*",
         "@shipshitgames/assets": "workspace:*",
-        "@shipshitgames/engine": "workspace:*",
+        "@shipshitgames/engine": "^0.2.0",
         "@shipshitgames/ui": "workspace:*",
         "react": "19.2.7",
         "react-dom": "19.2.7",
@@ -36,6 +38,7 @@
       "name": "pactfall",
       "version": "0.1.0",
       "dependencies": {
+        "@deadrot/game-kit": "workspace:*",
         "@shipshitgames/assets": "workspace:*",
         "@shipshitgames/ui": "workspace:*",
         "react": "19.2.7",
@@ -55,6 +58,7 @@
       "name": "redline",
       "version": "0.1.0",
       "dependencies": {
+        "@deadrot/game-kit": "workspace:*",
         "@shipshitgames/assets": "workspace:*",
         "@shipshitgames/ui": "workspace:*",
         "react": "19.2.7",
@@ -75,6 +79,7 @@
       "name": "rothulk",
       "version": "0.1.0",
       "dependencies": {
+        "@deadrot/game-kit": "workspace:*",
         "@shipshitgames/assets": "workspace:*",
         "@shipshitgames/ui": "workspace:*",
         "react": "19.2.7",
@@ -94,10 +99,11 @@
       "name": "scourge-survivors",
       "version": "1.0.0",
       "dependencies": {
+        "@deadrot/game-kit": "workspace:*",
         "@radix-ui/react-slot": "^1.2.4",
         "@radix-ui/react-switch": "^1.2.6",
         "@shipshitgames/assets": "workspace:*",
-        "@shipshitgames/engine": "workspace:*",
+        "@shipshitgames/engine": "^0.2.0",
         "@shipshitgames/ui": "workspace:*",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
@@ -127,6 +133,7 @@
       "name": "starblight",
       "version": "0.1.0",
       "dependencies": {
+        "@deadrot/game-kit": "workspace:*",
         "@shipshitgames/assets": "workspace:*",
         "@shipshitgames/ui": "workspace:*",
         "react": "19.2.7",
@@ -146,8 +153,9 @@
       "name": "warline",
       "version": "0.1.0",
       "dependencies": {
+        "@deadrot/game-kit": "workspace:*",
         "@shipshitgames/assets": "workspace:*",
-        "@shipshitgames/engine": "workspace:*",
+        "@shipshitgames/engine": "^0.2.0",
         "@shipshitgames/ui": "workspace:*",
         "@shipshitgames/warline": "workspace:*",
         "partysocket": "^1.1.19",
@@ -259,6 +267,7 @@
       "name": "web",
       "version": "0.1.0",
       "dependencies": {
+        "@deadrot/catalog": "workspace:*",
         "@radix-ui/react-slot": "^1.2.4",
         "@shipshitgames/assets": "workspace:*",
         "@shipshitgames/ui": "^0.1.0",
@@ -283,33 +292,47 @@
     "packages/assets": {
       "name": "@shipshitgames/assets",
       "version": "0.1.0",
+      "dependencies": {
+        "@deadrot/catalog": "workspace:*",
+      },
       "devDependencies": {
+        "@deadrot/catalog": "workspace:*",
+        "@types/node": "25.9.1",
         "typescript": "6.0.3",
       },
     },
-    "packages/engine": {
-      "name": "@shipshitgames/engine",
-      "version": "0.1.1",
+    "packages/catalog": {
+      "name": "@deadrot/catalog",
+      "version": "0.0.0",
+    },
+    "packages/game-kit": {
+      "name": "@deadrot/game-kit",
+      "version": "0.1.0",
+      "dependencies": {
+        "@shipshitgames/assets": "workspace:*",
+        "@shipshitgames/ui": "workspace:*",
+      },
       "devDependencies": {
+        "@types/node": "25.9.1",
+        "@types/react": "19.2.16",
+        "@types/react-dom": "19.2.3",
         "@types/three": "0.184.1",
-        "partysocket": "^1.1.19",
         "three": "0.184.0",
         "typescript": "6.0.3",
       },
-      "optionalDependencies": {
-        "partysocket": "^1.1.19",
-      },
       "peerDependencies": {
-        "partysocket": "*",
-        "three": "^0.169.0",
+        "three": ">=0.169.0",
       },
       "optionalPeers": [
-        "partysocket",
+        "three",
       ],
     },
     "packages/ui": {
       "name": "@shipshitgames/ui",
       "version": "0.1.0",
+      "dependencies": {
+        "@deadrot/catalog": "workspace:*",
+      },
       "devDependencies": {
         "@types/react": "19.2.16",
         "@types/react-dom": "19.2.3",
@@ -326,6 +349,7 @@
       "name": "@shipshitgames/warline",
       "version": "0.0.0",
       "dependencies": {
+        "@deadrot/catalog": "workspace:*",
         "partysocket": "^1.1.19",
       },
       "devDependencies": {
@@ -420,6 +444,10 @@
     "@cloudflare/workers-types": ["@cloudflare/workers-types@4.20240718.0", "", {}, "sha512-7RqxXIM9HyhjfZ9ztXjITuc7mL0w4s+zXgypqKmMuvuObC3DgXutJ3bOYbQ+Ss5QbywrzWSNMlmGdL/ldg/yZg=="],
 
     "@cspotcode/source-map-support": ["@cspotcode/source-map-support@0.8.1", "", { "dependencies": { "@jridgewell/trace-mapping": "0.3.9" } }, "sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw=="],
+
+    "@deadrot/catalog": ["@deadrot/catalog@workspace:packages/catalog"],
+
+    "@deadrot/game-kit": ["@deadrot/game-kit@workspace:packages/game-kit"],
 
     "@dimforge/rapier3d-compat": ["@dimforge/rapier3d-compat@0.12.0", "", {}, "sha512-uekIGetywIgopfD97oDL5PfeezkFpNhwlzlaEYNOA0N6ghdsOvh/HYjSMek5Q2O1PYvRSDFcqFVJl4r4ZBwOow=="],
 
@@ -917,7 +945,7 @@
 
     "@shipshitgames/assets": ["@shipshitgames/assets@workspace:packages/assets"],
 
-    "@shipshitgames/engine": ["@shipshitgames/engine@workspace:packages/engine"],
+    "@shipshitgames/engine": ["@shipshitgames/engine@0.2.0", "", { "optionalDependencies": { "partysocket": "^1.1.19" }, "peerDependencies": { "three": "^0.169.0" } }, "sha512-jTWU+9sAXPj8XvO/yqVgeTODQanHSbYP6rNYTqbZperJbcc8keJuzeVBG7jzzxVADGj20b9YJHK5cbP58MV1MQ=="],
 
     "@shipshitgames/ui": ["@shipshitgames/ui@workspace:packages/ui"],
 

@@ -1,3 +1,4 @@
+import { ParticleBursts, ScreenShake } from "@deadrot/game-kit/juice";
 import { type CameraRig, firstPersonPointerLock } from "@shipshitgames/engine";
 import * as THREE from "three";
 import {
@@ -25,9 +26,14 @@ export class RenderSystem {
 
   /** Invisible plane used by the InputSystem for raycasting the board. */
   readonly groundPlane: THREE.Mesh;
+  /** Pooled kill-pop / splash bursts (shared juice module). */
+  readonly bursts: ParticleBursts;
   /** Translucent cell shown under the cursor while building. */
   private readonly hover: THREE.Mesh;
   private readonly progressPillar: THREE.Mesh;
+  private readonly baseCore: THREE.Mesh;
+  private readonly baseCoreMat: THREE.MeshStandardMaterial;
+  private readonly shake = new ScreenShake();
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new THREE.WebGLRenderer({
@@ -49,11 +55,14 @@ export class RenderSystem {
     this.buildApproach();
     this.buildLane();
     this.buildBreachDoor();
-    this.buildBase();
+    const base = this.buildBase();
+    this.baseCore = base.core;
+    this.baseCoreMat = base.coreMat;
 
     this.groundPlane = this.buildGroundPlane();
     this.hover = this.buildHover();
     this.progressPillar = this.buildProgressPillar();
+    this.bursts = new ParticleBursts(this.scene);
 
     this.resize();
     window.addEventListener("resize", () => this.resize());
@@ -218,7 +227,7 @@ export class RenderSystem {
     this.scene.add(group);
   }
 
-  private buildBase(): void {
+  private buildBase(): { group: THREE.Group; coreMat: THREE.MeshStandardMaterial; core: THREE.Mesh } {
     // Bone pillar with a hellfire core — the line the Wardens hold.
     const group = new THREE.Group();
 
@@ -233,21 +242,18 @@ export class RenderSystem {
     pillar.position.y = 1.1;
     group.add(pillar);
 
-    const core = new THREE.Mesh(
-      new THREE.SphereGeometry(0.55, 16, 16),
-      new THREE.MeshStandardMaterial({
-        color: COLORS.hellfire,
-        emissive: COLORS.hellfire,
-        emissiveIntensity: 1.6,
-      }),
-    );
+    const coreMat = new THREE.MeshStandardMaterial({
+      color: COLORS.hellfire,
+      emissive: COLORS.hellfire,
+      emissiveIntensity: 1.6,
+    });
+    const core = new THREE.Mesh(new THREE.SphereGeometry(0.55, 16, 16), coreMat);
     core.position.y = 2.4;
     group.add(core);
 
     group.position.set(basePoint.x, 0, basePoint.z);
-    group.userData.core = core;
     this.scene.add(group);
-    this.base = group;
+    return { group, coreMat, core };
   }
 
   private buildGroundPlane(): THREE.Mesh {
@@ -292,8 +298,6 @@ export class RenderSystem {
     return mesh;
   }
 
-  private base!: THREE.Group;
-
   // ---- per-frame ------------------------------------------------------------
 
   /** Show / move the hover highlight. `valid` tints it blood vs ash. */
@@ -320,14 +324,22 @@ export class RenderSystem {
     }
   }
 
+  /** Kick the screen-shake (breaches, boss kills). */
+  kickShake(amount: number): void {
+    this.shake.kick(amount);
+  }
+
   /** Pulse the base core; flash brighter when damaged this frame. */
   update(dt: number, t: number, baseHit: boolean): void {
     this.rig.update(dt);
-    const core = this.base.userData.core as THREE.Mesh;
-    const mat = core.material as THREE.MeshStandardMaterial;
+    // shake offsets layer on top of whatever the rig set this frame
+    this.shake.update(dt);
+    this.camera.position.x += this.shake.offsetX;
+    this.camera.position.y += this.shake.offsetY;
+    this.bursts.update(dt);
     const pulse = 1.2 + Math.sin(t * 3) * 0.4;
-    mat.emissiveIntensity = baseHit ? 4 : pulse;
-    core.rotation.y += dt * 0.8;
+    this.baseCoreMat.emissiveIntensity = baseHit ? 4 : pulse;
+    this.baseCore.rotation.y += dt * 0.8;
   }
 
   render(): void {

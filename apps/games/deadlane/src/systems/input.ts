@@ -6,12 +6,20 @@ import {
   makeMoveIntent,
 } from "@shipshitgames/engine";
 import * as THREE from "three";
-import { inBounds, isPathCell, worldToCell } from "../board";
+import { inBounds, worldToCell } from "../board";
+import type { TowerKind } from "../types";
 
 export interface HoverCell {
   col: number;
   row: number;
 }
+
+/** 1/2/3 select the tower archetype to build next. */
+const TOWER_SELECT_KEYS: Record<string, TowerKind> = {
+  Digit1: "ember",
+  Digit2: "stasis",
+  Digit3: "mortar",
+};
 
 /**
  * InputSystem binds first-person movement and reports the tile under the
@@ -24,6 +32,7 @@ export class InputSystem {
   active = false;
   wantsSprint = false;
   private buildQueued = false;
+  private selectQueued: TowerKind | null = null;
 
   constructor(
     private readonly rig: CameraRig,
@@ -53,6 +62,7 @@ export class InputSystem {
     clearMoveIntent(this.move);
     this.wantsSprint = false;
     this.buildQueued = false;
+    this.selectQueued = null;
   }
 
   aimedCell(): HoverCell | null {
@@ -77,9 +87,18 @@ export class InputSystem {
     return queued;
   }
 
+  /** Latched 1/2/3 tower selection; null when nothing was pressed. */
+  takeSelectAction(): TowerKind | null {
+    const queued = this.selectQueued;
+    this.selectQueued = null;
+    return queued;
+  }
+
   private onActionKey(code: string): void {
     if (code === "KeyE") this.buildQueued = true;
     if (code === "ShiftLeft" || code === "ShiftRight") this.wantsSprint = true;
+    const select = TOWER_SELECT_KEYS[code];
+    if (select) this.selectQueued = select;
   }
 
   private onRawKeyDown = (e: KeyboardEvent): void => {
@@ -92,6 +111,8 @@ export class InputSystem {
       this.buildQueued = true;
     } else if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
       this.wantsSprint = true;
+    } else if (TOWER_SELECT_KEYS[e.code]) {
+      this.selectQueued = TOWER_SELECT_KEYS[e.code] ?? null;
     }
   };
 
@@ -102,12 +123,4 @@ export class InputSystem {
       this.wantsSprint = false;
     }
   };
-
-  /** True if the hovered cell could legally hold a tower (empty, off-path). */
-  static isBuildable(cell: HoverCell | null, occupied: Set<string>): boolean {
-    if (!cell) return false;
-    if (isPathCell(cell.col, cell.row)) return false;
-    if (occupied.has(`${cell.col},${cell.row}`)) return false;
-    return true;
-  }
 }

@@ -10,6 +10,7 @@
     "deps:update": "bunx npm-check-updates -u --cooldown 3h --removeRange && bun install"
   },
   "dependencies": {
+    "@deadrot/catalog": "workspace:*",
     "@radix-ui/react-slot": "^1.2.4",
     "@shipshitgames/assets": "workspace:*",
     "@shipshitgames/ui": "^0.1.0",

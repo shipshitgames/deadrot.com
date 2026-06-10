@@ -1,21 +1,17 @@
-export const allGames = [
-  { slug: "deadlane", port: 5174 },
-  { slug: "pactfall", port: 5175 },
-  { slug: "redline", port: 5176 },
-  { slug: "rothulk", port: 5177 },
-  { slug: "scourge-survivors", port: 5178 },
-  { slug: "starblight", port: 5179 },
-  { slug: "warline", port: 5180 },
-] as const;
+import { GAME_APPS, type GameSlug } from "@deadrot/catalog";
 
-export type GameSlug = (typeof allGames)[number]["slug"];
+// The catalog (@deadrot/catalog) is the single source of truth for the roster and
+// each game's dev port; the Playwright project + webServer fan-out derives from it.
 
-export const DEFAULT_PORT_BASE = 5174;
+export type { GameSlug };
+
+// First app port (catalog is ordered ascending by dev port).
+export const DEFAULT_PORT_BASE = GAME_APPS[0]?.devPort ?? 5174;
 
 export function parseSelectedGameSlugs(value: string | undefined): GameSlug[] {
   if (!value?.trim()) return [];
 
-  const known = new Set<GameSlug>(allGames.map((game) => game.slug));
+  const known = new Set<GameSlug>(GAME_APPS.map((game) => game.slug));
   const selected = value
     .split(",")
     .map((entry) => entry.trim())
@@ -24,6 +20,22 @@ export function parseSelectedGameSlugs(value: string | undefined): GameSlug[] {
   if (unknown.length) throw new Error(`Unknown E2E_GAME_SLUGS entries: ${unknown.join(", ")}`);
 
   return selected as GameSlug[];
+}
+
+export type ViewportName = "desktop" | "mobile";
+
+export function parseSelectedViewports(value: string | undefined): ViewportName[] {
+  if (!value?.trim()) return [];
+
+  const known = new Set<ViewportName>(["desktop", "mobile"]);
+  const selected = value
+    .split(",")
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean);
+  const unknown = selected.filter((entry): entry is string => !known.has(entry as ViewportName));
+  if (unknown.length) throw new Error(`Unknown E2E_VIEWPORT entries: ${unknown.join(", ")}`);
+
+  return selected as ViewportName[];
 }
 
 export function parsePortBase(value: string | undefined): number {

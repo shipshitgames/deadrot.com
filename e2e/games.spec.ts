@@ -1,7 +1,8 @@
 import { readdirSync } from "node:fs";
 import path from "node:path";
+import { GAME_APPS } from "@deadrot/catalog";
 import { expect, type Page, test } from "@playwright/test";
-import { allGames, type GameSlug } from "./game-catalog";
+import type { GameSlug } from "./game-catalog";
 
 interface GameSpec {
   path: string;
@@ -136,6 +137,14 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
       await expect(page.locator("#int-text")).toContainText("100/100");
     },
     async exercise(page) {
+      // The hero title hides once the menu is revealed (it stays mounted for the
+      // engine-written game-over banner, which reuses #banner-title).
+      await expect(page.locator("#banner-title")).toBeHidden();
+      // The Drydock (meta-upgrade shop) opens from the Upgrades action and lists upgrades.
+      await page.getByRole("button", { name: /^Upgrades\b/i }).click();
+      await expect(page.getByText("REINFORCED FRAME")).toBeVisible();
+      await page.getByRole("button", { name: /^Back\b/i }).click();
+      await expect(page.getByText("REINFORCED FRAME")).toBeHidden();
       await page.getByRole("button", { name: "ENGAGE" }).click();
       await expect(page.locator("#banner")).toHaveClass(/hidden/);
       await expect(page.locator("#level")).toHaveText("1");
@@ -167,7 +176,7 @@ test.beforeAll(() => {
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .sort();
-  const configuredGameSlugs = allGames.map((game) => game.slug).sort();
+  const configuredGameSlugs = GAME_APPS.map((game) => game.slug).sort();
   const testedGameSlugs = Object.keys(gameSpecs).sort();
 
   expect(configuredGameSlugs).toEqual(shippedGameSlugs);

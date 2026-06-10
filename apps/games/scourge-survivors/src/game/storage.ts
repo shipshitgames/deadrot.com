@@ -1,4 +1,4 @@
-// localStorage-backed leaderboard + audio settings (no backend required).
+// localStorage-backed leaderboard (no backend required).
 
 import type { RunMode } from "./types";
 
@@ -18,7 +18,6 @@ export interface ScoreEntry {
 }
 
 const SCORES_KEY = "scourge-survivors.scores.v1";
-const SETTINGS_KEY = "scourge-survivors.settings.v1";
 const MAX_SCORES = 10;
 
 export function loadScores(): ScoreEntry[] {
@@ -84,32 +83,6 @@ export function clearScores(): ScoreEntry[] {
     /* ignore */
   }
   return [];
-}
-
-export interface Settings {
-  music: boolean;
-  sfx: boolean;
-}
-
-export function loadSettings(): Settings {
-  try {
-    const raw = localStorage.getItem(SETTINGS_KEY);
-    if (raw) {
-      const s = JSON.parse(raw);
-      return { music: s.music !== false, sfx: s.sfx !== false };
-    }
-  } catch {
-    /* ignore */
-  }
-  return { music: true, sfx: true };
-}
-
-export function saveSettings(s: Settings) {
-  try {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
-  } catch {
-    /* ignore */
-  }
 }
 
 // ---- Survivors meta-progression (persistent gold + permanent upgrade tiers) ----

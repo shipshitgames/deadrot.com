@@ -1,3 +1,4 @@
+import { recordWarResult } from "@deadrot/game-kit/core";
 import { GlobalMusicToggle, subscribeGlobalGameSettings } from "@shipshitgames/ui";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { audio } from "./audio/AudioEngine";
@@ -28,10 +29,8 @@ import { Game } from "./game/Game";
 import {
   clearScores,
   loadScores,
-  loadSettings,
   loadShop,
   type ScoreEntry,
-  type Settings,
   type ShopState,
   saveScore,
   saveShop,
@@ -57,6 +56,7 @@ const INITIAL_STATE: HUDState = {
   score: 0,
   kills: 0,
   headshots: 0,
+  bossKills: 0,
   enemiesAlive: 0,
   combo: 0,
   time: 0,
@@ -145,7 +145,6 @@ export default function App() {
   const hudRef = useRef<HUDState>(INITIAL_STATE);
   const [hud, setHudState] = useState<HUDState>(INITIAL_STATE);
   const [scores, setScores] = useState<ScoreEntry[]>(() => loadScores());
-  const [settings] = useState<Settings>(() => loadSettings());
   const [shop, setShop] = useState<ShopState>(() => loadShop());
   const lastRunGoldRef = useRef(0);
   const sandboxAvailable = import.meta.env.DEV;
@@ -187,8 +186,6 @@ export default function App() {
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    audio.setMusicEnabled(settings.music);
-    audio.setSfxEnabled(settings.sfx);
     const game = new Game(container, setHud);
     gameRef.current = game;
     game.setShopUpgrades(shop.tiers);
@@ -229,6 +226,19 @@ export default function App() {
           date: Date.now(),
         }),
       );
+      // Mirror the run into the shared cross-game war record (display-only;
+      // Warline's "Your War Record" card reads it back). Survivors chapter runs
+      // progress by depth, not the clamped arena wave — report the deeper number.
+      recordWarResult(
+        "scourge-survivors",
+        {
+          outcome: hud.outcome === "win" ? "victory" : "defeat",
+          score: hud.score,
+          wave: hud.survivors ? Math.max(hud.runDepth, hud.wave) : hud.wave,
+          bossKill: hud.bossKills,
+        },
+        Date.now(),
+      );
       if (hud.survivors) {
         setShop((prev) => {
           const next = { ...prev, gold: prev.gold + earnedGold };
@@ -248,6 +258,7 @@ export default function App() {
     hud.score,
     hud.kills,
     hud.headshots,
+    hud.bossKills,
     hud.time,
     hud.survivors,
     hud.level,
@@ -256,6 +267,7 @@ export default function App() {
     hud.runDepth,
     hud.runDepthTotal,
     hud.runDepthName,
+    hud.wave,
     shop.tiers.greed,
   ]);
 

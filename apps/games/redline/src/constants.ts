@@ -103,4 +103,47 @@ export const COURSE = {
   rampRun: 5.0,
 } as const;
 
+export const SCORE = {
+  // Ember chain: each pickup scores emberPoints * current multiplier, then
+  // heats the chain one step (x1 -> chainMax). The chain collapses back to x1
+  // when chainWindow seconds pass without a pickup.
+  emberPoints: 10,
+  chainMax: 5,
+  chainWindow: 4, // seconds without a pickup before the chain collapses
+  // Near-miss style: skim past a hazard (cleanly, no stagger) within this
+  // margin (world units) to earn style points. The bar margin sits below the
+  // 0.3 of headroom an upright grounded runner always has (barClearance 1.5
+  // minus head at 2*radius = 1.2), so plain running never farms free style.
+  nearMissMargin: { spike: 0.5, bar: 0.25 },
+  nearMissPoints: 150,
+  // Time bonus at the beacon: faster = more, floored at zero.
+  timeBonusMax: 3000, // theoretical bonus at t=0
+  timeBonusPerSecond: 50, // points shed per second on the clock
+  // Letter grade thresholds on the final total (checked top-down).
+  grades: [
+    { grade: "S", min: 7000 },
+    { grade: "A", min: 5000 },
+    { grade: "B", min: 2500 },
+    { grade: "C", min: 0 },
+  ],
+} as const;
+
+export const FEEDBACK = {
+  // Land SFX/dust only fire on meaningful falls: impact fall speed (u/s,
+  // negative = down) must be at least this fast. A full jump lands ~ -26;
+  // a cut-jump hop lands ~ -12.
+  landFallVy: -16,
+  sfxFrameCap: 4, // max one-shot cues layered per rendered frame
+  gemChainPitchStep: 0.09, // gem cue pitches up per chain step
+  jumpPitchJitter: 0.08, // subtle per-jump pitch variation
+  // Particle bursts (consumed by the render system via game-kit ParticleBursts).
+  emberBurst: { count: 12, speed: 6.5, life: 0.5, size: 0.17, upwardBias: 0.55 },
+  dustBurst: { count: 10, speed: 3.4, life: 0.42, size: 0.15, gravity: 14, upwardBias: 0.6 },
+  dustPuff: { count: 5, speed: 2.2, life: 0.32, size: 0.12, gravity: 10, upwardBias: 0.8 },
+} as const;
+
+// Best-run persistence. The key is shared with the legacy raw best-time payload
+// (a bare number string); createLocalStore migrates it into the versioned
+// per-seed envelope (see systems/score.ts).
 export const STORAGE_KEY = "redline.best.v1";
+export const BESTS_VERSION = 2;

@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16",
+    "@deadrot/catalog": "workspace:*",
     "@playwright/test": "^1.60.0",
     "react-doctor": "^0.4.0",
     "turbo": "2.9.16",

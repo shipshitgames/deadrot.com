@@ -1,12 +1,11 @@
-import type * as THREE from "three";
 import { RectScatterSpawnProvider, type SpawnPointProvider } from "@shipshitgames/engine";
-import type { GameContext } from "../context";
-import type { GameSystems } from "../systems";
+import type * as THREE from "three";
 import { audio } from "../../audio/AudioEngine";
 import {
+  BERSERK_MOVE_MULT,
   CROUCH_ACCEL_MULT,
-  GROUND_SNAP_DOWN,
   GRAVITY,
+  GROUND_SNAP_DOWN,
   MOVE_ACCEL,
   MOVE_DAMPING,
   MOVE_STOP_EPSILON,
@@ -16,14 +15,15 @@ import {
   PLAYER_RADIUS,
   PLAYER_STEP_HEIGHT,
   SPRINT_ACCEL_MULT,
-  STARTING_WEAPON,
   STANCE_LERP,
+  STARTING_WEAPON,
   WALL_THICKNESS,
   WEAPON_ORDER,
   WEAPONS,
-  BERSERK_MOVE_MULT,
   type WeaponId,
 } from "../constants";
+import type { GameContext } from "../context";
+import type { GameSystems } from "../systems";
 
 export class PlayerSystem {
   constructor(
@@ -215,6 +215,7 @@ export class PlayerSystem {
     this.ctx.score = 0;
     this.ctx.kills = 0;
     this.ctx.headshots = 0;
+    this.ctx.bossKills = 0;
     this.ctx.time = 0;
     this.ctx.outcome = null;
     this.ctx.damageBoostTimer = 0;

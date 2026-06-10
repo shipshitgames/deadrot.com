@@ -1,3 +1,4 @@
+import { ParticleBursts, ScreenShake } from "@deadrot/game-kit/juice";
 import * as THREE from "three";
 import { COLORS, CONSTANTS, WORLD } from "../game/constants";
 
@@ -10,11 +11,15 @@ export class RenderSystem {
   readonly camera: THREE.OrthographicCamera;
   readonly renderer: THREE.WebGLRenderer;
 
+  /** Pooled kill-pop bursts (shared juice module; honors the particles setting). */
+  readonly bursts: ParticleBursts;
+
   // Follow state.
   readonly camFocus = new THREE.Vector2(0, 0);
   private halfW = WORLD.halfW;
   private halfH = WORLD.halfH;
-  private shake = 0;
+  // Kit ScreenShake honors the global "shake" setting automatically.
+  private readonly shake = new ScreenShake({ decay: CONSTANTS.fx.shakeDecay });
 
   private nearStars!: THREE.Points;
   private farStars!: THREE.Points;
@@ -34,6 +39,8 @@ export class RenderSystem {
     });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+    this.bursts = new ParticleBursts(this.scene);
+
     this.buildStars();
     this.buildLattice();
     this.resize();
@@ -42,6 +49,7 @@ export class RenderSystem {
 
   dispose() {
     window.removeEventListener("resize", this.resize);
+    this.bursts.dispose();
     for (const layer of [this.nearStars, this.farStars]) {
       this.scene.remove(layer);
       layer.geometry.dispose();
@@ -73,9 +81,9 @@ export class RenderSystem {
     return { x: this.camFocus.x + ndcX * this.halfW, y: this.camFocus.y + ndcY * this.halfH };
   }
 
-  /** Adds a screen-shake impulse (larger = harder kick). */
+  /** Adds a screen-shake impulse (kit trauma units, 0..1; larger = harder). */
   addShake(amount: number) {
-    this.shake = Math.min(this.shake + amount, CONSTANTS.fx.shakeMax);
+    this.shake.kick(Math.min(amount, CONSTANTS.fx.shakeMax));
   }
 
   resetFocus(x: number, y: number) {
@@ -83,7 +91,7 @@ export class RenderSystem {
   }
 
   /** Eases the camera toward the ship (deadzone box) and applies shake. */
-  update(dt: number, shipX: number, shipY: number) {
+  update(dt: number, shipX: number, shipY: number, simulateFx = true) {
     const c = CONSTANTS.camera;
     const dzW = c.deadzoneW / 2;
     const dzH = c.deadzoneH / 2;
@@ -100,18 +108,19 @@ export class RenderSystem {
     this.camFocus.x += (tx - this.camFocus.x) * k;
     this.camFocus.y += (ty - this.camFocus.y) * k;
 
-    // Shake is an additive pan on top of the follow target (no rotation).
-    let sx = 0;
-    let sy = 0;
-    if (this.shake > 0.0001) {
-      sx = (Math.random() - 0.5) * this.shake;
-      sy = (Math.random() - 0.5) * this.shake;
-      this.shake = Math.max(0, this.shake - CONSTANTS.fx.shakeDecay * dt * this.shake);
-    }
-    const fx = this.camFocus.x + sx;
-    const fy = this.camFocus.y + sy;
+    // Shake is an additive pan on top of the follow target (no rotation). The
+    // kit offsets are ~screen-space; scale into ortho world units.
+    this.shake.update(dt);
+    const ws = CONSTANTS.fx.shakeWorldScale;
+    const fx = this.camFocus.x + this.shake.offsetX * ws;
+    const fy = this.camFocus.y + this.shake.offsetY * ws;
     this.camera.position.set(fx, fy, c.z);
     this.camera.lookAt(fx, fy, 0);
+
+    // Advance pooled kill-pop bursts only while the game is simulating — they
+    // must freeze alongside the legacy particle pops during pause and the
+    // level-up draft (the camera/backdrop above still animates every frame).
+    if (simulateFx) this.bursts.update(dt);
 
     // Parallax: star layers trail the camera at (1 - parallax), so flying any
     // direction streaks them past you. No per-point JS loop.

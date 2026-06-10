@@ -8,8 +8,8 @@
  * given seed is identical — fair for time-attack.
  */
 
-import { COURSE, WORLD, RUNNER } from "./constants";
-import type { Course, Platform, Hazard, Ember, Ramp } from "./types";
+import { COURSE, RUNNER, WORLD } from "./constants";
+import type { Course, Ember, Hazard, Platform, Ramp } from "./types";
 
 /** Tiny mulberry32 PRNG — fast, deterministic, good enough for layout. */
 function mulberry32(seed: number): () => number {
