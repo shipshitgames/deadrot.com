@@ -1,6 +1,16 @@
 import * as THREE from "three";
+import { audio } from "../audio";
 import type { EntitySystem } from "../systems/EntitySystem";
 import type { RenderSystem } from "../systems/RenderSystem";
+import {
+  type BossPhase,
+  beamPlan,
+  bossPhaseFor,
+  pointSegDist,
+  radialBurstAngles,
+  ringBurstPlan,
+  ringOffset,
+} from "./bossPatterns";
 import { COLORS, CONSTANTS, type EnemyType } from "./constants";
 import { clamp, TAU } from "./math";
 import type { Enemy } from "./types";
@@ -11,14 +21,17 @@ const HIT_FLASH = 0.09;
 export interface BossEncounterHost {
   ringPoint(): { x: number; y: number };
   spawnAt(type: EnemyType, x: number, y: number): void;
+  /** Beam damage routes through the Game (it owns integrity + i-frames). */
+  hitPlayer(dmg: number): void;
   /** Run-state on defeat: count the kill, vacuum the field, enter victory. */
   onDefeated(): void;
 }
 
 // THE BLIGHT-MAW (Orbital Breach Carrier): owns the boss state machine —
-// trigger, orbit/dash movement, burst/summon/spiral attacks, visuals on the
-// bespoke mesh, defeat rewards, and mesh teardown. The boss stays an Enemy
-// record inside EntitySystem.enemies for shared damage/collision contracts.
+// trigger, orbit/dash movement, burst/summon/spiral attacks, the telegraphed
+// ring volleys + beam (bossPatterns.ts owns the math), visuals on the bespoke
+// mesh, defeat rewards, and mesh teardown. The boss stays an Enemy record
+// inside EntitySystem.enemies for shared damage/collision contracts.
 export class BossEncounter {
   private boss: Enemy | null = null;
   private triggered = false;
@@ -31,6 +44,24 @@ export class BossEncounter {
   private dashTime = 0;
   private dashX = 0;
   private dashY = 0;
+  private phaseSeen: BossPhase = 1;
+
+  // Telegraphed radial ring volley (bossPatterns.ts owns the math).
+  private ringState: "idle" | "windup" | "volley" = "idle";
+  private ringT = 0; // cooldown until the next volley may start
+  private ringTime = 0; // timer inside the current windup/volley
+  private ringIndex = 0; // next ring to fire within the volley
+  private ringCount = 1; // rings in the current volley
+  private ringAngle = 0; // base rotation of the current volley
+
+  // Telegraphed beam (warning line -> burn along the locked path).
+  private beamState: "idle" | "warn" | "fire" = "idle";
+  private beamT = 0;
+  private beamTime = 0;
+  private beamX1 = 0;
+  private beamY1 = 0;
+  private beamX2 = 0;
+  private beamY2 = 0;
 
   constructor(
     private readonly entities: EntitySystem,
@@ -83,16 +114,17 @@ export class BossEncounter {
     this.summonT = b.summonEvery;
     this.orbit = Math.random() * TAU;
     this.dashState = "none";
+    this.resetAttacks();
+    this.ringT = b.ring.firstDelay;
+    this.beamT = b.beam.firstDelay;
+    audio.sfx("boss");
     this.render.addShake(CONSTANTS.fx.shake.bossSpawn);
     this.entities.pop(p.x, p.y, COLORS.toxicHot, 40);
   }
 
-  private phase(): 1 | 2 | 3 {
+  private phase(): BossPhase {
     if (!this.boss) return 1;
-    const pct = this.boss.health / this.boss.maxHealth;
-    if (pct > CONSTANTS.boss.phase2Pct) return 1;
-    if (pct > CONSTANTS.boss.phase3Pct) return 2;
-    return 3;
+    return bossPhaseFor(this.boss.health / this.boss.maxHealth);
   }
 
   update(dt: number, time: number) {
@@ -102,6 +134,15 @@ export class BossEncounter {
     const sx = this.entities.ship.position.x;
     const sy = this.entities.ship.position.y;
     const phase = this.phase();
+
+    // Phase transition: vents blow, the attack mix changes.
+    if (phase > this.phaseSeen) {
+      this.phaseSeen = phase;
+      audio.sfx("boss");
+      audio.sfx("explosion", { pitch: 0.8 });
+      this.render.addShake(CONSTANTS.fx.shake.bossPhase);
+      this.burst(boss.mesh.position.x, boss.mesh.position.y, COLORS.toxicHot, CONSTANTS.fx.burst.bossPhase);
+    }
 
     // Movement: orbit the ship, unless dashing.
     if (this.dashState === "charge") {
@@ -119,10 +160,16 @@ export class BossEncounter {
     const bx = boss.mesh.position.x;
     const by = boss.mesh.position.y;
 
-    // Visuals: face the ship; hit-flash, else a slow menace pulse.
+    // Visuals: face the ship; windup glow, else hit-flash, else a menace pulse.
     boss.mesh.rotation.z = Math.atan2(sy - by, sx - bx) + Math.PI / 2;
-    if (boss.flash > 0) {
-      boss.flash = Math.max(0, boss.flash - dt);
+    if (boss.flash > 0) boss.flash = Math.max(0, boss.flash - dt);
+    if (boss.telegraph > 0) {
+      // Attack-windup glow: blink toward hot toxic so the ring volley
+      // reads clearly before it fires (overrides the hit flash).
+      const blink = 0.55 + 0.45 * Math.sin(time * 16);
+      boss.material.color.setHex(0xffffff).lerp(TOXIC_HOT, clamp(boss.telegraph, 0, 1) * blink);
+      boss.material.opacity = 1;
+    } else if (boss.flash > 0) {
       const t = clamp(boss.flash / HIT_FLASH, 0, 1);
       boss.material.color.setHex(0xffffff).lerp(BONE, t);
     } else {
@@ -155,8 +202,10 @@ export class BossEncounter {
 
     // Charge-dash (all phases; rarer in phase 1). The lunge is the boss's
     // contact threat — it travels just past the ship so it crosses the hull.
+    // Never overlaps the ring windup or the beam so telegraphs stay readable.
     this.dashT -= dt;
-    if (this.dashState === "none" && this.dashT <= 0) {
+    const otherAttackActive = this.ringState !== "idle" || this.beamState !== "idle";
+    if (this.dashState === "none" && this.dashT <= 0 && !otherAttackActive) {
       this.dashState = "telegraph";
       this.dashTime = b.dashTelegraph;
       boss.flash = b.dashTelegraph;
@@ -176,6 +225,10 @@ export class BossEncounter {
       }
     }
 
+    // Telegraphed attacks: ring volleys + the beam (each phase mixes its own).
+    this.updateRing(dt, boss, phase, bx, by);
+    this.updateBeam(dt, phase, bx, by, sx, sy);
+
     // Phase 3: rotating spiral of globs.
     if (phase === 3) {
       this.spiralT -= dt;
@@ -190,6 +243,105 @@ export class BossEncounter {
     }
   }
 
+  /** Telegraphed radial ring volley: glow windup, then staggered slow rings.
+   *  Rings per volley and the cooldown scale with the boss phase. */
+  private updateRing(dt: number, boss: Enemy, phase: BossPhase, bx: number, by: number) {
+    const r = CONSTANTS.boss.ring;
+    if (this.ringState === "idle") {
+      this.ringT -= dt;
+      // Hold while dashing so the glow windup is never masked by the lunge.
+      if (this.ringT <= 0 && this.dashState === "none" && this.beamState === "idle") {
+        const plan = ringBurstPlan(phase);
+        this.ringState = "windup";
+        this.ringTime = r.telegraph;
+        this.ringCount = plan.rings;
+        this.ringIndex = 0;
+        this.ringAngle = Math.random() * TAU;
+        this.ringT = plan.cooldown;
+        audio.sfx("shieldUp"); // charge-up cue alongside the glow
+      }
+      return;
+    }
+    if (this.ringState === "windup") {
+      this.ringTime -= dt;
+      boss.telegraph = 1 - Math.max(0, this.ringTime) / r.telegraph;
+      if (this.ringTime <= 0) {
+        boss.telegraph = 0;
+        this.ringState = "volley";
+        this.ringTime = 0; // first ring fires immediately
+      } else {
+        return;
+      }
+    }
+    // volley: fire rings on the stagger cadence.
+    this.ringTime -= dt;
+    while (this.ringTime <= 0 && this.ringIndex < this.ringCount) {
+      this.fireRing(bx, by, this.ringAngle + ringOffset(this.ringIndex, r.count));
+      this.ringIndex++;
+      this.ringTime += r.ringInterval;
+    }
+    if (this.ringIndex >= this.ringCount) this.ringState = "idle";
+  }
+
+  /** One evenly-spaced ring of slow spores (weavable at base player speed). */
+  private fireRing(bx: number, by: number, offset: number) {
+    const r = CONSTANTS.boss.ring;
+    for (const a of radialBurstAngles(r.count, offset)) {
+      this.entities.spawnGlob(bx, by, Math.cos(a) * r.bulletSpeed, Math.sin(a) * r.bulletSpeed, r.bulletDmg);
+    }
+    this.entities.pop(bx, by, COLORS.toxic, 10);
+    audio.sfx("shootCannon", { pitch: 0.75 });
+  }
+
+  /** Telegraphed beam: a warning line locks onto the ship's position, renders
+   *  for the telegraph window, then burns along the SAME line (dodge by
+   *  leaving the corridor). Offline in phase 1; faster in phase 3. */
+  private updateBeam(dt: number, phase: BossPhase, bx: number, by: number, sx: number, sy: number) {
+    const bm = CONSTANTS.boss.beam;
+    if (this.beamState === "idle") {
+      const plan = beamPlan(phase);
+      if (!plan) return; // offline this phase — the timer holds
+      this.beamT -= dt;
+      if (this.beamT <= 0 && this.dashState === "none" && this.ringState === "idle") {
+        this.beamT = plan.cooldown;
+        this.beamState = "warn";
+        this.beamTime = bm.telegraph;
+        // Lock the firing line: from the boss through the ship, full length.
+        const dx = sx - bx;
+        const dy = sy - by;
+        const d = Math.hypot(dx, dy) || 1;
+        this.beamX1 = bx;
+        this.beamY1 = by;
+        this.beamX2 = bx + (dx / d) * bm.length;
+        this.beamY2 = by + (dy / d) * bm.length;
+        audio.sfx("berserk"); // warning klaxon while the line renders
+      }
+      return;
+    }
+    if (this.beamState === "warn") {
+      this.beamTime -= dt;
+      const t01 = 1 - Math.max(0, this.beamTime) / bm.telegraph;
+      this.entities.showBossBeamWarn(this.beamX1, this.beamY1, this.beamX2, this.beamY2, bm.width, t01);
+      if (this.beamTime <= 0) {
+        this.beamState = "fire";
+        this.beamTime = bm.duration;
+        audio.sfx("laser", { pitch: 0.6 });
+        this.render.addShake(CONSTANTS.fx.shake.bossCharge);
+      }
+      return;
+    }
+    // fire: burn along the locked line; the ship's i-frames gate repeat ticks.
+    this.beamTime -= dt;
+    const left = Math.max(0, this.beamTime) / bm.duration;
+    this.entities.showBossBeamFire(this.beamX1, this.beamY1, this.beamX2, this.beamY2, bm.width, left);
+    const d = pointSegDist(sx, sy, this.beamX1, this.beamY1, this.beamX2, this.beamY2);
+    if (d < bm.width / 2 + CONSTANTS.player.width * 0.5) this.host.hitPlayer(bm.damage);
+    if (this.beamTime <= 0) {
+      this.beamState = "idle";
+      this.entities.hideBossBeam();
+    }
+  }
+
   /** Health hit zero: rewards + teardown, then hand run-state to the Game. */
   defeated(e: Enemy) {
     const x = e.mesh.position.x;
@@ -198,14 +350,17 @@ export class BossEncounter {
     e.mesh.visible = false;
     this.disposeBossMesh(e);
     this.boss = null;
+    this.resetAttacks();
     // Triumphant gem shower + storm.
     for (let i = 0; i < 10; i++) {
       this.entities.spawnGem(x + (Math.random() - 0.5) * 12, y + (Math.random() - 0.5) * 12, 25);
     }
-    this.entities.pop(x, y, COLORS.hellfire, 40);
-    this.entities.pop(x, y, COLORS.bone, 30);
+    this.burst(x, y, COLORS.hellfire, CONSTANTS.fx.burst.bossDeath);
+    this.burst(x, y, COLORS.bone, CONSTANTS.fx.burst.bossPhase);
     this.entities.pop(x, y, COLORS.bloodHot, 30);
     this.render.addShake(CONSTANTS.fx.shake.bossDeath);
+    audio.sfx("explosion", { pitch: 0.7 });
+    audio.sfx("victory");
     this.host.onDefeated();
   }
 
@@ -219,11 +374,37 @@ export class BossEncounter {
     }
     this.boss = null;
     this.triggered = false;
+    this.resetAttacks();
   }
 
   /** Teardown / HMR: free the bespoke mesh before EntitySystem.dispose(). */
   dispose() {
     this.reset();
+  }
+
+  /** Clear the telegraphed-attack machines (run start/exit, boss death). */
+  private resetAttacks() {
+    this.phaseSeen = 1;
+    this.ringState = "idle";
+    this.ringT = 0;
+    this.ringTime = 0;
+    this.ringIndex = 0;
+    this.beamState = "idle";
+    this.beamT = 0;
+    this.beamTime = 0;
+    this.entities.hideBossBeam();
+  }
+
+  /** Kit ParticleBursts spawn with the data-driven sizing from fx.burst. */
+  private burst(x: number, y: number, color: number, b: { count: number; speed: number; life: number; size: number }) {
+    this.render.bursts.spawn({
+      position: { x, y, z: 0.5 },
+      color,
+      count: b.count,
+      speed: b.speed,
+      life: b.life,
+      size: b.size,
+    });
   }
 
   /** The bespoke (non-pooled) boss mesh: remove + free GPU resources. */
@@ -238,5 +419,6 @@ export class BossEncounter {
   }
 }
 
-// Scratch color (avoid `new THREE.Color` in hot loops).
+// Scratch colors (avoid `new THREE.Color` in hot loops).
 const BONE = new THREE.Color(COLORS.bone);
+const TOXIC_HOT = new THREE.Color(COLORS.toxicHot);

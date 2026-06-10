@@ -1,0 +1,352 @@
+[
+  {
+    "slug": "ranger",
+    "name": "Ranger",
+    "factionSlug": "the-pyre",
+    "factionName": "The Pyre",
+    "role": "Balanced Purger",
+    "tagline": "The professional zealot you learn the breach with.",
+    "accent": "hellfire",
+    "overview": "Start here. The Ranger is the Pyre's baseline Purger, the balanced operator every player should understand first: medium armor, rifle up, average everything and reliable in all of it.\n\nNot a clean sci-fi marine. A professional zealot in scorched gunmetal who does the job and walks back out of the breach.",
+    "gameplayRead": ["Medium armor", "Rifle-first silhouette", "Average mobility, health, and damage"],
+    "visualMotifs": [
+      "Scorched gunmetal armor",
+      "Bone-white heat-baked ceramic plates",
+      "Furnace visor with blood-hot and hellfire orange heat lines",
+      "Dim diagnostics only, no neon"
+    ],
+    "appearsIn": ["scourge-survivors"],
+    "spriteBase": "player-ranger-front"
+  },
+  {
+    "slug": "bulwark",
+    "name": "Bulwark",
+    "factionSlug": "the-pyre",
+    "factionName": "The Pyre",
+    "role": "Heavy Purger",
+    "tagline": "A walking furnace that stands in the breach longer than anyone should.",
+    "accent": "hellfire",
+    "overview": "You are the slowest thing on the field and the last thing still standing. Bulwark is the Pyre's heavy Purger, slabbed in scorched plate and built to soak breach pressure that would erase anyone else. No Warden wall-builder here, just a furnace with legs and a cannon.\n\nPlant your boots, vent heat through your chest, and let the Scourge break itself against you while your shotgun does the closing argument.",
+    "gameplayRead": [
+      "Wide, unmistakable silhouette",
+      "Heavy cannon or rotary shotgun",
+      "Slowest but most durable Pyre avatar"
+    ],
+    "visualMotifs": [
+      "Broad scorched plates and reinforced boots",
+      "Furnace vents in chest, shoulders, and forearms",
+      "Blood-hot red heat scars under blackened armor",
+      "Cracked bone-ceramic panels from repeated breach descents"
+    ],
+    "appearsIn": ["scourge-survivors"],
+    "spriteBase": "player-heavy-front"
+  },
+  {
+    "slug": "vector",
+    "name": "Vector",
+    "factionSlug": "the-pyre",
+    "factionName": "The Pyre",
+    "role": "Scout Purger",
+    "tagline": "Stays alive by never standing still.",
+    "accent": "toxic",
+    "overview": "A breach runner with a death wish and a sensor suite. Vector is the Pyre's fast, light scout, sent in to mark breaches and kite swarms while everyone slower tries to keep up.\n\nSlim armor over a black pressure suit, long running legs, and ember accents kept thin and quick. Speed is the build, and the build is staying alive.",
+    "gameplayRead": ["Slim silhouette", "Compact SMG or carbine", "Sensor fins, grapnel, or breach-marker gear"],
+    "visualMotifs": [
+      "Light scorched armor over a black pressure suit",
+      "Long running-leg silhouette",
+      "Narrow furnace visor",
+      "Thin, fast-looking ember accents"
+    ],
+    "appearsIn": ["scourge-survivors"],
+    "spriteBase": "player-scout-front"
+  },
+  {
+    "slug": "patch",
+    "name": "Patch",
+    "factionSlug": "the-pyre",
+    "factionName": "The Pyre",
+    "role": "Support Purger",
+    "tagline": "Cauterizes damage faster than the breach can finish you.",
+    "accent": "hellfire",
+    "overview": "Forget clean doctors and white coats. Patch is a Pyre burn technician, sealing wounds shut with heat and keeping Purgers moving when the breach is doing its best to stop them.\n\nMedium-light armor, an injector rig, and zero intention of standing in the back. Support that still pulls a trigger.",
+    "gameplayRead": [
+      "Medium-light armor",
+      "Injector tubes, heat-seal tools, and support rig",
+      "Supportive without losing combat posture"
+    ],
+    "visualMotifs": [
+      "Scorched cauterizer harness",
+      "Bone-white shoulder plates with abstract marks",
+      "Hellfire orange medical heat glow",
+      "Blood-stained utility pouches and field repairs"
+    ],
+    "appearsIn": ["scourge-survivors"],
+    "spriteBase": "player-medic-front"
+  },
+  {
+    "slug": "pyre-duelist",
+    "name": "Pyre Duelist",
+    "factionSlug": "the-pyre",
+    "factionName": "The Pyre",
+    "role": "Pactfall melee carry",
+    "tagline": "Pyre doctrine sharpened into arena pressure.",
+    "accent": "blood",
+    "overview": "Sanctioned violence, where the Pact gets tested but never broken. The Duelist is the Pyre's arena-tuned fighter: lighter, faster, and built to close the distance before you can think about it.\n\nEmber blade in hand, triangular and aggressive, this is a Purger who treats every match as a reason to get closer.",
+    "gameplayRead": [
+      "Lighter armor than the Ranger",
+      "Ember blade, carbide, or close-range heat weapon",
+      "Fast triangular silhouette"
+    ],
+    "visualMotifs": [
+      "Scorched armor and ash cloth accents",
+      "Blood-hot Pyre heat lines",
+      "Abstract ritual-industrial marks"
+    ],
+    "appearsIn": ["pactfall"],
+    "spriteBase": "portrait-pyre-duelist"
+  },
+  {
+    "slug": "pyre-cauterizer",
+    "name": "Pyre Cauterizer",
+    "factionSlug": "the-pyre",
+    "factionName": "The Pyre",
+    "role": "Pactfall area control",
+    "tagline": "Every problem is just something to burn closed.",
+    "accent": "hellfire",
+    "overview": "A portable breach furnace dropped into the arena. The Cauterizer is the Pyre's area controller, masked and pressure-sealed, dragging heat tanks and a short-range burner that turns whole zones into no-go ground.\n\nWhere Patch heals, you erase. Set the floor on fire and watch the duel become a survival problem.",
+    "gameplayRead": [
+      "Heat tanks and short-range burner weapon",
+      "Masked, pressure-sealed silhouette",
+      "Offensive-first damage-over-time control"
+    ],
+    "visualMotifs": [
+      "Furnace mask",
+      "Scorched tanks and hoses",
+      "Blood-hot red and hellfire orange heat scars",
+      "Blackened armor and bone-ceramic plates"
+    ],
+    "appearsIn": ["pactfall"],
+    "spriteBase": "portrait-pyre-cauterizer"
+  },
+  {
+    "slug": "pyre-interceptor-pilot",
+    "name": "Pyre Interceptor Pilot",
+    "factionSlug": "the-pyre",
+    "factionName": "The Pyre",
+    "role": "Starblight pilot",
+    "tagline": "Burns the breach out of orbit before it ever falls into the lanes.",
+    "accent": "hellfire",
+    "overview": "A Purger pointed at the sky. The Interceptor Pilot takes the Pyre's doctrine to cockpit scale, hunting Scourge breach matter in orbit so it never reaches the ground below.\n\nFast, fragile, and built to gamble. Offensive burn weapons and a risky upgrade tree for pilots who'd rather win hard than play safe.",
+    "gameplayRead": [
+      "Fast interceptor profile",
+      "Flight armor and sealed helmet",
+      "Offensive burn weapons and a risky upgrade tree"
+    ],
+    "visualMotifs": [
+      "Scorched pressure suit",
+      "Furnace visor",
+      "Compact life-support rig",
+      "Blood-hot warning lamps and hellfire weapon cues"
+    ],
+    "appearsIn": ["starblight"],
+    "spriteBase": "portrait-pyre-interceptor-pilot"
+  },
+  {
+    "slug": "field-engineer",
+    "name": "Field Engineer",
+    "factionSlug": "the-wardens",
+    "factionName": "The Wardens",
+    "role": "Tower builder",
+    "tagline": "Turns broken ground into a defendable lane.",
+    "accent": "rust",
+    "overview": "Somebody has to make the line hold, and that somebody is you. The Field Engineer is the Wardens' baseline builder, a practical technician working under fire with a tower-control rig and a harness full of clamps and repairs.\n\nNo glory, no heroics. Just put the towers up, keep them firing, and make sure the lane is still there when the Scourge arrives.",
+    "gameplayRead": [
+      "Compact utility silhouette",
+      "Tower-control tablet, baton, or wrist rig",
+      "Tool harness and repair clamps"
+    ],
+    "visualMotifs": [
+      "Gunmetal work armor",
+      "Industrial yellow markings and bone stencils",
+      "Ember-lit shield hardware",
+      "Grease, scratches, weld scars, and field repairs"
+    ],
+    "appearsIn": ["deadlane"],
+    "spriteBase": "portrait-field-engineer"
+  },
+  {
+    "slug": "lane-gunner",
+    "name": "Lane Gunner",
+    "factionSlug": "the-wardens",
+    "factionName": "The Wardens",
+    "role": "Heavy defender",
+    "tagline": "Stay planted and let the Scourge break itself on the line.",
+    "accent": "rust",
+    "overview": "Attrition is a strategy, and you are the strategy. The Lane Gunner is the Wardens' heavy ranged defender: broad stance, fed ammo belt, and a weapon that does not stop until the lane is clear.\n\nYou win by not moving. Brace, feed, fire, and let the horde grind itself into the dirt in front of you.",
+    "gameplayRead": [
+      "Broad, planted stance",
+      "Heavy weapon with ammo feed",
+      "Reinforced knee braces and shoulder plates"
+    ],
+    "visualMotifs": [
+      "Worn steel and gunmetal armor",
+      "Industrial yellow hazard accents",
+      "Ember targeting lamps",
+      "Boxy, modular Warden shape language"
+    ],
+    "appearsIn": ["deadlane"],
+    "spriteBase": "portrait-lane-gunner"
+  },
+  {
+    "slug": "wallwright",
+    "name": "Wallwright",
+    "factionSlug": "the-wardens",
+    "factionName": "The Wardens",
+    "role": "Shield and barricade specialist",
+    "tagline": "Builds the last wall before a lane becomes a grave.",
+    "accent": "rust",
+    "overview": "When the line is about to fall, you're what's left between it and the dirt. The Wallwright is the Wardens' shield-and-barricade specialist, a builder-protector hauling heavy field hardware into the worst of it.\n\nShield emitter on the back, barricade anchors on the arms, and a slab of chest armor between the Scourge and everyone behind you. No paladins here, just a wall that fights back.",
+    "gameplayRead": [
+      "Square heavy silhouette",
+      "Shield emitter backpack",
+      "Deployable barricade anchors on arms or belt"
+    ],
+    "visualMotifs": [
+      "Slab chest armor",
+      "Gunmetal and worn steel",
+      "Industrial hazard stripes used sparingly",
+      "Ember-lit field nodes"
+    ],
+    "appearsIn": ["deadlane"],
+    "spriteBase": "portrait-wallwright"
+  },
+  {
+    "slug": "warden-artillerist",
+    "name": "Warden Artillerist",
+    "factionSlug": "the-wardens",
+    "factionName": "The Wardens",
+    "role": "Pactfall ranged artillery",
+    "tagline": "Brings siege math into sanctioned arena combat.",
+    "accent": "rust",
+    "overview": "Aggression is for amateurs. The Artillerist is the Wardens' long-range arena hero, dropping controlled firepower from a braced stance while everyone else scrambles in the open.\n\nShoulder targeting rig, compact launcher, and a calm that comes from doing the math before the round even starts. You don't chase the fight. You range it.",
+    "gameplayRead": ["Shoulder targeting rig", "Compact artillery launcher", "Stable, braced stance"],
+    "visualMotifs": [
+      "Gunmetal and worn steel",
+      "Industrial yellow markings",
+      "Ember rangefinder lamps",
+      "Square modular armor"
+    ],
+    "appearsIn": ["pactfall"],
+    "spriteBase": "portrait-warden-artillerist"
+  },
+  {
+    "slug": "warden-bastion",
+    "name": "Warden Bastion",
+    "factionSlug": "the-wardens",
+    "factionName": "The Wardens",
+    "role": "Pactfall tank support",
+    "tagline": "Turns a duel into a fortified position.",
+    "accent": "rust",
+    "overview": "The line holds, even inside a blood-arena. The Bastion is the Wardens' arena tank and support, deploying a shield projector to turn open ground into a position your team can actually live on.\n\nHeavy but organized, square and deliberate. Where the Pyre heavy burns through, you simply refuse to give the ground back.",
+    "gameplayRead": ["Shield projector", "Square silhouette", "Heavy but organized armor geometry"],
+    "visualMotifs": [
+      "Worn gunmetal slab armor with industrial yellow",
+      "Ember barrier hardware",
+      "Riveted plates and utility braces"
+    ],
+    "appearsIn": ["pactfall"],
+    "spriteBase": "portrait-warden-bastion"
+  },
+  {
+    "slug": "warden-defense-pilot",
+    "name": "Warden Defense Pilot",
+    "factionSlug": "the-wardens",
+    "factionName": "The Wardens",
+    "role": "Starblight pilot",
+    "tagline": "Lane defense, moved into orbit.",
+    "accent": "rust",
+    "overview": "The lanes below stay safe because you hold the sky above them. The Defense Pilot is the Wardens' orbital protector, flying a sturdier profile built around shields, barriers, and keeping infrastructure intact.\n\nNo clean NASA fantasy here. Reinforced flight suit, shield-control harness, and a cockpit full of grime and war repairs. Defensive flying for pilots who'd rather everyone make it home.",
+    "gameplayRead": [
+      "Sturdier ship and armor profile than the Pyre pilot",
+      "Shield-control harness",
+      "Defensive drones or barrier upgrades"
+    ],
+    "visualMotifs": [
+      "Reinforced Warden flight suit",
+      "Gunmetal plating and industrial yellow marks",
+      "Ember-lit shield hardware",
+      "Practical, repaired cockpit gear"
+    ],
+    "appearsIn": ["starblight"],
+    "spriteBase": "portrait-warden-defense-pilot"
+  },
+  {
+    "slug": "pyre-courier",
+    "name": "Pyre Courier",
+    "factionSlug": "the-pyre",
+    "factionName": "The Pyre",
+    "role": "Redline courier",
+    "tagline": "Runs a burn order down the dead roads faster than the Choir can close them.",
+    "accent": "hellfire",
+    "overview": "When the Scourge cuts the lanes and the wired relays go dark, the order still has to move — so you move it on foot, faster than the horde can re-route to cut you off.\n\nThe Pyre way: strip the armor, take the boost, and burn every repeater-pylon you pass. Stop, and the Choir's omniscience snaps shut around you. So don't stop.",
+    "gameplayRead": [
+      "Light, forward-leaning silhouette built for pure momentum",
+      "Trades armor for top speed and aggressive boost",
+      "Clips repeater-pylons on the way past — each kill sends the local horde feral"
+    ],
+    "visualMotifs": [
+      "Stripped scorched plate and ash-cloth streamers",
+      "Blood-hot Pyre heat lines trailing the limbs",
+      "Furnace visor and a hellfire message canister",
+      "Rust-and-gunmetal road grime, no neon"
+    ],
+    "appearsIn": ["redline"],
+    "spriteBase": "portrait-pyre-courier"
+  },
+  {
+    "slug": "warden-courier",
+    "name": "Warden Courier",
+    "factionSlug": "the-wardens",
+    "factionName": "The Wardens",
+    "role": "Redline courier",
+    "tagline": "Carries a hold order through the rot and intends to deliver it intact.",
+    "accent": "rust",
+    "overview": "Someone has to get the hold order to the next holdout, and they intend to arrive with it intact. The Warden Courier trades the Pyre runner's reckless top speed for control and a cargo rig that survives contact.\n\nSpeed as a duty, not a gamble — keep momentum through the rot, protect the message like a wall, and don't let the lane between holdouts become a grave.",
+    "gameplayRead": [
+      "Heavier, steadier runner than the Pyre Courier",
+      "Reinforced cargo rig — the order survives the hits",
+      "Holds momentum through contact instead of gambling on raw pace"
+    ],
+    "visualMotifs": [
+      "Gunmetal road armor with sparing industrial-yellow stripes",
+      "Armored, sealed message-case and courier harness",
+      "Ember rangefinder lamps, worn steel, weld scars",
+      "Boxy, modular Warden shape language"
+    ],
+    "appearsIn": ["redline"],
+    "spriteBase": "portrait-warden-courier"
+  },
+  {
+    "slug": "pyre-saboteur",
+    "name": "Pyre Saboteur",
+    "factionSlug": "the-pyre",
+    "factionName": "The Pyre",
+    "role": "Rothulk saboteur",
+    "tagline": "Climbs a living breach-ship to its heart and sets the core on fire.",
+    "accent": "hellfire",
+    "overview": "A rothulk is a beached Scourge breach-ship grown into the ground, and you're the one Purger going inside it. Light, agile, and carrying a single ignition charge, you platform up the living nest toward the breach-core that keeps it connected.\n\nThis isn't a firefight — it's a climb. Stay out of the Choir's massed sight, reach the heart, set it on fire, and run as the severed node turns feral around you.",
+    "gameplayRead": [
+      "Light, agile climber built for jumps, swings, and wall-work",
+      "Carries sabotage charges — reaching the core matters, not clearing the room",
+      "Survives by routing through the gaps in the Choir's massed sight"
+    ],
+    "visualMotifs": [
+      "Stripped, dark, low-profile infiltration rig",
+      "Furnace visor dimmed to a sliver so the nest can't read the glow",
+      "A hellfire ignition charge at the hip",
+      "Bone-ceramic grips, blood-hot scars, rust and gore from the climb"
+    ],
+    "appearsIn": ["rothulk"],
+    "spriteBase": "portrait-pyre-saboteur"
+  }
+]

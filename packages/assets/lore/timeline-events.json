@@ -1,0 +1,152 @@
+[
+  {
+    "slug": "zero-day-first-contact",
+    "era": "Zero Day — the Invasion",
+    "order": 1,
+    "title": "The Night We Lost the Sky",
+    "blurb": "First contact with the Scourge out of the void is a space battle, and humanity loses it — not ready, too many. The orbital and sky defense collapses over a world that does not yet know it is already falling. The orbital relays the Skyhook still hunts were seeded in this sky.",
+    "tags": ["origin", "battle"],
+    "locationSlugs": ["the-skyhook"],
+    "factionSlugs": ["scourge"]
+  },
+  {
+    "slug": "zero-day-landfall",
+    "era": "Zero Day — the Invasion",
+    "order": 2,
+    "title": "Landfall",
+    "blurb": "The Scourge makes landfall and the world falls. The first breaches root groundside — physical, entrenched nests punched in from the void that never stop vomiting horde.",
+    "tags": ["origin", "battle"],
+    "locationSlugs": [],
+    "factionSlugs": ["scourge"]
+  },
+  {
+    "slug": "the-long-fall",
+    "era": "The Long Fall",
+    "order": 3,
+    "title": "The Old World Ends",
+    "blurb": "In the months after Zero Day, cities are consumed and the fleets are gone. Survivors scatter down the only roads left — the lanes. The old world ends here.",
+    "tags": ["collapse", "exodus"],
+    "locationSlugs": [],
+    "factionSlugs": ["scourge"]
+  },
+  {
+    "slug": "the-hush-drowns",
+    "era": "The Long Fall",
+    "order": 4,
+    "title": "The Delta Drowns",
+    "blurb": "When the world falls, the water finishes what the Scourge started: a river-mouth city's storm-walls fail and the streets go under. What survives in the flooded fen learns to live scattered, silent, and dark — the holdout that will be called the Hush.",
+    "tags": ["collapse", "survival"],
+    "locationSlugs": ["the-hush"],
+    "factionSlugs": []
+  },
+  {
+    "slug": "the-schism",
+    "era": "The Schism",
+    "order": 5,
+    "title": "The Schism",
+    "blurb": "The survivors split by doctrine, not enmity. The remnant army holds and rebuilds as the Wardens — humanity's closest thing to a state — while a zealot order breaks away as the Pyre, convinced that holding is just a slower death and the only cure is fire.",
+    "tags": ["politics", "schism"],
+    "locationSlugs": [],
+    "factionSlugs": ["the-wardens", "the-pyre"]
+  },
+  {
+    "slug": "the-pact-sworn",
+    "era": "The Pact",
+    "order": 6,
+    "title": "The Pact Is Sworn",
+    "blurb": "After the rivalry nearly costs a holdout its walls, both sides swear the Pact: whatever the feud, humans stand together the instant a breach opens. The feud is exiled to sanctioned arenas like Ashgate's arena district — never the field.",
+    "tags": ["politics", "oath"],
+    "locationSlugs": ["ashgate"],
+    "factionSlugs": ["the-wardens", "the-pyre"]
+  },
+  {
+    "slug": "the-repeater-secret",
+    "era": "The Lane Wars",
+    "order": 7,
+    "title": "The Repeater Secret",
+    "blurb": "The Resistance fortifies the lanes and learns the Scourge's secret: cutting its repeaters severs it from the Choir, leaving the horde feral — blind, dumb, instinct-only. The war becomes a fight to fragment the signal.",
+    "tags": ["discovery", "strategy"],
+    "locationSlugs": [],
+    "factionSlugs": ["the-wardens", "the-pyre", "scourge"]
+  },
+  {
+    "slug": "the-wall-at-ashgate",
+    "era": "The Lane Wars",
+    "order": 8,
+    "title": "The Wall at Ashgate",
+    "blurb": "The Wardens make the foundry city their capital — not for walls it never had, but for its output and the three lanes that converge there — and seal the eastern approach under a rampart of towers, kill-corridors, and artillery stacked out of a decade of holding. Above it, the Spire's guns keep the one record that matters: it has never fallen.",
+    "tags": ["fortification", "battle"],
+    "locationSlugs": ["ashgate", "the-spire", "the-spire-causeway"],
+    "factionSlugs": ["the-wardens"]
+  },
+  {
+    "slug": "the-lanes-go-dark",
+    "era": "The Lane Wars",
+    "order": 9,
+    "title": "The Lanes Go Dark",
+    "blurb": "The Scourge cuts the lanes and the comms between holdouts, and the corridors between them become the Hollow Lanes — severed, pylon-seeded, held by no one. Lone runners carry the message on foot, faster than the horde can close, because a severed holdout is a dead holdout.",
+    "tags": ["battle", "collapse"],
+    "locationSlugs": ["the-hollow-lanes", "the-hush"],
+    "factionSlugs": ["the-pyre", "the-wardens", "scourge"]
+  },
+  {
+    "slug": "the-ninety-second-window",
+    "era": "The Lane Wars",
+    "order": 10,
+    "title": "The Ninety-Second Window",
+    "blurb": "Warden signals crews at Holdout Nine time the Choir's response: about ninety seconds from first contact inside a repeater-pylon's radius to both ends of the road being walled. The Wardens log it as a response window. The couriers turn it into a dare.",
+    "tags": ["discovery", "strategy"],
+    "locationSlugs": ["holdout-nine", "the-hollow-lanes"],
+    "factionSlugs": ["the-wardens"]
+  },
+  {
+    "slug": "the-first-descents",
+    "era": "The Descent",
+    "order": 11,
+    "title": "The First Descents",
+    "blurb": "The first Purgers go into the breaches to sever nodes and burn the sources from the inside — most do not come back. Runs muster at the Pyre Gate, go down Pyre Road, cross the Maw, and end where the names run out: Perdition.",
+    "tags": ["doctrine", "battle", "sacrifice"],
+    "locationSlugs": ["the-pyre-gate", "ash-reach", "the-maw", "perdition"],
+    "factionSlugs": ["the-pyre"]
+  },
+  {
+    "slug": "the-wells-go-pact",
+    "era": "The Descent",
+    "order": 12,
+    "title": "The Wells Go Pact",
+    "blurb": "The Pyre come back from the first descents with empty cauterizer tanks and people still moving inside their armor; the Wardens say the grid cannot spare the draw. The argument lasts until the next breach horn — after that, the Cinder Wells become Pact ground, Warden meters on one wall and Pyre tank racks on the other.",
+    "tags": ["politics"],
+    "locationSlugs": ["the-cinder-wells", "ashgate"],
+    "factionSlugs": ["the-wardens", "the-pyre"]
+  },
+  {
+    "slug": "climbing-the-breach-ships",
+    "era": "The Descent",
+    "order": 13,
+    "title": "Climbing the Breach-Ships",
+    "blurb": "Pyre saboteurs climb the living breach-ships beached on Cinder Flats to ignite their cores and sever the local node. The biggest of them grew into the earth instead of just sitting on it — the Pyre stopped calling it a ship and named it the Rothulk.",
+    "tags": ["sabotage", "battle"],
+    "locationSlugs": ["the-rothulk", "cinder-flats"],
+    "factionSlugs": ["the-pyre", "scourge"]
+  },
+  {
+    "slug": "the-partial-sever",
+    "era": "The Descent",
+    "order": 14,
+    "title": "The Partial Sever",
+    "blurb": "Six Purgers go down past the Maw toward Perdition's edge; one comes up, three days late, tanks empty and visor scoured grey — the only return on record. The Pyre log it as a partial sever and list the lane that stayed quiet for a year after, which down there counts as a victory.",
+    "tags": ["battle", "sacrifice"],
+    "locationSlugs": ["perdition", "the-maw"],
+    "factionSlugs": ["the-pyre"]
+  },
+  {
+    "slug": "the-listeners-emerge",
+    "era": "The Listeners Emerge",
+    "order": 15,
+    "title": "The Listeners Emerge",
+    "blurb": "A heresy spreads: that the Choir could be understood and steered rather than only fought. Hunted by Pyre and Wardens alike, the Listeners keep severed nodes alive — and listen.",
+    "tags": ["heresy", "politics"],
+    "locationSlugs": [],
+    "factionSlugs": ["the-listeners", "the-pyre", "the-wardens", "scourge"]
+  }
+]

@@ -8,7 +8,7 @@ import type { Entity } from "./types";
 let meshSeed = 0;
 function baseEntity(
   req: Pick<Entity, "kind" | "team" | "mesh" | "maxHp" | "radius"> &
-    Partial<Pick<Entity, "attackRange" | "attackDamage" | "attackCooldown">>,
+    Partial<Pick<Entity, "attackRange" | "attackDamage" | "attackCooldown" | "mana" | "maxMana">>,
 ): Entity {
   return {
     id: meshSeed++,
@@ -19,6 +19,9 @@ function baseEntity(
     attackRange: req.attackRange ?? 0,
     attackDamage: req.attackDamage ?? 0,
     attackCooldown: req.attackCooldown ?? 0,
+    mana: req.mana ?? 0,
+    maxMana: req.maxMana ?? 0,
+    slowTimer: 0,
     kind: req.kind,
     team: req.team,
     mesh: req.mesh,
@@ -70,6 +73,8 @@ export function makeChampion(team: Team = "pyre"): Entity {
     attackRange: CONSTANTS.champion.attackRange,
     attackDamage: CONSTANTS.champion.attackDamage,
     attackCooldown: CONSTANTS.champion.attackCooldown,
+    mana: CONSTANTS.champion.maxMana,
+    maxMana: CONSTANTS.champion.maxMana,
   });
 }
 

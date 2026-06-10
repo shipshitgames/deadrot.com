@@ -46,8 +46,6 @@ export const CONSTANTS = {
   // ---- Economy --------------------------------------------------------------
   economy: {
     startGold: 175,
-    towerCost: 50,
-    killReward: 12,
     waveClearBonus: 25,
   },
 
@@ -56,28 +54,93 @@ export const CONSTANTS = {
     startHp: 20,
   },
 
-  // ---- Tower ----------------------------------------------------------------
-  tower: {
-    range: 6.25,
-    fireRate: 1.6, // shots per second
-    damage: 16,
-    projectileSpeed: 22,
-    turnSpeed: 9, // rad/s the turret rotates toward target
+  // ---- Tower archetypes -------------------------------------------------------
+  // Select with 1/2/3. slowFactor/aoeRadius are 0 where the archetype has none.
+  towers: {
+    ember: {
+      label: "EMBER TURRET",
+      cost: 50,
+      range: 6.25,
+      fireRate: 1.6, // shots per second
+      damage: 16,
+      projectileSpeed: 22,
+      turnSpeed: 9, // rad/s the turret rotates toward target
+      slowFactor: 0,
+      slowDuration: 0,
+      aoeRadius: 0,
+    },
+    stasis: {
+      label: "STASIS PYLON",
+      cost: 65,
+      range: 5.0,
+      fireRate: 0.9,
+      damage: 5,
+      projectileSpeed: 26,
+      turnSpeed: 12,
+      slowFactor: 0.45, // fraction of speed removed while slowed
+      slowDuration: 1.6, // seconds the slow lasts after a hit
+      aoeRadius: 0,
+    },
+    mortar: {
+      label: "ASH MORTAR",
+      cost: 90,
+      range: 8.75,
+      fireRate: 0.45,
+      damage: 34,
+      projectileSpeed: 11,
+      turnSpeed: 5,
+      slowFactor: 0,
+      slowDuration: 0,
+      aoeRadius: 2.1, // splash radius around the impact
+    },
   },
 
-  // ---- Creep (Scourge) ------------------------------------------------------
-  creep: {
-    baseHp: 30,
-    baseSpeed: 2.25, // world units / sec along the path
-    radius: 0.45,
-    // per-wave scaling
+  // ---- Creep (Scourge) archetypes --------------------------------------------
+  creeps: {
+    shambler: {
+      label: "SHAMBLER",
+      hp: 30,
+      speed: 2.25, // world units / sec along the path
+      radius: 0.45,
+      reward: 12,
+      breachDamage: 1, // base HP lost when it reaches the door
+    },
+    ripper: {
+      label: "RIPPER",
+      hp: 13,
+      speed: 4.2,
+      radius: 0.3,
+      reward: 7,
+      breachDamage: 1,
+    },
+    hulk: {
+      label: "BREACH HULK",
+      hp: 110,
+      speed: 1.4,
+      radius: 0.62,
+      reward: 32,
+      breachDamage: 3,
+    },
+    boss: {
+      label: "LANE TYRANT",
+      hp: 420,
+      speed: 1.15,
+      radius: 0.85,
+      reward: 130,
+      breachDamage: 8,
+    },
+  },
+
+  // per-wave scaling applied to every creep kind
+  creepScaling: {
     hpGrowth: 1.22, // multiplied each wave
     speedGrowth: 1.04,
   },
 
   // ---- Waves ----------------------------------------------------------------
   waves: {
-    total: 8,
+    total: 10,
+    bossEvery: 5, // a Lane Tyrant leads every Nth wave
     baseCount: 6, // creeps in wave 1
     countGrowth: 2, // extra creeps added per wave
     spawnInterval: 0.85, // seconds between creeps in a wave
@@ -111,6 +174,7 @@ export const CONSTANTS = {
 
   // ---- Loop -----------------------------------------------------------------
   loop: {
+    fixedDt: 1 / 120, // deterministic physics step (game-kit fixed loop)
     maxDelta: 0.05, // clamp dt so a tab-out can't fling the sim
   },
 } as const;

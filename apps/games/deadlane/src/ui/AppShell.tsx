@@ -1,5 +1,7 @@
+import { codexEntriesForGame } from "@deadrot/game-kit";
 import menuHero from "@shipshitgames/assets/games/deadlane/ui/menu/title.webp";
 import {
+  CodexScreen,
   GameSettingsScreen,
   GlobalMusicToggle,
   goToWarlineLobby,
@@ -18,11 +20,19 @@ import {
   useEnterToReveal,
 } from "@shipshitgames/ui";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { unlockedBestiarySlugs } from "../codexUnlocks";
 import { getBannerSnapshot, subscribeBanner } from "./bannerBridge";
 import { getPauseSnapshot, subscribePause } from "./pauseBridge";
 
 export function AppShell() {
   const [showSettings, setShowSettings] = useState(false);
+  const [showCodex, setShowCodex] = useState(false);
+  // Re-read the unlock set each time the codex opens so kills from the run
+  // that just ended are reflected without any live bridge.
+  const codexEntries = useMemo(
+    () => (showCodex ? codexEntriesForGame("deadlane", { unlockedSlugs: unlockedBestiarySlugs() }) : []),
+    [showCodex],
+  );
   const banner = useSyncExternalStore(subscribeBanner, getBannerSnapshot, getBannerSnapshot);
   const pause = useSyncExternalStore(subscribePause, getPauseSnapshot, getPauseSnapshot);
   // The title <MainMenuScreen> is always mounted (visibility toggled via the
@@ -83,6 +93,12 @@ export function AppShell() {
             </span>
           </div>
           <div className="stat ssg-hud-corner">
+            <span className="stat-label ssg-stat-label">Tower [1-3]</span>
+            <span className="stat-value ssg-stat-value ssg-stat-value--text" id="stat-tower">
+              {banner.tower}
+            </span>
+          </div>
+          <div className="stat ssg-hud-corner">
             <span className="stat-label ssg-stat-label">Build</span>
             <span className="stat-value ssg-stat-value" id="stat-build">
               {banner.build}
@@ -131,6 +147,13 @@ export function AppShell() {
               <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
               <MainMenuAction
                 type="button"
+                variant="default"
+                label="Codex"
+                meta="War dossiers"
+                onClick={() => setShowCodex(true)}
+              />
+              <MainMenuAction
+                type="button"
                 variant="settings"
                 label="Settings"
                 meta="Audio"
@@ -161,6 +184,16 @@ export function AppShell() {
           onClose={() => setShowSettings(false)}
           kicker="Wardens Console"
           backgroundImage={menuHero}
+        />
+      )}
+
+      {showCodex && (
+        <CodexScreen
+          open
+          onClose={() => setShowCodex(false)}
+          kicker="Ashgate Lane"
+          backgroundImage={menuHero}
+          entries={codexEntries}
         />
       )}
 

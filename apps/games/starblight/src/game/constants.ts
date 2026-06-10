@@ -125,26 +125,78 @@ export const CONSTANTS = {
     bulletDmg: 12,
     contactDmg: 26,
     summonEvery: 5,
+
+    // Telegraphed radial ring volley: a glow windup, then staggered rings of
+    // slow spores the pilot weaves through. Pure math lives in bossPatterns.ts.
+    ring: {
+      telegraph: 0.8, // boss glow windup before the first ring fires
+      firstDelay: 3, // first volley this long after the boss warps in
+      ringsByPhase: [1, 2, 3], // rings per volley in phases 1 / 2 / 3
+      cooldownByPhase: [7.5, 6.5, 5.5], // seconds between volleys per phase
+      ringInterval: 0.28, // stagger between rings of one volley
+      count: 18, // spores per ring (evenly spaced)
+      bulletSpeed: 9, // slow + weavable (player base maxSpeed is 22)
+      bulletDmg: 10,
+    },
+
+    // Telegraphed beam: a warning line renders, then a damaging beam burns
+    // along the locked line. Offline in phase 1 (cooldown 0 = disabled).
+    beam: {
+      telegraph: 1.0, // warning line renders this long...
+      duration: 1.2, // ...then the beam burns along it for this long
+      firstDelay: 3, // grace period once the beam phase begins
+      cooldownByPhase: [0, 9, 7], // seconds between beams per phase (0 = off)
+      width: 2.4,
+      length: 70, // long enough to cross the whole view
+      damage: 16, // per touch (player i-frames gate repeat ticks)
+    },
   },
 
   // --- Juice ------------------------------------------------------------
   fx: {
+    // ScreenShake trauma kicks (game-kit units, 0..1; largest pending wins).
     shake: {
-      gruntKill: 0.05,
-      novaDetonate: 0.2,
-      mineDetonate: 0.22,
-      eliteKill: 0.4,
-      playerHit: 0.8,
-      bossSpawn: 1.0,
-      bossCharge: 1.0,
-      bossDeath: 1.6,
+      gruntKill: 0.04,
+      novaDetonate: 0.08,
+      mineDetonate: 0.1,
+      eliteSpawn: 0.12,
+      eliteKill: 0.25, // big explosions
+      playerHit: 0.3,
+      bossCharge: 0.4, // boss dash lunge + beam ignition
+      bossSpawn: 0.5,
+      bossPhase: 0.5, // boss phase transition
+      bossDeath: 0.6,
     },
-    shakeDecay: 6, // higher = settles faster
-    shakeMax: 2.5,
+    shakeDecay: 6, // trauma decay per second (proportional; higher settles faster)
+    shakeMax: 1, // hard cap on any single kick
+    shakeWorldScale: 2.2, // kit offsets -> ortho world units (view is 48 tall)
+    // Kill-pop burst sizing (game-kit ParticleBursts; counts scale with the
+    // user's global "particles" setting).
+    burst: {
+      enemy: { count: 10, speed: 7, life: 0.45, size: 0.24 },
+      elite: { count: 30, speed: 11, life: 0.7, size: 0.34 },
+      bossHit: { count: 6, speed: 6, life: 0.3, size: 0.2, every: 0.12 },
+      bossPhase: { count: 40, speed: 13, life: 0.8, size: 0.36 },
+      bossDeath: { count: 48, speed: 14, life: 0.9, size: 0.4 },
+    },
     particlePerPop: 12,
     particleLife: 0.5,
     particleSpeed: 14,
     trailLife: 0.34, // thruster-trail quad lifetime
+  },
+
+  // --- Audio cue shaping (throttles + pitch ramps; cues are game-kit's) --
+  audio: {
+    laserMinInterval: 1 / 6, // cap weapon-fire cues at ~6 plays/sec
+    laserPitchLo: 0.92, // fire-cue pitch jitter range
+    laserPitchHi: 1.12,
+    explosionMinInterval: 0.1, // chained elite kills don't stack booms
+    gemMinInterval: 0.07, // a vacuum pulls many gems/frame — space the dings
+    gemStreakWindow: 1.5, // pickups inside this window keep raising the pitch
+    gemPitchStep: 0.045, // pitch climb per streak step
+    gemPitchMax: 1.5,
+    lowHealthPct: 0.25, // warning pings under this integrity fraction
+    lowHealthEvery: 2.5, // seconds between warning pings while below
   },
 
   // --- Parallax starfield ----------------------------------------------

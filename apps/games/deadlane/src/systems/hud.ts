@@ -9,10 +9,12 @@ import { patchBannerSnapshot } from "../ui/bannerBridge";
  */
 export class HudSystem {
   update(state: GameState): void {
+    const tower = CONSTANTS.towers[state.selectedTower];
     patchBannerSnapshot({
       gold: String(state.gold),
       wave: `${Math.max(0, state.wave)} / ${CONSTANTS.waves.total}`,
       hp: String(state.baseHp),
+      tower: `${tower.label} (${tower.cost})`,
       build: `${Math.round(buildSpeedMul(state) * 100)}%`,
       run: `${Math.round(runSpeedMul(state) * 100)}%`,
       hint: state.hintText,

@@ -33,6 +33,7 @@ export class Runner {
   // event flags raised this frame (read + cleared by game for juice/audio)
   justJumped = false;
   justDashed = false;
+  justLanded = false;
   justHit = false;
 
   reset() {
@@ -55,6 +56,7 @@ export class Runner {
   clearEvents() {
     this.justJumped = false;
     this.justDashed = false;
+    this.justLanded = false;
     this.justHit = false;
   }
 
@@ -155,6 +157,7 @@ export class Runner {
   land(surfaceTopY: number) {
     this.y = surfaceTopY + RUNNER.radius;
     this.vy = 0;
+    if (!this.onGround) this.justLanded = true;
     this.onGround = true;
     this.coyote = RUNNER.coyoteTime;
   }

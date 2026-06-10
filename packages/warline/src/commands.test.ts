@@ -1,8 +1,7 @@
-import { test } from "node:test";
 import assert from "node:assert/strict";
-
+import { test } from "node:test";
+import { applyCommand, canAfford } from "./commands";
 import { createInitialWorld, regionById } from "./map";
-import { canAfford, applyCommand } from "./commands";
 import type { Command, WorldState } from "./types";
 import { COMMAND_COSTS, COMMAND_EFFECT } from "./types";
 

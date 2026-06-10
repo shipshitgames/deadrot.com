@@ -9,7 +9,7 @@ import {
   shouldCompleteEscape,
   shouldIgniteCore,
 } from "../../src/game/coreLoop";
-import { buildLevel } from "../../src/game/level";
+import { buildLevel1 as buildLevel } from "../../src/game/levels";
 
 describe("Rothulk core loop", () => {
   test("starts as an infiltration toward a connected breach-core", () => {

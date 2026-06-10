@@ -1,14 +1,14 @@
-import { CONSTANTS } from "../constants";
-import type { Ember, Hazard, LevelData, MovingPlatform, Platform, Scourge } from "./types";
+import { CONSTANTS } from "../../constants";
+import type { Ember, Hazard, LevelData, MovingPlatform, Platform, Scourge } from "../types";
 
 // Canon location: see apps/lore/content/Locations/The-Rothulk.md and
 // apps/lore/content/Locations/Cinder-Flats.md and apps/lore/content/Maps.md (cross-game map registry).
 //
-// A single hand-authored level: the interior of 'The Rothulk', a named beached
-// breach-ship lying in Cinder Flats. Iron/gunmetal slabs bolted over fleshy
-// walls; acid pools and bone spikes; two moving platforms; a mid-level
-// checkpoint; the breach-core at the end.
-export function buildLevel(): LevelData {
+// Level 1 — hand-authored, gameplay-identical to the original single level: the
+// interior of 'The Rothulk', a named beached breach-ship lying in Cinder Flats.
+// Iron/gunmetal slabs bolted over fleshy walls; acid pools and bone spikes; two
+// moving platforms; a mid-level checkpoint; the breach-core at the end.
+export function buildLevel1(): LevelData {
   const platforms: Platform[] = [];
 
   const slab = (x: number, y: number, w: number, h = 1): Platform => ({
@@ -147,10 +147,13 @@ export function buildLevel(): LevelData {
     loreId: "cinder",
     front: "hulk",
     width: 130,
+    spawn: { x: CONSTANTS.HERO_SPAWN_X, y: CONSTANTS.HERO_SPAWN_Y },
     platforms,
     movers,
     hazards,
     scourge,
+    spitters: [],
+    chargers: [],
     embers,
     checkpoint: { x: 60, y: 2.6, reached: false },
     core: { x: 122.5, y: 6.2 },

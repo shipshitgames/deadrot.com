@@ -153,6 +153,7 @@
       "name": "warline",
       "version": "0.1.0",
       "dependencies": {
+        "@deadrot/game-kit": "workspace:*",
         "@shipshitgames/assets": "workspace:*",
         "@shipshitgames/engine": "^0.2.0",
         "@shipshitgames/ui": "workspace:*",
@@ -177,6 +178,7 @@
     },
     "apps/lore": {
       "name": "lore",
+      "version": "4.5.2",
       "bin": {
         "quartz": "./quartz/bootstrap-cli.mjs",
       },
@@ -294,6 +296,8 @@
         "@deadrot/catalog": "workspace:*",
       },
       "devDependencies": {
+        "@deadrot/catalog": "workspace:*",
+        "@types/node": "25.9.1",
         "typescript": "6.0.3",
       },
     },
@@ -305,6 +309,7 @@
       "name": "@deadrot/game-kit",
       "version": "0.1.0",
       "dependencies": {
+        "@shipshitgames/assets": "workspace:*",
         "@shipshitgames/ui": "workspace:*",
       },
       "devDependencies": {

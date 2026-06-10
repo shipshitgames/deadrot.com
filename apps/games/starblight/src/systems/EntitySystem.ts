@@ -1,6 +1,7 @@
 import type * as THREE from "three";
 import type { EnemyType } from "../game/constants";
 import type { Bullet, Enemy, EnemyBullet, Gem, Particle } from "../game/types";
+import { BossBeam } from "./entities/bossBeam";
 import { Enemies } from "./entities/enemies";
 import { Gems } from "./entities/gems";
 import { Particles } from "./entities/particles";
@@ -21,6 +22,7 @@ export class EntitySystem {
   private readonly projectilesSys: Projectiles;
   private readonly enemiesSys: Enemies;
   private readonly gemsSys: Gems;
+  private readonly bossBeam: BossBeam;
 
   constructor(render: RenderSystem) {
     this.particlesSys = new Particles(render);
@@ -28,6 +30,7 @@ export class EntitySystem {
     this.projectilesSys = new Projectiles(render, (x, y) => this.nearestEnemy(x, y));
     this.enemiesSys = new Enemies(render, this.projectilesSys, () => this.ship, this.textures);
     this.gemsSys = new Gems(render, this.particlesSys, () => this.ship, this.textures);
+    this.bossBeam = new BossBeam(render);
   }
 
   // --- ship ----------------------------------------------------------------
@@ -124,6 +127,23 @@ export class EntitySystem {
 
   clearProjectiles() {
     this.projectilesSys.clear();
+    this.bossBeam.hide();
+  }
+
+  // --- boss beam telegraph + burn -----------------------------------------
+
+  /** Warning line along the locked beam path; t01 ramps urgency 0 -> 1. */
+  showBossBeamWarn(x1: number, y1: number, x2: number, y2: number, width: number, t01: number) {
+    this.bossBeam.showWarn(x1, y1, x2, y2, width, t01);
+  }
+
+  /** The burning beam along the same locked path; t01 is remaining life 1 -> 0. */
+  showBossBeamFire(x1: number, y1: number, x2: number, y2: number, width: number, t01: number) {
+    this.bossBeam.showFire(x1, y1, x2, y2, width, t01);
+  }
+
+  hideBossBeam() {
+    this.bossBeam.hide();
   }
 
   // --- gems --------------------------------------------------------------
@@ -170,6 +190,7 @@ export class EntitySystem {
     this.projectilesSys.dispose();
     this.gemsSys.dispose();
     this.particlesSys.dispose();
+    this.bossBeam.dispose();
     for (const t of Object.values(this.textures)) t.dispose();
   }
 }

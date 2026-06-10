@@ -1,5 +1,8 @@
+import type { DeadrotSfx } from "@deadrot/game-kit/audio";
 import { InputLatch } from "@deadrot/game-kit/core";
-import { CONSTANTS } from "../constants";
+import { FlashOverlay, ParticleBursts, ScreenShake } from "@deadrot/game-kit/juice";
+import { audio } from "../audio";
+import { COLORS, CONSTANTS } from "../constants";
 import {
   type CoreLoopState,
   completeEscape,
@@ -10,11 +13,38 @@ import {
   shouldCompleteEscape,
   shouldIgniteCore,
 } from "./coreLoop";
+import { globLaunchVelocity, updateCharger, updateSpitter } from "./enemies";
 import { Hud } from "./hud";
-import { buildLevel } from "./level";
+import { buildLevelAt, LEVELS } from "./levels";
 import { aabbOverlap, platformToAABB, rectToAABB, resolveAgainstSolids } from "./physics";
 import { Renderer } from "./render";
-import type { AABB, GameMode, LevelData } from "./types";
+import type { AABB, GameMode, LevelData, Spitter, ToxicGlob } from "./types";
+
+// Behavior tunings for the pure enemy state machines — values live in the
+// constants file; the systems never hardcode numbers.
+const CHARGER_TUNING = {
+  patrolSpeed: CONSTANTS.CHARGER_PATROL_SPEED,
+  chargeSpeed: CONSTANTS.CHARGER_CHARGE_SPEED,
+  triggerRange: CONSTANTS.CHARGER_TRIGGER_RANGE,
+  rowTolerance: CONSTANTS.CHARGER_ROW_TOLERANCE,
+  stunTime: CONSTANTS.CHARGER_STUN_TIME,
+} as const;
+
+const SPITTER_TUNING = {
+  range: CONSTANTS.SPITTER_RANGE,
+  cooldown: CONSTANTS.SPITTER_COOLDOWN,
+} as const;
+
+function makeGlobPool(): ToxicGlob[] {
+  return Array.from({ length: CONSTANTS.MAX_GLOBS }, () => ({
+    x: 0,
+    y: 0,
+    vx: 0,
+    vy: 0,
+    life: 0,
+    active: false,
+  }));
+}
 
 // The thin owner of shared state + systems. Runs the rAF loop with a clamped
 // delta and routes update/draw through the renderer, input, physics and HUD.
@@ -36,8 +66,16 @@ export class Game {
   });
   private hud = new Hud();
 
-  private level: LevelData = buildLevel();
+  private levelIndex = 0;
+  private level: LevelData = buildLevelAt(0);
+  private globs: ToxicGlob[] = makeGlobPool();
   private mode: GameMode = "title";
+
+  // --- Juice (consumed once per displayed frame) ----------------------------
+  private shake = new ScreenShake();
+  private bursts: ParticleBursts;
+  private flash: FlashOverlay;
+  private sfxThisFrame = 0;
 
   // --- Hero state ----------------------------------------------------------
   private hx: number = CONSTANTS.HERO_SPAWN_X;
@@ -75,6 +113,8 @@ export class Game {
     this.renderer.buildLevel(this.level);
     this.renderer.buildHero();
     this.renderer.setHeroTransform(this.hx, this.hy, this.facing, 1);
+    this.bursts = new ParticleBursts(this.renderer.scene);
+    this.flash = new FlashOverlay(canvas.parentElement ?? document.body);
     this.refreshHud();
   }
 
@@ -94,6 +134,7 @@ export class Game {
 
   beginRun() {
     if (this.mode === "playing") return;
+    audio.unlock(); // user gesture — safe to start the bed + cues
     this.resetRun();
     this.mode = "playing";
   }
@@ -130,17 +171,26 @@ export class Game {
 
   // Full reset (new run from the title or after win/gameover via R).
   private resetRun() {
-    this.level = buildLevel();
-    this.coreLoop = createCoreLoopState();
-    this.renderer.buildLevel(this.level);
     this.lives = CONSTANTS.START_LIVES;
     this.hp = CONSTANTS.MAX_HP;
     this.embers = 0;
-    this.spawnX = CONSTANTS.HERO_SPAWN_X;
-    this.spawnY = CONSTANTS.HERO_SPAWN_Y;
     this.hud.clearBigToast();
-    this.respawnHero();
+    this.loadLevel(0);
     this.refreshHud();
+  }
+
+  // Build + enter a level by campaign index. Lives/HP/embers carry across; the
+  // core loop, projectiles, and spawn point are per-level.
+  private loadLevel(index: number) {
+    this.levelIndex = index;
+    this.level = buildLevelAt(index);
+    this.coreLoop = createCoreLoopState();
+    this.renderer.buildLevel(this.level);
+    for (const glob of this.globs) glob.active = false;
+    this.spawnX = this.level.spawn.x;
+    this.spawnY = this.level.spawn.y;
+    this.hud.setObjective(objectiveForPhase(this.coreLoop.phase, this.level.checkpoint.reached));
+    this.respawnHero();
   }
 
   // Soft respawn after a death (keeps embers + checkpoint).
@@ -167,6 +217,8 @@ export class Game {
     return {
       mode: this.mode,
       phase: this.coreLoop.phase,
+      level: this.levelIndex + 1,
+      levelName: this.level.name,
       coreIgnited: this.coreLoop.phase !== "infiltrate",
       scourgeSevered: this.coreLoop.phase !== "infiltrate",
       exitReached: this.coreLoop.phase === "won",
@@ -187,7 +239,16 @@ export class Game {
     this.renderer.setHeroTransform(this.hx, this.hy, this.facing, 1);
   }
 
+  // Debug/e2e helper: jump to the FINAL armed exit. Fast-forwards any remaining
+  // levels (arming their escape) so one core + one exit always ends the run.
   teleportToExit() {
+    if (this.levelIndex < LEVELS.length - 1) {
+      this.loadLevel(LEVELS.length - 1);
+    }
+    if (this.coreLoop.phase === "infiltrate") {
+      this.coreLoop = igniteBreachCore(this.coreLoop);
+      this.armFeralEscape();
+    }
     this.hx = this.level.exit.x;
     this.hy = this.level.exit.y;
     this.vx = 0;
@@ -214,6 +275,7 @@ export class Game {
     this.lastTime = now;
     if (dt > CONSTANTS.MAX_DELTA) dt = CONSTANTS.MAX_DELTA; // clamp stutters
     this.elapsed += dt;
+    this.sfxThisFrame = 0; // re-arm the per-frame SFX cap
 
     if (this.input.isHeld("restart") && this.mode !== "title") {
       this.resetRun();
@@ -229,10 +291,24 @@ export class Game {
     // Movers + decorative animation run in every non-title mode for life.
     if (this.mode !== "title") this.updateMovers(dt);
 
+    // Juice is consumed once per displayed frame.
+    this.shake.update(dt);
+    this.bursts.update(dt);
+    this.flash.update(dt);
+
     this.renderer.animate(this.elapsed, dt);
     this.renderer.updateCamera(this.hx, this.hy, this.level.width);
     this.hud.update(dt);
+
+    // Apply the shake offset around the render only, so the camera's follow
+    // lerp never fights the jitter.
+    const shakeX = this.shake.offsetX;
+    const shakeY = this.shake.offsetY;
+    this.renderer.camera.position.x += shakeX;
+    this.renderer.camera.position.y += shakeY;
     this.renderer.render();
+    this.renderer.camera.position.x -= shakeX;
+    this.renderer.camera.position.y -= shakeY;
 
     requestAnimationFrame(this.loop);
   };
@@ -242,6 +318,7 @@ export class Game {
     if (this.respawnTimer <= 0) {
       if (this.lives <= 0) {
         this.mode = "gameover";
+        this.playSfx("defeat");
         this.hud.showBigToast("gameover");
       } else {
         this.respawnHero();
@@ -286,6 +363,7 @@ export class Game {
       this.coyote = 0;
       this.jumpBuffer = 0;
       this.squash = 1.18; // stretch on launch
+      this.playSfx("jump", 0.96 + Math.random() * 0.08);
     }
 
     // --- Gravity (variable jump height) ---
@@ -315,6 +393,7 @@ export class Game {
 
     const hw = CONSTANTS.HERO_WIDTH / 2;
     const hh = CONSTANTS.HERO_HEIGHT / 2;
+    const impactVy = this.vy; // pre-resolve fall speed, for landing feedback
     const res = resolveAgainstSolids(this.hx, this.hy, hw, hh, this.vx, this.vy, dt, solids);
     this.hx = res.x;
     this.hy = res.y;
@@ -333,8 +412,23 @@ export class Game {
       }
     }
 
-    // Landing squash juice.
-    if (!wasGrounded && this.grounded) this.squash = 0.78;
+    // Landing squash juice + dust kick on a real fall.
+    if (!wasGrounded && this.grounded) {
+      this.squash = 0.78;
+      if (impactVy <= -CONSTANTS.LAND_DUST_MIN_FALL) {
+        this.playSfx("land", 0.95 + Math.random() * 0.1);
+        this.bursts.spawn({
+          position: { x: this.hx, y: this.hy - hh, z: 0.4 },
+          color: COLORS.ash,
+          count: 10,
+          speed: 3,
+          life: 0.4,
+          gravity: 9,
+          upwardBias: 0.6,
+          size: 0.14,
+        });
+      }
+    }
     this.squash += (1 - this.squash) * Math.min(1, dt * 12);
 
     // Clamp to level bounds horizontally.
@@ -345,7 +439,12 @@ export class Game {
 
     // --- Interactions ---
     this.updateScourge(dt);
+    this.updateSpitters(dt);
+    this.updateChargers(dt);
+    this.updateGlobs(dt, solids);
     this.checkScourgeCollisions();
+    this.checkSpitterCollisions();
+    this.checkChargerCollisions();
     this.checkHazards();
     this.checkEmbers();
     this.checkCheckpoint();
@@ -399,8 +498,110 @@ export class Game {
     }
   }
 
+  private updateSpitters(dt: number) {
+    for (const sp of this.level.spitters) {
+      const fired = updateSpitter(sp, this.hx, this.hy, dt, SPITTER_TUNING);
+      if (fired) this.launchGlob(sp);
+    }
+  }
+
+  private launchGlob(sp: Spitter) {
+    const glob = this.globs.find((g) => !g.active);
+    if (!glob) return;
+    const mouthY = sp.y + sp.size * 0.4;
+    const v = globLaunchVelocity(sp.x, mouthY, this.hx, this.hy, CONSTANTS.GLOB_ARC_TIME, CONSTANTS.GLOB_GRAVITY);
+    glob.x = sp.x;
+    glob.y = mouthY;
+    glob.vx = v.vx;
+    glob.vy = v.vy;
+    glob.life = CONSTANTS.GLOB_LIFE;
+    glob.active = true;
+    this.playSfx("switch", 0.8); // wet lob cue
+  }
+
+  private updateGlobs(dt: number, solids: AABB[]) {
+    const hero = this.heroAABB();
+    for (const g of this.globs) {
+      if (!g.active) continue;
+      g.vy -= CONSTANTS.GLOB_GRAVITY * dt;
+      g.x += g.vx * dt;
+      g.y += g.vy * dt;
+      g.life -= dt;
+      if (g.life <= 0 || g.y < CONSTANTS.KILL_FLOOR_Y) {
+        g.active = false;
+        continue;
+      }
+      const box = rectToAABB(g.x, g.y, CONSTANTS.GLOB_SIZE, CONSTANTS.GLOB_SIZE);
+      if (aabbOverlap(hero, box)) {
+        g.active = false;
+        this.damageHero(CONSTANTS.GLOB_DAMAGE, g.x);
+        continue;
+      }
+      for (const s of solids) {
+        if (aabbOverlap(box, s)) {
+          g.active = false;
+          this.bursts.spawn({
+            position: { x: g.x, y: g.y, z: 0.4 },
+            color: COLORS.toxic,
+            count: 6,
+            speed: 2.5,
+            life: 0.3,
+            size: 0.12,
+          });
+          break;
+        }
+      }
+    }
+  }
+
+  private updateChargers(dt: number) {
+    for (let i = 0; i < this.level.chargers.length; i++) {
+      const c = this.level.chargers[i];
+      const event = updateCharger(c, this.hx, this.hy, dt, CHARGER_TUNING);
+      if (!c.alive || event === null) continue;
+      if (event === "charged") {
+        this.playSfx("dash", 0.9);
+        this.renderer.setChargerState(i, "charge");
+      } else if (event === "stunned") {
+        this.playSfx("hit", 0.7);
+        this.shake.kick(CONSTANTS.SHAKE_WALLHIT);
+        this.bursts.spawn({
+          position: { x: c.x + c.facing * (c.w / 2), y: c.y, z: 0.4 },
+          color: COLORS.ash,
+          count: 8,
+          speed: 3,
+          life: 0.35,
+          gravity: 8,
+          size: 0.13,
+        });
+        this.renderer.setChargerState(i, "stunned");
+      } else {
+        this.renderer.setChargerState(i, "patrol");
+      }
+    }
+  }
+
   private heroAABB(): AABB {
     return rectToAABB(this.hx, this.hy, CONSTANTS.HERO_WIDTH, CONSTANTS.HERO_HEIGHT);
+  }
+
+  // Shared stomp-kill feedback: bounce, squash-pop burst, kick, kill cue.
+  private stompKill(x: number, y: number, toast: string) {
+    this.vy = CONSTANTS.STOMP_BOUNCE;
+    this.squash = 1.2;
+    this.shake.kick(CONSTANTS.SHAKE_STOMP);
+    this.playSfx("kill", 0.94 + Math.random() * 0.12);
+    this.bursts.spawn({
+      position: { x, y, z: 0.4 },
+      color: COLORS.toxic,
+      count: 16,
+      speed: 5,
+      life: 0.5,
+      gravity: 10,
+      upwardBias: 0.5,
+      size: 0.16,
+    });
+    this.hud.flashToast(toast, 0.8);
   }
 
   private checkScourgeCollisions() {
@@ -416,11 +617,48 @@ export class Game {
       if (this.vy < 0 && heroFeet > blobTop - s.size * 0.45) {
         s.alive = false;
         s.popTimer = 0.3;
-        this.vy = CONSTANTS.STOMP_BOUNCE;
-        this.squash = 1.2;
-        this.hud.flashToast("SCOURGE POPPED", 0.8);
+        this.stompKill(s.x, s.y, "SCOURGE POPPED");
       } else {
         this.damageHero(CONSTANTS.CONTACT_DAMAGE, s.x);
+      }
+    }
+  }
+
+  private checkSpitterCollisions() {
+    const hero = this.heroAABB();
+    for (const sp of this.level.spitters) {
+      if (!sp.alive) continue;
+      const box = rectToAABB(sp.x, sp.y, sp.size, sp.size * 0.8);
+      if (!aabbOverlap(hero, box)) continue;
+
+      const heroFeet = this.hy - CONSTANTS.HERO_HEIGHT / 2;
+      const moundTop = sp.y + (sp.size * 0.8) / 2;
+      if (this.vy < 0 && heroFeet > moundTop - sp.size * 0.45) {
+        sp.alive = false;
+        sp.popTimer = 0.3;
+        this.stompKill(sp.x, sp.y, "SPITTER BURST");
+      } else {
+        this.damageHero(CONSTANTS.CONTACT_DAMAGE, sp.x);
+      }
+    }
+  }
+
+  private checkChargerCollisions() {
+    const hero = this.heroAABB();
+    for (const c of this.level.chargers) {
+      if (!c.alive) continue;
+      const box = rectToAABB(c.x, c.y, c.w, c.h);
+      if (!aabbOverlap(hero, box)) continue;
+
+      const heroFeet = this.hy - CONSTANTS.HERO_HEIGHT / 2;
+      const backTop = c.y + c.h / 2;
+      // Stomp from above kills it; side contact (especially mid-charge) hurts.
+      if (this.vy < 0 && heroFeet > backTop - c.h * 0.55) {
+        c.alive = false;
+        c.popTimer = 0.3;
+        this.stompKill(c.x, c.y, "CHARGER CRACKED");
+      } else {
+        this.damageHero(CONSTANTS.CONTACT_DAMAGE, c.x);
       }
     }
   }
@@ -450,6 +688,15 @@ export class Game {
       if (aabbOverlap(hero, box)) {
         e.collected = true;
         this.embers += CONSTANTS.EMBER_VALUE;
+        this.playSfx("pickup", 1 + Math.random() * 0.08);
+        this.bursts.spawn({
+          position: { x: e.x, y: e.y, z: 0.4 },
+          color: COLORS.hellfire,
+          count: 6,
+          speed: 2.5,
+          life: 0.35,
+          size: 0.13,
+        });
         const mesh = this.renderer.emberMeshes[i];
         if (mesh) mesh.visible = false;
       }
@@ -464,6 +711,7 @@ export class Game {
       this.spawnX = cp.x;
       this.spawnY = cp.y + 1.5;
       this.renderer.setCheckpointReached();
+      this.playSfx("pickup", 1.25);
       this.hud.flashToast("CHECKPOINT SECURED", 1.4);
     }
   }
@@ -473,6 +721,8 @@ export class Game {
     if (!shouldIgniteCore(this.hx, this.hy, this.level.core, this.coreLoop.phase)) return;
 
     this.coreLoop = igniteBreachCore(this.coreLoop);
+    this.playSfx("explosion"); // core ignition
+    this.shake.kick(CONSTANTS.SHAKE_IGNITE);
     this.armFeralEscape();
   }
 
@@ -481,14 +731,27 @@ export class Game {
     if (!shouldCompleteEscape(this.hx, this.hy, this.level.exit, this.coreLoop.phase)) return;
 
     this.coreLoop = completeEscape(this.coreLoop);
-    this.mode = "won";
     this.renderer.triggerFlash();
+
+    if (this.levelIndex < LEVELS.length - 1) {
+      // Node severed mid-run — breach the next, deeper hulk immediately.
+      this.playSfx("breach");
+      this.shake.kick(CONSTANTS.SHAKE_IGNITE);
+      this.loadLevel(this.levelIndex + 1);
+      this.hud.flashToast(`NODE SEVERED // ${this.level.name.toUpperCase()}`, 2);
+      this.refreshHud();
+      return;
+    }
+
+    this.mode = "won";
+    this.playSfx("victory");
     this.renderer.setExitArmed(false);
     this.hud.setProgress(1);
     this.hud.showBigToast("won");
   }
 
   private armFeralEscape() {
+    this.playSfx("breach"); // the escape klaxon
     this.renderer.triggerFlash();
     this.renderer.setCoreIgnited();
     this.renderer.setExitArmed(true);
@@ -516,6 +779,9 @@ export class Game {
     // knockback away from the source
     const dir = this.hx >= fromX ? 1 : -1;
     this.vx = dir * CONSTANTS.MOVE_SPEED * 0.8;
+    this.shake.kick(CONSTANTS.SHAKE_HURT);
+    this.flash.flash("#c1121f", { alpha: 0.32, duration: 0.3 });
+    this.playSfx("hurt");
     this.hud.flashToast("INTEGRITY BREACHED", 0.9);
     if (this.hp <= 0) this.killHero();
   }
@@ -526,9 +792,20 @@ export class Game {
     this.hp = CONSTANTS.MAX_HP;
     this.mode = "dead";
     this.respawnTimer = CONSTANTS.RESPAWN_DELAY;
+    this.shake.kick(CONSTANTS.SHAKE_DEATH);
+    this.flash.flash("#ff2a18", { alpha: 0.5, duration: 0.45 });
+    this.playSfx("hurt", 0.7);
     this.renderer.setHeroVisible(false);
     this.renderer.triggerFlash();
     this.refreshHud();
+  }
+
+  // One-shot cue through the shared engine, capped per displayed frame so a
+  // pile-up of events never turns into a noise burst.
+  private playSfx(name: DeadrotSfx, pitch?: number) {
+    if (this.sfxThisFrame >= CONSTANTS.SFX_FRAME_CAP) return;
+    this.sfxThisFrame += 1;
+    audio.sfx(name, pitch === undefined ? undefined : { pitch });
   }
 
   private syncDynamicMeshes() {
@@ -549,6 +826,48 @@ export class Game {
       } else {
         g.visible = false;
       }
+    }
+    // Spitters
+    for (let i = 0; i < this.level.spitters.length; i++) {
+      const sp = this.level.spitters[i];
+      const g = this.renderer.spitterMeshes[i];
+      if (!g) continue;
+      if (sp.alive) {
+        g.position.set(sp.x, sp.y, 0.2);
+        g.scale.setScalar(1);
+        g.visible = true;
+      } else if (sp.popTimer > 0) {
+        const k = sp.popTimer / 0.3;
+        g.scale.set(1 + (1 - k) * 1.4, k * 0.4, 1);
+        g.visible = true;
+      } else {
+        g.visible = false;
+      }
+    }
+    // Chargers (scale.x mirrors the facing so the horn leads)
+    for (let i = 0; i < this.level.chargers.length; i++) {
+      const c = this.level.chargers[i];
+      const g = this.renderer.chargerMeshes[i];
+      if (!g) continue;
+      if (c.alive) {
+        g.position.set(c.x, c.y, 0.2);
+        g.scale.set(c.facing || 1, 1, 1);
+        g.visible = true;
+      } else if (c.popTimer > 0) {
+        const k = c.popTimer / 0.3;
+        g.scale.set((1 + (1 - k) * 1.4) * (c.facing || 1), k * 0.4, 1);
+        g.visible = true;
+      } else {
+        g.visible = false;
+      }
+    }
+    // Toxic globs
+    for (let i = 0; i < this.globs.length; i++) {
+      const glob = this.globs[i];
+      const m = this.renderer.globMeshes[i];
+      if (!m) continue;
+      m.visible = glob.active;
+      if (glob.active) m.position.set(glob.x, glob.y, 0.3);
     }
     // Movers
     for (let i = 0; i < this.level.movers.length; i++) {

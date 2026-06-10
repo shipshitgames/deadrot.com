@@ -1,3 +1,4 @@
+import { ParticleBursts, ScreenShake } from "@deadrot/game-kit/juice";
 import { type CameraRig, firstPersonPointerLock } from "@shipshitgames/engine";
 import * as THREE from "three";
 import {
@@ -25,11 +26,14 @@ export class RenderSystem {
 
   /** Invisible plane used by the InputSystem for raycasting the board. */
   readonly groundPlane: THREE.Mesh;
+  /** Pooled kill-pop / splash bursts (shared juice module). */
+  readonly bursts: ParticleBursts;
   /** Translucent cell shown under the cursor while building. */
   private readonly hover: THREE.Mesh;
   private readonly progressPillar: THREE.Mesh;
   private readonly baseCore: THREE.Mesh;
   private readonly baseCoreMat: THREE.MeshStandardMaterial;
+  private readonly shake = new ScreenShake();
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new THREE.WebGLRenderer({
@@ -58,6 +62,7 @@ export class RenderSystem {
     this.groundPlane = this.buildGroundPlane();
     this.hover = this.buildHover();
     this.progressPillar = this.buildProgressPillar();
+    this.bursts = new ParticleBursts(this.scene);
 
     this.resize();
     window.addEventListener("resize", () => this.resize());
@@ -319,9 +324,19 @@ export class RenderSystem {
     }
   }
 
+  /** Kick the screen-shake (breaches, boss kills). */
+  kickShake(amount: number): void {
+    this.shake.kick(amount);
+  }
+
   /** Pulse the base core; flash brighter when damaged this frame. */
   update(dt: number, t: number, baseHit: boolean): void {
     this.rig.update(dt);
+    // shake offsets layer on top of whatever the rig set this frame
+    this.shake.update(dt);
+    this.camera.position.x += this.shake.offsetX;
+    this.camera.position.y += this.shake.offsetY;
+    this.bursts.update(dt);
     const pulse = 1.2 + Math.sin(t * 3) * 0.4;
     this.baseCoreMat.emissiveIntensity = baseHit ? 4 : pulse;
     this.baseCore.rotation.y += dt * 0.8;

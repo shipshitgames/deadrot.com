@@ -9,7 +9,9 @@
 // commands (spec §6)
 export type { CommandResult } from "./commands";
 export { applyCommand, canAfford } from "./commands";
-
+// narrative events (spec §5 extension)
+export type { NarrativeEventDef } from "./events";
+export { applyNarrative, NARRATIVE, NARRATIVE_EVENTS, narrativeSeed, pickNarrativeEvent } from "./events";
 // map (spec §3)
 export {
   breachById,
@@ -19,18 +21,16 @@ export {
   neighborsOf,
   regionById,
 } from "./map";
-
 // operations (spec §4)
 export type { GameOperationMeta } from "./operations";
 export { GAME_OPERATIONS, GAME_SLUGS, operationKindFor } from "./operations";
-
 // palette
 export { FACTION_COLOR } from "./palette";
-
 // reducer (spec §5)
 export type { ApplyResult } from "./reducer";
 export {
   applyOperation,
+  escalationFactor,
   magnitude,
   makeEventId,
   resetWorld,
@@ -47,6 +47,7 @@ export type {
   GameSlug,
   HumanFaction,
   Lane,
+  OperationBreakdown,
   OperationKind,
   OperationResult,
   Region,
@@ -60,6 +61,7 @@ export {
   COMMAND_COSTS,
   COMMAND_EFFECT,
   ECON,
+  ESCALATION,
   FEED_MAX,
   RESOURCE_KINDS,
   SCHEMA_VERSION,

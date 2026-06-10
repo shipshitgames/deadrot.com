@@ -2,6 +2,8 @@ export type { ButtonProps, ButtonSize, ButtonVariant } from "./Button";
 export { Button } from "./Button";
 export type { CardProps } from "./Card";
 export { Card, CardBody, CardTitle } from "./Card";
+export type { CodexEntry, CodexScreenProps } from "./Codex";
+export { CodexScreen } from "./Codex";
 export type { ClassValue } from "./cn";
 export { cn } from "./cn";
 export type {

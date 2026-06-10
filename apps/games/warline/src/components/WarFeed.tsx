@@ -24,6 +24,8 @@ function kindAccent(event: WarEvent): string {
       return "text-bone";
     case "system":
       return "text-ash";
+    case "story":
+      return "text-hellfire";
     default:
       return "text-bone";
   }
@@ -60,6 +62,11 @@ export function WarFeed({ feed }: WarFeedProps) {
                 {event.text}
                 {event.sealed && <span className="ml-1 font-display text-toxic">[SEALED]</span>}
               </p>
+              {event.detail && (
+                <p className="break-words font-mono text-[0.6rem] leading-snug text-ash" title={event.detail}>
+                  {event.detail}
+                </p>
+              )}
               <span className="font-mono text-[0.6rem] text-ash">
                 t{event.t} · {event.kind}
                 {event.game ? ` · ${event.game}` : ""}

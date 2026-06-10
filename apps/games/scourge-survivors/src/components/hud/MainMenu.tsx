@@ -1,6 +1,8 @@
+import { codexEntriesForGame } from "@deadrot/game-kit";
 import {
   Button,
   Card,
+  CodexScreen,
   GameSettingsScreen,
   GlobalMusicToggle,
   goToWarlineLobby,
@@ -33,6 +35,10 @@ import type { HUDState } from "../../game/types";
 import { normalizePlayerAvatar, PLAYER_AVATAR_OPTIONS, type PlayerAvatarId } from "../../net/playerAvatars";
 import { PixelIcon } from "../PixelIcon";
 import { IconText, Leaderboard, MENU_HEADING } from "./shared";
+
+// Static lore mapping — hoisted so the per-frame HUD re-renders don't rebuild
+// the entry objects (and CodexScreen's internal memo keeps a stable identity).
+const CODEX_ENTRIES = codexEntriesForGame("scourge-survivors");
 
 const AVATAR_PREVIEWS: Record<PlayerAvatarId, string> = PLAYER_AVATAR_PREVIEW_URLS;
 
@@ -301,6 +307,7 @@ function SurvivorsHub({
   onShop,
   onCoop,
   onLeaderboard,
+  onCodex,
   onSettings,
   onStartSandbox,
 }: {
@@ -310,6 +317,7 @@ function SurvivorsHub({
   onShop: () => void;
   onCoop: () => void;
   onLeaderboard: () => void;
+  onCodex: () => void;
   onSettings: () => void;
   onStartSandbox?: () => void;
 }) {
@@ -360,6 +368,17 @@ function SurvivorsHub({
         }
         meta={scores.length === 0 ? "No records" : "Local archive"}
         onClick={onLeaderboard}
+      />
+      <MainMenuAction
+        type="button"
+        variant="default"
+        label={
+          <IconText icon="skull" size={18}>
+            Codex
+          </IconText>
+        }
+        meta="War dossiers"
+        onClick={onCodex}
       />
       <MainMenuAction
         type="button"
@@ -422,7 +441,7 @@ export function MainMenu({
 }) {
   const { status, campaign, survivors, multiplayer } = state;
 
-  type MenuScreen = "home" | "operator" | "multiplayer" | "shop" | "settings" | "leaderboard";
+  type MenuScreen = "home" | "operator" | "multiplayer" | "shop" | "settings" | "leaderboard" | "codex";
   const [menuScreen, setMenuScreen] = useState<MenuScreen>(initialRoom ? "multiplayer" : "home");
   const firstMenuShow = useRef(true);
   // Reset to the root menu whenever the menu is (re)shown — but a shared
@@ -471,6 +490,7 @@ export function MainMenu({
               onShop={() => setMenuScreen("shop")}
               onCoop={() => setMenuScreen("multiplayer")}
               onLeaderboard={() => setMenuScreen("leaderboard")}
+              onCodex={() => setMenuScreen("codex")}
               onSettings={() => setMenuScreen("settings")}
               onStartSandbox={onStartSandbox}
             />
@@ -527,6 +547,16 @@ export function MainMenu({
 
           {menuScreen === "settings" && (
             <GameSettingsScreen open onClose={() => setMenuScreen("home")} backgroundImage={MENU_HERO_URL} />
+          )}
+
+          {menuScreen === "codex" && (
+            <CodexScreen
+              open
+              onClose={() => setMenuScreen("home")}
+              kicker="Pyre Breach Hub"
+              backgroundImage={MENU_HERO_URL}
+              entries={CODEX_ENTRIES}
+            />
           )}
 
           {menuScreen === "leaderboard" && (

@@ -19,6 +19,33 @@ export function isEliteWave(surgeIndex: number, every: number = ELITE_WAVE_EVERY
   return surgeIndex > 0 && every > 0 && surgeIndex % every === 0;
 }
 
+export interface SurgePlan {
+  /** Enemies this surge can actually field (clamped by spawn headroom). */
+  spawnCount: number;
+  /** Surge counter after this beat; unchanged when the surge is skipped. */
+  nextSurgeIndex: number;
+  /** True when this surge lands as an ELITE WAVE. */
+  elite: boolean;
+}
+
+/**
+ * Plan a breach surge from the current cadence counter and spawn headroom.
+ * A surge with zero headroom is skipped entirely: it must not announce a wave
+ * that fields zero enemies, and it must not consume an elite-cadence slot —
+ * the elite lands on the next surge that actually has room.
+ */
+export function planSurge(
+  surgeIndex: number,
+  headroom: number,
+  batchSize: number,
+  every: number = ELITE_WAVE_EVERY,
+): SurgePlan {
+  const spawnCount = Math.min(batchSize, Math.max(0, headroom));
+  if (spawnCount <= 0) return { spawnCount: 0, nextSurgeIndex: surgeIndex, elite: false };
+  const nextSurgeIndex = surgeIndex + 1;
+  return { spawnCount, nextSurgeIndex, elite: isEliteWave(nextSurgeIndex, every) };
+}
+
 /** Roll the single affix shared by an elite batch (deterministic given `random`). */
 export function rollEliteAffix(random: () => number): EliteAffixDef {
   const roll = Math.floor(random() * ELITE_AFFIX_IDS.length);

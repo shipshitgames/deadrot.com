@@ -18,6 +18,9 @@ The top is the whole point. Somewhere near the crown sits the breach-core, the [
 ## Role in the war
 **Breach** — a single, named, self-contained nest: a crashed breach-ship ([[CANON]] §4) rooted into [[Cinder-Flats]] and grown into a vertical nest with a breach-core / [[CANON|repeater-heart]] at its crown. It is the [[CANON]] §6 win condition rendered as a level — climb in, ignite the core, sever the local node, and the surrounding horde goes feral. Per [[Cosmology|The Purge]], the kill is local: burning one Rothulk frees one lane; it does not touch the deeper source at [[Perdition]].
 
+## Named Threats
+- **Hull Chorus** *(provisional — coined for the runtime lore data; promote or rename freely)* — the breach-core made guardian: the repeater-heart at the hulk's crown wearing the voidship itself as a body. It sings the wreck's defense — every gut, vent, and grafted gun answers it — and goes silent only when the core burns. Runtime data anchors it to [[Breach-Boss]] under the voidship host family, named in the Choir's bell register alongside the [[CANON|Choir]] repeater classes.
+
 ## Appears In
 - [[Rothulk]] — the level *is* the hulk; the Pyre saboteur platforms up its chambers to reach and ignite the breach-core, then escapes the collapse.
 

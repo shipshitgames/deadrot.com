@@ -1,3 +1,5 @@
+import { recordWarResult } from "@deadrot/game-kit/core";
+import { audio } from "../audio";
 import { EntitySystem } from "../systems/EntitySystem";
 import { HudSystem } from "../systems/HudSystem";
 import { InputSystem } from "../systems/InputSystem";
@@ -49,6 +51,16 @@ export class Game {
   // --- boss --------------------------------------------------------------
   private bossEncounter: BossEncounter;
 
+  // --- audio / juice throttles --------------------------------------------
+  private laserT = 0;
+  private laserQueued = false;
+  private explosionT = 0;
+  private gemSfxT = 0;
+  private gemStreak = 0;
+  private lastGemAt = -999;
+  private lowHealthT = 0;
+  private bossHitFxT = 0;
+
   private raf = 0;
   private prev = 0;
   private disposed = false;
@@ -59,14 +71,24 @@ export class Game {
     this.entities = new EntitySystem(this.render);
     this.weapons = new WeaponSystem(this.render, this.entities);
     this.weapons.damageEnemy = (e, dmg, allowCrit) => this.damageEnemy(e, dmg, allowCrit);
+    // Weapon fire is voiced once per frame at most, throttled in simulate().
+    this.weapons.onFire = () => {
+      this.laserQueued = true;
+    };
     this.bossEncounter = new BossEncounter(this.entities, this.render, {
       ringPoint: () => this.ringPoint(),
       spawnAt: (type, x, y) => this.spawnAt(type, x, y),
+      // The beam re-checks every frame; the ship's i-frames gate repeat ticks.
+      hitPlayer: (dmg) => {
+        if (this.invuln <= 0) this.hitPlayer(dmg);
+      },
       onDefeated: () => {
         this.kills++;
         this.vacuum = true;
         this.phase = "victory";
         emitRunEnd(Math.round(this.salvage)); // bank salvage as Drydock wreckage
+        // Bank the boss kill into the cross-game war record (Warline shows it).
+        recordWarResult("starblight", { outcome: "victory", score: this.level, bossKill: true }, Date.now());
         this.emitHud();
       },
     });
@@ -144,8 +166,22 @@ export class Game {
     const playing = phase === "playing";
     this.spawnT = playing ? 0.6 : 0;
     this.eliteT = playing ? CONSTANTS.director.eliteEvery : 0;
+    this.resetFeedback();
 
+    audio.unlock(); // started from a click/keypress — the gesture allows audio
     this.emitHud();
+  }
+
+  /** Reset the audio/juice throttles so a fresh run starts quiet. */
+  private resetFeedback() {
+    this.laserT = 0;
+    this.laserQueued = false;
+    this.explosionT = 0;
+    this.gemSfxT = 0;
+    this.gemStreak = 0;
+    this.lastGemAt = -999;
+    this.lowHealthT = 0;
+    this.bossHitFxT = 0;
   }
 
   private pauseRun() {
@@ -203,8 +239,10 @@ export class Game {
 
     if (this.phase === "playing") this.simulate(dt);
 
-    // Camera follows the ship (also keeps the menu backdrop alive).
-    this.render.update(dt, this.entities.ship.position.x, this.entities.ship.position.y);
+    // Camera follows the ship (also keeps the menu backdrop alive). Kill-pop
+    // bursts only advance while simulating — same gate as the legacy particle
+    // sim in simulate() — so all FX freeze together on pause / level-up.
+    this.render.update(dt, this.entities.ship.position.x, this.entities.ship.position.y, this.phase === "playing");
     this.render.render();
     this.emitHud();
 
@@ -231,6 +269,10 @@ export class Game {
   private simulate(dt: number) {
     this.clock += dt;
     if (this.invuln > 0) this.invuln = Math.max(0, this.invuln - dt);
+    this.laserT = Math.max(0, this.laserT - dt);
+    this.explosionT = Math.max(0, this.explosionT - dt);
+    this.gemSfxT = Math.max(0, this.gemSfxT - dt);
+    this.bossHitFxT = Math.max(0, this.bossHitFxT - dt);
 
     // 1. flight
     const aim = this.render.screenToWorld(this.input.ndcX, this.input.ndcY);
@@ -244,6 +286,7 @@ export class Game {
 
     // 4. weapons fire / deal damage
     this.weapons.update(dt, this.clock);
+    this.voiceWeaponFire();
 
     // 5. player bolts vs enemies
     this.entities.updateBullets(dt);
@@ -261,12 +304,40 @@ export class Game {
 
     this.entities.updateParticles(dt);
     this.entities.sweepEnemies();
+    this.updateLowHealthWarning(dt);
 
     if (this.integrity <= 0 && this.phase === "playing") {
       this.integrity = 0;
       this.phase = "gameover";
+      audio.sfx("defeat");
       emitRunEnd(Math.round(this.salvage)); // bank salvage as Drydock wreckage
+      // Bank the loss into the cross-game war record (Warline shows it).
+      recordWarResult("starblight", { outcome: "defeat", score: this.level }, Date.now());
       this.emitHud();
+    }
+  }
+
+  /** Throttled weapon-fire cue: at most 1/laserMinInterval plays per second. */
+  private voiceWeaponFire() {
+    if (!this.laserQueued) return;
+    this.laserQueued = false;
+    if (this.laserT > 0) return;
+    const a = CONSTANTS.audio;
+    this.laserT = a.laserMinInterval;
+    audio.sfx("laser", { pitch: a.laserPitchLo + Math.random() * (a.laserPitchHi - a.laserPitchLo) });
+  }
+
+  /** Periodic warning ping while integrity sits under the danger threshold. */
+  private updateLowHealthWarning(dt: number) {
+    const a = CONSTANTS.audio;
+    if (this.integrity > 0 && this.integrity < this.stats.maxIntegrity * a.lowHealthPct) {
+      this.lowHealthT -= dt;
+      if (this.lowHealthT <= 0) {
+        this.lowHealthT = a.lowHealthEvery;
+        audio.sfx("lowhealth");
+      }
+    } else {
+      this.lowHealthT = 0; // re-crossing the threshold pings immediately
     }
   }
 
@@ -301,7 +372,7 @@ export class Game {
       this.eliteT = d.eliteEvery;
       const p = this.ringPoint();
       this.entities.pop(p.x, p.y, COLORS.toxicHot, 16); // spawn flare
-      this.render.addShake(0.25);
+      this.render.addShake(CONSTANTS.fx.shake.eliteSpawn);
       this.spawnAt("elite", p.x, p.y);
     }
   }
@@ -363,7 +434,24 @@ export class Game {
     const dmg = baseDmg * this.stats.damageMul * (crit ? 2 : 1);
     e.health -= dmg;
     this.entities.hitFlash(e);
+    // Boss-hit sparks, throttled — continuous beams hit every frame.
+    if (e.boss && this.bossHitFxT <= 0) {
+      this.bossHitFxT = CONSTANTS.fx.burst.bossHit.every;
+      this.burst(e.mesh.position.x, e.mesh.position.y, COLORS.bone, CONSTANTS.fx.burst.bossHit);
+    }
     if (e.health <= 0) this.onKill(e);
+  }
+
+  /** Kit ParticleBursts spawn with the data-driven sizing from fx.burst. */
+  private burst(x: number, y: number, color: number, b: { count: number; speed: number; life: number; size: number }) {
+    this.render.bursts.spawn({
+      position: { x, y, z: 0.5 },
+      color,
+      count: b.count,
+      speed: b.speed,
+      life: b.life,
+      size: b.size,
+    });
   }
 
   private onKill(e: Enemy) {
@@ -380,13 +468,17 @@ export class Game {
       for (let i = 0; i < shards; i++) {
         this.entities.spawnGem(x + (Math.random() - 0.5) * 4, y + (Math.random() - 0.5) * 4, 3);
       }
-      this.entities.pop(x, y, COLORS.bone, 18);
-      this.entities.pop(x, y, COLORS.hellfire, 12);
+      // BLIGHT-BOIL elites blow big: a fat toxic burst plus a hellfire core.
+      this.burst(x, y, COLORS.toxicHot, CONSTANTS.fx.burst.elite);
+      this.burst(x, y, COLORS.hellfire, CONSTANTS.fx.burst.enemy);
+      if (this.explosionT <= 0) {
+        this.explosionT = CONSTANTS.audio.explosionMinInterval;
+        audio.sfx("explosion");
+      }
       this.render.addShake(CONSTANTS.fx.shake.eliteKill);
     } else {
       this.entities.spawnGem(x, y, e.gemValue);
-      const ichor = e.type === "spitter" || e.type === "weaver" ? COLORS.toxic : COLORS.hellfire;
-      this.entities.pop(x, y, ichor, 8);
+      this.burst(x, y, COLORS.toxic, CONSTANTS.fx.burst.enemy); // ichor pop
       this.render.addShake(CONSTANTS.fx.shake.gruntKill);
     }
     this.entities.killEnemy(e);
@@ -453,12 +545,22 @@ export class Game {
     this.invuln = CONSTANTS.player.invulnTime;
     this.entities.pop(this.entities.ship.position.x, this.entities.ship.position.y, COLORS.blood, 18);
     this.render.addShake(CONSTANTS.fx.shake.playerHit);
+    audio.sfx("hurt");
   }
 
   // --- XP + draft --------------------------------------------------------
 
   private gainXp(raw: number) {
     this.salvage += raw;
+    // Rising salvage ding: the pitch climbs while pickups keep streaking in.
+    const a = CONSTANTS.audio;
+    if (this.clock - this.lastGemAt <= a.gemStreakWindow) this.gemStreak++;
+    else this.gemStreak = 0;
+    this.lastGemAt = this.clock;
+    if (this.gemSfxT <= 0) {
+      this.gemSfxT = a.gemMinInterval;
+      audio.sfx("gem", { pitch: Math.min(a.gemPitchMax, 1 + this.gemStreak * a.gemPitchStep) });
+    }
     this.currentXP += raw * this.stats.xpGainMul;
     let leveled = false;
     while (this.currentXP >= xpForLevel(this.level)) {
@@ -473,6 +575,7 @@ export class Game {
   private triggerLevelUp() {
     this.phase = "levelup";
     this.vacuum = true; // salvage pulse: vacuum the field
+    audio.sfx("levelup");
     this.rollDraft();
     this.emitHud();
   }
@@ -510,6 +613,7 @@ export class Game {
     if (!this.draft.some((c) => c.id === id)) return;
     const prev = this.levels.get(id) ?? 0;
     this.levels.set(id, prev + 1);
+    audio.sfx(defOf(id).kind === "passive" ? "powerup" : "uiSelect");
     this.recomputeStats();
     if (id === "hull") this.integrity = this.stats.maxIntegrity; // full repair
     this.pendingLevels = Math.max(0, this.pendingLevels - 1);

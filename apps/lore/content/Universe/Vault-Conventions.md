@@ -31,3 +31,20 @@ mode loses a different reader.
 
 **At a glance** template (one line directly under the `#` title):
 `**At a glance:** <type / role> · <key trait> · <key trait> · appears in [[Game]] / [[Game]].`
+
+## The runtime data derivative
+
+This vault is the **prose source of truth**. The shipped repo carries a typed derivative at
+`packages/assets/lore/*.json` (games, factions, characters, bestiary, locations,
+timeline-events, universe) consumed by the web hub, the in-game codex, and Warline's
+narrative events. Drift tests (`packages/assets/tests/lore-drift.test.ts`) pin the
+derivative against the asset catalog and the game roster.
+
+Two rules keep the relationship honest:
+
+- **Vault leads, data follows.** Change canon here first; mirror it into the JSON (or ask an
+  agent to). The drift tests fail loudly when the two diverge.
+- **Coined names are provisional until promoted.** Where the data layer needed a name the
+  vault hadn't authored yet (e.g. per-location bosses), the JSON marks it `coined: true` and
+  the location note lists it under **Named Threats** with a *(provisional)* tag. Rename or
+  promote them freely — then flip the flag.

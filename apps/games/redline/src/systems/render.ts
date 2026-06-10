@@ -12,9 +12,9 @@
  *   - beacon  : a tall hellfire pillar at the finish
  */
 
-import { ScreenShake } from "@deadrot/game-kit/juice";
+import { ParticleBursts, ScreenShake } from "@deadrot/game-kit/juice";
 import * as THREE from "three";
-import { CAMERA, COLORS, EMBER, RUNNER, TRAIL, WORLD } from "../constants";
+import { CAMERA, COLORS, EMBER, FEEDBACK, RUNNER, TRAIL, WORLD } from "../constants";
 import type { Runner } from "../entities/runner";
 import type { Course } from "../types";
 
@@ -42,6 +42,9 @@ export class Render {
   private readonly shake = new ScreenShake({ decay: CAMERA.shakeDecay });
   private viewHeight = CAMERA.viewHeight;
 
+  // pooled one-shot bursts (ember pickups, landing dust); created after the scene
+  private bursts!: ParticleBursts;
+
   private aspect = 1;
   private elapsed = 0;
 
@@ -59,6 +62,8 @@ export class Render {
 
     this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000);
     this.camera.position.set(0, CAMERA.height, 30);
+
+    this.bursts = new ParticleBursts(this.scene);
 
     this.addLights();
     this.resize();
@@ -456,7 +461,35 @@ export class Render {
     this.updateTrail(dt, runner, frac);
     this.updateEmbers(dt);
     this.updateBeacon();
+    this.bursts.update(dt);
     this.updateCamera(dt, runner, course, frac);
+  }
+
+  // ---------------------------------------------------------------------------
+  // One-shot bursts (game-kit ParticleBursts; honors the global particles level)
+  // ---------------------------------------------------------------------------
+
+  /** Hellfire pop where an ember was grabbed. */
+  emitEmberBurst(x: number, y: number) {
+    this.bursts.spawn({
+      position: { x, y, z: 0.4 },
+      color: COLORS.hellfire,
+      ...FEEDBACK.emberBurst,
+    });
+  }
+
+  /** Ash/gunmetal dust kicked up by a hard landing at the runner's feet. */
+  emitLandingDust(x: number, y: number) {
+    this.bursts.spawn({
+      position: { x, y, z: 0.3 },
+      color: COLORS.ash,
+      ...FEEDBACK.dustBurst,
+    });
+    this.bursts.spawn({
+      position: { x, y, z: 0.2 },
+      color: COLORS.gunmetal,
+      ...FEEDBACK.dustPuff,
+    });
   }
 
   private updateTrail(dt: number, runner: Runner, frac: number) {
@@ -567,6 +600,7 @@ export class Render {
   }
 
   dispose() {
+    this.bursts.dispose();
     this.clearGroup();
     this.renderer.dispose();
   }

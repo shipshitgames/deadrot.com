@@ -10,3 +10,12 @@ export {
 export { createRng, type Rng } from "./rng";
 export { createSnapshotStore, type SnapshotStore } from "./snapshotStore";
 export { createLocalStore, type LocalStore, type LocalStoreOptions } from "./storage";
+export {
+  mergeWarResult,
+  readWarRecord,
+  recordWarResult,
+  WAR_RECORD_KEY,
+  type WarRecord,
+  type WarRecordEntry,
+  type WarResult,
+} from "./warRecord";
