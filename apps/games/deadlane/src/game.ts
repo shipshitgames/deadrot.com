@@ -3,6 +3,7 @@ import { FlashOverlay } from "@deadrot/game-kit/juice";
 import * as THREE from "three";
 import { audio } from "./audio";
 import { cellToWorld, inBounds, isPathCell, playBounds, worldToCell } from "./board";
+import { recordCreepKill } from "./codexUnlocks";
 import { COLORS, CONSTANTS } from "./constants";
 import { EntitySystem } from "./systems/entities";
 import { HudSystem } from "./systems/hud";
@@ -159,6 +160,8 @@ export class Game {
 
     if (this.frameKills.length > 0) {
       for (const kill of this.frameKills) {
+        // Codex discovery — recordCreepKill only persists the first kill of a kind.
+        recordCreepKill(kill.kind);
         const boss = kill.kind === "boss";
         this.render.bursts.spawn({
           position: { x: kill.x, y: 0.7, z: kill.z },

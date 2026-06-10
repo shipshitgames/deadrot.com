@@ -40,6 +40,7 @@
     "deps:update": "bunx npm-check-updates -u --cooldown 3h --removeRange && bun install"
   },
   "dependencies": {
+    "@shipshitgames/assets": "workspace:*",
     "@shipshitgames/ui": "workspace:*"
   },
   "peerDependencies": {

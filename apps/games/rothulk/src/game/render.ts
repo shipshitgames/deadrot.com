@@ -63,8 +63,14 @@ export class Renderer {
 
   // --- Static + dynamic level geometry ------------------------------------
   buildLevel(level: LevelData) {
-    // Clear any prior level (on restart) but keep lights + hero + flash.
-    for (const object of this.levelObjects) this.scene.remove(object);
+    // Clear any prior level (on restart / level transition) but keep lights +
+    // hero + flash. Every geometry/material below is created fresh per build
+    // (nothing is cached across builds), so dispose GPU resources too —
+    // otherwise each rebuild leaks the previous level's buffers.
+    for (const object of this.levelObjects) {
+      this.scene.remove(object);
+      this.disposeLevelObject(object);
+    }
     this.levelObjects.length = 0;
     this.scourgeMeshes.length = 0;
     this.spitterMeshes.length = 0;
@@ -472,6 +478,23 @@ export class Renderer {
   private addLevelObject(object: THREE.Object3D) {
     this.scene.add(object);
     this.levelObjects.push(object);
+  }
+
+  // Free GPU resources for a removed level object (and its children). Some
+  // materials are shared between several level meshes (e.g. slabMat across
+  // platforms); Three.js material/geometry dispose() is idempotent, so
+  // disposing them once per referencing mesh is safe.
+  private disposeLevelObject(object: THREE.Object3D) {
+    object.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.geometry.dispose();
+      if (Array.isArray(mesh.material)) {
+        for (const material of mesh.material) material.dispose();
+      } else {
+        mesh.material.dispose();
+      }
+    });
   }
 
   private resize = () => {

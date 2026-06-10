@@ -1,6 +1,8 @@
+import { codexEntriesForGame } from "@deadrot/game-kit";
 import {
   Button,
   Card,
+  CodexScreen,
   GameSettingsScreen,
   GlobalGameSettingsPanel,
   GlobalMusicToggle,
@@ -69,6 +71,10 @@ interface Props {
 }
 
 // ----------------------------------------------------------------- shared utility class strings
+// Static lore mapping — hoisted so the per-frame HUD re-renders don't rebuild
+// the entry objects (and CodexScreen's internal memo keeps a stable identity).
+const CODEX_ENTRIES = codexEntriesForGame("scourge-survivors");
+
 const OVERLAY = "ssg-menu-screen";
 const HUD_CORNER = "ssg-hud-corner";
 const STAT_LABEL = "ssg-stat-label";
@@ -362,6 +368,7 @@ function SurvivorsHub({
   onShop,
   onCoop,
   onLeaderboard,
+  onCodex,
   onSettings,
   onStartSandbox,
 }: {
@@ -371,6 +378,7 @@ function SurvivorsHub({
   onShop: () => void;
   onCoop: () => void;
   onLeaderboard: () => void;
+  onCodex: () => void;
   onSettings: () => void;
   onStartSandbox?: () => void;
 }) {
@@ -421,6 +429,17 @@ function SurvivorsHub({
         }
         meta={scores.length === 0 ? "No records" : "Local archive"}
         onClick={onLeaderboard}
+      />
+      <MainMenuAction
+        type="button"
+        variant="default"
+        label={
+          <IconText icon="skull" size={18}>
+            Codex
+          </IconText>
+        }
+        meta="War dossiers"
+        onClick={onCodex}
       />
       <MainMenuAction
         type="button"
@@ -910,7 +929,7 @@ export function HUD({
     survivors,
   } = state;
 
-  type MenuScreen = "home" | "operator" | "multiplayer" | "shop" | "settings" | "leaderboard";
+  type MenuScreen = "home" | "operator" | "multiplayer" | "shop" | "settings" | "leaderboard" | "codex";
   const [menuScreen, setMenuScreen] = useState<MenuScreen>(initialRoom ? "multiplayer" : "home");
   const [pausePanel, setPausePanel] = useState<"none" | "settings" | "controls">("none");
   const [gameOverPanel, setGameOverPanel] = useState<"summary" | "shop">("summary");
@@ -1353,6 +1372,7 @@ export function HUD({
                   onShop={() => setMenuScreen("shop")}
                   onCoop={() => setMenuScreen("multiplayer")}
                   onLeaderboard={() => setMenuScreen("leaderboard")}
+                  onCodex={() => setMenuScreen("codex")}
                   onSettings={() => setMenuScreen("settings")}
                   onStartSandbox={onStartSandbox}
                 />
@@ -1409,6 +1429,16 @@ export function HUD({
 
               {menuScreen === "settings" && (
                 <GameSettingsScreen open onClose={() => setMenuScreen("home")} backgroundImage={MENU_HERO_URL} />
+              )}
+
+              {menuScreen === "codex" && (
+                <CodexScreen
+                  open
+                  onClose={() => setMenuScreen("home")}
+                  kicker="Pyre Breach Hub"
+                  backgroundImage={MENU_HERO_URL}
+                  entries={CODEX_ENTRIES}
+                />
               )}
 
               {menuScreen === "leaderboard" && (

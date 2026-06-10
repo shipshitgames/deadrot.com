@@ -1,5 +1,7 @@
+import { codexEntriesForGame } from "@deadrot/game-kit";
 import menuHero from "@shipshitgames/assets/games/starblight/ui/menu/title.webp";
 import {
+  CodexScreen,
   GameSettingsScreen,
   GlobalMusicToggle,
   goToWarlineLobby,
@@ -28,6 +30,9 @@ export function AppShell() {
   // bridge so the shared React PauseMenu can render over the canvas.
   const pause = useSyncExternalStore(subscribePause, getPauseSnapshot, getPauseSnapshot);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [codexOpen, setCodexOpen] = useState(false);
+  // No discovery wiring in starblight: every dossier ships unlocked.
+  const codexEntries = useMemo(() => codexEntriesForGame("starblight"), []);
   const [drydock, setDrydock] = useState(() => loadDrydock());
   const [drydockOpen, setDrydockOpen] = useState(false);
   // The run-end banking handler registers once; read live tiers through a ref so
@@ -166,6 +171,13 @@ export function AppShell() {
               <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
               <MainMenuAction
                 type="button"
+                variant="default"
+                label="Codex"
+                meta="War dossiers"
+                onClick={() => setCodexOpen(true)}
+              />
+              <MainMenuAction
+                type="button"
                 variant="settings"
                 label="Settings"
                 meta="Audio"
@@ -196,6 +208,15 @@ export function AppShell() {
         />
 
         {settingsOpen && <GameSettingsScreen open onClose={() => setSettingsOpen(false)} backgroundImage={menuHero} />}
+        {codexOpen && (
+          <CodexScreen
+            open
+            onClose={() => setCodexOpen(false)}
+            kicker="Orbital Front"
+            backgroundImage={menuHero}
+            entries={codexEntries}
+          />
+        )}
         {drydockOpen && (
           <DrydockScreen
             open

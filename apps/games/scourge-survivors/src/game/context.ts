@@ -100,6 +100,8 @@ export class GameContext {
   score = 0;
   kills = 0;
   headshots = 0;
+  /** Breach-bosses / Scourge elites felled this run (war-record mirror). */
+  bossKills = 0;
   time = 0;
   damageBoostTimer = 0;
   velocity = new THREE.Vector3();

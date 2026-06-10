@@ -24,6 +24,7 @@ import { OpsPanel } from "./components/OpsPanel";
 import { ResourceBar } from "./components/ResourceBar";
 import { WarFeed } from "./components/WarFeed";
 import { WarMap } from "./components/WarMap";
+import { WarRecord } from "./components/WarRecord";
 import { useWarline } from "./store";
 
 export default function App() {
@@ -157,6 +158,7 @@ export default function App() {
                 command={command}
               />
               <OpsPanel simulate={simulate} />
+              <WarRecord />
               <Legend />
               <div className="h-64 shrink-0">
                 <WarFeed feed={state.feed} />

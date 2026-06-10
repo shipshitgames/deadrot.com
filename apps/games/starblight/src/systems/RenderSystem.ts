@@ -91,7 +91,7 @@ export class RenderSystem {
   }
 
   /** Eases the camera toward the ship (deadzone box) and applies shake. */
-  update(dt: number, shipX: number, shipY: number) {
+  update(dt: number, shipX: number, shipY: number, simulateFx = true) {
     const c = CONSTANTS.camera;
     const dzW = c.deadzoneW / 2;
     const dzH = c.deadzoneH / 2;
@@ -117,8 +117,10 @@ export class RenderSystem {
     this.camera.position.set(fx, fy, c.z);
     this.camera.lookAt(fx, fy, 0);
 
-    // Advance pooled kill-pop bursts (update() runs once per displayed frame).
-    this.bursts.update(dt);
+    // Advance pooled kill-pop bursts only while the game is simulating — they
+    // must freeze alongside the legacy particle pops during pause and the
+    // level-up draft (the camera/backdrop above still animates every frame).
+    if (simulateFx) this.bursts.update(dt);
 
     // Parallax: star layers trail the camera at (1 - parallax), so flying any
     // direction streaks them past you. No per-point JS loop.

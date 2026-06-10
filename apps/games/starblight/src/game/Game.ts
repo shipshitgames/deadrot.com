@@ -1,3 +1,4 @@
+import { recordWarResult } from "@deadrot/game-kit/core";
 import { audio } from "../audio";
 import { EntitySystem } from "../systems/EntitySystem";
 import { HudSystem } from "../systems/HudSystem";
@@ -295,8 +296,10 @@ export class Game {
 
     if (this.phase === "playing") this.simulate(dt);
 
-    // Camera follows the ship (also keeps the menu backdrop alive).
-    this.render.update(dt, this.entities.ship.position.x, this.entities.ship.position.y);
+    // Camera follows the ship (also keeps the menu backdrop alive). Kill-pop
+    // bursts only advance while simulating — same gate as the legacy particle
+    // sim in simulate() — so all FX freeze together on pause / level-up.
+    this.render.update(dt, this.entities.ship.position.x, this.entities.ship.position.y, this.phase === "playing");
     this.render.render();
     this.emitHud();
 
@@ -365,6 +368,8 @@ export class Game {
       this.phase = "gameover";
       audio.sfx("defeat");
       emitRunEnd(Math.round(this.salvage)); // bank salvage as Drydock wreckage
+      // Bank the loss into the cross-game war record (Warline shows it).
+      recordWarResult("starblight", { outcome: "defeat", score: this.level }, Date.now());
       this.emitHud();
     }
   }
@@ -926,6 +931,8 @@ export class Game {
     this.vacuum = true;
     this.phase = "victory";
     emitRunEnd(Math.round(this.salvage)); // bank salvage as Drydock wreckage
+    // Bank the boss kill into the cross-game war record (Warline shows it).
+    recordWarResult("starblight", { outcome: "victory", score: this.level, bossKill: true }, Date.now());
     this.emitHud();
   }
 
