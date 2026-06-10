@@ -14,6 +14,7 @@ import {
   eliteCountForWave,
   eliteXpValue,
   isEliteWave,
+  planSurge,
   rollEliteAffix,
   rollEliteSplitCount,
   takeSplitAllowance,
@@ -50,6 +51,41 @@ describe("elite wave cadence", () => {
   it("respects a custom cadence", () => {
     expect(isEliteWave(4, 2)).toBe(true);
     expect(isEliteWave(5, 2)).toBe(false);
+  });
+});
+
+describe("surge planning (spawn headroom guard)", () => {
+  it("fields a full batch when headroom allows and advances the cadence counter", () => {
+    expect(planSurge(0, 50, SURV_SWELL_COUNT)).toEqual({
+      spawnCount: SURV_SWELL_COUNT,
+      nextSurgeIndex: 1,
+      elite: false,
+    });
+  });
+
+  it("clamps the batch to the remaining headroom", () => {
+    expect(planSurge(0, 5, SURV_SWELL_COUNT)).toEqual({ spawnCount: 5, nextSurgeIndex: 1, elite: false });
+  });
+
+  it("lands the elite wave on the cadence beat", () => {
+    expect(planSurge(2, 50, SURV_SWELL_COUNT)).toEqual({
+      spawnCount: SURV_SWELL_COUNT,
+      nextSurgeIndex: 3,
+      elite: true,
+    });
+  });
+
+  it("skips a surge with zero headroom without consuming the elite cadence slot", () => {
+    // surgeIndex 2 → the next surge would be the elite beat, but the arena is full.
+    expect(planSurge(2, 0, SURV_SWELL_COUNT)).toEqual({ spawnCount: 0, nextSurgeIndex: 2, elite: false });
+    expect(planSurge(2, -7, SURV_SWELL_COUNT)).toEqual({ spawnCount: 0, nextSurgeIndex: 2, elite: false });
+    // Once headroom returns, the very next surge still lands as the elite wave.
+    expect(planSurge(2, 4, SURV_SWELL_COUNT)).toEqual({ spawnCount: 4, nextSurgeIndex: 3, elite: true });
+  });
+
+  it("respects a custom cadence", () => {
+    expect(planSurge(1, 10, SURV_SWELL_COUNT, 2).elite).toBe(true);
+    expect(planSurge(2, 10, SURV_SWELL_COUNT, 2).elite).toBe(false);
   });
 });
 

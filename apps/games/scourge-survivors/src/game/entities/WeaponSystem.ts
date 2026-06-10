@@ -20,8 +20,8 @@ import {
   type WeaponId,
 } from "../constants";
 import type { GameContext } from "../context";
-import type { MainWeaponVisualTier } from "../data/survivors";
 import { WEAPON_VIEW_X, WEAPON_VIEW_Y, WEAPON_VIEW_Z } from "../data/internalTypes";
+import type { MainWeaponVisualTier } from "../data/survivors";
 import {
   MUZZLE_FLASH_TEXTURE,
   WEAPON_SPRITE_TEXTURES,
@@ -296,8 +296,12 @@ export class WeaponSystem {
       const dmg = MELEE_DAMAGE * dmgMul * crit;
       const res = enemy.takeDamage(dmg, false, MELEE_KNOCKBACK * knockbackMul, dirX, dirZ);
       hitAny = true;
-      this.sys.hud.addDamageNumber(enemy.position.clone().setY(1.6), dmg, crit > 1 ? "crit" : "normal");
-      this.sys.fx.spawnBloodHit(enemy.position.clone().setY(1.45), false);
+      if (res.blocked) {
+        audio.sfx("shieldhit"); // overshield ate the swing — no damage feedback
+      } else {
+        this.sys.hud.addDamageNumber(enemy.position.clone().setY(1.6), dmg, crit > 1 ? "crit" : "normal");
+        this.sys.fx.spawnBloodHit(enemy.position.clone().setY(1.45), false);
+      }
       if (res.died) this.sys.pve.onEnemyDeath(enemy, false);
     }
 
