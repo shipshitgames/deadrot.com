@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   CodexScreen,
+  GameJumpMenu,
   GameSettingsScreen,
   GlobalMusicToggle,
   goToWarlineLobby,
@@ -492,6 +493,7 @@ function SurvivorsHub({
         meta="Lobby"
         onClick={() => goToWarlineLobby()}
       />
+      <GameJumpMenu currentSlug="scourge-survivors" />
     </MainMenuNav>
   );
 }

@@ -28,6 +28,20 @@
       "runtimeArgs": ["run", "dev"],
       "cwd": "apps/games/pactfall",
       "port": 5175
+    },
+    {
+      "name": "redline",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "apps/games/redline",
+      "port": 5176
+    },
+    {
+      "name": "deadlane",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "apps/games/deadlane",
+      "port": 5174
     }
   ]
 }

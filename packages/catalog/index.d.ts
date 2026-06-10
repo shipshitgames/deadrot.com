@@ -11,6 +11,10 @@ export type GameStatus = "PLAYABLE" | "IN DEV" | "CONCEPT";
 
 export interface GameApp {
   slug: GameSlug;
+  /** Display title for cross-game UI (Warline portals, title-menu quick links). */
+  title: string;
+  /** Hex accent for cross-game UI tinting. */
+  accent: string;
   devPort: number;
   deployUrl: string;
   status: GameStatus;

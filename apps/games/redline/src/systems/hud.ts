@@ -4,7 +4,7 @@
  * overlays plus start / win / dead card text.
  */
 
-import { warlineLobbyHref } from "@shipshitgames/ui";
+import { gameJumpHtml, warlineLobbyHref } from "@shipshitgames/ui";
 import { COURSE, RUNNER, SCORE } from "../constants";
 import type { RunnerState } from "../types";
 import { applyRunRecord, bestFor, createBestsStore, type RunSummary } from "./score";
@@ -197,6 +197,7 @@ export class Hud {
           <span class="ssg-main-menu-action__label"><span>← Back to Warline</span></span>
           <span class="ssg-main-menu-action__meta">Lobby</span>
         </a>
+        ${gameJumpHtml("redline")}
       </nav>
     `;
     this.wireOverlayButton(opts.onIgnite);
