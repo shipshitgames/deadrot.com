@@ -1,12 +1,10 @@
 import type { GameSlug } from "@shipshitgames/warline";
-import { GAME_OPERATIONS } from "@shipshitgames/warline";
+import { GAME_OPERATIONS, GAME_SLUGS } from "@shipshitgames/warline";
 import { HelpTooltip } from "./HelpTooltip";
 
 interface OpsPanelProps {
   simulate: (game?: GameSlug) => void;
 }
-
-const GAME_SLUGS: GameSlug[] = ["scourge-survivors", "deadlane", "pactfall", "starblight", "redline", "rothulk"];
 
 export function OpsPanel({ simulate }: OpsPanelProps) {
   return (

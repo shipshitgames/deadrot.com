@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { COLORS, CONSTANTS } from "../constants";
-import type { LevelData } from "./types";
+import type { ChargerState, LevelData } from "./types";
 
 // Owns the Three.js scene, the orthographic side camera, and all meshes built
 // from primitives. Side-scroller / 2.5D: we look down -Z at a flat XY world.
@@ -17,6 +17,9 @@ export class Renderer {
 
   // Dynamic mesh pools keyed by entity index.
   readonly scourgeMeshes: THREE.Group[] = [];
+  readonly spitterMeshes: THREE.Group[] = [];
+  readonly chargerMeshes: THREE.Group[] = [];
+  readonly globMeshes: THREE.Mesh[] = [];
   readonly emberMeshes: THREE.Mesh[] = [];
   readonly moverMeshes: THREE.Mesh[] = [];
   private levelObjects: THREE.Object3D[] = [];
@@ -60,13 +63,22 @@ export class Renderer {
 
   // --- Static + dynamic level geometry ------------------------------------
   buildLevel(level: LevelData) {
-    // Clear any prior level (on restart) but keep lights + hero + flash.
-    for (const object of this.levelObjects) this.scene.remove(object);
+    // Clear any prior level (on restart / level transition) but keep lights +
+    // hero + flash. Every geometry/material below is created fresh per build
+    // (nothing is cached across builds), so dispose GPU resources too —
+    // otherwise each rebuild leaks the previous level's buffers.
+    for (const object of this.levelObjects) {
+      this.scene.remove(object);
+      this.disposeLevelObject(object);
+    }
     this.levelObjects.length = 0;
     this.scourgeMeshes.length = 0;
+    this.spitterMeshes.length = 0;
+    this.chargerMeshes.length = 0;
+    this.globMeshes.length = 0;
     this.emberMeshes.length = 0;
     this.moverMeshes.length = 0;
-    this.coreIgnited = level.core.ignited;
+    this.coreIgnited = false;
     this.exitArmed = false;
 
     // Backdrop: a huge dark void plane far behind everything.
@@ -181,6 +193,65 @@ export class Renderer {
       g.position.set(s.x, s.y, 0.2);
       this.addLevelObject(g);
       this.scourgeMeshes.push(g);
+    }
+
+    // Spitters — rooted lobber mounds, wet flesh with a toxic maw.
+    for (const sp of level.spitters) {
+      const g = new THREE.Group();
+      const mound = new THREE.Mesh(
+        new THREE.SphereGeometry(sp.size / 2, 12, 10),
+        new THREE.MeshStandardMaterial({
+          color: COLORS.fleshWet,
+          roughness: 0.7,
+          emissive: COLORS.toxic,
+          emissiveIntensity: 0.2,
+        }),
+      );
+      mound.scale.y = 0.75;
+      const maw = new THREE.Mesh(
+        new THREE.SphereGeometry(sp.size * 0.22, 8, 8),
+        new THREE.MeshBasicMaterial({ color: COLORS.toxic }),
+      );
+      maw.position.y = sp.size * 0.3;
+      g.add(mound, maw);
+      g.position.set(sp.x, sp.y, 0.2);
+      this.addLevelObject(g);
+      this.spitterMeshes.push(g);
+    }
+
+    // Chargers — armored rams: flesh-wet body, bone horn facing forward.
+    for (const c of level.chargers) {
+      const g = new THREE.Group();
+      const body = new THREE.Mesh(
+        new THREE.BoxGeometry(c.w, c.h, 0.9),
+        new THREE.MeshStandardMaterial({
+          color: COLORS.fleshWet,
+          roughness: 0.6,
+          emissive: COLORS.blood,
+          emissiveIntensity: 0.25,
+        }),
+      );
+      const horn = new THREE.Mesh(
+        new THREE.ConeGeometry(0.2, 0.6, 5),
+        new THREE.MeshStandardMaterial({ color: COLORS.bone, roughness: 0.7 }),
+      );
+      horn.rotation.z = -Math.PI / 2;
+      horn.position.set(c.w / 2 + 0.2, c.h * 0.15, 0);
+      g.add(body, horn);
+      g.position.set(c.x, c.y, 0.2);
+      this.addLevelObject(g);
+      this.chargerMeshes.push(g);
+    }
+
+    // Toxic globs — pooled spitter projectiles, hidden until launched.
+    for (let i = 0; i < CONSTANTS.MAX_GLOBS; i++) {
+      const m = new THREE.Mesh(
+        new THREE.SphereGeometry(CONSTANTS.GLOB_SIZE / 2, 8, 8),
+        new THREE.MeshBasicMaterial({ color: COLORS.toxic }),
+      );
+      m.visible = false;
+      this.addLevelObject(m);
+      this.globMeshes.push(m);
     }
 
     // Embers — hellfire octahedrons.
@@ -339,6 +410,25 @@ export class Renderer {
     nodeMat?.color.setHex(feral ? COLORS.hellfire : COLORS.toxic);
   }
 
+  // Tint a charger to telegraph its state: red-hot mid-charge, dim when dazed.
+  setChargerState(index: number, state: ChargerState) {
+    const group = this.chargerMeshes[index];
+    if (!group) return;
+    const body = group.children[0] as THREE.Mesh | undefined;
+    const mat = body?.material as THREE.MeshStandardMaterial | undefined;
+    if (!mat) return;
+    if (state === "charge") {
+      mat.emissive.setHex(COLORS.bloodHot);
+      mat.emissiveIntensity = 0.9;
+    } else if (state === "stunned") {
+      mat.emissive.setHex(COLORS.iron);
+      mat.emissiveIntensity = 0.1;
+    } else {
+      mat.emissive.setHex(COLORS.blood);
+      mat.emissiveIntensity = 0.25;
+    }
+  }
+
   setCheckpointReached() {
     (this.checkpointMesh.material as THREE.MeshStandardMaterial).emissive.setHex(COLORS.blood);
     (this.checkpointMesh.material as THREE.MeshStandardMaterial).emissiveIntensity = 0.8;
@@ -388,6 +478,23 @@ export class Renderer {
   private addLevelObject(object: THREE.Object3D) {
     this.scene.add(object);
     this.levelObjects.push(object);
+  }
+
+  // Free GPU resources for a removed level object (and its children). Some
+  // materials are shared between several level meshes (e.g. slabMat across
+  // platforms); Three.js material/geometry dispose() is idempotent, so
+  // disposing them once per referencing mesh is safe.
+  private disposeLevelObject(object: THREE.Object3D) {
+    object.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.geometry.dispose();
+      if (Array.isArray(mesh.material)) {
+        for (const material of mesh.material) material.dispose();
+      } else {
+        mesh.material.dispose();
+      }
+    });
   }
 
   private resize = () => {

@@ -156,8 +156,8 @@ gameArtDirection:
     paletteBias: "blood and hellfire for combat feedback; toxic only for breach cores and Scourge weak points"
   deadlane:
     title: "Deadlane"
-    camera: "top-down / high-angle lane-defense sprites"
-    assetFraming: "units, towers, lanes, and projectiles readable from above"
+    camera: "first-person walk-the-lane build-and-defend view; front-facing full-body towers, creeps, and props (shared billboard treatment with scourge-survivors)"
+    assetFraming: "towers, creeps, and projectiles readable head-on at lane distance from the first-person build perspective"
     paletteBias: "gunmetal lane structures, blood pressure, hellfire tower heat"
   pactfall:
     title: "Pactfall"

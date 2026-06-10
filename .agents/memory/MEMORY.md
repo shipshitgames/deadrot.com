@@ -1,6 +1,6 @@
 # Deadrot Monorepo - Repo Memory
 
-last_verified: 2026-06-08
+last_verified: 2026-06-10
 
 ## What this is
 The shipped Deadrot monorepo (Turborepo + Bun), GitHub
@@ -17,8 +17,26 @@ asset that ships with them:
   soundtrack, preserved source history, generated originals, and Deadrot IP
   runtime data. Internal `@deadrot/*` aliases should resolve into this package
   or nearby Deadrot packages while they are monorepo-only.
-- `packages/ui` - shared game UI primitives.
-- `packages/warline` - runtime multiplayer/networking helpers.
+- `packages/ui` - shared game UI primitives (incl. the shared `CodexScreen`
+  dossier browser).
+- `packages/warline` - runtime multiplayer/networking helpers (pure state
+  machine; deliberately dependency-free, incl. deterministic narrative events).
+- `packages/game-kit` - `@deadrot/game-kit` (private, workspace-only): shared
+  game runtime — audio engine + procedural SFX palette, juice/VFX (shake,
+  particles, damage numbers, flash), core utils (fixed loop, seeded RNG, typed
+  localStorage, pools, input latch), codex/lore mapping, cross-game war record.
+  Upstream candidates for `@shipshitgames/engine` are listed in its README —
+  graduate by upstream+publish, never fork.
+- `packages/assets` also exports `./lore` — typed JSON derivative of the vault
+  (games/factions/characters/bestiary/locations/timeline), drift-tested against
+  the asset catalog and `@deadrot/catalog`. Vault leads, data follows; coined
+  names stay `coined: true` + "(provisional)" in the vault until promoted.
+
+## Testing gotcha
+`apps/games/scourge-survivors` MUST stay on vitest: its tests import
+`@shipshitgames/assets/scourge-survivors`, which uses Vite's
+`import.meta.glob` — `bun test` cannot load it. Every other game/package uses
+`bun test`.
 
 ## Repo Boundary
 Deadrot assets and Deadrot-specific runtime packages ship from this repo.

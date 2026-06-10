@@ -292,95 +292,7 @@ body {
 .banner.hidden {
   display: none;
 }
-.banner-inner {
-  text-align: center;
-  padding: 36px clamp(24px, 6vw, 64px);
-  background: var(--coal);
-  border: 1px solid var(--gunmetal);
-  border-top: 3px solid var(--blood);
-  max-width: 640px;
-}
-#banner-title {
-  color: var(--bone);
-}
-#banner-sub {
-  margin-top: 10px;
-  font-size: clamp(15px, 2.4vw, 20px);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--blood);
-}
-.hint {
-  margin-top: 18px;
-  font-family: var(--mono);
-  font-size: 13px;
-  letter-spacing: 0.04em;
-  color: var(--ash);
-  text-transform: uppercase;
-}
-.cta {
-  margin-top: 26px;
-  pointer-events: auto;
-  cursor: pointer;
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: 20px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--bone);
-  background: var(--blood);
-  border: 0;
-  border-radius: 2px;
-  padding: 14px 38px;
-  transition:
-    box-shadow 120ms ease,
-    background 120ms ease;
-}
-.cta:hover {
-  background: var(--blood-hot);
-  box-shadow: var(--glow);
-}
-.cta:active {
-  transform: translateY(1px);
-}
-.cta.hidden {
-  display: none;
-}
 
-/* --- settings overlay -------------------------------------------------- */
-/* The pause overlay is now the shared <PauseMenu>; this is the title-menu
-   Settings panel (music + SFX sliders). */
-
-.settings-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 90;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(8, 8, 10, 0.78);
-  backdrop-filter: blur(3px);
-  pointer-events: auto;
-}
-.settings-inner {
-  width: min(440px, calc(100vw - 32px));
-  display: grid;
-  gap: 18px;
-  padding: 30px clamp(20px, 5vw, 44px);
-  text-align: center;
-  background: var(--coal);
-  border: 1px solid var(--gunmetal);
-  border-top: 3px solid var(--hellfire);
-}
-.settings-title {
-  font-size: clamp(26px, 6vw, 40px);
-  line-height: 0.95;
-  letter-spacing: 0.12em;
-  color: var(--bone);
-}
-.settings-close {
-  justify-self: stretch;
-}
 .menu-action {
   pointer-events: auto;
   cursor: pointer;
@@ -507,4 +419,18 @@ body {
   letter-spacing: 0.2em;
   color: var(--gunmetal);
   pointer-events: none;
+}
+
+/* The Drydock meta-upgrade shop: a responsive grid of buyable upgrade cards. */
+.ssg-drydock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  width: min(720px, 86vw);
+  margin: 18px 0 4px;
+}
+
+.ssg-drydock-grid .ssg-upgrade-card:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }

@@ -8,14 +8,17 @@
     "dev:all": "concurrently -k -n web,party -c blue,magenta \"vite\" \"partykit dev\"",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "test": "bun run test:unit",
+    "test:unit": "bun test tests/unit",
     "typecheck": "tsc --noEmit",
     "party:dev": "partykit dev",
     "party:deploy": "partykit deploy",
     "deps:update": "bunx npm-check-updates -u --cooldown 3h --removeRange && bun install"
   },
   "dependencies": {
+    "@deadrot/game-kit": "workspace:*",
     "@shipshitgames/assets": "workspace:*",
-    "@shipshitgames/engine": "workspace:*",
+    "@shipshitgames/engine": "^0.2.0",
     "@shipshitgames/ui": "workspace:*",
     "@shipshitgames/warline": "workspace:*",
     "partysocket": "^1.1.19",

@@ -1,3 +1,5 @@
+import { createSnapshotStore } from "@deadrot/game-kit/core";
+
 export interface BannerSnapshot {
   visible: boolean;
   title: string;
@@ -7,12 +9,13 @@ export interface BannerSnapshot {
   gold: string;
   wave: string;
   hp: string;
+  tower: string;
   build: string;
   run: string;
   hint: string;
 }
 
-let snapshot: BannerSnapshot = {
+const store = createSnapshotStore<BannerSnapshot>({
   visible: false,
   title: "DEADLANE",
   subtitle: "",
@@ -21,29 +24,24 @@ let snapshot: BannerSnapshot = {
   gold: "0",
   wave: "0 / 0",
   hp: "0",
+  tower: "EMBER TURRET (50)",
   build: "100%",
   run: "100%",
   hint: "CLICK A CELL TO BUILD (COST 50)",
-};
-
-const listeners = new Set<(snapshot: BannerSnapshot) => void>();
+});
 
 export function getBannerSnapshot(): BannerSnapshot {
-  return snapshot;
+  return store.get();
 }
 
 export function subscribeBanner(listener: (snapshot: BannerSnapshot) => void): () => void {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
+  return store.subscribe(() => listener(store.get()));
 }
 
 export function setBannerSnapshot(next: BannerSnapshot): void {
-  snapshot = next;
-  for (const listener of listeners) listener(snapshot);
+  store.set(next);
 }
 
 export function patchBannerSnapshot(next: Partial<BannerSnapshot>): void {
-  setBannerSnapshot({ ...snapshot, ...next });
+  store.patch(next);
 }

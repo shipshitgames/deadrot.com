@@ -12,10 +12,11 @@
  *   - beacon  : a tall hellfire pillar at the finish
  */
 
+import { ParticleBursts, ScreenShake } from "@deadrot/game-kit/juice";
 import * as THREE from "three";
-import { COLORS, CAMERA, WORLD, RUNNER, EMBER, TRAIL } from "../constants";
-import type { Course } from "../types";
+import { CAMERA, COLORS, EMBER, FEEDBACK, RUNNER, TRAIL, WORLD } from "../constants";
 import type { Runner } from "../entities/runner";
+import type { Course } from "../types";
 
 interface TrailGhost {
   mesh: THREE.Mesh;
@@ -38,9 +39,11 @@ export class Render {
   private beaconLight!: THREE.PointLight;
 
   // camera state
-  private shake = 0;
-  private shakeSeed = Math.random() * 1000;
+  private readonly shake = new ScreenShake({ decay: CAMERA.shakeDecay });
   private viewHeight = CAMERA.viewHeight;
+
+  // pooled one-shot bursts (ember pickups, landing dust); created after the scene
+  private bursts!: ParticleBursts;
 
   private aspect = 1;
   private elapsed = 0;
@@ -59,6 +62,8 @@ export class Render {
 
     this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000);
     this.camera.position.set(0, CAMERA.height, 30);
+
+    this.bursts = new ParticleBursts(this.scene);
 
     this.addLights();
     this.resize();
@@ -456,7 +461,35 @@ export class Render {
     this.updateTrail(dt, runner, frac);
     this.updateEmbers(dt);
     this.updateBeacon();
+    this.bursts.update(dt);
     this.updateCamera(dt, runner, course, frac);
+  }
+
+  // ---------------------------------------------------------------------------
+  // One-shot bursts (game-kit ParticleBursts; honors the global particles level)
+  // ---------------------------------------------------------------------------
+
+  /** Hellfire pop where an ember was grabbed. */
+  emitEmberBurst(x: number, y: number) {
+    this.bursts.spawn({
+      position: { x, y, z: 0.4 },
+      color: COLORS.hellfire,
+      ...FEEDBACK.emberBurst,
+    });
+  }
+
+  /** Ash/gunmetal dust kicked up by a hard landing at the runner's feet. */
+  emitLandingDust(x: number, y: number) {
+    this.bursts.spawn({
+      position: { x, y, z: 0.3 },
+      color: COLORS.ash,
+      ...FEEDBACK.dustBurst,
+    });
+    this.bursts.spawn({
+      position: { x, y, z: 0.2 },
+      color: COLORS.gunmetal,
+      ...FEEDBACK.dustPuff,
+    });
   }
 
   private updateTrail(dt: number, runner: Runner, frac: number) {
@@ -527,13 +560,10 @@ export class Render {
     this.viewHeight += (targetView - this.viewHeight) * (1 - Math.exp(-6 * dt));
     this.applyProjection();
 
-    // screen-shake decay + apply as a small offset
-    this.shake = Math.max(0, this.shake - CAMERA.shakeDecay * dt * this.shake);
-    if (this.shake > 0.001) {
-      const t = this.elapsed * 60 + this.shakeSeed;
-      this.camera.position.x += Math.sin(t * 1.7) * this.shake * 0.5;
-      this.camera.position.y += Math.cos(t * 2.3) * this.shake;
-    }
+    // screen-shake decay + offset (shared juice module; honors the global shake level)
+    this.shake.update(dt);
+    this.camera.position.x += this.shake.offsetX;
+    this.camera.position.y += this.shake.offsetY;
 
     // beacon point-light reach: brighten as you approach (handled by progress in HUD)
     void course;
@@ -543,7 +573,7 @@ export class Render {
 
   /** Kick the screen-shake (called on stagger). */
   kickShake(amount: number) {
-    this.shake = Math.max(this.shake, amount);
+    this.shake.kick(amount);
   }
 
   private applyProjection() {
@@ -570,6 +600,7 @@ export class Render {
   }
 
   dispose() {
+    this.bursts.dispose();
     this.clearGroup();
     this.renderer.dispose();
   }

@@ -49,6 +49,8 @@ export interface HUDState {
   score: number;
   kills: number;
   headshots: number;
+  /** Breach-bosses / Scourge elites felled this run (war-record mirror). */
+  bossKills: number;
   enemiesAlive: number;
   /** Current kill-streak combo (0 when the streak has lapsed). */
   combo: number;

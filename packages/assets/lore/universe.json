@@ -1,0 +1,51 @@
+{
+  "premise": "It came out of the void, and the first time we met it — a battle in the sky over our own heads — we lost. Now it tears its way back in through breaches: festering, rooted wounds that never stop vomiting horde. We call it the Scourge. It has no face and no native shape; it wears whatever it eats — flesh, machine, fungus, the corpse of whole dead worlds — all stitched under one grammar of hunger. It isn't evil. It has no plan, no hatred, no off-switch. It just needs to survive and spread, and it will eat this planet down to the bone and jump to the next, exactly like it ate the ones before us. You can't reason with need. You can only buy time.\n\nSo that's the job. We hold the lanes — the last roads still threading the ruins together — because to lose a lane is to be overrun, and to lose them all is to be extinct. We split over how. The Wardens are what's left of the old armies: they dig in, wall up, and outlast. The Pyre think holding is just dying slow, so they walk straight down into the breaches to burn the source from the inside, and most of them don't walk back out. We hate each other a little. We've nearly killed each other over it. So we swore the Pact: whatever the feud, the second a breach opens, every human stands on the same side of the wall. Settle scores in the arena, never on the field, never while the Scourge still bleeds through.\n\nHere's the thing that keeps us alive: the Scourge thinks as one mind, the Choir, and that mind is nothing but a signal with a hard edge to it. Cut the repeaters, push a node past the radius, and that piece of it goes feral — still lethal, but blind, dumb, alone. Isolation is the whole war. An optimizer that knows everything can't model the one thing we've got: free will, decentralized, improvising, willing to burn our own to break the song. That's how unpredictable beats omniscient. We don't win. Nobody wins against the Scourge. We just make this world cost more than it's worth — and we make the bastard go hungry trying.",
+  "pillars": [
+    {
+      "title": "The Scourge",
+      "desc": "A host-dependent parasite out of the void with no shape of its own — it wears whatever it infects: flesh, fungus, machine, the dead races and ruined tech of worlds it already devoured. Not evil. No malice, no plan, no off-switch. It only needs to survive and spread, consuming every host to death and jumping to the next world when this one's spent. The through-line enemy of every war. You can blind it, isolate it, win the night — you can never truly kill it."
+    },
+    {
+      "title": "Breaches & Lanes",
+      "desc": "Breaches are where it punches into the world from the void — physical, rooted, escalating nests that never stop spawning horde, not mystical rifts. The lanes are the only roads left between the breaches and the holdouts. Hold a lane and you survive; lose one and you're overrun. Holding the chokepoints does double duty: it fragments the Choir where the swarm has to mass."
+    },
+    {
+      "title": "The Pact",
+      "desc": "Humanity is split by doctrine, not hatred. The Wardens — the remnant army and engineers — dig in and outlast. The Pyre — the zealot order that broke away — descend into the breaches to burn the source. Rivals, never enemies: the Pact binds them to stand together the instant a breach opens. The feud is exiled to sanctioned arenas, never the field, never while the Scourge still bleeds through."
+    },
+    {
+      "title": "The Choir",
+      "desc": "The hive mind. The Scourge knows everything its parts know, all at once, over a signal called the Choir — there's no single general to kill, because the mind is the connection itself. But the Choir has a limited radius, so the swarm must mass densely and string out repeaters to extend its reach. Kill the repeaters or push a node past the edge and it's severed: feral, blind, instinct-only. Isolation is the human win condition."
+    }
+  ],
+  "eras": [
+    {
+      "name": "Zero Day — the Invasion",
+      "blurb": "First contact with the Scourge out of the void. Humanity fights the battle for the sky and orbit — and loses. Not ready, too many. The world falls and the first breaches root groundside. The night everything else is after."
+    },
+    {
+      "name": "The Long Fall",
+      "blurb": "The months after Zero Day. Cities consumed, fleets gone, survivors scattering down the only roads left — the lanes. The old world ends here."
+    },
+    {
+      "name": "The Schism",
+      "blurb": "The survivors split by doctrine. The remnant army holds and rebuilds as the Wardens; a zealot order breaks away as the Pyre, convinced that holding is just a slower death and the only cure is fire."
+    },
+    {
+      "name": "The Pact",
+      "blurb": "After the rivalry nearly costs a holdout its walls, both sides swear the Pact: whatever the feud, humans stand together the instant a breach opens. The feud is exiled to sanctioned arenas, never the field."
+    },
+    {
+      "name": "The Lane Wars",
+      "blurb": "Humanity fortifies the lanes and learns the secret — cutting the Scourge's repeaters severs it from the Choir. The war becomes a fight to fragment the signal. When the horde cuts comms between holdouts, lone runners carry the message on foot, faster than the swarm can close."
+    },
+    {
+      "name": "The Descent",
+      "blurb": "The first Purgers go down into the breaches to sever nodes and burn the sources from the inside. Most do not come back. Pyre saboteurs climb the living breach-ships to ignite their cores and cut the local node."
+    },
+    {
+      "name": "The Listeners Emerge",
+      "blurb": "A heresy spreads: that the Choir could be understood and steered rather than only fought. Hunted by Pyre and Wardens alike, the Listeners keep severed nodes alive — and listen."
+    }
+  ]
+}

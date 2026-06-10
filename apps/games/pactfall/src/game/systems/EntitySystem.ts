@@ -1,8 +1,10 @@
 import * as THREE from "three";
 import { COLORS, CONSTANTS, MARCH_DIR, type Team } from "../constants";
-import type { Entity } from "../types";
+import { makeBase, makeChampion, makeMinion, makeScourge } from "../factory";
 import type { Game } from "../Game";
-import { makeChampion, makeMinion, makeScourge, makeBase } from "../factory";
+import type { Entity, GameEvents } from "../types";
+import { slowedSpeed } from "./abilities";
+import { clampToLane, stepToward } from "./movement";
 
 // Owns every entity, the spawn cadence, movement, targeting, combat, and the
 // transient attack beams. This is where the core loop actually lives.
@@ -16,6 +18,20 @@ export class EntitySystem {
   enemyBase!: Entity;
   scourge!: Entity;
 
+  // The player champion's last lane-space move direction (x = strafe, y = +Z
+  // forward). Abilities aim along this when there's no cursor to aim at.
+  readonly playerFacing = new THREE.Vector2(0, 1);
+
+  // Gameplay events accumulated each tick; the Game consumes + clears them
+  // once per displayed frame for juice and audio.
+  readonly events: GameEvents = {
+    hits: [],
+    kills: [],
+    playerDamage: 0,
+    playerDied: false,
+    buffGained: false,
+  };
+
   private spawnTimers: Record<Team, number> = { pyre: 0, warden: 0 };
   private scourgeRespawn = 0; // > 0 means the blob is dead and counting down
   // > 0 means that team's champion is dead and counting down to redeploy.
@@ -25,6 +41,14 @@ export class EntitySystem {
   private beams: { mesh: THREE.Mesh; life: number; max: number }[] = [];
 
   constructor(private readonly game: Game) {}
+
+  clearEvents(): void {
+    this.events.hits.length = 0;
+    this.events.kills.length = 0;
+    this.events.playerDamage = 0;
+    this.events.playerDied = false;
+    this.events.buffGained = false;
+  }
 
   reset(): void {
     for (const e of this.all) this.game.render.remove(e.mesh);
@@ -37,6 +61,8 @@ export class EntitySystem {
     this.spawnTimers = { pyre: 0, warden: 1.3 };
     this.scourgeRespawn = 0;
     this.championDown = { pyre: 0, warden: 0 };
+    this.playerFacing.set(0, 1);
+    this.clearEvents();
 
     this.champion = this.spawn(makeChampion("pyre"));
     this.champion.pos.copy(this.championSpawnPos("pyre"));
@@ -71,6 +97,11 @@ export class EntitySystem {
   }
 
   update(dt: number): void {
+    // Pact Brand slow decays everywhere in one pass.
+    for (const e of this.all) {
+      if (e.slowTimer > 0) e.slowTimer = Math.max(0, e.slowTimer - dt);
+    }
+
     this.tickSpawns(dt);
     this.tickScourgeRespawn(dt);
     this.tickChampionRespawns(dt);
@@ -124,7 +155,9 @@ export class EntitySystem {
         const c = team === "pyre" ? this.champion : this.enemyChampion;
         c.alive = true;
         c.hp = c.maxHp;
+        c.mana = c.maxMana;
         c.cooldown = 0;
+        c.slowTimer = 0;
         c.mesh.visible = true;
         c.pos.copy(this.championSpawnPos(team));
       }
@@ -137,29 +170,27 @@ export class EntitySystem {
     const c = this.champion;
     if (!c.alive) return;
     const input = this.game.input;
-    const speed = CONSTANTS.champion.moveSpeed;
+    const speed = slowedSpeed(CONSTANTS.champion.moveSpeed, c.slowTimer, CONSTANTS.abilities.w.slowFactor);
 
     if (input.hasKeyboardMove) {
       c.pos.x += input.move.x * speed * dt;
       c.pos.z += input.move.y * speed * dt;
+      this.playerFacing.set(input.move.x, input.move.y).normalize();
     } else if (input.clickTarget) {
-      const dx = input.clickTarget.x - c.pos.x;
-      const dz = input.clickTarget.z - c.pos.z;
-      const dist = Math.hypot(dx, dz);
-      if (dist < 0.2) {
+      const t = input.clickTarget;
+      if (Math.hypot(t.x - c.pos.x, t.z - c.pos.z) < 0.2) {
         input.clickTarget = null;
       } else {
-        const step = Math.min(speed * dt, dist);
-        c.pos.x += (dx / dist) * step;
-        c.pos.z += (dz / dist) * step;
+        // Abilities aim along the move direction; record it before the step
+        // mutates the position.
+        this.playerFacing.set(t.x - c.pos.x, t.z - c.pos.z).normalize();
+        stepToward(c.pos, t.x, t.z, speed, dt);
       }
     }
 
-    const clamp = CONSTANTS.arena.laneClamp;
-    c.pos.x = THREE.MathUtils.clamp(c.pos.x, -clamp, clamp);
     // Don't let the player walk back onto its own base (that would wall the camera);
     // retreatZ keeps the base safely behind the follow-cam.
-    c.pos.z = THREE.MathUtils.clamp(c.pos.z, CONSTANTS.champion.retreatZ, CONSTANTS.base.enemyZ - 1);
+    clampToLane(c.pos, CONSTANTS.champion.retreatZ);
   }
 
   // Simple lane AI for the Warden champion: chase the nearest Pyre unit to
@@ -167,7 +198,7 @@ export class EntitySystem {
   private moveEnemyChampion(dt: number): void {
     const c = this.enemyChampion;
     if (!c.alive) return;
-    const speed = CONSTANTS.champion.moveSpeed;
+    const speed = slowedSpeed(CONSTANTS.champion.moveSpeed, c.slowTimer, CONSTANTS.abilities.w.slowFactor);
 
     const foe = this.nearestFoeAny(c);
     let tx: number;
@@ -183,18 +214,8 @@ export class EntitySystem {
       stop = CONSTANTS.base.championRange + this.friendlyBase.radius - 0.6;
     }
 
-    const dx = tx - c.pos.x;
-    const dz = tz - c.pos.z;
-    const dist = Math.hypot(dx, dz);
-    if (dist > stop) {
-      const step = Math.min(speed * dt, dist - stop);
-      c.pos.x += (dx / dist) * step;
-      c.pos.z += (dz / dist) * step;
-    }
-
-    const clamp = CONSTANTS.arena.laneClamp;
-    c.pos.x = THREE.MathUtils.clamp(c.pos.x, -clamp, clamp);
-    c.pos.z = THREE.MathUtils.clamp(c.pos.z, CONSTANTS.base.friendlyZ - 1, CONSTANTS.base.enemyZ - 1);
+    stepToward(c.pos, tx, tz, speed, dt, stop);
+    clampToLane(c.pos, CONSTANTS.base.friendlyZ - 1);
   }
 
   private moveMinions(dt: number): void {
@@ -209,7 +230,8 @@ export class EntitySystem {
       const base = this.opposingBase(team);
       if (base.alive && this.flatDist(m.pos, base.pos) <= m.attackRange + base.radius) continue;
 
-      m.pos.z += MARCH_DIR[team] * CONSTANTS.minion.moveSpeed * dt;
+      const speed = slowedSpeed(CONSTANTS.minion.moveSpeed, m.slowTimer, CONSTANTS.abilities.w.slowFactor);
+      m.pos.z += MARCH_DIR[team] * speed * dt;
     }
   }
 
@@ -228,7 +250,7 @@ export class EntitySystem {
         if (target) {
           const buffed = isPlayer && this.game.buffed;
           const dmg = e.attackDamage * (buffed ? CONSTANTS.scourge.buffMultiplier : 1);
-          this.damage(target, dmg);
+          this.damage(target, dmg, { dealer: e });
           const color = isPlayer ? (buffed ? COLORS.toxic : COLORS.hellfire) : COLORS.bloodHot;
           this.beam(e.pos, target.pos, color, 0.42, 1);
           e.cooldown = e.attackCooldown;
@@ -236,14 +258,14 @@ export class EntitySystem {
       } else if (e.kind === "minion") {
         const foe = this.nearestFoe(e, e.attackRange);
         if (foe) {
-          this.damage(foe, e.attackDamage);
+          this.damage(foe, e.attackDamage, { dealer: e });
           this.beam(e.pos, foe.pos, COLORS.blood, 0.18, 0.4);
           e.cooldown = e.attackCooldown;
         } else {
           // No unit in range — chip the opposing base if we've sieged up to it.
           const base = this.opposingBase(e.team as Team);
           if (base.alive && this.flatDist(e.pos, base.pos) <= e.attackRange + base.radius) {
-            this.damage(base, e.attackDamage);
+            this.damage(base, e.attackDamage, { dealer: e });
             this.beam(e.pos, base.pos, COLORS.blood, 0.2, 0.5);
             e.cooldown = e.attackCooldown;
           }
@@ -298,19 +320,56 @@ export class EntitySystem {
     return team === "pyre" ? this.enemyBase : this.friendlyBase;
   }
 
+  /** Every living unit (minion or champion) hostile to the given team. */
+  unitsHostileTo(team: Team): Entity[] {
+    return this.all.filter(
+      (e) => e.alive && (e.kind === "minion" || e.kind === "champion") && e.team !== team && e.team !== "neutral",
+    );
+  }
+
   private areEnemies(a: Entity, b: Entity): boolean {
     if (a.team === "neutral" || b.team === "neutral") return false;
     return a.team !== b.team;
   }
 
-  private damage(target: Entity, amount: number): void {
+  damage(target: Entity, amount: number, source?: { dealer: Entity; ability?: boolean }): void {
     if (!target.alive) return;
     target.hp -= amount;
-    if (target.hp <= 0) this.kill(target);
+
+    const dealer = source?.dealer ?? null;
+    // Hit events only for champion-dealt damage — minion skirmish chip would
+    // drown the HUD in numbers without telling the player anything.
+    if (dealer && dealer.kind === "champion" && dealer.team !== "neutral") {
+      this.events.hits.push({
+        x: target.pos.x,
+        y: target.pos.y + target.radius,
+        z: target.pos.z,
+        amount,
+        ability: source?.ability ?? false,
+        dealerTeam: dealer.team as Team,
+        dealerIsPlayer: dealer === this.champion,
+        targetIsPlayer: target === this.champion,
+      });
+    }
+    if (target === this.champion) this.events.playerDamage += amount;
+
+    if (target.hp <= 0) this.kill(target, dealer);
   }
 
-  private kill(e: Entity): void {
+  private kill(e: Entity, dealer: Entity | null = null): void {
     e.hp = 0;
+
+    if (e.kind !== "base") {
+      this.events.kills.push({
+        x: e.pos.x,
+        y: e.pos.y,
+        z: e.pos.z,
+        kind: e.kind,
+        dealerTeam: dealer && dealer.team !== "neutral" ? (dealer.team as Team) : null,
+        dealerIsPlayer: dealer === this.champion,
+        victimIsPlayer: e === this.champion,
+      });
+    }
 
     if (e.kind === "scourge") {
       // Slaying the Scourge grants the champion a temporary damage buff.
@@ -318,6 +377,7 @@ export class EntitySystem {
       e.mesh.visible = false;
       this.scourgeRespawn = CONSTANTS.scourge.respawn;
       this.game.grantBuff();
+      this.events.buffGained = true;
       return;
     }
 
@@ -326,7 +386,10 @@ export class EntitySystem {
       e.alive = false;
       e.mesh.visible = false;
       this.championDown[e.team as Team] = CONSTANTS.champion.respawnDelay;
-      if (e === this.champion) this.game.input.clickTarget = null; // drop any stale move order
+      if (e === this.champion) {
+        this.game.input.clickTarget = null; // drop any stale move order
+        this.events.playerDied = true;
+      }
       return;
     }
 
@@ -335,7 +398,7 @@ export class EntitySystem {
 
   // ---- transient beams ----------------------------------------------------
 
-  private beam(from: THREE.Vector3, to: THREE.Vector3, color: number, life: number, thick: number): void {
+  beam(from: THREE.Vector3, to: THREE.Vector3, color: number, life: number, thick: number): void {
     const a = from.clone();
     a.y = 1.1;
     const b = to.clone();

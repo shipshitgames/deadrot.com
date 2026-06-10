@@ -96,6 +96,12 @@ body {
   line-height: 1;
 }
 
+/* word-sized stat values (selected tower) read at a smaller size */
+.ssg-stat-value--text {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+
 /* tint key stats */
 #stat-gold {
   color: var(--hellfire);
@@ -160,28 +166,6 @@ body {
 
 #hud-banner.hidden {
   display: none;
-}
-
-/* ---- settings overlay (audio sliders) ------------------------------------ */
-
-.deadlane-settings-screen {
-  position: fixed;
-  inset: 0;
-  z-index: 75;
-  pointer-events: auto;
-}
-
-#banner-title {
-  color: inherit;
-}
-
-#banner-sub {
-  max-width: 36rem;
-  font-size: 15px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-weight: 400;
-  color: var(--ash);
 }
 
 .btn-primary {

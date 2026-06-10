@@ -8,7 +8,8 @@
  * never has to know about React internals.
  */
 
-import { GlobalGameSettingsPanel, PauseMenu } from "@shipshitgames/ui";
+import menuHero from "@shipshitgames/assets/games/redline/ui/menu/title.webp";
+import { GameSettingsScreen, PauseMenu } from "@shipshitgames/ui";
 import { useSyncExternalStore } from "react";
 import { overlayController } from "./overlayController";
 
@@ -18,24 +19,12 @@ export function GameOverlays() {
   return (
     <>
       {state.settingsOpen && (
-        <dialog className="settings-overlay" open aria-modal="true" aria-label="Settings">
-          <div className="settings-overlay__card">
-            <div className="settings-overlay__head">
-              <div>
-                <div className="ssg-menu-kicker">Courier Settings</div>
-                <h2 className="settings-overlay__title">Audio</h2>
-              </div>
-              <button
-                type="button"
-                className="settings-overlay__close"
-                onClick={() => overlayController.closeSettings()}
-              >
-                Close
-              </button>
-            </div>
-            <GlobalGameSettingsPanel inline />
-          </div>
-        </dialog>
+        <GameSettingsScreen
+          open
+          onClose={() => overlayController.closeSettings()}
+          kicker="Courier Settings"
+          backgroundImage={menuHero}
+        />
       )}
 
       <PauseMenu

@@ -2,29 +2,11 @@
 // Path-based game hosting: deadrot.com/<slug>/ serves each game under one origin.
 // trailingSlash:true normalizes /<slug> -> /<slug>/ consistently (no redirect loop) so the
 // games' relative Vite base ("./") resolves assets under the subpath.
-const GAME_DEPLOYS = {
-  "scourge-survivors": "https://scourge-survivors.vercel.app",
-  deadlane: "https://deadlane-one.vercel.app",
-  pactfall: "https://pactfall.vercel.app",
-  starblight: "https://starblight.vercel.app",
-  redline: "https://redline-eight-theta.vercel.app",
-  rothulk: "https://rothulk.vercel.app",
-  // The persistent meta-layer (EPIC #34). Vite SPA (apps/games/warline) on the shipshitdev team,
-  // backed by the PartyKit server at warline.vincentshipsit.partykit.dev.
-  warline: "https://warline-jet.vercel.app",
-};
-
-// Local Vite dev ports — each game's vite.config.ts server.port, mirrored in
-// apps/games/warline PORTALS + packages/ui lobby.ts.
-const GAME_DEV_PORTS = {
-  "scourge-survivors": 5178,
-  deadlane: 5174,
-  pactfall: 5175,
-  starblight: 5179,
-  redline: 5176,
-  rothulk: 5177,
-  warline: 5180,
-};
+//
+// slug -> prod deploy URL and slug -> local Vite dev port both come from the single
+// source of truth in @deadrot/catalog (which also drives the e2e harness, the
+// Warline lobby, and the hub content layer). Add/retire a game there, not here.
+import { gameDeploys as GAME_DEPLOYS, gameDevPorts as GAME_DEV_PORTS } from "@deadrot/catalog";
 
 // In `next dev` we send /<slug>/ to the local Vite dev servers so the hub reflects
 // your working tree instead of the stale prod deploy. We REDIRECT (302) rather than
@@ -40,6 +22,8 @@ const useLocalGames = process.env.NODE_ENV !== "production" && process.env.DEADR
 const nextConfig = {
   reactStrictMode: true,
   trailingSlash: true,
+  // The lore data layer (@shipshitgames/assets/lore) ships as workspace TS source.
+  transpilePackages: ["@shipshitgames/assets"],
   async rewrites() {
     if (useLocalGames) return [];
     return Object.entries(GAME_DEPLOYS).flatMap(([slug, url]) => [

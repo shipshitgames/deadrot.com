@@ -18,10 +18,11 @@
     "deps:update": "bunx npm-check-updates -u --cooldown 3h --removeRange && bun install"
   },
   "dependencies": {
+    "@deadrot/game-kit": "workspace:*",
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-switch": "^1.2.6",
     "@shipshitgames/assets": "workspace:*",
-    "@shipshitgames/engine": "workspace:*",
+    "@shipshitgames/engine": "^0.2.0",
     "@shipshitgames/ui": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

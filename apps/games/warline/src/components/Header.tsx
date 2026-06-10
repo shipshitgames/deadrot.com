@@ -70,6 +70,20 @@ export function Header({ state, summary, status }: HeaderProps) {
               Scourge is closer to flipping regions.
             </HelpTooltip>
           </div>
+
+          <div className="flex items-center gap-1">
+            <span
+              className={`border-2 px-2 py-0.5 font-display text-xs tracking-wide ${
+                summary.escalation > 1 ? "border-blood text-blood-hot" : "border-gunmetal text-ash"
+              }`}
+            >
+              CHOIR ×{summary.escalation.toFixed(2)}
+            </span>
+            <HelpTooltip label="Explain Choir escalation" side="bottom">
+              The doom clock. The longer the war runs, the harder the Choir pushes: breach output and regrowth multiply
+              by this factor, stepping up every few hundred ticks. The front does not wait for you.
+            </HelpTooltip>
+          </div>
         </div>
       </div>
     </header>

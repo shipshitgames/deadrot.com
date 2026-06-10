@@ -1,27 +1,55 @@
 /**
- * Input system. Maps keyboard + pointer/touch to intent flags the game reads.
- * Edge events (jumpPressed / dashPressed) are latched until consumed so the
- * physics step can buffer them precisely.
+ * Input system. Thin facade over @deadrot/game-kit's InputLatch: maps keyboard
+ * + pointer/touch to intent flags the game reads. Edge events (jump / dash /
+ * restart) are latched until consumed so the physics step can buffer them
+ * precisely.
  */
 
+import { InputLatch } from "@deadrot/game-kit";
+
+type Action = "jump" | "dash" | "restart" | "accelerate";
+
+const KEYS: Record<string, Action> = {
+  Space: "jump",
+  ArrowUp: "jump",
+  KeyW: "jump",
+  ShiftLeft: "dash",
+  ShiftRight: "dash",
+  ArrowDown: "dash",
+  KeyS: "dash",
+  KeyR: "restart",
+  ArrowRight: "accelerate",
+  KeyD: "accelerate",
+};
+
+/** Prevent page scroll on the game keys (matches the original key list). */
+const PREVENT_DEFAULT = new Set([
+  "Space",
+  "ArrowUp",
+  "KeyW",
+  "ShiftLeft",
+  "ShiftRight",
+  "ArrowDown",
+  "KeyS",
+  "ArrowRight",
+  "KeyD",
+  "ArrowLeft",
+]);
+
 export class Input {
-  // Held states
-  accelerate = false; // hold to build speed
-  dashHeld = false; // hold to keep crouch-roll posture
+  private readonly latch = new InputLatch<Action>({
+    keys: KEYS,
+    preventDefault: (code) => PREVENT_DEFAULT.has(code),
+  });
 
-  // Latched edge presses (consume once)
-  private jumpQueued = false;
-  private dashQueued = false;
-  private restartQueued = false;
-  private anyKeyQueued = false; // used to dismiss the start overlay
-
-  private readonly held = new Set<string>();
+  // "Any key" side-channel: InputLatch only queues mapped codes, but the start
+  // overlay dismisses on any keypress / tap, so keep this one boolean local.
+  private anyKeyQueued = false;
 
   constructor(private readonly target: HTMLElement) {
-    window.addEventListener("keydown", this.onKeyDown);
-    window.addEventListener("keyup", this.onKeyUp);
+    window.addEventListener("keydown", this.onAnyKeyDown);
 
-    // Pointer: left half = accelerate, tap upper = jump, hold lower = dash.
+    // Pointer: any touch = accelerate, tap upper = jump, hold lower = dash.
     target.addEventListener("pointerdown", this.onPointerDown);
     target.addEventListener("pointerup", this.onPointerUp);
     target.addEventListener("pointercancel", this.onPointerUp);
@@ -29,29 +57,34 @@ export class Input {
   }
 
   dispose() {
-    window.removeEventListener("keydown", this.onKeyDown);
-    window.removeEventListener("keyup", this.onKeyUp);
+    this.latch.dispose();
+    window.removeEventListener("keydown", this.onAnyKeyDown);
     this.target.removeEventListener("pointerdown", this.onPointerDown);
     this.target.removeEventListener("pointerup", this.onPointerUp);
     this.target.removeEventListener("pointercancel", this.onPointerUp);
     window.removeEventListener("blur", this.onBlur);
   }
 
+  // --- held states ------------------------------------------------------------
+  /** Hold to build speed. */
+  get accelerate(): boolean {
+    return this.latch.isHeld("accelerate");
+  }
+
+  /** True while a jump key is held (for variable jump height / cut-jump). */
+  get jumpHeld(): boolean {
+    return this.latch.isHeld("jump");
+  }
+
   // --- edge consumers -------------------------------------------------------
   consumeJump(): boolean {
-    const q = this.jumpQueued;
-    this.jumpQueued = false;
-    return q;
+    return this.latch.consume("jump");
   }
   consumeDash(): boolean {
-    const q = this.dashQueued;
-    this.dashQueued = false;
-    return q;
+    return this.latch.consume("dash");
   }
   consumeRestart(): boolean {
-    const q = this.restartQueued;
-    this.restartQueued = false;
-    return q;
+    return this.latch.consume("restart");
   }
   consumeAnyKey(): boolean {
     const q = this.anyKeyQueued;
@@ -59,74 +92,33 @@ export class Input {
     return q;
   }
 
-  private isJumpKey(code: string) {
-    return code === "Space" || code === "ArrowUp" || code === "KeyW";
-  }
-  private isDashKey(code: string) {
-    return code === "ShiftLeft" || code === "ShiftRight" || code === "ArrowDown" || code === "KeyS";
-  }
-  private isAccelKey(code: string) {
-    return code === "ArrowRight" || code === "KeyD";
+  /** Drop all held + queued state (used while paused). */
+  clear() {
+    this.latch.clear();
+    this.anyKeyQueued = false;
   }
 
-  private onKeyDown = (e: KeyboardEvent) => {
-    // Prevent page scroll on the game keys.
-    if (this.isJumpKey(e.code) || this.isDashKey(e.code) || this.isAccelKey(e.code) || e.code === "ArrowLeft") {
-      e.preventDefault();
-    }
-
+  private onAnyKeyDown = () => {
     this.anyKeyQueued = true;
-    if (e.repeat) return;
-
-    this.held.add(e.code);
-
-    if (this.isAccelKey(e.code)) this.accelerate = true;
-    if (this.isDashKey(e.code)) {
-      this.dashHeld = true;
-      this.dashQueued = true;
-    }
-    if (this.isJumpKey(e.code)) this.jumpQueued = true;
-    if (e.code === "KeyR") this.restartQueued = true;
   };
-
-  private onKeyUp = (e: KeyboardEvent) => {
-    this.held.delete(e.code);
-    if (this.isAccelKey(e.code)) this.accelerate = false;
-    if (this.isDashKey(e.code) && !this.anyDashHeld()) this.dashHeld = false;
-  };
-
-  private anyDashHeld() {
-    return (
-      this.held.has("ShiftLeft") || this.held.has("ShiftRight") || this.held.has("ArrowDown") || this.held.has("KeyS")
-    );
-  }
-
-  /** True while a jump key is held (for variable jump height / cut-jump). */
-  get jumpHeld(): boolean {
-    return this.held.has("Space") || this.held.has("ArrowUp") || this.held.has("KeyW");
-  }
 
   // --- pointer / touch ------------------------------------------------------
   private onPointerDown = (e: PointerEvent) => {
     this.anyKeyQueued = true;
-    this.accelerate = true; // any touch builds speed
+    this.latch.setHeld("accelerate", true); // any touch builds speed
     const lower = e.clientY > window.innerHeight * 0.62;
     if (lower) {
-      this.dashHeld = true;
-      this.dashQueued = true;
+      this.latch.press("dash");
     } else {
-      this.jumpQueued = true;
+      this.latch.press("jump");
     }
   };
 
   private onPointerUp = () => {
-    this.accelerate = false;
-    this.dashHeld = false;
+    this.latch.setHeld("accelerate", false);
   };
 
   private onBlur = () => {
-    this.accelerate = false;
-    this.dashHeld = false;
-    this.held.clear();
+    this.latch.clear();
   };
 }

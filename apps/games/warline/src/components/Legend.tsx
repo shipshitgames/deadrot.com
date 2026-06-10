@@ -1,12 +1,6 @@
 import type { Faction } from "@shipshitgames/warline";
+import { FACTION_COLOR } from "@shipshitgames/warline";
 import { HelpTooltip } from "./HelpTooltip";
-
-const FACTION_COLOR: Record<Faction, string> = {
-  wardens: "#c1121f",
-  pyre: "#ff6a00",
-  scourge: "#8bdc1f",
-  neutral: "#34343c",
-};
 
 const FACTION_ROWS: { faction: Faction; label: string; help: string }[] = [
   {

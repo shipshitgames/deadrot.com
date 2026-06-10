@@ -9,62 +9,50 @@ import {
   shouldCompleteEscape,
   shouldIgniteCore,
 } from "../../src/game/coreLoop";
-import { buildLevel } from "../../src/game/level";
+import { buildLevel1 as buildLevel } from "../../src/game/levels";
 
 describe("Rothulk core loop", () => {
   test("starts as an infiltration toward a connected breach-core", () => {
     const level = buildLevel();
     const state = createCoreLoopState();
 
-    expect(state).toEqual({
-      phase: "infiltrate",
-      coreIgnited: false,
-      scourgeSevered: false,
-      exitReached: false,
-    });
-    expect(level.core.ignited).toBe(false);
+    expect(state).toEqual({ phase: "infiltrate" });
     expect(level.exit).toEqual({
       x: CONSTANTS.HERO_SPAWN_X,
       y: CONSTANTS.HERO_SPAWN_Y,
       radius: CONSTANTS.EXIT_RADIUS,
-      reached: false,
     });
     expect(level.scourge.every((scourge) => !scourge.feral)).toBe(true);
-    expect(objectiveForPhase(state.phase)).toBe("REACH + IGNITE THE CORE");
+    expect(objectiveForPhase(state.phase, false)).toBe("REACH + IGNITE THE CORE");
+    expect(objectiveForPhase(state.phase, true)).toBe("PUSH DEEPER // IGNITE THE CORE");
   });
 
   test("ignites the core once and arms escape instead of winning immediately", () => {
     const level = buildLevel();
     const initial = createCoreLoopState();
 
-    expect(shouldIgniteCore(level.core.x, level.core.y, level.core)).toBe(true);
+    expect(shouldIgniteCore(level.core.x, level.core.y, level.core, initial.phase)).toBe(true);
 
     const escaping = igniteBreachCore(initial);
-    level.core.ignited = escaping.coreIgnited;
 
-    expect(escaping).toEqual({
-      phase: "escape",
-      coreIgnited: true,
-      scourgeSevered: true,
-      exitReached: false,
-    });
-    expect(shouldIgniteCore(level.core.x, level.core.y, level.core)).toBe(false);
+    expect(escaping).toEqual({ phase: "escape" });
+    expect(shouldIgniteCore(level.core.x, level.core.y, level.core, escaping.phase)).toBe(false);
     expect(igniteBreachCore(escaping)).toBe(escaping);
-    expect(objectiveForPhase(escaping.phase)).toBe("ESCAPE THE SEVERED HULK");
+    expect(objectiveForPhase(escaping.phase, true)).toBe("ESCAPE THE SEVERED HULK");
   });
 
   test("finishes only at the extraction point after ignition", () => {
     const level = buildLevel();
     const escaping = igniteBreachCore(createCoreLoopState());
 
-    expect(shouldCompleteEscape(level.core.x, level.core.y, level.exit)).toBe(false);
+    expect(shouldCompleteEscape(level.core.x, level.core.y, level.exit, escaping.phase)).toBe(false);
+    expect(shouldCompleteEscape(level.exit.x, level.exit.y, level.exit, escaping.phase)).toBe(true);
 
     const won = completeEscape(escaping);
-    level.exit.reached = won.exitReached;
 
-    expect(won.phase).toBe("won");
-    expect(won.exitReached).toBe(true);
-    expect(objectiveForPhase(won.phase)).toBe("HULK SEVERED // LANE CLEARED");
+    expect(won).toEqual({ phase: "won" });
+    expect(shouldCompleteEscape(level.exit.x, level.exit.y, level.exit, won.phase)).toBe(false);
+    expect(objectiveForPhase(won.phase, true)).toBe("HULK SEVERED // LANE CLEARED");
   });
 
   test("progress reverses during the escape runback", () => {
