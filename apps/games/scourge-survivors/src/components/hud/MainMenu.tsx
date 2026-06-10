@@ -19,7 +19,7 @@ import {
   MenuKicker,
   useEnterToReveal,
 } from "@shipshitgames/ui";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { MAP_PICKER, normalizeMapId } from "../../game/data/maps";
 import {
   SHOP_UPGRADES,
@@ -161,6 +161,7 @@ function MultiplayerPanel({
         <input
           className={input}
           placeholder="Your name"
+          aria-label="Your name"
           maxLength={16}
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -168,6 +169,7 @@ function MultiplayerPanel({
         <input
           className={input}
           placeholder="Breach code (blank = random)"
+          aria-label="Breach code"
           maxLength={20}
           value={room}
           onChange={(e) => setRoom(e.target.value)}
@@ -524,15 +526,14 @@ export function MainMenu({
   const [menuScreen, setMenuScreen] = useState<MenuScreen>(initialRoom ? "multiplayer" : "home");
   // Class confirmed on the operator screen, carried into the map select step.
   const [pendingClassId, setPendingClassId] = useState<SurvivorClassId>(() => savedSurvivorClass());
-  const firstMenuShow = useRef(true);
-  // Reset to the root menu whenever the menu is (re)shown — but a shared
-  // `?room=` link drops you straight on the join screen the first time.
-  useEffect(() => {
-    if (status === "pointerlock-needed") {
-      setMenuScreen(firstMenuShow.current && initialRoom ? "multiplayer" : "home");
-      firstMenuShow.current = false;
-    }
-  }, [status, initialRoom]);
+  // Reset to the root menu whenever the menu is re-shown, adjusted inline
+  // during render so the old screen never paints. The `?room=` deep link only
+  // applies to the initial mount, which the useState initializer handles.
+  const [prevStatus, setPrevStatus] = useState(status);
+  if (status !== prevStatus) {
+    setPrevStatus(status);
+    if (status === "pointerlock-needed") setMenuScreen("home");
+  }
 
   const showMainMenu = status === "pointerlock-needed" && !suppressMenu && !campaign && !survivors && !multiplayer;
   // Title splash: hold the menu behind a "press enter to continue" prompt.
