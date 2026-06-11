@@ -9,7 +9,7 @@ import {
   WEAPONS,
   type WeaponId,
 } from "./constants";
-import { type ArenaMap, DEFAULT_MAP_ID, getMap } from "./data/maps";
+import { DEFAULT_MAP_ID, getMap, type NormalizedArenaMap } from "./data/maps";
 import { createIdleMissionState, type MissionRunState } from "./data/missions";
 import type { MainWeaponVisualTier } from "./data/survivors";
 import { SURV_BASE_MAGNET, type SurvivorClassId } from "./data/survivors";
@@ -61,10 +61,10 @@ export class GameContext {
   enemies: Enemy[] = []; // shared pooled enemy array (contains dead entries)
 
   // --- arena / campaign map ---
-  currentMap: ArenaMap = getMap(DEFAULT_MAP_ID);
+  currentMap: NormalizedArenaMap = getMap(DEFAULT_MAP_ID);
   /** Horizontal play-area bounds (XZ). Published by ArenaSystem; default = the square arena. */
   bounds: WorldBounds = RectBounds.square(ARENA_HALF);
-  campaignMaps: ArenaMap[] = [];
+  campaignMaps: NormalizedArenaMap[] = [];
   campaignStage = 0; // 0-based index into campaignMaps
   mission: MissionRunState = createIdleMissionState();
 

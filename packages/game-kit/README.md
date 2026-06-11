@@ -26,10 +26,13 @@ directly (no build step), same as `@shipshitgames/ui`.
   (`playerSpawn`/`breachSpawn`/`objective`/`extraction`), rooms with their own
   bounds + obstacles, floor levels + ramps + platforms, and
   `normalizeArenaLayout` (the thin v1→v2 adapter that lifts a flat
-  bounds/spawn/obstacles map into a fully-populated `ArenaLayout`). Plain
-  JSON-serialisable data, no THREE. Reusable beyond scourge-survivors —
-  deadlane maps as boardBounds → rect bounds, breachDoorPoint → breachSpawn,
-  basePoint → objective.
+  bounds/spawn/obstacles map into a fully-populated `ArenaLayout`). Also the
+  biome preset catalog (`BIOMES`/`resolveBiomeTheme`): six canon-checked arena
+  palettes (foundry/bone/rot/perdition/cinderwell/cryo — bg, fog, surface
+  tints, trim, two accent lights, material hints) that maps reference by
+  `biomeId` plus optional per-map overrides. Plain JSON-serialisable data, no
+  THREE. Reusable beyond scourge-survivors — deadlane maps as boardBounds →
+  rect bounds, breachDoorPoint → breachSpawn, basePoint → objective.
 
 ## Boundary notes
 

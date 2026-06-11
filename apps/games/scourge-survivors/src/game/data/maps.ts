@@ -22,8 +22,19 @@
 // and a playerSpawn anchor from `spawn`. Note: `elevated` obstacle stacking is
 // a render-only quirk that floor levels will subsume in #82.
 //
+// Biome presentation layer (issue #80): maps no longer author a theme block.
+// Each map authors a `biomeId` (plus optional per-map `themeOverrides`) and
+// the MAPS registry resolves the concrete `theme` at module load via
+// `resolveBiomeTheme` — mirroring the `layout` normalization above — so every
+// map handed out by MAPS/getMap/campaignSequence carries a resolved MapTheme.
+// The presets live in `@deadrot/game-kit/maps` (the canon-checked biome
+// catalog shared across games). `biomeId` is presentation-only: it does NOT
+// replace `loreId`/`front`, which stay the lore-registry join keys.
+//
 // Palette is canon DOOM (see DESIGN.md / Style-Bible): blood + fire + metal +
-// bone, no neon. Toxic-green is reserved for the Scourge only.
+// bone — ember discipline, sourced glow only (vents, lamps, seams), never
+// saturated signage. Toxic-green is reserved for the Scourge only (the `rot`
+// biome carries it).
 //
 // Layouts were generated + geometrically validated by a multi-agent design
 // pass (no out-of-bounds boxes, no overlaps/slivers, clear player spawns).
@@ -36,7 +47,12 @@ import {
   type ArenaPlatform,
   type ArenaRamp,
   type ArenaRoom,
+  type BiomeAccentLight,
+  type BiomeId,
+  type BiomeTheme,
+  type BiomeThemeOverrides,
   normalizeArenaLayout,
+  resolveBiomeTheme,
 } from "@deadrot/game-kit/maps";
 import type { MapBounds } from "@shipshitgames/engine";
 import type { PixelIconId } from "../../assets/ui/pixelIcons";
@@ -66,23 +82,14 @@ export interface MapObstacle {
   elevated?: boolean;
 }
 
-export interface MapLight {
-  color: number;
-  x: number;
-  y: number;
-  z: number;
-}
+/** Game-local alias for the shared biome accent-light shape (one of the two
+ *  coloured rim lights). Kept exported so existing importers keep compiling. */
+export type MapLight = BiomeAccentLight;
 
-export interface MapTheme {
-  bg: number; // scene background + fog colour
-  fogNear: number;
-  fogFar: number;
-  floorTint: number; // multiplied over the floor texture
-  wallTint: number; // multiplied over walls + obstacle textures
-  trim: number; // emissive neon edge colour
-  accentA: MapLight; // two coloured rim lights
-  accentB: MapLight;
-}
+/** Game-local alias for the shared biome theme: background + fog colour, fog
+ *  range, floor/wall tints, the emissive ember trim colour, and the two accent
+ *  rim lights. Resolved from `biomeId` + `themeOverrides` by the registry. */
+export type MapTheme = BiomeTheme;
 
 export interface ArenaSilhouette {
   x: number;
@@ -136,7 +143,17 @@ export interface ArenaMap {
   icon: PixelIconId;
   accent: string; // css hex for the picker card border / glow
   bounds?: MapBounds; // defaults to DEFAULT_ARENA_BOUNDS so current FPS tuning stays unchanged
-  theme: MapTheme;
+  /** Biome preset id the registry resolves into `theme` at module load (see
+   *  `@deadrot/game-kit/maps`). Presentation-only — it does NOT replace the
+   *  `loreId`/`front` lore-registry join keys. */
+  biomeId: BiomeId;
+  /** Optional per-map adjustments layered over the biome preset by
+   *  `resolveBiomeTheme` (scalars replace; accent overrides merge per-field). */
+  themeOverrides?: BiomeThemeOverrides;
+  /** Resolved presentation palette — populated by the MAPS registry at module
+   *  load from `biomeId` + `themeOverrides`; always present on maps from
+   *  MAPS/getMap/campaignSequence. Do not author directly. */
+  theme?: MapTheme;
   materials: ArenaMaterialSet;
   environment: ArenaEnvironment;
   spawn: { x: number; z: number }; // player start (faces the arena centre)
@@ -164,8 +181,8 @@ export interface ArenaMap {
   layout?: ArenaLayout<MapObstacle>;
 }
 
-/** An ArenaMap whose layout has been populated — what the registry hands out. */
-export type NormalizedArenaMap = ArenaMap & { layout: ArenaLayout<MapObstacle> };
+/** An ArenaMap whose layout + theme have been populated — what the registry hands out. */
+export type NormalizedArenaMap = ArenaMap & { layout: ArenaLayout<MapObstacle>; theme: MapTheme };
 
 function arenaMaterials(mapId: string): ArenaMaterialSet {
   return {
@@ -188,16 +205,7 @@ const ASHGATE: ArenaMap = {
   subtitle: "The eastern foundry-wall — where the Purgers drop in",
   icon: "foundry",
   accent: "#ff6a00",
-  theme: {
-    bg: 0x160d08,
-    fogNear: 34,
-    fogFar: 165,
-    floorTint: 0xc9a98a,
-    wallTint: 0xb89274,
-    trim: 0xff6a00,
-    accentA: { color: 0xff6a00, x: -26, y: 8, z: -26 },
-    accentB: { color: 0xff8a3c, x: 26, y: 9, z: 26 },
-  },
+  biomeId: "foundry",
   materials: arenaMaterials("ashgate"),
   environment: {
     skyTop: 0x090505,
@@ -247,7 +255,8 @@ const ASHGATE: ArenaMap = {
 
 // ============================================================================
 // THE HOLLOW LANES — dead corridors between the holdouts: long slab aisles with
-// junction chokepoints. Desaturated bone/gunmetal grey — dead, lightless, no neon.
+// junction chokepoints. Desaturated bone/gunmetal grey — dead, lightless, no
+// ember glow left.
 // ============================================================================
 const HOLLOWLANES: ArenaMap = {
   id: "hollowlanes",
@@ -257,16 +266,7 @@ const HOLLOWLANES: ArenaMap = {
   subtitle: "Dead corridors between the holdouts",
   icon: "bone",
   accent: "#cdbfae",
-  theme: {
-    bg: 0x181818,
-    fogNear: 30,
-    fogFar: 150,
-    floorTint: 0xd4c8b7,
-    wallTint: 0xc4b8a6,
-    trim: 0xcdbfae,
-    accentA: { color: 0xcdbfae, x: -26, y: 9, z: -26 },
-    accentB: { color: 0x9b958a, x: 26, y: 9, z: 26 },
-  },
+  biomeId: "bone",
   materials: arenaMaterials("hollowlanes"),
   environment: {
     skyTop: 0x0c0c0d,
@@ -326,16 +326,7 @@ const MAW: ArenaMap = {
   subtitle: "An exposed span over the breach throat",
   icon: "maw",
   accent: "#6acf3c",
-  theme: {
-    bg: 0x0a0f08,
-    fogNear: 38,
-    fogFar: 175,
-    floorTint: 0x6b7a5a,
-    wallTint: 0x5a6b4a,
-    trim: 0x6acf3c,
-    accentA: { color: 0x8bdc1f, x: -26, y: 9, z: -26 },
-    accentB: { color: 0x6acf3c, x: 26, y: 9, z: 26 },
-  },
+  biomeId: "rot",
   materials: arenaMaterials("maw"),
   environment: {
     skyTop: 0x050706,
@@ -392,16 +383,7 @@ const PERDITION: ArenaMap = {
   subtitle: "The source pulses — few Purgers walk out",
   icon: "fire",
   accent: "#c1121f",
-  theme: {
-    bg: 0x1a0408,
-    fogNear: 34,
-    fogFar: 165,
-    floorTint: 0x9a5560,
-    wallTint: 0x86424e,
-    trim: 0xc1121f,
-    accentA: { color: 0xc1121f, x: -26, y: 9, z: -26 },
-    accentB: { color: 0xff2a18, x: 26, y: 8, z: 26 },
-  },
+  biomeId: "perdition",
   materials: arenaMaterials("perdition"),
   environment: {
     skyTop: 0x070103,
@@ -461,9 +443,15 @@ const PERDITION: ArenaMap = {
 
 // ----------------------------------------------------------------------------
 
-/** v1→v2 adapter entry point: attaches the normalized structural layout. */
+/** Registry normalization entry point: attaches the normalized structural
+ *  layout AND resolves the presentation theme from `biomeId` + the optional
+ *  per-map `themeOverrides` (issue #80). */
 function normalizeMap(map: ArenaMap): NormalizedArenaMap {
-  return { ...map, layout: normalizeArenaLayout<MapObstacle>(map, { defaultBounds: DEFAULT_ARENA_BOUNDS }) };
+  return {
+    ...map,
+    layout: normalizeArenaLayout<MapObstacle>(map, { defaultBounds: DEFAULT_ARENA_BOUNDS }),
+    theme: resolveBiomeTheme(map.biomeId, map.themeOverrides),
+  };
 }
 
 /** All campaign maps, keyed by id. */
