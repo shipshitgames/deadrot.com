@@ -26,5 +26,7 @@ tmp/
 packages/assets/sources/*
 !packages/assets/sources/generated/
 !packages/assets/sources/generated/**
-packages/assets/sources/generated/gpt-image-2/
+packages/assets/sources/generated/*-cache/
+packages/assets/sources/generated/gpt-image-*/
+packages/assets/_archive/
 packages/assets/games/**/sources/

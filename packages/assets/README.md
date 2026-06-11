@@ -48,7 +48,7 @@ Never add runtime files under `sources/`, `sites/`, a flat `sprites/` folder, or
 any `source/` subfolder inside a game pack. Successful generation history that
 explains promoted runtime assets belongs under `sources/generated/`. Rejected
 outputs, banned-provider outputs, temporary drafts, and source-like material that
-should never be promoted belong in the repo-level `_archive/` review folder or
+should never be promoted belong in `packages/assets/_archive/` or
 outside git.
 
 ## Scourge Survivors runtime pack
@@ -99,8 +99,12 @@ generated, reviewed, promoted, or replaced. That archive is not part of
 not be mirrored to the asset CDN.
 
 Keep rejected outputs, banned-provider outputs, temporary drafts, and exploratory
-source folders out of `packages/assets`; use the repo-level `_archive/` review
-folder or leave them outside git.
+source folders out of `sources/generated`; use `packages/assets/_archive/` for
+package-local review material or leave them outside git.
+
+Raw provider caches do not belong in `sources/generated`, even when they contain
+images worth reviewing. Put them under `packages/assets/_archive/` until a human
+curates and renames selected files into semantic dated generated-history paths.
 
 ### Naming conventions
 
