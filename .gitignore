@@ -24,6 +24,7 @@ tmp/
 # Local source archives generated while preparing runtime assets. Curated,
 # successful generation history under sources/generated is intentionally tracked.
 packages/assets/sources/*
-packages/assets/**/sources/
 !packages/assets/sources/generated/
 !packages/assets/sources/generated/**
+packages/assets/sources/generated/gpt-image-2/
+packages/assets/games/**/sources/
