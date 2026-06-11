@@ -29,6 +29,7 @@ Ranged Scourge form that turns infection into projectile pressure.
 ## Sprite Brief
 - Views: front, side, back.
 - Projectile organ must remain readable in side view.
+- Visual lock: [[Design/Bestiary/Swarm-Spitter-DESIGN|Swarm Spitter Design Lock]].
 
 ## Prompt Seed
 Scourge ranged parasite, thin predatory silhouette, distended toxic-green firing sac,
