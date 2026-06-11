@@ -13,6 +13,7 @@ import {
   EARLY_BUYER_PRICE_LABEL,
   FREE_GAME_SLUGS,
   hasCollection,
+  isLockedGameSlug,
   LOCKED_GAME_SLUGS,
 } from "@/lib/access";
 import { getGame } from "@/lib/content";
@@ -35,13 +36,27 @@ async function getAccess(): Promise<{ signedIn: boolean; owned: boolean }> {
   return { signedIn: true, owned: hasCollection(user.publicMetadata) };
 }
 
+/** Next delivers repeated query params as arrays — take the first. */
+function first(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
 export default async function UnlockPage({
   searchParams,
 }: {
-  searchParams: Promise<{ success?: string; canceled?: string; from?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const [{ signedIn, owned }, params] = await Promise.all([getAccess(), searchParams]);
-  const fromGame = params.from ? getGame(params.from) : undefined;
+  const [{ signedIn, owned }, rawParams] = await Promise.all([getAccess(), searchParams]);
+  const params = {
+    success: first(rawParams.success),
+    canceled: first(rawParams.canceled),
+    from: first(rawParams.from),
+  };
+  // Only honor ?from= for games that are actually behind the paywall.
+  const fromGame = params.from && isLockedGameSlug(params.from) ? getGame(params.from) : undefined;
+  // Paid, but the webhook/claims haven't landed yet (seconds, up to ~a minute):
+  // don't dangle a second buy button under the "payment received" banner.
+  const pendingUnlock = Boolean(params.success) && signedIn && !owned;
 
   const lockedGames = LOCKED_GAME_SLUGS.map(getGame).filter((g) => g !== undefined);
   const freeGames = FREE_GAME_SLUGS.map(getGame).filter((g) => g !== undefined);
@@ -86,6 +101,11 @@ export default async function UnlockPage({
               </a>
             </div>
           </div>
+        ) : pendingUnlock ? (
+          <p className="mt-8 max-w-2xl text-lg leading-relaxed text-ash">
+            Your purchase is being written to your account. Refresh in a few seconds — no need to
+            buy again.
+          </p>
         ) : (
           <>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ash">
@@ -95,7 +115,13 @@ export default async function UnlockPage({
               it to <span className="text-bone">{EARLY_BUYER_PRICE_LABEL}</span> — first 1,000 only.
             </p>
             <div className="mt-8">
-              <BuyButton signedIn={signedIn} priceLabel={COLLECTION_PRICE_LABEL} />
+              {authEnabled ? (
+                <BuyButton signedIn={signedIn} priceLabel={COLLECTION_PRICE_LABEL} from={fromGame?.slug} />
+              ) : (
+                <p className="text-sm uppercase tracking-widest text-ash/70">
+                  Purchases aren&apos;t wired up in this environment.
+                </p>
+              )}
             </div>
           </>
         )}

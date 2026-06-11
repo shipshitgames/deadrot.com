@@ -4,14 +4,26 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
-export function BuyButton({ signedIn, priceLabel }: { signedIn: boolean; priceLabel: string }) {
+export function BuyButton({
+  signedIn,
+  priceLabel,
+  from,
+}: {
+  signedIn: boolean;
+  priceLabel: string;
+  /** Locked game slug that sent the player here — preserved through sign-in. */
+  from?: string;
+}) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!signedIn) {
+    const returnTo = from ? `/unlock/?from=${from}` : "/unlock/";
     return (
       <Button asChild size="xl" className="font-display uppercase tracking-widest shadow-ember">
-        <a href="/sign-in/?redirect_url=/unlock/">Sign in to unlock — {priceLabel}</a>
+        <a href={`/sign-in/?redirect_url=${encodeURIComponent(returnTo)}`}>
+          Sign in to unlock — {priceLabel}
+        </a>
       </Button>
     );
   }

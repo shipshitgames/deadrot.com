@@ -48,7 +48,7 @@ function PlayGateButtonInner({ slug, demo }: { slug: string; demo: string }) {
   if (!useLocked()) return <PlayNowButton demo={demo} />;
   return (
     <Button asChild size="xl" className="font-display uppercase tracking-widest shadow-ember">
-      <Link href={`/unlock?from=${slug}`}>
+      <Link href={`/unlock/?from=${slug}`}>
         <Lock className="size-4" aria-hidden /> Unlock to play
       </Link>
     </Button>

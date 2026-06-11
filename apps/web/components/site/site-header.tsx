@@ -37,8 +37,13 @@ const NAV: NavItem[] = [
   { label: "Warline", href: "/warline/", accent: "toxic", plainAnchor: true },
   { label: "Watch", href: WATCH, external: true, accent: "hellfire" },
   // Early-access paywall (epic #330): one purchase unlocks every game.
-  { label: "Unlock", href: "/unlock", accent: "hellfire" },
+  { label: "Unlock", href: "/unlock/", accent: "hellfire" },
 ];
+
+// Keyless builds (CI, dev without secrets) have no working purchase funnel —
+// don't advertise a dead-end Unlock page. authEnabled is build-time inlined,
+// so server and client agree and hydration stays clean.
+const VISIBLE_NAV = authEnabled ? NAV : NAV.filter((item) => item.href !== "/unlock/");
 
 // Sign-in / account controls. Clerk components only render when the publishable
 // key is configured — without it there is no ClerkProvider and they would throw.
@@ -136,8 +141,10 @@ export function SiteHeader() {
           <DeadrotBrand variant="target" imageClassName="h-9 w-9 sm:h-10 sm:w-10" />
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
-          {NAV.map((i) => (
+        {/* xl breakpoint, not md: nine items plus auth controls measure ~1136px
+            and overflow every narrower tier (measured at 1024). */}
+        <nav className="hidden items-center gap-6 xl:flex">
+          {VISIBLE_NAV.map((i) => (
             <NavLink key={i.href} item={i} />
           ))}
           <AuthControls />
@@ -145,7 +152,7 @@ export function SiteHeader() {
 
         <button
           onClick={() => setOpen((o) => !o)}
-          className="text-bone md:hidden"
+          className="text-bone xl:hidden"
           aria-label="Toggle menu"
           type="button"
         >
@@ -154,8 +161,8 @@ export function SiteHeader() {
       </div>
 
       {open ? (
-        <nav className="flex flex-col gap-1 border-t border-gunmetal/60 bg-void/95 px-6 py-4 backdrop-blur-md md:hidden">
-          {NAV.map((i) => (
+        <nav className="flex flex-col gap-1 border-t border-gunmetal/60 bg-void/95 px-6 py-4 backdrop-blur-md xl:hidden">
+          {VISIBLE_NAV.map((i) => (
             <NavLink key={i.href} item={i} mobile onNavigate={() => setOpen(false)} />
           ))}
           <AuthControls mobile onNavigate={() => setOpen(false)} />
