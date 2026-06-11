@@ -1,6 +1,5 @@
+import { assetUrl } from "@/lib/assets";
 import { cn } from "@/lib/utils";
-
-const CDN_ORIGIN = "https://cdn.deadrot.com";
 
 type DeadrotBrandProps = {
   className?: string;
@@ -22,7 +21,7 @@ export function DeadrotBrand({
       <span className={cn("inline-flex items-center", className)}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/branding/deadrot-target-logo-gpt-image-2.webp"
+          src={assetUrl("/brand/mark.webp")}
           alt="DEADROT"
           width={500}
           height={500}
@@ -37,7 +36,7 @@ export function DeadrotBrand({
       <span className={cn("inline-flex items-center", className)}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/branding/deadrot-wordmark-gpt-image-2.webp"
+          src={assetUrl("/brand/wordmark.webp")}
           alt="DEADROT"
           width={1120}
           height={450}
@@ -51,7 +50,7 @@ export function DeadrotBrand({
     <span className={cn("inline-flex items-center gap-2", className)}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={`${CDN_ORIGIN}/branding/deadrot-mark.svg`}
+        src={assetUrl("/brand/mark.webp")}
         alt=""
         aria-hidden="true"
         className={cn("h-8 w-8 shrink-0", markClassName)}

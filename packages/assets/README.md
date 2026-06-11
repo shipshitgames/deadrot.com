@@ -26,8 +26,13 @@ assets every game shares identically.
 - **`games/scourge-survivors/`** — the Scourge Survivors runtime pack. This
   includes semantic folders for Scourge enemies, Pyre survivors, weapons,
   pickups, projectiles, arena textures, UI, fonts, SFX, and soundtrack cues.
-- **`sites/deadrotcom/public/`** — a preserved copy of the current website
-  public assets.
+- **`games/<slug>/ui/menu/title.webp`** — game-owned 16:9 title/key art used by
+  both the game shell and the web hub gallery.
+- **`games/<slug>/ui/social/og.png`** — game-owned Open Graph/social image.
+- **`concepts/<slug>/`** — concept-only presentation art for titles that are
+  not shipped game packages yet.
+- **`brand/`** and **`universe/`** — Deadrot-level brand marks and global hero
+  art used across apps.
 - **`src/index.ts`** — TypeScript types (`Asset`, `AssetCatalog`, `EntityAsset`,
   `Faction`, `HostFamily`, `GameSlug`, ...), the `getAsset(catalog, id, game)`
   resolver, and matrix helpers (`gamesFor`, `renderedGames`, `pendingGames`,
