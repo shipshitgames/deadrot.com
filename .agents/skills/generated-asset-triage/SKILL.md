@@ -24,6 +24,7 @@ Before moving assets, read:
 - `packages/assets/_archive/README.md` when working inside `_archive`
 
 Use `game-asset-pipeline` for runtime asset registration rules.
+Use `deadrot-image-generation` when creating new image assets with Codex.
 
 ## Canonical locations
 

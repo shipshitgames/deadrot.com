@@ -1,6 +1,6 @@
 ---
 type: design-lock
-status: draft
+status: needs-master
 subject: Breach-Boss
 subjectType: creature
 canon: Bestiary/Breach-Boss
@@ -43,10 +43,19 @@ plates, toxic chest heart, projectile vents, and heavy tendril inertia.
 
 Status: missing. Do not treat current runtime animation frames as canon.
 
+![Breach Boss runtime placeholder](../../Assets/Art-Masters/Scourge/breach-boss/breach-boss-runtime-placeholder.webp)
+
+![Breach Boss breach-heart reference](../../Assets/Art-Masters/Scourge/breach-boss/breach-boss-breachheart-reference.png)
+
 - Idle front:
 - Idle side:
 - Idle back:
 - Optional action/read pose: barrage wind-up with projectile vents visible.
+
+## Art Master Attachments
+
+- Runtime placeholder only: `../../Assets/Art-Masters/Scourge/breach-boss/breach-boss-runtime-placeholder.webp`
+- Breach-heart style reference: `../../Assets/Art-Masters/Scourge/breach-boss/breach-boss-breachheart-reference.png`
 
 ## Game Adaptations
 

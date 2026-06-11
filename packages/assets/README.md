@@ -130,12 +130,15 @@ Generated-history assets should be named by what they document, not where they
 came from:
 
 ```txt
+sources/generated/<YYYY-MM-DD>/<collection>/<subject>-<purpose>.<ext>
+sources/generated/<YYYY-MM-DD>/<game>/<domain>/<subject>-<purpose>.<ext>
 sources/generated/<collection>/<YYYY-MM-DD>/<subject>-<purpose>.<ext>
 sources/generated/<game>/<domain>/<YYYY-MM-DD>/<subject>-<purpose>.<ext>
 ```
 
 Good examples:
 
+- `sources/generated/2026-06-11/lore/bestiary/swarm-ripper-turnaround-candidate.png`
 - `sources/generated/og-social/2026-06-11/scourge-survivors-fps-og-source.png`
 - `sources/generated/scourge-survivors/animation-sheets/2026-06-11/host-grunt-walk-sheet.png`
 - `sources/generated/title-screens/2026-06-07/deadlane-title-source.png`
@@ -144,6 +147,13 @@ Run the package boundary check before merging asset changes:
 
 ```bash
 bun run --cwd packages/assets assets:check
+```
+
+When Codex generates images, immediately rescue the global Codex cache into this
+repo before reviewing or pruning anything:
+
+```bash
+bun run --cwd packages/assets assets:sync-codex-images
 ```
 
 ## Generator boundary

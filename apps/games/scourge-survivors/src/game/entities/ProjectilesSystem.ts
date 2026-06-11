@@ -79,7 +79,7 @@ export class ProjectilesSystem {
 
       // hit something? (the resolver owns the hit test and its side effects)
       if (this.combat.resolveHit(pr.view)) {
-        this.removeProjectile(i);
+        this.removeProjectileObject(pr);
         continue;
       }
       // expired / out of bounds / into an obstacle?
@@ -106,9 +106,15 @@ export class ProjectilesSystem {
 
   removeProjectile(i: number) {
     const pr = this.projectiles[i];
+    if (!pr) return;
     this.ctx.scene.remove(pr.mesh);
     (pr.mesh.material as THREE.Material).dispose();
     this.projectiles.splice(i, 1);
+  }
+
+  removeProjectileObject(projectile: Projectile) {
+    const i = this.projectiles.indexOf(projectile);
+    if (i !== -1) this.removeProjectile(i);
   }
 
   clearProjectiles() {

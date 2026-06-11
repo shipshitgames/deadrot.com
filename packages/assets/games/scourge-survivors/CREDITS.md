@@ -25,7 +25,7 @@
 - Kind: generated source sheet cropped into 64x64 transparent WebP gib sprites
   in the Scourge palette.
 - Source output:
-  `/Users/decod3rslabs/.codex/generated_images/019ea1f0-1ea2-7cf3-b0b6-453bfa0ba6cb/ig_080f82b0f8c0b304016a256fcf02e081919b431d468e6996b8.png`.
+  `~/.codex/generated_images/019ea1f0-1ea2-7cf3-b0b6-453bfa0ba6cb/ig_080f82b0f8c0b304016a256fcf02e081919b431d468e6996b8.png`.
 - Preserved source:
   `_archive/assets-cleanup-2026-06-11/packages/assets/sources/generated/scourge-survivors/gibs/2026-06-07/gpt-image-2-gib-source-sheet.png`.
 - Source note: generated as a 3x2 chroma-key source sheet using the locked
@@ -76,7 +76,7 @@
 - Tool: built-in `image_gen`.
 - Plan: Codex built-in.
 - Kind: generated 2D first-person weapon sprites.
-- Source outputs: `/Users/decod3rslabs/.codex/generated_images/019e9483-c89c-7be0-a448-32cfa1e7738c/`.
+- Source outputs: `~/.codex/generated_images/019e9483-c89c-7be0-a448-32cfa1e7738c/`.
 - Workspace draft folder: historical app-local draft folder
   `src/assets/sprites/drafts/2026-06-04-pyre-weapon-runtime/`.
 - Final assets: current package runtime sheets
@@ -94,7 +94,7 @@
 - Tool: built-in `image_gen`.
 - Plan: Codex built-in.
 - Kind: generated 2D first-person weapon sprite.
-- Source output: `/Users/decod3rslabs/.codex/generated_images/019e9483-c89c-7be0-a448-32cfa1e7738c/ig_07e0e3d430cc82a3016a227f11523c8191807cdb3830854dfa.png`.
+- Source output: `~/.codex/generated_images/019e9483-c89c-7be0-a448-32cfa1e7738c/ig_07e0e3d430cc82a3016a227f11523c8191807cdb3830854dfa.png`.
 - Workspace draft folder: historical app-local draft folder
   `src/assets/sprites/drafts/2026-06-05-pyre-sidearm-runtime/`.
 - Final asset: superseded into current package runtime sheet
@@ -111,7 +111,7 @@
 - Tool: `gpt-image-2` via built-in `image_gen`.
 - Plan: Codex built-in.
 - Kind: generated 2D first-person weapon upgrade sprites.
-- Source outputs: `/Users/decod3rslabs/.codex/generated_images/019ea531-3224-7cc1-936b-b522c4712745/`.
+- Source outputs: `~/.codex/generated_images/019ea531-3224-7cc1-936b-b522c4712745/`.
 - Workspace source folder: historical generated source folder
   `sources/generated/scourge-survivors/weapons/pyre/main-sidearm-tiers/2026-06-08/`.
 - Final asset: `weapons/pyre/pistol-tiers.webp`.
@@ -127,7 +127,7 @@
 - Tool: `gpt-image-2` via built-in `image_gen`.
 - Plan: Codex built-in.
 - Kind: generated 2D enemy sprite sheets.
-- Source outputs: `/Users/decod3rslabs/.codex/generated_images/019e9483-c89c-7be0-a448-32cfa1e7738c/ig_0fa54e31be871759016a228f47e27c8191b82af19d7dc11c73.png`, `/Users/decod3rslabs/.codex/generated_images/019e9483-c89c-7be0-a448-32cfa1e7738c/ig_0fa54e31be871759016a22901e29a081918cd60c25b3ce340a.png`, `/Users/decod3rslabs/.codex/generated_images/019e9483-c89c-7be0-a448-32cfa1e7738c/ig_019e874c3e306b3d016a22a851c3c88198b6058191c709624b.png`, `/Users/decod3rslabs/.codex/generated_images/019e9483-c89c-7be0-a448-32cfa1e7738c/ig_019e874c3e306b3d016a22a800be588198940edec6f5168db2.png`.
+- Source outputs: `~/.codex/generated_images/019e9483-c89c-7be0-a448-32cfa1e7738c/ig_0fa54e31be871759016a228f47e27c8191b82af19d7dc11c73.png`, `~/.codex/generated_images/019e9483-c89c-7be0-a448-32cfa1e7738c/ig_0fa54e31be871759016a22901e29a081918cd60c25b3ce340a.png`, `~/.codex/generated_images/019e9483-c89c-7be0-a448-32cfa1e7738c/ig_019e874c3e306b3d016a22a851c3c88198b6058191c709624b.png`, `~/.codex/generated_images/019e9483-c89c-7be0-a448-32cfa1e7738c/ig_019e874c3e306b3d016a22a800be588198940edec6f5168db2.png`.
 - Workspace draft folders: historical app-local draft folders
   `src/assets/sprites/drafts/2026-06-05-scourge-enemy-runtime/` and
   `src/assets/sprites/drafts/2026-06-05-gpt-image-2-redo/`.
@@ -152,8 +152,8 @@
 - Plan: Codex built-in.
 - Kind: generated 2D enemy sprite sheets in the locked medium-chunky pixel style.
 - Source outputs:
-  - `/Users/decod3rslabs/.codex/generated_images/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_0470aa91021088af016a22ed9b2b6c819197f8d4b4b0ac3443.png`
-  - `/Users/decod3rslabs/.codex/generated_images/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_0470aa91021088af016a22ee1ffd2c8191bc6029fcddaa27ad.png`
+  - `~/.codex/generated_images/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_0470aa91021088af016a22ed9b2b6c819197f8d4b4b0ac3443.png`
+  - `~/.codex/generated_images/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_0470aa91021088af016a22ee1ffd2c8191bc6029fcddaa27ad.png`
 - Workspace draft folder: historical generated source folder
   `sources/drafts/sprites/2026-06-05-locked-runtime-refresh/`.
 - Final assets: `enemies/scourge/host-grunt/{front,side,back}.webp`, `enemies/scourge/breach-boss/{front,side,back}.webp`.
@@ -194,9 +194,9 @@
 - Tool: `gpt-image-2` via built-in `image_gen`.
 - Kind: regenerated 2D animation sprite sheets on flat `#00ff00` chroma-key backgrounds.
 - Source outputs:
-  - `/Users/decod3rslabs/.codex/generated_images/019e9c96-23f7-7883-a5d9-fa73fe4ca167/ig_0b32ccf368593783016a2408866ae08191b69a47a9f1b4a2b3.png`
-  - `/Users/decod3rslabs/.codex/generated_images/019e9c96-23f7-7883-a5d9-fa73fe4ca167/ig_0b32ccf368593783016a2409e1f880819180319ad68be9d57a.png`
-  - `/Users/decod3rslabs/.codex/generated_images/019e9c96-23f7-7883-a5d9-fa73fe4ca167/ig_0b32ccf368593783016a240a39531881919a7bca0fb13e96ec.png`
+  - `~/.codex/generated_images/019e9c96-23f7-7883-a5d9-fa73fe4ca167/ig_0b32ccf368593783016a2408866ae08191b69a47a9f1b4a2b3.png`
+  - `~/.codex/generated_images/019e9c96-23f7-7883-a5d9-fa73fe4ca167/ig_0b32ccf368593783016a2409e1f880819180319ad68be9d57a.png`
+  - `~/.codex/generated_images/019e9c96-23f7-7883-a5d9-fa73fe4ca167/ig_0b32ccf368593783016a240a39531881919a7bca0fb13e96ec.png`
 - Workspace source sheets: archived under
   `_archive/assets-cleanup-2026-06-11/packages/assets/games/scourge-survivors/animations/scourge/winged-host/{fly,attack,death}/source/sheet.png`.
 - Final assets: `enemies/scourge/winged-host/{front,side,back}.webp`, `animations/scourge/winged-host/**/frame-*.webp`.
@@ -211,7 +211,7 @@
 - Tool: `gpt-image-2` via built-in `image_gen`.
 - Plan: Codex built-in.
 - Kind: generated 2D pixel sprite sheet.
-- Source output: `/Users/decod3rslabs/.codex/generated_images/019e9483-c89c-7be0-a448-32cfa1e7738c/ig_019e874c3e306b3d016a22a88aadcc8198bd356dd1d31fb189.png`.
+- Source output: `~/.codex/generated_images/019e9483-c89c-7be0-a448-32cfa1e7738c/ig_019e874c3e306b3d016a22a88aadcc8198bd356dd1d31fb189.png`.
 - Workspace draft folder: historical app-local draft folder
   `src/assets/sprites/drafts/2026-06-05-gpt-image-2-redo/`.
 - Final assets:
@@ -229,7 +229,7 @@
 - Tool: built-in `image_gen`.
 - Plan: Codex built-in.
 - Kind: generated 2D pixel-art sprite.
-- Source output: `/Users/decod3rslabs/.codex/generated_images/019e9397-d391-7fa1-8dda-cb63905e6288/ig_0f5b7488d608cdb8016a21b89606288191ba1b6b09c8184dea.png`.
+- Source output: `~/.codex/generated_images/019e9397-d391-7fa1-8dda-cb63905e6288/ig_0f5b7488d608cdb8016a21b89606288191ba1b6b09c8184dea.png`.
 - Workspace draft source: historical app-local draft
   `src/assets/sprites/drafts/2026-06-04-pixel-runtime-candidates/weapon-smg-pyre-firstperson-v04-source.png`.
 - Workspace draft cutout: historical app-local draft
@@ -247,7 +247,7 @@
 - Tool: built-in `image_gen`.
 - Plan: Codex built-in.
 - Kind: generated 2D pixel-art VFX sprite.
-- Source output: `/Users/decod3rslabs/.codex/generated_images/019e9397-d391-7fa1-8dda-cb63905e6288/ig_0f5b7488d608cdb8016a21bbd71d8c8191aa78e7ff16a306a0.png`.
+- Source output: `~/.codex/generated_images/019e9397-d391-7fa1-8dda-cb63905e6288/ig_0f5b7488d608cdb8016a21bbd71d8c8191aa78e7ff16a306a0.png`.
 - Workspace draft source: historical app-local draft
   `src/assets/sprites/drafts/2026-06-04-pixel-runtime-candidates/muzzle-flash-pyre-v01-source.png`.
 - Workspace draft cutout: historical app-local draft

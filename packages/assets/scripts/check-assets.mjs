@@ -31,6 +31,7 @@ function trackedAssetFiles() {
 }
 
 function runtimeFolder(path) {
+  if (/^packages\/assets\/games\/[^/]+\/sources\//.test(path)) return false;
   return /^packages\/assets\/(?:brand|universe|games|entities|shared|concepts)\//.test(path);
 }
 
@@ -47,7 +48,7 @@ function hasKebabName(name) {
 }
 
 function hasAllowedGeneratedFileName(name) {
-  if (name === "README.md") return true;
+  if (name === "README.md" || name === "index.md") return true;
 
   const extension = name.match(/\.[a-z0-9]+$/)?.[0] ?? "";
   if (!extension) return false;
@@ -287,10 +288,16 @@ function checkGeneratedSourceNaming() {
     const archivePath = generatedArchivePath(path);
     const parts = archivePath.split("/");
     const fileName = parts.at(-1);
-    const dateIndex = parts.findIndex((part) => /^\d{4}-\d{2}-\d{2}$/.test(part));
+    const dateParts = parts.filter((part) => /^\d{4}-\d{2}-\d{2}$/.test(part));
 
-    if (dateIndex < 1 || dateIndex !== parts.length - 2) {
-      fail(`generated source path must include one YYYY-MM-DD directory directly before the file: ${path}`);
+    if (dateParts.length !== 1) {
+      fail(`generated source path must include exactly one YYYY-MM-DD directory: ${path}`);
+      continue;
+    }
+
+    const dateIndex = parts.findIndex((part) => /^\d{4}-\d{2}-\d{2}$/.test(part));
+    if (dateIndex !== 0 && dateIndex !== parts.length - 2) {
+      fail(`generated source date must be either the first directory or directly before the file: ${path}`);
       continue;
     }
 

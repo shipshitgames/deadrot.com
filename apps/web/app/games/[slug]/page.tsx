@@ -7,17 +7,8 @@ import { Backdrop } from "@/components/site/atmosphere";
 import { Eyebrow } from "@/components/site/eyebrow";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  accentVars,
-  gameCharacters,
-  gameCoverUrl,
-  gameCreatures,
-  gameSocialImageUrl,
-  games,
-  getFaction,
-  getGame,
-} from "@/lib/content";
-import { createSocialMetadata } from "@/lib/social";
+import { accentVars, gameCharacters, gameCoverUrl, gameCreatures, games, getFaction, getGame } from "@/lib/content";
+import { createSocialMetadata, SITE_URL } from "@/lib/social";
 
 export function generateStaticParams() {
   return games.map((g) => ({ slug: g.slug }));
@@ -27,8 +18,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const game = getGame(slug);
   if (!game) return {};
+  const socialImagePath = game.slug === "warline" ? "/images/hero.webp" : `/images/og/games/${game.slug}.png`;
   const image = {
-    url: gameSocialImageUrl(game.slug),
+    url: `${SITE_URL}${socialImagePath}`,
     width: 1200,
     height: 630,
     alt: `${game.title} - DEADROT`,

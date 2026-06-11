@@ -26,8 +26,8 @@ supersededBy: ../Style-Bible.md
 
 | Asset | Source Output | Workspace Asset | Notes |
 | --- | --- | --- | --- |
-| Zero Day | `/Users/decod3rslabs/.codex/generated_images/019e8fbd-2348-77b1-ac5c-ea661293fe4b/ig_0db4cebb68d2cc0f016a20b3f3c19481919d828895a4de14ae.png` | `shipshitgames/apps/web/public/images/games/zero-day.jpg` | First-contact orbital last stand against an infected Scourge voidship carrier. |
-| Homepage hero | `/Users/decod3rslabs/.codex/generated_images/019e8fbd-2348-77b1-ac5c-ea661293fe4b/ig_0db4cebb68d2cc0f016a20b426d594819192e61dc30450d1a8.png` | `shipshitgames/apps/web/public/images/home/shipshit-hero.jpg` | Centered breach-boss poster plate for the homepage hero background. |
+| Zero Day | `~/.codex/generated_images/019e8fbd-2348-77b1-ac5c-ea661293fe4b/ig_0db4cebb68d2cc0f016a20b3f3c19481919d828895a4de14ae.png` | `shipshitgames/apps/web/public/images/games/zero-day.jpg` | First-contact orbital last stand against an infected Scourge voidship carrier. |
+| Homepage hero | `~/.codex/generated_images/019e8fbd-2348-77b1-ac5c-ea661293fe4b/ig_0db4cebb68d2cc0f016a20b426d594819192e61dc30450d1a8.png` | `shipshitgames/apps/web/public/images/home/shipshit-hero.jpg` | Centered breach-boss poster plate for the homepage hero background. |
 
 ## Integration
 

@@ -63,6 +63,13 @@ package path or release, not from a divergent local fork.
 Do not move `packages/assetgen` into this repo. Assetgen is the studio/product
 CLI we need to ship and dogfood from the sibling `shipshitgames` repo.
 
+When asset generation, cleanup, sprite splitting, atlas packing, pixelization,
+promotion, indexing, provider-cache rescue, or other reusable asset tooling is
+needed, implement or extend it in `../shipshitgames/packages/assetgen` or the
+Ship Shit Games CLI first. Product repos such as `deadrotcom` should call that
+CLI and store curated outputs, not grow duplicate one-off scripts. Track CLI
+coverage in `shipshitgames/shipshit.games#204`.
+
 Do not create a separate root `deadrotcom/lore` vault unless the user explicitly
 asks for that move. The current Deadrot Obsidian vault is
 `apps/lore/content`.

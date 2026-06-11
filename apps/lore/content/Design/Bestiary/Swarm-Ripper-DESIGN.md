@@ -1,6 +1,6 @@
 ---
 type: design-lock
-status: draft
+status: candidate-review
 subject: Swarm-Ripper
 subjectType: creature
 canon: Bestiary/Swarm-Ripper
@@ -39,12 +39,29 @@ forearms, exposed muscle, black chitin, and one small toxic breach core.
 
 ## Locked Poses
 
-Status: missing. Do not treat current runtime animation frames as canon.
+Status: candidate review. Do not treat current runtime animation frames as canon.
 
+- Lore vault candidate:
+  ![Swarm Ripper fast master candidate](../../Assets/Art-Masters/Scourge/swarm-ripper/swarm-ripper-master-fast-candidate.png)
+- Lore vault turnaround:
+  ![Swarm Ripper turnaround candidate](../../Assets/Art-Masters/Scourge/swarm-ripper/swarm-ripper-turnaround-candidate.png)
+- Turnaround candidate:
+  `packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper-turnaround-candidate.png`
+- Master candidate, too heavy:
+  `packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper-master-candidate-heavy.png`
+- Master candidate, fast direction:
+  `packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper-master-candidate-fast.png`
 - Idle front:
 - Idle side:
 - Idle back:
 - Optional action/read pose: slash wind-up showing forearm blades.
+
+## Art Master Attachments
+
+- Primary candidate: `../../Assets/Art-Masters/Scourge/swarm-ripper/swarm-ripper-master-fast-candidate.png`
+- Turnaround candidate: `../../Assets/Art-Masters/Scourge/swarm-ripper/swarm-ripper-turnaround-candidate.png`
+- Heavy reference only: `../../Assets/Art-Masters/Scourge/swarm-ripper/swarm-ripper-master-heavy-reference.png`
+- Reference batch: `../../Assets/Art-Masters/Scourge/swarm-ripper/references/`
 
 ## Game Adaptations
 

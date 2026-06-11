@@ -39,7 +39,7 @@ the provenance trail before assets are promoted into a game manifest.
 - Tool: built-in `image_gen`.
 - Plan: Codex built-in.
 - Kind: ai-2d-sprite draft.
-- Source output: `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_083e7076ef973bc7016a201ff67d2c8191a040bb517242be70.png`
+- Source output: `~/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_083e7076ef973bc7016a201ff67d2c8191a040bb517242be70.png`
 - Workspace draft source: `games/scourge-survivors/src/assets/sprites/drafts/player-ranger-front-pyre-v01-source.png`
 - Workspace draft cutout: `games/scourge-survivors/src/assets/sprites/drafts/player-ranger-front-pyre-v01-cutout.png`
 - Final asset: none.
@@ -59,13 +59,13 @@ the provenance trail before assets are promoted into a game manifest.
 - Plan: Codex built-in.
 - Kind: ai-2d-sprite concept batch.
 - Source output:
-  - `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_0956ca1eaea30e16016a206d57a5d081919655c60e5aa09dbd.png`
-  - `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_0956ca1eaea30e16016a206d9362648191be73b29957be93f7.png`
-  - `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_0956ca1eaea30e16016a206dd147c48191a9d64af6432721dc.png`
-  - `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_0956ca1eaea30e16016a206e0ce03481918c2bc26ec30a021d.png`
-  - `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_0956ca1eaea30e16016a206e4af11881918846f6548351bdab.png`
-  - `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_0956ca1eaea30e16016a206e8a5bc481918cc55029bfd942cf.png`
-  - `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_0956ca1eaea30e16016a206ecc078c819193401c2b9899b2d9.png`
+  - `~/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_0956ca1eaea30e16016a206d57a5d081919655c60e5aa09dbd.png`
+  - `~/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_0956ca1eaea30e16016a206d9362648191be73b29957be93f7.png`
+  - `~/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_0956ca1eaea30e16016a206dd147c48191a9d64af6432721dc.png`
+  - `~/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_0956ca1eaea30e16016a206e0ce03481918c2bc26ec30a021d.png`
+  - `~/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_0956ca1eaea30e16016a206e4af11881918846f6548351bdab.png`
+  - `~/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_0956ca1eaea30e16016a206e8a5bc481918cc55029bfd942cf.png`
+  - `~/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_0956ca1eaea30e16016a206ecc078c819193401c2b9899b2d9.png`
 - Workspace draft: `games/scourge-survivors/src/assets/sprites/drafts/2026-06-03-scourge-host-family-concepts/`.
 - Final asset: none.
 - Prompt source: [[Scourge-Host-Families]], [[Character-Prompt-Library]], and `lore/Art/Prompt-Batches/2026-06-03-scourge-host-family-concepts.md`.
@@ -120,7 +120,7 @@ the provenance trail before assets are promoted into a game manifest.
 - Tool: built-in `image_gen`.
 - Plan: Codex built-in.
 - Kind: ai-website-portrait draft.
-- Source output: generated under `/Users/decod3rslabs/.codex/generated_images/019e8fbd-2348-77b1-ac5c-ea661293fe4b/` and `/Users/decod3rslabs/.codex/generated_images/019e8ff4-3cec-7d93-8b15-1880632dab7b/`.
+- Source output: generated under `~/.codex/generated_images/019e8fbd-2348-77b1-ac5c-ea661293fe4b/` and `~/.codex/generated_images/019e8ff4-3cec-7d93-8b15-1880632dab7b/`.
 - Workspace draft: none.
 - Final asset: `shipshitgames/apps/web/public/sprites/portrait-*.webp`.
 - Prompt source: `lore/Universe/Style-Bible.md`, `lore/Art/Character-Prompt-Library.md`, and `lore/Art/Prompt-Batches/2026-06-04-website-portrait-placeholders.md`.
@@ -138,7 +138,7 @@ the provenance trail before assets are promoted into a game manifest.
 - Tool: built-in `image_gen`.
 - Plan: Codex built-in.
 - Kind: ai-key-art pre-viz draft.
-- Source output: `/Users/decod3rslabs/.codex/generated_images/019e9356-ec1a-7ab1-9cd1-bf183f811698/`.
+- Source output: `~/.codex/generated_images/019e9356-ec1a-7ab1-9cd1-bf183f811698/`.
 - Workspace draft: `Art/Previs/2026-06-04-game-previs/`.
 - Final asset: none.
 - Prompt source: `Art/Prompt-Batches/2026-06-04-game-previs.md`.
@@ -196,8 +196,8 @@ the provenance trail before assets are promoted into a game manifest.
 - Plan: Codex built-in.
 - Kind: ai-2d-sprite runtime refresh.
 - Source output:
-  - `/Users/decod3rslabs/.codex/generated_images/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_0470aa91021088af016a22ed9b2b6c819197f8d4b4b0ac3443.png`
-  - `/Users/decod3rslabs/.codex/generated_images/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_0470aa91021088af016a22ee1ffd2c8191bc6029fcddaa27ad.png`
+  - `~/.codex/generated_images/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_0470aa91021088af016a22ed9b2b6c819197f8d4b4b0ac3443.png`
+  - `~/.codex/generated_images/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_0470aa91021088af016a22ee1ffd2c8191bc6029fcddaa27ad.png`
 - Workspace draft: `packages/assets/games/scourge-survivors/sources/drafts/sprites/2026-06-05-locked-runtime-refresh/`.
 - Final asset:
   - `packages/assets/games/scourge-survivors/enemies/scourge/host-grunt/{front,side,back}.webp`

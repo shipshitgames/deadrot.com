@@ -40,6 +40,8 @@
   ],
   "scripts": {
     "assets:check": "node scripts/check-assets.mjs",
+    "assets:clean-sprites": "bun ../../../shipshitgames/packages/assetgen/src/cli.ts clean-sprites",
+    "assets:sync-codex-images": "node scripts/sync-codex-generated-images.mjs",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "test": "bun test tests",

@@ -31,6 +31,13 @@ Ranged Scourge form that turns infection into projectile pressure.
 - Projectile organ must remain readable in side view.
 - Visual lock: [[Design/Bestiary/Swarm-Spitter-DESIGN|Swarm Spitter Design Lock]].
 
+## Art Master
+
+![Swarm Spitter runtime placeholder](../Assets/Art-Masters/Scourge/swarm-spitter/swarm-spitter-runtime-placeholder.webp)
+
+- Status: needs art master; image above is a runtime placeholder only.
+- Art master index: [[Design/Bestiary/Scourge-Foe-Art-Masters|Scourge Foe Art Masters]]
+
 ## Prompt Seed
 Scourge ranged parasite, thin predatory silhouette, distended toxic-green firing sac,
 bio-industrial arm lance, black chitin, raw sinew, rusted tech fragments, no neon.

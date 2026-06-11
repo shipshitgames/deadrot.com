@@ -29,6 +29,14 @@ Small infected attack craft for [[Starblight]] formations.
 ## Sprite Brief
 - Views: top/front arcade sprite first.
 - Must remain readable at small scale and high speed.
+- Visual lock: [[Design/Bestiary/Scourge-Fighter-DESIGN|Scourge Fighter Design Lock]].
+
+## Art Master
+
+![Scourge Fighter runtime placeholder](../Assets/Art-Masters/Scourge/scourge-fighter/scourge-fighter-runtime-placeholder.webp)
+
+- Status: needs art master; image above is a runtime placeholder only.
+- Art master index: [[Design/Bestiary/Scourge-Foe-Art-Masters|Scourge Foe Art Masters]]
 
 ## Prompt Seed
 Scourge infected small attack craft, rusted hull fused with black chitin and raw tissue,

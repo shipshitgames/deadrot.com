@@ -1,4 +1,4 @@
-// THROWAWAY REPRO — delete after verification. Simulates the live chain:
+// Regression coverage for the live chain:
 // resolveHit -> damagePlayer -> onPlayerDamaged (retaliate) -> onEnemyDeath
 // -> sys.projectiles.removeProjectilesFrom(owner), re-entrant during updateProjectiles.
 import * as THREE from "three";
@@ -38,7 +38,7 @@ function makeShot(overrides: Partial<EnemyShot> = {}): EnemyShot {
 }
 
 describe("re-entrant removeProjectilesFrom during resolveHit", () => {
-  it("single projectile: damagePlayer killing the shooter (retaliate) crashes the frame", () => {
+  it("single projectile: damagePlayer killing the shooter (retaliate) does not crash the frame", () => {
     const scene = new THREE.Scene();
     const body = new THREE.Object3D();
     body.position.set(0, 1.8, 0);
@@ -60,10 +60,10 @@ describe("re-entrant removeProjectilesFrom during resolveHit", () => {
     } as unknown as GameSystems;
     const system = new ProjectilesSystem(ctx, sys);
     system.spawnProjectile(makeShot(), shooter); // PveDirectorSystem.ts:314
-    expect(() => system.updateProjectiles(0.016)).toThrow(TypeError);
+    expect(() => system.updateProjectiles(0.016)).not.toThrow();
   });
 
-  it("two projectiles: re-entrant removal despawns an UNRELATED live projectile", () => {
+  it("two projectiles: re-entrant removal preserves an unrelated live projectile", () => {
     const scene = new THREE.Scene();
     const body = new THREE.Object3D();
     body.position.set(0, 1.8, 0);

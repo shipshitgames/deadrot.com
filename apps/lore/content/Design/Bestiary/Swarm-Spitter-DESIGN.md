@@ -1,6 +1,6 @@
 ---
 type: design-lock
-status: draft
+status: needs-master
 subject: Swarm-Spitter
 subjectType: creature
 canon: Bestiary/Swarm-Spitter
@@ -41,10 +41,16 @@ chest sac, or fused arm-lance grown through a consumed host.
 
 Status: missing. Do not treat current runtime animation frames as canon.
 
+![Swarm Spitter runtime placeholder](../../Assets/Art-Masters/Scourge/swarm-spitter/swarm-spitter-runtime-placeholder.webp)
+
 - Idle front:
 - Idle side:
 - Idle back:
 - Optional action/read pose: sac swelling or spit launch.
+
+## Art Master Attachments
+
+- Runtime placeholder only: `../../Assets/Art-Masters/Scourge/swarm-spitter/swarm-spitter-runtime-placeholder.webp`
 
 ## Game Adaptations
 

@@ -28,4 +28,3 @@ packages/assets/sources/*
 !packages/assets/sources/generated/**
 packages/assets/sources/generated/*-cache/
 packages/assets/sources/generated/gpt-image-*/
-packages/assets/games/**/sources/
