@@ -180,6 +180,23 @@ function checkCatalogPaths() {
   }
 }
 
+function checkBannedGeneratorProvenance() {
+  const manifestPaths = [
+    "assets-catalog.json",
+    ...gameDirs().map((slug) => `games/${slug}/assets.json`),
+  ];
+
+  for (const path of manifestPaths) {
+    const fullPath = assetPath(path);
+    if (!existsSync(fullPath)) continue;
+
+    const text = readFileSync(fullPath, "utf8");
+    if (/\b(?:xai|grok)\b/i.test(text)) {
+      fail(`asset manifest contains banned generator provenance: ${path}`);
+    }
+  }
+}
+
 function collectManifestPaths(value, out = new Set()) {
   if (!value || typeof value !== "object") return out;
 
@@ -252,6 +269,7 @@ checkTrackedBoundaries();
 checkNoEmptySourceTree();
 checkImageContracts();
 checkCatalogPaths();
+checkBannedGeneratorProvenance();
 checkScourgeManifestPaths();
 checkScourgeAnimationPack();
 

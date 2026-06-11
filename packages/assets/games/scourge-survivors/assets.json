@@ -282,8 +282,8 @@
       "type": "sprite",
       "path": "games/scourge-survivors/weapons/pyre/smg-tiers.webp",
       "dimensions": [
-        1760,
-        576
+        2175,
+        724
       ],
       "anchor": [
         0.5,
@@ -318,10 +318,10 @@
         ]
       },
       "license": {
-        "tool": "xai-grok-imagine",
-        "plan": "image_edit (ref-conditioned) + cwebp lossless",
-        "date": "2026-06-10",
-        "kind": "remediated tier sheet: generous transparent margin added (fixed border clip), clean alpha (gh-287)",
+        "tool": "gpt-image-2",
+        "plan": "Codex built-in image_gen, reference-anchored 1x5 tier sheet, chroma-key alpha, lossless WebP",
+        "date": "2026-06-08",
+        "kind": "first-person weapon view-model tier sheet (base->evolved)",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -376,8 +376,8 @@
       "type": "sprite",
       "path": "games/scourge-survivors/weapons/pyre/cannon-tiers.webp",
       "dimensions": [
-        1760,
-        576
+        2172,
+        724
       ],
       "anchor": [
         0.5,
@@ -412,10 +412,10 @@
         ]
       },
       "license": {
-        "tool": "xai-grok-imagine",
-        "plan": "image_edit (ref-conditioned) + cwebp lossless",
-        "date": "2026-06-10",
-        "kind": "remediated tier sheet: generous transparent margin added (fixed border clip), clean edges (gh-287)",
+        "tool": "gpt-image-2",
+        "plan": "Codex built-in image_gen, reference-anchored 1x5 tier sheet, chroma-key alpha, lossless WebP",
+        "date": "2026-06-08",
+        "kind": "first-person weapon view-model tier sheet (base->evolved)",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -423,8 +423,8 @@
       "type": "sprite",
       "path": "games/scourge-survivors/fx/pyre/muzzle-flash.webp",
       "dimensions": [
-        1024,
-        1024
+        256,
+        256
       ],
       "anchor": [
         0.68,
@@ -432,14 +432,14 @@
       ],
       "filter": "nearest",
       "scale": [
-        0.25,
-        0.25
+        1,
+        1
       ],
       "license": {
-        "tool": "xai-grok-imagine",
-        "plan": "image_edit (ref-conditioned) + cwebp lossless",
-        "date": "2026-06-10",
-        "kind": "remediated VFX: clean alpha (removed dark fringe), higher res with margin (gh-287)",
+        "tool": "built-in image_gen",
+        "plan": "Codex built-in",
+        "date": "2026-06-04",
+        "kind": "generated 2D VFX sprite",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -447,23 +447,23 @@
       "type": "sprite",
       "path": "games/scourge-survivors/projectiles/scourge/enemy-spit.webp",
       "dimensions": [
-        1008,
-        1024
+        253,
+        256
       ],
       "anchor": [
         0.5,
         0.5
       ],
       "scale": [
-        0.15,
-        0.15
+        0.58,
+        0.58
       ],
       "license": {
-        "tool": "xai-grok-imagine",
-        "plan": "image_edit (ref-conditioned) + cwebp lossless",
-        "date": "2026-06-10",
-        "kind": "remediated projectile: clean alpha (removed dark fringe) (gh-287)",
-        "scope": "Scourge Survivors runtime"
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-02",
+        "kind": "generated 2D projectile sprite",
+        "scope": "project prototype"
       }
     },
     "projectile-boss": {
