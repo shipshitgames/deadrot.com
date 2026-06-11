@@ -205,9 +205,12 @@ export const WEAPON_SPRITE_TEXTURES: Record<WeaponId, THREE.Texture> = {
   cannon: loadSpriteTexture(weaponSpriteAssetId("cannon")),
   sniper: loadSpriteTexture(weaponSpriteAssetId("sniper")),
 };
+export const WEAPON_ADS_SPRITE_TEXTURES: Partial<Record<WeaponId, THREE.Texture>> = {
+  sniper: loadAdsSpriteTexture("sniper"),
+};
 // Tier sheets are UV-sampled per cell, so the weapon textures must repeat-wrap on U.
 // (repeat.x = 1/columns, offset.x = cell/columns — see WeaponSystem.applyWeaponModel.)
-for (const tex of Object.values(WEAPON_SPRITE_TEXTURES)) {
+for (const tex of [...Object.values(WEAPON_SPRITE_TEXTURES), ...Object.values(WEAPON_ADS_SPRITE_TEXTURES)]) {
   tex.wrapS = THREE.RepeatWrapping;
 }
 
@@ -236,15 +239,44 @@ export const WEAPON_SPRITE_CONFIG: Record<
   sniper: weaponConfig("sniper"),
 };
 
+export const WEAPON_ADS_SPRITE_CONFIG: Partial<
+  Record<
+    WeaponId,
+    {
+      scale: [number, number];
+      offset: [number, number, number];
+      muzzle: [number, number, number];
+      flashScale: number;
+      flashRotation?: number;
+    }
+  >
+> = {
+  sniper: adsWeaponConfig("sniper"),
+};
+
 /** The weapon's view-model texture (a tier sheet when `tierSheet` is set). The active
  *  tier cell is selected by UV offset in WeaponSystem, not by swapping textures. */
 export function weaponSpriteTexture(id: WeaponId): THREE.Texture {
   return WEAPON_SPRITE_TEXTURES[id];
 }
 
+/** Scoped/ADS view-model texture. When absent, the normal weapon sheet is used. */
+export function weaponAdsSpriteTexture(id: WeaponId): THREE.Texture {
+  return WEAPON_ADS_SPRITE_TEXTURES[id] ?? WEAPON_SPRITE_TEXTURES[id];
+}
+
+export function weaponHasAdsSprite(id: WeaponId): boolean {
+  return Boolean(WEAPON_ADS_SPRITE_TEXTURES[id]);
+}
+
 /** Per-cell placement config (scale/offset/muzzle) — identical for every tier of a weapon. */
 export function weaponSpriteConfig(id: WeaponId) {
   return WEAPON_SPRITE_CONFIG[id];
+}
+
+/** Scoped/ADS placement config. When absent, the normal weapon placement is used. */
+export function weaponAdsSpriteConfig(id: WeaponId) {
+  return WEAPON_ADS_SPRITE_CONFIG[id] ?? WEAPON_SPRITE_CONFIG[id];
 }
 
 export const MUZZLE_FLASH_TEXTURE = loadSpriteTexture(fxSpriteAssetId("muzzleFlash"));
@@ -363,6 +395,33 @@ export const RUNTIME_AUDIO_ASSET_URLS = Object.fromEntries(
 
 function weaponConfig(id: WeaponId) {
   return weaponConfigForSpriteId(weaponSpriteAssetId(id));
+}
+
+function adsWeaponConfig(id: WeaponId) {
+  const spriteId = weaponSpriteAssetId(id);
+  const entry = spriteEntry(spriteId);
+  const ads = entry.adsSprite;
+  const base = weaponConfigForSpriteId(spriteId);
+  if (!ads) return base;
+  return {
+    scale: ads.scale ?? base.scale,
+    offset: ads.offset ?? base.offset,
+    muzzle: ads.muzzle ?? base.muzzle,
+    flashScale: ads.flashScale ?? base.flashScale,
+    flashRotation: ads.flashRotation ?? base.flashRotation,
+  };
+}
+
+function loadAdsSpriteTexture(id: WeaponId): THREE.Texture {
+  const entry = spriteEntry(weaponSpriteAssetId(id));
+  if (!entry.adsSprite) throw new Error(`Weapon sprite ${id} is missing scoped ADS metadata`);
+  const texture = new THREE.TextureLoader().load(assetUrl(entry.adsSprite.path));
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = entry.filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
+  texture.magFilter = entry.filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
+  texture.generateMipmaps = entry.filter !== "nearest";
+  texture.premultiplyAlpha = false;
+  return texture;
 }
 
 function weaponConfigForSpriteId(id: string) {

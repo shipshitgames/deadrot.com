@@ -25,6 +25,9 @@ import type { MainWeaponVisualTier } from "../data/survivors";
 import {
   MUZZLE_FLASH_TEXTURE,
   WEAPON_SPRITE_TEXTURES,
+  weaponAdsSpriteConfig,
+  weaponAdsSpriteTexture,
+  weaponHasAdsSprite,
   weaponSheetColumns,
   weaponSpriteConfig,
   weaponSpriteTexture,
@@ -81,6 +84,7 @@ export class WeaponSystem {
   meleeAnim = 0;
   private muzzleFlashBaseRotation = 0;
   private currentFov = CAMERA_BASE_FOV;
+  private weaponAdsSpriteActive = false;
 
   constructor(
     private ctx: GameContext,
@@ -169,7 +173,7 @@ export class WeaponSystem {
     this.applyWeaponModel(this.ctx.activeWeapon);
   }
 
-  applyWeaponModel(id: WeaponId) {
+  applyWeaponModel(id: WeaponId, adsSprite = this.weaponAdsSpriteActive) {
     const spec = WEAPONS[id];
     this.weaponAccentMat.color.setHex(spec.accent);
     this.weaponAccentMat.emissive.setHex(spec.accent);
@@ -178,13 +182,15 @@ export class WeaponSystem {
     this.weaponBarrel.position.set(0, 0.02, -0.2 - spec.barrelLen / 2);
 
     const tier = this.activeWeaponVisualTier(id);
-    const sprite = weaponSpriteConfig(id);
+    const useAdsSprite = adsSprite && weaponHasAdsSprite(id);
+    this.weaponAdsSpriteActive = useAdsSprite;
+    const sprite = useAdsSprite ? weaponAdsSpriteConfig(id) : weaponSpriteConfig(id);
     const tierScale = TIER_SCALE[tier];
     // The view-model texture is a horizontal tier SHEET; select this tier's cell by UV
     // offset (columns=1 for a single-image weapon, so this is a no-op there).
     const cols = weaponSheetColumns(id);
     const cell = weaponTierCellIndex(id, tier);
-    const tex = weaponSpriteTexture(id);
+    const tex = useAdsSprite ? weaponAdsSpriteTexture(id) : weaponSpriteTexture(id);
     tex.wrapS = THREE.RepeatWrapping;
     tex.repeat.x = 1 / cols;
     tex.offset.x = cell / cols;
@@ -539,6 +545,13 @@ export class WeaponSystem {
 
   updateWeapon(delta: number) {
     this.updateAds(delta);
+    const shouldUseAdsSprite =
+      this.ctx.status === "playing" &&
+      this.ctx.aimingDownSights &&
+      this.ctx.adsT > 0.45 &&
+      weaponHasAdsSprite(this.ctx.activeWeapon);
+    if (shouldUseAdsSprite !== this.weaponAdsSpriteActive)
+      this.applyWeaponModel(this.ctx.activeWeapon, shouldUseAdsSprite);
 
     if (this.meleeAnim > 0) {
       // quick knife swipe (takes priority over reload/idle pose)

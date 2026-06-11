@@ -61,6 +61,7 @@ describe("asset manifest", () => {
   it("references files that exist on disk", () => {
     for (const entry of Object.values(manifest.sprites) as SpriteEntry[]) {
       if ("path" in entry && entry.path) expectExistingAsset(entry.path);
+      if ("adsSprite" in entry && entry.adsSprite) expectExistingAsset(entry.adsSprite.path);
       if ("views" in entry && entry.views) {
         for (const view of Object.values(entry.views)) expectExistingAsset(view.path);
       }
@@ -199,6 +200,15 @@ describe("asset manifest", () => {
       expect(entry.weapon?.muzzle, `${id} muzzle`).toHaveLength(3);
       expect(entry.weapon?.flashScale, `${id} flash scale`).toBeGreaterThan(0);
     }
+  });
+
+  it("ships a scoped ADS view-model sheet for the sniper", () => {
+    const entry = manifest.sprites["weapon-sniper"];
+
+    expect(entry.adsSprite?.path).toBe("games/scourge-survivors/weapons/pyre/sniper-ads-tiers.webp");
+    expect(entry.adsSprite?.dimensions).toEqual(entry.dimensions);
+    expect(entry.adsSprite?.scale?.[0]).toBeGreaterThan(entry.scale[0]);
+    expect(entry.adsSprite?.scale?.[1]).toBeGreaterThan(entry.scale[1]);
   });
 
   it("ships every weapon as a 5-cell tier sheet (base->evolved) UV-sampled per visual tier", () => {
