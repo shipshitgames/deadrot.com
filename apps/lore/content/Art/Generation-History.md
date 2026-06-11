@@ -7,6 +7,13 @@ type: generation-ledger
 Record every generated asset or serious variation here. Drafts count. This is
 the provenance trail before assets are promoted into a game manifest.
 
+## Path Note - 2026-06-11
+
+Entries before the asset package cleanup may mention historical app-local paths
+such as `apps/web/public/*` or `games/scourge-survivors/src/assets/*`. Current
+runtime art lives under `packages/assets`, and source-like generated material is
+reviewed outside that runtime package under `_archive/`.
+
 ## Ledger Template
 
 ```markdown
@@ -85,7 +92,8 @@ the provenance trail before assets are promoted into a game manifest.
 - Kind: ai-key-art and ai-ui-reference draft.
 - Source output: see `lore/Art/Prompt-Batches/2026-06-03-gallery-thumbnails-and-menu-ui.md`.
 - Workspace draft: `lore/Art/UI-Drafts/2026-06-03-doom-menu-concepts/`.
-- Final asset: `shipshitgames/apps/web/public/images/games/*.jpg`.
+- Final asset: promoted to package-native game title art under
+  `packages/assets/games/<slug>/ui/menu/title.webp`.
 - Prompt source: `lore/Art/Prompt-Batches/2026-06-03-gallery-thumbnails-and-menu-ui.md`.
 - Post-processing: resized/cropped gallery thumbnails to 1280x720 JPG with ffmpeg.
 - Notes: UI drafts are references only. Final menus should be real React/DOM controls with generated art used only as backgrounds, thumbnails, or icons.
@@ -103,8 +111,8 @@ the provenance trail before assets are promoted into a game manifest.
 - Kind: ai-key-art draft.
 - Source output: see `lore/Art/Prompt-Batches/2026-06-04-key-art-placeholders.md`.
 - Final asset:
-  - `shipshitgames/apps/web/public/images/games/zero-day.jpg`
-  - `shipshitgames/apps/web/public/images/home/shipshit-hero.jpg`
+  - `packages/assets/concepts/zero-day/ui/social/og.png`
+  - `packages/assets/universe/hero.webp`
 - Prompt source: `lore/Universe/Style-Bible.md` and `lore/Art/Prompt-Batches/2026-06-04-key-art-placeholders.md`.
 - Post-processing: resized/cropped outputs with ffmpeg to 1280x720 for Zero Day and 1920x1080 for the homepage hero.
 - Notes: draft placeholders follow the locked void/rim-light/DOOM-grade art bible. Homepage and game-detail/card slots now render generated key art instead of sprite-only or CSS placeholders. **Medium mismatch (flagged 2026-06-04 audit):** the batch used a *hi-fi concept render*, which contradicts the locked house medium (medium-chunky pixel art, [[Style-Bible]] §1–2). These are off-canon placeholders pending regeneration in the locked pixel style.
@@ -122,7 +130,8 @@ the provenance trail before assets are promoted into a game manifest.
 - Kind: ai-website-portrait draft.
 - Source output: generated under `/Users/decod3rslabs/.codex/generated_images/019e8fbd-2348-77b1-ac5c-ea661293fe4b/` and `/Users/decod3rslabs/.codex/generated_images/019e8ff4-3cec-7d93-8b15-1880632dab7b/`.
 - Workspace draft: none.
-- Final asset: `shipshitgames/apps/web/public/sprites/portrait-*.webp`.
+- Final asset: promoted to package-native catalog/entity previews under
+  `packages/assets/entities/**/<game>.webp`.
 - Prompt source: `lore/Universe/Style-Bible.md`, `lore/Art/Character-Prompt-Library.md`, and `lore/Art/Prompt-Batches/2026-06-04-website-portrait-placeholders.md`.
 - Post-processing: resized/padded to `768x768` PNG intermediates with ffmpeg, then converted to WebP with `cwebp`; project-local PNG intermediates removed after conversion.
 - Notes: Existing Scourge Survivors runtime sprites remain in place. These draft plates fill website card and dossier placeholders only.
@@ -171,18 +180,21 @@ the provenance trail before assets are promoted into a game manifest.
 - Tool: existing built-in `image_gen` / `gpt-image-2` source art, composed with Sharp.
 - Plan: Codex built-in source art plus deterministic text overlay.
 - Kind: ai-key-art-derived social card.
-- Source output: shipped gallery thumbnails from `apps/web/public/images/games/*.webp` and `Art/Previs/2026-06-04-game-previs/zero-day-v01.png`.
+- Source output: shipped package title art from
+  `packages/assets/games/<slug>/ui/menu/title.webp` and
+  `Art/Previs/2026-06-04-game-previs/zero-day-v01.png`.
 - Final asset:
-  - `apps/web/public/images/og/games/scourge-survivors.png`
-  - `apps/web/public/images/og/games/deadlane.png`
-  - `apps/web/public/images/og/games/pactfall.png`
-  - `apps/web/public/images/og/games/starblight.png`
-  - `apps/web/public/images/og/games/redline.png`
-  - `apps/web/public/images/og/games/rothulk.png`
-  - `apps/web/public/images/og/games/zero-day.png`
+  - `packages/assets/games/scourge-survivors/ui/social/og.jpg`
+  - `packages/assets/games/deadlane/ui/social/og.jpg`
+  - `packages/assets/games/pactfall/ui/social/og.jpg`
+  - `packages/assets/games/starblight/ui/social/og.jpg`
+  - `packages/assets/games/redline/ui/social/og.jpg`
+  - `packages/assets/games/rothulk/ui/social/og.jpg`
+  - `packages/assets/concepts/zero-day/ui/social/og.png`
 - Prompt source: `Art/Prompt-Batches/2026-06-03-gallery-thumbnails-and-menu-ui.md`, `Art/Prompt-Batches/2026-06-04-game-previs.md`, and `Art/Prompt-Batches/2026-06-05-game-og-cards.md`.
 - Post-processing: generated a blurred/dimmed art backing, a right-side crisp art crop, and exact Deadrot/title/tagline/URL SVG text overlay at 1200x630.
-- Notes: `Zero Day` also received `apps/web/public/images/games/zero-day.webp` so the existing game gallery image path resolves.
+- Notes: `Zero Day` uses the package concept image until it has a shipped game
+  runtime pack.
 - Decision: wired into `/games/[slug]` metadata as Open Graph and Twitter `summary_large_image` cards.
 
 ## 2026-06-05 - locked-scourge-melee-and-boss-runtime-refresh - v01
@@ -223,6 +235,8 @@ the provenance trail before assets are promoted into a game manifest.
   - `packages/assets/games/scourge-survivors/animations/scourge/winged-host/`
   - `packages/assets/games/scourge-survivors/animations/scourge/breach-boss/`
 - Prompt source: `Art/Prompt-Batches/2026-06-05-scourge-animation-pack.md`.
-- Post-processing: generated 3x6 action sheets; copied originals into action `source/sheet.png`; split into six frames per view; removed `#ff00ff` chroma key; nearest-neighbor downscaled; alpha padded; encoded lossless WebP.
+- Post-processing: generated 3x6 action sheets; archived originals outside the
+  runtime package; split into six frames per view; removed `#ff00ff` chroma key;
+  nearest-neighbor downscaled; alpha padded; encoded lossless WebP.
 - Notes: The pack establishes enemy readability lanes: blood-red heavy melee, chartreuse acid ranged, purple-wing lightweight flyer, and deep crimson-black massive boss.
 - Decision: keep as an animation asset pack and wire into the renderer in a follow-up implementation pass. First spitter walk frames and first winged fly frames were also promoted into the current runtime static sprites so the color lanes are immediately visible in-game.

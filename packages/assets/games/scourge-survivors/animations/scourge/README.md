@@ -10,7 +10,8 @@ Frame layout:
 - Boss frames: `128x180` lossless WebP with alpha to preserve the padded boss crop.
 - Every action has `front`, `side`, and `back` view folders.
 - Every view has six frames: `frame-00.webp` through `frame-05.webp`.
-- Original generated sheets are preserved in each action's `source/sheet.png`.
+- Original generated sheets were moved out of the runtime package and archived
+  under `_archive/assets-cleanup-2026-06-11/packages/assets/games/scourge-survivors/animations/scourge/`.
 
 Readability lanes:
 

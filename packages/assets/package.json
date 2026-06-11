@@ -35,11 +35,11 @@
     "games",
     "lore",
     "shared",
-    "sources",
     "src",
     "tokens"
   ],
   "scripts": {
+    "assets:check": "node scripts/check-assets.mjs",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "test": "bun test tests",

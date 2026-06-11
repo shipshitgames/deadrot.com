@@ -10,15 +10,16 @@
 The OG cards use existing `gpt-image-2` art rather than new model renders:
 
 - `Scourge Survivors`, `Deadlane`, `Pactfall`, `Starblight`, `Redline`, and
-  `Rothulk` use the shipped gallery thumbnail illustrations from
-  `apps/web/public/images/games/*.webp`.
+  `Rothulk` use the package title illustrations from
+  `packages/assets/games/<slug>/ui/menu/title.webp`.
 - `Zero Day` uses `apps/lore/content/Art/Previs/2026-06-04-game-previs/zero-day-v01.png`,
   generated in the 2026-06-04 game pre-viz batch.
 
 ## Composition
 
 - Tooling: Sharp through the bundled Codex Node runtime.
-- Size: 1200x630 PNG.
+- Size: 1200x630. Shipped games export JPG for crawler compatibility; concept
+  titles may remain PNG until promoted.
 - Layout: gpt-image-2 art on the right, dark Deadrot metadata panel on the
   left, exact SVG/text overlay for the game title, tagline, status, genre, and
   URL.
@@ -29,16 +30,16 @@ The OG cards use existing `gpt-image-2` art rather than new model renders:
 
 | Game | Final web asset |
 | --- | --- |
-| Scourge Survivors | `apps/web/public/images/og/games/scourge-survivors.png` |
-| Deadlane | `apps/web/public/images/og/games/deadlane.png` |
-| Pactfall | `apps/web/public/images/og/games/pactfall.png` |
-| Starblight | `apps/web/public/images/og/games/starblight.png` |
-| Redline | `apps/web/public/images/og/games/redline.png` |
-| Rothulk | `apps/web/public/images/og/games/rothulk.png` |
-| Zero Day | `apps/web/public/images/og/games/zero-day.png` |
+| Scourge Survivors | `packages/assets/games/scourge-survivors/ui/social/og.jpg` |
+| Deadlane | `packages/assets/games/deadlane/ui/social/og.jpg` |
+| Pactfall | `packages/assets/games/pactfall/ui/social/og.jpg` |
+| Starblight | `packages/assets/games/starblight/ui/social/og.jpg` |
+| Redline | `packages/assets/games/redline/ui/social/og.jpg` |
+| Rothulk | `packages/assets/games/rothulk/ui/social/og.jpg` |
+| Zero Day | `packages/assets/concepts/zero-day/ui/social/og.png` |
 
 ## Related Thumbnail
 
 | Game | Final web asset | Notes |
 | --- | --- | --- |
-| Zero Day | `apps/web/public/images/games/zero-day.webp` | 640x960 crop from the `zero-day-v01` pre-viz source so the game gallery no longer points at a missing image. |
+| Zero Day | `packages/assets/concepts/zero-day/ui/social/og.png` | Current concept image used until Zero Day has a shipped runtime pack. |

@@ -17,12 +17,12 @@
 
 | Game | Source Output | Workspace Asset | Notes |
 | --- | --- | --- | --- |
-| Scourge Survivors | `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a1e4cc008191b1c35c52eba5a21d.png` | `shipshitgames/apps/web/public/images/games/scourge-survivors.jpg` | FPS horde arena with Scourge parasite-host pressure. |
-| Deadlane | `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a26923548191a03d1f85128b2e69.png` | `shipshitgames/apps/web/public/images/games/deadlane.jpg` | Elevated tower-defense lane with Warden fortification read. |
-| Pactfall | `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a2a591748191af940b408d75de70.png` | `shipshitgames/apps/web/public/images/games/pactfall.jpg` | Pyre/Warden standoff around neutral Scourge objective. |
-| Starblight | `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a321169c8191ae1d2dcf6410351d.png` | `shipshitgames/apps/web/public/images/games/starblight.jpg` | Arcade fighter against voidship parasite craft. |
-| Redline | `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a36af3908191880877bb0987ac00.png` | `shipshitgames/apps/web/public/images/games/redline.jpg` | Courier route chased by Scourge infection. |
-| Rothulk | `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a3a4451881918dab1321e5271666.png` | `shipshitgames/apps/web/public/images/games/rothulk.jpg` | Side-view infiltration through a living Scourge bio-ship. |
+| Scourge Survivors | `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a1e4cc008191b1c35c52eba5a21d.png` | `packages/assets/games/scourge-survivors/ui/menu/title.webp` | FPS horde arena with Scourge parasite-host pressure. |
+| Deadlane | `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a26923548191a03d1f85128b2e69.png` | `packages/assets/games/deadlane/ui/menu/title.webp` | Elevated tower-defense lane with Warden fortification read. |
+| Pactfall | `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a2a591748191af940b408d75de70.png` | `packages/assets/games/pactfall/ui/menu/title.webp` | Pyre/Warden standoff around neutral Scourge objective. |
+| Starblight | `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a321169c8191ae1d2dcf6410351d.png` | `packages/assets/games/starblight/ui/menu/title.webp` | Arcade fighter against voidship parasite craft. |
+| Redline | `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a36af3908191880877bb0987ac00.png` | `packages/assets/games/redline/ui/menu/title.webp` | Courier route chased by Scourge infection. |
+| Rothulk | `/Users/decod3rslabs/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a3a4451881918dab1321e5271666.png` | `packages/assets/games/rothulk/ui/menu/title.webp` | Side-view infiltration through a living Scourge bio-ship. |
 
 ## Menu UI Draft Results
 
