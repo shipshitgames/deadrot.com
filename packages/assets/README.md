@@ -28,7 +28,10 @@ assets every game shares identically.
   pickups, projectiles, arena textures, UI, fonts, SFX, and soundtrack cues.
 - **`games/<slug>/ui/menu/title.webp`** — game-owned 16:9 title/key art used by
   both the game shell and the web hub gallery.
-- **`games/<slug>/ui/social/og.png`** — game-owned Open Graph/social image.
+- **`games/<slug>/ui/social/og.jpg`** — compatible `1200x630` social-card
+  export. Prefer JPG for Open Graph crawlers even when browser delivery uses
+  WebP; replace these with approved, beautiful Imagen-generated landscape cards
+  when available.
 - **`concepts/<slug>/`** — concept-only presentation art for titles that are
   not shipped game packages yet.
 - **`brand/`** and **`universe/`** — Deadrot-level brand marks and global hero

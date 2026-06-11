@@ -133,7 +133,7 @@ export const gameCoverUrl = (slug: string) =>
   assetUrl(slug === "zero-day" ? "/concepts/zero-day/ui/social/og.png" : `/games/${slug}/ui/menu/title.webp`);
 
 export const gameSocialImageUrl = (slug: string) =>
-  assetUrl(slug === "zero-day" ? "/concepts/zero-day/ui/social/og.png" : `/games/${slug}/ui/social/og.png`);
+  assetUrl(slug === "zero-day" ? "/concepts/zero-day/ui/social/og.png" : `/games/${slug}/ui/social/og.jpg`);
 
 export const spriteUrl = (base: string | null) => {
   if (!base) return null;
