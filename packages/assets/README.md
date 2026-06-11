@@ -100,11 +100,14 @@ not be mirrored to the asset CDN.
 
 Keep rejected outputs, banned-provider outputs, temporary drafts, and exploratory
 source folders out of `sources/generated`; use `packages/assets/_archive/` for
-package-local review material or leave them outside git.
+package-local review material that still needs durable custody. Only leave files
+outside git when they are truly disposable.
 
 Raw provider caches do not belong in `sources/generated`, even when they contain
 images worth reviewing. Put them under `packages/assets/_archive/` until a human
 curates and renames selected files into semantic dated generated-history paths.
+Archive batches may preserve provider cache folder names and raw filenames for
+traceability while review is pending.
 
 ### Naming conventions
 
