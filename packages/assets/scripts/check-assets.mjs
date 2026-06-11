@@ -38,6 +38,24 @@ function generatedSourceArchive(path) {
   return path.startsWith("packages/assets/sources/generated/");
 }
 
+function generatedArchivePath(path) {
+  return relative("packages/assets/sources/generated", path);
+}
+
+function hasKebabName(name) {
+  return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name);
+}
+
+function hasAllowedGeneratedFileName(name) {
+  if (name === "README.md") return true;
+
+  const extension = name.match(/\.[a-z0-9]+$/)?.[0] ?? "";
+  if (!extension) return false;
+
+  const stem = name.slice(0, -extension.length);
+  return hasKebabName(stem);
+}
+
 function checkTrackedBoundaries() {
   for (const path of trackedAssetFiles()) {
     const name = basename(path).toLowerCase();
@@ -264,8 +282,32 @@ function checkTrackedSourceTree() {
   }
 }
 
+function checkGeneratedSourceNaming() {
+  for (const path of trackedAssetFiles().filter(generatedSourceArchive)) {
+    const archivePath = generatedArchivePath(path);
+    const parts = archivePath.split("/");
+    const fileName = parts.at(-1);
+    const dateIndex = parts.findIndex((part) => /^\d{4}-\d{2}-\d{2}$/.test(part));
+
+    if (dateIndex < 1 || dateIndex !== parts.length - 2) {
+      fail(`generated source path must include one YYYY-MM-DD directory directly before the file: ${path}`);
+      continue;
+    }
+
+    for (const dir of parts.slice(0, -1)) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dir)) continue;
+      if (!hasKebabName(dir)) fail(`generated source directory must be lowercase kebab-case: ${path}`);
+    }
+
+    if (!fileName || !hasAllowedGeneratedFileName(fileName)) {
+      fail(`generated source filename must be lowercase kebab-case: ${path}`);
+    }
+  }
+}
+
 checkTrackedBoundaries();
 checkTrackedSourceTree();
+checkGeneratedSourceNaming();
 checkImageContracts();
 checkCatalogPaths();
 checkBannedGeneratorProvenance();

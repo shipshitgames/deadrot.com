@@ -102,10 +102,41 @@ Keep rejected outputs, banned-provider outputs, temporary drafts, and explorator
 source folders out of `packages/assets`; use the repo-level `_archive/` review
 folder or leave them outside git.
 
+### Naming conventions
+
+Use lowercase kebab-case for every asset directory and filename. Keep dates as
+`YYYY-MM-DD`. Avoid spaces, underscores, provider IDs, hashes, and ambiguous
+names like `final`, `clean`, `draft`, `source`, or `copy`.
+
+Runtime assets should be named by stable game meaning:
+
+```txt
+games/<game>/ui/menu/title.webp
+games/<game>/ui/social/og.jpg
+games/<game>/players/<faction>/<character>/<view>.webp
+games/<game>/enemies/<faction>/<enemy>/<view>.webp
+games/<game>/weapons/<faction>/<weapon>-tiers.webp
+entities/<entity-id>/<game>.webp
+```
+
+Generated-history assets should be named by what they document, not where they
+came from:
+
+```txt
+sources/generated/<collection>/<YYYY-MM-DD>/<subject>-<purpose>.<ext>
+sources/generated/<game>/<domain>/<YYYY-MM-DD>/<subject>-<purpose>.<ext>
+```
+
+Good examples:
+
+- `sources/generated/og-social/2026-06-11/scourge-survivors-fps-og-source.png`
+- `sources/generated/scourge-survivors/animation-sheets/2026-06-11/host-grunt-walk-sheet.png`
+- `sources/generated/title-screens/2026-06-07/deadlane-title-source.png`
+
 Run the package boundary check before merging asset changes:
 
 ```bash
-bun --cwd packages/assets run assets:check
+bun run --cwd packages/assets assets:check
 ```
 
 ## Generator boundary
