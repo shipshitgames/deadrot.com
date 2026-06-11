@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StatusBadge } from "@/components/game/game-card";
+import { PlayGateButton } from "@/components/game/game-lock";
 import { EntityCard } from "@/components/roster/entity-card";
 import { Backdrop } from "@/components/site/atmosphere";
 import { Eyebrow } from "@/components/site/eyebrow";
@@ -94,11 +95,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               {game.demo ? (
-                <Button asChild size="xl" className="font-display uppercase tracking-widest shadow-ember">
-                  <a href={game.demo} target="_blank" rel="noreferrer">
-                    Play Now
-                  </a>
-                </Button>
+                <PlayGateButton slug={game.slug} demo={game.demo} />
               ) : (
                 <Badge variant="outline" className="border-gunmetal bg-iron font-display tracking-widest text-ash">
                   Concept

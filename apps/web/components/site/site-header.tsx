@@ -1,10 +1,12 @@
 "use client";
 
+import { Show, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 
 import { DeadrotBrand } from "@/components/site/deadrot-brand";
+import { authEnabled } from "@/lib/access";
 import { cn } from "@/lib/utils";
 
 const WATCH = "https://youtube.com/@shipshitshow";
@@ -34,7 +36,32 @@ const NAV: NavItem[] = [
   // is a rewrite to the SPA (apps/games/warline), not a Next route.
   { label: "Warline", href: "/warline/", accent: "toxic", plainAnchor: true },
   { label: "Watch", href: WATCH, external: true, accent: "hellfire" },
+  // Early-access paywall (epic #330): one purchase unlocks every game.
+  { label: "Unlock", href: "/unlock", accent: "hellfire" },
 ];
+
+// Sign-in / account controls. Clerk components only render when the publishable
+// key is configured — without it there is no ClerkProvider and they would throw.
+function AuthControls({ mobile, onNavigate }: { mobile?: boolean; onNavigate?: () => void }) {
+  if (!authEnabled) return null;
+  const signInClassName = cn(
+    mobile && "py-2",
+    "font-display text-sm font-bold uppercase tracking-widest",
+    (mobile ? MOBILE_COLOR : DESKTOP_COLOR).default,
+  );
+  return (
+    <>
+      <Show when="signed-out">
+        <Link href="/sign-in" onClick={onNavigate} className={signInClassName}>
+          Sign in
+        </Link>
+      </Show>
+      <Show when="signed-in">
+        <UserButton />
+      </Show>
+    </>
+  );
+}
 
 // Exact color/hover class suffixes from the original hand-written anchors.
 const DESKTOP_COLOR: Record<NonNullable<NavItem["accent"]> | "default", string> = {
@@ -113,6 +140,7 @@ export function SiteHeader() {
           {NAV.map((i) => (
             <NavLink key={i.href} item={i} />
           ))}
+          <AuthControls />
         </nav>
 
         <button
@@ -130,6 +158,7 @@ export function SiteHeader() {
           {NAV.map((i) => (
             <NavLink key={i.href} item={i} mobile onNavigate={() => setOpen(false)} />
           ))}
+          <AuthControls mobile onNavigate={() => setOpen(false)} />
         </nav>
       ) : null}
     </header>
