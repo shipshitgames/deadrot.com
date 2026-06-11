@@ -6,6 +6,8 @@ assets every game shares identically.
 
 ## What lives here
 
+- **Runtime/CDN assets only.** This package is what `/assets` points at today
+  and what `cdn.deadrot.com` should mirror later.
 - **`assets-catalog.json`** — the canon catalog (schema: `assets-catalog.schema.json`).
   Two parts:
   - `entities` — the canonical roster (22 entities) pulled from the lore vault:
@@ -19,19 +21,30 @@ assets every game shares identically.
   - `shared` — truly game-agnostic assets used **identically** by every game:
     FX (blood / ember / muzzle / breach-glow), UI icons (Pyre / Warden / Scourge
     / breach / lane), fonts (Press Start 2P / SSG Press Start), and audio.
-- **`entities/<id>/<game>.webp`** — the per-game entity renders, produced by the
-  variant-matrix generator (see below). This is what makes the catalog's
-  `variants` paths resolve.
-- **`shared/{fx,ui,fonts,audio}/`** — the game-agnostic binary assets.
-- **`games/scourge-survivors/`** — the Scourge Survivors runtime pack. This
-  includes semantic folders for Scourge enemies, Pyre survivors, weapons,
-  pickups, projectiles, arena textures, UI, fonts, SFX, and soundtrack cues.
-- **`sites/deadrotcom/public/`** — a preserved copy of the current website
-  public assets.
+- **`brand/`** — Deadrot marks and title/wordmark art used by apps.
+- **`universe/`** — global Deadrot hero/social art.
+- **`games/<slug>/...`** — game-owned runtime packs and game web art.
+- **`entities/<id>/<game>.webp`** — per-game entity renders produced by the
+  variant-matrix generator. This is what makes the catalog's `variants` paths
+  resolve.
+- **`shared/{audio,fonts,fx,ui}/`** — game-agnostic binary assets used
+  identically by multiple games.
+- **`games/<slug>/ui/menu/title.webp`** — game-owned 16:9 title/key art used by
+  both the game shell and the web hub gallery.
+- **`games/<slug>/ui/social/og.jpg`** — compatible `1200x630` social-card
+  export. Prefer JPG for Open Graph crawlers even when browser delivery uses
+  WebP; replace these with approved, beautiful Imagen-generated landscape cards
+  when available.
+- **`concepts/<slug>/`** — concept-only presentation art for titles that are
+  not shipped game packages yet.
 - **`src/index.ts`** — TypeScript types (`Asset`, `AssetCatalog`, `EntityAsset`,
   `Faction`, `HostFamily`, `GameSlug`, ...), the `getAsset(catalog, id, game)`
   resolver, and matrix helpers (`gamesFor`, `renderedGames`, `pendingGames`,
   `matrixRows`).
+
+Never add runtime files under `sources/`, `sites/`, a flat `sprites/` folder, or
+any `source/` subfolder inside a game pack. Rejected/raw generated outputs belong
+in the repo-level `_archive/` review folder or outside git.
 
 ## Scourge Survivors runtime pack
 
@@ -75,7 +88,15 @@ IDs with license records. The game consumes that table through its local
 
 Runtime packs should only commit files that games load at build time or runtime.
 Drafts, raw generator outputs, prompt history, and other source archives stay
-outside git unless they are moved to Git LFS or external asset storage.
+outside `packages/assets`. Short-lived review material can be placed under the
+repo-level `_archive/` folder, but it must never be imported, served, or synced
+to the asset CDN.
+
+Run the package boundary check before merging asset changes:
+
+```bash
+bun --cwd packages/assets run assets:check
+```
 
 ## Generator boundary
 

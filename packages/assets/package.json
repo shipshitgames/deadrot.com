@@ -19,24 +19,27 @@
       "types": "./src/lore.ts",
       "default": "./src/lore.ts"
     },
+    "./brand/*": "./brand/*",
+    "./concepts/*": "./concepts/*",
+    "./entities/*": "./entities/*",
     "./games/*": "./games/*",
     "./shared/*": "./shared/*",
-    "./sites/deadrotcom/*": "./sites/deadrotcom/*",
     "./tokens/*": "./tokens/*"
   },
   "files": [
     "assets-catalog.json",
     "assets-catalog.schema.json",
+    "brand",
+    "concepts",
     "entities",
     "games",
     "lore",
     "shared",
-    "sites",
-    "sources",
     "src",
     "tokens"
   ],
   "scripts": {
+    "assets:check": "node scripts/check-assets.mjs",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "test": "bun test tests",

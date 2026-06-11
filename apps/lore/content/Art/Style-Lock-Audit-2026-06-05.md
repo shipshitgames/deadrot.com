@@ -88,11 +88,10 @@ Superseded asset families:
 - `Art/style-refs/scourge-survivors.webp`
 - `Art/style-refs/shared.webp`
 - `Art/style-bakeoff/d2-ripper-medium.png`
-- `packages/assets/sources/lore-art/style-refs/scourge-survivors.webp`
-- `packages/assets/sources/lore-art/style-refs/shared.webp`
 
-The generated-output history remains preserved under
-`packages/assets/sources/lore-art/style-bakeoff/`.
+After the 2026-06-11 asset cleanup, generated-output history no longer lives
+inside the runtime package. Review-only source material belongs in `_archive/`
+or outside git.
 
 ## First-Pass Assets Added
 
@@ -102,5 +101,4 @@ The generated-output history remains preserved under
 - 5 shared UI SVGs under `packages/assets/shared/ui/`.
 - 2 self-hosted WOFF2 font files under `packages/assets/shared/fonts/`.
 - 3 shared synthetic OGG audio cues under `packages/assets/shared/audio/`.
-- The post-grade palette file at `Art/grade/doom.gpl`, mirrored under
-  `packages/assets/sources/lore-art/grade/doom.gpl`.
+- The post-grade palette file at `Art/grade/doom.gpl`.

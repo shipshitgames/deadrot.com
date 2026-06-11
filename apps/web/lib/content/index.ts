@@ -22,6 +22,7 @@ import {
   universe,
 } from "@shipshitgames/assets/lore";
 import type { CSSProperties } from "react";
+import { assetUrl } from "@/lib/assets";
 
 // The lore tables (canon copy) live in @shipshitgames/assets/lore — the typed
 // derivative of the Obsidian vault — so this hub can never drift from canon.
@@ -98,5 +99,50 @@ export const gameCreatures = (g: Game) => resolve(g.enemySlugs, getCreature);
 export const characterGames = (c: Character) => resolve(c.appearsIn, getGame);
 export const creatureGames = (b: Creature) => resolve(b.appearsIn, getGame);
 
-export const spriteUrl = (base: string | null) =>
-  base ? `/sprites/${base.includes(".") ? base : `${base}.webp`}` : null;
+const SPRITE_BASE_PATHS: Record<string, string> = {
+  "boss": "/games/scourge-survivors/enemies/scourge/breach-boss/front.webp",
+  "enemy-melee": "/games/scourge-survivors/enemies/scourge/host-grunt/front.webp",
+  "enemy-ranged": "/games/scourge-survivors/enemies/scourge/spitter-host/front.webp",
+  "player-heavy-front": "/games/scourge-survivors/players/pyre/bulwark/front.webp",
+  "player-medic-front": "/games/scourge-survivors/players/pyre/patch/front.webp",
+  "player-ranger-front": "/games/scourge-survivors/players/pyre/ranger/front.webp",
+  "player-scout-front": "/games/scourge-survivors/players/pyre/vector/front.webp",
+  "portrait-field-engineer": "/entities/warden-field-engineer/deadlane.webp",
+  "portrait-graft-breacher": "/entities/graft-breacher/deadlane.webp",
+  "portrait-lane-gunner": "/entities/warden-lane-gunner/deadlane.webp",
+  "portrait-orbital-breach-carrier": "/entities/orbital-breach-carrier/starblight.webp",
+  "portrait-pyre-cauterizer": "/entities/pyre-cauterizer/pactfall.webp",
+  "portrait-pyre-courier": "/entities/pyre-courier/redline.webp",
+  "portrait-pyre-duelist": "/entities/pyre-duelist/pactfall.webp",
+  "portrait-pyre-interceptor-pilot": "/entities/pyre-interceptor-pilot/starblight.webp",
+  "portrait-pyre-saboteur": "/entities/pyre-saboteur/rothulk.webp",
+  "portrait-render": "/entities/scourge-elite/deadlane.webp",
+  "portrait-rot-engine": "/entities/rot-engine/deadlane.webp",
+  "portrait-scourge": "/entities/scourge-overview/shared.webp",
+  "portrait-scourge-fighter": "/entities/scourge-fighter/starblight.webp",
+  "portrait-scourge-host-families": "/entities/scourge-host-families/shared.webp",
+  "portrait-trucebreaker": "/entities/trucebreaker/pactfall.webp",
+  "portrait-wallwright": "/entities/warden-wallwright/deadlane.webp",
+  "portrait-warden-artillerist": "/entities/warden-artillerist/pactfall.webp",
+  "portrait-warden-bastion": "/entities/warden-bastion/pactfall.webp",
+  "portrait-warden-courier": "/entities/warden-courier/redline.webp",
+  "portrait-warden-defense-pilot": "/entities/warden-defense-pilot/starblight.webp",
+};
+
+export const gameCoverUrl = (slug: string) =>
+  assetUrl(
+    slug === "zero-day"
+      ? "/concepts/zero-day/ui/social/og.png"
+      : slug === "scourge-survivors"
+        ? "/games/scourge-survivors/ui/cover/gameplay.webp"
+        : `/games/${slug}/ui/menu/title.webp`,
+  );
+
+export const gameSocialImageUrl = (slug: string) =>
+  assetUrl(slug === "zero-day" ? "/concepts/zero-day/ui/social/og.png" : `/games/${slug}/ui/social/og.jpg`);
+
+export const spriteUrl = (base: string | null) => {
+  if (!base) return null;
+  const path = SPRITE_BASE_PATHS[base] ?? base;
+  return assetUrl(path.startsWith("/") ? path : `/${path}`);
+};

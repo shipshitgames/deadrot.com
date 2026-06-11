@@ -6,6 +6,7 @@ import { Backdrop } from "@/components/site/atmosphere";
 import { GameCard } from "@/components/game/game-card";
 import { FactionCardGrid } from "@/components/faction/faction-card-grid";
 import { Waitlist } from "@/components/site/waitlist";
+import { assetUrl } from "@/lib/assets";
 import { accentVars, gamesByStatus, universe } from "@/lib/content";
 
 const WATCH = "https://youtube.com/@shipshitshow";
@@ -25,7 +26,7 @@ export default function Home() {
         {/* Pixel hero banner (locked house style #62) */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/hero.webp"
+          src={assetUrl("/universe/hero.webp")}
           alt=""
           aria-hidden
           className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-25"
@@ -39,7 +40,7 @@ export default function Home() {
           <h1 className="mt-5 w-[min(760px,94vw)] sm:w-[min(820px,90vw)] md:w-[min(880px,82vw)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/branding/deadrot-title-gpt-image-2.webp"
+              src={assetUrl("/brand/title.webp")}
               alt="DEADROT"
               width={1120}
               height={450}

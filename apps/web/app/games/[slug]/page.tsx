@@ -7,7 +7,16 @@ import { Backdrop } from "@/components/site/atmosphere";
 import { Eyebrow } from "@/components/site/eyebrow";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { accentVars, gameCharacters, gameCreatures, games, getFaction, getGame } from "@/lib/content";
+import {
+  accentVars,
+  gameCharacters,
+  gameCoverUrl,
+  gameCreatures,
+  gameSocialImageUrl,
+  games,
+  getFaction,
+  getGame,
+} from "@/lib/content";
 import { createSocialMetadata } from "@/lib/social";
 
 export function generateStaticParams() {
@@ -19,7 +28,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const game = getGame(slug);
   if (!game) return {};
   const image = {
-    url: `/images/og/games/${game.slug}.png`,
+    url: gameSocialImageUrl(game.slug),
     width: 1200,
     height: 630,
     alt: `${game.title} - DEADROT`,
@@ -43,7 +52,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 
   const roster = gameCharacters(game);
   const foes = gameCreatures(game);
-  const gameImage = `/images/games/${game.slug}.webp`;
+  const gameImage = gameCoverUrl(game.slug);
 
   return (
     <main style={accentVars(game.accent)}>
