@@ -32,7 +32,8 @@ export function BuyButton({
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/checkout", { method: "POST" });
+      // Trailing slash avoids the trailingSlash:true 308 hop on the POST.
+      const res = await fetch("/api/checkout/", { method: "POST" });
       const data = (await res.json()) as { url?: string; error?: string };
       if (!res.ok || !data.url) throw new Error(data.error ?? "Checkout failed");
       window.location.assign(data.url);

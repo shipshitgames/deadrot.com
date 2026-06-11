@@ -12,9 +12,12 @@ import { authEnabled, FREE_GAME_SLUGS, hasCollection, LOCKED_GAME_SLUGS } from "
 //   free games   -> any signed-in account (email capture)
 //   locked games -> signed-in + publicMetadata.deadrotCollection (Stripe webhook)
 //
-// The entitlement is read from sessionClaims.metadata, which requires the Clerk
-// dashboard session-token customization { "metadata": "{{user.public_metadata}}" }
-// (see apps/web/.env.example). Claims refresh within ~60s of the webhook firing.
+// The entitlement is read from a flat custom claim, which requires the Clerk
+// dashboard session-token customization (see apps/web/.env.example):
+//   { "deadrotCollection": "{{user.public_metadata.deadrotCollection}}" }
+// Claims refresh within ~60s of the webhook firing; without the customization
+// the claim is absent and every gated request falls through to the
+// authoritative user lookup below — slower, still correct.
 
 const isFreeGameRoute = createRouteMatcher(FREE_GAME_SLUGS.map((slug) => `/${slug}(.*)`));
 const isLockedGameRoute = createRouteMatcher(LOCKED_GAME_SLUGS.map((slug) => `/${slug}(.*)`));
@@ -35,7 +38,7 @@ const gate = clerkMiddleware(async (auth, req) => {
   if (isLockedGameRoute(req)) {
     await auth.protect({ unauthenticatedUrl: signInUrl(req) });
     const { sessionClaims, userId } = await auth();
-    if (hasCollection(sessionClaims?.metadata)) return;
+    if (sessionClaims?.deadrotCollection === true) return;
     // Session claims lag publicMetadata by up to ~60s after the webhook grants
     // the entitlement. Re-check the user record before bouncing a player who
     // may have just paid — only visitors without the claim pay this API call.
