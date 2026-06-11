@@ -29,6 +29,9 @@ export class Game {
   private readonly flash: FlashOverlay;
   private readonly loop: FixedLoop;
   private readonly forward = new THREE.Vector3();
+  private readonly playerMoveVel = new THREE.Vector2();
+  private wasSprinting = false;
+  private sprintStartBoostTimer = 0;
 
   // gameplay events accumulated across the fixed steps of one displayed frame
   private readonly frameKills: KillEvent[] = [];
@@ -87,6 +90,9 @@ export class Game {
     this.clearPauseMenu();
     this.render.placePlayerAtStart();
     this.input.clearTransientInput();
+    this.playerMoveVel.set(0, 0);
+    this.wasSprinting = false;
+    this.sprintStartBoostTimer = 0;
     this.pausedForCapture = false;
     this.state.phase = "building";
     this.state.hintText = "CLICK THE GAME TO LOCK VIEW";
@@ -204,12 +210,40 @@ export class Game {
     const x = Number(this.input.move.right) - Number(this.input.move.left);
     const z = Number(this.input.move.forward) - Number(this.input.move.back);
     const moving = x !== 0 || z !== 0;
+    const p = CONSTANTS.player;
+    const sprinting = moving && this.input.wantsSprint;
+    if (sprinting && !this.wasSprinting) this.sprintStartBoostTimer = p.sprintStartBoostTime;
+    this.wasSprinting = sprinting;
+
+    const damping = moving ? p.damping : p.brakeDamping;
+    const damp = Math.max(0, 1 - damping * dt);
+    this.playerMoveVel.multiplyScalar(damp);
+
     if (moving) {
       const len = Math.hypot(x, z);
-      const sprint = this.input.wantsSprint ? CONSTANTS.player.sprintMultiplier : 1;
-      const speed = CONSTANTS.player.moveSpeed * sprint * runSpeedMul(this.state);
-      this.render.rig.movePlanar((x / len) * speed * dt, (z / len) * speed * dt);
+      const speed = p.moveSpeed * (sprinting ? p.sprintMultiplier : 1) * runSpeedMul(this.state);
+      const boost =
+        sprinting && this.sprintStartBoostTimer > 0
+          ? 1 + p.sprintStartBoostMultiplier * (this.sprintStartBoostTimer / p.sprintStartBoostTime)
+          : 1;
+      const desiredX = (x / len) * speed;
+      const desiredZ = (z / len) * speed;
+      const maxStep = p.accel * boost * dt;
+      const dx = desiredX - this.playerMoveVel.x;
+      const dz = desiredZ - this.playerMoveVel.y;
+      const dist = Math.hypot(dx, dz);
+      if (dist > maxStep && dist > 0) {
+        this.playerMoveVel.x += (dx / dist) * maxStep;
+        this.playerMoveVel.y += (dz / dist) * maxStep;
+      } else {
+        this.playerMoveVel.set(desiredX, desiredZ);
+      }
+    } else if (this.playerMoveVel.length() < p.stopEpsilon) {
+      this.playerMoveVel.set(0, 0);
     }
+    this.sprintStartBoostTimer = Math.max(0, this.sprintStartBoostTimer - dt);
+
+    this.render.rig.movePlanar(this.playerMoveVel.x * dt, this.playerMoveVel.y * dt);
 
     const pos = this.render.rig.body.position;
     const radius = CONSTANTS.player.radius;

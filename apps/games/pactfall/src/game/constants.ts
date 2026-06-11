@@ -37,6 +37,12 @@ export const CONSTANTS = {
   champion: {
     maxHp: 220,
     moveSpeed: 9, // units / sec
+    moveAccel: 80,
+    moveDamping: 13,
+    moveBrakeDamping: 20,
+    moveStartBoostTime: 0.12,
+    moveStartBoostMultiplier: 0.18,
+    moveStopEpsilon: 0.05,
     radius: 0.8,
     height: 2.2,
     attackRange: 9,

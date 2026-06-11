@@ -213,6 +213,8 @@ export class ArenaSystem {
   placeAtSpawn() {
     const s = this.ctx.currentMap.spawn;
     this.ctx.velocity.set(0, 0, 0);
+    this.ctx.wasSprinting = false;
+    this.ctx.sprintStartBoostTimer = 0;
     this.ctx.canJump = false;
     // Centre spawns face into the arena (-Z); off-centre spawns face the origin.
     const centre = Math.abs(s.x) < 0.001 && Math.abs(s.z) < 0.001;
