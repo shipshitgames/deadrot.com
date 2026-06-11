@@ -130,7 +130,13 @@ const SPRITE_BASE_PATHS: Record<string, string> = {
 };
 
 export const gameCoverUrl = (slug: string) =>
-  assetUrl(slug === "zero-day" ? "/concepts/zero-day/ui/social/og.png" : `/games/${slug}/ui/menu/title.webp`);
+  assetUrl(
+    slug === "zero-day"
+      ? "/concepts/zero-day/ui/social/og.png"
+      : slug === "scourge-survivors"
+        ? "/games/scourge-survivors/ui/cover/gameplay.webp"
+        : `/games/${slug}/ui/menu/title.webp`,
+  );
 
 export const gameSocialImageUrl = (slug: string) =>
   assetUrl(slug === "zero-day" ? "/concepts/zero-day/ui/social/og.png" : `/games/${slug}/ui/social/og.jpg`);
