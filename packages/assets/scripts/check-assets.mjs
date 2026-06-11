@@ -34,11 +34,17 @@ function runtimeFolder(path) {
   return /^packages\/assets\/(?:brand|universe|games|entities|shared|concepts)\//.test(path);
 }
 
+function generatedSourceArchive(path) {
+  return path.startsWith("packages/assets/sources/generated/");
+}
+
 function checkTrackedBoundaries() {
   for (const path of trackedAssetFiles()) {
     const name = basename(path).toLowerCase();
 
-    if (path.startsWith("packages/assets/sources/")) fail(`tracked source archive remains in package: ${path}`);
+    if (path.startsWith("packages/assets/sources/") && !generatedSourceArchive(path)) {
+      fail(`tracked non-generated source archive remains in package: ${path}`);
+    }
     if (path.startsWith("packages/assets/sites/")) fail(`tracked site mirror remains in package: ${path}`);
     if (path.startsWith("packages/assets/sprites/")) fail(`tracked flat sprites folder remains in package: ${path}`);
     if (path.startsWith("packages/assets/node_modules/")) fail(`tracked node_modules file remains in package: ${path}`);
@@ -181,10 +187,7 @@ function checkCatalogPaths() {
 }
 
 function checkBannedGeneratorProvenance() {
-  const manifestPaths = [
-    "assets-catalog.json",
-    ...gameDirs().map((slug) => `games/${slug}/assets.json`),
-  ];
+  const manifestPaths = ["assets-catalog.json", ...gameDirs().map((slug) => `games/${slug}/assets.json`)];
 
   for (const path of manifestPaths) {
     const fullPath = assetPath(path);
@@ -238,7 +241,9 @@ function checkScourgeAnimationPack() {
             .replace("{view}", view)
             .replace("{frame}", frameId)}`;
           if (path.includes("/source/") || path.includes("/sources/")) {
-            fail(`animation pack path points at source material: ${entityId}.${actionId}.${view}.${frameId} -> ${path}`);
+            fail(
+              `animation pack path points at source material: ${entityId}.${actionId}.${view}.${frameId} -> ${path}`,
+            );
           }
           if (!existsPackagePath(path)) {
             fail(`animation pack frame missing: ${entityId}.${actionId}.${view}.${frameId} -> ${path}`);
@@ -249,24 +254,18 @@ function checkScourgeAnimationPack() {
   }
 }
 
-function checkNoEmptySourceTree() {
-  const sourcesPath = assetPath("sources");
-  if (existsSync(sourcesPath)) {
-    const files = [];
-    const walk = (dir) => {
-      for (const entry of readdirSync(dir, { withFileTypes: true })) {
-        const fullPath = join(dir, entry.name);
-        if (entry.isDirectory()) walk(fullPath);
-        else if (entry.isFile()) files.push(relative(assetsRoot, fullPath));
-      }
-    };
-    walk(sourcesPath);
-    if (files.length > 0) fail(`packages/assets/sources must not contain runtime package files: ${files.join(", ")}`);
+function checkTrackedSourceTree() {
+  const misplaced = trackedAssetFiles()
+    .filter((path) => path.startsWith("packages/assets/sources/") && !generatedSourceArchive(path))
+    .map((path) => relative("packages/assets/sources", path));
+
+  if (misplaced.length > 0) {
+    fail(`packages/assets/sources may only track curated generated history: ${misplaced.join(", ")}`);
   }
 }
 
 checkTrackedBoundaries();
-checkNoEmptySourceTree();
+checkTrackedSourceTree();
 checkImageContracts();
 checkCatalogPaths();
 checkBannedGeneratorProvenance();

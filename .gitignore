@@ -21,6 +21,9 @@ tmp/
 .worktrees/
 .vercel
 
-# Local source archives generated while preparing runtime assets.
-packages/assets/sources/
+# Local source archives generated while preparing runtime assets. Curated,
+# successful generation history under sources/generated is intentionally tracked.
+packages/assets/sources/*
 packages/assets/**/sources/
+!packages/assets/sources/generated/
+!packages/assets/sources/generated/**

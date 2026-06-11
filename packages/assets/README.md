@@ -6,8 +6,10 @@ assets every game shares identically.
 
 ## What lives here
 
-- **Runtime/CDN assets only.** This package is what `/assets` points at today
-  and what `cdn.deadrot.com` should mirror later.
+- **Runtime/CDN assets plus curated generation history.** The runtime folders
+  are what `/assets` points at today and what `cdn.deadrot.com` should mirror
+  later. Curated source history lives only under `sources/generated/` and is
+  excluded from the package export list.
 - **`assets-catalog.json`** — the canon catalog (schema: `assets-catalog.schema.json`).
   Two parts:
   - `entities` — the canonical roster (22 entities) pulled from the lore vault:
@@ -43,8 +45,11 @@ assets every game shares identically.
   `matrixRows`).
 
 Never add runtime files under `sources/`, `sites/`, a flat `sprites/` folder, or
-any `source/` subfolder inside a game pack. Rejected/raw generated outputs belong
-in the repo-level `_archive/` review folder or outside git.
+any `source/` subfolder inside a game pack. Successful generation history that
+explains promoted runtime assets belongs under `sources/generated/`. Rejected
+outputs, banned-provider outputs, temporary drafts, and source-like material that
+should never be promoted belong in the repo-level `_archive/` review folder or
+outside git.
 
 ## Scourge Survivors runtime pack
 
@@ -87,10 +92,15 @@ IDs with license records. The game consumes that table through its local
 ## Source material
 
 Runtime packs should only commit files that games load at build time or runtime.
-Drafts, raw generator outputs, prompt history, and other source archives stay
-outside `packages/assets`. Short-lived review material can be placed under the
-repo-level `_archive/` folder, but it must never be imported, served, or synced
-to the asset CDN.
+Curated prompt/history docs and source images for approved generations should be
+preserved under `sources/generated/` so future asset work can trace what was
+generated, reviewed, promoted, or replaced. That archive is not part of
+`package.json#files`, should never be imported by apps or manifests, and should
+not be mirrored to the asset CDN.
+
+Keep rejected outputs, banned-provider outputs, temporary drafts, and exploratory
+source folders out of `packages/assets`; use the repo-level `_archive/` review
+folder or leave them outside git.
 
 Run the package boundary check before merging asset changes:
 
