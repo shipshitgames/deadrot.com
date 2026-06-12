@@ -1,5 +1,5 @@
 import { Button, GameSettingsScreen, PauseMenu, type PauseMenuAction } from "@shipshitgames/ui";
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useMemo, useRef, useState } from "react";
 import { SCOURGE_THREAT_TIERS } from "../../game/data/enemies";
 import { MENU_HERO_URL } from "../../game/spriteAssets";
 import type { HUDState } from "../../game/types";
@@ -24,10 +24,12 @@ export function PauseScreens({
   const { status, multiplayer, room, connected, kills, score, bossActive, wave, totalWaves } = state;
 
   const [pausePanel, setPausePanel] = useState<"none" | "settings" | "controls">("none");
+  const prevStatusRef = useRef(status);
   // Always reopen the pause menu on its root screen.
-  useEffect(() => {
-    if (status !== "paused") setPausePanel("none");
-  }, [status]);
+  if (status !== prevStatusRef.current) {
+    prevStatusRef.current = status;
+    if (status !== "paused" && pausePanel !== "none") setPausePanel("none");
+  }
 
   // Status row + real actions for the shared PauseMenu (mirrors the title menu;
   // no shop affordance). Multiplayer surfaces breach/connection info + Leave.

@@ -20,7 +20,7 @@ import {
   MenuKicker,
   useEnterToReveal,
 } from "@shipshitgames/ui";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { MAP_PICKER, normalizeMapId } from "../../game/data/maps";
 import {
   SHOP_UPGRADES,
@@ -531,9 +531,9 @@ export function MainMenu({
   // Reset to the root menu whenever the menu is re-shown, adjusted inline
   // during render so the old screen never paints. The `?room=` deep link only
   // applies to the initial mount, which the useState initializer handles.
-  const [prevStatus, setPrevStatus] = useState(status);
-  if (status !== prevStatus) {
-    setPrevStatus(status);
+  const prevStatusRef = useRef(status);
+  if (status !== prevStatusRef.current) {
+    prevStatusRef.current = status;
     if (status === "pointerlock-needed") setMenuScreen("home");
   }
 
