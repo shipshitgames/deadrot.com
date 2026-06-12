@@ -19,7 +19,14 @@ import type { GameSlug, HumanFaction, Summary, WorldState } from "@shipshitgames
 import { GAME_OPERATIONS } from "@shipshitgames/warline";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { JUMP_VELOCITY, PLAYER_HEIGHT, updateJump, updateMovement } from "../front/movement";
+import {
+  createMoveState,
+  JUMP_VELOCITY,
+  PLAYER_HEIGHT,
+  resetMoveState,
+  updateJump,
+  updateMovement,
+} from "../front/movement";
 import { normalizePath, PORTALS, resolvePortalHref, shouldUseLocalGamePort } from "../front/portals";
 import type { PortalRuntime } from "../front/scene";
 import { buildFrontScene, disposeObject, updateDynamicScene } from "../front/scene";
@@ -183,6 +190,7 @@ export function FrontMap3D({
     rig.placeAt(0, PLAYER_HEIGHT, 24, 0, -1);
     rig.setFov(72);
     const jumpState = { velocity: 0, grounded: true };
+    const moveState = createMoveState();
     const setControlActive = (next: boolean) => {
       controlActiveRef.current = next;
     };
@@ -206,6 +214,7 @@ export function FrontMap3D({
       setPauseSettings(false); // each pause opens on the menu, not the settings panel
       setControlActive(false);
       clearMoveIntent(move);
+      resetMoveState(moveState);
       // Keep the music playing through the pause — only stop it on unmount.
       rig.releaseCapture(true);
     };
@@ -308,7 +317,7 @@ export function FrontMap3D({
       lastFrame = now;
       if (!pausedRef.current) {
         updateJump(rig, delta, jumpState);
-        updateMovement(rig, move, bounds, obstacleBoxes, delta);
+        updateMovement(rig, move, moveState, bounds, obstacleBoxes, delta);
       }
       updateDynamicScene(sceneRuntime, stateRef.current, time);
 

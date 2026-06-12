@@ -56,6 +56,8 @@ export const CONSTANTS = {
     maxSpeed: 22, // base top speed (world-units / sec), scaled by ION THRUSTERS
     followDeadzone: 1.0, // cursor distance under which the ship coasts to a stop
     drag: 0.86, // per-frame-equiv velocity decay while coasting
+    thrustStartBoostTime: 0.14, // short kick when thrust begins
+    thrustStartBoostMultiplier: 0.22,
     width: 2.2,
     height: 2.6,
     startIntegrity: 100,
