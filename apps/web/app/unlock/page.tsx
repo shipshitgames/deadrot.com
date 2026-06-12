@@ -93,12 +93,12 @@ export default async function UnlockPage({
               You own the <span className="text-bone">Deadrot Collection</span>. Every gate is open.
             </p>
             <div className="mt-6">
-              <a
+              <Link
                 href="/warline/"
                 className="font-display text-sm font-bold uppercase tracking-widest text-toxic hover:text-bone"
               >
                 Enter the war →
-              </a>
+              </Link>
             </div>
           </div>
         ) : pendingUnlock ? (
