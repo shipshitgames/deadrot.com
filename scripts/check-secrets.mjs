@@ -85,7 +85,10 @@ function scanFile(file) {
 }
 
 function scanWorkingTree() {
-  const files = new Set([...nulList(["ls-files", "-z"]), ...nulList(["ls-files", "--others", "--exclude-standard", "-z"])]);
+  const files = new Set([
+    ...nulList(["ls-files", "-z"]),
+    ...nulList(["ls-files", "--others", "--exclude-standard", "-z"]),
+  ]);
   return [...files].flatMap(scanFile);
 }
 

@@ -72,8 +72,8 @@ export default async function UnlockPage({
 
         {params.success ? (
           <p className="mt-6 border border-toxic/50 bg-toxic/10 p-4 text-toxic">
-            Payment received. Your access is unlocking now — it can take up to a minute to reach every
-            gate. Welcome to the war.
+            Payment received. Your access is unlocking now — it can take up to a minute to reach every gate. Welcome to
+            the war.
           </p>
         ) : null}
         {params.canceled ? (
@@ -103,16 +103,14 @@ export default async function UnlockPage({
           </div>
         ) : pendingUnlock ? (
           <p className="mt-8 max-w-2xl text-lg leading-relaxed text-ash">
-            Your purchase is being written to your account. Refresh in a few seconds — no need to
-            buy again.
+            Your purchase is being written to your account. Refresh in a few seconds — no need to buy again.
           </p>
         ) : (
           <>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ash">
-              One purchase, every game — {COLLECTION_PRICE_LABEL}, forever. No subscription, no
-              unlock grind. Early buyers: code{" "}
-              <span className="font-display text-hellfire">{EARLY_BUYER_CODE}</span> at checkout drops
-              it to <span className="text-bone">{EARLY_BUYER_PRICE_LABEL}</span> — first 1,000 only.
+              One purchase, every game — {COLLECTION_PRICE_LABEL}, forever. No subscription, no unlock grind. Early
+              buyers: code <span className="font-display text-hellfire">{EARLY_BUYER_CODE}</span> at checkout drops it
+              to <span className="text-bone">{EARLY_BUYER_PRICE_LABEL}</span> — first 1,000 only.
             </p>
             <div className="mt-8">
               {authEnabled ? (
@@ -128,9 +126,7 @@ export default async function UnlockPage({
 
         <div className="mt-16 grid gap-10 sm:grid-cols-2">
           <section>
-            <h2 className="font-display text-xl font-bold uppercase tracking-tight text-bone">
-              In the collection
-            </h2>
+            <h2 className="font-display text-xl font-bold uppercase tracking-tight text-bone">In the collection</h2>
             <ul className="mt-4 space-y-3">
               {lockedGames.map((game) => (
                 <li key={game.slug} className="flex items-center gap-3">
@@ -143,9 +139,7 @@ export default async function UnlockPage({
             </ul>
           </section>
           <section>
-            <h2 className="font-display text-xl font-bold uppercase tracking-tight text-bone">
-              Free with an account
-            </h2>
+            <h2 className="font-display text-xl font-bold uppercase tracking-tight text-bone">Free with an account</h2>
             <ul className="mt-4 space-y-3">
               {freeGames.map((game) => (
                 <li key={game.slug} className="flex items-center gap-3">

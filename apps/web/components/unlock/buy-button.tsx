@@ -21,9 +21,7 @@ export function BuyButton({
     const returnTo = from ? `/unlock/?from=${from}` : "/unlock/";
     return (
       <Button asChild size="xl" className="font-display uppercase tracking-widest shadow-ember">
-        <a href={`/sign-in/?redirect_url=${encodeURIComponent(returnTo)}`}>
-          Sign in to unlock — {priceLabel}
-        </a>
+        <a href={`/sign-in/?redirect_url=${encodeURIComponent(returnTo)}`}>Sign in to unlock — {priceLabel}</a>
       </Button>
     );
   }
@@ -45,12 +43,7 @@ export function BuyButton({
 
   return (
     <div className="flex flex-col items-start gap-2">
-      <Button
-        size="xl"
-        onClick={buy}
-        disabled={busy}
-        className="font-display uppercase tracking-widest shadow-ember"
-      >
+      <Button size="xl" onClick={buy} disabled={busy} className="font-display uppercase tracking-widest shadow-ember">
         {busy ? "Opening checkout…" : `Unlock everything — ${priceLabel}`}
       </Button>
       {error ? <p className="text-sm text-blood">{error}</p> : null}

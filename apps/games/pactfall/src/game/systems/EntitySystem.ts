@@ -207,7 +207,12 @@ export class EntitySystem {
     clampToLane(c.pos, CONSTANTS.champion.retreatZ);
   }
 
-  private applyPlayerVelocity(pos: THREE.Vector3, desired: THREE.Vector2, dt: number, clickTarget: THREE.Vector3 | null) {
+  private applyPlayerVelocity(
+    pos: THREE.Vector3,
+    desired: THREE.Vector2,
+    dt: number,
+    clickTarget: THREE.Vector3 | null,
+  ) {
     const moving = desired.lengthSq() > 0;
     if (moving && !this.wasPlayerMoving) this.playerMoveStartBoostTimer = CONSTANTS.champion.moveStartBoostTime;
     this.wasPlayerMoving = moving;

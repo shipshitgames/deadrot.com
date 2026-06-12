@@ -38,10 +38,7 @@ export async function POST(req: Request) {
 
   // completed covers instant methods (cards); async_payment_succeeded covers
   // delayed methods (e.g. bank debits) whose completed event arrives unpaid.
-  if (
-    event.type === "checkout.session.completed" ||
-    event.type === "checkout.session.async_payment_succeeded"
-  ) {
+  if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
     const session = event.data.object;
 
     // Only fulfill sessions our checkout route created — other products on
