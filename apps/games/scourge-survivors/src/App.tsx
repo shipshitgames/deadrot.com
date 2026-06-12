@@ -182,6 +182,7 @@ export default function App() {
     hudRef.current = next;
     if (next.status === "gameover" && next.outcome && !next.sandbox && !savedRef.current) {
       savedRef.current = true;
+      if (next.outcome === "win") audio.setMusicMode("victory");
       const earnedGold = next.survivors
         ? runGold(next.kills, next.level, next.time, shopTiersRef.current.greed ?? 0)
         : 0;
@@ -268,6 +269,8 @@ export default function App() {
   }, []);
   const handleRestart = useCallback(() => {
     audio.unlock();
+    const current = hudRef.current;
+    audio.setMusicMode(current.multiplayer ? "multiplayer" : current.survivors ? "survivors" : "campaign");
     gameRef.current?.restart();
   }, []);
   const handleClearScores = useCallback(() => setScores(clearScores()), []);
