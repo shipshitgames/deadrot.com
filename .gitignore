@@ -19,7 +19,18 @@ tmp/
 
 # git worktrees created by the /worktree skill
 .worktrees/
+.claude/worktrees/
 .vercel
+
+# Local credentials and private keys
+.aws/
+**/.aws/
+*.pem
+*.p12
+*.pfx
+*.private-key
+id_rsa*
+id_ed25519*
 
 # Local source archives generated while preparing runtime assets. Curated,
 # successful generation history under sources/generated is intentionally tracked.

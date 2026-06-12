@@ -29,6 +29,7 @@
     "e2e:ui": "playwright test --ui",
     "e2e:report": "playwright show-report",
     "social:check": "node scripts/check-social-metadata.mjs",
+    "check:secrets": "node scripts/check-secrets.mjs",
     "assets:check": "node scripts/check-assets.mjs",
     "board:hygiene": "node scripts/board-hygiene.mjs",
     "deploy:games:changed": "node scripts/deploy-changed-games.mjs",
