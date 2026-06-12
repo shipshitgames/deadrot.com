@@ -39,7 +39,3 @@ packages/assets/sources/*
 !packages/assets/sources/generated/**
 packages/assets/sources/generated/*-cache/
 packages/assets/sources/generated/gpt-image-*/
-
-# Raw generator caches stay local/review-only; curate keepers into
-# packages/assets/sources/generated with semantic names.
-packages/assets/_archive/raw-generator-cache/**/raw/**
