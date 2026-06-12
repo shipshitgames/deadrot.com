@@ -21,8 +21,7 @@ A Pyre interceptor pilot, asked why she burned a contaminated drifter that was a
 A **Lane** in the truest sense — the highest one, the [[Cosmology|Cosmology]] corridor the Scourge itself uses to *arrive*. The Skyhook is where humanity contests the breach **before it becomes a breach**, the orbital interdiction of new arrivals first attempted (and lost) on [[Zero-Day]] and held, barely, ever since. It does not isolate the Choir the way the ground lanes do; it starves the ground of fresh hosts and fresh nests, the [[CANON]] §6 starvation prong fought from above. Hold the Skyhook and the surface war stays the war it is. Lose it and the sky becomes a breach again.
 
 ## Appears In
-- [[Starblight]] — the entire theater; Pyre and Warden pilots burn Scourge contamination out of orbit before it falls into the lanes below.
-- [[Zero-Day]] — the same sky, the night it was first lost; the orbital relays the Skyhook now hunts were seeded here.
+- [[Starblight]] — the entire theater; Pyre and Warden pilots burn Scourge contamination out of orbit before it falls into the lanes below. Its [[Zero-Day]] mode returns to the same sky on the night it was first lost.
 
 ## See Also
 - [[CANON]] §3–4 — the Scourge arrives from the void; breaches are physical landfall · [[Zero-Day]] — the night the sky fell · [[Starblight]] — the orbital front · [[The-Hollow-Lanes]] — the ground that pays when the Skyhook misses

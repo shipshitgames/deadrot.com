@@ -6,11 +6,13 @@ status: playable prototype — pivoting to a momentum-flight pilot build (style 
 ---
 # Starblight
 
-**At a glance:** top-down arcade-pilot survivors (momentum-flight pivot) · burn the Scourge out of orbit before it falls — you fly under mouse, the guns auto-fire · [[The-Pyre]] / [[The-Wardens]] pilots · the orbital front of the war: kill the infection above before [[Deadlane]] has to hold it below.
+**At a glance:** top-down arcade-pilot survivors (momentum-flight pivot) · burn the Scourge out of orbit before it falls — you fly under mouse, the guns auto-fire · [[The-Pyre]] / [[The-Wardens]] pilots · the orbital front of the war, with [[Zero-Day]] folded in as the first-contact last-stand prologue.
 
 An orbital arcade shooter where pilots burn Scourge infection out of the sky before it falls
 into the surface war. "Starblight" is the name for Scourge contamination in space: spores,
 infected wreckage, living carrier-ships, and breach matter spreading through orbit.
+[[Zero-Day]] is the memory scar inside the same product: the first battle humanity lost, played
+as a doomed prologue or challenge mode rather than a second standalone space shooter.
 
 ## Core Loop
 
@@ -42,8 +44,17 @@ view) is resolved as part of that style lock, not improvised in code.
 
 ## Canon Role
 
-The orbital front. [[Deadlane]] holds the ground lanes; [[Scourge-Survivors]] descends into
+The orbital front. [[Zero-Day]] is when the sky fell; Starblight is the nightly work of keeping
+it from falling again. [[Deadlane]] holds the ground lanes; [[Scourge-Survivors]] descends into
 breaches; Starblight intercepts the infection before it reaches the ground.
+
+## Zero Day Mode
+
+Zero Day is the first-contact last stand folded into Starblight. It should play with the same
+orbital grammar — voidship hosts, spore payloads, failing relays, evacuation lanes — but without
+the later comfort of Pyre/Warden doctrine. The player is pre-schism humanity on borrowed minutes.
+The mode can pay out lore, unlocks, or training value, but canonically the battle always ends in
+loss. That loss is the reason the Skyhook exists.
 
 ## Factions
 

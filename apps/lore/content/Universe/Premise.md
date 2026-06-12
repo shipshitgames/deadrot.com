@@ -34,13 +34,13 @@ the Scourge is the only true enemy. Their rivalry plays out in sanctioned arenas
 ([[Pactfall]]), never as open war while the Scourge still bleeds through.
 
 ## Scales of one war
-- **[[Zero-Day]]** — *the night we lost the sky*: first contact in orbit and atmosphere, the
-  battle humanity loses. The origin; everything else is after the fall.
 - **[[Deadlane]]** — *hold the lane*: stop the Scourge pouring from a breach. Macro, defensive.
 - **[[Scourge-Survivors]]** — *survive the swarm*: a lone Purger, drowning in the Scourge,
   pushing deeper room by room. Micro, offensive, DOOM-fast and bloody.
 - **[[Starblight]]** — *burn the orbital infection*: pilots intercept Scourge spores,
-  infected wreckage, and breach-ships before they fall into the surface war.
+  infected wreckage, and breach-ships before they fall into the surface war. It also carries
+  **[[Zero-Day]]** as the first-contact last stand: the sky battle humanity loses before every
+  Resistance-era front exists.
 - **[[Pactfall]]** — *test the Pact*: sanctioned human rivalry under pressure from the
   Scourge neutral threat.
 

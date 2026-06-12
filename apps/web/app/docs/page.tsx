@@ -234,11 +234,11 @@ export default function DocsPage() {
                         <p className="font-display text-sm font-bold uppercase tracking-widest text-bone">First Read</p>
                         <RosterLine
                           label="Humans"
-                          value={humanRoster.length ? humanRoster.join(", ") : "Pre-schism humanity"}
+                          value={humanRoster.length ? humanRoster.join(", ") : "No fixed character roster"}
                         />
                         <RosterLine
                           label="Scourge"
-                          value={scourgeRoster.length ? scourgeRoster.join(", ") : "First-contact horde not locked"}
+                          value={scourgeRoster.length ? scourgeRoster.join(", ") : "No fixed Scourge roster"}
                         />
                         <div className="mt-4 flex flex-wrap gap-2">
                           <Button

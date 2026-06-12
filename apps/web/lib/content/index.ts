@@ -35,7 +35,7 @@ export interface Game extends GameLore {
 
 // Derived from @deadrot/catalog (the single source of truth) rather than re-listed
 // here: each game app gets a source link + same-origin demo route + its status;
-// concept titles (e.g. zero-day) get status only.
+// concept titles get status only.
 const GAME_SOURCE_ROOT = "https://github.com/shipshitgames/deadrot.com/tree/master/apps/games";
 const gameSource = (slug: string) => `${GAME_SOURCE_ROOT}/${slug}`;
 
@@ -127,11 +127,9 @@ const SPRITE_BASE_PATHS: Record<string, string> = {
 
 export const gameCoverUrl = (slug: string) =>
   assetUrl(
-    slug === "zero-day"
-      ? "/concepts/zero-day/ui/social/og.png"
-      : slug === "scourge-survivors"
-        ? "/games/scourge-survivors/ui/cover/gameplay.webp"
-        : `/games/${slug}/ui/menu/title.webp`,
+    slug === "scourge-survivors"
+      ? "/games/scourge-survivors/ui/cover/gameplay.webp"
+      : `/games/${slug}/ui/menu/title.webp`,
   );
 
 export const spriteUrl = (base: string | null) => {
