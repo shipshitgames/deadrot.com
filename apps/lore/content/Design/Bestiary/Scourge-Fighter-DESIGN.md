@@ -41,9 +41,9 @@ clean enough to read at arcade speed but still wet, chitinous, and hostile.
 Status: candidate master attached. Runtime preview and winged sheets below are
 placeholders only until regenerated from this sheet.
 
-![Scourge Fighter master turnaround](../../Assets/Art-Masters/Scourge/scourge-fighter/scourge-fighter-master-turnaround.png)
+![Scourge Fighter master turnaround](/assets/lore/art-masters/scourge/scourge-fighter/scourge-fighter-master-turnaround.png)
 
-![Scourge Fighter runtime placeholder](../../Assets/Art-Masters/Scourge/scourge-fighter/scourge-fighter-runtime-placeholder.webp)
+![Scourge Fighter runtime placeholder](/assets/lore/art-masters/scourge/scourge-fighter/scourge-fighter-runtime-placeholder.webp)
 
 - Top/front arcade sprite:
 - Side dive silhouette:
@@ -52,10 +52,10 @@ placeholders only until regenerated from this sheet.
 
 ## Art Master Attachments
 
-- Candidate master: `../../Assets/Art-Masters/Scourge/scourge-fighter/scourge-fighter-master-turnaround.png`
+- Candidate master: `/assets/lore/art-masters/scourge/scourge-fighter/scourge-fighter-master-turnaround.png`
 - Generated source: `packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/scourge-fighter-master-turnaround.png`
-- Runtime placeholder: `../../Assets/Art-Masters/Scourge/scourge-fighter/scourge-fighter-runtime-placeholder.webp`
-- Winged Scourge generated sheet references: `../../Assets/Art-Masters/Scourge/scourge-fighter/winged-scourge-animation-sheets/`
+- Runtime placeholder: `/assets/lore/art-masters/scourge/scourge-fighter/scourge-fighter-runtime-placeholder.webp`
+- Winged Scourge generated sheet references: `/assets/lore/art-masters/scourge/scourge-fighter/winged-scourge-animation-sheets/`
 
 ## Game Adaptations
 

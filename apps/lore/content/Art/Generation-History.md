@@ -91,7 +91,7 @@ reviewed outside runtime paths under `packages/assets/_archive/`.
 - Plan: Codex built-in.
 - Kind: ai-key-art and ai-ui-reference draft.
 - Source output: see `lore/Art/Prompt-Batches/2026-06-03-gallery-thumbnails-and-menu-ui.md`.
-- Workspace draft: `lore/Art/UI-Drafts/2026-06-03-doom-menu-concepts/`.
+- Workspace draft: `packages/assets/sources/generated/lore-art-ui-drafts/2026-06-03/`.
 - Final asset: promoted to package-native game title art under
   `packages/assets/games/<slug>/ui/menu/title.webp`.
 - Prompt source: `lore/Art/Prompt-Batches/2026-06-03-gallery-thumbnails-and-menu-ui.md`.
@@ -148,7 +148,7 @@ reviewed outside runtime paths under `packages/assets/_archive/`.
 - Plan: Codex built-in.
 - Kind: ai-key-art pre-viz draft.
 - Source output: `~/.codex/generated_images/019e9356-ec1a-7ab1-9cd1-bf183f811698/`.
-- Workspace draft: `Art/Previs/2026-06-04-game-previs/`.
+- Workspace draft: `packages/assets/sources/generated/lore-art-previs/2026-06-04/`.
 - Final asset: none.
 - Prompt source: `Art/Prompt-Batches/2026-06-04-game-previs.md`.
 - Post-processing: copied generated PNGs into the lore workspace with stable game/version filenames; no crop, grade, pixelize, or WebP conversion yet.
@@ -161,9 +161,9 @@ reviewed outside runtime paths under `packages/assets/_archive/`.
 - Game: [[Scourge-Survivors]].
 - Faction: Pyre player HUD with Scourge-only toxic signal.
 - Character/role: first-person survival HUD, upgrade overlay, loadout overlay, pause overlay.
-- View: browser-rendered DOM/CSS prototype over `Art/Previs/2026-06-04-game-previs/scourge-survivors-v02.png`.
+- View: browser-rendered DOM/CSS prototype over `packages/assets/sources/generated/lore-art-previs/2026-06-04/scourge-survivors-v02.png`.
 - Tool: hand-authored HTML/CSS/JS, verified with Playwright screenshots.
-- Workspace draft: `Art/UI-Drafts/2026-06-04-fps-hud-previs/`.
+- Workspace draft: `packages/assets/sources/generated/lore-art-ui-drafts/2026-06-04/`.
 - Final asset: none.
 - Prompt source: none; this is buildable UI pre-viz, not generated image UI.
 - Post-processing: captured `screenshot-hud-desktop-doom-pixel.png`, `screenshot-upgrade-desktop-doom-pixel.png`, and `screenshot-hud-mobile-doom-pixel.png`.
@@ -182,7 +182,7 @@ reviewed outside runtime paths under `packages/assets/_archive/`.
 - Kind: ai-key-art-derived social card.
 - Source output: shipped package title art from
   `packages/assets/games/<slug>/ui/menu/title.webp` and
-  `Art/Previs/2026-06-04-game-previs/zero-day-v01.png`.
+  `packages/assets/sources/generated/lore-art-previs/2026-06-04/zero-day-v01.png`.
 - Final asset:
   - `packages/assets/games/scourge-survivors/ui/social/og.jpg`
   - `packages/assets/games/deadlane/ui/social/og.jpg`
@@ -214,7 +214,7 @@ reviewed outside runtime paths under `packages/assets/_archive/`.
 - Final asset:
   - `packages/assets/games/scourge-survivors/enemies/scourge/host-grunt/{front,side,back}.webp`
   - `packages/assets/games/scourge-survivors/enemies/scourge/breach-boss/{front,side,back}.webp`
-- Prompt source: `Art/style-bakeoff/run-d2.sh`, `Art/style-refs/scourge-survivors.webp`, and direct review that melee foes need body-grown swords and the boss was being cut in-game.
+- Prompt source: `Art/style-bakeoff/run-d2.sh`, `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/scourge-survivors.webp`, and direct review that melee foes need body-grown swords and the boss was being cut in-game.
 - Post-processing: copied source sheets into the asset package; sliced three equal cells; removed sampled magenta key with ffmpeg `colorkey`; nearest-neighbor downscaled; padded with alpha; encoded lossless WebP.
 - Notes: Melee now has sword-like bone blades grown from the forearms, not separate held weapons. Boss sprites have extra texture padding and reduced manifest sprite height so they stop filling/cutting the camera.
 - Decision: promoted to runtime and mirrored to website/public sprite copies plus shared entity preview plates.

@@ -19,6 +19,7 @@
       "types": "./src/lore.ts",
       "default": "./src/lore.ts"
     },
+    "./lore/*": "./lore/*",
     "./brand/*": "./brand/*",
     "./concepts/*": "./concepts/*",
     "./entities/*": "./entities/*",

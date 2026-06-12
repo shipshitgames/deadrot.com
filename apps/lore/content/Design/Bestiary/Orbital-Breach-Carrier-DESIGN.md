@@ -42,9 +42,9 @@ engine tissue.
 Status: candidate master attached. Runtime preview below is placeholder only
 until regenerated from this sheet.
 
-![Orbital Breach Carrier master turnaround](../../Assets/Art-Masters/Scourge/orbital-breach-carrier/orbital-breach-carrier-master-turnaround.png)
+![Orbital Breach Carrier master turnaround](/assets/lore/art-masters/scourge/orbital-breach-carrier/orbital-breach-carrier-master-turnaround.png)
 
-![Orbital Breach Carrier runtime placeholder](../../Assets/Art-Masters/Scourge/orbital-breach-carrier/orbital-breach-carrier-runtime-placeholder.webp)
+![Orbital Breach Carrier runtime placeholder](/assets/lore/art-masters/scourge/orbital-breach-carrier/orbital-breach-carrier-runtime-placeholder.webp)
 
 - Top/front boss sprite:
 - Damage state 01:
@@ -53,9 +53,9 @@ until regenerated from this sheet.
 
 ## Art Master Attachments
 
-- Candidate master: `../../Assets/Art-Masters/Scourge/orbital-breach-carrier/orbital-breach-carrier-master-turnaround.png`
+- Candidate master: `/assets/lore/art-masters/scourge/orbital-breach-carrier/orbital-breach-carrier-master-turnaround.png`
 - Generated source: `packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/orbital-breach-carrier-master-turnaround.png`
-- Runtime placeholder: `../../Assets/Art-Masters/Scourge/orbital-breach-carrier/orbital-breach-carrier-runtime-placeholder.webp`
+- Runtime placeholder: `/assets/lore/art-masters/scourge/orbital-breach-carrier/orbital-breach-carrier-runtime-placeholder.webp`
 
 ## Game Adaptations
 

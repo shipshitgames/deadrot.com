@@ -46,9 +46,9 @@ rib armor, projectile vents, and conduit tendrils.
 Status: candidate master attached. Do not treat current runtime animation
 frames as canon until regenerated from this sheet.
 
-![Breach Boss breach-engine master turnaround](../../Assets/Art-Masters/Scourge/breach-boss/breach-boss-breach-engine-master-turnaround.png)
+![Breach Boss breach-engine master turnaround](/assets/lore/art-masters/scourge/breach-boss/breach-boss-breach-engine-master-turnaround.png)
 
-![Breach Boss runtime placeholder](../../Assets/Art-Masters/Scourge/breach-boss/breach-boss-runtime-placeholder.webp)
+![Breach Boss runtime placeholder](/assets/lore/art-masters/scourge/breach-boss/breach-boss-runtime-placeholder.webp)
 
 - Idle front:
 - Idle side:
@@ -57,9 +57,9 @@ frames as canon until regenerated from this sheet.
 
 ## Art Master Attachments
 
-- Candidate master: `../../Assets/Art-Masters/Scourge/breach-boss/breach-boss-breach-engine-master-turnaround.png`
+- Candidate master: `/assets/lore/art-masters/scourge/breach-boss/breach-boss-breach-engine-master-turnaround.png`
 - Generated source: `packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/breach-boss-breach-engine-master-turnaround.png`
-- Runtime placeholder: `../../Assets/Art-Masters/Scourge/breach-boss/breach-boss-runtime-placeholder.webp`
+- Runtime placeholder: `/assets/lore/art-masters/scourge/breach-boss/breach-boss-runtime-placeholder.webp`
 
 ## Game Adaptations
 

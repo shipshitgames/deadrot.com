@@ -30,6 +30,15 @@ function trackedAssetFiles() {
   return output ? output.split("\n").filter((path) => existsSync(resolve(repoRoot, path))) : [];
 }
 
+function trackedFiles(...paths) {
+  const output = execFileSync("git", ["ls-files", ...paths], {
+    cwd: repoRoot,
+    encoding: "utf8",
+  }).trim();
+
+  return output ? output.split("\n").filter((path) => existsSync(resolve(repoRoot, path))) : [];
+}
+
 function runtimeFolder(path) {
   if (/^packages\/assets\/games\/[^/]+\/sources\//.test(path)) return false;
   return /^packages\/assets\/(?:brand|universe|games|entities|shared|concepts)\//.test(path);
@@ -76,6 +85,16 @@ function checkTrackedBoundaries() {
     if (runtimeFolder(path) && /\b(draft|source|clean)\b/.test(name.replace(/[-_.]/g, " "))) {
       fail(`runtime asset filename looks like draft/source/cleanup residue: ${path}`);
     }
+  }
+}
+
+function checkLoreVaultDoesNotOwnBinaries() {
+  const loreBinaries = trackedFiles("apps/lore/content/Assets", "apps/lore/content/Art").filter((path) =>
+    /\.(?:avif|gif|jpe?g|mp3|mp4|ogg|png|svg|wav|webm|webp)$/i.test(path),
+  );
+
+  for (const path of loreBinaries) {
+    fail(`lore vault must reference package assets instead of tracking binaries: ${path}`);
   }
 }
 
@@ -317,6 +336,7 @@ function checkGeneratedSourceNaming() {
 }
 
 checkTrackedBoundaries();
+checkLoreVaultDoesNotOwnBinaries();
 checkTrackedSourceTree();
 checkGeneratedSourceNaming();
 checkImageContracts();

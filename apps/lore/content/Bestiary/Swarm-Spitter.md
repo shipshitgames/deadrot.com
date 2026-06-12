@@ -33,7 +33,7 @@ Ranged Scourge form that turns infection into projectile pressure.
 
 ## Art Master
 
-![Swarm Spitter runtime visual lock](../Assets/Art-Masters/Scourge/swarm-spitter/swarm-spitter-runtime-visual-lock.png)
+![Swarm Spitter runtime visual lock](/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-runtime-visual-lock.png)
 
 - Status: runtime visual lock attached; high-res master candidate was
   regenerated from it and still needs cleanup before runtime use.

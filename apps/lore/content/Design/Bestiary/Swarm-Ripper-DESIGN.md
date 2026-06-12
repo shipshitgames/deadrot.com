@@ -42,9 +42,9 @@ forearms, exposed muscle, black chitin, and one small toxic breach core.
 Status: candidate review. Do not treat current runtime animation frames as canon.
 
 - Lore vault candidate:
-  ![Swarm Ripper fast master candidate](../../Assets/Art-Masters/Scourge/swarm-ripper/swarm-ripper-master-fast-candidate.png)
+  ![Swarm Ripper fast master candidate](/assets/lore/art-masters/scourge/swarm-ripper/swarm-ripper-master-fast-candidate.png)
 - Lore vault turnaround:
-  ![Swarm Ripper turnaround candidate](../../Assets/Art-Masters/Scourge/swarm-ripper/swarm-ripper-turnaround-candidate.png)
+  ![Swarm Ripper turnaround candidate](/assets/lore/art-masters/scourge/swarm-ripper/swarm-ripper-turnaround-candidate.png)
 - Turnaround candidate:
   `packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper-turnaround-candidate.png`
 - Master candidate, too heavy:
@@ -58,10 +58,10 @@ Status: candidate review. Do not treat current runtime animation frames as canon
 
 ## Art Master Attachments
 
-- Primary candidate: `../../Assets/Art-Masters/Scourge/swarm-ripper/swarm-ripper-master-fast-candidate.png`
-- Turnaround candidate: `../../Assets/Art-Masters/Scourge/swarm-ripper/swarm-ripper-turnaround-candidate.png`
-- Heavy reference only: `../../Assets/Art-Masters/Scourge/swarm-ripper/swarm-ripper-master-heavy-reference.png`
-- Reference batch: `../../Assets/Art-Masters/Scourge/swarm-ripper/references/`
+- Primary candidate: `/assets/lore/art-masters/scourge/swarm-ripper/swarm-ripper-master-fast-candidate.png`
+- Turnaround candidate: `/assets/lore/art-masters/scourge/swarm-ripper/swarm-ripper-turnaround-candidate.png`
+- Heavy reference only: `/assets/lore/art-masters/scourge/swarm-ripper/swarm-ripper-master-heavy-reference.png`
+- Reference batch: `/assets/lore/art-masters/scourge/swarm-ripper/references/`
 
 ## Game Adaptations
 

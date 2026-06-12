@@ -28,10 +28,10 @@
 
 | Draft | Source Output | Workspace Draft | Integration Notes |
 | --- | --- | --- | --- |
-| Main menu | `~/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a40d9ad081918b94522df5523e76.png` | `lore/Art/UI-Drafts/2026-06-03-doom-menu-concepts/main-menu.png` | Reference for title screens and primary action hierarchy. |
-| Deployment/loadout | `~/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a4542a008191aeaa6b5ab33d85cc.png` | `lore/Art/UI-Drafts/2026-06-03-doom-menu-concepts/deployment-loadout.png` | Reference for mode select, character choice, and loadout panels. |
-| Upgrade choice | `~/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a4fffc2c8191a04ec39eeec323b4.png` | `lore/Art/UI-Drafts/2026-06-03-doom-menu-concepts/upgrade-choice.png` | Reference for survivors-loop upgrade picks across games. |
-| Pause/settings | `~/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a5ab16a08191af2e349a20f5c842.png` | `lore/Art/UI-Drafts/2026-06-03-doom-menu-concepts/pause-settings.png` | Reference for pause overlays, settings rows, toggles, sliders, and keybind chips. |
+| Main menu | `~/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a40d9ad081918b94522df5523e76.png` | `packages/assets/sources/generated/lore-art-ui-drafts/2026-06-03/main-menu.png` | Reference for title screens and primary action hierarchy. |
+| Deployment/loadout | `~/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a4542a008191aeaa6b5ab33d85cc.png` | `packages/assets/sources/generated/lore-art-ui-drafts/2026-06-03/deployment-loadout.png` | Reference for mode select, character choice, and loadout panels. |
+| Upgrade choice | `~/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a4fffc2c8191a04ec39eeec323b4.png` | `packages/assets/sources/generated/lore-art-ui-drafts/2026-06-03/upgrade-choice.png` | Reference for survivors-loop upgrade picks across games. |
+| Pause/settings | `~/.codex/generated_images/019e8d78-c835-7241-82b7-8c7318721b14/ig_04c7196def12859c016a20a5ab16a08191af2e349a20f5c842.png` | `packages/assets/sources/generated/lore-art-ui-drafts/2026-06-03/pause-settings.png` | Reference for pause overlays, settings rows, toggles, sliders, and keybind chips. |
 
 ## Integration Rule
 

@@ -33,7 +33,7 @@ Fast melee Scourge fodder that floods lanes and breach rooms through numbers and
 
 ## Art Master
 
-![Swarm Ripper master candidate](../Assets/Art-Masters/Scourge/swarm-ripper/swarm-ripper-master-fast-candidate.png)
+![Swarm Ripper master candidate](/assets/lore/art-masters/scourge/swarm-ripper/swarm-ripper-master-fast-candidate.png)
 
 - Status: candidate master attached, not final-locked.
 - Art master index: [[Design/Bestiary/Scourge-Foe-Art-Masters|Scourge Foe Art Masters]]

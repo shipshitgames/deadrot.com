@@ -12,7 +12,7 @@ The OG cards use existing `gpt-image-2` art rather than new model renders:
 - `Scourge Survivors`, `Deadlane`, `Pactfall`, `Starblight`, `Redline`, and
   `Rothulk` use the package title illustrations from
   `packages/assets/games/<slug>/ui/menu/title.webp`.
-- `Zero Day` uses `apps/lore/content/Art/Previs/2026-06-04-game-previs/zero-day-v01.png`,
+- `Zero Day` uses `packages/assets/sources/generated/lore-art-previs/2026-06-04/zero-day-v01.png`,
   generated in the 2026-06-04 game pre-viz batch.
 
 ## Composition

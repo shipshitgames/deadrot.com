@@ -42,7 +42,7 @@ machinery and the other side collapsing into wet tendril mass.
 Status: candidate master attached. Runtime art should be regenerated from this
 sheet.
 
-![Graft Breacher master turnaround](../../Assets/Art-Masters/Scourge/graft-breacher/graft-breacher-master-turnaround.png)
+![Graft Breacher master turnaround](/assets/lore/art-masters/scourge/graft-breacher/graft-breacher-master-turnaround.png)
 
 - Idle front:
 - Idle side:
@@ -51,7 +51,7 @@ sheet.
 
 ## Art Master Attachments
 
-- Candidate master: `../../Assets/Art-Masters/Scourge/graft-breacher/graft-breacher-master-turnaround.png`
+- Candidate master: `/assets/lore/art-masters/scourge/graft-breacher/graft-breacher-master-turnaround.png`
 - Generated source: `packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/graft-breacher-master-turnaround.png`
 
 ## Game Adaptations

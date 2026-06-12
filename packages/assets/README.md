@@ -25,6 +25,8 @@ assets every game shares identically.
     / breach / lane), fonts (Press Start 2P / SSG Press Start), and audio.
 - **`brand/`** — Deadrot marks and title/wordmark art used by apps.
 - **`universe/`** — global Deadrot hero/social art.
+- **`lore/`** — machine-readable canon data plus lore-facing art masters,
+  status previews, and other assets that lore pages embed through `/assets/...`.
 - **`games/<slug>/...`** — game-owned runtime packs and game web art.
 - **`entities/<id>/<game>.webp`** — per-game entity renders produced by the
   variant-matrix generator. This is what makes the catalog's `variants` paths
@@ -124,6 +126,8 @@ games/<game>/players/<faction>/<character>/<view>.webp
 games/<game>/enemies/<faction>/<enemy>/<view>.webp
 games/<game>/weapons/<faction>/<weapon>-tiers.webp
 entities/<entity-id>/<game>.webp
+lore/art-masters/<faction-or-domain>/<subject>/<subject>-<purpose>.<ext>
+lore/asset-status/previews/<group>/<subject>.webp
 ```
 
 Generated-history assets should be named by what they document, not where they

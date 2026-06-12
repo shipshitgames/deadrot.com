@@ -47,11 +47,11 @@ the better role read: greener, simpler, and more clearly ranged than the
 generated master. Future high-res masters must match this silhouette/color lane
 before they replace it.
 
-![Swarm Spitter runtime visual lock](../../Assets/Art-Masters/Scourge/swarm-spitter/swarm-spitter-runtime-visual-lock.png)
+![Swarm Spitter runtime visual lock](/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-runtime-visual-lock.png)
 
-![Swarm Spitter master turnaround](../../Assets/Art-Masters/Scourge/swarm-spitter/swarm-spitter-master-turnaround.png)
+![Swarm Spitter master turnaround](/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-master-turnaround.png)
 
-![Swarm Spitter runtime placeholder](../../Assets/Art-Masters/Scourge/swarm-spitter/swarm-spitter-runtime-placeholder.webp)
+![Swarm Spitter runtime placeholder](/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-runtime-placeholder.webp)
 
 - Idle front:
 - Idle side:
@@ -60,12 +60,12 @@ before they replace it.
 
 ## Art Master Attachments
 
-- Runtime visual lock: `../../Assets/Art-Masters/Scourge/swarm-spitter/swarm-spitter-runtime-visual-lock.png`
+- Runtime visual lock: `/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-runtime-visual-lock.png`
 - Runtime source sprites:
   `packages/assets/games/scourge-survivors/enemies/scourge/spitter-host/{front,side,back}.webp`
-- Runtime-derived high-res master candidate: `../../Assets/Art-Masters/Scourge/swarm-spitter/swarm-spitter-master-turnaround.png`
+- Runtime-derived high-res master candidate: `/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-master-turnaround.png`
 - Generated source: `packages/assets/sources/generated/2026-06-12/lore/bestiary/scourge-foes/swarm-spitter-runtime-derived-master-turnaround.png`
-- Legacy runtime placeholder: `../../Assets/Art-Masters/Scourge/swarm-spitter/swarm-spitter-runtime-placeholder.webp`
+- Legacy runtime placeholder: `/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-runtime-placeholder.webp`
 
 ## Cleanup Notes
 

@@ -33,7 +33,7 @@ Small infected attack craft for [[Starblight]] formations.
 
 ## Art Master
 
-![Scourge Fighter master turnaround](../Assets/Art-Masters/Scourge/scourge-fighter/scourge-fighter-master-turnaround.png)
+![Scourge Fighter master turnaround](/assets/lore/art-masters/scourge/scourge-fighter/scourge-fighter-master-turnaround.png)
 
 - Status: candidate art master attached; runtime sprites still need regeneration.
 - Art master index: [[Design/Bestiary/Scourge-Foe-Art-Masters|Scourge Foe Art Masters]]

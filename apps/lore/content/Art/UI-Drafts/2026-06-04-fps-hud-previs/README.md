@@ -2,7 +2,7 @@
 status: active
 type: buildable-ui-previs
 game: Scourge-Survivors
-sourceArt: ../../Previs/2026-06-04-game-previs/scourge-survivors-v02.png
+sourceArt: packages/assets/sources/generated/lore-art-previs/2026-06-04/scourge-survivors-v02.png
 ---
 
 # Scourge Survivors FPS HUD Previs
@@ -16,9 +16,9 @@ Buildable DOM prototype for the [[Scourge-Survivors]] runtime UI.
   - upgrade choice overlay
   - deployment/loadout overlay
   - pause/settings overlay
-- `screenshot-hud-desktop-doom-pixel.png`, `screenshot-upgrade-desktop-doom-pixel.png`, and
-  `screenshot-hud-mobile-doom-pixel.png` — current review screenshots.
-- Background plate: `../../Previs/2026-06-04-game-previs/scourge-survivors-v02.png`.
+- `packages/assets/sources/generated/lore-art-ui-drafts/2026-06-04/screenshot-hud-desktop-doom-pixel.png`, `packages/assets/sources/generated/lore-art-ui-drafts/2026-06-04/screenshot-upgrade-desktop-doom-pixel.png`, and
+  `packages/assets/sources/generated/lore-art-ui-drafts/2026-06-04/screenshot-hud-mobile-doom-pixel.png` — current review screenshots.
+- Background plate: `packages/assets/sources/generated/lore-art-previs/2026-06-04/scourge-survivors-v02.png`.
 - All HUD chrome is real markup and CSS, not baked into the image.
 
 ## Direction
