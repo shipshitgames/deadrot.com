@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "bun scripts/sync-public-assets.mjs && next build",
+    "build": "bun scripts/sync-public-assets.mjs && bun scripts/sync-public-game-builds.mjs && next build",
     "typecheck": "tsc --noEmit",
     "start": "next start",
     "deps:update": "bunx npm-check-updates -u --cooldown 3h --removeRange && bun install"
