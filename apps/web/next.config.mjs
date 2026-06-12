@@ -7,6 +7,7 @@
 // source of truth in @deadrot/catalog (which also drives the e2e harness, the
 // Warline lobby, and the hub content layer). Add/retire a game there, not here.
 import { gameDeploys as GAME_DEPLOYS, gameDevPorts as GAME_DEV_PORTS } from "@deadrot/catalog";
+import { withSentryConfig } from "@sentry/nextjs";
 
 // In `next dev` we send /<slug>/ to the local Vite dev servers so the hub reflects
 // your working tree instead of the stale prod deploy. We REDIRECT (302) rather than
@@ -45,4 +46,11 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  org: process.env.SENTRY_ORG ?? "shipshitgames",
+  project: process.env.SENTRY_PROJECT ?? "deadrot-web",
+  silent: !process.env.CI,
+  telemetry: false,
+  widenClientFileUpload: true,
+});

@@ -1,4 +1,5 @@
 import "@shipshitgames/ui/styles.css";
+import { initDeadrotBrowserTelemetry } from "@deadrot/game-kit/telemetry/browser";
 import "./styles.css";
 import { createElement } from "react";
 import { flushSync } from "react-dom";
@@ -6,6 +7,8 @@ import { createRoot } from "react-dom/client";
 import { Game } from "./game/Game";
 import { AppShell } from "./ui/AppShell";
 import { setBridgeGame } from "./ui/gameBridge";
+
+void initDeadrotBrowserTelemetry({ game: "pactfall", env: import.meta.env });
 
 // Entry point. Grab the canvas + HUD root, spin up the Game, and let it own the
 // requestAnimationFrame loop. Everything else lives under src/game.

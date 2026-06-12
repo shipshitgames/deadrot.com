@@ -1,4 +1,4 @@
-import { createFixedLoop, type FixedLoop } from "@deadrot/game-kit/core";
+import { createFixedLoop, type FixedLoop, recordWarResult } from "@deadrot/game-kit/core";
 import { DamageNumbers, FlashOverlay, ParticleBursts, ScreenShake } from "@deadrot/game-kit/juice";
 import { audio } from "../audio";
 import { COLORS, CONSTANTS } from "./constants";
@@ -152,6 +152,7 @@ export class Game {
 
   win(): void {
     if (this.phase === "playing") {
+      recordWarResult("pactfall", this.warResult("victory"), Date.now());
       this.setPaused(false);
       this.setPhase("won");
       audio.sfx("victory");
@@ -160,6 +161,7 @@ export class Game {
 
   lose(): void {
     if (this.phase === "playing") {
+      recordWarResult("pactfall", this.warResult("defeat"), Date.now());
       this.setPaused(false);
       this.setPhase("lost");
       audio.sfx("defeat");
@@ -186,6 +188,18 @@ export class Game {
 
     this.consumeFeedback(dt);
     this.hud.update(this);
+  }
+
+  private warResult(outcome: "victory" | "defeat") {
+    const enemyBaseDamage = CONSTANTS.base.maxHp - Math.max(0, this.entities.enemyBase.hp);
+    const friendlyBaseHp = Math.max(0, this.entities.friendlyBase.hp);
+    const score = Math.round(enemyBaseDamage + friendlyBaseHp * 0.25 + this.entities.champion.hp + this.elapsed * 2);
+    return {
+      outcome,
+      score,
+      timeMs: Math.round(this.elapsed * 1000),
+      bossKill: this.buffed,
+    };
   }
 
   // ---- per-frame juice + audio: turn sim events into feedback -----------------

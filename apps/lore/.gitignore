@@ -27,3 +27,4 @@ content/Art/**/*.wav
 
 # OS noise inside the vault
 content/**/.DS_Store
+.vercel
