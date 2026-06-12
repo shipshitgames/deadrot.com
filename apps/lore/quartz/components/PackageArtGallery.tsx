@@ -68,7 +68,7 @@ const PackageArtGallery: QuartzComponent = ({ fileData }: QuartzComponentProps) 
       </p>
       <div class="package-art-gallery__grid">
         {variants.map(({ game, path }) => (
-          <figure class="package-art-card">
+          <figure key={`${game}:${path}`} class="package-art-card">
             <img
               src={`/assets/${path}`}
               alt={`${entity.name} ${gameLabels[game]} package art`}
