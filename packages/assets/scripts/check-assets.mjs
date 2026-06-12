@@ -98,6 +98,32 @@ function checkLoreVaultDoesNotOwnBinaries() {
   }
 }
 
+function gitIgnores(path) {
+  try {
+    execFileSync("git", ["check-ignore", "-q", "--", path], { cwd: repoRoot });
+    return true;
+  } catch (error) {
+    if (error.status === 1) return false;
+    throw error;
+  }
+}
+
+function checkAssetPathsAreVisible() {
+  const samplePaths = [
+    "packages/assets/sources/generated/raw-generator-cache/gpt-image-2/2099-01-01/raw/sample.png",
+    "packages/assets/sources/generated/codex-generated-images/2099-01-01/raw/sample.png",
+    "packages/assets/sources/generated/scourge-survivors/icons/2099-01-01/sample.png",
+    "apps/lore/content/Art/sample.png",
+    "apps/lore/content/Assets/sample.webp",
+  ];
+
+  for (const path of samplePaths) {
+    if (gitIgnores(path)) {
+      fail(`asset path is hidden by gitignore and must stay visible for triage: ${path}`);
+    }
+  }
+}
+
 function readJpegSize(file) {
   const buffer = readFileSync(file);
   if (buffer[0] !== 0xff || buffer[1] !== 0xd8) throw new Error("not a JPEG");
@@ -337,6 +363,7 @@ function checkGeneratedSourceNaming() {
 
 checkTrackedBoundaries();
 checkLoreVaultDoesNotOwnBinaries();
+checkAssetPathsAreVisible();
 checkTrackedSourceTree();
 checkGeneratedSourceNaming();
 checkImageContracts();

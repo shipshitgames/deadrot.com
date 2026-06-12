@@ -27,6 +27,9 @@ assets every game shares identically.
 - **`universe/`** — global Deadrot hero/social art.
 - **`lore/`** — machine-readable canon data plus lore-facing art masters,
   status previews, and other assets that lore pages embed through `/assets/...`.
+  Lore pages render character and bestiary galleries from `assets-catalog.json`;
+  the Markdown vault links package-backed `/assets/...` URLs and must not own
+  binary art copies under `apps/lore/content`.
 - **`games/<slug>/...`** — game-owned runtime packs and game web art.
 - **`entities/<id>/<game>.webp`** — per-game entity renders produced by the
   variant-matrix generator. This is what makes the catalog's `variants` paths

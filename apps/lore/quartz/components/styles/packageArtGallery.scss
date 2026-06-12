@@ -1,0 +1,52 @@
+.package-art-gallery {
+  margin: 2rem 0 1rem;
+
+  & > h2 {
+    margin-bottom: 0.25rem;
+  }
+}
+
+.package-art-gallery__meta {
+  color: var(--darkgray);
+  font-size: 0.9rem;
+  margin-top: 0;
+}
+
+.package-art-gallery__grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+
+.package-art-card {
+  border: 1px solid var(--lightgray);
+  border-radius: 6px;
+  margin: 0;
+  overflow: hidden;
+  background: var(--light);
+
+  & > img {
+    aspect-ratio: 4 / 3;
+    background: #050505;
+    display: block;
+    image-rendering: pixelated;
+    object-fit: contain;
+    width: 100%;
+  }
+
+  & > figcaption {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.75rem;
+
+    & > strong {
+      font-size: 0.95rem;
+    }
+
+    & > code {
+      font-size: 0.72rem;
+      overflow-wrap: anywhere;
+      white-space: normal;
+    }
+  }
+}
