@@ -25,6 +25,26 @@
         "typescript": "6.0.3",
       },
     },
+    "apps/games/brawl": {
+      "name": "brawl",
+      "version": "0.1.0",
+      "dependencies": {
+        "@deadrot/game-kit": "workspace:*",
+        "@shipshitgames/assets": "workspace:*",
+        "@shipshitgames/ui": "workspace:*",
+        "react": "19.2.7",
+        "react-dom": "19.2.7",
+        "three": "0.184.0",
+      },
+      "devDependencies": {
+        "@types/react": "19.2.16",
+        "@types/react-dom": "19.2.3",
+        "@types/three": "0.184.1",
+        "@vitejs/plugin-react": "6.0.2",
+        "typescript": "6.0.3",
+        "vite": "8.0.16",
+      },
+    },
     "apps/games/deadlane": {
       "name": "deadlane",
       "version": "0.1.0",
@@ -1372,6 +1392,8 @@
     "brace-expansion": ["brace-expansion@5.0.6", "", { "dependencies": { "balanced-match": "^4.0.2" } }, "sha512-kLpxurY4Z4r9sgMsyG0Z9uzsBlgiU/EFKhj/h91/8yHu0edo7XuixOIH3VcJ8kkxs6/jPzoI6U9Vj3WqbMQ94g=="],
 
     "braces": ["braces@3.0.3", "", { "dependencies": { "fill-range": "^7.1.1" } }, "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA=="],
+
+    "brawl": ["brawl@workspace:apps/games/brawl"],
 
     "browserslist": ["browserslist@4.28.2", "", { "dependencies": { "baseline-browser-mapping": "^2.10.12", "caniuse-lite": "^1.0.30001782", "electron-to-chromium": "^1.5.328", "node-releases": "^2.0.36", "update-browserslist-db": "^1.2.3" }, "bin": { "browserslist": "cli.js" } }, "sha512-48xSriZYYg+8qXna9kwqjIVzuQxi+KYWp2+5nCYnYKPTr0LvD89Jqk2Or5ogxz0NUMfIjhh2lIUX/LyX9B4oIg=="],
 

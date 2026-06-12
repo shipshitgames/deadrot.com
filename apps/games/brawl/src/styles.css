@@ -1,0 +1,360 @@
+* {
+  box-sizing: border-box;
+  letter-spacing: 0;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #07080b;
+  color: #f0e6d6;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+a {
+  font: inherit;
+}
+
+.brawl-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 320px;
+  background: #07080b;
+}
+
+.brawl-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+.brawl-hud {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  left: 14px;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 108px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  pointer-events: none;
+}
+
+.fighter-meter {
+  min-width: 0;
+  border: 1px solid rgba(240, 230, 214, 0.28);
+  border-radius: 8px;
+  background: rgba(7, 8, 11, 0.76);
+  padding: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.fighter-meter--right {
+  text-align: right;
+}
+
+.fighter-meter__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.fighter-meter--right .fighter-meter__meta {
+  flex-direction: row-reverse;
+}
+
+.fighter-meter__meta strong,
+.fighter-meter__meta span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fighter-meter__meta span {
+  color: #8bdc1f;
+}
+
+.health-track {
+  position: relative;
+  height: 14px;
+  margin-top: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(240, 230, 214, 0.2);
+  border-radius: 6px;
+  background: #201518;
+}
+
+.health-track i {
+  display: block;
+  height: 100%;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #ff2a18, #ff7a1a, #e8dcc8);
+  transition: width 120ms linear;
+}
+
+.round-clock {
+  display: grid;
+  place-items: center;
+  min-height: 70px;
+  border: 1px solid rgba(240, 230, 214, 0.3);
+  border-radius: 8px;
+  background: rgba(10, 12, 18, 0.82);
+  text-align: center;
+}
+
+.round-clock span {
+  color: #aeb6c2;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.round-clock strong {
+  color: #f0e6d6;
+  font-size: 30px;
+  line-height: 1;
+}
+
+.select-panel,
+.result-panel {
+  position: absolute;
+  z-index: 10;
+  top: 50%;
+  left: 50%;
+  width: min(920px, calc(100% - 28px));
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(240, 230, 214, 0.24);
+  border-radius: 8px;
+  background: rgba(9, 11, 16, 0.9);
+  padding: 22px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.52);
+}
+
+.result-panel {
+  width: min(520px, calc(100% - 28px));
+  text-align: center;
+}
+
+.select-copy {
+  display: grid;
+  gap: 8px;
+  max-width: 680px;
+}
+
+.kicker {
+  margin: 0;
+  color: #8bdc1f;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.select-copy h1,
+.result-panel h2 {
+  margin: 0;
+  color: #f0e6d6;
+  font-size: clamp(42px, 9vw, 82px);
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.select-copy p,
+.result-panel p {
+  margin: 0;
+  color: #aeb6c2;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.fighter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.fighter-card {
+  display: grid;
+  grid-template-rows: minmax(130px, 1fr) auto auto;
+  min-width: 0;
+  min-height: 224px;
+  cursor: pointer;
+  border: 1px solid rgba(240, 230, 214, 0.18);
+  border-radius: 8px;
+  background: #12151d;
+  color: #f0e6d6;
+  padding: 10px;
+  text-align: left;
+  transition:
+    border-color 120ms ease,
+    transform 120ms ease,
+    background 120ms ease;
+}
+
+.fighter-card:hover,
+.fighter-card.is-selected {
+  border-color: #ff7a1a;
+  background: #1b1c22;
+  transform: translateY(-2px);
+}
+
+.fighter-card__sprite {
+  align-self: end;
+  justify-self: center;
+  display: block;
+  width: min(100%, 142px);
+  height: 130px;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  background-size: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 16px 12px rgba(0, 0, 0, 0.55));
+}
+
+.fighter-card span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.fighter-card small {
+  color: #aeb6c2;
+  font-size: 12px;
+}
+
+.select-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.primary-action,
+.ghost-action,
+.touch-controls button {
+  min-height: 42px;
+  cursor: pointer;
+  border: 1px solid rgba(240, 230, 214, 0.22);
+  border-radius: 8px;
+  color: #f0e6d6;
+  padding: 0 16px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.primary-action {
+  background: #c1121f;
+  font-weight: 900;
+}
+
+.ghost-action {
+  display: inline-grid;
+  place-items: center;
+  background: #171a22;
+}
+
+.touch-controls {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  left: 14px;
+  z-index: 6;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  min-inline-size: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  pointer-events: none;
+}
+
+.touch-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.touch-controls button {
+  min-width: 74px;
+  background: rgba(10, 12, 18, 0.78);
+  font-size: 12px;
+  font-weight: 800;
+  touch-action: none;
+}
+
+.touch-controls button:active {
+  background: #ff7a1a;
+  color: #07080b;
+}
+
+@media (max-width: 760px) {
+  .brawl-hud {
+    grid-template-columns: 1fr 72px 1fr;
+    gap: 6px;
+  }
+
+  .round-clock {
+    min-height: 58px;
+  }
+
+  .round-clock strong {
+    font-size: 24px;
+  }
+
+  .fighter-meter {
+    padding: 8px;
+  }
+
+  .fighter-meter__meta {
+    display: grid;
+    gap: 3px;
+    font-size: 10px;
+  }
+
+  .fighter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: 45vh;
+    overflow: auto;
+  }
+
+  .fighter-card {
+    min-height: 178px;
+    grid-template-rows: 94px auto auto;
+  }
+
+  .fighter-card__sprite {
+    height: 94px;
+  }
+
+  .select-panel {
+    padding: 16px;
+  }
+
+  .touch-controls {
+    align-items: end;
+  }
+
+  .touch-cluster {
+    max-width: 48%;
+  }
+
+  .touch-controls button {
+    min-width: 62px;
+    padding: 0 10px;
+  }
+}

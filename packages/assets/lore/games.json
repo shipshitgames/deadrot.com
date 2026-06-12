@@ -78,6 +78,32 @@
     "enemySlugs": ["trucebreaker"]
   },
   {
+    "slug": "brawl",
+    "title": "Brawl",
+    "tagline": "Pick a fighter. Let the front choose the rival. Settle the clash before the Scourge takes the field.",
+    "genre": "One-on-one battlefield fighter",
+    "factionSlug": "",
+    "factionName": "The Pact vs The Scourge",
+    "accent": "blood",
+    "overview": "Brawl turns the Warline front into character-scale violence: Pyre, Wardens, and Scourge champions dragged into one-on-one battlefield fights where a single duel can rally a contested lane.\n\nThe first playable version is a production-learning slice for fighting-game sprites and AI-assisted game building. It proves character select, rival assignment, readable hit timing, block pressure, KO, and rematch before the real fighting sprite sheets land.",
+    "features": [
+      {
+        "title": "Rival chosen by the front",
+        "desc": "Pick your fighter, then the game assigns the opposing champion so the duel feels like a Warline incident, not a menu mirror match."
+      },
+      {
+        "title": "Fighting sprite lab",
+        "desc": "The target asset pipeline covers idle, walk, jump, guard, light, heavy, special, hurt, knockdown, KO, and win reads."
+      },
+      {
+        "title": "Battlefield results",
+        "desc": "Wins and losses can bank into the shared war record and later report into Warline as contested-front pressure."
+      }
+    ],
+    "characterSlugs": ["pyre-duelist", "pyre-cauterizer", "warden-bastion", "warden-artillerist"],
+    "enemySlugs": ["render", "trucebreaker"]
+  },
+  {
     "slug": "starblight",
     "title": "Starblight",
     "tagline": "Burn the infection out of the sky before it falls into the war.",
