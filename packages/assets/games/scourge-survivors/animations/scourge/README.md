@@ -11,7 +11,7 @@ Frame layout:
 - Every action has `front`, `side`, and `back` view folders.
 - Every view has six frames: `frame-00.webp` through `frame-05.webp`.
 - Original generated sheets were moved out of the runtime package and archived
-  under `_archive/assets-cleanup-2026-06-11/packages/assets/games/scourge-survivors/animations/scourge/`.
+  under `packages/assets/_archive/assets-cleanup-2026-06-11/packages/assets/games/scourge-survivors/animations/scourge/`.
 
 Readability lanes:
 

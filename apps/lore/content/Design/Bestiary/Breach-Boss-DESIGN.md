@@ -1,6 +1,6 @@
 ---
 type: design-lock
-status: needs-master
+status: candidate-master
 subject: Breach-Boss
 subjectType: creature
 canon: Bestiary/Breach-Boss
@@ -19,17 +19,19 @@ Games adapt from this file; runtime frames do not define the Breach-Boss.
 
 ## Visual Thesis
 
-Boss-scale breach anatomy made into a war body: huge non-human mass, skull/bone
-plates, toxic chest heart, projectile vents, and heavy tendril inertia.
+Boss-scale breach anatomy made into a region-holding engine: a low, wide,
+artillery body grown around a shielded toxic breach heart, with anchor pylons,
+rib armor, projectile vents, and conduit tendrils.
 
 ## Silhouette Lock
 
-- Primary read: massive boss body grown around a breach heart.
-- Proportion: wider and taller than all rank-and-file Scourge.
-- Iconic shape signature: central toxic core framed by bone/skull plates and
-  shield-organ/projectile vent forms.
-- Forbidden shape drift: just a larger Ripper, clean demon lord, armored human,
-  symmetrical fantasy boss.
+- Primary read: living breach engine / artillery altar, not a melee bruiser.
+- Proportion: wider and heavier than all rank-and-file Scourge, with planted
+  anchor legs or pylons instead of runner legs.
+- Iconic shape signature: central toxic core framed by rib armor, shield organs,
+  barrage vents, and ground-locking limbs.
+- Forbidden shape drift: just a larger Ripper, clawed humanoid boss, clean demon
+  lord, armored human, symmetrical fantasy boss.
 
 ## Material And Color Lock
 
@@ -41,11 +43,12 @@ plates, toxic chest heart, projectile vents, and heavy tendril inertia.
 
 ## Locked Poses
 
-Status: missing. Do not treat current runtime animation frames as canon.
+Status: candidate master attached. Do not treat current runtime animation
+frames as canon until regenerated from this sheet.
+
+![Breach Boss breach-engine master turnaround](../../Assets/Art-Masters/Scourge/breach-boss/breach-boss-breach-engine-master-turnaround.png)
 
 ![Breach Boss runtime placeholder](../../Assets/Art-Masters/Scourge/breach-boss/breach-boss-runtime-placeholder.webp)
-
-![Breach Boss breach-heart reference](../../Assets/Art-Masters/Scourge/breach-boss/breach-boss-breachheart-reference.png)
 
 - Idle front:
 - Idle side:
@@ -54,8 +57,9 @@ Status: missing. Do not treat current runtime animation frames as canon.
 
 ## Art Master Attachments
 
-- Runtime placeholder only: `../../Assets/Art-Masters/Scourge/breach-boss/breach-boss-runtime-placeholder.webp`
-- Breach-heart style reference: `../../Assets/Art-Masters/Scourge/breach-boss/breach-boss-breachheart-reference.png`
+- Candidate master: `../../Assets/Art-Masters/Scourge/breach-boss/breach-boss-breach-engine-master-turnaround.png`
+- Generated source: `packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/breach-boss-breach-engine-master-turnaround.png`
+- Runtime placeholder: `../../Assets/Art-Masters/Scourge/breach-boss/breach-boss-runtime-placeholder.webp`
 
 ## Game Adaptations
 
@@ -66,7 +70,7 @@ Status: missing. Do not treat current runtime animation frames as canon.
 ## Validation Checklist
 
 - [ ] Three idle poses approved.
-- [ ] Boss scale and core/head read approved.
-- [ ] Source poses archived in `packages/assets/sources/generated`.
+- [x] Boss scale and core/head read approved.
+- [x] Source poses archived in `packages/assets/sources/generated`.
 - [ ] Runtime frames regenerated from approved pose lock.
 - [ ] No matte residue, stray pixels, or cropped limbs.

@@ -33,9 +33,9 @@ Small infected attack craft for [[Starblight]] formations.
 
 ## Art Master
 
-![Scourge Fighter runtime placeholder](../Assets/Art-Masters/Scourge/scourge-fighter/scourge-fighter-runtime-placeholder.webp)
+![Scourge Fighter master turnaround](../Assets/Art-Masters/Scourge/scourge-fighter/scourge-fighter-master-turnaround.png)
 
-- Status: needs art master; image above is a runtime placeholder only.
+- Status: candidate art master attached; runtime sprites still need regeneration.
 - Art master index: [[Design/Bestiary/Scourge-Foe-Art-Masters|Scourge Foe Art Masters]]
 
 ## Prompt Seed

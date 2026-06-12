@@ -1,6 +1,6 @@
 # Deadrot Monorepo - Repo Memory
 
-last_verified: 2026-06-10
+last_verified: 2026-06-12
 
 ## What this is
 The shipped Deadrot monorepo (Turborepo + Bun), GitHub
@@ -45,6 +45,8 @@ owned by the sibling `../shipshitgames` repo, not a Deadrot-owned package.
 
 Workflow expectations for agents are documented in
 `.agents/memory/workflow.md`.
+Master asset layout and sprite atlas conventions are documented in
+`.agents/memory/masters-and-sprite-atlases.md`.
 
 Studio tooling that builds/generates those assets lives in the sibling repo:
 
@@ -91,6 +93,19 @@ game, domain, faction, and name, for example:
 Do not leave permanent generated-image history in temporary cache folders such
 as `~/.codex/generated_images/`; preserve originals under
 `packages/assets/sources/generated/`.
+
+Non-runtime master assets also belong under `packages/assets`, not in the lore
+vault. Use `packages/assets/masters/<type>/<domain>/<asset-id>/` for new master
+types (`art`, `sprites`, `models`, `audio`, `ui`, etc.). Lore Markdown may
+reference/embed those package assets, but `apps/lore/content` should not become
+a second asset store. Existing `apps/lore/content/Assets/Art-Masters` files are
+legacy/migration debt until they are deliberately moved with links preserved.
+
+Sprite runtime should move toward atlas + JSON metadata packs. Source sheets may
+be `1xN` for single-view strips or `DxN` grids for directional animation; for
+Scourge Survivors billboard enemies, use `3xN` source sheets (`front`, `side`,
+`back` rows; frames as columns). Runtime systems should resolve sprites by
+manifest id and metadata, not by hardcoded grid math.
 
 ## Package Publishing Rule
 Do not publish Deadrot-specific `@deadrot/*` aliases/packages by default. While

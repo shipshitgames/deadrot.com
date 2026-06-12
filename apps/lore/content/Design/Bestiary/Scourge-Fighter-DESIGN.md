@@ -1,6 +1,6 @@
 ---
 type: design-lock
-status: needs-master
+status: candidate-master
 subject: Scourge-Fighter
 subjectType: creature
 canon: Bestiary/Scourge-Fighter
@@ -38,7 +38,10 @@ clean enough to read at arcade speed but still wet, chitinous, and hostile.
 
 ## Locked Poses
 
-Status: missing. Runtime preview and winged sheets below are placeholders only.
+Status: candidate master attached. Runtime preview and winged sheets below are
+placeholders only until regenerated from this sheet.
+
+![Scourge Fighter master turnaround](../../Assets/Art-Masters/Scourge/scourge-fighter/scourge-fighter-master-turnaround.png)
 
 ![Scourge Fighter runtime placeholder](../../Assets/Art-Masters/Scourge/scourge-fighter/scourge-fighter-runtime-placeholder.webp)
 
@@ -49,7 +52,9 @@ Status: missing. Runtime preview and winged sheets below are placeholders only.
 
 ## Art Master Attachments
 
-- Runtime placeholder only: `../../Assets/Art-Masters/Scourge/scourge-fighter/scourge-fighter-runtime-placeholder.webp`
+- Candidate master: `../../Assets/Art-Masters/Scourge/scourge-fighter/scourge-fighter-master-turnaround.png`
+- Generated source: `packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/scourge-fighter-master-turnaround.png`
+- Runtime placeholder: `../../Assets/Art-Masters/Scourge/scourge-fighter/scourge-fighter-runtime-placeholder.webp`
 - Winged Scourge generated sheet references: `../../Assets/Art-Masters/Scourge/scourge-fighter/winged-scourge-animation-sheets/`
 
 ## Game Adaptations
@@ -59,7 +64,7 @@ Status: missing. Runtime preview and winged sheets below are placeholders only.
 ## Validation Checklist
 
 - [ ] Small-craft silhouette approved.
-- [ ] Core/eye readable at runtime scale.
-- [ ] Source poses archived in `packages/assets/sources/generated`.
+- [x] Core/eye readable at runtime scale.
+- [x] Source poses archived in `packages/assets/sources/generated`.
 - [ ] Runtime frames regenerated from approved pose lock.
 - [ ] No matte residue, stray pixels, or cropped limbs.

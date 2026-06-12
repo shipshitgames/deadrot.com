@@ -1,6 +1,6 @@
 ---
 type: design-lock
-status: needs-master
+status: candidate-master
 subject: Graft-Breacher
 subjectType: creature
 canon: Bestiary/Graft-Breacher
@@ -39,9 +39,10 @@ machinery and the other side collapsing into wet tendril mass.
 
 ## Locked Poses
 
-Status: missing. Runtime preview below is placeholder only.
+Status: candidate master attached. Runtime art should be regenerated from this
+sheet.
 
-![Graft Breacher runtime placeholder](../../Assets/Art-Masters/Scourge/graft-breacher/graft-breacher-runtime-placeholder.webp)
+![Graft Breacher master turnaround](../../Assets/Art-Masters/Scourge/graft-breacher/graft-breacher-master-turnaround.png)
 
 - Idle front:
 - Idle side:
@@ -50,7 +51,8 @@ Status: missing. Runtime preview below is placeholder only.
 
 ## Art Master Attachments
 
-- Runtime placeholder only: `../../Assets/Art-Masters/Scourge/graft-breacher/graft-breacher-runtime-placeholder.webp`
+- Candidate master: `../../Assets/Art-Masters/Scourge/graft-breacher/graft-breacher-master-turnaround.png`
+- Generated source: `packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/graft-breacher-master-turnaround.png`
 
 ## Game Adaptations
 
@@ -61,7 +63,7 @@ Status: missing. Runtime preview below is placeholder only.
 ## Validation Checklist
 
 - [ ] Three idle poses approved.
-- [ ] Demolition claw and soft parasite back readable.
-- [ ] Source poses archived in `packages/assets/sources/generated`.
+- [x] Demolition claw and soft parasite back readable.
+- [x] Source poses archived in `packages/assets/sources/generated`.
 - [ ] Runtime frames regenerated from approved pose lock.
 - [ ] No matte residue, stray pixels, or cropped limbs.

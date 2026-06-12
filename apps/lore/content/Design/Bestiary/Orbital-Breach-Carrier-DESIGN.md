@@ -1,6 +1,6 @@
 ---
 type: design-lock
-status: needs-master
+status: candidate-master
 subject: Orbital-Breach-Carrier
 subjectType: creature
 canon: Bestiary/Orbital-Breach-Carrier
@@ -39,7 +39,10 @@ engine tissue.
 
 ## Locked Poses
 
-Status: missing. Runtime preview below is placeholder only.
+Status: candidate master attached. Runtime preview below is placeholder only
+until regenerated from this sheet.
+
+![Orbital Breach Carrier master turnaround](../../Assets/Art-Masters/Scourge/orbital-breach-carrier/orbital-breach-carrier-master-turnaround.png)
 
 ![Orbital Breach Carrier runtime placeholder](../../Assets/Art-Masters/Scourge/orbital-breach-carrier/orbital-breach-carrier-runtime-placeholder.webp)
 
@@ -50,7 +53,9 @@ Status: missing. Runtime preview below is placeholder only.
 
 ## Art Master Attachments
 
-- Runtime placeholder only: `../../Assets/Art-Masters/Scourge/orbital-breach-carrier/orbital-breach-carrier-runtime-placeholder.webp`
+- Candidate master: `../../Assets/Art-Masters/Scourge/orbital-breach-carrier/orbital-breach-carrier-master-turnaround.png`
+- Generated source: `packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/orbital-breach-carrier-master-turnaround.png`
+- Runtime placeholder: `../../Assets/Art-Masters/Scourge/orbital-breach-carrier/orbital-breach-carrier-runtime-placeholder.webp`
 
 ## Game Adaptations
 
@@ -59,7 +64,7 @@ Status: missing. Runtime preview below is placeholder only.
 ## Validation Checklist
 
 - [ ] Boss silhouette approved.
-- [ ] Breach heart readable as weakpoint.
-- [ ] Source poses archived in `packages/assets/sources/generated`.
+- [x] Breach heart readable as weakpoint.
+- [x] Source poses archived in `packages/assets/sources/generated`.
 - [ ] Runtime frames regenerated from approved pose lock.
 - [ ] No matte residue, stray pixels, or cropped limbs.

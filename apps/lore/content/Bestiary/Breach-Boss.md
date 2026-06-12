@@ -33,9 +33,9 @@ Monstrous Scourge expression grown around a breach heart.
 
 ## Art Master
 
-![Breach Boss runtime placeholder](../Assets/Art-Masters/Scourge/breach-boss/breach-boss-runtime-placeholder.webp)
+![Breach Boss breach-engine master turnaround](../Assets/Art-Masters/Scourge/breach-boss/breach-boss-breach-engine-master-turnaround.png)
 
-- Status: needs art master; current images are runtime/style references only.
+- Status: candidate art master attached; runtime sprites still need regeneration.
 - Art master index: [[Design/Bestiary/Scourge-Foe-Art-Masters|Scourge Foe Art Masters]]
 
 ## Prompt Seed

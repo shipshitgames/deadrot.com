@@ -1,6 +1,6 @@
 ---
 type: design-lock
-status: needs-master
+status: runtime-derived-master-candidate
 subject: Swarm-Spitter
 subjectType: creature
 canon: Bestiary/Swarm-Spitter
@@ -19,14 +19,15 @@ Games adapt from this file; runtime frames do not define the Spitter.
 
 ## Visual Thesis
 
-Thin ranged Scourge pressure unit with a readable toxic firing organ: throat sac,
-chest sac, or fused arm-lance grown through a consumed host.
+Thin ranged Scourge pressure unit with an unmistakable toxic-green firing read:
+throat sac, chest sac, or fused arm-lance grown through a consumed host.
 
 ## Silhouette Lock
 
 - Primary read: hunched ranged creature keeping distance.
 - Proportion: thinner and more elastic than [[Swarm-Ripper]].
-- Iconic shape signature: swollen toxic firing sac or bio-industrial arm-lance.
+- Iconic shape signature: swollen bright-green toxic firing sac or
+  bio-industrial arm-lance, more visibly green than melee Scourge foes.
 - Forbidden shape drift: generic wizard, clean insect, sci-fi gunner, smooth
   tentacle monster without host corruption.
 
@@ -34,12 +35,21 @@ chest sac, or fused arm-lance grown through a consumed host.
 
 - Body materials: ochre infected flesh, black chitin, sinew, embedded rust tech.
 - Accent materials: sac membrane, bone teeth/claws, ruptured armor scraps.
-- Emissive color: chartreuse toxic glow in firing organ only.
+- Emissive color: strong chartreuse toxic glow in firing organ, throat/chest
+  sac, and projectile nodes. This is the ranged-role read; keep it greener than
+  [[Swarm-Ripper]].
 - Forbidden colors: neon body paint, magenta/cyan, clean tech glow.
 
 ## Locked Poses
 
-Status: missing. Do not treat current runtime animation frames as canon.
+Status: runtime visual lock attached. Current Scourge Survivors sprites have
+the better role read: greener, simpler, and more clearly ranged than the
+generated master. Future high-res masters must match this silhouette/color lane
+before they replace it.
+
+![Swarm Spitter runtime visual lock](../../Assets/Art-Masters/Scourge/swarm-spitter/swarm-spitter-runtime-visual-lock.png)
+
+![Swarm Spitter master turnaround](../../Assets/Art-Masters/Scourge/swarm-spitter/swarm-spitter-master-turnaround.png)
 
 ![Swarm Spitter runtime placeholder](../../Assets/Art-Masters/Scourge/swarm-spitter/swarm-spitter-runtime-placeholder.webp)
 
@@ -50,7 +60,19 @@ Status: missing. Do not treat current runtime animation frames as canon.
 
 ## Art Master Attachments
 
-- Runtime placeholder only: `../../Assets/Art-Masters/Scourge/swarm-spitter/swarm-spitter-runtime-placeholder.webp`
+- Runtime visual lock: `../../Assets/Art-Masters/Scourge/swarm-spitter/swarm-spitter-runtime-visual-lock.png`
+- Runtime source sprites:
+  `packages/assets/games/scourge-survivors/enemies/scourge/spitter-host/{front,side,back}.webp`
+- Runtime-derived high-res master candidate: `../../Assets/Art-Masters/Scourge/swarm-spitter/swarm-spitter-master-turnaround.png`
+- Generated source: `packages/assets/sources/generated/2026-06-12/lore/bestiary/scourge-foes/swarm-spitter-runtime-derived-master-turnaround.png`
+- Legacy runtime placeholder: `../../Assets/Art-Masters/Scourge/swarm-spitter/swarm-spitter-runtime-placeholder.webp`
+
+## Cleanup Notes
+
+- Keep the current game sprite's acid-green role read.
+- Reduce the high-res candidate's gold/fantasy polish during cleanup.
+- Preserve the cannon-arm silhouette and squat ranged-host posture.
+- Do not add melee blade mass.
 
 ## Game Adaptations
 
@@ -60,8 +82,10 @@ Status: missing. Do not treat current runtime animation frames as canon.
 
 ## Validation Checklist
 
-- [ ] Three idle poses approved.
-- [ ] Firing organ readable in silhouette.
-- [ ] Source poses archived in `packages/assets/sources/generated`.
-- [ ] Runtime frames regenerated from approved pose lock.
+- [x] Runtime front/side/back visual lock attached.
+- [x] Firing organ readable in silhouette.
+- [x] Source poses archived in `packages/assets/sources/generated`.
+- [x] High-res master regenerated from runtime visual lock.
+- [ ] High-res master cleaned to match runtime palette and silhouette.
+- [ ] Runtime animation frames regenerated from approved pose lock.
 - [ ] No matte residue, stray pixels, or cropped limbs.

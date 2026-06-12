@@ -60,9 +60,9 @@ walks up and *shears it apart*.
 
 ## Art Master
 
-![Graft Breacher runtime placeholder](../Assets/Art-Masters/Scourge/graft-breacher/graft-breacher-runtime-placeholder.webp)
+![Graft Breacher master turnaround](../Assets/Art-Masters/Scourge/graft-breacher/graft-breacher-master-turnaround.png)
 
-- Status: needs art master; image above is a runtime placeholder only.
+- Status: candidate art master attached; runtime sprites still need regeneration.
 - Art master index: [[Design/Bestiary/Scourge-Foe-Art-Masters|Scourge Foe Art Masters]]
 
 ## Prompt Seed

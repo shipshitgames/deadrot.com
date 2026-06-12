@@ -1,6 +1,6 @@
 # Repo Boundary
 
-last_verified: 2026-06-09
+last_verified: 2026-06-12
 
 `deadrotcom` is the shipped Deadrot monorepo.
 
@@ -14,6 +14,8 @@ last_verified: 2026-06-09
 - Canonical shared assets in `packages/assets`.
 - Runtime audio, soundtrack, sprites, textures, fonts, UI art, and preserved
   generated source history.
+- Approved art/sprite/model/audio/UI masters and reference locks under
+  `packages/assets/masters`.
 
 ## Does Not Own
 
@@ -31,6 +33,12 @@ Those belong in the sibling `../shipshitgames` repo.
 If it ships to players or is Deadrot-specific runtime data/assets, it belongs
 here. If it builds/generates/edits assets as tooling, it belongs in
 `../shipshitgames`.
+
+Within this repo, asset binaries belong in `packages/assets`, including
+non-runtime masters. Lore pages in `apps/lore/content` may reference/embed those
+package assets, but the lore vault should not become a second asset store.
+Existing lore-local asset folders such as `apps/lore/content/Assets/Art-Masters`
+are legacy/migration debt, not the convention for new assets.
 
 `packages/assetgen` stays in `../shipshitgames` because it is the studio CLI
 product to ship and dogfood. `@shipshitgames/assets` stays in this repo because

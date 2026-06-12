@@ -21,7 +21,7 @@ Before moving assets, read:
 - `.agents/memory/repo-boundary.md`
 - `AGENTS.md`
 - `packages/assets/README.md`
-- `packages/assets/_archive/README.md` when working inside `_archive`
+- `packages/assets/_archive/README.md` when working inside `packages/assets/_archive`
 
 Use `game-asset-pipeline` for runtime asset registration rules.
 Use `deadrot-image-generation` when creating new image assets with Codex.

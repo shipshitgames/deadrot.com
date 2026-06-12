@@ -58,6 +58,10 @@ function hasAllowedGeneratedFileName(name) {
 }
 
 function checkTrackedBoundaries() {
+  if (existsSync(resolve(repoRoot, "_archive"))) {
+    fail("root _archive exists; use packages/assets/_archive for asset review custody");
+  }
+
   for (const path of trackedAssetFiles()) {
     const name = basename(path).toLowerCase();
 

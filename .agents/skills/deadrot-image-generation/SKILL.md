@@ -46,12 +46,17 @@ Do not leave generated assets only under `$CODEX_HOME/generated_images`.
    bun run --cwd packages/assets assets:sync-codex-images
    ```
 
-4. Promote useful outputs from `_archive/raw-generator-cache/...` into semantic
-   `sources/generated/<yyyy-mm-dd>/...` paths.
+4. Promote useful outputs from
+   `packages/assets/_archive/raw-generator-cache/...` into semantic
+   `packages/assets/sources/generated/<yyyy-mm-dd>/...` paths.
 5. Link promoted candidates from the relevant lore `*-DESIGN.md`.
 6. Runtime promotion is a separate step. Do not write generated raw images
    straight into `games/<game>/...` without cleanup, format conversion, manifest
    updates, and validation.
+   - For pixel-art sprites, a high-res master is not enough. It must match the
+     runtime visual lock, include strict front/true-side/back views, and survive
+     target-size cleanup before runtime promotion.
+   - Treat 3/4-only sheets as concept references, not production masters.
 7. Run:
 
    ```bash

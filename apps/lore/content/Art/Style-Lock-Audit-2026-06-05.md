@@ -90,8 +90,8 @@ Superseded asset families:
 - `Art/style-bakeoff/d2-ripper-medium.png`
 
 After the 2026-06-11 asset cleanup, generated-output history no longer lives
-inside the runtime package. Review-only source material belongs in `_archive/`
-or outside git.
+inside runtime paths. Review-only source material belongs in
+`packages/assets/_archive/` or outside git.
 
 ## First-Pass Assets Added
 

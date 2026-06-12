@@ -12,7 +12,7 @@ the provenance trail before assets are promoted into a game manifest.
 Entries before the asset package cleanup may mention historical app-local paths
 such as `apps/web/public/*` or `games/scourge-survivors/src/assets/*`. Current
 runtime art lives under `packages/assets`, and source-like generated material is
-reviewed outside that runtime package under `_archive/`.
+reviewed outside runtime paths under `packages/assets/_archive/`.
 
 ## Ledger Template
 

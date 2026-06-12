@@ -9,7 +9,7 @@
 - Plan: Codex local cleanup.
 - Kind: alpha/matte cleanup of existing generated 2D enemy sprite sheets.
 - Source sheets: archived under
-  `_archive/assets-cleanup-2026-06-11/packages/assets/games/scourge-survivors/animations/scourge/*/*/source/sheet.png`.
+  `packages/assets/_archive/assets-cleanup-2026-06-11/packages/assets/games/scourge-survivors/animations/scourge/*/*/source/sheet.png`.
 - Final assets: `enemies/scourge/**/{front,side,back}.webp` and `animations/scourge/**/frame-*.webp`.
 - Post-processing: split preserved 6-frame by 3-view sheets, keyed magenta/green matte pixels and white-pink grid fringe to hard alpha, cleared the outer alpha border, resized with nearest-neighbor, and encoded lossless WebP with exact alpha.
 - Notes: No new raster art was generated. This refresh removes visible magenta/purple matte rectangles and keeps the runtime sprites aligned with the existing animation source sheets.
@@ -27,7 +27,7 @@
 - Source output:
   `~/.codex/generated_images/019ea1f0-1ea2-7cf3-b0b6-453bfa0ba6cb/ig_080f82b0f8c0b304016a256fcf02e081919b431d468e6996b8.png`.
 - Preserved source:
-  `_archive/assets-cleanup-2026-06-11/packages/assets/sources/generated/scourge-survivors/gibs/2026-06-07/gpt-image-2-gib-source-sheet.png`.
+  `packages/assets/_archive/assets-cleanup-2026-06-11/packages/assets/sources/generated/scourge-survivors/gibs/2026-06-07/gpt-image-2-gib-source-sheet.png`.
 - Source note: generated as a 3x2 chroma-key source sheet using the locked
   Scourge visual grammar: blood/crimson meat, cracked bone, black chitin,
   claw-limb, acid sac, and bruised wing membrane.
@@ -198,7 +198,7 @@
   - `~/.codex/generated_images/019e9c96-23f7-7883-a5d9-fa73fe4ca167/ig_0b32ccf368593783016a2409e1f880819180319ad68be9d57a.png`
   - `~/.codex/generated_images/019e9c96-23f7-7883-a5d9-fa73fe4ca167/ig_0b32ccf368593783016a240a39531881919a7bca0fb13e96ec.png`
 - Workspace source sheets: archived under
-  `_archive/assets-cleanup-2026-06-11/packages/assets/games/scourge-survivors/animations/scourge/winged-host/{fly,attack,death}/source/sheet.png`.
+  `packages/assets/_archive/assets-cleanup-2026-06-11/packages/assets/games/scourge-survivors/animations/scourge/winged-host/{fly,attack,death}/source/sheet.png`.
 - Final assets: `enemies/scourge/winged-host/{front,side,back}.webp`, `animations/scourge/winged-host/**/frame-*.webp`.
 - Post-processing: split 3x6 sheets, square-padded each cell, keyed only the green background, hardened alpha, removed visible green key pixels, filled transparent RGB from neighboring foreground pixels, and encoded lossless WebP with `cwebp -lossless -exact`.
 - Runtime note: winged-host frames stay as 128x128 transparent square plates so animation anchors, billboard scale, and wing-motion negative space remain stable. Bruised purple is retained as the flyer wing readability lane; purple, white, and green are not retained as rectangular matte/borders.
