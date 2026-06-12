@@ -1,5 +1,5 @@
 import { Button, GlobalGameSettingsPanel, VictoryScreen } from "@shipshitgames/ui";
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import type { ScoreEntry, ShopState } from "../../game/storage";
 import type { HUDState } from "../../game/types";
 import { PixelIcon } from "../PixelIcon";
@@ -39,9 +39,11 @@ export function GameOverScreen({
   const { status, score, kills, headshots, time, outcome, survivors } = state;
 
   const [gameOverPanel, setGameOverPanel] = useState<"summary" | "shop">("summary");
-  useEffect(() => {
-    if (status !== "gameover") setGameOverPanel("summary");
-  }, [status]);
+  const prevStatusRef = useRef(status);
+  if (status !== prevStatusRef.current) {
+    prevStatusRef.current = status;
+    if (status !== "gameover" && gameOverPanel !== "summary") setGameOverPanel("summary");
+  }
 
   const currentRun: ScoreEntry | null =
     status === "gameover" && outcome
