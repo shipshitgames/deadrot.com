@@ -1,19 +1,30 @@
 import * as THREE from "three";
-import { PROJECTILE_HIT_RADIUS, PROJECTILE_TTL, WALL_THICKNESS } from "../constants";
+import { PROJECTILE_TTL, WALL_THICKNESS } from "../constants";
 import type { GameContext } from "../context";
 import type { Projectile } from "../data/internalTypes";
 import { PROJECTILE_SPRITE_TEXTURES } from "../spriteAssets";
 import type { GameSystems } from "../systems";
 import type { Enemy, EnemyShot } from "./Enemy";
+import { PlayerTargetCombat, type ProjectileCombat } from "./ProjectileCombat";
 
-/** Enemy / boss projectiles: spawn, fly, hit the player or get blocked. */
+/** Shape the integrator stuffs into ProjectileView.meta; resolvers narrow to this. */
+export interface ProjectileMeta {
+  owner: Enemy | null;
+  fromBoss: boolean;
+}
+
+/** Enemy / boss projectiles: spawn, fly, expire or get blocked; hits resolve through `combat`. */
 export class ProjectilesSystem {
   projectiles: Projectile[] = [];
+  /** Hit-resolution seam — swap to retarget projectiles; defaults to damaging the player. */
+  combat: ProjectileCombat;
 
   constructor(
     private ctx: GameContext,
     private sys: GameSystems,
-  ) {}
+  ) {
+    this.combat = new PlayerTargetCombat(this.ctx, this.sys);
+  }
 
   spawnProjectile(shot: EnemyShot, owner: Enemy | null = null) {
     const color = shot.fromBoss ? 0xff2d6a : 0xff8a3c;
@@ -41,6 +52,11 @@ export class ProjectilesSystem {
       baseScale,
       spin: (Math.random() < 0.5 ? -1 : 1) * (shot.fromBoss ? 3.8 : 5.5),
       owner,
+      view: {
+        position: mesh.position, // live alias — flight is visible to the resolver without copying
+        damage: shot.damage,
+        meta: { owner, fromBoss: shot.fromBoss } satisfies ProjectileMeta,
+      },
     });
   }
 
@@ -52,7 +68,6 @@ export class ProjectilesSystem {
   }
 
   updateProjectiles(delta: number) {
-    const player = this.ctx.body.position;
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
       const pr = this.projectiles[i];
       pr.age += delta;
@@ -62,10 +77,9 @@ export class ProjectilesSystem {
       (pr.mesh.material as THREE.SpriteMaterial).rotation += delta * pr.spin;
       const p = pr.mesh.position;
 
-      // hit the player?
-      if (p.distanceTo(player) < PROJECTILE_HIT_RADIUS) {
-        this.removeProjectile(i);
-        this.sys.player.damagePlayer(pr.damage);
+      // hit something? (the resolver owns the hit test and its side effects)
+      if (this.combat.resolveHit(pr.view)) {
+        this.removeProjectileObject(pr);
         continue;
       }
       // expired / out of bounds / into an obstacle?
@@ -92,9 +106,15 @@ export class ProjectilesSystem {
 
   removeProjectile(i: number) {
     const pr = this.projectiles[i];
+    if (!pr) return;
     this.ctx.scene.remove(pr.mesh);
     (pr.mesh.material as THREE.Material).dispose();
     this.projectiles.splice(i, 1);
+  }
+
+  removeProjectileObject(projectile: Projectile) {
+    const i = this.projectiles.indexOf(projectile);
+    if (i !== -1) this.removeProjectile(i);
   }
 
   clearProjectiles() {

@@ -1,5 +1,5 @@
 import type { DeadrotSfx } from "@deadrot/game-kit/audio";
-import { InputLatch } from "@deadrot/game-kit/core";
+import { InputLatch, recordWarResult } from "@deadrot/game-kit/core";
 import { FlashOverlay, ParticleBursts, ScreenShake } from "@deadrot/game-kit/juice";
 import { audio } from "../audio";
 import { COLORS, CONSTANTS } from "../constants";
@@ -318,6 +318,7 @@ export class Game {
     if (this.respawnTimer <= 0) {
       if (this.lives <= 0) {
         this.mode = "gameover";
+        recordWarResult("rothulk", this.warResult("defeat"), Date.now());
         this.playSfx("defeat");
         this.hud.showBigToast("gameover");
       } else {
@@ -744,6 +745,7 @@ export class Game {
     }
 
     this.mode = "won";
+    recordWarResult("rothulk", this.warResult("victory"), Date.now());
     this.playSfx("victory");
     this.renderer.setExitArmed(false);
     this.hud.setProgress(1);
@@ -806,6 +808,15 @@ export class Game {
     if (this.sfxThisFrame >= CONSTANTS.SFX_FRAME_CAP) return;
     this.sfxThisFrame += 1;
     audio.sfx(name, pitch === undefined ? undefined : { pitch });
+  }
+
+  private warResult(outcome: "victory" | "defeat") {
+    return {
+      outcome,
+      score: Math.max(0, Math.round(this.embers + this.lives * 50 + this.hp * 2)),
+      timeMs: Math.round(this.elapsed * 1000),
+      wave: this.levelIndex + 1,
+    };
   }
 
   private syncDynamicMeshes() {

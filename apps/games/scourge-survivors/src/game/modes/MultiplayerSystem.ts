@@ -139,6 +139,8 @@ export class MultiplayerSystem {
         this.ctx.stanceHeight = PLAYER_HEIGHT;
         this.ctx.wantsSprint = false;
         this.ctx.wantsCrouch = false;
+        this.ctx.wasSprinting = false;
+        this.ctx.sprintStartBoostTimer = 0;
         this.ctx.rig.placeAt(msg.respawn.x, PLAYER_HEIGHT, msg.respawn.z, 0, -1);
         this.ctx.velocity.set(0, 0, 0);
         this.sys.hud.showToast(`DROPPED BY ${msg.byName}`);

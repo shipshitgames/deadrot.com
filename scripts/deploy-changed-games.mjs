@@ -1,7 +1,7 @@
 #!/usr/bin/env node
+import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 
 const repoRoot = path.resolve(new URL("..", import.meta.url).pathname);
 const gamesRoot = path.join(repoRoot, "apps/games");
@@ -59,7 +59,10 @@ if (dryRun) process.exit(0);
 
 for (const slug of gamesToDeploy) {
   const cwd = path.join(gamesRoot, slug);
-  if (!noBuild) run("bun", ["run", "build"], cwd);
+  if (!noBuild) {
+    run("bun", ["run", "build"], cwd);
+    run("node", ["scripts/sentry-upload-vite-sourcemaps.mjs", `--app=${slug}`], repoRoot);
+  }
   run("bunx", ["vercel", "deploy", ...(preview ? [] : ["--prod"]), "--yes", "--cwd", cwd], repoRoot);
 }
 

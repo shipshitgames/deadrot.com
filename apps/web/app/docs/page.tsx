@@ -5,6 +5,7 @@ import { StatusBadge } from "@/components/game/game-card";
 import { Backdrop } from "@/components/site/atmosphere";
 import { Eyebrow } from "@/components/site/eyebrow";
 import { Button } from "@/components/ui/button";
+import { assetUrl } from "@/lib/assets";
 import {
   accentVars,
   bestiary,
@@ -45,7 +46,7 @@ export default function DocsPage() {
         <Backdrop />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/hero.webp"
+          src={assetUrl("/universe/hero.webp")}
           alt=""
           aria-hidden
           className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20"

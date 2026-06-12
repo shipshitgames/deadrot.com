@@ -538,22 +538,36 @@
       "id": "audio-breach-collapse",
       "kind": "audio",
       "name": "Breach Collapse SFX",
-      "path": "shared/audio/breach-collapse.ogg",
-      "note": "Low-frequency metallic implosion as a breach seals. DOOM-dark, no chime."
+      "path": "shared/audio/breach-collapse.webm",
+      "note": "ElevenLabs SFX metallic implosion as a breach seals. DOOM-dark, no chime."
     },
     {
       "id": "audio-choir-whisper",
       "kind": "audio",
       "name": "Choir Whisper Ambience",
-      "path": "shared/audio/choir-whisper.ogg",
-      "note": "Eerie layered biotech hum — Scourge ambient presence."
+      "path": "shared/audio/choir-whisper.webm",
+      "note": "ElevenLabs loopable biotech whisper ambience — Scourge ambient presence."
     },
     {
       "id": "audio-hellfire-pulse",
       "kind": "audio",
       "name": "Hellfire Pulse Loop",
-      "path": "shared/audio/hellfire-pulse.ogg",
-      "note": "Burning ember crackle + rhythmic pulse — Pyre identity audio."
+      "path": "shared/audio/hellfire-pulse.webm",
+      "note": "ElevenLabs flame whoomp + ember crackle — Pyre identity audio."
+    },
+    {
+      "id": "audio-sfx-hit",
+      "kind": "audio",
+      "name": "Hit Impact SFX",
+      "path": "shared/audio/sfx/hit.webm",
+      "note": "ElevenLabs one-shot hit impact promoted over the procedural oscillator cue."
+    },
+    {
+      "id": "audio-victory-breach-sealed",
+      "kind": "audio",
+      "name": "Victory: Breach Sealed",
+      "path": "shared/audio/victory-breach-sealed.webm",
+      "note": "All-games victory screen music. Runtime WebM/Opus transcode of the user-provided Suno export \"Verdict Thunder\"."
     }
   ]
 }

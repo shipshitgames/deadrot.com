@@ -19,6 +19,9 @@
     "npm": ">=10.9.2",
     "node": ">=22"
   },
+  "bin": {
+    "quartz": "./quartz/bootstrap-cli.mjs"
+  },
   "dependencies": {
     "@clack/prompts": "^0.11.0",
     "@floating-ui/dom": "^1.7.4",

@@ -238,7 +238,7 @@ assetgen:
     antialias: false              # hard 1px edges
     hardRemap: true               # SNAP to the fixed DOOM ramp (pixel art = limited palette)
     targetPalette: doom           # the colors: map in this frontmatter
-    palettePath: lore/Art/grade/doom.gpl
+    palettePath: packages/assets/tokens/palettes/doom.gpl
     outline: subtle-dark          # 1px darker outline so sprites pop off dark backgrounds
     preserveEmissive: true        # keep hellfire/toxic emitters hot through the remap
     blackPoint: "{tokens.void}"   # #0a0a0a — true near-black floor
@@ -250,13 +250,13 @@ assetgen:
   # The missing styleRef plumbing, as data. One locked image per game; codegen
   # emits these as STYLE_REF for providers to pass via image refs (downstream).
   referenceImages:
-    scourge-survivors: lore/Art/style-refs/scourge-survivors.webp
-    deadlane: lore/Art/style-refs/deadlane.webp
-    pactfall: lore/Art/style-refs/pactfall.webp
-    starblight: lore/Art/style-refs/starblight.webp
-    redline: lore/Art/style-refs/redline.webp
-    rothulk: lore/Art/style-refs/rothulk.webp
-    shared: lore/Art/style-refs/scourge-survivors.webp
+    scourge-survivors: packages/assets/sources/generated/lore-art-style-refs/2026-06-04/scourge-survivors.webp
+    deadlane: packages/assets/sources/generated/lore-art-style-refs/2026-06-04/deadlane.webp
+    pactfall: packages/assets/sources/generated/lore-art-style-refs/2026-06-04/pactfall.webp
+    starblight: packages/assets/sources/generated/lore-art-style-refs/2026-06-04/starblight.webp
+    redline: packages/assets/sources/generated/lore-art-style-refs/2026-06-04/redline.webp
+    rothulk: packages/assets/sources/generated/lore-art-style-refs/2026-06-04/rothulk.webp
+    shared: packages/assets/sources/generated/lore-art-style-refs/2026-06-04/scourge-survivors.webp
 
   # Provider settings. Defaults + per-provider overrides codegen bakes in.
   providers:

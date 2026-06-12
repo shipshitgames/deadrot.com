@@ -97,7 +97,7 @@ Desktop-browser web UI mockup.
 bash lore/Art/style-bakeoff/run.sh
 ```
 
-Then open `lore/Art/style-bakeoff/` and compare. Each filename is `<style>-<subject>.png`.
+Then compare the preserved outputs in `packages/assets/sources/generated/lore-art-style-bakeoff/2026-06-04/`. Each filename is `<style>-<subject>.png`.
 
 ## Judge, then lock
 

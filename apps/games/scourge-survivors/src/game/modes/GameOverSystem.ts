@@ -34,7 +34,8 @@ export class GameOverSystem {
       this.ctx.reserve = WEAPONS[STARTING_WEAPON].reserveCap;
       this.sys.weapon.applyWeaponModel(STARTING_WEAPON);
     } else if (this.ctx.survivors) {
-      this.sys.arena.buildArena(getMap(DEFAULT_MAP_ID));
+      // Replay stays on the breach site the player picked for this run (#276).
+      this.sys.arena.buildArena(getMap(this.sys.survivors.selectedMapId));
       this.sys.player.resetPlayer(this.sys.survivors.selectedStartingWeapon());
       this.sys.survivors.initSurvivorsRun();
     } else {

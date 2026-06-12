@@ -123,9 +123,11 @@ test.describe("survivors menu", () => {
       .getByRole("button", { name: /play a run/i })
       .click();
 
-    // The hub's primary action opens the operator loadout; the run launches
-    // from the loadout's own primary button.
+    // The hub's primary action opens the operator loadout; the loadout leads
+    // into the breach-site (map) select, and the run launches from there (#276).
     await expect(page.getByText("Operator Loadout")).toBeVisible();
+    await page.getByRole("button", { name: /choose breach site/i }).click();
+    await expect(page.locator(".ssg-section-heading", { hasText: "Breach Site" })).toBeVisible();
     await page.getByRole("button", { name: /play a run/i }).click();
 
     await expect(page.getByRole("button", { name: /click to lock/i })).toBeVisible();

@@ -21,6 +21,9 @@ export class EntitySystem {
   // The player champion's last lane-space move direction (x = strafe, y = +Z
   // forward). Abilities aim along this when there's no cursor to aim at.
   readonly playerFacing = new THREE.Vector2(0, 1);
+  private readonly playerMoveVel = new THREE.Vector2(0, 0);
+  private wasPlayerMoving = false;
+  private playerMoveStartBoostTimer = 0;
 
   // Gameplay events accumulated each tick; the Game consumes + clears them
   // once per displayed frame for juice and audio.
@@ -62,6 +65,9 @@ export class EntitySystem {
     this.scourgeRespawn = 0;
     this.championDown = { pyre: 0, warden: 0 };
     this.playerFacing.set(0, 1);
+    this.playerMoveVel.set(0, 0);
+    this.wasPlayerMoving = false;
+    this.playerMoveStartBoostTimer = 0;
     this.clearEvents();
 
     this.champion = this.spawn(makeChampion("pyre"));
@@ -160,6 +166,11 @@ export class EntitySystem {
         c.slowTimer = 0;
         c.mesh.visible = true;
         c.pos.copy(this.championSpawnPos(team));
+        if (team === "pyre") {
+          this.playerMoveVel.set(0, 0);
+          this.wasPlayerMoving = false;
+          this.playerMoveStartBoostTimer = 0;
+        }
       }
     });
   }
@@ -171,10 +182,11 @@ export class EntitySystem {
     if (!c.alive) return;
     const input = this.game.input;
     const speed = slowedSpeed(CONSTANTS.champion.moveSpeed, c.slowTimer, CONSTANTS.abilities.w.slowFactor);
+    const desired = new THREE.Vector2(0, 0);
+    let clickTarget: THREE.Vector3 | null = null;
 
     if (input.hasKeyboardMove) {
-      c.pos.x += input.move.x * speed * dt;
-      c.pos.z += input.move.y * speed * dt;
+      desired.set(input.move.x, input.move.y).multiplyScalar(speed);
       this.playerFacing.set(input.move.x, input.move.y).normalize();
     } else if (input.clickTarget) {
       const t = input.clickTarget;
@@ -184,13 +196,63 @@ export class EntitySystem {
         // Abilities aim along the move direction; record it before the step
         // mutates the position.
         this.playerFacing.set(t.x - c.pos.x, t.z - c.pos.z).normalize();
-        stepToward(c.pos, t.x, t.z, speed, dt);
+        desired.set(this.playerFacing.x, this.playerFacing.y).multiplyScalar(speed);
+        clickTarget = t;
       }
     }
+    this.applyPlayerVelocity(c.pos, desired, dt, clickTarget);
 
     // Don't let the player walk back onto its own base (that would wall the camera);
     // retreatZ keeps the base safely behind the follow-cam.
     clampToLane(c.pos, CONSTANTS.champion.retreatZ);
+  }
+
+  private applyPlayerVelocity(
+    pos: THREE.Vector3,
+    desired: THREE.Vector2,
+    dt: number,
+    clickTarget: THREE.Vector3 | null,
+  ) {
+    const moving = desired.lengthSq() > 0;
+    if (moving && !this.wasPlayerMoving) this.playerMoveStartBoostTimer = CONSTANTS.champion.moveStartBoostTime;
+    this.wasPlayerMoving = moving;
+
+    const damping = moving ? CONSTANTS.champion.moveDamping : CONSTANTS.champion.moveBrakeDamping;
+    this.playerMoveVel.multiplyScalar(Math.max(0, 1 - damping * dt));
+
+    if (moving) {
+      const boost =
+        this.playerMoveStartBoostTimer > 0
+          ? 1 +
+            CONSTANTS.champion.moveStartBoostMultiplier *
+              (this.playerMoveStartBoostTimer / CONSTANTS.champion.moveStartBoostTime)
+          : 1;
+      const maxStep = CONSTANTS.champion.moveAccel * boost * dt;
+      const delta = desired.clone().sub(this.playerMoveVel);
+      const dist = delta.length();
+      if (dist > maxStep && dist > 0) this.playerMoveVel.add(delta.multiplyScalar(maxStep / dist));
+      else this.playerMoveVel.copy(desired);
+    } else if (this.playerMoveVel.length() < CONSTANTS.champion.moveStopEpsilon) {
+      this.playerMoveVel.set(0, 0);
+    }
+    this.playerMoveStartBoostTimer = Math.max(0, this.playerMoveStartBoostTimer - dt);
+
+    const stepX = this.playerMoveVel.x * dt;
+    const stepZ = this.playerMoveVel.y * dt;
+    if (clickTarget) {
+      const toTargetX = clickTarget.x - pos.x;
+      const toTargetZ = clickTarget.z - pos.z;
+      const before = Math.hypot(toTargetX, toTargetZ);
+      if (before <= Math.hypot(stepX, stepZ) + 0.2) {
+        pos.x = clickTarget.x;
+        pos.z = clickTarget.z;
+        this.playerMoveVel.set(0, 0);
+        this.game.input.clickTarget = null;
+        return;
+      }
+    }
+    pos.x += stepX;
+    pos.z += stepZ;
   }
 
   // Simple lane AI for the Warden champion: chase the nearest Pyre unit to

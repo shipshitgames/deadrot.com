@@ -56,6 +56,14 @@ walks up and *shears it apart*.
 - Side silhouette shows the asymmetry clearly: heavy claw vs. tendril cluster.
 - Back view exposes the soft parasite mass — the player reward for flanking.
 - Scale: noticeably larger than [[Swarm-Ripper]]; slower and less massive than [[Breach-Boss]].
+- Visual lock: [[Design/Bestiary/Graft-Breacher-DESIGN|Graft Breacher Design Lock]].
+
+## Art Master
+
+![Graft Breacher master turnaround](/assets/lore/art-masters/scourge/graft-breacher/graft-breacher-master-turnaround.png)
+
+- Status: candidate art master attached; runtime sprites still need regeneration.
+- Art master index: [[Design/Bestiary/Scourge-Foe-Art-Masters|Scourge Foe Art Masters]]
 
 ## Prompt Seed
 

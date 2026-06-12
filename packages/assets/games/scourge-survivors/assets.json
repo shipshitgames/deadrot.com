@@ -260,6 +260,28 @@
         ],
         "flashScale": 0.32
       },
+      "adsSprite": {
+        "path": "games/scourge-survivors/weapons/pyre/sniper-ads-tiers.webp",
+        "dimensions": [
+          2172,
+          724
+        ],
+        "scale": [
+          0.78,
+          1.3
+        ],
+        "offset": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "muzzle": [
+          -0.2,
+          0.3,
+          -0.1
+        ],
+        "flashScale": 0.26
+      },
       "tierSheet": {
         "columns": 5,
         "tiers": [

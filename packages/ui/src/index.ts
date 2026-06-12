@@ -6,6 +6,8 @@ export type { CodexEntry, CodexScreenProps } from "./Codex";
 export { CodexScreen } from "./Codex";
 export type { ClassValue } from "./cn";
 export { cn } from "./cn";
+export type { GameJumpMenuProps } from "./GameJump";
+export { GameJumpMenu } from "./GameJump";
 export type {
   EffectLevelSliderProps,
   GlobalEffectSlidersProps,
@@ -21,7 +23,16 @@ export {
 export { DEFAULT_AUDIO_SLIDER_KEYS } from "./GameSettings.constants";
 export type { GameSettingsScreenProps } from "./GameSettingsScreen";
 export { GameSettingsScreen } from "./GameSettingsScreen";
-export { goToWarlineLobby, warlineLobbyHref } from "./lobby";
+export type { GameJumpTarget } from "./lobby";
+export {
+  GAME_JUMP_DEFAULT_LABEL,
+  gameHref,
+  gameJumpHtml,
+  gameJumpTargets,
+  goToWarlineLobby,
+  isDevFleetPage,
+  warlineLobbyHref,
+} from "./lobby";
 export type { MainMenuEnterPromptProps } from "./MainMenuEnter";
 export { MainMenuEnterPrompt, useEnterToReveal } from "./MainMenuEnter";
 export type {
@@ -60,6 +71,8 @@ export type { PauseMenuAction, PauseMenuProps } from "./PauseMenu";
 export { PauseMenu } from "./PauseMenu";
 export type { PixelConfettiProps } from "./PixelConfetti";
 export { PixelConfetti } from "./PixelConfetti";
+export type { VictoryScreenProps } from "./VictoryScreen";
+export { VictoryScreen } from "./VictoryScreen";
 export type {
   GlobalEffectKey,
   GlobalEffectLevels,

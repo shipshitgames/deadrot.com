@@ -349,8 +349,10 @@ export function survivorStartingWeapon(classId?: string | null): WeaponId {
 }
 
 // ---- Structured run: a canonical breach descent for Survivors ----------------
+// Chapters are pure pacing beats (spawn pressure, elite cadence, HP scaling).
+// The arena is picked on the pre-run map select and holds for the whole run —
+// a chapter advance never swaps the map (#276).
 export interface SurvivorRunChapter {
-  mapId: string;
   name: string;
   subtitle: string;
   duration: number;
@@ -364,9 +366,8 @@ export interface SurvivorRunChapter {
 
 export const SURVIVOR_RUN_CHAPTERS: SurvivorRunChapter[] = [
   {
-    mapId: "ashgate",
-    name: "Ashgate Drop",
-    subtitle: "Hold the foundry wall while the breach wakes.",
+    name: "Breach Wakes",
+    subtitle: "Hold your ground while the breach wakes.",
     duration: 60,
     spawnMul: 1.15,
     hpMul: 1,
@@ -376,9 +377,8 @@ export const SURVIVOR_RUN_CHAPTERS: SurvivorRunChapter[] = [
     swellInterval: 36,
   },
   {
-    mapId: "hollowlanes",
-    name: "Hollow Lanes",
-    subtitle: "Thread the dead corridors as the swarm starts folding in.",
+    name: "The Folding",
+    subtitle: "The swarm starts folding in from every lane.",
     duration: 65,
     spawnMul: 1.35,
     hpMul: 1.12,
@@ -388,9 +388,8 @@ export const SURVIVOR_RUN_CHAPTERS: SurvivorRunChapter[] = [
     swellInterval: 34,
   },
   {
-    mapId: "maw",
-    name: "The Maw",
-    subtitle: "Fight across the breach throat under Scourge glow.",
+    name: "Scourge Tide",
+    subtitle: "The tide rises under full Scourge glow.",
     duration: 70,
     spawnMul: 1.55,
     hpMul: 1.32,
@@ -400,8 +399,7 @@ export const SURVIVOR_RUN_CHAPTERS: SurvivorRunChapter[] = [
     swellInterval: 32,
   },
   {
-    mapId: "perdition",
-    name: "Perdition",
+    name: "Source Frenzy",
     subtitle: "Seal the source before the host-mass swallows the arena.",
     duration: 75,
     spawnMul: 1.8,

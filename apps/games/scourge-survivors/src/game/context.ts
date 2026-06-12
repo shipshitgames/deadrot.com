@@ -110,6 +110,8 @@ export class GameContext {
   stanceHeight = PLAYER_HEIGHT;
   wantsSprint = false;
   wantsCrouch = false;
+  wasSprinting = false;
+  sprintStartBoostTimer = 0;
   move = makeMoveIntent();
   firing = false;
   triggerQueued = false;
