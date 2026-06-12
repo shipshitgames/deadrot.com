@@ -15,8 +15,12 @@ export function MenuStack({ className, ...props }: DivProps) {
   return <div className={cn("ssg-menu-stack", className)} {...props} />;
 }
 
-export function MenuTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
-  return <h1 className={cn("ssg-menu-title", className)} {...props} />;
+export function MenuTitle({ className, children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
+  return (
+    <h1 className={cn("ssg-menu-title", className)} {...props}>
+      {children}
+    </h1>
+  );
 }
 
 export function MenuKicker({ className, ...props }: DivProps) {
@@ -66,8 +70,12 @@ export function MainMenuCopy({ className, ...props }: DivProps) {
   return <div className={cn("ssg-main-menu-copy", className)} {...props} />;
 }
 
-export function MainMenuTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
-  return <h1 className={cn("ssg-main-menu-title", className)} {...props} />;
+export function MainMenuTitle({ className, children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
+  return (
+    <h1 className={cn("ssg-main-menu-title", className)} {...props}>
+      {children}
+    </h1>
+  );
 }
 
 export interface MainMenuTitleLineProps extends HTMLAttributes<HTMLSpanElement> {

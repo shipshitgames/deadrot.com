@@ -117,12 +117,11 @@ function NavLink({ item, mobile, onNavigate }: { item: NavItem; mobile?: boolean
 }
 
 export function SiteHeader() {
-  const [scrolled, setScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(() => (typeof window === "undefined" ? false : window.scrollY > 24));
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);

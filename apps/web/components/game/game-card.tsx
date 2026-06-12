@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 import { GameLockBadge } from "@/components/game/game-lock";
 import { Badge } from "@/components/ui/badge";
@@ -28,10 +29,11 @@ export function GameCard({ game }: { game: Game }) {
     >
       <div aria-hidden className="absolute inset-0">
         {/* Pixel game cover (locked house style #62) */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={gameCoverUrl(game.slug)}
           alt=""
+          fill
+          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           className="absolute inset-0 h-full w-full object-cover opacity-85 transition-transform duration-500 group-hover:scale-105"
           style={{ imageRendering: "pixelated" }}
         />

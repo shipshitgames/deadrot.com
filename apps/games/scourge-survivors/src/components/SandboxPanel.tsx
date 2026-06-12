@@ -173,6 +173,7 @@ const AUDIO_ASSETS: AudioAsset[] = [
 
 const PICKUP_KINDS: PickupKind[] = ["health", "ammo", "damage", "dual", ...WEAPON_ORDER];
 const ASSET_FILTERS: Array<"all" | AssetKind | "audio"> = ["all", "sprite", "texture", "ui", "audio"];
+const EMPTY_CAPTIONS_TRACK = "data:text/vtt;charset=utf-8,WEBVTT";
 
 function cx(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(" ");
@@ -291,7 +292,15 @@ function AudioList({ assets }: { assets: AudioAsset[] }) {
             <span className="truncate font-bold">{asset.label}</span>
             <span className="shrink-0 uppercase tracking-[0.12em] text-white/45">{asset.kind}</span>
           </div>
-          <audio controls loop={asset.kind === "music"} src={asset.src} className="h-[30px] w-full" />
+          <audio
+            controls
+            loop={asset.kind === "music"}
+            src={asset.src}
+            className="h-[30px] w-full"
+            aria-label={`${asset.label} ${asset.kind} preview`}
+          >
+            <track kind="captions" src={EMPTY_CAPTIONS_TRACK} srcLang="en" label="No spoken audio" />
+          </audio>
         </div>
       ))}
     </div>
@@ -339,6 +348,7 @@ export function SandboxPanel({
       panel.scrollBy({ top: event.deltaY, left: event.deltaX, behavior: "auto" });
     };
 
+    // react-doctor-disable-next-line react-doctor/client-passive-event-listeners -- The handler intentionally calls preventDefault so wheel input scrolls this sandbox panel.
     window.addEventListener("wheel", scrollLabsPanel, { passive: false });
     return () => window.removeEventListener("wheel", scrollLabsPanel);
   }, [state.status]);
@@ -457,6 +467,7 @@ export function SandboxPanel({
             <span className="text-[11px] uppercase tracking-[0.12em] text-white/45">Count</span>
             <input
               type="range"
+              aria-label="Spawn count"
               min={1}
               max={12}
               value={spawnCount}

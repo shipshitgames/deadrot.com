@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StatusBadge } from "@/components/game/game-card";
@@ -53,11 +54,13 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       <section className="relative flex min-h-[560px] items-center overflow-hidden px-6 pt-32 pb-16">
         <Backdrop />
         {/* Pixel game cover, shared with the /#games cards. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={gameImage}
           alt=""
           aria-hidden
+          fill
+          priority
+          sizes="100vw"
           className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-65 saturate-125"
           style={{ imageRendering: "pixelated" }}
         />
@@ -127,8 +130,8 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
             Overview
           </h2>
           <div className="mt-6 max-w-3xl space-y-4">
-            {game.overview.split("\n\n").map((p, i) => (
-              <p key={i} className="leading-relaxed text-ash">
+            {game.overview.split("\n\n").map((p) => (
+              <p key={p} className="leading-relaxed text-ash">
                 {p}
               </p>
             ))}

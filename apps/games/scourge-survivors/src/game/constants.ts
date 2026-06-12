@@ -27,11 +27,7 @@ export const PLAYER_MAX_HEALTH = 100;
 // Weapon
 export const MAGAZINE_SIZE = 15;
 export const START_RESERVE = 75;
-export const RESERVE_CAP = 300;
-export const AMMO_PER_KILL = 12;
 export const RELOAD_TIME = 1.2; // seconds
-export const FIRE_INTERVAL = 0.18; // seconds between shots
-export const WEAPON_DAMAGE = 26; // sidearm baseline
 export const HEADSHOT_MULTIPLIER = 2.2;
 
 // Melee knife — always available (no ammo), the guaranteed fallback so you can
@@ -47,7 +43,6 @@ export const ENEMY_MAX_HEALTH = 100;
 export const ENEMY_SPEED_MIN = 2.6;
 export const ENEMY_SPEED_MAX = 4.2;
 export const ENEMY_RADIUS = 0.6;
-export const ENEMY_HEIGHT = 1.7;
 export const ENEMY_ATTACK_RANGE = 2.2;
 export const ENEMY_ATTACK_DAMAGE = 9;
 export const ENEMY_ATTACK_INTERVAL = 0.9; // seconds between an enemy's hits
@@ -244,7 +239,7 @@ export const PICKUP_DROP_CHANCE = 0.5; // chance a normal kill drops something
 export const PICKUP_RADIUS = 1.7; // walk within this to collect
 export const PICKUP_TTL = 16; // seconds before a drop despawns
 export const HEALTH_PICKUP_AMOUNT = 35;
-export const BERSERK_DAMAGE_MULT = 2;
+const BERSERK_DAMAGE_MULT = 2;
 export const BERSERK_TIME = 10;
 export const BERSERK_FIRE_RATE_MULT = 1.35;
 export const BERSERK_MOVE_MULT = 1.16;
@@ -254,7 +249,6 @@ export const DAMAGE_BOOST_TIME = BERSERK_TIME;
 export const DUAL_WEAPON_TIME = 12;
 
 // ---- Enemy ranged fire ----------------------------------------------------
-export const ENEMY_RANGED_CHANCE = 0.45; // fraction of mobs that shoot back
 export const ENEMY_FIRE_INTERVAL = 1.7;
 export const ENEMY_FIRE_RANGE = 30; // max distance a mob will open fire
 export const ENEMY_PREFERRED_RANGE = 12; // ranged mobs try to hold this gap

@@ -164,6 +164,7 @@ function SurvivorsHud({ state }: { state: HUDState }) {
 }
 
 /** Everything drawn during live combat: crosshair, hit feedback, meters, panels. */
+// react-doctor-disable-next-line react-doctor/no-giant-component -- The HUD overlay is a cohesive render-only surface with shared transient state.
 export function CombatOverlays({ state }: { state: HUDState }) {
   const {
     status,

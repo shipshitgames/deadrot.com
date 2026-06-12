@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -8,8 +10,16 @@ import { FactionCardGrid } from "@/components/faction/faction-card-grid";
 import { Waitlist } from "@/components/site/waitlist";
 import { assetUrl } from "@/lib/assets";
 import { accentVars, gamesByStatus, universe } from "@/lib/content";
+import { createSocialMetadata } from "@/lib/social";
 
 const WATCH = "https://youtube.com/@shipshitshow";
+
+export const metadata: Metadata = createSocialMetadata({
+  title: "DEADROT",
+  description: "A blood-soaked Ship Shit Games universe of browser games, canon, and one persistent war.",
+  path: "/",
+  openGraphTitle: "DEADROT - Ship Shit Games",
+});
 
 export default function Home() {
   const gallery = gamesByStatus;
@@ -24,11 +34,13 @@ export default function Home() {
       >
         <Backdrop />
         {/* Pixel hero banner (locked house style #62) */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={assetUrl("/universe/hero.webp")}
           alt=""
           aria-hidden
+          fill
+          priority
+          sizes="100vw"
           className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-25"
           style={{ imageRendering: "pixelated" }}
         />
@@ -38,8 +50,7 @@ export default function Home() {
         <div className="relative z-10 flex flex-col items-center">
           <Eyebrow>A Ship Shit Games universe</Eyebrow>
           <h1 className="mt-5 w-[min(760px,94vw)] sm:w-[min(820px,90vw)] md:w-[min(880px,82vw)]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={assetUrl("/brand/title.webp")}
               alt="DEADROT"
               width={1120}
@@ -57,6 +68,7 @@ export default function Home() {
               {/* Front door into the persistent war: the Warline lobby (apps/games/warline),
                   from which every game is a walkable portal. Plain <a> for a full document
                   load — /warline/ is a rewrite to the SPA, not a Next route. */}
+              {/* react-doctor-disable-next-line react-doctor/nextjs-no-a-element -- /warline/ rewrites to the Vite Warline app and needs a full document load. */}
               <a href="/warline/">Enter the War</a>
             </Button>
             <Button
@@ -124,6 +136,7 @@ export default function Home() {
           </p>
           <div className="mt-10">
             <Button asChild size="xl" className="font-display uppercase tracking-widest shadow-ember">
+              {/* react-doctor-disable-next-line react-doctor/nextjs-no-a-element -- /warline/ rewrites to the Vite Warline app and needs a full document load. */}
               <a href="/warline/">Enter Warline →</a>
             </Button>
           </div>

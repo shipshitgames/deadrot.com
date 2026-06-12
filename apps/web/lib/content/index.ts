@@ -14,10 +14,6 @@ import {
   getCharacter,
   getCreature,
   getFaction,
-  type LoreLocation,
-  locations,
-  type TimelineEvent,
-  timelineEvents,
   type Universe,
   universe,
 } from "@shipshitgames/assets/lore";
@@ -28,7 +24,7 @@ import { assetUrl } from "@/lib/assets";
 // derivative of the Obsidian vault — so this hub can never drift from canon.
 // This module layers the roster metadata from @deadrot/catalog on top.
 
-export type { Accent, Character, Creature, Faction, Feature, LoreLocation, TimelineEvent, Universe };
+export type { Accent, Character, Creature, Faction, Feature, Universe };
 export type GameStatus = "PLAYABLE" | "IN DEV" | "CONCEPT";
 
 export interface Game extends GameLore {
@@ -55,10 +51,10 @@ export const games: Game[] = gameLore.map((g) => ({
   ...g,
   ...(GAME_META[g.slug] ?? { status: "CONCEPT" as GameStatus }),
 }));
-export { bestiary, characters, factions, locations, timelineEvents, universe };
+export { bestiary, characters, factions, universe };
 
 // ── Accent system ────────────────────────────────────────────────────────────
-export const ACCENT_HEX: Record<Accent, string> = {
+const ACCENT_HEX: Record<Accent, string> = {
   blood: "#c1121f",
   hellfire: "#ff6a00",
   toxic: "#8bdc1f",
@@ -137,9 +133,6 @@ export const gameCoverUrl = (slug: string) =>
         ? "/games/scourge-survivors/ui/cover/gameplay.webp"
         : `/games/${slug}/ui/menu/title.webp`,
   );
-
-export const gameSocialImageUrl = (slug: string) =>
-  assetUrl(slug === "zero-day" ? "/concepts/zero-day/ui/social/og.png" : `/games/${slug}/ui/social/og.jpg`);
 
 export const spriteUrl = (base: string | null) => {
   if (!base) return null;
