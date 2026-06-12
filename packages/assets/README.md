@@ -6,6 +6,10 @@ assets every game shares identically.
 
 ## What lives here
 
+- **Runtime/CDN assets plus curated generation history.** The runtime folders
+  are what `/assets` points at today and what `cdn.deadrot.com` should mirror
+  later. Curated source history lives only under `sources/generated/` and is
+  excluded from the package export list.
 - **`assets-catalog.json`** — the canon catalog (schema: `assets-catalog.schema.json`).
   Two parts:
   - `entities` — the canonical roster (22 entities) pulled from the lore vault:
@@ -19,19 +23,38 @@ assets every game shares identically.
   - `shared` — truly game-agnostic assets used **identically** by every game:
     FX (blood / ember / muzzle / breach-glow), UI icons (Pyre / Warden / Scourge
     / breach / lane), fonts (Press Start 2P / SSG Press Start), and audio.
-- **`entities/<id>/<game>.webp`** — the per-game entity renders, produced by the
-  variant-matrix generator (see below). This is what makes the catalog's
-  `variants` paths resolve.
-- **`shared/{fx,ui,fonts,audio}/`** — the game-agnostic binary assets.
-- **`games/scourge-survivors/`** — the Scourge Survivors runtime pack. This
-  includes semantic folders for Scourge enemies, Pyre survivors, weapons,
-  pickups, projectiles, arena textures, UI, fonts, SFX, and soundtrack cues.
-- **`sites/deadrotcom/public/`** — a preserved copy of the current website
-  public assets.
+- **`brand/`** — Deadrot marks and title/wordmark art used by apps.
+- **`universe/`** — global Deadrot hero/social art.
+- **`lore/`** — machine-readable canon data plus lore-facing art masters,
+  status previews, and other assets that lore pages embed through `/assets/...`.
+  Lore pages render character and bestiary galleries from `assets-catalog.json`;
+  the Markdown vault links package-backed `/assets/...` URLs and must not own
+  binary art copies under `apps/lore/content`.
+- **`games/<slug>/...`** — game-owned runtime packs and game web art.
+- **`entities/<id>/<game>.webp`** — per-game entity renders produced by the
+  variant-matrix generator. This is what makes the catalog's `variants` paths
+  resolve.
+- **`shared/{audio,fonts,fx,ui}/`** — game-agnostic binary assets used
+  identically by multiple games.
+- **`games/<slug>/ui/menu/title.webp`** — game-owned 16:9 title/key art used by
+  both the game shell and the web hub gallery.
+- **`games/<slug>/ui/social/og.jpg`** — compatible `1200x630` social-card
+  export. Prefer JPG for Open Graph crawlers even when browser delivery uses
+  WebP; replace these with approved, beautiful Imagen-generated landscape cards
+  when available.
+- **`concepts/<slug>/`** — concept-only presentation art for titles that are
+  not shipped game packages yet.
 - **`src/index.ts`** — TypeScript types (`Asset`, `AssetCatalog`, `EntityAsset`,
   `Faction`, `HostFamily`, `GameSlug`, ...), the `getAsset(catalog, id, game)`
   resolver, and matrix helpers (`gamesFor`, `renderedGames`, `pendingGames`,
   `matrixRows`).
+
+Never add runtime files under `sources/`, `sites/`, a flat `sprites/` folder, or
+any `source/` subfolder inside a game pack. Successful generation history that
+explains promoted runtime assets belongs under `sources/generated/`. Rejected
+outputs, banned-provider outputs, temporary drafts, and source-like material that
+should never be promoted belong in `packages/assets/_archive/` or
+outside git.
 
 ## Scourge Survivors runtime pack
 
@@ -74,8 +97,71 @@ IDs with license records. The game consumes that table through its local
 ## Source material
 
 Runtime packs should only commit files that games load at build time or runtime.
-Drafts, raw generator outputs, prompt history, and other source archives stay
-outside git unless they are moved to Git LFS or external asset storage.
+Curated prompt/history docs and source images for approved generations should be
+preserved under `sources/generated/` so future asset work can trace what was
+generated, reviewed, promoted, or replaced. That archive is not part of
+`package.json#files`, should never be imported by apps or manifests, and should
+not be mirrored to the asset CDN.
+
+Keep rejected outputs, banned-provider outputs, temporary drafts, and exploratory
+source folders out of `sources/generated`; use `packages/assets/_archive/` for
+package-local review material that still needs durable custody. Only leave files
+outside git when they are truly disposable.
+
+Raw provider caches do not belong in `sources/generated`, even when they contain
+images worth reviewing. Put them under `packages/assets/_archive/` until a human
+curates and renames selected files into semantic dated generated-history paths.
+Archive batches may preserve provider cache folder names and raw filenames for
+traceability while review is pending.
+
+### Naming conventions
+
+Use lowercase kebab-case for every asset directory and filename. Keep dates as
+`YYYY-MM-DD`. Avoid spaces, underscores, provider IDs, hashes, and ambiguous
+names like `final`, `clean`, `draft`, `source`, or `copy`.
+
+Runtime assets should be named by stable game meaning:
+
+```txt
+games/<game>/ui/menu/title.webp
+games/<game>/ui/social/og.jpg
+games/<game>/players/<faction>/<character>/<view>.webp
+games/<game>/enemies/<faction>/<enemy>/<view>.webp
+games/<game>/weapons/<faction>/<weapon>-tiers.webp
+entities/<entity-id>/<game>.webp
+lore/art-masters/<faction-or-domain>/<subject>/<subject>-<purpose>.<ext>
+lore/asset-status/previews/<group>/<subject>.webp
+```
+
+Generated-history assets should be named by what they document, not where they
+came from:
+
+```txt
+sources/generated/<YYYY-MM-DD>/<collection>/<subject>-<purpose>.<ext>
+sources/generated/<YYYY-MM-DD>/<game>/<domain>/<subject>-<purpose>.<ext>
+sources/generated/<collection>/<YYYY-MM-DD>/<subject>-<purpose>.<ext>
+sources/generated/<game>/<domain>/<YYYY-MM-DD>/<subject>-<purpose>.<ext>
+```
+
+Good examples:
+
+- `sources/generated/2026-06-11/lore/bestiary/swarm-ripper-turnaround-candidate.png`
+- `sources/generated/og-social/2026-06-11/scourge-survivors-fps-og-source.png`
+- `sources/generated/scourge-survivors/animation-sheets/2026-06-11/host-grunt-walk-sheet.png`
+- `sources/generated/title-screens/2026-06-07/deadlane-title-source.png`
+
+Run the package boundary check before merging asset changes:
+
+```bash
+bun run --cwd packages/assets assets:check
+```
+
+When Codex generates images, immediately rescue the global Codex cache into this
+repo before reviewing or pruning anything:
+
+```bash
+bun run --cwd packages/assets assets:sync-codex-images
+```
 
 ## Generator boundary
 

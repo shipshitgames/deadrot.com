@@ -7,6 +7,7 @@ import {
   GRAVITY,
   GROUND_SNAP_DOWN,
   MOVE_ACCEL,
+  MOVE_BRAKE_DAMPING,
   MOVE_DAMPING,
   MOVE_STOP_EPSILON,
   PLAYER_CROUCH_HEIGHT,
@@ -15,6 +16,8 @@ import {
   PLAYER_RADIUS,
   PLAYER_STEP_HEIGHT,
   SPRINT_ACCEL_MULT,
+  SPRINT_START_BOOST_MULT,
+  SPRINT_START_BOOST_TIME,
   STANCE_LERP,
   STARTING_WEAPON,
   WALL_THICKNESS,
@@ -47,27 +50,36 @@ export class PlayerSystem {
   updatePlayerMovement(delta: number) {
     this.updateStance(delta);
 
-    this.ctx.velocity.x -= this.ctx.velocity.x * MOVE_DAMPING * delta;
-    this.ctx.velocity.z -= this.ctx.velocity.z * MOVE_DAMPING * delta;
-    this.ctx.velocity.y -= GRAVITY * delta;
-
     this.ctx._dir.z = Number(this.ctx.move.forward) - Number(this.ctx.move.back);
     this.ctx._dir.x = Number(this.ctx.move.right) - Number(this.ctx.move.left);
     this.ctx._dir.normalize();
 
+    const hasMoveInput = this.ctx._dir.lengthSq() > 0;
     const crouched = this.ctx.wantsCrouch || this.ctx.stanceHeight < PLAYER_HEIGHT - 0.08;
-    const sprinting = this.ctx.wantsSprint && !crouched;
+    const sprinting = this.ctx.wantsSprint && !crouched && hasMoveInput;
+    if (sprinting && !this.ctx.wasSprinting) this.ctx.sprintStartBoostTimer = SPRINT_START_BOOST_TIME;
+    this.ctx.wasSprinting = sprinting;
+
+    const damping = hasMoveInput ? MOVE_DAMPING : MOVE_BRAKE_DAMPING;
+    this.ctx.velocity.x -= this.ctx.velocity.x * damping * delta;
+    this.ctx.velocity.z -= this.ctx.velocity.z * damping * delta;
+    this.ctx.velocity.y -= GRAVITY * delta;
+
     const stanceMul = crouched ? CROUCH_ACCEL_MULT : sprinting ? SPRINT_ACCEL_MULT : 1;
     const adsMoveMul = 1 + (WEAPONS[this.ctx.activeWeapon].adsMoveMul - 1) * this.ctx.adsT;
     const berserkMoveMul = this.ctx.damageBoostTimer > 0 ? BERSERK_MOVE_MULT : 1;
-    const accel = MOVE_ACCEL * this.ctx.statMoveMul * berserkMoveMul * stanceMul * adsMoveMul;
+    const sprintBoost =
+      sprinting && this.ctx.sprintStartBoostTimer > 0
+        ? 1 + SPRINT_START_BOOST_MULT * (this.ctx.sprintStartBoostTimer / SPRINT_START_BOOST_TIME)
+        : 1;
+    const accel = MOVE_ACCEL * this.ctx.statMoveMul * berserkMoveMul * stanceMul * adsMoveMul * sprintBoost;
     if (this.ctx.move.forward || this.ctx.move.back) this.ctx.velocity.z -= this.ctx._dir.z * accel * delta;
     if (this.ctx.move.left || this.ctx.move.right) this.ctx.velocity.x -= this.ctx._dir.x * accel * delta;
+    this.ctx.sprintStartBoostTimer = Math.max(0, this.ctx.sprintStartBoostTimer - delta);
 
     // Snap to a dead stop below a threshold when no key is held — kills the long
     // ice-skate glide so movement reads crisp and intentional.
-    const noInput = !this.ctx.move.forward && !this.ctx.move.back && !this.ctx.move.left && !this.ctx.move.right;
-    if (noInput && Math.hypot(this.ctx.velocity.x, this.ctx.velocity.z) < MOVE_STOP_EPSILON) {
+    if (!hasMoveInput && Math.hypot(this.ctx.velocity.x, this.ctx.velocity.z) < MOVE_STOP_EPSILON) {
       this.ctx.velocity.x = 0;
       this.ctx.velocity.z = 0;
     }
@@ -230,6 +242,8 @@ export class PlayerSystem {
     this.ctx.stanceHeight = PLAYER_HEIGHT;
     this.ctx.wantsSprint = false;
     this.ctx.wantsCrouch = false;
+    this.ctx.wasSprinting = false;
+    this.ctx.sprintStartBoostTimer = 0;
     this.ctx.move.forward = this.ctx.move.back = this.ctx.move.left = this.ctx.move.right = false;
     this.ctx.aimingDownSights = false;
     this.ctx.adsT = 0;

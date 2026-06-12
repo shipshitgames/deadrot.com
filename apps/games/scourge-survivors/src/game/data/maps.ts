@@ -487,6 +487,11 @@ export function getMap(id: string): NormalizedArenaMap {
   return MAPS[id] ?? MAPS[DEFAULT_MAP_ID];
 }
 
+/** Resolve a saved/requested map id to a real one, falling back to the default. */
+export function normalizeMapId(id?: string | null): string {
+  return id && MAPS[id] ? id : DEFAULT_MAP_ID;
+}
+
 /**
  * Build the campaign stage sequence starting from `startId`: that map first,
  * then the remaining maps in canonical order (wrapping around).

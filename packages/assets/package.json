@@ -19,24 +19,30 @@
       "types": "./src/lore.ts",
       "default": "./src/lore.ts"
     },
+    "./lore/*": "./lore/*",
+    "./brand/*": "./brand/*",
+    "./concepts/*": "./concepts/*",
+    "./entities/*": "./entities/*",
     "./games/*": "./games/*",
     "./shared/*": "./shared/*",
-    "./sites/deadrotcom/*": "./sites/deadrotcom/*",
     "./tokens/*": "./tokens/*"
   },
   "files": [
     "assets-catalog.json",
     "assets-catalog.schema.json",
+    "brand",
+    "concepts",
     "entities",
     "games",
     "lore",
     "shared",
-    "sites",
-    "sources",
     "src",
     "tokens"
   ],
   "scripts": {
+    "assets:check": "node scripts/check-assets.mjs",
+    "assets:clean-sprites": "bun ../../../shipshitgames/packages/assetgen/src/cli.ts clean-sprites",
+    "assets:sync-codex-images": "node scripts/sync-codex-generated-images.mjs",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "test": "bun test tests",

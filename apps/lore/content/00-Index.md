@@ -18,6 +18,8 @@ Start here, follow the links, open the graph view.
 
 ## Art Direction
 
+- [[Design/README|Design Locks]] — per-foe, per-character, and per-location visual source of truth before game adaptation _(active)_
+- [[Design/Bestiary/Scourge-Foe-Art-Masters|Scourge Foe Art Masters]] — attached master/reference images and lock status for Scourge enemies _(active)_
 - [[Character-Sprite-Direction]] — faction language + sprite production rules _(superseded — see [[Style-Bible]])_
 - [[Character-Prompt-Library]] — reusable generation prompts _(superseded — see [[Style-Bible]])_
 - [[Variation-Matrix]] — batch planning + selection criteria _(draft)_
@@ -34,6 +36,17 @@ Start here, follow the links, open the graph view.
 - [[Art/UI-Drafts/2026-06-04-fps-hud-previs/README|Scourge Survivors FPS HUD Previs]] — Doom-pixel HUD overlay direction _(active)_
 - [[Art/Prompt-Batches/2026-06-05-game-og-cards|2026-06-05 Game OG Cards]] — deterministic social-card composition batch
 - [[Art/Prompt-Batches/2026-06-05-scourge-animation-pack|2026-06-05 Scourge Animation Pack]] — first-pass Scourge animation sheet prompts
+
+### Active Design Locks
+
+- [[Design/Bestiary/Swarm-Ripper-DESIGN|Swarm Ripper Design Lock]]
+- [[Design/Bestiary/Swarm-Spitter-DESIGN|Swarm Spitter Design Lock]]
+- [[Design/Bestiary/Breach-Boss-DESIGN|Breach-Boss Design Lock]]
+- [[Design/Bestiary/Graft-Breacher-DESIGN|Graft Breacher Design Lock]]
+- [[Design/Bestiary/Orbital-Breach-Carrier-DESIGN|Orbital Breach Carrier Design Lock]]
+- [[Design/Bestiary/Scourge-Fighter-DESIGN|Scourge Fighter Design Lock]]
+- [[Design/Locations/Ashgate-DESIGN|Ashgate Design Lock]]
+- [[Design/Locations/The-Hollow-Lanes-DESIGN|The Hollow Lanes Design Lock]]
 
 ## Factions
 

@@ -510,7 +510,7 @@ Coherence comes from **conditioning, not seeds.** Seeds are a weak, provider-spe
 
 > **frozen prompt skeleton + swapped `{SUBJECT}` line + the game's pinned style-ref.**
 
-The reference-image paths are canon in the `assetgen:` block (`referenceImages.<game>` → `lore/Art/style-refs/<game>.webp`). The catalog/provider plumbing to pass them is downstream work, but the **paths are now law** so providers can wire `image_urls` later without another bible edit. Until the plumbing ships, generate against the ref manually in the noob loop.
+The reference-image paths are canon in the `assetgen:` block (`referenceImages.<game>` → `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/<game>.webp`). The catalog/provider plumbing to pass them is downstream work, but the **paths are now law** so providers can wire `image_urls` later without another bible edit. Until the plumbing ships, generate against the ref manually in the noob loop.
 
 ### Per provider
 

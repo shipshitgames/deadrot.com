@@ -1,9 +1,12 @@
 import "@shipshitgames/ui/styles.css";
+import { initDeadrotBrowserTelemetry } from "@deadrot/game-kit/telemetry/browser";
 import "./styles.css";
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { Game } from "./game/Game";
 import { AppShell } from "./ui/AppShell";
+
+void initDeadrotBrowserTelemetry({ game: "rothulk", env: import.meta.env });
 
 const app = document.getElementById("app");
 if (!app) {

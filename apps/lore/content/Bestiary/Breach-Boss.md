@@ -29,6 +29,14 @@ Monstrous Scourge expression grown around a breach heart.
 ## Sprite Brief
 - Views: front, side, back.
 - Boss should be larger and more detailed, but core/head read must stay clear in motion.
+- Visual lock: [[Design/Bestiary/Breach-Boss-DESIGN|Breach-Boss Design Lock]].
+
+## Art Master
+
+![Breach Boss breach-engine master turnaround](/assets/lore/art-masters/scourge/breach-boss/breach-boss-breach-engine-master-turnaround.png)
+
+- Status: candidate art master attached; runtime sprites still need regeneration.
+- Art master index: [[Design/Bestiary/Scourge-Foe-Art-Masters|Scourge Foe Art Masters]]
 
 ## Prompt Seed
 Scourge breach-boss, huge non-human war body, toxic-green chest core, shield-organ ring,

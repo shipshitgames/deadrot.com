@@ -167,9 +167,9 @@ export class Game {
     this.sys.mission.startCampaign(startMapId);
   }
 
-  startSurvivors(classId?: SurvivorClassId) {
+  startSurvivors(classId?: SurvivorClassId, mapId?: string) {
     this.ctx.sandbox = false;
-    this.sys.survivors.startSurvivors(classId);
+    this.sys.survivors.startSurvivors(classId, mapId);
   }
 
   setSurvivorClass(classId: SurvivorClassId) {

@@ -1,10 +1,13 @@
 import "@shipshitgames/ui/styles.css";
+import { initDeadrotBrowserTelemetry } from "@deadrot/game-kit/telemetry/browser";
 import "./styles.css";
 import { createElement } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { Game } from "./game";
 import { AppShell } from "./ui/AppShell";
+
+void initDeadrotBrowserTelemetry({ game: "deadlane", env: import.meta.env });
 
 const app = document.getElementById("app");
 if (!app) {

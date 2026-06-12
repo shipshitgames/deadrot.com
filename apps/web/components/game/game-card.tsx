@@ -1,7 +1,8 @@
 import Link from "next/link";
 
+import { GameLockBadge } from "@/components/game/game-lock";
 import { Badge } from "@/components/ui/badge";
-import { accentVars, type Game, type GameStatus } from "@/lib/content";
+import { accentVars, gameCoverUrl, type Game, type GameStatus } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
 const STATUS_STYLES: Record<GameStatus, string> = {
@@ -29,7 +30,7 @@ export function GameCard({ game }: { game: Game }) {
         {/* Pixel game cover (locked house style #62) */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={`/images/games/${game.slug}.webp`}
+          src={gameCoverUrl(game.slug)}
           alt=""
           className="absolute inset-0 h-full w-full object-cover opacity-85 transition-transform duration-500 group-hover:scale-105"
           style={{ imageRendering: "pixelated" }}
@@ -42,6 +43,7 @@ export function GameCard({ game }: { game: Game }) {
       <div className="relative z-10 p-5">
         <div className="mb-2 flex items-center gap-2">
           <StatusBadge status={game.status} />
+          <GameLockBadge slug={game.slug} />
           <span className="text-[0.65rem] uppercase tracking-widest text-ash">{game.genre}</span>
         </div>
         <h3 className="font-display text-2xl font-bold uppercase leading-none tracking-tight text-bone">

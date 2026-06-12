@@ -249,7 +249,7 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
     el.crossOrigin = "anonymous";
     el.addEventListener("error", () => this.handleTrackPlaybackFailure());
     el.addEventListener("ended", () => {
-      if (!this.musicEnabled || !this.currentTrack) return;
+      if (!this.musicEnabled || !this.currentTrack || !el.loop) return;
       el.currentTime = 0;
       void el.play().catch(() => this.handleTrackPlaybackFailure());
     });

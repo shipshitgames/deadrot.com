@@ -68,7 +68,7 @@ jobs:
         run: bun run typecheck
 
       - name: Check generated assets
-        run: bun run assets:check
+        run: bun run --cwd packages/assets assets:check
 
   unit:
     name: Unit tests

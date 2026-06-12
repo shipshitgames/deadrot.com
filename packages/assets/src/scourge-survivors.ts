@@ -36,6 +36,15 @@ export interface SpriteEntry {
     flashScale: number;
     flashRotation?: number;
   };
+  adsSprite?: {
+    path: string;
+    dimensions: Vec2;
+    scale?: Vec2;
+    offset?: Vec3;
+    muzzle?: Vec3;
+    flashScale?: number;
+    flashRotation?: number;
+  };
   /**
    * Horizontal tier sheet: one weapon view-model drawn at N escalating visual tiers,
    * left to right. The runtime UV-samples one equal-width cell per tier, so `path`

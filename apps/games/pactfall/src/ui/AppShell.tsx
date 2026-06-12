@@ -1,5 +1,6 @@
 import menuHero from "@shipshitgames/assets/games/pactfall/ui/menu/title.webp";
 import {
+  GameJumpMenu,
   GameSettingsScreen,
   GlobalMusicToggle,
   goToWarlineLobby,
@@ -238,6 +239,7 @@ export function AppShell() {
                   meta="Lobby"
                   onClick={() => goToWarlineLobby()}
                 />
+                <GameJumpMenu currentSlug="pactfall" />
               </MainMenuNav>
             ) : (
               <MainMenuEnterPrompt />

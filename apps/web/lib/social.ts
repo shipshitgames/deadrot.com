@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { assetUrl } from "@/lib/assets";
 
 export const SITE_NAME = "DEADROT";
 export const SITE_URL = "https://deadrot.com";
@@ -11,7 +12,7 @@ export interface SocialImage {
 }
 
 export const DEFAULT_SOCIAL_IMAGE: SocialImage = {
-  url: "/images/hero.webp",
+  url: assetUrl("/universe/hero.webp"),
   width: 1600,
   height: 759,
   alt: "DEADROT social preview art",

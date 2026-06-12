@@ -2,6 +2,7 @@ import { codexEntriesForGame } from "@deadrot/game-kit";
 import menuHero from "@shipshitgames/assets/games/deadlane/ui/menu/title.webp";
 import {
   CodexScreen,
+  GameJumpMenu,
   GameSettingsScreen,
   GlobalMusicToggle,
   goToWarlineLobby,
@@ -167,6 +168,7 @@ export function AppShell() {
                 meta="Lobby"
                 onClick={() => goToWarlineLobby()}
               />
+              <GameJumpMenu currentSlug="deadlane" />
             </MainMenuNav>
             {!revealed && <MainMenuEnterPrompt />}
           </MainMenuLayout>

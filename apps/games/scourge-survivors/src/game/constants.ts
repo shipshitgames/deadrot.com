@@ -13,8 +13,11 @@ export const GRAVITY = 30;
 export const JUMP_VELOCITY = 11;
 export const MOVE_ACCEL = 120; // higher = snappier; steady-state speed ~= accel / damping
 export const MOVE_DAMPING = 13; // crisper start/stop (DOOM-snappy, less ice-skating)
+export const MOVE_BRAKE_DAMPING = 18; // faster braking when input is released
 export const MOVE_STOP_EPSILON = 0.6; // snap velocity to 0 below this when no input (kills the long glide)
 export const SPRINT_ACCEL_MULT = 1.45;
+export const SPRINT_START_BOOST_TIME = 0.16; // short shove when committing to a run
+export const SPRINT_START_BOOST_MULT = 0.32; // additive accel at the start of a sprint
 export const CROUCH_ACCEL_MULT = 0.48;
 export const STANCE_LERP = 18;
 export const PLAYER_STEP_HEIGHT = 0.45;

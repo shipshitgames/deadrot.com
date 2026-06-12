@@ -10,8 +10,10 @@
     "deps:update": "bunx npm-check-updates -u --cooldown 3h --removeRange && bun install"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.5.1",
     "@deadrot/catalog": "workspace:*",
     "@radix-ui/react-slot": "^1.2.4",
+    "@sentry/nextjs": "^10.57.0",
     "@shipshitgames/assets": "workspace:*",
     "@shipshitgames/ui": "^0.1.0",
     "class-variance-authority": "^0.7.1",
@@ -20,6 +22,7 @@
     "next": "16",
     "react": "19.2.7",
     "react-dom": "19.2.7",
+    "stripe": "^22.2.0",
     "tailwind-merge": "3.6.0"
   },
   "devDependencies": {

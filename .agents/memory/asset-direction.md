@@ -1,6 +1,6 @@
 ---
 status: active
-last_verified: 2026-06-09
+last_verified: 2026-06-12
 ---
 
 # Asset Direction & Generation Pipeline
@@ -34,6 +34,32 @@ wobble — which is why no game has a real animation pack yet.
   **animated or multi-view** — players, named enemies, bosses. Fixes frame
   coherence + front/side/back consistency. The "bake stage" is the missing tooling
   → tracked in **shipshit.games#164** (lives in assetgen per [[repo-boundary]]).
+
+## Masters + sprite packaging
+New non-runtime masters use
+`packages/assets/masters/<type>/<domain>/<asset-id>/`, with `type` folders such
+as `art`, `sprites`, `models`, `audio`, and `ui`. Lore Markdown may reference or
+embed package assets, but `apps/lore/content` does not own asset binaries. The
+older `apps/lore/content/Assets/Art-Masters` path is legacy/migration debt; use
+the package-owned `masters` layout for new work so runtime assets, generated
+sources, and approved masters stay in one asset package.
+
+Pixel animation follows the usual metadata-first game-art practice:
+
+- `1xN` source strips for single-view/single-action runs such as weapon tiers,
+  one-direction effects, and simple UI/VFX sheets.
+- `DxN` source grids when a sprite has multiple views or directions; rows are
+  views/directions, columns are frames.
+- For Scourge Survivors billboard enemies, default to `3xN` source grids:
+  `front`, `side`, `back` rows and frame columns. Side views may be mirrored in
+  code unless asymmetry becomes important.
+
+The runtime target is atlas + JSON metadata: `<pack-id>.webp` plus
+`<pack-id>.json`, registered in the game manifest. Metadata owns frame rects,
+source/trim sizes, anchors, actions, views, frame durations/fps, loop flags, and
+provenance/manifest ids. Gameplay asks for `entity/action/view/frame`; loaders
+map that to atlas UVs. Split `frame-00.webp` files remain acceptable for early
+debug packs until assetgen and the loader support packed atlases.
 
 ## Inventory + tracking issues (deadrot.com)
 - **#295** epic "Asset generation inventory" + children **#296–#302** (one per

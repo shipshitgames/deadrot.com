@@ -29,6 +29,14 @@ Starblight boss: a living carrier-ship grown around an orbital breach heart.
 ## Sprite Brief
 - Top/front boss sprite first.
 - Needs multiple damage-state variants later.
+- Visual lock: [[Design/Bestiary/Orbital-Breach-Carrier-DESIGN|Orbital Breach Carrier Design Lock]].
+
+## Art Master
+
+![Orbital Breach Carrier master turnaround](/assets/lore/art-masters/scourge/orbital-breach-carrier/orbital-breach-carrier-master-turnaround.png)
+
+- Status: candidate art master attached; runtime sprites still need regeneration.
+- Art master index: [[Design/Bestiary/Scourge-Foe-Art-Masters|Scourge Foe Art Masters]]
 
 ## Prompt Seed
 Scourge orbital carrier boss, infected wreckage grown around toxic-green breach heart,

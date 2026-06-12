@@ -29,6 +29,14 @@ Fast melee Scourge fodder that floods lanes and breach rooms through numbers and
 ## Sprite Brief
 - Views: front, side, back.
 - Must read at small scale for both [[Scourge-Survivors]] and [[Deadlane]].
+- Visual lock: [[Design/Bestiary/Swarm-Ripper-DESIGN|Swarm Ripper Design Lock]].
+
+## Art Master
+
+![Swarm Ripper master candidate](/assets/lore/art-masters/scourge/swarm-ripper/swarm-ripper-master-fast-candidate.png)
+
+- Status: candidate master attached, not final-locked.
+- Art master index: [[Design/Bestiary/Scourge-Foe-Art-Masters|Scourge Foe Art Masters]]
 
 ## Prompt Seed
 Scourge swarm melee creature, hunched parasite, black chitin, raw muscle, blade forearms,
