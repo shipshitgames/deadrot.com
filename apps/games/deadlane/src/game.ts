@@ -1,4 +1,4 @@
-import { createFixedLoop, type FixedLoop } from "@deadrot/game-kit/core";
+import { createFixedLoop, type FixedLoop, recordWarResult } from "@deadrot/game-kit/core";
 import { FlashOverlay } from "@deadrot/game-kit/juice";
 import * as THREE from "three";
 import { audio } from "./audio";
@@ -413,6 +413,15 @@ export class Game {
 
   private win(): void {
     if (this.state.phase === "won") return;
+    recordWarResult(
+      "deadlane",
+      {
+        outcome: "victory",
+        score: runScore(this.state),
+        wave: this.state.wave,
+      },
+      Date.now(),
+    );
     this.state.phase = "won";
     this.input.setActive(false);
     this.render.rig.releaseCapture(true);
@@ -422,6 +431,15 @@ export class Game {
 
   private lose(): void {
     if (this.state.phase === "lost") return;
+    recordWarResult(
+      "deadlane",
+      {
+        outcome: "defeat",
+        score: runScore(this.state),
+        wave: this.state.wave,
+      },
+      Date.now(),
+    );
     this.state.phase = "lost";
     this.input.setActive(false);
     this.render.rig.releaseCapture(true);
@@ -515,4 +533,8 @@ function freshState(): GameState {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+function runScore(state: GameState): number {
+  return Math.max(0, Math.round(state.wave * 100 + state.gold + state.baseHp * 25));
 }

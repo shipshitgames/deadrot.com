@@ -19,6 +19,7 @@ tmp/
 
 # git worktrees created by the /worktree skill
 .worktrees/
+.claude/
 .claude/worktrees/
 .vercel
 
@@ -37,5 +38,3 @@ id_ed25519*
 packages/assets/sources/*
 !packages/assets/sources/generated/
 !packages/assets/sources/generated/**
-packages/assets/sources/generated/*-cache/
-packages/assets/sources/generated/gpt-image-*/

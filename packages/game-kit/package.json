@@ -27,6 +27,14 @@
     "./maps": {
       "types": "./src/maps/index.ts",
       "default": "./src/maps/index.ts"
+    },
+    "./telemetry": {
+      "types": "./src/telemetry/index.ts",
+      "default": "./src/telemetry/index.ts"
+    },
+    "./telemetry/browser": {
+      "types": "./src/telemetry/browser.ts",
+      "default": "./src/telemetry/browser.ts"
     }
   },
   "files": [
@@ -40,8 +48,10 @@
     "deps:update": "bunx npm-check-updates -u --cooldown 3h --removeRange && bun install"
   },
   "dependencies": {
+    "@sentry/browser": "^10.57.0",
     "@shipshitgames/assets": "workspace:*",
-    "@shipshitgames/ui": "workspace:*"
+    "@shipshitgames/ui": "workspace:*",
+    "posthog-js": "^1.386.6"
   },
   "peerDependencies": {
     "three": ">=0.169.0"

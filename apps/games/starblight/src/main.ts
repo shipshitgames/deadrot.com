@@ -1,10 +1,13 @@
 import "@shipshitgames/ui/styles.css";
+import { initDeadrotBrowserTelemetry } from "@deadrot/game-kit/telemetry/browser";
 import "./styles.css";
 import { createElement } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { Game } from "./game/Game";
 import { AppShell } from "./ui/AppShell";
+
+void initDeadrotBrowserTelemetry({ game: "starblight", env: import.meta.env });
 
 // Entry point: grab the canvas declared in index.html, boot the Game, and let
 // its requestAnimationFrame loop drive everything.
