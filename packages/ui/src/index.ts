@@ -60,6 +60,8 @@ export type { PauseMenuAction, PauseMenuProps } from "./PauseMenu";
 export { PauseMenu } from "./PauseMenu";
 export type { PixelConfettiProps } from "./PixelConfetti";
 export { PixelConfetti } from "./PixelConfetti";
+export type { VictoryScreenProps } from "./VictoryScreen";
+export { VictoryScreen } from "./VictoryScreen";
 export type {
   GlobalEffectKey,
   GlobalEffectLevels,
