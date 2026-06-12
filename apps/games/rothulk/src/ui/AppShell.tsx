@@ -1,5 +1,6 @@
 import menuHero from "@shipshitgames/assets/games/rothulk/ui/menu/title.webp";
 import {
+  GameJumpMenu,
   GameSettingsScreen,
   GlobalMusicToggle,
   goToWarlineLobby,
@@ -185,6 +186,7 @@ export function AppShell({ createGame }: AppShellProps) {
                 meta="Lobby"
                 onClick={() => goToWarlineLobby()}
               />
+              <GameJumpMenu currentSlug="rothulk" />
             </MainMenuNav>
             {!revealed && <MainMenuEnterPrompt />}
           </MainMenuLayout>

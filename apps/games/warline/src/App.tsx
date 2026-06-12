@@ -1,5 +1,6 @@
 import menuHero from "@shipshitgames/assets/games/warline/ui/menu/title.webp";
 import {
+  GameJumpMenu,
   GameSettingsScreen,
   GlobalMusicToggle,
   MainMenuAction,
@@ -98,6 +99,7 @@ export default function App() {
                   meta="Audio"
                   onClick={() => setTitleSettings(true)}
                 />
+                <GameJumpMenu currentSlug="warline" label="Portals — direct deploy" />
               </MainMenuNav>
             ) : (
               <MainMenuEnterPrompt />
