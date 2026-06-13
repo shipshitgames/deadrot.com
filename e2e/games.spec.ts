@@ -17,6 +17,24 @@ interface GameSpec {
 }
 
 const gameSpecs: Record<GameSlug, GameSpec> = {
+  brawl: {
+    path: "/",
+    canvasSelector: ".brawl-canvas",
+    async assertLoaded(page) {
+      await expect(page.getByRole("heading", { name: "Brawl" })).toBeVisible();
+      await expect(page.getByRole("button", { name: /Pyre Duelist/ })).toBeVisible();
+      await page.waitForFunction(() => Boolean((window as unknown as { __brawlGame?: unknown }).__brawlGame));
+    },
+    async exercise(page) {
+      await page.getByRole("button", { name: "Fight" }).click();
+      await expect.poll(() => brawlSnapshot(page, "status")).toBe("playing");
+      await page.evaluate(() => {
+        const game = (window as unknown as { __brawlGame: { command: (action: string) => void } }).__brawlGame;
+        game.command("special");
+      });
+      await expect.poll(() => brawlSnapshot(page, "timer")).toBeLessThan(60);
+    },
+  },
   deadlane: {
     path: "/",
     canvasSelector: "#scene",
@@ -272,6 +290,13 @@ async function expectCanvasToRender(page: Page, selector: string) {
       }, dataUrl);
     })
     .toBe(true);
+}
+
+async function brawlSnapshot<T extends "status" | "timer">(page: Page, key: T) {
+  return page.evaluate((snapshotKey) => {
+    const snapshot = (window as unknown as { __brawlSnapshot: () => Record<T, unknown> }).__brawlSnapshot();
+    return snapshot[snapshotKey];
+  }, key);
 }
 
 async function expectNoBrokenImages(page: Page) {
