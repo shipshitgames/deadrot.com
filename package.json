@@ -17,7 +17,7 @@
     "check:fix": "biome check --write .",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
-    "lint:react": "react-doctor -y --project web,deadlane,pactfall,redline,rothulk,scourge-survivors,starblight,warline,@shipshitgames/ui --no-score --no-telemetry",
+    "lint:react": "react-doctor -y --project web,brawl,deadlane,pactfall,redline,rothulk,scourge-survivors,starblight,warline,@shipshitgames/ui --no-score --no-telemetry",
     "lint:packages": "turbo run lint",
     "test": "bun run test:unit && bun run test:e2e:unit",
     "test:unit": "turbo run test:unit",
@@ -39,7 +39,7 @@
     "typecheck": "turbo run typecheck",
     "ci": "bun run format:check && bun run lint && bun run typecheck && bun run social:check && bun run assets:check",
     "deps:update": "bunx npm-check-updates -u --deep --cooldown 3h --removeRange && bun install",
-    "doctor": "react-doctor -y --project web,deadlane,pactfall,redline,rothulk,scourge-survivors,starblight,warline,@shipshitgames/ui --no-score --no-telemetry",
+    "doctor": "react-doctor -y --project web,brawl,deadlane,pactfall,redline,rothulk,scourge-survivors,starblight,warline,@shipshitgames/ui --no-score --no-telemetry",
     "prepare": "git config core.hooksPath .githooks || true"
   },
   "devDependencies": {

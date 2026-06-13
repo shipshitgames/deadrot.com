@@ -8,7 +8,7 @@ import { DEFAULT_PORT_BASE, parsePortBase, parseSelectedGameSlugs, parseSelected
 // helpers that drive Playwright project + webServer fan-out.
 
 describe("GAME_APPS catalog", () => {
-  test("lists the seven shipped games with unique ascending ports", () => {
+  test("lists the eight shipped games with unique ascending ports", () => {
     expect(GAME_APPS.map((g) => g.slug)).toEqual([
       "deadlane",
       "pactfall",
@@ -17,6 +17,7 @@ describe("GAME_APPS catalog", () => {
       "scourge-survivors",
       "starblight",
       "warline",
+      "brawl",
     ]);
     const ports = GAME_APPS.map((g) => g.devPort);
     expect(new Set(ports).size).toBe(ports.length); // unique

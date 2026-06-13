@@ -7,6 +7,12 @@ const siteOrigin = "https://deadrot.com";
 
 const gameEntries = [
   {
+    slug: "brawl",
+    title: "Brawl - DEADROT",
+    description: "Choose a faction fighter and settle a one-on-one battlefield clash against the Scourge.",
+    image: `${siteOrigin}/images/og/games/brawl.png`,
+  },
+  {
     slug: "deadlane",
     title: "DEADLANE - DEADROT",
     description:
