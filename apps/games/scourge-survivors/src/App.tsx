@@ -1,4 +1,5 @@
 import { recordWarResult } from "@deadrot/game-kit/core";
+import { reportWarlineOperation } from "@deadrot/game-kit/warline";
 import { GlobalMusicToggle, subscribeGlobalGameSettings } from "@shipshitgames/ui";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { audio } from "./audio/AudioEngine";
@@ -216,6 +217,11 @@ export default function App() {
         },
         Date.now(),
       );
+      // Report the breach purge into the shared Warline front (config-gated, offline-safe).
+      void reportWarlineOperation("scourge-survivors", {
+        outcome: next.outcome === "win" ? "victory" : "defeat",
+        score: next.score,
+      });
       if (next.survivors) {
         setShop((prev) => {
           const nextShop = { ...prev, gold: prev.gold + earnedGold };
