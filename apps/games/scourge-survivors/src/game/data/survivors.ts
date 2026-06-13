@@ -504,7 +504,7 @@ export const SHOP_UPGRADES: ShopDef[] = [
   },
   { id: "magnetP", name: "Ichor Draw", desc: "+24% base pickup radius", icon: "magnet", max: 4, baseCost: 30 },
   { id: "scholar", name: "Breach Lessons", desc: "+12% XP gained", icon: "chart", max: 4, baseCost: 40 },
-  { id: "greed", name: "Salvage Tithe", desc: "+18% gold earned per run", icon: "gold", max: 4, baseCost: 50 },
+  { id: "greed", name: "Salvage Tithe", desc: "+15% gold earned per run", icon: "gold", max: 4, baseCost: 50 },
   // --- Starting weapons: buy these to begin a run already armed (build variety) ---
   {
     id: "arsenal",
@@ -512,7 +512,7 @@ export const SHOP_UPGRADES: ShopDef[] = [
     desc: "Start every run with Cautery Ring Lv1",
     icon: "orbit",
     max: 1,
-    baseCost: 95,
+    baseCost: 120,
   },
   {
     id: "munitions",
@@ -520,7 +520,7 @@ export const SHOP_UPGRADES: ShopDef[] = [
     desc: "Start every run with Ember-Seeker Bolts Lv1",
     icon: "bolt",
     max: 1,
-    baseCost: 95,
+    baseCost: 120,
   },
   {
     id: "pulsar",
@@ -528,7 +528,7 @@ export const SHOP_UPGRADES: ShopDef[] = [
     desc: "Start every run with Breachfire Nova Lv1",
     icon: "nova",
     max: 1,
-    baseCost: 110,
+    baseCost: 140,
   },
 ];
 
@@ -537,13 +537,58 @@ export const SHOP_BY_ID: Record<ShopId, ShopDef> = Object.fromEntries(SHOP_UPGRA
   ShopDef
 >;
 
-/** Cost to buy the next tier (current tier -> tier+1). */
+// ---- Economy tuning (see ECONOMY.md) ---------------------------------------
+// Design goal (#277): permanent meta-progression should span MANY runs and can
+// never be bought out in one. Maxing the whole shop costs `shopTotalCost()`
+// (~4.3k gold across 33 tiers); a single run is hard-capped at `RUN_GOLD_CAP`,
+// which is roughly a third of that — so even a record run buys only a slice.
+
+/** Per-tier cost escalation for {@link shopCost}: the next tier costs more for
+ *  every tier already owned (quadratic), turning late tiers into real goals. */
+const SHOP_COST_LINEAR = 0.8;
+const SHOP_COST_QUADRATIC = 0.25;
+
+/** Cost to buy the next tier (current tier -> tier+1). Escalates per owned tier. */
 export function shopCost(def: ShopDef, tier: number): number {
-  return Math.round(def.baseCost * (1 + tier * 0.55));
+  const t = Math.max(0, tier);
+  return Math.round(def.baseCost * (1 + t * SHOP_COST_LINEAR + t * t * SHOP_COST_QUADRATIC));
 }
 
-/** Gold awarded for a finished Survivors run. */
+/** Gold to take a single upgrade from `fromTier` up to its max. */
+export function shopUpgradeCost(def: ShopDef, fromTier = 0): number {
+  let total = 0;
+  for (let tier = Math.max(0, fromTier); tier < def.max; tier++) total += shopCost(def, tier);
+  return total;
+}
+
+/** Gold to fully max EVERY shop upgrade from scratch. */
+export function shopTotalCost(): number {
+  return SHOP_UPGRADES.reduce((sum, def) => sum + shopUpgradeCost(def, 0), 0);
+}
+
+/** Gold still needed to fully max the shop from the player's current tiers. */
+export function shopRemainingCost(tiers: Record<string, number>): number {
+  return SHOP_UPGRADES.reduce((sum, def) => sum + shopUpgradeCost(def, tiers[def.id] ?? 0), 0);
+}
+
+/** Total purchasable tiers across the whole shop (sum of every upgrade's max). */
+export const SHOP_TOTAL_TIERS = SHOP_UPGRADES.reduce((sum, def) => sum + def.max, 0);
+
+/** How many tiers the player currently owns across the whole shop. */
+export function shopTiersOwned(tiers: Record<string, number>): number {
+  return SHOP_UPGRADES.reduce((sum, def) => sum + Math.min(def.max, Math.max(0, Math.floor(tiers[def.id] ?? 0))), 0);
+}
+
+/** A single run can never earn more than this. Keeps one run from funding the
+ *  whole shop no matter how long or lucky it is; stays well below
+ *  {@link shopTotalCost}. */
+export const RUN_GOLD_CAP = 1500;
+
+/** Gold awarded for a finished Survivors run, hard-capped at {@link RUN_GOLD_CAP}.
+ *  Income is intentionally a fraction of the shop total so progression is paced
+ *  across many runs (kills + level + survival time, boosted by the greed tier). */
 export function runGold(kills: number, level: number, time: number, greedTier: number): number {
-  const base = kills * 3.5 + level * 14 + time * 1.35;
-  return Math.floor(base * (1 + 0.18 * greedTier));
+  const base = kills * 0.9 + level * 5 + time * 0.4;
+  const greedMul = 1 + 0.15 * Math.max(0, greedTier);
+  return Math.min(RUN_GOLD_CAP, Math.floor(Math.max(0, base) * greedMul));
 }

@@ -28,6 +28,9 @@ multiplayer becomes co-op, and the game expands with more maps.
 The first menu is the Survivors hub: Play a Run, Shop, Co-op, and Leaderboard all support
 the Pyre breach-run loop, with `Game.startSurvivors()` as the primary entrypoint.
 
+The permanent gold-shop economy (income, costs, and the one-run-can't-buy-everything
+invariant) is tuned and documented in [ECONOMY.md](./ECONOMY.md).
+
 ## License
 
 MIT (code). Assets follow the studio style/lore canon.
