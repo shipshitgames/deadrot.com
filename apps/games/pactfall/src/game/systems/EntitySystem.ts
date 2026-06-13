@@ -1,7 +1,8 @@
 import * as THREE from "three";
 import { COLORS, CONSTANTS, MARCH_DIR, type Team } from "../constants";
-import { makeBase, makeChampion, makeMinion, makeScourge } from "../factory";
+import { makeBase, makeChampion, makeMinion, makeScourge, makeTower } from "../factory";
 import type { Game } from "../Game";
+import { ASHGATE_MAP, activeLanes, type LaneDef, type MapDef, towerZ } from "../map";
 import type { Entity, GameEvents } from "../types";
 import { slowedSpeed } from "./abilities";
 import { clampToLane, stepToward } from "./movement";
@@ -11,12 +12,18 @@ import { clampToLane, stepToward } from "./movement";
 export class EntitySystem {
   private nextId = 1;
   private all: Entity[] = [];
+  // The battlefield layout drives every spawn position, tower line, and wave
+  // cadence — see map.ts. Only the active lanes are simulated.
+  private readonly map: MapDef = ASHGATE_MAP;
 
   champion!: Entity; // the player (Pyre)
   enemyChampion!: Entity; // the AI opponent (Warden)
   friendlyBase!: Entity;
   enemyBase!: Entity;
   scourge!: Entity;
+  // Lane towers for both teams (public so the HUD/snapshot can read standing
+  // counts). A base is only sieged once its team's towers have all fallen.
+  towers: Entity[] = [];
 
   // The player champion's last lane-space move direction (x = strafe, y = +Z
   // forward). Abilities aim along this when there's no cursor to aim at.
@@ -58,10 +65,12 @@ export class EntitySystem {
     for (const b of this.beams) this.game.render.remove(b.mesh);
     this.all = [];
     this.beams = [];
+    this.towers = [];
     this.nextId = 1;
     // Stagger the first waves so the lane isn't a perfect mirror that locks at
-    // center — one side's wave arrives first and the front line can actually move.
-    this.spawnTimers = { pyre: 0, warden: 1.3 };
+    // center — one side's wave arrives first and the front line can actually
+    // move. The stagger is a map tunable (waves.firstSpawnDelay).
+    this.spawnTimers = { ...this.map.waves.firstSpawnDelay };
     this.scourgeRespawn = 0;
     this.championDown = { pyre: 0, warden: 0 };
     this.playerFacing.set(0, 1);
@@ -77,13 +86,26 @@ export class EntitySystem {
     this.enemyChampion.pos.copy(this.championSpawnPos("warden"));
 
     this.friendlyBase = this.spawn(makeBase("pyre"));
-    this.friendlyBase.pos.set(0, CONSTANTS.base.height / 2, CONSTANTS.base.friendlyZ);
+    this.friendlyBase.pos.set(this.map.bases.pyre.x, CONSTANTS.base.height / 2, this.map.bases.pyre.z);
 
     this.enemyBase = this.spawn(makeBase("warden"));
-    this.enemyBase.pos.set(0, CONSTANTS.base.height / 2, CONSTANTS.base.enemyZ);
+    this.enemyBase.pos.set(this.map.bases.warden.x, CONSTANTS.base.height / 2, this.map.bases.warden.z);
 
     this.scourge = this.spawn(makeScourge());
-    this.scourge.pos.set(0, CONSTANTS.scourge.radius + 0.4, 0);
+    this.scourge.pos.set(this.map.scourge.x, CONSTANTS.scourge.radius + 0.4, this.map.scourge.z);
+
+    // Tower lines: one per def in each active lane, for both teams. Their Z is
+    // derived from the lane's `t` fractions so flipping a lane to active places
+    // its towers without any further code.
+    for (const lane of activeLanes(this.map)) {
+      for (const team of ["pyre", "warden"] as Team[]) {
+        for (const def of lane.towers[team]) {
+          const t = this.spawn(makeTower(team));
+          t.pos.set(lane.xOffset, CONSTANTS.tower.height / 2, towerZ(this.map, team, def));
+          this.towers.push(t);
+        }
+      }
+    }
 
     this.syncMeshes();
   }
@@ -127,20 +149,25 @@ export class EntitySystem {
   // ---- spawning -----------------------------------------------------------
 
   private tickSpawns(dt: number): void {
+    const waves = this.map.waves;
     (["pyre", "warden"] as Team[]).forEach((team) => {
       this.spawnTimers[team] -= dt;
       if (this.spawnTimers[team] <= 0) {
-        this.spawnTimers[team] = CONSTANTS.minion.spawnInterval;
-        for (let i = 0; i < CONSTANTS.minion.waveSize; i++) this.spawnMinion(team, i);
+        this.spawnTimers[team] = waves.spawnInterval;
+        // A wave per active lane. The slice runs one lane; lighting up top/bot
+        // feeds them automatically with no change here.
+        for (const lane of activeLanes(this.map)) {
+          for (let i = 0; i < waves.waveSize; i++) this.spawnMinion(team, lane, i);
+        }
       }
     });
   }
 
-  private spawnMinion(team: Team, lateral: number): void {
+  private spawnMinion(team: Team, lane: LaneDef, lateral: number): void {
     const m = this.spawn(makeMinion(team));
-    const fromZ = team === "pyre" ? CONSTANTS.base.friendlyZ + 3 : CONSTANTS.base.enemyZ - 3;
-    const offset = (lateral - (CONSTANTS.minion.waveSize - 1) / 2) * 1.6;
-    m.pos.set(offset, CONSTANTS.minion.radius, fromZ);
+    const fromZ = team === "pyre" ? this.map.bases.pyre.z + 3 : this.map.bases.warden.z - 3;
+    const offset = (lateral - (this.map.waves.waveSize - 1) / 2) * 1.6;
+    m.pos.set(lane.xOffset + offset, CONSTANTS.minion.radius, fromZ);
   }
 
   private tickScourgeRespawn(dt: number): void {
@@ -262,14 +289,20 @@ export class EntitySystem {
     if (!c.alive) return;
     const speed = slowedSpeed(CONSTANTS.champion.moveSpeed, c.slowTimer, CONSTANTS.abilities.w.slowFactor);
 
-    const foe = this.nearestFoeAny(c);
     let tx: number;
     let tz: number;
     let stop: number;
+    const foe = this.nearestFoeAny(c);
+    const tower = foe ? null : this.nearestTower(c, Number.POSITIVE_INFINITY);
     if (foe) {
       tx = foe.pos.x;
       tz = foe.pos.z;
       stop = c.attackRange + foe.radius - 0.6; // close to just inside attack range
+    } else if (tower) {
+      // No units to fight — break the Pyre tower line on the way to the base.
+      tx = tower.pos.x;
+      tz = tower.pos.z;
+      stop = c.attackRange + tower.radius - 0.6;
     } else {
       tx = this.friendlyBase.pos.x;
       tz = this.friendlyBase.pos.z;
@@ -287,6 +320,8 @@ export class EntitySystem {
 
       // Hold position to fight a unit foe in range...
       if (this.nearestFoe(m, m.attackRange)) continue;
+      // ...or to batter an enemy tower blocking the push...
+      if (this.nearestTower(m, m.attackRange)) continue;
 
       // ...or to siege the opposing base once it's reached.
       const base = this.opposingBase(team);
@@ -324,20 +359,41 @@ export class EntitySystem {
           this.beam(e.pos, foe.pos, COLORS.blood, 0.18, 0.4);
           e.cooldown = e.attackCooldown;
         } else {
-          // No unit in range — chip the opposing base if we've sieged up to it.
+          // No unit in range — batter the nearest enemy tower, or chip the base
+          // once that team's towers are down and we've sieged up to it.
+          const tower = this.nearestTower(e, e.attackRange);
           const base = this.opposingBase(e.team as Team);
-          if (base.alive && this.flatDist(e.pos, base.pos) <= e.attackRange + base.radius) {
-            this.damage(base, e.attackDamage, { dealer: e });
+          if (tower) {
+            this.damage(tower, e.attackDamage, { dealer: e });
+            this.beam(e.pos, tower.pos, COLORS.blood, 0.2, 0.5);
+            e.cooldown = e.attackCooldown;
+          } else if (
+            base.alive &&
+            this.baseVulnerable(base.team as Team) &&
+            this.flatDist(e.pos, base.pos) <= e.attackRange + base.radius
+          ) {
+            // Minions chip a base for less than they hit units/towers (baseDamage),
+            // so a base falls to champion pressure, not an unattended minion trickle.
+            this.damage(base, CONSTANTS.minion.baseDamage, { dealer: e });
             this.beam(e.pos, base.pos, COLORS.blood, 0.2, 0.5);
             e.cooldown = e.attackCooldown;
           }
+        }
+      } else if (e.kind === "tower") {
+        // Stationary auto-attacker: punish the nearest enemy unit that dives in.
+        const foe = this.nearestFoe(e, e.attackRange);
+        if (foe) {
+          this.damage(foe, e.attackDamage, { dealer: e });
+          this.beam(e.pos, foe.pos, e.team === "pyre" ? COLORS.hellfire : COLORS.bloodHot, 0.3, 0.7);
+          e.cooldown = e.attackCooldown;
         }
       }
     }
   }
 
   // Auto-target priority for a champion: nearest enemy unit, then (player only)
-  // the Scourge blob, then the opposing base once pushed up to it.
+  // the Scourge blob, then the nearest enemy tower, then the opposing base —
+  // but only once that team's towers have fallen and we've pushed up to it.
   private acquireTarget(c: Entity, opposingBase: Entity, scourgeEligible: boolean): Entity | null {
     const r = c.attackRange;
 
@@ -348,8 +404,12 @@ export class EntitySystem {
       return this.scourge;
     }
 
+    const tower = this.nearestTower(c, r);
+    if (tower) return tower;
+
     if (
       opposingBase.alive &&
+      this.baseVulnerable(opposingBase.team as Team) &&
       this.flatDist(c.pos, opposingBase.pos) <= CONSTANTS.base.championRange + opposingBase.radius
     ) {
       return opposingBase;
@@ -376,6 +436,36 @@ export class EntitySystem {
   // Nearest enemy unit at any distance — used by the Warden AI to pick a chase target.
   private nearestFoeAny(self: Entity): Entity | null {
     return this.nearestFoe(self, Number.POSITIVE_INFINITY);
+  }
+
+  // Nearest living enemy tower within `range` (flat, edge-aware distance).
+  private nearestTower(self: Entity, range: number): Entity | null {
+    let best: Entity | null = null;
+    let bestD = range;
+    for (const t of this.towers) {
+      if (!t.alive || t.team === self.team || t.team === "neutral") continue;
+      const d = this.flatDist(self.pos, t.pos) - t.radius;
+      if (d <= bestD) {
+        bestD = d;
+        best = t;
+      }
+    }
+    return best;
+  }
+
+  /** How many of a team's towers are still standing. */
+  structuresStanding(team: Team): number {
+    return this.towers.reduce((n, t) => n + (t.alive && t.team === team ? 1 : 0), 0);
+  }
+
+  /** A base can only be sieged once its own team's towers have all fallen. */
+  baseVulnerable(team: Team): boolean {
+    return this.structuresStanding(team) === 0;
+  }
+
+  /** Living minions on a team (used by the e2e snapshot). */
+  minionCount(team: Team): number {
+    return this.all.reduce((n, e) => n + (e.alive && e.kind === "minion" && e.team === team ? 1 : 0), 0);
   }
 
   private opposingBase(team: Team): Entity {
@@ -452,6 +542,14 @@ export class EntitySystem {
         this.game.input.clickTarget = null; // drop any stale move order
         this.events.playerDied = true;
       }
+      return;
+    }
+
+    if (e.kind === "tower") {
+      // A toppled tower stays as a hidden marker — it never respawns and never
+      // culls, so structuresStanding/baseVulnerable stay correct for the match.
+      e.alive = false;
+      e.mesh.visible = false;
       return;
     }
 
