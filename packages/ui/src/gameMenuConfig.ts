@@ -24,6 +24,20 @@ export interface GameMenuConfig {
 }
 
 export const GAME_MENU_CONFIGS = {
+  brawl: {
+    slug: "brawl",
+    topBar: "Cleared ground",
+    titleKicker: "One-on-One Battlefield Duel",
+    titleLines: [{ text: "BR" }, { text: "AWL", tone: "hot" }],
+    titleSubtitle: "One champion, one rival. Settle the clash before the Scourge settles it for you.",
+    titleStatus: ["Champion armed"],
+    settingsKicker: "Duel Settings",
+    codexKicker: "Cleared Ground",
+    pauseKicker: "Cleared Ground",
+    pauseSubtitle: "The clash holds. Steady your stance, then settle it.",
+    backToWarlineLabel: "← Back to Warline",
+    backToWarlineMeta: "Lobby",
+  },
   deadlane: {
     slug: "deadlane",
     topBar: "Ashgate lane",
