@@ -23,12 +23,15 @@ import {
 import { useRef, useState } from "react";
 import { MAP_PICKER, normalizeMapId } from "../../game/data/maps";
 import {
+  SHOP_TOTAL_TIERS,
   SHOP_UPGRADES,
   SURVIVOR_CLASS_IDS,
   SURVIVOR_CLASSES,
   SURVIVOR_RUN_GOAL_TIME,
   type SurvivorClassId,
   shopCost,
+  shopRemainingCost,
+  shopTiersOwned,
 } from "../../game/data/survivors";
 import { WEAPON_IDENTITIES } from "../../game/data/weaponIdentity";
 import { MENU_HERO_URL, PLAYER_AVATAR_PREVIEW_URLS } from "../../game/spriteAssets";
@@ -56,8 +59,12 @@ function savedMapId(): string {
 }
 
 export function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => void }) {
+  const tiersOwned = shopTiersOwned(shop.tiers);
+  const remaining = shopRemainingCost(shop.tiers);
+  const fullyUpgraded = tiersOwned >= SHOP_TOTAL_TIERS;
   return (
     <div
+      data-testid="shop-panel"
       className="pointer-events-auto w-[min(680px,92vw)] mt-[14px] bg-[rgba(255,209,102,0.05)] border border-[rgba(255,209,102,0.35)] rounded-xl px-4 py-[14px]"
       onClick={(e) => e.stopPropagation()}
     >
@@ -67,15 +74,42 @@ export function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => 
             Survivors Upgrade Shop
           </IconText>
         </span>
-        <span className="text-[16px] font-extrabold text-[#ffd166]">
+        <span
+          data-testid="shop-gold"
+          data-gold={Math.max(0, Math.floor(shop.gold))}
+          className="text-[16px] font-extrabold text-[#ffd166]"
+        >
           <IconText icon="gold" size={19}>
             {shop.gold.toLocaleString()}
           </IconText>
         </span>
       </div>
+      {/* Multi-run progress: the armory is a long-haul goal, not a one-run buy. */}
+      <div
+        data-testid="shop-progress"
+        data-owned={tiersOwned}
+        data-total={SHOP_TOTAL_TIERS}
+        data-remaining={remaining}
+        className="mb-[10px] flex items-center justify-between gap-2 text-[11px] tracking-[0.04em] text-[#9b958a]"
+      >
+        <span className="uppercase">
+          Armory {tiersOwned}/{SHOP_TOTAL_TIERS}
+        </span>
+        <span>
+          {fullyUpgraded ? (
+            <span className="text-[#ffd166] font-semibold uppercase">Fully upgraded</span>
+          ) : (
+            <IconText icon="gold" size={12}>
+              {remaining.toLocaleString()} to fully upgrade
+            </IconText>
+          )}
+        </span>
+      </div>
       <div className="flex flex-col gap-2 max-h-[56vh] overflow-y-auto overscroll-contain pr-1.5">
         {SHOP_UPGRADES.map((u) => {
-          const tier = shop.tiers[u.id] ?? 0;
+          // Clamp the owned tier the same way the Armory progress line does, so a
+          // legacy/tampered over-max save can't render a nonsense "7/5" label.
+          const tier = Math.min(u.max, Math.max(0, Math.floor(shop.tiers[u.id] ?? 0)));
           const maxed = tier >= u.max;
           const cost = shopCost(u, tier);
           const afford = shop.gold >= cost;
@@ -91,7 +125,7 @@ export function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => 
               <div className="flex-1 min-w-0">
                 <div className="text-[15px] font-bold">
                   {u.name}{" "}
-                  <span className="text-[11px] opacity-60 font-semibold">
+                  <span data-testid={`shop-tier-${u.id}`} className="text-[11px] opacity-60 font-semibold">
                     {tier}/{u.max}
                   </span>
                 </div>
@@ -99,6 +133,9 @@ export function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => 
               </div>
               <button
                 type="button"
+                data-testid={`shop-buy-${u.id}`}
+                data-maxed={maxed}
+                data-afford={afford}
                 className="pointer-events-auto cursor-pointer text-[12px] font-extrabold whitespace-nowrap text-[#1a1206] bg-gradient-to-r from-[#ffd166] to-[#ffb02e] rounded-[7px] px-[10px] py-[7px] disabled:cursor-default disabled:bg-white/[0.12] disabled:bg-none disabled:text-[#8a93a6]"
                 disabled={maxed || !afford}
                 onClick={() => onBuy(u.id)}
@@ -116,7 +153,7 @@ export function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => 
         })}
       </div>
       <div className="mt-[10px] text-[11px] opacity-60 text-center">
-        Permanent upgrades apply to every Survivors run. Earn gold by surviving.
+        Permanent upgrades apply to every Survivors run. Earn gold by surviving — the full armory takes many runs.
       </div>
     </div>
   );
