@@ -59,8 +59,14 @@ front.
 - **Hub** (`apps/games/warline/src`) connects with `connectWarline()` from
   `@shipshitgames/warline/client` and mirrors server state; if no server is reachable it
   seeds `createInitialWorld()` and runs the identical reducers locally.
-- **Games** report results via `WarlineClient.reportOperation()` from
-  `@shipshitgames/warline/client` (Bearer token).
+- **Games** report run results through `reportWarlineOperation()` from
+  `@deadrot/game-kit/warline`, called once per run beside each game's
+  `recordWarResult(...)`. That helper builds the `OperationResult` (clamping the
+  score, reading the shared `warline.faction` allegiance) and forwards it via
+  `WarlineClient.reportOperation()` from `@shipshitgames/warline/client` (Bearer
+  token). It is config-gated on `VITE_WARLINE_HOST`: with no host configured the
+  call is a no-op, so single-game builds never touch the network and an
+  unreachable front never breaks a run.
 
 The pure core (`@shipshitgames/warline`) has **no runtime dependencies**. Only the
 `@shipshitgames/warline/client` subpath imports `partysocket`, keeping the core safe to

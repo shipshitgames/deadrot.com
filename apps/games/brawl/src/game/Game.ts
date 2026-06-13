@@ -1,4 +1,5 @@
 import { recordWarResult } from "@deadrot/game-kit/core";
+import { reportWarlineOperation } from "@deadrot/game-kit/warline";
 import * as THREE from "three";
 import { ARENA } from "./constants";
 import { ATTACKS, attackDamage, guardedDamage } from "./combat";
@@ -326,6 +327,8 @@ export class Game {
         },
         Date.now(),
       );
+      // Report the settled grudge into the shared Warline front (config-gated, offline-safe).
+      void reportWarlineOperation("brawl", { outcome, score });
     }
     this.emit();
   }

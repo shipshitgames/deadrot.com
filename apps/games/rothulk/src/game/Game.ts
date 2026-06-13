@@ -1,6 +1,7 @@
 import type { DeadrotSfx } from "@deadrot/game-kit/audio";
 import { InputLatch, recordWarResult } from "@deadrot/game-kit/core";
 import { FlashOverlay, ParticleBursts, ScreenShake } from "@deadrot/game-kit/juice";
+import { reportWarlineOperation } from "@deadrot/game-kit/warline";
 import { audio } from "../audio";
 import { COLORS, CONSTANTS } from "../constants";
 import {
@@ -334,7 +335,9 @@ export class Game {
     if (this.respawnTimer <= 0) {
       if (this.lives <= 0) {
         this.mode = "gameover";
-        recordWarResult("rothulk", this.warResult("defeat"), Date.now());
+        const result = this.warResult("defeat");
+        recordWarResult("rothulk", result, Date.now());
+        void reportWarlineOperation("rothulk", { outcome: "defeat", score: result.score });
         this.playSfx("defeat");
         this.hud.showBigToast("gameover");
       } else {
@@ -761,7 +764,9 @@ export class Game {
     }
 
     this.mode = "won";
-    recordWarResult("rothulk", this.warResult("victory"), Date.now());
+    const result = this.warResult("victory");
+    recordWarResult("rothulk", result, Date.now());
+    void reportWarlineOperation("rothulk", { outcome: "victory", score: result.score });
     this.playSfx("victory");
     this.renderer.setExitArmed(false);
     this.hud.setProgress(1);

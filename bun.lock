@@ -342,6 +342,7 @@
         "@sentry/browser": "^10.57.0",
         "@shipshitgames/assets": "workspace:*",
         "@shipshitgames/ui": "workspace:*",
+        "@shipshitgames/warline": "workspace:*",
         "posthog-js": "^1.386.6",
       },
       "devDependencies": {

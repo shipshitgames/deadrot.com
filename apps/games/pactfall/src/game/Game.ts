@@ -1,5 +1,6 @@
 import { createFixedLoop, type FixedLoop, recordWarResult } from "@deadrot/game-kit/core";
 import { DamageNumbers, FlashOverlay, ParticleBursts, ScreenShake } from "@deadrot/game-kit/juice";
+import { reportWarlineOperation } from "@deadrot/game-kit/warline";
 import { audio } from "../audio";
 import { COLORS, CONSTANTS } from "./constants";
 import { type AbilityKey, AbilitySystem } from "./systems/abilities";
@@ -152,7 +153,9 @@ export class Game {
 
   win(): void {
     if (this.phase === "playing") {
-      recordWarResult("pactfall", this.warResult("victory"), Date.now());
+      const result = this.warResult("victory");
+      recordWarResult("pactfall", result, Date.now());
+      void reportWarlineOperation("pactfall", { outcome: "victory", score: result.score });
       this.setPaused(false);
       this.setPhase("won");
       audio.sfx("victory");
@@ -161,7 +164,9 @@ export class Game {
 
   lose(): void {
     if (this.phase === "playing") {
-      recordWarResult("pactfall", this.warResult("defeat"), Date.now());
+      const result = this.warResult("defeat");
+      recordWarResult("pactfall", result, Date.now());
+      void reportWarlineOperation("pactfall", { outcome: "defeat", score: result.score });
       this.setPaused(false);
       this.setPhase("lost");
       audio.sfx("defeat");
