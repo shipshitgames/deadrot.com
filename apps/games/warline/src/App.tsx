@@ -1,8 +1,10 @@
 import menuHero from "@shipshitgames/assets/games/warline/ui/menu/title.webp";
 import {
+  GameAudioSettingsScreen,
   GameJumpMenu,
-  GameSettingsScreen,
+  GameMenuTitle,
   GlobalMusicToggle,
+  gameMenuConfig,
   MainMenuAction,
   MainMenuCopy,
   MainMenuEnterPrompt,
@@ -10,8 +12,6 @@ import {
   MainMenuNav,
   MainMenuScreen,
   MainMenuStatus,
-  MainMenuTitle,
-  MainMenuTitleLine,
   MainMenuTopBar,
   MenuKicker,
   useEnterToReveal,
@@ -27,6 +27,9 @@ import { WarFeed } from "./components/WarFeed";
 import { WarMap } from "./components/WarMap";
 import { WarRecord } from "./components/WarRecord";
 import { useWarline } from "./store";
+
+const GAME_SLUG = "warline";
+const menu = gameMenuConfig(GAME_SLUG);
 
 export default function App() {
   const { state, summary, status, faction, setFaction, command, simulate } = useWarline();
@@ -47,18 +50,13 @@ export default function App() {
           style={{ position: "fixed", zIndex: 60 }}
         >
           <MainMenuTopBar mark="SSG" meta={status === "LIVE" ? "Live front" : "Local front"} aria-hidden>
-            War for the lanes
+            {menu.topBar}
           </MainMenuTopBar>
           <MainMenuLayout className={revealed ? "ssg-main-menu-layout--menu" : "ssg-main-menu-layout--splash"}>
             <MainMenuCopy hidden={revealed}>
-              <MenuKicker>Strategic Command</MenuKicker>
-              <MainMenuTitle>
-                <MainMenuTitleLine>WAR</MainMenuTitleLine>
-                <MainMenuTitleLine tone="hot">LINE</MainMenuTitleLine>
-              </MainMenuTitle>
-              <p className="ssg-main-menu-subtitle">
-                Walk the Front, step through a portal into any game, or take the Command Table to push the war.
-              </p>
+              <MenuKicker>{menu.titleKicker}</MenuKicker>
+              <GameMenuTitle config={menu} />
+              <p className="ssg-main-menu-subtitle">{menu.titleSubtitle}</p>
               <MainMenuStatus>
                 <span>{status === "LIVE" ? "Shared front online" : "Standalone simulation"}</span>
                 <span>Threat {Math.round(summary.threat)}%</span>
@@ -99,21 +97,21 @@ export default function App() {
                   meta="Audio"
                   onClick={() => setTitleSettings(true)}
                 />
-                <GameJumpMenu currentSlug="warline" label="Portals — direct deploy" />
+                <GameJumpMenu currentSlug={GAME_SLUG} label={menu.fastTravelLabel} />
               </MainMenuNav>
             ) : (
               <>
                 <MainMenuEnterPrompt />
-                <GameJumpMenu currentSlug="warline" label="Portals — direct deploy" className="ssg-game-jump--splash" />
+                <GameJumpMenu currentSlug={GAME_SLUG} label={menu.fastTravelLabel} className="ssg-game-jump--splash" />
               </>
             )}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
           {titleSettings && (
-            <GameSettingsScreen
+            <GameAudioSettingsScreen
               open
+              slug={GAME_SLUG}
               onClose={() => setTitleSettings(false)}
-              kicker="Audio Settings"
               backgroundImage={menuHero}
             />
           )}

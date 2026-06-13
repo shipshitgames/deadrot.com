@@ -8,10 +8,10 @@ import {
   RectBounds,
 } from "@shipshitgames/engine";
 import {
-  GameSettingsScreen,
+  GameAudioSettingsScreen,
+  GamePauseMenu,
   loadGlobalGameSettings,
   MusicDirector,
-  PauseMenu,
   subscribeGlobalGameSettings,
   toggleGlobalMusicMuted,
 } from "@shipshitgames/ui";
@@ -60,6 +60,8 @@ type PauseUiState = {
   paused: boolean;
   settings: boolean;
 };
+
+const GAME_SLUG = "warline";
 
 // react-doctor-disable-next-line react-doctor/no-giant-component -- The Three.js scene lifecycle stays together so setup and cleanup remain paired.
 export function FrontMap3D({
@@ -429,21 +431,19 @@ export function FrontMap3D({
         </div>
       )}
 
-      <PauseMenu
+      <GamePauseMenu
+        slug={GAME_SLUG}
         open={paused && !pauseSettings}
-        kicker="Warline Front"
-        title="Paused"
-        subtitle="The lanes hold while you stand at the threshold."
         status={pauseStatus}
         onResume={() => resumeRef.current()}
         actions={pauseActions}
       />
 
       {paused && pauseSettings && (
-        <GameSettingsScreen
+        <GameAudioSettingsScreen
           open
+          slug={GAME_SLUG}
           onClose={() => setPauseUi((prev) => ({ ...prev, settings: false }))}
-          kicker="Audio Settings"
           backgroundImage={menuHero}
         />
       )}

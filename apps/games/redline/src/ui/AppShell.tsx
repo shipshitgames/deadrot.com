@@ -1,6 +1,8 @@
 import menuHero from "@shipshitgames/assets/games/redline/ui/menu/title.webp";
-import { GlobalMusicToggle, MainMenuLayout, MainMenuScreen, MainMenuTopBar } from "@shipshitgames/ui";
+import { GlobalMusicToggle, MainMenuLayout, MainMenuScreen, MainMenuTopBar, gameMenuConfig } from "@shipshitgames/ui";
 import { GameOverlays } from "./overlays";
+
+const menu = gameMenuConfig("redline");
 
 export function AppShell() {
   return (
@@ -74,7 +76,7 @@ export function AppShell() {
           never replace the engine's live button mid-click. */}
       <MainMenuScreen id="overlay" backgroundImage={menuHero}>
         <MainMenuTopBar mark="SSG" meta="0 gold" aria-hidden>
-          Beacon run
+          {menu.topBar}
         </MainMenuTopBar>
         <MainMenuLayout id="overlay-card" />
         <GlobalMusicToggle className="ssg-music-toggle--corner" />

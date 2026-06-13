@@ -1,8 +1,11 @@
 import menuHero from "@shipshitgames/assets/games/pactfall/ui/menu/title.webp";
 import {
+  GameAudioSettingsScreen,
   GameJumpMenu,
-  GameSettingsScreen,
+  GameMenuTitle,
+  GamePauseMenu,
   GlobalMusicToggle,
+  gameMenuConfig,
   goToWarlineLobby,
   MainMenuAction,
   MainMenuCopy,
@@ -12,10 +15,8 @@ import {
   MainMenuScreen,
   MainMenuStatus,
   MainMenuTitle,
-  MainMenuTitleLine,
   MainMenuTopBar,
   MenuKicker,
-  PauseMenu,
   useEnterToReveal,
 } from "@shipshitgames/ui";
 import {
@@ -30,6 +31,9 @@ import type { Game } from "../game/Game";
 import { ABILITY_KEYS, type AbilityKey } from "../game/systems/abilities";
 import type { Phase } from "../game/types";
 import { getBridgeGame, subscribeBridgeGame } from "./gameBridge";
+
+const GAME_SLUG = "pactfall";
+const menu = gameMenuConfig(GAME_SLUG);
 
 export function AppShell() {
   // The vanilla Game owns the loop + HUD DOM; it registers itself on the bridge
@@ -194,21 +198,17 @@ export function AppShell() {
           backgroundImage={menuHero}
         >
           <MainMenuTopBar mark="SSG" meta="0 gold" aria-hidden>
-            Broken concord
+            {menu.topBar}
           </MainMenuTopBar>
           <MainMenuLayout className={revealed ? "ssg-main-menu-layout--menu" : "ssg-main-menu-layout--splash"}>
             <MainMenuCopy hidden={revealed}>
-              <MenuKicker>Pyre vs Warden Arena</MenuKicker>
-              <MainMenuTitle>
-                <MainMenuTitleLine>PACT</MainMenuTitleLine>
-                <MainMenuTitleLine tone="hot">FALL</MainMenuTitleLine>
-              </MainMenuTitle>
-              <p className="ssg-main-menu-subtitle">
-                Break the Warden base before the Scourge turns the duel into a feeding ground.
-              </p>
+              <MenuKicker>{menu.titleKicker}</MenuKicker>
+              <GameMenuTitle config={menu} />
+              <p className="ssg-main-menu-subtitle">{menu.titleSubtitle}</p>
               <MainMenuStatus>
-                <span>Champion armed</span>
-                <span>Neutral Scourge buff</span>
+                {menu.titleStatus.map((item) => (
+                  <span key={item}>{item}</span>
+                ))}
               </MainMenuStatus>
             </MainMenuCopy>
             {revealed ? (
@@ -235,16 +235,16 @@ export function AppShell() {
                 <MainMenuAction
                   type="button"
                   variant="default"
-                  label="← Back to Warline"
-                  meta="Lobby"
+                  label={menu.backToWarlineLabel}
+                  meta={menu.backToWarlineMeta}
                   onClick={() => goToWarlineLobby()}
                 />
-                <GameJumpMenu currentSlug="pactfall" />
+                <GameJumpMenu currentSlug={GAME_SLUG} label={menu.fastTravelLabel} />
               </MainMenuNav>
             ) : (
               <>
                 <MainMenuEnterPrompt />
-                <GameJumpMenu currentSlug="pactfall" className="ssg-game-jump--splash" />
+                <GameJumpMenu currentSlug={GAME_SLUG} label={menu.fastTravelLabel} className="ssg-game-jump--splash" />
               </>
             )}
           </MainMenuLayout>
@@ -266,19 +266,17 @@ export function AppShell() {
       </div>
 
       {showSettings && (
-        <GameSettingsScreen
+        <GameAudioSettingsScreen
           open
+          slug={GAME_SLUG}
           onClose={() => setShowSettings(false)}
-          kicker="Arena Settings"
           backgroundImage={menuHero}
         />
       )}
 
-      <PauseMenu
+      <GamePauseMenu
+        slug={GAME_SLUG}
         open={paused && phase === "playing" && !showSettings}
-        kicker="Ashgate Arena"
-        title="Paused"
-        subtitle="The duel holds. Catch your breath, then redeploy."
         status={pauseStatus}
         onResume={resume}
         actions={pauseActions}

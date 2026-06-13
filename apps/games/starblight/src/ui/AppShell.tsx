@@ -2,9 +2,12 @@ import { codexEntriesForGame } from "@deadrot/game-kit";
 import menuHero from "@shipshitgames/assets/games/starblight/ui/menu/title.webp";
 import {
   CodexScreen,
+  GameAudioSettingsScreen,
   GameJumpMenu,
-  GameSettingsScreen,
+  GameMenuTitle,
+  GamePauseMenu,
   GlobalMusicToggle,
+  gameMenuConfig,
   goToWarlineLobby,
   MainMenuAction,
   MainMenuCopy,
@@ -13,18 +16,18 @@ import {
   MainMenuNav,
   MainMenuScreen,
   MainMenuStatus,
-  MainMenuTitle,
-  MainMenuTitleLine,
   MainMenuTopBar,
   MenuKicker,
   MenuPanel,
-  PauseMenu,
   useEnterToReveal,
 } from "@shipshitgames/ui";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { applyBuy, loadDrydock, type ShopId, saveDrydock } from "../game/drydock";
 import { DrydockScreen } from "./DrydockScreen";
 import { getPauseActions, getPauseSnapshot, pushDrydockTiers, setRunEndHandler, subscribePause } from "./gameBridge";
+
+const GAME_SLUG = "starblight";
+const menu = gameMenuConfig(GAME_SLUG);
 
 export function AppShell() {
   // Pause state lives in the imperative Game engine; mirror it here via the
@@ -134,26 +137,24 @@ export function AppShell() {
 
         <MainMenuScreen id="banner" className="banner" backgroundImage={menuHero}>
           <MainMenuTopBar mark="SSG" meta="0 salvage" aria-hidden>
-            Orbital front
+            {menu.topBar}
           </MainMenuTopBar>
           <MainMenuLayout className="ssg-main-menu-layout--menu">
             {/* Hidden once the title menu is revealed, but shown again for the
                 engine-written game-over / victory banner (phase leaves "title"). */}
             <MainMenuCopy hidden={onTitle && revealed}>
-              <MenuKicker>Orbital Survivors Front</MenuKicker>
-              <MainMenuTitle id="banner-title">
-                <MainMenuTitleLine>STAR</MainMenuTitleLine>
-                <MainMenuTitleLine tone="hot">BLIGHT</MainMenuTitleLine>
-              </MainMenuTitle>
+              <MenuKicker>{menu.titleKicker}</MenuKicker>
+              <GameMenuTitle config={menu} id="banner-title" />
               <p className="ssg-main-menu-subtitle" id="banner-sub">
-                THE ORBITAL FRONT
+                {menu.titleSubtitle}
               </p>
               <p className="ssg-main-menu-subtitle" id="banner-hint">
                 MOVE WITH THE MOUSE - weapons auto-fire - collect gems, draft upgrades, stack combos
               </p>
               <MainMenuStatus>
-                <span>Interceptor online</span>
-                <span>Draft systems hot</span>
+                {menu.titleStatus.map((item) => (
+                  <span key={item}>{item}</span>
+                ))}
               </MainMenuStatus>
             </MainMenuCopy>
             {/* Nav stays mounted (engine grabs #banner-btn at boot). Hidden only
@@ -188,38 +189,43 @@ export function AppShell() {
               <MainMenuAction
                 type="button"
                 variant="default"
-                label="← Back to Warline"
-                meta="Lobby"
+                label={menu.backToWarlineLabel}
+                meta={menu.backToWarlineMeta}
                 onClick={() => goToWarlineLobby()}
               />
-              <GameJumpMenu currentSlug="starblight" />
+              <GameJumpMenu currentSlug={GAME_SLUG} label={menu.fastTravelLabel} />
             </MainMenuNav>
             {onSplash && (
               <>
                 <MainMenuEnterPrompt />
-                <GameJumpMenu currentSlug="starblight" className="ssg-game-jump--splash" />
+                <GameJumpMenu currentSlug={GAME_SLUG} label={menu.fastTravelLabel} className="ssg-game-jump--splash" />
               </>
             )}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>
 
-        <PauseMenu
+        <GamePauseMenu
+          slug={GAME_SLUG}
           open={pause.open}
-          kicker="Orbital Front"
-          title="Paused"
-          subtitle="The Scourge holds at the threshold while you stand down."
           status={pauseStatus}
           onResume={() => getPauseActions().resume()}
           actions={pauseActions}
         />
 
-        {settingsOpen && <GameSettingsScreen open onClose={() => setSettingsOpen(false)} backgroundImage={menuHero} />}
+        {settingsOpen && (
+          <GameAudioSettingsScreen
+            open
+            slug={GAME_SLUG}
+            onClose={() => setSettingsOpen(false)}
+            backgroundImage={menuHero}
+          />
+        )}
         {codexOpen && (
           <CodexScreen
             open
             onClose={() => setCodexOpen(false)}
-            kicker="Orbital Front"
+            kicker={menu.codexKicker}
             backgroundImage={menuHero}
             entries={codexEntries}
           />

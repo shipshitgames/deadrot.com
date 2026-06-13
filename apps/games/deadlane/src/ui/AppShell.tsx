@@ -2,9 +2,12 @@ import { codexEntriesForGame } from "@deadrot/game-kit";
 import menuHero from "@shipshitgames/assets/games/deadlane/ui/menu/title.webp";
 import {
   CodexScreen,
+  GameAudioSettingsScreen,
   GameJumpMenu,
-  GameSettingsScreen,
+  GameMenuTitle,
+  GamePauseMenu,
   GlobalMusicToggle,
+  gameMenuConfig,
   goToWarlineLobby,
   MainMenuAction,
   MainMenuCopy,
@@ -17,13 +20,15 @@ import {
   MainMenuTitleLine,
   MainMenuTopBar,
   MenuKicker,
-  PauseMenu,
   useEnterToReveal,
 } from "@shipshitgames/ui";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { unlockedBestiarySlugs } from "../codexUnlocks";
 import { getBannerSnapshot, subscribeBanner } from "./bannerBridge";
 import { getPauseSnapshot, subscribePause } from "./pauseBridge";
+
+const GAME_SLUG = "deadlane";
+const menu = gameMenuConfig(GAME_SLUG);
 
 export function AppShell() {
   const [showSettings, setShowSettings] = useState(false);
@@ -115,28 +120,25 @@ export function AppShell() {
 
         <MainMenuScreen id="hud-banner" className={banner.visible ? undefined : "hidden"} backgroundImage={menuHero}>
           <MainMenuTopBar mark="SSG" meta="150 gold" aria-hidden>
-            Ashgate lane
+            {menu.topBar}
           </MainMenuTopBar>
           <MainMenuLayout className={revealed ? "ssg-main-menu-layout--menu" : "ssg-main-menu-layout--splash"}>
             <MainMenuCopy hidden={revealed}>
-              <MenuKicker>Scourge Lane Defense</MenuKicker>
-              <MainMenuTitle id="banner-title">
-                {banner.title === "DEADLANE" ? (
-                  <>
-                    <MainMenuTitleLine>DEAD</MainMenuTitleLine>
-                    <MainMenuTitleLine tone="hot">LANE</MainMenuTitleLine>
-                  </>
-                ) : (
+              <MenuKicker>{menu.titleKicker}</MenuKicker>
+              {banner.title === "DEADLANE" ? (
+                <GameMenuTitle config={menu} id="banner-title" />
+              ) : (
+                <MainMenuTitle id="banner-title">
                   <MainMenuTitleLine tone="hot">{banner.title}</MainMenuTitleLine>
-                )}
-              </MainMenuTitle>
+                </MainMenuTitle>
+              )}
               <p id="banner-sub" className="ssg-main-menu-subtitle">
                 {banner.subtitle}
               </p>
               <MainMenuStatus>
-                <span>Run to the tile</span>
-                <span>Build by hand</span>
-                <span>Hold the base</span>
+                {menu.titleStatus.map((item) => (
+                  <span key={item}>{item}</span>
+                ))}
               </MainMenuStatus>
             </MainMenuCopy>
             {/* Nav stays mounted (engine grabs #banner-btn at boot); the splash
@@ -164,16 +166,16 @@ export function AppShell() {
               <MainMenuAction
                 type="button"
                 variant="default"
-                label="← Back to Warline"
-                meta="Lobby"
+                label={menu.backToWarlineLabel}
+                meta={menu.backToWarlineMeta}
                 onClick={() => goToWarlineLobby()}
               />
-              <GameJumpMenu currentSlug="deadlane" />
+              <GameJumpMenu currentSlug={GAME_SLUG} label={menu.fastTravelLabel} />
             </MainMenuNav>
             {!revealed && (
               <>
                 <MainMenuEnterPrompt />
-                <GameJumpMenu currentSlug="deadlane" className="ssg-game-jump--splash" />
+                <GameJumpMenu currentSlug={GAME_SLUG} label={menu.fastTravelLabel} className="ssg-game-jump--splash" />
               </>
             )}
           </MainMenuLayout>
@@ -186,10 +188,10 @@ export function AppShell() {
       </div>
 
       {showSettings && (
-        <GameSettingsScreen
+        <GameAudioSettingsScreen
           open
+          slug={GAME_SLUG}
           onClose={() => setShowSettings(false)}
-          kicker="Wardens Console"
           backgroundImage={menuHero}
         />
       )}
@@ -198,17 +200,15 @@ export function AppShell() {
         <CodexScreen
           open
           onClose={() => setShowCodex(false)}
-          kicker="Ashgate Lane"
+          kicker={menu.codexKicker}
           backgroundImage={menuHero}
           entries={codexEntries}
         />
       )}
 
-      <PauseMenu
+      <GamePauseMenu
+        slug={GAME_SLUG}
         open={pause.open}
-        kicker="Ashgate Lane"
-        title="Paused"
-        subtitle="Re-enter the lane. The breach waits for no one."
         status={pauseStatus}
         onResume={() => pause.onResume?.()}
         resumeMeta="Lock view"
