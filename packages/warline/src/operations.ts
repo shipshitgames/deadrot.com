@@ -41,6 +41,14 @@ export const GAME_OPERATIONS: Record<GameSlug, GameOperationMeta> = {
     blurb: "Seize a contested neutral region for the Pact.",
     resources: ["intel"],
   },
+  brawl: {
+    game: "brawl",
+    kind: "contest-territory",
+    label: "Settle a Grudge",
+    verb: "brawled",
+    blurb: "Win a battlefield duel and rally the contested front.",
+    resources: ["intel", "biomass"],
+  },
   starblight: {
     game: "starblight",
     kind: "orbital-intercept",

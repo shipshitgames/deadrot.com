@@ -18,7 +18,7 @@
 // cross-game UI palette, intentionally separate from the lore accent tokens.
 
 // Playable game apps, ordered by ascending dev port. The e2e harness pins this
-// order (deadlane 5174 → warline 5180), so keep new apps inserted by port.
+// order (deadlane 5174 → brawl 5181), so keep new apps inserted by port.
 export const GAME_APPS = [
   {
     slug: "deadlane",
@@ -78,6 +78,14 @@ export const GAME_APPS = [
     deployUrl: "https://warline-jet.vercel.app",
     status: "PLAYABLE",
   },
+  {
+    slug: "brawl",
+    title: "Brawl",
+    accent: "#c1121f",
+    devPort: 5181,
+    deployUrl: "https://brawl.vercel.app",
+    status: "PLAYABLE",
+  },
 ];
 
 // Titles that exist in canon/marketing but have no in-repo app (and so no port,
@@ -99,7 +107,15 @@ export const gameDevPorts = Object.fromEntries(GAME_APPS.map((g) => [g.slug, g.d
 // Ordered app slugs.
 export const gameSlugs = GAME_APPS.map((g) => g.slug);
 
-// The six playable front games (everything except the warline lobby), in the
+// The playable front games (everything except the warline lobby), in the
 // canonical Scourge-universe order shared by @shipshitgames/assets and
 // @shipshitgames/warline. NOT the dev-port order of GAME_APPS above.
-export const PLAYABLE_GAME_SLUGS = ["scourge-survivors", "deadlane", "pactfall", "starblight", "redline", "rothulk"];
+export const PLAYABLE_GAME_SLUGS = [
+  "scourge-survivors",
+  "deadlane",
+  "pactfall",
+  "brawl",
+  "starblight",
+  "redline",
+  "rothulk",
+];
