@@ -99,7 +99,7 @@ export function AppShell({ createGame }: AppShellProps) {
 
   return (
     <>
-      <canvas id="scene" ref={canvasRef} />
+      <canvas id="scene" data-testid="game-canvas" ref={canvasRef} />
 
       <div id="hud" aria-hidden="true">
         <div className="hud-top">
