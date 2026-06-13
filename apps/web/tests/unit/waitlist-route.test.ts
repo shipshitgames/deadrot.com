@@ -1,24 +1,34 @@
-import { afterAll, beforeEach, describe, expect, mock, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 
-import type { WaitlistSignup } from "@/lib/waitlist";
+import { POST } from "@/app/api/waitlist/route";
 
-// Intercept the side-effecting sink so the handler tests assert the capture
-// contract (status codes + whether a signup is recorded) without touching the
-// network or env. mock.module must be registered before the route is imported,
-// so the route is pulled in lazily inside the tests via loadRoute().
-const recorded: WaitlistSignup[] = [];
-const recordSignup = mock(async (signup: WaitlistSignup) => {
-  recorded.push(signup);
+// Exercises the POST handler end-to-end through the REAL sink (lib/waitlist-sink.ts):
+// a forward URL is wired and globalThis.fetch is faked, so a recorded signup shows up
+// as a forwarded JSON payload we can inspect. Deliberately uses NO mock.module — bun's
+// module mocks are process-global and are not undone by mock.restore(), so mocking the
+// sink here would leak into the sibling waitlist-sink.test.ts depending on file order.
+
+const FORWARD = "https://sink.test/intake";
+let realFetch: typeof fetch;
+let savedForwardUrl: string | undefined;
+let forwarded: Array<{ url: string; body: Record<string, unknown> }>;
+
+beforeEach(() => {
+  savedForwardUrl = process.env.WAITLIST_FORWARD_URL;
+  process.env.WAITLIST_FORWARD_URL = FORWARD;
+  forwarded = [];
+  realFetch = globalThis.fetch;
+  globalThis.fetch = mock(async (url: string | URL | Request, init?: RequestInit) => {
+    forwarded.push({ url: String(url), body: JSON.parse(String(init?.body ?? "null")) });
+    return new Response(null, { status: 200 });
+  }) as unknown as typeof fetch;
 });
 
-mock.module("@/lib/waitlist-sink", () => ({
-  recordSignup,
-  waitlistForwardTarget: () => null,
-}));
-
-async function loadRoute() {
-  return import("@/app/api/waitlist/route");
-}
+afterEach(() => {
+  globalThis.fetch = realFetch;
+  if (savedForwardUrl === undefined) delete process.env.WAITLIST_FORWARD_URL;
+  else process.env.WAITLIST_FORWARD_URL = savedForwardUrl;
+});
 
 function jsonReq(body: unknown): Request {
   return new Request("http://localhost/api/waitlist/", {
@@ -37,62 +47,44 @@ function formReq(fields: Record<string, string>): Request {
   });
 }
 
-beforeEach(() => {
-  recorded.length = 0;
-  recordSignup.mockClear();
-});
-
-// mock.module overrides are process-global in bun:test; restore so a sibling file
-// (waitlist-sink.test.ts) can exercise the real sink without inheriting this mock.
-afterAll(() => {
-  mock.restore();
-});
-
 describe("POST /api/waitlist", () => {
-  test("records a valid JSON signup and returns ok", async () => {
-    const { POST } = await loadRoute();
+  test("records a valid JSON signup (normalized + timestamped) and returns ok", async () => {
     const res = await POST(jsonReq({ email: "Survivor@Deadrot.com", source: "site-waitlist" }));
 
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
-    expect(recordSignup).toHaveBeenCalledTimes(1);
-    expect(recorded[0]?.email).toBe("survivor@deadrot.com");
-    expect(recorded[0]?.source).toBe("site-waitlist");
+    expect(forwarded).toHaveLength(1);
+    expect(forwarded[0].url).toBe(FORWARD);
+    expect(forwarded[0].body).toMatchObject({ email: "survivor@deadrot.com", source: "site-waitlist" });
     // The route stamps an ISO timestamp the pure layer never sees.
-    expect(recorded[0]?.at).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(String(forwarded[0].body.at)).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });
 
-  test("accepts a progressive-enhancement form-encoded submit", async () => {
-    const { POST } = await loadRoute();
+  test("accepts a form-encoded submit from a non-JSON client", async () => {
     const res = await POST(formReq({ email: "a@b.co" }));
 
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
-    expect(recorded[0]?.email).toBe("a@b.co");
-    // Source defaults when the form omits it.
-    expect(recorded[0]?.source).toBe("site");
+    expect(forwarded[0].body).toMatchObject({ email: "a@b.co", source: "site" });
   });
 
   test("rejects an invalid email with 400 and never records", async () => {
-    const { POST } = await loadRoute();
     const res = await POST(jsonReq({ email: "nope" }));
 
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ ok: false, error: "Enter a valid email address." });
-    expect(recordSignup).not.toHaveBeenCalled();
+    expect(forwarded).toHaveLength(0);
   });
 
   test("a tripped honeypot returns ok but records nothing (don't tip off the bot)", async () => {
-    const { POST } = await loadRoute();
     const res = await POST(jsonReq({ email: "real@person.com", company: "Acme Corp" }));
 
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
-    expect(recordSignup).not.toHaveBeenCalled();
+    expect(forwarded).toHaveLength(0);
   });
 
   test("malformed JSON is treated as an invalid (empty) submit, not a 500", async () => {
-    const { POST } = await loadRoute();
     const res = await POST(
       new Request("http://localhost/api/waitlist/", {
         method: "POST",
@@ -102,6 +94,6 @@ describe("POST /api/waitlist", () => {
     );
 
     expect(res.status).toBe(400);
-    expect(recordSignup).not.toHaveBeenCalled();
+    expect(forwarded).toHaveLength(0);
   });
 });
