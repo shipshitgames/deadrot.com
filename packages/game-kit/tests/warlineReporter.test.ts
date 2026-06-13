@@ -1,15 +1,18 @@
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, test } from "node:test";
 
-import type { OperationResult } from "@shipshitgames/warline";
+import type { OperationResult, WorldState } from "@shipshitgames/warline";
+import { createInitialWorld, NEUTRAL_WAR_EFFORT, WAR_EFFORT } from "@shipshitgames/warline";
 import {
   buildOperationResult,
   configureWarlineReporter,
+  fetchWarEffortBonus,
   readSharedFaction,
   reportWarlineOperation,
   resetWarlineReporterConfig,
   resolveWarlineConfig,
   type WarlineReportClient,
+  type WarlineStateClient,
 } from "../src/warline/reporter";
 
 function fakeLocalStorage() {
@@ -102,6 +105,29 @@ test("buildOperationResult passes through optional player/nonce/targetId only wh
   assert.equal(full.player, "vince");
   assert.equal(full.nonce, "abc");
   assert.equal(full.targetId, "lane-2");
+});
+
+test("buildOperationResult includes contributed only when it is a positive finite number", () => {
+  // Omitted / zero / junk → no key on the wire (server banks nothing).
+  assert.equal("contributed" in buildOperationResult("scourge-survivors", { outcome: "victory", score: 1 }), false);
+  assert.equal(
+    "contributed" in buildOperationResult("scourge-survivors", { outcome: "victory", score: 1, contributed: 0 }),
+    false,
+  );
+  assert.equal(
+    "contributed" in buildOperationResult("scourge-survivors", { outcome: "victory", score: 1, contributed: -50 }),
+    false,
+  );
+  assert.equal(
+    "contributed" in
+      buildOperationResult("scourge-survivors", { outcome: "victory", score: 1, contributed: Number.NaN }),
+    false,
+  );
+  // A positive loot value rides along, clamped to >= 0 by the same coercion as score.
+  assert.equal(
+    buildOperationResult("scourge-survivors", { outcome: "defeat", score: 1, contributed: 420 }).contributed,
+    420,
+  );
 });
 
 // ---- readSharedFaction ----
@@ -242,6 +268,101 @@ test("reportWarlineOperation reports through a configured host without an inject
       outcome: "victory",
       score: 4,
     });
+  } finally {
+    globalThis.fetch = original;
+  }
+});
+
+test("reportWarlineOperation carries looted `contributed` through to the wire", async () => {
+  const { client, captured } = captureClient({ ok: true });
+  const outcome = await reportWarlineOperation(
+    "scourge-survivors",
+    { outcome: "victory", score: 10, contributed: 777 },
+    { client },
+  );
+  assert.equal(outcome.reported, true);
+  assert.equal(captured[0]?.contributed, 777);
+});
+
+// ---- fetchWarEffortBonus (#280) ----
+
+/** A state client that returns a world with the given resource pool. */
+function stateClientWithPool(scrap: number) {
+  const world = createInitialWorld(1_700_000_000_000);
+  const state: WorldState = { ...world, resources: { scrap, biomass: 0, fuel: 0, intel: 0 } };
+  const client: WarlineStateClient = {
+    fetchState: async () => state,
+  };
+  return client;
+}
+
+test("fetchWarEffortBonus returns the neutral bonus when no host is configured", async () => {
+  const bonus = await fetchWarEffortBonus();
+  assert.deepEqual(bonus, NEUTRAL_WAR_EFFORT);
+});
+
+test("fetchWarEffortBonus derives the bonus from the fetched world pool", async () => {
+  // Two full tiers of scrap → tier 2, +2*perTier damage, fresh progress.
+  const client = stateClientWithPool(WAR_EFFORT.unitPerTier * 2);
+  const bonus = await fetchWarEffortBonus({ client });
+  assert.equal(bonus.tier, 2);
+  assert.ok(Math.abs(bonus.damageMult - (1 + 2 * WAR_EFFORT.perTier)) < 1e-9);
+  assert.equal(bonus.total, WAR_EFFORT.unitPerTier * 2);
+  assert.equal(bonus.progress, 0);
+});
+
+test("fetchWarEffortBonus never throws — a failing client yields the neutral bonus", async () => {
+  const client: WarlineStateClient = {
+    fetchState: async () => {
+      throw new Error("front unreachable");
+    },
+  };
+  const bonus = await fetchWarEffortBonus({ client });
+  assert.deepEqual(bonus, NEUTRAL_WAR_EFFORT);
+});
+
+test("fetchWarEffortBonus times out a *slow* front and yields the neutral bonus", async () => {
+  // A reachable-but-stalled front: fetchState never settles. The read must not
+  // hang the run start — it falls back to neutral once timeoutMs elapses.
+  const client: WarlineStateClient = {
+    fetchState: () => new Promise<WorldState>(() => {}),
+  };
+  const start = Date.now();
+  const bonus = await fetchWarEffortBonus({ client, timeoutMs: 20 });
+  assert.deepEqual(bonus, NEUTRAL_WAR_EFFORT);
+  // Resolved promptly via the timeout, nowhere near hanging.
+  assert.ok(Date.now() - start < 1_000, "slow front resolved via timeout");
+});
+
+test("fetchWarEffortBonus reads through a configured host without an injected client", async () => {
+  const original = globalThis.fetch;
+  const world = createInitialWorld(1_700_000_000_000);
+  const state: WorldState = { ...world, resources: { scrap: WAR_EFFORT.unitPerTier, biomass: 0, fuel: 0, intel: 0 } };
+  let calledUrl: unknown;
+  globalThis.fetch = (async (url: unknown) => {
+    calledUrl = url;
+    return { ok: true, json: async () => ({ state }) } as unknown as Response;
+  }) as typeof fetch;
+  try {
+    const bonus = await fetchWarEffortBonus({ host: "warline.test" });
+    assert.equal(bonus.tier, 1);
+    assert.match(String(calledUrl), /\/parties\/main\/front$/);
+  } finally {
+    globalThis.fetch = original;
+  }
+});
+
+test("fetchWarEffortBonus is disabled (neutral) for a whitespace-only host — no request", async () => {
+  const original = globalThis.fetch;
+  let fetched = false;
+  globalThis.fetch = (async () => {
+    fetched = true;
+    return { ok: true, json: async () => ({ state: createInitialWorld(1) }) } as unknown as Response;
+  }) as typeof fetch;
+  try {
+    const bonus = await fetchWarEffortBonus({ host: "   " });
+    assert.deepEqual(bonus, NEUTRAL_WAR_EFFORT);
+    assert.equal(fetched, false);
   } finally {
     globalThis.fetch = original;
   }

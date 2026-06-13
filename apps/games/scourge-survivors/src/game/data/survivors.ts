@@ -592,3 +592,18 @@ export function runGold(kills: number, level: number, time: number, greedTier: n
   const greedMul = 1 + 0.15 * Math.max(0, greedTier);
   return Math.min(RUN_GOLD_CAP, Math.floor(Math.max(0, base) * greedMul));
 }
+
+/** A single run can never bank more than this much biomass into the shared
+ *  Warline pool, so no one run can swing the global war effort (#280). Sits
+ *  well under `WAR_EFFORT.unitPerTier` (5000) — banking a tier takes teamwork. */
+export const RUN_BIOMASS_CAP = 2500;
+
+/** War-resource (biomass) salvaged from a finished Survivors run, banked into
+ *  the shared cross-game Warline pool (#280). Harvested mostly from slain
+ *  scourge (kills), with a small survival-time + level bonus; hard-capped at
+ *  {@link RUN_BIOMASS_CAP}. Pure + deterministic so the contribution is
+ *  unit-testable without a network. */
+export function runBiomass(kills: number, level: number, time: number): number {
+  const harvested = kills * 1.5 + level * 8 + time * 0.6;
+  return Math.min(RUN_BIOMASS_CAP, Math.floor(Math.max(0, harvested)));
+}

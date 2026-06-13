@@ -142,6 +142,11 @@ export class GameContext {
   // --- survivor-derived stat multipliers (1 / 0 / SURV_BASE_MAGNET = no effect,
   // so campaign + multiplayer stay unaffected). Written by SurvivorsSystem.recomputeStats. ---
   statDamageMul = 1;
+  // Shared cross-game War-Effort buff (#280): the pooled war resources every
+  // Ship Shit Game banks into the Warline front unlock a GLOBAL damage
+  // multiplier, read once at run start. 1 = neutral (offline / front
+  // unreachable / no pool), so campaign + multiplayer stay unaffected.
+  warEffortDamageMul = 1;
   statFireRateMul = 1;
   statMoveMul = 1;
   statMaxHpBonus = 0;

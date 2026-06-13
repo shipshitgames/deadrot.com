@@ -287,7 +287,8 @@ export class WeaponSystem {
     const dirZ = this.ctx._fwd.z / flen;
     const px = this.ctx.body.position.x;
     const pz = this.ctx.body.position.z;
-    const dmgMul = (this.ctx.damageBoostTimer > 0 ? DAMAGE_BOOST_MULT : 1) * this.ctx.statDamageMul;
+    const dmgMul =
+      (this.ctx.damageBoostTimer > 0 ? DAMAGE_BOOST_MULT : 1) * this.ctx.statDamageMul * this.ctx.warEffortDamageMul;
     const knockbackMul = this.ctx.damageBoostTimer > 0 ? BERSERK_KNOCKBACK_MULT : 1;
     let hitAny = false;
 
@@ -361,7 +362,7 @@ export class WeaponSystem {
     this.ctx._right.crossVectors(this.ctx._fwd, this.ctx._worldUp).normalize();
     this.ctx._up.crossVectors(this.ctx._right, this.ctx._fwd).normalize();
 
-    const dmgMult = (berserkActive ? DAMAGE_BOOST_MULT : 1) * this.ctx.statDamageMul;
+    const dmgMult = (berserkActive ? DAMAGE_BOOST_MULT : 1) * this.ctx.statDamageMul * this.ctx.warEffortDamageMul;
     const knockbackMul = berserkActive ? BERSERK_KNOCKBACK_MULT : 1;
     const headshotMultiplier = spec.headshotMultiplier ?? HEADSHOT_MULTIPLIER;
     const muzzleWorld = this.ctx.muzzleFlash.getWorldPosition(new THREE.Vector3());

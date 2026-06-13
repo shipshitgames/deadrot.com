@@ -16,6 +16,7 @@ import {
 } from "./game/constants";
 import {
   type MainWeaponVisualTier,
+  runBiomass,
   runGold,
   SHOP_BY_ID,
   type ShopId,
@@ -38,6 +39,7 @@ import {
 } from "./game/storage";
 import type { HUDState } from "./game/types";
 import type { PlayerAvatarId } from "./net/playerAvatars";
+import { WarEffortBadge } from "./WarEffortBadge";
 
 const SandboxPanel = import.meta.env.DEV
   ? lazy(() => import("./components/SandboxPanel").then((mod) => ({ default: mod.SandboxPanel })))
@@ -218,9 +220,12 @@ export default function App() {
         Date.now(),
       );
       // Report the breach purge into the shared Warline front (config-gated, offline-safe).
+      // `contributed` is the biomass salvaged this run, banked into the shared
+      // cross-game war-effort pool (#280) — credited regardless of outcome.
       void reportWarlineOperation("scourge-survivors", {
         outcome: next.outcome === "win" ? "victory" : "defeat",
         score: next.score,
+        contributed: runBiomass(next.kills, next.level, next.time),
       });
       if (next.survivors) {
         setShop((prev) => {
@@ -411,6 +416,7 @@ export default function App() {
         initialRoom={initialRoom}
         suppressMenu={sandboxActive}
       />
+      <WarEffortBadge gameRef={gameRef} />
       {sandboxActive && <GlobalMusicToggle className="ssg-music-toggle--corner" />}
       {SandboxPanel && sandboxActive && (
         <Suspense fallback={null}>
