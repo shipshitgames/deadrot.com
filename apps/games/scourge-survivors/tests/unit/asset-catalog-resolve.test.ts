@@ -76,7 +76,7 @@ describe("asset catalog resolution (#76)", () => {
   describe("runtime ui lookups", () => {
     it("resolves a ui id to its asset ref and a resolvable url", () => {
       const ref = ASSET_CATALOG.ui("menuTitle");
-      expect(ref.asset).toBe("ui-menu-title");
+      expect(ref.asset).toBe("ui-cover-gameplay");
       const url = ASSET_CATALOG.runtimeUiUrl("menuTitle");
       expect(url).toMatch(URL_EXT);
       // runtimeUiUrl must agree with resolving the underlying ui asset directly.
@@ -110,7 +110,7 @@ describe("asset catalog resolution (#76)", () => {
     });
 
     it("returns the manifest entry for a known ui id", () => {
-      const entry = uiEntry("ui-menu-title");
+      const entry = uiEntry("ui-cover-gameplay");
       expect(entry.type).toBe("ui");
       expect(entry.path.length).toBeGreaterThan(0);
     });
@@ -157,7 +157,7 @@ describe("asset catalog resolution (#76)", () => {
 
     it("resolves audio and ui urls", () => {
       expect(audioUrl("sfx-sniper")).toMatch(/\.webm(\?|$)/);
-      expect(uiUrl("ui-menu-title")).toMatch(URL_EXT);
+      expect(uiUrl("ui-cover-gameplay")).toMatch(URL_EXT);
     });
 
     it("throws when resolving a manifest path that has no underlying file", () => {

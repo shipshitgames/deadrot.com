@@ -18,7 +18,7 @@
       "Tendrils and rupture seams",
       "Host material being overwritten — flesh, metal, bone, fungus"
     ],
-    "appearsIn": ["zero-day", "scourge-survivors", "deadlane", "pactfall", "starblight", "redline", "rothulk"],
+    "appearsIn": ["scourge-survivors", "deadlane", "pactfall", "starblight", "redline", "rothulk"],
     "spriteBase": "portrait-scourge"
   },
   {
@@ -233,7 +233,7 @@
       "Bulging sacs and fibrous spore growth on mycelial hosts",
       "Metal as a shell grown through, not technology"
     ],
-    "appearsIn": ["zero-day", "scourge-survivors", "deadlane", "starblight", "pactfall", "redline", "rothulk"],
+    "appearsIn": ["scourge-survivors", "deadlane", "starblight", "pactfall", "redline", "rothulk"],
     "spriteBase": "portrait-scourge-host-families"
   }
 ]

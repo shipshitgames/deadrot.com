@@ -165,6 +165,7 @@ const scourgeSurvivorsAssetModules = import.meta.glob<string>(
     "../games/scourge-survivors/fx/**/*.webp",
     "../games/scourge-survivors/ui/icons/pixel/*.webp",
     "../games/scourge-survivors/ui/cards/**/*.{jpg,png}",
+    "../games/scourge-survivors/ui/cover/**/*.{jpg,png,webp}",
     "../games/scourge-survivors/ui/menu/**/*.{jpg,png,webp}",
     "../games/scourge-survivors/audio/**/*.webm",
     "../games/scourge-survivors/fonts/*.ttf",

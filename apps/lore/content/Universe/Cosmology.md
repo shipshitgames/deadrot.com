@@ -11,7 +11,7 @@ extinguishes a world, and **jumps to the next**. See [[CANON]] §1–2 and [[Sco
 Where the Scourge **punches into a world from the void** — orbital descent, crashed
 breach-ships, the wound it burrows and roots into. Physical, entrenched **nests** that pulse,
 escalate, and spawn waves — *not* mystical rifts. The source of every game's groundside
-conflict. (Origin: [[Zero-Day]].)
+conflict. (Origin: [[Zero-Day]], the first-contact sequence inside [[Starblight]].)
 
 ## The Choir — the hive mind
 The Scourge knows everything its parts know, all at once, over a signal called **the Choir**.

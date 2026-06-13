@@ -106,20 +106,20 @@
   {
     "slug": "starblight",
     "title": "Starblight",
-    "tagline": "Burn the infection out of the sky before it falls into the war.",
+    "tagline": "Burn the infection out of the sky. Remember the night it fell.",
     "genre": "Arcade pilot shooter",
     "factionSlug": "",
     "factionName": "The Pyre & The Wardens",
     "accent": "toxic",
-    "overview": "Starblight is Scourge contamination loose in orbit — spores, infected wreckage, living carrier-ships, and breach matter spreading through the void. The current playable prototype foregrounds a lone Warden interceptor; the design target expands that into Pyre and Warden pilot identities intercepting the rot before it touches the ground war below.",
+    "overview": "Starblight is Scourge contamination loose in orbit — spores, infected wreckage, living carrier-ships, and breach matter spreading through the void. Zero Day is folded into this game as the first-contact last stand: the doomed night the sky fell. The current playable prototype foregrounds a lone Warden interceptor; the design target expands that into Pyre and Warden pilot identities intercepting the rot before it touches the ground war below.",
     "features": [
       {
-        "title": "Clean, readable carnage",
-        "desc": "Top-down mouse-flight survivors on the shared run loop: launch, survive escalating swarms, stack weapon synergies, and kill the orbital boss."
+        "title": "Zero Day prologue",
+        "desc": "The first-contact last stand lives here now: pre-schism pilots, evacuation lanes, and a battle that canonically ends in loss."
       },
       {
-        "title": "Two pilot creeds",
-        "desc": "Current build proves the Warden-front prototype first; Pyre burn pilots and Warden defense pilots are the target roster."
+        "title": "Pilot buildcraft",
+        "desc": "Top-down mouse-flight survivors on the shared run loop: launch, survive escalating swarms, stack ship systems, and burn the orbital boss."
       },
       {
         "title": "Parasite conquest in space",
@@ -210,31 +210,5 @@
     ],
     "characterSlugs": [],
     "enemySlugs": ["scourge"]
-  },
-  {
-    "slug": "zero-day",
-    "title": "Zero Day",
-    "tagline": "The night we lost the sky. You do not win — you just hold.",
-    "genre": "Arcade space shooter (last-stand)",
-    "factionSlug": "",
-    "factionName": "Humanity (pre-schism)",
-    "accent": "blood",
-    "overview": "This is humanity's first contact with the Scourge, fought in orbit and atmosphere over a dying world. You will not win. You hold the line as long as you can, save who you can, and then it falls. Everything else in the universe happens after this.",
-    "features": [
-      {
-        "title": "The unwinnable battle",
-        "desc": "Waves escalate past any sustainable defense. Buy minutes, save some evacuations, witness the fall — heroism inside doom."
-      },
-      {
-        "title": "Before the schism",
-        "desc": "This is the loss that breaks humanity into 'burn the source' and 'hold the line' — the origin of the Pyre and the Wardens both."
-      },
-      {
-        "title": "First sight of the Choir",
-        "desc": "The orbital relays appear here for the first time — the repeaters that every later war is fought to sever."
-      }
-    ],
-    "characterSlugs": [],
-    "enemySlugs": []
   }
 ]

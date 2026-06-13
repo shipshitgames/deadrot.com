@@ -25,6 +25,26 @@ export {
 export { DEFAULT_AUDIO_SLIDER_KEYS } from "./GameSettings.constants";
 export type { GameSettingsScreenProps } from "./GameSettingsScreen";
 export { GameSettingsScreen } from "./GameSettingsScreen";
+export type {
+  GameMenuConfig,
+  GameMenuTitleHtmlOptions,
+  GameMenuTitleLineConfig,
+  GameMenuTitleTone,
+} from "./gameMenuConfig";
+export {
+  GAME_MENU_CONFIGS,
+  gameMenuConfig,
+  gameMenuCopyHtml,
+  gameMenuTitleHtml,
+  gameMenuTitleText,
+} from "./gameMenuConfig";
+export type {
+  GameAudioSettingsScreenProps,
+  GameMenuCopyProps,
+  GameMenuTitleProps,
+  GamePauseMenuProps,
+} from "./GameMenuShell";
+export { GameAudioSettingsScreen, GameMenuCopy, GameMenuTitle, GamePauseMenu } from "./GameMenuShell";
 export type { GameJumpTarget } from "./lobby";
 export {
   GAME_JUMP_DEFAULT_LABEL,

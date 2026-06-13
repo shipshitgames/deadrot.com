@@ -4,7 +4,8 @@
 
 - **Zero Day — the Invasion.** First contact with [[Scourge|the Scourge]] from the void.
   Humanity fights the orbital and sky battle **and loses** — not ready, too many. The world
-  falls; the first breaches root groundside. The origin game: [[Zero-Day]]. *(See [[CANON]] §3.)*
+  falls; the first breaches root groundside. The origin sequence: [[Zero-Day]], now folded
+  into [[Starblight]] as its first-contact last stand. *(See [[CANON]] §3.)*
 - **The Long Fall.** The months after Zero Day: cities consumed, fleets gone, survivors
   scattering down the only roads left — the **lanes**. The old world ends here.
 - **The Schism.** The survivors split by doctrine. The remnant army holds and rebuilds as the

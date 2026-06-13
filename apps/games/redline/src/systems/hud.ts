@@ -4,10 +4,13 @@
  * overlays plus start / win / dead card text.
  */
 
-import { gameJumpHtml, warlineLobbyHref } from "@shipshitgames/ui";
+import { gameJumpHtml, gameMenuConfig, gameMenuCopyHtml, warlineLobbyHref } from "@shipshitgames/ui";
 import { COURSE, RUNNER, SCORE } from "../constants";
 import type { RunnerState } from "../types";
 import { applyRunRecord, bestFor, createBestsStore, type RunSummary } from "./score";
+
+const GAME_SLUG = "redline";
+const menu = gameMenuConfig(GAME_SLUG);
 
 function fmtTime(s: number): string {
   return s.toFixed(2);
@@ -153,21 +156,12 @@ export class Hud {
   showStart(opts: { onIgnite: () => void; onSettings: () => void }) {
     this.overlay.classList.remove("is-hidden");
     this.overlayCard.innerHTML = `
-      <div class="ssg-main-menu-copy">
-        <div id="overlay-kicker" class="ssg-menu-kicker">Pyre Courier Run</div>
-        <h1 id="overlay-title" class="ssg-main-menu-title">
-          <span class="ssg-main-menu-title-line ssg-main-menu-title-line--bone">RED</span>
-          <span class="ssg-main-menu-title-line ssg-main-menu-title-line--hot">LINE</span>
-        </h1>
-        <p id="overlay-body" class="ssg-main-menu-subtitle">
-          Carry the cargo through the Scourge-rot lane to the BEACON. Beat the clock.
-          Hold to build speed, jump the creep spikes, roll under the arches, ride the embers.
-        </p>
-        <div class="ssg-main-menu-status">
-          <span>Courier ready</span>
-          <span>${this.bestLabel()}</span>
-        </div>
-      </div>
+      ${gameMenuCopyHtml(GAME_SLUG, {
+        kickerId: "overlay-kicker",
+        titleId: "overlay-title",
+        subtitleId: "overlay-body",
+        status: [...menu.titleStatus, this.bestLabel()],
+      })}
       <nav class="ssg-main-menu-nav" aria-label="Main menu">
         <button id="overlay-btn" class="ssg-main-menu-action ssg-main-menu-action--primary">
           <span class="ssg-main-menu-action__label"><span>Ignite</span></span>
@@ -194,10 +188,10 @@ export class Hud {
           <span class="ssg-main-menu-action__meta">Route lab</span>
         </button>
         <a class="ssg-main-menu-action ssg-main-menu-action--default" href="${warlineLobbyHref()}">
-          <span class="ssg-main-menu-action__label"><span>← Back to Warline</span></span>
-          <span class="ssg-main-menu-action__meta">Lobby</span>
+          <span class="ssg-main-menu-action__label"><span>${menu.backToWarlineLabel}</span></span>
+          <span class="ssg-main-menu-action__meta">${menu.backToWarlineMeta}</span>
         </a>
-        ${gameJumpHtml("redline")}
+        ${gameJumpHtml(GAME_SLUG, menu.fastTravelLabel)}
       </nav>
     `;
     this.wireOverlayButton(opts.onIgnite);

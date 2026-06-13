@@ -3,9 +3,11 @@ import {
   Button,
   Card,
   CodexScreen,
+  GameAudioSettingsScreen,
   GameJumpMenu,
-  GameSettingsScreen,
+  GameMenuTitle,
   GlobalMusicToggle,
+  gameMenuConfig,
   goToWarlineLobby,
   MainMenuAction,
   MainMenuCopy,
@@ -14,8 +16,6 @@ import {
   MainMenuNav,
   MainMenuScreen,
   MainMenuStatus,
-  MainMenuTitle,
-  MainMenuTitleLine,
   MainMenuTopBar,
   MenuKicker,
   useEnterToReveal,
@@ -41,6 +41,8 @@ import { IconText, Leaderboard, MENU_HEADING } from "./shared";
 // Static lore mapping — hoisted so the per-frame HUD re-renders don't rebuild
 // the entry objects (and CodexScreen's internal memo keeps a stable identity).
 const CODEX_ENTRIES = codexEntriesForGame("scourge-survivors");
+const GAME_SLUG = "scourge-survivors";
+const menu = gameMenuConfig(GAME_SLUG);
 
 const AVATAR_PREVIEWS: Record<PlayerAvatarId, string> = PLAYER_AVATAR_PREVIEW_URLS;
 
@@ -489,11 +491,11 @@ function SurvivorsHub({
       <MainMenuAction
         type="button"
         variant="default"
-        label="← Back to Warline"
-        meta="Lobby"
+        label={menu.backToWarlineLabel}
+        meta={menu.backToWarlineMeta}
         onClick={() => goToWarlineLobby()}
       />
-      <GameJumpMenu currentSlug="scourge-survivors" />
+      <GameJumpMenu currentSlug={GAME_SLUG} label={menu.fastTravelLabel} />
     </MainMenuNav>
   );
 }
@@ -548,20 +550,19 @@ export function MainMenu({
   return (
     <MainMenuScreen className="cursor-default overflow-y-auto" backgroundImage={MENU_HERO_URL}>
       <MainMenuTopBar mark="SSG" meta={`${shop.gold.toLocaleString()} gold`} aria-hidden>
-        Ashgate breach
+        {menu.topBar}
       </MainMenuTopBar>
 
       {menuScreen === "home" ? (
         <MainMenuLayout className={menuRevealed ? "ssg-main-menu-layout--menu" : "ssg-main-menu-layout--splash"}>
           <MainMenuCopy hidden={menuRevealed}>
-            <MenuKicker>Pyre breach hub</MenuKicker>
-            <MainMenuTitle>
-              <MainMenuTitleLine>SCOURGE</MainMenuTitleLine>
-              <MainMenuTitleLine tone="hot">SURVIVORS</MainMenuTitleLine>
-            </MainMenuTitle>
-            <p className="ssg-main-menu-subtitle">Descend the breach. Burn the source nodes. Hold Ashgate.</p>
+            <MenuKicker>{menu.titleKicker}</MenuKicker>
+            <GameMenuTitle config={menu} />
+            <p className="ssg-main-menu-subtitle">{menu.titleSubtitle}</p>
             <MainMenuStatus>
-              <span>Survivors core online</span>
+              {menu.titleStatus.map((item) => (
+                <span key={item}>{item}</span>
+              ))}
               <span>{scores.length === 0 ? "No records" : `${scores.length} local records`}</span>
             </MainMenuStatus>
           </MainMenuCopy>
@@ -579,7 +580,10 @@ export function MainMenu({
               onStartSandbox={onStartSandbox}
             />
           ) : (
-            <MainMenuEnterPrompt />
+            <>
+              <MainMenuEnterPrompt />
+              <GameJumpMenu currentSlug={GAME_SLUG} label={menu.fastTravelLabel} className="ssg-game-jump--splash" />
+            </>
           )}
         </MainMenuLayout>
       ) : (
@@ -647,14 +651,19 @@ export function MainMenu({
           )}
 
           {menuScreen === "settings" && (
-            <GameSettingsScreen open onClose={() => setMenuScreen("home")} backgroundImage={MENU_HERO_URL} />
+            <GameAudioSettingsScreen
+              open
+              slug={GAME_SLUG}
+              onClose={() => setMenuScreen("home")}
+              backgroundImage={MENU_HERO_URL}
+            />
           )}
 
           {menuScreen === "codex" && (
             <CodexScreen
               open
               onClose={() => setMenuScreen("home")}
-              kicker="Pyre Breach Hub"
+              kicker={menu.codexKicker}
               backgroundImage={MENU_HERO_URL}
               entries={CODEX_ENTRIES}
             />

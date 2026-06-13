@@ -90,7 +90,7 @@ export const GAME_APPS = [
 
 // Titles that exist in canon/marketing but have no in-repo app (and so no port,
 // deploy, or playable route) yet.
-export const CONCEPTS = [{ slug: "zero-day", status: "CONCEPT" }];
+export const CONCEPTS = [];
 
 // Slug of the lobby / front-door game that the in-game "back to lobby" routing targets.
 export const LOBBY_SLUG = "warline";
