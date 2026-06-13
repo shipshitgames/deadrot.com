@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 
-import { GameLockBadge } from "@/components/game/game-lock";
+import { GameAccessBadge } from "@/components/game/access-badge";
 import { Badge } from "@/components/ui/badge";
 import { accentVars, gameCoverUrl, type Game, type GameStatus } from "@/lib/content";
 import { cn } from "@/lib/utils";
@@ -44,8 +44,7 @@ export function GameCard({ game }: { game: Game }) {
 
       <div className="relative z-10 p-5">
         <div className="mb-2 flex items-center gap-2">
-          <StatusBadge status={game.status} />
-          <GameLockBadge slug={game.slug} />
+          <GameAccessBadge slug={game.slug} status={game.status} />
           <span className="text-[0.65rem] uppercase tracking-widest text-ash">{game.genre}</span>
         </div>
         <h3 className="font-display text-2xl font-bold uppercase leading-none tracking-tight text-bone">
