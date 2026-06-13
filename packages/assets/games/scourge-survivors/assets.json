@@ -1825,6 +1825,22 @@
     }
   },
   "ui": {
+    "ui-cover-gameplay": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/cover/gameplay.webp",
+      "role": "game-cover",
+      "dimensions": [
+        1200,
+        630
+      ],
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-11",
+        "kind": "Scourge Survivors gameplay cover",
+        "scope": "Scourge Survivors runtime UI and web game page"
+      }
+    },
     "ui-menu-title": {
       "type": "ui",
       "path": "games/scourge-survivors/ui/menu/title.webp",
@@ -2050,7 +2066,7 @@
     },
     "ui": {
       "menuTitle": {
-        "asset": "ui-menu-title"
+        "asset": "ui-cover-gameplay"
       },
       "menuHeroJpg": {
         "asset": "ui-menu-hero-jpg"

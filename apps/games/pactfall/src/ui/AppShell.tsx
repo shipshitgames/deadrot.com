@@ -242,7 +242,10 @@ export function AppShell() {
                 <GameJumpMenu currentSlug="pactfall" />
               </MainMenuNav>
             ) : (
-              <MainMenuEnterPrompt />
+              <>
+                <MainMenuEnterPrompt />
+                <GameJumpMenu currentSlug="pactfall" className="ssg-game-jump--splash" />
+              </>
             )}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />

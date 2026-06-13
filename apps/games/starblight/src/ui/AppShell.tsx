@@ -194,7 +194,12 @@ export function AppShell() {
               />
               <GameJumpMenu currentSlug="starblight" />
             </MainMenuNav>
-            {onSplash && <MainMenuEnterPrompt />}
+            {onSplash && (
+              <>
+                <MainMenuEnterPrompt />
+                <GameJumpMenu currentSlug="starblight" className="ssg-game-jump--splash" />
+              </>
+            )}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>

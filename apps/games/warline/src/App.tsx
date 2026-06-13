@@ -102,7 +102,10 @@ export default function App() {
                 <GameJumpMenu currentSlug="warline" label="Portals — direct deploy" />
               </MainMenuNav>
             ) : (
-              <MainMenuEnterPrompt />
+              <>
+                <MainMenuEnterPrompt />
+                <GameJumpMenu currentSlug="warline" label="Portals — direct deploy" className="ssg-game-jump--splash" />
+              </>
             )}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />

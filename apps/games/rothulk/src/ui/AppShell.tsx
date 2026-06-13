@@ -188,7 +188,12 @@ export function AppShell({ createGame }: AppShellProps) {
               />
               <GameJumpMenu currentSlug="rothulk" />
             </MainMenuNav>
-            {!revealed && <MainMenuEnterPrompt />}
+            {!revealed && (
+              <>
+                <MainMenuEnterPrompt />
+                <GameJumpMenu currentSlug="rothulk" className="ssg-game-jump--splash" />
+              </>
+            )}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>

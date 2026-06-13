@@ -170,7 +170,12 @@ export function AppShell() {
               />
               <GameJumpMenu currentSlug="deadlane" />
             </MainMenuNav>
-            {!revealed && <MainMenuEnterPrompt />}
+            {!revealed && (
+              <>
+                <MainMenuEnterPrompt />
+                <GameJumpMenu currentSlug="deadlane" className="ssg-game-jump--splash" />
+              </>
+            )}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>

@@ -579,7 +579,10 @@ export function MainMenu({
               onStartSandbox={onStartSandbox}
             />
           ) : (
-            <MainMenuEnterPrompt />
+            <>
+              <MainMenuEnterPrompt />
+              <GameJumpMenu currentSlug="scourge-survivors" className="ssg-game-jump--splash" />
+            </>
           )}
         </MainMenuLayout>
       ) : (

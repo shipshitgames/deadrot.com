@@ -112,7 +112,13 @@ export function PauseScreens({
       )}
 
       {status === "paused" && !suppressMenu && pausePanel === "settings" && (
-        <GameSettingsScreen open onClose={() => setPausePanel("none")} backgroundImage={MENU_HERO_URL} />
+        <GameSettingsScreen
+          open
+          className="pause-ui"
+          onClose={() => setPausePanel("none")}
+          backgroundImage={MENU_HERO_URL}
+          backMeta="Pause menu"
+        />
       )}
 
       {status === "paused" && !suppressMenu && pausePanel === "controls" && (
