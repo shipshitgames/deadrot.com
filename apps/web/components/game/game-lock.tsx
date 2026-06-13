@@ -4,38 +4,20 @@ import { useUser } from "@clerk/nextjs";
 import { Lock } from "lucide-react";
 import Link from "next/link";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { authEnabled, hasCollection, isLockedGameSlug } from "@/lib/access";
-import { cn } from "@/lib/utils";
 
-// Client-side lock state so the hub pages stay static — the proxy gate is the
+// Client-side gate state so the hub pages stay static — the proxy gate is the
 // actual enforcement; this is just honest signage. Everything reads unlocked
 // when Clerk isn't configured (keyless CI/dev, gate no-ops in lockstep).
-// useUser lives only in *Inner components, mounted strictly behind authEnabled,
-// because the hook requires ClerkProvider.
+// useUser lives only in the *Inner component, mounted strictly behind authEnabled,
+// because the hook requires ClerkProvider. (The gallery's locked badge lives in
+// components/game/access-badge.tsx — GameAccessBadge — alongside the other states.)
 
 function useLocked(): boolean {
   const { isLoaded, user } = useUser();
   if (!isLoaded) return false; // optimistic while Clerk hydrates; the gate enforces
   return !hasCollection(user?.publicMetadata);
-}
-
-export function GameLockBadge({ slug, className }: { slug: string; className?: string }) {
-  if (!authEnabled || !isLockedGameSlug(slug)) return null;
-  return <GameLockBadgeInner className={className} />;
-}
-
-function GameLockBadgeInner({ className }: { className?: string }) {
-  if (!useLocked()) return null;
-  return (
-    <Badge
-      variant="outline"
-      className={cn("border-hellfire/50 bg-void/70 font-display tracking-widest text-hellfire", className)}
-    >
-      <Lock className="size-3" aria-hidden /> Locked
-    </Badge>
-  );
 }
 
 /** "Play Now" on the game detail page, swapped for the unlock CTA when gated. */
