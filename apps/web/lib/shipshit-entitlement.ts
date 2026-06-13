@@ -29,7 +29,7 @@ export const PURCHASED_AT_KEY = "deadrotCollectionPurchasedAt" as const;
 // Stripe price lookup_key convention pinned by the shipshit.games repo
 // (packages/shared STUDIO_PASS.priceLookupKey) — stable across test/live mode,
 // so the live Studio Pass launch needs no config change here.
-export const SHIPSHIT_SUB_PRICE_LOOKUP_KEYS: readonly string[] = ["shipshit-studio-pass-49-usd-monthly"];
+const SHIPSHIT_SUB_PRICE_LOOKUP_KEYS: readonly string[] = ["shipshit-studio-pass-49-usd-monthly"];
 
 // Mirrors shipshit.games's ACTIVE_SUBSCRIPTION_STATUSES: past_due loses access
 // there too, and Stripe Smart Retries re-fire customer.subscription.updated on
