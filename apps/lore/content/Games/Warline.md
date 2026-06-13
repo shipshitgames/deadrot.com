@@ -10,8 +10,9 @@ status: playable prototype
 
 Warline is not another isolated arcade pillar. It is the strategic layer that makes the other
 games matter to the same war: [[Scourge-Survivors]] purges breaches, [[Deadlane]] holds lanes,
-[[Pactfall]] contests territory, [[Starblight]] intercepts orbit, [[Redline]] runs logistics,
-and [[Rothulk]] sabotages breach-hearts from inside the nest.
+[[Pactfall]] contests territory, [[Brawl]] resolves no-man's-land pockets, [[Starblight]]
+intercepts orbit, [[Redline]] runs logistics, and [[Rothulk]] sabotages breach-hearts from
+inside the nest.
 
 The current build should be read as **strategy-lite**: a living front, four resources, simple
 commands, and a game-to-operation loop. If it proves fun, it can grow toward a deeper strategy
@@ -37,6 +38,7 @@ prototype front without automatically rewriting [[Timeline]] or a Location page.
 - [[Scourge-Survivors]] → Purge a Breach.
 - [[Deadlane]] → Hold the Lane.
 - [[Pactfall]] → Contest Territory.
+- [[Brawl]] → Break a Pocket.
 - [[Starblight]] → Orbital Intercept.
 - [[Redline]] → Run Logistics.
 - [[Rothulk]] → Sabotage a Breach.

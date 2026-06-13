@@ -20,7 +20,7 @@ inherits:
 
 ## 1. Philosophy — what we are making
 
-One parasite, six games, sixty-plus creatures, and a single world that has to read as one world from a billboard ten feet from a player's face down to a tower-defense unit the size of a thumbnail. We do not get coherence by hand-tuning each asset. We get it with two cheap, brutal levers — **one locked style-reference image per game** and **one DOOM color grade baked in post** — and a prompt skeleton frozen so hard that a noob with no taste can swap one line and get something amazing.
+One parasite, many games, sixty-plus creatures, and a single world that has to read as one world from a billboard ten feet from a player's face down to a tower-defense unit the size of a thumbnail. We do not get coherence by hand-tuning each asset. We get it with two cheap, brutal levers — **one locked style-reference image per game** and **one DOOM color grade baked in post** — and a prompt skeleton frozen so hard that a noob with no taste can swap one line and get something amazing.
 
 That is the whole bet: **amazing by default from a single prompt, forgiving of variance across the roster, reproducible at scale across providers.** The void, the rim-light, and the grade homogenize everything else. Optimize for that. Resist the urge to fiddle.
 
@@ -204,7 +204,7 @@ For every Scourge batch, record both the **threat role** (Ripper, Spitter, elite
 
 ---
 
-## 10. One look, six cameras — identity never changes
+## 10. One look, many cameras — identity never changes
 
 The style-ref pins the **rendering style and grade;** per-game **camera framing** changes around it. Same sculpt, same materials, same rim, same DOOM grade — re-shot from the game's angle. These framing strings are the canon `GAME_FRAMING` map (mirrored in the `assetgen:` block):
 
@@ -213,6 +213,7 @@ The style-ref pins the **rendering style and grade;** per-game **camera framing*
 | [[Scourge-Survivors]] | first-person billboard sprite, front-facing, full body |
 | [[Deadlane]] | top-down / high-angle, silhouette readable from above |
 | [[Pactfall]] | isometric 3/4 champion scale |
+| [[Brawl]] | side-on / 3/4 trench-fighter scale, readable from Duel and arena distance |
 | [[Starblight]] | side-on / top-down arcade, crisp readable silhouette |
 | [[Redline]] | side-on Sonic-like runner profile |
 | [[Rothulk]] | side-on Mario-like platformer profile |
