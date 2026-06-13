@@ -31,7 +31,7 @@ export function shipshitSyncEnabled(): boolean {
  * email is this person. An unverified address must never qualify — anyone can
  * type a known subscriber's email into sign-up.
  */
-export function verifiedEmails(user: User): string[] {
+function verifiedEmails(user: User): string[] {
   const primaryId = user.primaryEmailAddressId;
   const verified = user.emailAddresses
     .filter((email) => email.verification?.status === "verified")
@@ -47,7 +47,7 @@ export function verifiedEmails(user: User): string[] {
  * prefills customer_email from the Clerk primary email, which Clerk stores
  * lowercased, so lowercase queries line up in practice.
  */
-export async function hasActiveShipshitSubscription(stripe: Stripe, emails: readonly string[]): Promise<boolean> {
+async function hasActiveShipshitSubscription(stripe: Stripe, emails: readonly string[]): Promise<boolean> {
   for (const email of emails) {
     const customers = await stripe.customers.list({ email, limit: 100 });
     for (const customer of customers.data) {
