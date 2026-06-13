@@ -2,7 +2,12 @@ import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type PickupKind, STARTING_WEAPON, WEAPON_ORDER, WEAPONS, type WeaponId } from "../game/constants";
 import { MAP_PICKER } from "../game/data/maps";
-import { MAIN_WEAPON_VISUAL_TIERS, type MainWeaponVisualTier } from "../game/data/survivors";
+import {
+  MAIN_WEAPON_TIER_LABEL,
+  MAIN_WEAPON_VISUAL_TIERS,
+  mainWeaponTierDamageMul,
+  type MainWeaponVisualTier,
+} from "../game/data/survivors";
 import type { SandboxEnemyKind } from "../game/Game";
 import { RUNTIME_AUDIO_ASSET_URLS, RUNTIME_VISUAL_ASSET_URLS, weaponSpriteAssetId } from "../game/spriteAssets";
 import type { HUDState } from "../game/types";
@@ -454,6 +459,9 @@ export function SandboxPanel({
                 {tier === "base" ? "Base" : tier === "evolved" ? "Evo" : tier.replace("tier-", "T")}
               </button>
             ))}
+          </div>
+          <div className="mt-1 text-[10px] uppercase tracking-[0.08em] text-white/55" data-testid="sandbox-tier-dmg">
+            {MAIN_WEAPON_TIER_LABEL[sbTier]} · gun damage ×{mainWeaponTierDamageMul(sbTier).toFixed(2)}
           </div>
           <div className="mt-2 grid grid-cols-3 gap-2">
             <LabButton onClick={onFire}>Fire Once</LabButton>

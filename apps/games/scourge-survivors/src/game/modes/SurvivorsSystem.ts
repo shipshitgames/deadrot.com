@@ -18,6 +18,9 @@ import {
   AMP_PER_TIER,
   availableEvolutionChoice,
   BANISHES_PER_RUN,
+  MAIN_WEAPON_TIER_LABEL,
+  mainWeaponTierIndex,
+  type MainWeaponVisualTier,
   mainWeaponVisualTier,
   REROLLS_PER_LEVEL,
   SURV_BASE_MAGNET,
@@ -70,6 +73,9 @@ export class SurvivorsSystem {
   xp = 0;
   xpToNext = xpForLevel(1);
   pendingLevels = 0;
+  // A tier-up earned during a draft is announced only once the draft closes and the run
+  // resumes, so the centre banner never fires behind the (occluding) level-up overlay (#279).
+  pendingTierAnnounce: MainWeaponVisualTier | null = null;
   choices: UpgradeChoice[] = [];
   upgradeLevels: Partial<Record<UpgradeId, number>> = {};
   aw: SurvivorsAutoWeapons;
@@ -126,6 +132,7 @@ export class SurvivorsSystem {
     this.xp = 0;
     this.xpToNext = xpForLevel(1);
     this.pendingLevels = 0;
+    this.pendingTierAnnounce = null;
     this.choices = [];
     this.upgradeLevels = {};
     this.banishes = BANISHES_PER_RUN;
@@ -379,8 +386,15 @@ export class SurvivorsSystem {
     }
     // Every weapon re-applies its model on a tier change so the TIER_SCALE growth (and any
     // future per-tier art) lands; the per-frame TIER_GLOW tint tracks the tier on its own.
-    if (this.mainWeaponVisualTier() !== previousMainWeaponTier) {
+    const nextMainWeaponTier = this.mainWeaponVisualTier();
+    if (nextMainWeaponTier !== previousMainWeaponTier) {
       this.sys.weapon.applyWeaponModel(this.ctx.activeWeapon);
+      // A tier-up is a run reward (#279): queue the unmissable centre banner + power-cue, but
+      // defer firing it until the draft closes (below) so it never plays behind the level-up
+      // overlay. Chained picks collapse to one banner for the highest tier reached.
+      if (mainWeaponTierIndex(nextMainWeaponTier) > mainWeaponTierIndex(previousMainWeaponTier)) {
+        this.pendingTierAnnounce = nextMainWeaponTier;
+      }
     }
     this.pendingLevels = Math.max(0, this.pendingLevels - 1);
     if (this.pendingLevels > 0) {
@@ -390,9 +404,18 @@ export class SurvivorsSystem {
     } else {
       this.choices = [];
       this.ctx.status = "playing";
+      this.flushTierAnnounce();
       this.sys.hud.emit();
       this.sys.input.requestLock();
     }
+  }
+
+  /** Fire any tier-up banner queued during the draft, now that the run has resumed (#279). */
+  private flushTierAnnounce() {
+    if (!this.pendingTierAnnounce) return;
+    this.sys.hud.announce(`WEAPON ${MAIN_WEAPON_TIER_LABEL[this.pendingTierAnnounce]}`);
+    audio.sfx("berserk");
+    this.pendingTierAnnounce = null;
   }
 
   updateSurvivors(delta: number) {

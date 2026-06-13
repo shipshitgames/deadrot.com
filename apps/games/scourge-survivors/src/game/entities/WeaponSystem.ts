@@ -21,7 +21,7 @@ import {
 } from "../constants";
 import type { GameContext } from "../context";
 import { WEAPON_VIEW_X, WEAPON_VIEW_Y, WEAPON_VIEW_Z } from "../data/internalTypes";
-import type { MainWeaponVisualTier } from "../data/survivors";
+import { type MainWeaponVisualTier, mainWeaponTierDamageMul } from "../data/survivors";
 import {
   MUZZLE_FLASH_TEXTURE,
   WEAPON_SPRITE_TEXTURES,
@@ -287,7 +287,10 @@ export class WeaponSystem {
     const dirZ = this.ctx._fwd.z / flen;
     const px = this.ctx.body.position.x;
     const pz = this.ctx.body.position.z;
-    const dmgMul = (this.ctx.damageBoostTimer > 0 ? DAMAGE_BOOST_MULT : 1) * this.ctx.statDamageMul;
+    const dmgMul =
+      (this.ctx.damageBoostTimer > 0 ? DAMAGE_BOOST_MULT : 1) *
+      this.ctx.statDamageMul *
+      mainWeaponTierDamageMul(this.activeWeaponVisualTier());
     const knockbackMul = this.ctx.damageBoostTimer > 0 ? BERSERK_KNOCKBACK_MULT : 1;
     let hitAny = false;
 
@@ -361,7 +364,12 @@ export class WeaponSystem {
     this.ctx._right.crossVectors(this.ctx._fwd, this.ctx._worldUp).normalize();
     this.ctx._up.crossVectors(this.ctx._right, this.ctx._fwd).normalize();
 
-    const dmgMult = (berserkActive ? DAMAGE_BOOST_MULT : 1) * this.ctx.statDamageMul;
+    // Weapon-tier power spike (#279): the same visual tier that drives the gun's
+    // glow/scale also multiplies its hit damage, so climbing a tier is a real reward.
+    const dmgMult =
+      (berserkActive ? DAMAGE_BOOST_MULT : 1) *
+      this.ctx.statDamageMul *
+      mainWeaponTierDamageMul(this.activeWeaponVisualTier());
     const knockbackMul = berserkActive ? BERSERK_KNOCKBACK_MULT : 1;
     const headshotMultiplier = spec.headshotMultiplier ?? HEADSHOT_MULTIPLIER;
     const muzzleWorld = this.ctx.muzzleFlash.getWorldPosition(new THREE.Vector3());
