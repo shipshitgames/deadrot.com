@@ -96,9 +96,16 @@ export class Renderer {
       metalness: 0.4,
     });
     const slabEdgeMat = new THREE.MeshStandardMaterial({
-      color: COLORS.iron,
-      roughness: 0.9,
-      metalness: 0.3,
+      color: COLORS.bone,
+      roughness: 0.75,
+      metalness: 0.2,
+      emissive: COLORS.hellfire,
+      emissiveIntensity: 0.12,
+    });
+    const slabLipMat = new THREE.MeshBasicMaterial({
+      color: COLORS.hellfire,
+      transparent: true,
+      opacity: 0.65,
     });
     const fleshMat = new THREE.MeshStandardMaterial({
       color: COLORS.fleshDark,
@@ -123,9 +130,18 @@ export class Renderer {
         m.position.set(p.x, p.y, 0);
         this.addLevelObject(m);
         // bone-light top trim so platform tops read clearly
-        const trim = new THREE.Mesh(new THREE.BoxGeometry(p.w, 0.14, 1.5), slabEdgeMat);
-        trim.position.set(p.x, p.y + p.h / 2, 0.01);
+        const topY = p.y + p.h / 2;
+        const trim = new THREE.Mesh(new THREE.BoxGeometry(p.w, 0.16, 1.52), slabEdgeMat);
+        trim.position.set(p.x, topY + 0.03, 0.02);
         this.addLevelObject(trim);
+        const lip = new THREE.Mesh(new THREE.BoxGeometry(p.w, 0.045, 1.58), slabLipMat);
+        lip.position.set(p.x, topY + 0.14, 0.08);
+        this.addLevelObject(lip);
+        for (const edgeX of [p.x - p.w / 2, p.x + p.w / 2]) {
+          const cap = new THREE.Mesh(new THREE.BoxGeometry(0.08, p.h, 1.5), slabEdgeMat);
+          cap.position.set(edgeX, p.y, 0.03);
+          this.addLevelObject(cap);
+        }
       }
     }
 

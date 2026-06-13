@@ -1,5 +1,7 @@
 import type { AABB, Platform } from "./types";
 
+const COLLISION_SKIN = 0.0001;
+
 // Axis-aligned overlap test.
 export function aabbOverlap(a: AABB, b: AABB): boolean {
   return Math.abs(a.x - b.x) < a.hw + b.hw && Math.abs(a.y - b.y) < a.hh + b.hh;
@@ -43,7 +45,9 @@ export function resolveAgainstSolids(
   // ---- X axis ----
   x += vx * dt;
   for (const s of solids) {
-    if (Math.abs(x - s.x) < hw + s.hw && Math.abs(y - s.y) < hh + s.hh) {
+    const overlapsX = Math.abs(x - s.x) < hw + s.hw;
+    const overlapsY = Math.abs(y - s.y) < hh + s.hh - COLLISION_SKIN;
+    if (overlapsX && overlapsY) {
       if (vx > 0) {
         x = s.x - s.hw - hw;
         vx = 0;
