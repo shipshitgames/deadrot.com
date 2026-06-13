@@ -1,7 +1,8 @@
 import { clerkClient, clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { authEnabled, FREE_GAME_SLUGS, hasCollection, LOCKED_GAME_SLUGS } from "@/lib/access";
+import { authEnabled, FREE_GAME_SLUGS, LOCKED_GAME_SLUGS } from "@/lib/access";
+import { ensureShipshitEntitlement } from "@/lib/shipshit-entitlement-sync";
 
 // Shell-level game gate (epic #330). In prod this runs BEFORE the next.config
 // rewrites that proxy deadrot.com/<slug>/ to each game's Vercel deploy, so it
@@ -44,7 +45,13 @@ const gate = clerkMiddleware(async (auth, req) => {
     // may have just paid — only visitors without the claim pay this API call.
     const client = await clerkClient();
     const user = userId ? await client.users.getUser(userId).catch(() => null) : null;
-    if (user && hasCollection(user.publicMetadata)) return;
+    // ensureShipshitEntitlement also bridges cross-property access: an active
+    // shipshit.games Studio Pass (shared Stripe account, matched by VERIFIED
+    // email) grants the collection on the spot, so a subscriber's first visit
+    // walks straight into the game. Throttled via deadrotCollectionCheckedAt
+    // (~10 min for non-owners, 7 days to re-validate sub-backed grants) and
+    // fail-open on Stripe errors, so the gate's latency stays bounded.
+    if (user && (await ensureShipshitEntitlement(user)).owned) return;
     const unlock = new URL("/unlock/", req.url);
     unlock.searchParams.set("from", req.nextUrl.pathname.split("/")[1] ?? "");
     return NextResponse.redirect(unlock);

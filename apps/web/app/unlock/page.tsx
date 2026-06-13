@@ -12,11 +12,12 @@ import {
   EARLY_BUYER_CODE,
   EARLY_BUYER_PRICE_LABEL,
   FREE_GAME_SLUGS,
-  hasCollection,
   isLockedGameSlug,
   LOCKED_GAME_SLUGS,
 } from "@/lib/access";
 import { getGame } from "@/lib/content";
+import { UNLOCK_PAGE_RECHECK_MS } from "@/lib/shipshit-entitlement";
+import { ensureShipshitEntitlement } from "@/lib/shipshit-entitlement-sync";
 
 export const metadata: Metadata = {
   title: "Unlock the Collection",
@@ -26,14 +27,21 @@ export const metadata: Metadata = {
 // Auth state is per-request — this page is always dynamic.
 export const dynamic = "force-dynamic";
 
-async function getAccess(): Promise<{ signedIn: boolean; owned: boolean }> {
-  if (!authEnabled) return { signedIn: false, owned: false };
+async function getAccess(): Promise<{ signedIn: boolean; owned: boolean; viaShipshit: boolean }> {
+  if (!authEnabled) return { signedIn: false, owned: false, viaShipshit: false };
   const { userId } = await auth();
-  if (!userId) return { signedIn: false, owned: false };
+  if (!userId) return { signedIn: false, owned: false, viaShipshit: false };
   // Authoritative check (webhook writes publicMetadata; session claims can lag ~60s).
   const client = await clerkClient();
   const user = await client.users.getUser(userId);
-  return { signedIn: true, owned: hasCollection(user.publicMetadata) };
+  // Also bridges shipshit.games Studio Pass subscribers (shared Stripe
+  // account, matched by verified email) — a short throttle instead of the
+  // proxy's 10-minute one, so "I just subscribed over there" resolves on a
+  // reload of this page. Fail-open: Stripe being down renders current state.
+  const { owned, viaShipshit } = await ensureShipshitEntitlement(user, {
+    notOwnedTtlMs: UNLOCK_PAGE_RECHECK_MS,
+  });
+  return { signedIn: true, owned, viaShipshit };
 }
 
 /** Next delivers repeated query params as arrays — take the first. */
@@ -46,7 +54,7 @@ export default async function UnlockPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const [{ signedIn, owned }, rawParams] = await Promise.all([getAccess(), searchParams]);
+  const [{ signedIn, owned, viaShipshit }, rawParams] = await Promise.all([getAccess(), searchParams]);
   const params = {
     success: first(rawParams.success),
     canceled: first(rawParams.canceled),
@@ -90,7 +98,16 @@ export default async function UnlockPage({
         {owned ? (
           <div className="mt-8">
             <p className="text-lg leading-relaxed text-ash">
-              You own the <span className="text-bone">Deadrot Collection</span>. Every gate is open.
+              {viaShipshit ? (
+                <>
+                  Your <span className="text-bone">shipshit.games Studio Pass</span> unlocks the Deadrot Collection.
+                  Every gate is open while it&apos;s active.
+                </>
+              ) : (
+                <>
+                  You own the <span className="text-bone">Deadrot Collection</span>. Every gate is open.
+                </>
+              )}
             </p>
             <div className="mt-6">
               <Link
@@ -121,6 +138,10 @@ export default async function UnlockPage({
                 </p>
               )}
             </div>
+            <p className="mt-4 max-w-2xl text-sm text-ash/70">
+              Already a shipshit.games Studio Pass subscriber? Sign in here with the same verified email and the
+              collection unlocks on its own.
+            </p>
           </>
         )}
 
