@@ -57,6 +57,11 @@ export class GameContext {
   // --- world collision / hit-test targets ---
   solidMeshes: THREE.Mesh[] = []; // arena solids only (used to prune raycastTargets on rebuild)
   obstacleBoxes: THREE.Box3[] = []; // collider AABBs (non-elevated obstacles)
+  // Raised WALKABLE surfaces (v2 layout: raised room floors, platforms, ramp steps).
+  // Scanned by PlayerSystem.groundUnder so the player can stand on / climb them, but
+  // deliberately NOT pushed against (no push-out/headroom) so ramps stay climbable.
+  // Flat v1 maps produce zero surface boxes, so their collision is byte-identical.
+  surfaceBoxes: THREE.Box3[] = [];
   raycastTargets: THREE.Object3D[] = []; // arena solids + enemy + remote-avatar hit meshes
   enemies: Enemy[] = []; // shared pooled enemy array (contains dead entries)
 
