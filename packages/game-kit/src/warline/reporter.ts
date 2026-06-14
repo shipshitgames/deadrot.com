@@ -17,8 +17,14 @@
 // display-only localStorage and must never feed the shared simulation. This
 // module is the one path that *does* feed the shared front.
 
-import type { GameSlug, HumanFaction, OperationResult } from "@shipshitgames/warline";
+import type { GameSlug, HumanFaction, OperationResult, WarEffortBonus, WorldState } from "@shipshitgames/warline";
+import { NEUTRAL_WAR_EFFORT, warEffortBonus } from "@shipshitgames/warline";
 import { WarlineClient } from "@shipshitgames/warline/client";
+
+// Re-export the shared war-effort bonus shape so a consuming game can type the
+// value `fetchWarEffortBonus` hands back without reaching past this gateway into
+// `@shipshitgames/warline` directly (it isn't a game's direct dependency).
+export type { WarEffortBonus } from "@shipshitgames/warline";
 
 /** localStorage key shared with the Warline hub store (apps/games/warline). */
 const FACTION_KEY = "warline.faction";
@@ -44,6 +50,12 @@ export interface WarlineRunInput {
   nonce?: string;
   /** Optional explicit target region/lane/breach id; otherwise the server picks one. */
   targetId?: string;
+  /**
+   * War-resource units the player looted this run, banked into the shared pool
+   * (#280). Coerced to a finite, >= 0 number; the server clamps it. Omitted/zero
+   * banks nothing. See `WAR_RESOURCE` for which resource each game drops.
+   */
+  contributed?: number;
 }
 
 /** A minimal slice of `WarlineClient` so tests can inject a fake. */
@@ -51,9 +63,25 @@ export interface WarlineReportClient {
   reportOperation: (result: OperationResult) => Promise<{ ok: boolean; error?: string }>;
 }
 
+/** A minimal slice of `WarlineClient` for *reading* the shared world (#280). */
+export interface WarlineStateClient {
+  fetchState: () => Promise<WorldState>;
+}
+
 export interface WarlineReporterOptions extends WarlineReporterConfig {
   /** Inject a client (tests / custom transports). Bypasses host/token resolution. */
   client?: WarlineReportClient;
+}
+
+export interface WarEffortOptions extends WarlineReporterConfig {
+  /** Inject a state client (tests / custom transports). Bypasses host/token resolution. */
+  client?: WarlineStateClient;
+  /**
+   * Upper bound (ms) on the read before it falls back to the neutral bonus, so a
+   * *slow* (reachable-but-stalled) front can never delay a run start, not just a
+   * dead one. Defaults to {@link DEFAULT_WAR_EFFORT_TIMEOUT_MS} (5s).
+   */
+  timeoutMs?: number;
 }
 
 export type WarlineReportStatus = "ok" | "disabled" | "error";
@@ -148,6 +176,8 @@ export function buildOperationResult(game: GameSlug, run: WarlineRunInput): Oper
   if (run.player) result.player = run.player;
   if (run.nonce) result.nonce = run.nonce;
   if (run.targetId) result.targetId = run.targetId;
+  const contributed = clampScore(run.contributed);
+  if (contributed > 0) result.contributed = contributed;
   return result;
 }
 
@@ -180,5 +210,57 @@ export async function reportWarlineOperation(
     return { reported: false, status: "error", result, error: response.error ?? "report rejected" };
   } catch (error) {
     return { reported: false, status: "error", result, error: String(error) };
+  }
+}
+
+// ---- reading the shared war-effort buff (#280) ----
+
+/** Default upper bound (ms) on the war-effort read; see {@link WarEffortOptions.timeoutMs}. */
+export const DEFAULT_WAR_EFFORT_TIMEOUT_MS = 5_000;
+
+/**
+ * Settle with `promise`, or reject once `ms` elapses — whichever is first — so a
+ * stalled (reachable-but-slow) front can never leave the read pending forever.
+ * The timeout rejection is caught by {@link fetchWarEffortBonus} and mapped to
+ * the neutral bonus; the underlying request is abandoned, not awaited.
+ */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer: ReturnType<typeof setTimeout> = setTimeout(() => reject(new Error("warline read timed out")), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
+/**
+ * Read the current shared War-Effort bonus from the front (#280): the global
+ * damage multiplier the pooled war resources unlock for *every* game. Call once
+ * at run start to scale the run. Like {@link reportWarlineOperation}, this is
+ * config-gated and offline-graceful — it never throws and never rejects.
+ * Returns the NEUTRAL bonus (1x, tier 0) when no host is configured, or when the
+ * server is unreachable, errors, OR is merely slow (the read is bounded by
+ * `options.timeoutMs`, default 5s) — so neither a dead nor a stalled front can
+ * delay a run start. An offline player simply fights without the buff.
+ */
+export async function fetchWarEffortBonus(options?: WarEffortOptions): Promise<WarEffortBonus> {
+  const config = resolveWarlineConfig(options);
+  if (!options?.client && !config.host) {
+    return NEUTRAL_WAR_EFFORT;
+  }
+  try {
+    const client: WarlineStateClient =
+      options?.client ?? new WarlineClient({ host: config.host as string, token: config.token });
+    const state = await withTimeout(client.fetchState(), options?.timeoutMs ?? DEFAULT_WAR_EFFORT_TIMEOUT_MS);
+    return warEffortBonus(state);
+  } catch {
+    return NEUTRAL_WAR_EFFORT;
   }
 }

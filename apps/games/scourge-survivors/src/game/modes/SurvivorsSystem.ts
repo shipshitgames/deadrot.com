@@ -617,7 +617,7 @@ export class SurvivorsSystem {
     if (!enemy.alive) return;
     const crit = this.ctx.statCrit > 0 && Math.random() < this.ctx.statCrit;
     // statAmp (Cauterizer Feed) + crit make a passive build empower the auto-weapons.
-    const total = dmg * this.ctx.statDamageMul * this.statAmp * (crit ? 2 : 1);
+    const total = dmg * this.ctx.statDamageMul * this.ctx.warEffortDamageMul * this.statAmp * (crit ? 2 : 1);
     const res = enemy.takeDamage(total, false);
     if (res.blocked) {
       audio.sfx("shieldhit"); // elite overshield (or boss shield) ate the hit

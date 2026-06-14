@@ -82,3 +82,18 @@ export const GAME_SLUGS = Object.keys(GAME_OPERATIONS) as GameSlug[];
 export function operationKindFor(game: GameSlug): OperationKind {
   return GAME_OPERATIONS[game].kind;
 }
+
+/**
+ * The single canonical war resource each game drops and players loot during play
+ * (#280). It is the first (primary) resource the game's operation credits, so the
+ * loot a run banks lands in the same pool the operation already feeds — one
+ * source of truth, no second table to drift. Banked via OperationResult.contributed.
+ */
+export function warResourceFor(game: GameSlug): ResourceKind {
+  return GAME_OPERATIONS[game].resources[0] ?? "scrap";
+}
+
+/** Per-game canonical war resource, keyed by slug (derived from GAME_OPERATIONS). */
+export const WAR_RESOURCE: Record<GameSlug, ResourceKind> = Object.fromEntries(
+  GAME_SLUGS.map((g) => [g, warResourceFor(g)]),
+) as Record<GameSlug, ResourceKind>;

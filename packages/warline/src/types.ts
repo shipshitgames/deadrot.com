@@ -92,6 +92,13 @@ export interface OperationResult {
   targetId?: string; // optional explicit region/lane/breach id; else server picks
   player?: string; // optional handle
   nonce?: string; // optional idempotency key
+  /**
+   * War-resource units looted during the run and banked into the shared pool
+   * (#280). Finite and >= 0; the reducer clamps to [0, MAX_CONTRIBUTION] and
+   * credits the game's WAR_RESOURCE regardless of outcome — you keep what you
+   * collected even on a defeat. Omitted/invalid values bank nothing.
+   */
+  contributed?: number;
 }
 
 // ---- build / spend / raise-army loop ----
@@ -167,6 +174,29 @@ export const ESCALATION = {
   perRamp: 0.25, // +25% Choir output per step
   max: 2.5, // hard ceiling
 } as const;
+
+/**
+ * War effort — collective damage progression (#280). The shared resource pool
+ * funds a global war-effort bonus every game can read: each `unitPerTier` of
+ * pooled resources raises the tier by one, and each tier grants `+perTier`
+ * damage, capped at `maxTier` (so the bonus tops out at +`perTier × maxTier`).
+ * Step-wise so the curve is legible and bounded; tier 0 is exactly 1× (neutral).
+ */
+export const WAR_EFFORT = {
+  unitPerTier: 5000,
+  perTier: 0.04,
+  maxTier: 10,
+} as const;
+
+/**
+ * Per-report ceiling on looted war-resource contributions (#280). The shared
+ * front trusts token-gated game clients, but clamping every banked contribution
+ * keeps one bad/forged report from warping the collective pool. Pinned to a
+ * single tier's worth (`WAR_EFFORT.unitPerTier`) so even a maxed or forged
+ * report advances the shared war by at most ONE war-effort tier — banking the
+ * full buff stays a collective effort, never a one-report feat.
+ */
+export const MAX_CONTRIBUTION = WAR_EFFORT.unitPerTier;
 
 export const COMMAND_COSTS: Record<CommandKind, Partial<ResourceBag> & { army?: number }> = {
   fortify: { scrap: 120, fuel: 40 },

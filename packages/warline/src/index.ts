@@ -23,13 +23,14 @@ export {
 } from "./map";
 // operations (spec §4)
 export type { GameOperationMeta } from "./operations";
-export { GAME_OPERATIONS, GAME_SLUGS, operationKindFor } from "./operations";
+export { GAME_OPERATIONS, GAME_SLUGS, operationKindFor, WAR_RESOURCE, warResourceFor } from "./operations";
 // palette
 export { FACTION_COLOR } from "./palette";
 // reducer (spec §5)
 export type { ApplyResult } from "./reducer";
 export {
   applyOperation,
+  clampContribution,
   escalationFactor,
   magnitude,
   makeEventId,
@@ -63,9 +64,14 @@ export {
   ECON,
   ESCALATION,
   FEED_MAX,
+  MAX_CONTRIBUTION,
   RESOURCE_KINDS,
   SCHEMA_VERSION,
   TICK,
   TICK_MS,
+  WAR_EFFORT,
 } from "./types";
+// war effort — collective damage progression (#280)
+export type { WarEffortBonus } from "./warEffort";
+export { NEUTRAL_WAR_EFFORT, warEffortBonus, warEffortPool } from "./warEffort";
 export { HUMAN_FACTIONS } from "./world";
