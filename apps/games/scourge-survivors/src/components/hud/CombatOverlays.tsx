@@ -472,6 +472,31 @@ export function CombatOverlays({ state }: { state: HUDState }) {
         className={`${HUD_CORNER} scourge-weapon-panel right-[18px] bottom-[18px] text-right min-w-[178px]`}
         data-testid="weapon-panel"
       >
+        {survivors && (
+          <div
+            className="scourge-weapon-tier flex items-center justify-end gap-[6px] mb-[4px]"
+            data-testid="survivor-weapon-tier"
+            title={`Weapon ${state.survivorWeaponTierLabel} — ×${state.survivorWeaponTierDamageMul.toFixed(2)} gun damage`}
+            aria-hidden
+          >
+            <span className="text-[10px] font-black uppercase tracking-[0.08em] text-[#ffb26b]">
+              {state.survivorWeaponTierLabel}
+            </span>
+            <span className="flex items-center gap-[2px]">
+              {Array.from({ length: 5 }, (_, i) => (
+                <i
+                  key={i}
+                  className={`inline-block h-[6px] w-[6px] rounded-[1px] ${
+                    i <= state.survivorWeaponTierIndex
+                      ? "bg-[#ff8f3a] shadow-[0_0_6px_rgba(255,143,58,0.6)]"
+                      : "bg-white/15"
+                  }`}
+                />
+              ))}
+            </span>
+            <span className="text-[10px] font-bold text-accent">×{state.survivorWeaponTierDamageMul.toFixed(2)}</span>
+          </div>
+        )}
         <div className="text-[13px] tracking-[0.12em] uppercase text-accent mb-[2px]">{weapon}</div>
         <div className="flex items-baseline justify-end gap-[6px]">
           <span className={`text-[30px] font-extrabold${ammo === 0 ? " text-danger" : ""}`}>{ammo}</span>

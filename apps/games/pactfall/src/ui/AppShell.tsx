@@ -139,13 +139,19 @@ export function AppShell() {
         <div id="arena-name" />
         <div id="hud-top">
           <div className="meter" id="meter-base-friendly">
-            <span className="meter-label">PYRE BASE</span>
+            <span className="meter-label">
+              PYRE BASE
+              <span className="meter-towers" id="towers-friendly" title="Pyre towers standing" />
+            </span>
             <div className="bar">
               <i />
             </div>
           </div>
           <div className="meter" id="meter-base-enemy">
-            <span className="meter-label">WARDEN BASE</span>
+            <span className="meter-label">
+              WARDEN BASE
+              <span className="meter-towers" id="towers-enemy" title="Warden towers standing" />
+            </span>
             <div className="bar bar--enemy">
               <i />
             </div>

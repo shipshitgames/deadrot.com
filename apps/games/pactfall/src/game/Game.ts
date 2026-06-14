@@ -2,13 +2,14 @@ import { createFixedLoop, type FixedLoop, recordWarResult } from "@deadrot/game-
 import { DamageNumbers, FlashOverlay, ParticleBursts, ScreenShake } from "@deadrot/game-kit/juice";
 import { reportWarlineOperation } from "@deadrot/game-kit/warline";
 import { audio } from "../audio";
-import { COLORS, CONSTANTS } from "./constants";
+import { COLORS, CONSTANTS, type Team } from "./constants";
+import { ASHGATE_MAP, activeLanes, activeTowersFor, primaryLane } from "./map";
 import { type AbilityKey, AbilitySystem } from "./systems/abilities";
 import { EntitySystem } from "./systems/EntitySystem";
 import { HudSystem } from "./systems/HudSystem";
 import { InputSystem } from "./systems/InputSystem";
 import { RenderSystem } from "./systems/RenderSystem";
-import type { Phase } from "./types";
+import type { Entity, GameSnapshot, Phase, TeamStructureSnapshot } from "./types";
 
 // One SFX cue per ability slot (presentation table, not a tunable).
 const CAST_SFX: Record<AbilityKey, "laser" | "powerup" | "dash"> = {
@@ -151,8 +152,41 @@ export class Game {
     this.buffTime = CONSTANTS.scourge.buffDuration;
   }
 
+  // A flat, read-only view of the run for the e2e harness (mirrors the
+  // __brawlSnapshot / __rothulkGame.debugSnapshot patterns). Never mutates state.
+  snapshot(): GameSnapshot {
+    const ent = this.entities;
+    const structureFor = (team: Team): TeamStructureSnapshot => {
+      const base = team === "pyre" ? ent.friendlyBase : ent.enemyBase;
+      return {
+        towersTotal: activeTowersFor(ASHGATE_MAP, team),
+        towersStanding: ent.structuresStanding(team),
+        baseHp: Math.max(0, base.hp),
+        baseVulnerable: ent.baseVulnerable(team),
+      };
+    };
+    const c = ent.champion;
+    return {
+      phase: this.phase,
+      paused: this.paused,
+      elapsed: this.elapsed,
+      buffed: this.buffed,
+      map: {
+        id: ASHGATE_MAP.id,
+        name: ASHGATE_MAP.name,
+        lanes: ASHGATE_MAP.lanes.length,
+        activeLanes: activeLanes(ASHGATE_MAP).length,
+        primaryLane: primaryLane(ASHGATE_MAP).id,
+      },
+      champion: { hp: Math.max(0, c.hp), maxHp: c.maxHp, mana: c.mana, alive: c.alive, x: c.pos.x, z: c.pos.z },
+      minions: { pyre: ent.minionCount("pyre"), warden: ent.minionCount("warden") },
+      structures: { pyre: structureFor("pyre"), warden: structureFor("warden") },
+    };
+  }
+
   win(): void {
     if (this.phase === "playing") {
+      this.eruptBase(this.entities.enemyBase, COLORS.hellfire);
       const result = this.warResult("victory");
       recordWarResult("pactfall", result, Date.now());
       void reportWarlineOperation("pactfall", { outcome: "victory", score: result.score });
@@ -164,6 +198,7 @@ export class Game {
 
   lose(): void {
     if (this.phase === "playing") {
+      this.eruptBase(this.entities.friendlyBase, COLORS.bloodHot);
       const result = this.warResult("defeat");
       recordWarResult("pactfall", result, Date.now());
       void reportWarlineOperation("pactfall", { outcome: "defeat", score: result.score });
@@ -171,6 +206,23 @@ export class Game {
       this.setPhase("lost");
       audio.sfx("defeat");
     }
+  }
+
+  // A toppled base is the decisive moment — bases never emit a kill event (they
+  // are kept alive-flagged for the win/lose check), so the climactic burst is
+  // fired here rather than through the per-frame kill juice.
+  private eruptBase(base: Entity, color: number): void {
+    this.bursts.spawn({
+      position: { x: base.pos.x, y: Math.max(1, base.pos.y), z: base.pos.z },
+      color,
+      count: 64,
+      speed: 9,
+      life: 1.1,
+      gravity: 6,
+      upwardBias: 0.6,
+      size: 0.34,
+    });
+    this.shake.kick(CONSTANTS.feedback.shake.baseFall);
   }
 
   private update(dt: number): void {
@@ -242,21 +294,27 @@ export class Game {
     let killCues = 0;
     for (const kill of ev.kills) {
       const champ = kill.kind === "champion";
+      const tower = kill.kind === "tower";
+      const big = champ || tower || kill.kind === "scourge";
       const color =
         kill.kind === "scourge" ? COLORS.toxic : kill.dealerTeam === "pyre" ? COLORS.hellfire : COLORS.blood;
       this.bursts.spawn({
         position: { x: kill.x, y: Math.max(0.9, kill.y), z: kill.z },
         color,
-        count: champ || kill.kind === "scourge" ? 36 : 14,
-        speed: champ ? 7 : 4.5,
-        life: champ ? 0.7 : 0.45,
+        count: big ? 36 : 14,
+        speed: champ ? 7 : tower ? 6 : 4.5,
+        life: big ? 0.7 : 0.45,
         gravity: 6,
         upwardBias: 0.5,
-        size: champ ? 0.26 : 0.16,
+        size: big ? 0.26 : 0.16,
       });
       if (champ) {
         this.shake.kick(fb.shake.championKill);
         audio.sfx("kill", { pitch: 0.72 });
+      } else if (tower) {
+        // A toppled tower is a momentum swing — heavy shake and a deep cue.
+        this.shake.kick(fb.shake.towerKill);
+        audio.sfx("kill", { pitch: 0.6 });
       } else if (kill.dealerIsPlayer && killCues < fb.maxKillSfxPerFrame) {
         audio.sfx("kill", { pitch: 0.95 + Math.random() * 0.2 });
         killCues++;

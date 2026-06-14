@@ -1,8 +1,20 @@
 import { describe, expect, test } from "bun:test";
 import { COLORS, CONSTANTS, MARCH_DIR, type Team } from "../../src/game/constants";
 import { makeBase, makeChampion, makeMinion, makeScourge } from "../../src/game/factory";
+import { ASHGATE_MAP, totalActiveTowers } from "../../src/game/map";
 import { EntitySystem } from "../../src/game/systems/EntitySystem";
 import type { Entity } from "../../src/game/types";
+
+// Down every tower belonging to `team` so the base behind it can be sieged
+// (combat is gated on baseVulnerable). Tests that target a base directly use this.
+function razeTowers(es: EntitySystem, team: Team): void {
+  for (const t of es.towers) {
+    if (t.team === team) {
+      t.alive = false;
+      t.hp = 0;
+    }
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Test harness: a minimal fake Game so we can drive the *real* EntitySystem
@@ -201,9 +213,11 @@ describe("pactfall EntitySystem — reset & lane layout", () => {
     advance(game, 6); // spawn a pile of minions
     expect(minions(game.entities).length).toBeGreaterThan(0);
     game.entities.reset();
-    // Fresh layout: champions(2) + bases(2) + scourge(1), no minions yet.
+    // Fresh layout: champions(2) + bases(2) + scourge(1) + the active tower
+    // line, no minions yet.
     expect(minions(game.entities).length).toBe(0);
-    expect(allEntities(game.entities).length).toBe(5);
+    expect(game.entities.towers.length).toBe(totalActiveTowers(ASHGATE_MAP));
+    expect(allEntities(game.entities).length).toBe(5 + totalActiveTowers(ASHGATE_MAP));
   });
 });
 
@@ -313,6 +327,8 @@ describe("pactfall EntitySystem — combat, scourge buff & death", () => {
   test("buffed champion deals multiplied damage to a base", () => {
     const game = makeStubGame();
     game.entities.reset();
+    // The enemy base is only vulnerable once the Warden tower line is down.
+    razeTowers(game.entities, "warden");
 
     // Push the player up against the enemy base, clear lane, no buff.
     const base = game.entities.enemyBase;

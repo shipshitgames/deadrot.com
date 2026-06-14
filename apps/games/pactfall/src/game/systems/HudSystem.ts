@@ -1,5 +1,6 @@
 import { CONSTANTS } from "../constants";
 import type { Game } from "../Game";
+import { ASHGATE_MAP, activeTowersFor } from "../map";
 import { ABILITY_KEYS, type AbilityKey } from "./abilities";
 
 interface AbilitySlot {
@@ -14,6 +15,8 @@ interface AbilitySlot {
 export class HudSystem {
   private readonly elBaseFriendly: HTMLElement;
   private readonly elBaseEnemy: HTMLElement;
+  private readonly elTowersFriendly: HTMLElement;
+  private readonly elTowersEnemy: HTMLElement;
   private readonly elHp: HTMLElement;
   private readonly elMana: HTMLElement;
   private readonly elManaValue: HTMLElement;
@@ -24,6 +27,8 @@ export class HudSystem {
   constructor(root: HTMLElement) {
     this.elBaseFriendly = this.req(root, "#meter-base-friendly .bar i");
     this.elBaseEnemy = this.req(root, "#meter-base-enemy .bar i");
+    this.elTowersFriendly = this.req(root, "#towers-friendly");
+    this.elTowersEnemy = this.req(root, "#towers-enemy");
     this.elHp = this.req(root, "#meter-hp .bar i");
     this.elMana = this.req(root, "#meter-mana .bar i");
     this.elManaValue = this.req(root, "#meter-mana .mana-value");
@@ -66,6 +71,9 @@ export class HudSystem {
     this.elManaValue.textContent = `${Math.round(ent.champion.mana)}`;
     this.setBar(this.elBaseFriendly, ent.friendlyBase.hp, CONSTANTS.base.maxHp);
     this.setBar(this.elBaseEnemy, ent.enemyBase.hp, CONSTANTS.base.maxHp);
+    // Tower line readout: standing/total per side. "OPEN" once a base is exposed.
+    this.setTowers(this.elTowersFriendly, ent.structuresStanding("pyre"), activeTowersFor(ASHGATE_MAP, "pyre"));
+    this.setTowers(this.elTowersEnemy, ent.structuresStanding("warden"), activeTowersFor(ASHGATE_MAP, "warden"));
 
     for (const key of ABILITY_KEYS) {
       const slot = this.abilitySlots[key];
@@ -91,5 +99,11 @@ export class HudSystem {
   private setBar(fill: HTMLElement, hp: number, max: number): void {
     const pct = Math.max(0, Math.min(1, hp / max)) * 100;
     fill.style.width = `${pct}%`;
+  }
+
+  private setTowers(el: HTMLElement, standing: number, total: number): void {
+    const down = standing <= 0;
+    el.textContent = down ? "OPEN" : `${standing}/${total}`;
+    el.classList.toggle("towers--down", down);
   }
 }
