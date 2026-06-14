@@ -99,6 +99,30 @@ export const BOSS_SCORE = 2500;
 export const BOSS_COLOR = 0xff1f4f;
 export const BOSS_RESERVE_BONUS = 60; // ammo granted for slaying the boss
 
+// ---- The Toll: the 10:00 Survivors reaper (#278) ---------------------------
+// At SURVIVOR_RUN_GOAL_TIME the timed win is gone — the breach sends a HUGE
+// named reaper instead. Identity (lore name + tint) lives in data/reaper.ts.
+export const REAPER_SCALE = 4.2; // visibly dwarfs the BOSS_SCALE 2.6 breach-boss
+export const REAPER_HEALTH = 9000;
+// One-shot math: the deepest possible defensive pool is PLAYER_MAX_HEALTH 100
+// + in-run maxhp 5×30 + permanent vigor 5×18 + best class HP bonus 45 + ward
+// shields 4×24 + best class shield 24 = 505 effective HP, and the armor cap in
+// PlayerSystem.damagePlayer is 0.78 — so a guaranteed one-shot needs raw
+// damage > 505 / 0.22 ≈ 2296. 2400 × 0.22 = 528 clears it with margin.
+// (Dodge / grace i-frames evading a single strike is accepted, VS-style.)
+export const REAPER_TOUCH_DAMAGE = 2400;
+export const REAPER_RESISTED_TOUCH_DAMAGE = 60; // once permanent scars qualify (canResistReaper) strikes bruise, not erase
+export const REAPER_ATTACK_INTERVAL = 0.75;
+export const REAPER_ATTACK_RANGE = 5.6;
+export const REAPER_PROJECTILE_DAMAGE = 30; // barrage is chip pressure only — the TOUCH is the killer
+export const REAPER_SCORE = 5000;
+export const REAPER_WARNING_LEAD = 12; // seconds of dread between the warning toast and arrival
+export const REAPER_RESIST_TOTAL_TIERS = 28; // permanent shop tiers (of 33 total) needed to withstand strikes
+export const REAPER_RESIST_VIGOR_TIERS = 4; // ...and the Ash-Hardened Suit near-maxed specifically
+// ~1.10× the player's base steady-state speed (MOVE_ACCEL / MOVE_DAMPING ≈
+// 9.23 u/s): walking never escapes it, sprinting (1.45×) buys readable space.
+export const REAPER_SPEED = 10.2;
+
 // ---- Weapons --------------------------------------------------------------
 export type WeaponId = "pistol" | "smg" | "shotgun" | "cannon" | "sniper";
 

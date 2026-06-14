@@ -184,7 +184,9 @@ export const SURVIVORS_ARCHETYPE_IDS: EnemyArchetypeId[] = [
 ];
 
 export function pickWeightedEnemyArchetype(runTime: number, chapterIndex = 0): EnemyArchetypeDef {
-  const maturity = Math.max(0, Math.min(1, (runTime - 20) / 230 + chapterIndex * 0.08));
+  // Divisor renormalized for the 600s reaper timeline (#278): the mix matures
+  // near run end just like before — (600-20)/535 ≈ 1.08 vs old (270-20)/230 ≈ 1.09.
+  const maturity = Math.max(0, Math.min(1, (runTime - 20) / 535 + chapterIndex * 0.08));
   let total = 0;
   const weighted: { def: EnemyArchetypeDef; weight: number }[] = [];
   for (const id of SURVIVORS_ARCHETYPE_IDS) {
