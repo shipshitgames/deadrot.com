@@ -10,6 +10,7 @@ YouTube channel.
 - **Universe / canon:** [apps/lore/content](../../lore/content)
 - **Built with:** Vite + TypeScript + imperative Three.js + PartyKit, on the `@shipshitgames/engine` conventions
 - **Faction:** the Pyre · **Enemy:** the Scourge · **Deepest zone:** Perdition
+- **Runtime art format:** WebP, per the shared [asset-format policy](../../../packages/assets/docs/asset-format-policy.md) — this game is its reference migration
 
 ## Dev
 
