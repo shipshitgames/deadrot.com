@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 type SurvivorClassId = "ranger" | "heavy" | "scout" | "medic";
 type WeaponId = "pistol" | "smg" | "shotgun" | "cannon" | "sniper";

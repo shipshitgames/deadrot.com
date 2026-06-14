@@ -1,8 +1,9 @@
 // ArenaMap v2 structural schema — the game-agnostic core extracted from
-// scourge-survivors' flat v1 maps.ts (issue #79). Presentation (themes,
-// material sets, environment dressing, picker metadata) stays game-side; this
-// module only describes WHERE things are: bounds, rooms, floor levels,
-// ramps/stairs, platforms, and typed anchors.
+// scourge-survivors' flat v1 maps.ts (issue #79). Presentation (material sets,
+// environment dressing, picker metadata) stays game-side — except the shared
+// biome preset catalog in ./biomes.ts (issue #80), which games resolve into
+// their own theme types; this module only describes WHERE things are: bounds,
+// rooms, floor levels, ramps/stairs, platforms, and typed anchors.
 //
 // Engine candidate: everything here is plain JSON-serialisable data — no THREE,
 // no engine import. `ArenaBounds` is a structural twin of
