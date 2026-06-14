@@ -72,14 +72,10 @@ const arenaFloor = visualAssetUrl("arena-floor");
 const arenaWall = visualAssetUrl("arena-wall");
 const arenaColumn = visualAssetUrl("arena-column");
 const arenaBlock = visualAssetUrl("arena-block");
-const menuHeroJpg = visualAssetUrl("ui-menu-hero-jpg");
-const menuHeroPng = visualAssetUrl("ui-menu-hero-png");
-const menuCardBreach = visualAssetUrl("ui-card-breach-jpg");
-const menuCardBreachPng = visualAssetUrl("ui-card-breach-png");
-const menuCardBastion = visualAssetUrl("ui-card-bastion-jpg");
-const menuCardBastionPng = visualAssetUrl("ui-card-bastion-png");
-const menuCardFleshworks = visualAssetUrl("ui-card-fleshworks-jpg");
-const menuCardFleshworksPng = visualAssetUrl("ui-card-fleshworks-png");
+const menuHero = visualAssetUrl("ui-menu-hero");
+const menuCardBreach = visualAssetUrl("ui-card-breach");
+const menuCardBastion = visualAssetUrl("ui-card-bastion");
+const menuCardFleshworks = visualAssetUrl("ui-card-fleshworks");
 
 const WEAPON_IMAGES: Record<WeaponId, string> = {
   pistol: weaponPistol,
@@ -146,14 +142,10 @@ const VISUAL_ASSETS: VisualAsset[] = [
       kind: "texture" as const,
     })),
   ),
-  { id: "ui-hero-jpg", label: "Menu hero jpg", src: menuHeroJpg, kind: "ui" },
-  { id: "ui-hero-png", label: "Menu hero png", src: menuHeroPng, kind: "ui" },
-  { id: "ui-breach-jpg", label: "Breach card jpg", src: menuCardBreach, kind: "ui" },
-  { id: "ui-breach-png", label: "Breach card png", src: menuCardBreachPng, kind: "ui" },
-  { id: "ui-bastion-jpg", label: "Bastion card jpg", src: menuCardBastion, kind: "ui" },
-  { id: "ui-bastion-png", label: "Bastion card png", src: menuCardBastionPng, kind: "ui" },
-  { id: "ui-fleshworks-jpg", label: "Fleshworks card jpg", src: menuCardFleshworks, kind: "ui" },
-  { id: "ui-fleshworks-png", label: "Fleshworks card png", src: menuCardFleshworksPng, kind: "ui" },
+  { id: "ui-hero", label: "Menu hero", src: menuHero, kind: "ui" },
+  { id: "ui-breach", label: "Breach card", src: menuCardBreach, kind: "ui" },
+  { id: "ui-bastion", label: "Bastion card", src: menuCardBastion, kind: "ui" },
+  { id: "ui-fleshworks", label: "Fleshworks card", src: menuCardFleshworks, kind: "ui" },
 ];
 
 const AUDIO_ASSETS: AudioAsset[] = [

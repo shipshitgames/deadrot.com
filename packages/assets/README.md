@@ -94,6 +94,23 @@ weapons, pickups, projectiles, FX, and menu/card UI all resolve to manifest asse
 IDs with license records. The game consumes that table through its local
 `AssetCatalog` loader instead of importing package file paths directly.
 
+## Runtime asset format
+
+Runtime raster (sprites, UI art, textures) ships as **WebP**; PNG/JPEG are
+source/master formats, with one exception — the Open Graph card
+`ui/social/og.jpg`. The full rule, the conversion recipes, and the CI gate are
+in [`docs/asset-format-policy.md`](./docs/asset-format-policy.md).
+
+```sh
+# convert source raster → runtime WebP (author-run; cwebp required locally)
+bun run --cwd packages/assets assets:to-webp games/<slug>/ui --rm
+
+# validate that manifests + bundle globs only ship runtime formats (runs in CI)
+bun run --cwd packages/assets assets:check
+```
+
+Scourge Survivors is the migrated reference implementation.
+
 ## Source material
 
 Runtime packs should only commit files that games load at build time or runtime.

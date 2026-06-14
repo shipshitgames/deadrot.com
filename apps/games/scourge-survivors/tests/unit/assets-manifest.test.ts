@@ -87,14 +87,10 @@ describe("asset manifest", () => {
     expect(Object.keys(manifest.runtime.projectiles).sort()).toEqual(["bolt", "boss", "enemy", "orb"]);
     expect(Object.keys(manifest.runtime.fx).sort()).toEqual(["muzzleFlash"]);
     expect(Object.keys(manifest.runtime.ui).sort()).toEqual([
-      "cardBastionJpg",
-      "cardBastionPng",
-      "cardBreachJpg",
-      "cardBreachPng",
-      "cardFleshworksJpg",
-      "cardFleshworksPng",
-      "menuHeroJpg",
-      "menuHeroPng",
+      "cardBastion",
+      "cardBreach",
+      "cardFleshworks",
+      "menuHero",
       "menuTitle",
     ]);
   });
@@ -124,7 +120,9 @@ describe("asset manifest", () => {
 
     for (const [id, ref] of Object.entries(manifest.runtime.ui)) {
       expect(manifest.ui[ref.asset as keyof typeof manifest.ui], `ui.${id}`).toBeTruthy();
-      expect(ASSET_CATALOG.runtimeUiUrl(id), `ui.${id} URL`).toMatch(/\.(webp|jpe?g|png)(\?|$)/);
+      // Runtime UI raster ships as WebP (deadrot.com#118). The OG social card is
+      // the only allowed non-WebP runtime raster and is not part of runtime.ui.
+      expect(ASSET_CATALOG.runtimeUiUrl(id), `ui.${id} URL`).toMatch(/\.webp(\?|$)/);
     }
   });
 
