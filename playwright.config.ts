@@ -59,6 +59,7 @@ export default defineConfig({
         /warline-reporting\.spec\.ts/,
         /warline-war-effort\.spec\.ts/,
         /pactfall-moba\.spec\.ts/,
+        /brawl-arena\.spec\.ts/,
       ],
       use: {
         ...viewport.device,
