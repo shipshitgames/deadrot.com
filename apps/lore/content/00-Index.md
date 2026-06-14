@@ -61,13 +61,17 @@ Start here, follow the links, open the graph view.
 - [[The-Pact]] — field compact; Pyre/Warden rivalry stops the instant a breach opens
 - [[The-Last-Manifest]] — Pyre run sheet; target, fuel ledger, and Pact handoff
 
+## Canon Anchors
+
+- [[Zero-Day]] — _the night we lost the sky_ (first-contact last stand; now the [[Starblight]] prologue / memory mode)
+
 ## Games (entries in the canon)
 
-- [[Zero-Day]] — _the night we lost the sky_ (first-contact space shooter; the origin) — concept
 - [[Scourge-Survivors]] — _survive the swarm_ (first-person horde-survivors shooter) — playable prototype
 - [[Deadlane]] — _hold the lane_ (3D tower defense) — playable prototype
 - [[Pactfall]] — _test the Pact_ (Pyre vs Wardens MOBA) — playable prototype; [[Bloodlane]] is the one-lane v1 design doc
-- [[Starblight]] — _burn the orbital infection_ (arcade pilot shooter) — playable prototype
+- [[Brawl]] — _survive the pocket_ (trench brawler / Duel + Arena Brawl) — playable prototype
+- [[Starblight]] — _burn the orbital infection_ (arcade pilot shooter; includes [[Zero-Day]] as the first-contact last stand) — playable prototype
 - [[Redline]] — _outrun the Choir_ (high-speed courier platformer) — playable prototype
 - [[Rothulk]] — _burn it from the inside_ (infiltration platformer) — playable prototype
 - [[Warline]] — _manage the front_ (strategy-lite campaign layer) — playable prototype
@@ -77,6 +81,7 @@ Start here, follow the links, open the graph view.
 - Pyre / Scourge Survivors: [[Ranger]], [[Bulwark]], [[Vector]], [[Patch]]
 - Wardens / Deadlane: [[Field-Engineer]], [[Lane-Gunner]], [[Wallwright]]
 - Pactfall: [[Pyre-Duelist]], [[Pyre-Cauterizer]], [[Warden-Bastion]], [[Warden-Artillerist]], [[Trucebreaker]]
+- Brawl: [[Pyre-Duelist]], [[Warden-Bastion]], [[Render]], [[Trucebreaker]]
 - Starblight: [[Pyre-Interceptor-Pilot]], [[Warden-Defense-Pilot]], [[Scourge-Fighter]], [[Spore-Casket]], [[Orbital-Breach-Carrier]]
 - Redline: [[Pyre-Courier]], [[Warden-Courier]]
 - Rothulk: [[Pyre-Saboteur]]

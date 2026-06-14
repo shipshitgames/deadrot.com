@@ -1,4 +1,5 @@
 import type { PixelIconId } from "../assets/ui/pixelIcons";
+import type { MainWeaponVisualTier } from "./data/survivors";
 
 export type GameStatus =
   | "pointerlock-needed" // waiting for the player to click in to lock the pointer
@@ -142,6 +143,11 @@ export interface HUDState {
   survivorDodge: number;
   survivorGrace: number;
   survivorEvolved: string[];
+  /** Main-weapon tier (#279): a build-power milestone that also buffs gun damage. */
+  survivorWeaponTier: MainWeaponVisualTier;
+  survivorWeaponTierLabel: string;
+  survivorWeaponTierIndex: number; // 0 (Tier I) … 4 (Evolved)
+  survivorWeaponTierDamageMul: number;
   level: number;
   xp: number;
   xpToNext: number;

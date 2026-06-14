@@ -424,3 +424,82 @@ canAfford false when broke. Use a small pure event-id; no network.
   ```
   (Web agent owns this file; it includes the `partykit`/`partysocket` deps the server needs. Server agent must NOT create package.json.)
 - `README.md` for the app: what it is, `bun run dev` / `dev:all`, env (`VITE_WARLINE_HOST`, `WARLINE_TOKEN`), the game→meta contract table, deploy notes.
+
+---
+
+## 14. Shared war-effort pool (#280) — `src/warEffort.ts`, `src/operations.ts`, `src/reducer.ts`
+
+A cross-game progression layer on top of §4/§5: every game can bank a **looted war
+resource** into the shared pool, and that pool funds a single **global damage bonus**
+every game reads back. Loot in one game makes everyone's shots hit harder. Pure +
+deterministic like the rest of the core — derived only from `state.resources`, no clock,
+no deps; an empty/offline pool is exactly 1× so it never alters a standalone build.
+
+### Contribution (report → bank)
+
+`OperationResult` gains one optional field (§1):
+```ts
+contributed?: number   // looted war-resource units this run; finite & >= 0
+```
+
+`applyOperation` banks it **on top of** the operation's own credits (§5), via a pure
+clamp reducer:
+```ts
+export const MAX_CONTRIBUTION = WAR_EFFORT.unitPerTier          // per-report ceiling == one tier's worth (5000)
+export function clampContribution(value: number | undefined): number  // → [0, MAX_CONTRIBUTION], NaN/neg/absent → 0
+```
+- The clamped amount is credited into the game's **primary** resource —
+  `warResourceFor(game)` / `WAR_RESOURCE[game]` = `GAME_OPERATIONS[game].resources[0]`
+  (no second table to drift) — **regardless of outcome** (victory or defeat: you keep
+  what you collected).
+- It surfaces in the result breakdown as a transparent `` `${res} salvage banked` `` line.
+- The per-report ceiling is pinned to `WAR_EFFORT.unitPerTier`, so even a forged/buggy
+  token-gated report can advance the shared war by **at most one tier**, never
+  unboundedly — banking the full buff stays a collective effort. (The pool itself is
+  intentionally unbounded above; only each individual report is bounded.)
+
+| game | banks into (`WAR_RESOURCE`) |
+|------|-----------------------------|
+| scourge-survivors, rothulk | `biomass` |
+| deadlane, redline | `scrap` |
+| pactfall, brawl | `intel` |
+| starblight | `fuel` |
+
+### Bonus (pool → buff)
+
+`src/warEffort.ts` (pure, exported from the index barrel — §9):
+```ts
+export interface WarEffortBonus { total: number; tier: number; damageMult: number; progress: number }
+export function warEffortPool(resources: ResourceBag): number          // scrap+biomass+fuel+intel, floored at 0
+export function warEffortBonus(state: Pick<WorldState,'resources'>): WarEffortBonus
+export const NEUTRAL_WAR_EFFORT: WarEffortBonus                          // { total:0, tier:0, damageMult:1, progress:0 }
+export const WAR_EFFORT = { unitPerTier: 5000, perTier: 0.04, maxTier: 10 } as const  // §2
+```
+`warEffortBonus` derivation (deterministic):
+- `total = warEffortPool(resources)`
+- `tier = min(WAR_EFFORT.maxTier, floor(total / WAR_EFFORT.unitPerTier))`
+- `damageMult = 1 + tier × WAR_EFFORT.perTier`  (current tuning: +4%/tier, saturating at +40%)
+- `progress = tier>=maxTier ? 1 : (total % unitPerTier) / unitPerTier`  (`[0,1]` toward next tier, for HUD bars)
+
+Accepts a full `WorldState` or just a `{ resources }` slice, so the client `GET … /front`
+state (or a summary) drives it without extra plumbing.
+
+### Consumption (the cross-game contract)
+
+Games never import `@shipshitgames/warline` directly — both halves go through the
+config-gated, offline-graceful `@deadrot/game-kit/warline` gateway:
+- **read** the live buff at run start: `fetchWarEffortBonus()` → `WarEffortBonus`
+  (resolves to `NEUTRAL_WAR_EFFORT` when no host is configured, the front is
+  unreachable/errors, or it is merely *slow* — the read is bounded by a timeout, so a
+  stalled front can never delay a run start; never throws).
+- **report** the loot at run end: `reportWarlineOperation(slug, { …, contributed })`
+  (no-op when no host; never throws).
+
+Scourge Survivors is the reference implementation: it reads the buff into
+`ctx.warEffortDamageMul` (applied at the weapon/auto-weapon **build-damage** channels,
+composing with `statDamageMul`; the flat *reactive* channels — Retaliate, Bastion —
+deliberately bypass all build multipliers, the war buff included) and reports
+`contributed = runBiomass(kills, level, time)` (capped well below one `unitPerTier`, so
+no single run can swing the global war). See `packages/game-kit/src/warline/README.md`
+for the consumer contract and the **privacy/security** stance (what leaves the device,
+opt-in by config, server-as-trust-boundary clamping, shared-not-personal progression).

@@ -1,6 +1,7 @@
 import type { DeadrotSfx } from "@deadrot/game-kit/audio";
 import { InputLatch, recordWarResult } from "@deadrot/game-kit/core";
 import { FlashOverlay, ParticleBursts, ScreenShake } from "@deadrot/game-kit/juice";
+import { reportWarlineOperation } from "@deadrot/game-kit/warline";
 import { audio } from "../audio";
 import { COLORS, CONSTANTS } from "../constants";
 import {
@@ -224,9 +225,14 @@ export class Game {
       exitReached: this.coreLoop.phase === "won",
       feralScourge: this.level.scourge.filter((s) => s.feral).length,
       objective: objectiveForPhase(this.coreLoop.phase, false),
+      hp: this.hp,
+      lives: this.lives,
+      grounded: this.grounded,
       hero: {
         x: this.hx,
         y: this.hy,
+        vx: this.vx,
+        vy: this.vy,
       },
     };
   }
@@ -237,6 +243,17 @@ export class Game {
     this.vx = 0;
     this.vy = 0;
     this.renderer.setHeroTransform(this.hx, this.hy, this.facing, 1);
+  }
+
+  debugTeleportTo(x: number, y: number) {
+    this.hx = x;
+    this.hy = y;
+    this.vx = 0;
+    this.vy = 0;
+    this.grounded = false;
+    this.invuln = 0;
+    this.renderer.setHeroTransform(this.hx, this.hy, this.facing, 1);
+    this.refreshHud();
   }
 
   // Debug/e2e helper: jump to the FINAL armed exit. Fast-forwards any remaining
@@ -318,7 +335,9 @@ export class Game {
     if (this.respawnTimer <= 0) {
       if (this.lives <= 0) {
         this.mode = "gameover";
-        recordWarResult("rothulk", this.warResult("defeat"), Date.now());
+        const result = this.warResult("defeat");
+        recordWarResult("rothulk", result, Date.now());
+        void reportWarlineOperation("rothulk", { outcome: "defeat", score: result.score });
         this.playSfx("defeat");
         this.hud.showBigToast("gameover");
       } else {
@@ -745,7 +764,9 @@ export class Game {
     }
 
     this.mode = "won";
-    recordWarResult("rothulk", this.warResult("victory"), Date.now());
+    const result = this.warResult("victory");
+    recordWarResult("rothulk", result, Date.now());
+    void reportWarlineOperation("rothulk", { outcome: "victory", score: result.score });
     this.playSfx("victory");
     this.renderer.setExitArmed(false);
     this.hud.setProgress(1);
@@ -770,7 +791,7 @@ export class Game {
 
   private checkFatalFall() {
     if (this.hy < CONSTANTS.KILL_FLOOR_Y) {
-      this.killHero();
+      this.killHero("fall");
     }
   }
 
@@ -785,11 +806,13 @@ export class Game {
     this.flash.flash("#c1121f", { alpha: 0.32, duration: 0.3 });
     this.playSfx("hurt");
     this.hud.flashToast("INTEGRITY BREACHED", 0.9);
-    if (this.hp <= 0) this.killHero();
+    if (this.hp <= 0) this.killHero("damage");
   }
 
-  private killHero() {
+  private killHero(cause: "damage" | "fall" = "damage") {
     if (this.mode !== "playing") return;
+    const deathX = this.hx;
+    const deathY = Math.max(this.hy, CONSTANTS.KILL_FLOOR_Y + 1);
     this.lives -= 1;
     this.hp = CONSTANTS.MAX_HP;
     this.mode = "dead";
@@ -797,6 +820,17 @@ export class Game {
     this.shake.kick(CONSTANTS.SHAKE_DEATH);
     this.flash.flash("#ff2a18", { alpha: 0.5, duration: 0.45 });
     this.playSfx("hurt", 0.7);
+    this.bursts.spawn({
+      position: { x: deathX, y: deathY, z: 0.45 },
+      color: cause === "fall" ? COLORS.hellfire : COLORS.bloodHot,
+      count: cause === "fall" ? 22 : 16,
+      speed: cause === "fall" ? 7 : 5,
+      life: 0.55,
+      gravity: 12,
+      upwardBias: cause === "fall" ? 0.9 : 0.45,
+      size: 0.18,
+    });
+    this.hud.flashToast(cause === "fall" ? "PIT FALL // RECOVERING" : "PYRE DOWN // RECOVERING", 1.1);
     this.renderer.setHeroVisible(false);
     this.renderer.triggerFlash();
     this.refreshHud();

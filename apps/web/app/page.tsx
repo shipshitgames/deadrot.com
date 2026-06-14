@@ -1,15 +1,28 @@
+import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/site/eyebrow";
 import { Backdrop } from "@/components/site/atmosphere";
+import { AccessStateBadge } from "@/components/game/access-badge";
 import { GameCard } from "@/components/game/game-card";
 import { FactionCardGrid } from "@/components/faction/faction-card-grid";
 import { Waitlist } from "@/components/site/waitlist";
+import { COLLECTION_PRICE_LABEL, EARLY_BUYER_CODE, EARLY_BUYER_PRICE_LABEL } from "@/lib/access";
+import { ACCESS_STATE_ORDER, ACCESS_STATE_PRESENTATION } from "@/lib/access-state";
 import { assetUrl } from "@/lib/assets";
 import { accentVars, gamesByStatus, universe } from "@/lib/content";
+import { createSocialMetadata } from "@/lib/social";
 
 const WATCH = "https://youtube.com/@shipshitshow";
+
+export const metadata: Metadata = createSocialMetadata({
+  title: "DEADROT",
+  description: "A blood-soaked Ship Shit Games universe of browser games, canon, and one persistent war.",
+  path: "/",
+  openGraphTitle: "DEADROT - Ship Shit Games",
+});
 
 export default function Home() {
   const gallery = gamesByStatus;
@@ -24,11 +37,13 @@ export default function Home() {
       >
         <Backdrop />
         {/* Pixel hero banner (locked house style #62) */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={assetUrl("/universe/hero.webp")}
           alt=""
           aria-hidden
+          fill
+          priority
+          sizes="100vw"
           className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-25"
           style={{ imageRendering: "pixelated" }}
         />
@@ -38,8 +53,7 @@ export default function Home() {
         <div className="relative z-10 flex flex-col items-center">
           <Eyebrow>A Ship Shit Games universe</Eyebrow>
           <h1 className="mt-5 w-[min(760px,94vw)] sm:w-[min(820px,90vw)] md:w-[min(880px,82vw)]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={assetUrl("/brand/title.webp")}
               alt="DEADROT"
               width={1120}
@@ -57,6 +71,7 @@ export default function Home() {
               {/* Front door into the persistent war: the Warline lobby (apps/games/warline),
                   from which every game is a walkable portal. Plain <a> for a full document
                   load — /warline/ is a rewrite to the SPA, not a Next route. */}
+              {/* react-doctor-disable-next-line react-doctor/nextjs-no-a-element -- /warline/ rewrites to the Vite Warline app and needs a full document load. */}
               <a href="/warline/">Enter the War</a>
             </Button>
             <Button
@@ -93,8 +108,17 @@ export default function Home() {
           </h2>
           <p className="mt-3 max-w-2xl text-ash">
             Standalone games and prototypes in one war. Some are playable now, some are still design targets, and all of
-            them feed the same canon.
+            them feed the same canon. Everything playable is a preview/community build — rough, evolving, and built in
+            the open, never a finished-game promise.
           </p>
+          <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2" aria-label="What the game card states mean">
+            {ACCESS_STATE_ORDER.map((state) => (
+              <li key={state} className="flex items-center gap-2 text-sm text-ash">
+                <AccessStateBadge state={state} />
+                <span>{ACCESS_STATE_PRESENTATION[state].blurb}</span>
+              </li>
+            ))}
+          </ul>
           <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {gallery.map((g) => (
               <GameCard key={g.slug} game={g} />
@@ -124,6 +148,7 @@ export default function Home() {
           </p>
           <div className="mt-10">
             <Button asChild size="xl" className="font-display uppercase tracking-widest shadow-ember">
+              {/* react-doctor-disable-next-line react-doctor/nextjs-no-a-element -- /warline/ rewrites to the Vite Warline app and needs a full document load. */}
               <a href="/warline/">Enter Warline →</a>
             </Button>
           </div>
@@ -180,10 +205,45 @@ export default function Home() {
             Be first through the breach
           </h2>
           <p className="mt-5 max-w-xl leading-relaxed text-ash">
-            New games, new horrors, and the persistent war. Join the waitlist for launch news — no spam, just the war.
+            Deadrot is built in the open — preview and community builds ship rough and evolve on stream, not as a
+            finished-game promise. Join the waitlist for first access to new games, new horrors, and the persistent war.
+            No spam, just the war.
           </p>
           <div className="relative mt-9 w-full">
             <Waitlist />
+          </div>
+
+          {/* Early-buyer / community-build framing. Honest about what backing buys:
+              a seat in an evolving build, not a shipped game. (#355 AC3) */}
+          <div className="mt-12 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="rounded-md border border-gunmetal bg-coal/60 p-6">
+              <h3 className="font-display text-lg font-bold uppercase tracking-tight text-hellfire">
+                Back the build early
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-ash">
+                The Deadrot Collection unlocks every gated build for a one-time {COLLECTION_PRICE_LABEL}. Early backers
+                use code <span className="font-display tracking-widest text-bone">{EARLY_BUYER_CODE}</span> for{" "}
+                {EARLY_BUYER_PRICE_LABEL} — you&apos;re funding an in-progress, community-built war and playing it as it
+                grows, rough edges and all.
+              </p>
+              <div className="mt-4">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="border-hellfire/50 font-display uppercase tracking-widest text-hellfire hover:bg-hellfire/10 hover:text-hellfire"
+                >
+                  <Link href="/unlock">Unlock the Collection →</Link>
+                </Button>
+              </div>
+            </div>
+            <div className="rounded-md border border-gunmetal bg-coal/60 p-6">
+              <h3 className="font-display text-lg font-bold uppercase tracking-tight text-toxic">Built in the open</h3>
+              <p className="mt-2 text-sm leading-relaxed text-ash">
+                Maps, monsters, and sprites are forged live every week. Waitlist members get the drop the moment a new
+                build or game opens — and your runs feed the canon. Nothing here is a launched, finished product;
+                it&apos;s a community build you help shape.
+              </p>
+            </div>
           </div>
         </div>
       </section>

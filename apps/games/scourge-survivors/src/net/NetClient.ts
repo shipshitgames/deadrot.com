@@ -35,7 +35,7 @@ export interface NetEvents {
 }
 
 /** Default PartyKit host: local `partykit dev` in dev, env-configured in prod. */
-export const PARTYKIT_HOST: string =
+const PARTYKIT_HOST: string =
   (import.meta.env.VITE_PARTYKIT_HOST as string | undefined) || (import.meta.env.DEV ? "localhost:1999" : "");
 
 export class NetClient {

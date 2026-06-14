@@ -1,7 +1,7 @@
-import manifestData from "../games/scourge-survivors/assets.json" with { type: "json" };
 import animationManifestData from "../games/scourge-survivors/animations/scourge/animation-pack.json" with {
   type: "json",
 };
+import manifestData from "../games/scourge-survivors/assets.json" with { type: "json" };
 
 export type Vec2 = [number, number];
 export type Vec3 = [number, number, number];
@@ -164,8 +164,9 @@ const scourgeSurvivorsAssetModules = import.meta.glob<string>(
     "../games/scourge-survivors/textures/**/*.webp",
     "../games/scourge-survivors/fx/**/*.webp",
     "../games/scourge-survivors/ui/icons/pixel/*.webp",
-    "../games/scourge-survivors/ui/cards/**/*.{jpg,png}",
-    "../games/scourge-survivors/ui/menu/**/*.{jpg,png,webp}",
+    "../games/scourge-survivors/ui/cards/**/*.webp",
+    "../games/scourge-survivors/ui/cover/**/*.webp",
+    "../games/scourge-survivors/ui/menu/**/*.webp",
     "../games/scourge-survivors/audio/**/*.webm",
     "../games/scourge-survivors/fonts/*.ttf",
   ],

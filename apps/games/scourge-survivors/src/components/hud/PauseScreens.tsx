@@ -1,9 +1,11 @@
-import { Button, GameSettingsScreen, PauseMenu, type PauseMenuAction } from "@shipshitgames/ui";
+import { Button, GameAudioSettingsScreen, GamePauseMenu, type PauseMenuAction } from "@shipshitgames/ui";
 import { type ReactNode, useMemo, useRef, useState } from "react";
 import { SCOURGE_THREAT_TIERS } from "../../game/data/enemies";
 import { MENU_HERO_URL } from "../../game/spriteAssets";
 import type { HUDState } from "../../game/types";
 import { IconText, OVERLAY } from "./shared";
+
+const GAME_SLUG = "scourge-survivors";
 
 /** Pause menu + its settings/controls sub-panels. */
 export function PauseScreens({
@@ -95,16 +97,12 @@ export function PauseScreens({
   return (
     <>
       {status === "paused" && !suppressMenu && pausePanel === "none" && (
-        <PauseMenu
+        <GamePauseMenu
+          slug={GAME_SLUG}
           open
           className="pause-ui"
           kicker={multiplayer ? "Breach run" : "Pyre breach"}
-          title="Paused"
-          subtitle={
-            multiplayer
-              ? "Hold the line — the breach keeps churning while you regroup."
-              : "The breach is held in stasis. Catch your breath, operator."
-          }
+          subtitle={multiplayer ? "Hold the line — the breach keeps churning while you regroup." : undefined}
           status={pauseStatus}
           onResume={onLock}
           actions={pauseActions}
@@ -112,7 +110,14 @@ export function PauseScreens({
       )}
 
       {status === "paused" && !suppressMenu && pausePanel === "settings" && (
-        <GameSettingsScreen open onClose={() => setPausePanel("none")} backgroundImage={MENU_HERO_URL} />
+        <GameAudioSettingsScreen
+          open
+          slug={GAME_SLUG}
+          className="pause-ui"
+          onClose={() => setPausePanel("none")}
+          backgroundImage={MENU_HERO_URL}
+          backMeta="Pause menu"
+        />
       )}
 
       {status === "paused" && !suppressMenu && pausePanel === "controls" && (

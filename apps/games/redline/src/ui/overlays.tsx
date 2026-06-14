@@ -9,9 +9,11 @@
  */
 
 import menuHero from "@shipshitgames/assets/games/redline/ui/menu/title.webp";
-import { GameSettingsScreen, PauseMenu } from "@shipshitgames/ui";
+import { GameAudioSettingsScreen, GamePauseMenu } from "@shipshitgames/ui";
 import { useSyncExternalStore } from "react";
 import { overlayController } from "./overlayController";
+
+const GAME_SLUG = "redline";
 
 export function GameOverlays() {
   const state = useSyncExternalStore(overlayController.subscribe, overlayController.getState);
@@ -19,19 +21,17 @@ export function GameOverlays() {
   return (
     <>
       {state.settingsOpen && (
-        <GameSettingsScreen
+        <GameAudioSettingsScreen
           open
+          slug={GAME_SLUG}
           onClose={() => overlayController.closeSettings()}
-          kicker="Courier Settings"
           backgroundImage={menuHero}
         />
       )}
 
-      <PauseMenu
+      <GamePauseMenu
+        slug={GAME_SLUG}
         open={state.paused}
-        kicker="Dead Road"
-        title="Paused"
-        subtitle="The lane holds its breath. Catch yours."
         onResume={overlayController.onResume}
         actions={overlayController.pauseActions}
       />

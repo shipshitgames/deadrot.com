@@ -177,7 +177,7 @@
     "tagline": "Every carrier broken in orbit is a breach that never opens at Ashgate's wall.",
     "overview": "A battered orbital ring and the tether that anchors it — what humanity still holds of the sky, salvaged and re-crewed after Zero-Day took it and never gave it back. The Scourge never stops arriving: spores, infected wreckage, living carrier-ships, and raw breach-matter drifting down to seed fresh nests, and the Skyhook's whole purpose is to catch it up here, where it's thin and scattered. Every interception is breach-matter that never roots in the lanes.",
     "warRole": "The highest lane — the orbital interdiction line that starves the ground of fresh hosts and fresh nests; lose it and the sky becomes a breach again.",
-    "appearsIn": ["starblight", "zero-day"],
+    "appearsIn": ["starblight"],
     "boss": {
       "name": "The Blight-Maw",
       "entitySlug": "orbital-breach-carrier",

@@ -54,7 +54,7 @@ export function runModeLabel(mode?: HUDState["runMode"]): string {
   }
 }
 
-export function depthLabel(depth?: number, total?: number, name?: string): string {
+function depthLabel(depth?: number, total?: number, name?: string): string {
   if (!depth) return name || "-";
   const count = total && total > 0 ? `${depth}/${total}` : `${depth}`;
   return name ? `${count} · ${name}` : count;
@@ -117,7 +117,7 @@ export function Leaderboard({
                 s.date === highlight.date;
               return (
                 <tr
-                  key={s.date + "-" + i}
+                  key={`${s.date}-${s.score}-${s.kills}-${s.time}`}
                   className={me ? "bg-[rgba(255,106,0,0.14)] outline outline-1 outline-[rgba(255,106,0,0.36)]" : ""}
                 >
                   <td className={`${td} !text-center`}>{i + 1}</td>

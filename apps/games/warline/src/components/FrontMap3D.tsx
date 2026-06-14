@@ -8,10 +8,10 @@ import {
   RectBounds,
 } from "@shipshitgames/engine";
 import {
-  GameSettingsScreen,
+  GameAudioSettingsScreen,
+  GamePauseMenu,
   loadGlobalGameSettings,
   MusicDirector,
-  PauseMenu,
   subscribeGlobalGameSettings,
   toggleGlobalMusicMuted,
 } from "@shipshitgames/ui";
@@ -51,6 +51,19 @@ const LOBBY_MUSIC = {
   loop: true,
 };
 
+type PortalCueState = {
+  nearest: GameSlug | null;
+  nearTable: boolean;
+};
+
+type PauseUiState = {
+  paused: boolean;
+  settings: boolean;
+};
+
+const GAME_SLUG = "warline";
+
+// react-doctor-disable-next-line react-doctor/no-giant-component -- The Three.js scene lifecycle stays together so setup and cleanup remain paired.
 export function FrontMap3D({
   state,
   summary,
@@ -77,16 +90,16 @@ export function FrontMap3D({
   const controlActiveRef = useRef(false);
   const pausedRef = useRef(false);
 
-  const [nearest, setNearest] = useState<GameSlug | null>(null);
-  const [nearTable, setNearTable] = useState(false);
+  const [portalCue, setPortalCue] = useState<PortalCueState>({ nearest: null, nearTable: false });
   const [captured, setCaptured] = useState(false);
-  const [paused, setPausedState] = useState(false);
-  const [pauseSettings, setPauseSettings] = useState(false);
+  const [pauseUi, setPauseUi] = useState<PauseUiState>({ paused: false, settings: false });
   // "Mute Music"/"Music On" label mirrors the shared global mute (same state the
   // title-menu corner toggle + settings sliders drive).
   const [musicEnabled, setMusicEnabled] = useState(() =>
     typeof window === "undefined" ? true : !loadGlobalGameSettings().musicMuted,
   );
+  const { nearest, nearTable } = portalCue;
+  const { paused, settings: pauseSettings } = pauseUi;
   const pauseStatus = useMemo(
     () => (
       <>
@@ -104,7 +117,7 @@ export function FrontMap3D({
         label: "Settings",
         meta: "Audio",
         variant: "settings" as const,
-        onSelect: () => setPauseSettings(true),
+        onSelect: () => setPauseUi((prev) => ({ ...prev, settings: true })),
       },
       { id: "title", label: "Exit to title", meta: "Main menu", onSelect: () => onExitToTitle?.() },
     ],
@@ -196,7 +209,7 @@ export function FrontMap3D({
     };
     const setPaused = (next: boolean) => {
       pausedRef.current = next;
-      setPausedState(next);
+      setPauseUi((prev) => (prev.paused === next ? prev : { ...prev, paused: next }));
     };
     const activateControls = () => {
       setPaused(false);
@@ -211,7 +224,7 @@ export function FrontMap3D({
     };
     const pauseControls = () => {
       setPaused(true);
-      setPauseSettings(false); // each pause opens on the menu, not the settings panel
+      setPauseUi({ paused: true, settings: false }); // each pause opens on the menu, not the settings panel
       setControlActive(false);
       clearMoveIntent(move);
       resetMoveState(moveState);
@@ -301,6 +314,7 @@ export function FrontMap3D({
       onResize: resize,
       suppressContextMenu: () => true,
     });
+    // react-doctor-disable-next-line react-doctor/no-initialize-state -- Event handlers mirror pause/capture state from the input system after binding.
     input.bind();
 
     const updateCapture = () => {
@@ -344,7 +358,7 @@ export function FrontMap3D({
       const nextNearest = nearestPortalFor(rig.body.position, sceneRuntime.portals);
       if (nextNearest !== nearestRef.current) {
         nearestRef.current = nextNearest;
-        setNearest(nextNearest);
+        setPortalCue((prev) => (prev.nearest === nextNearest ? prev : { ...prev, nearest: nextNearest }));
       }
 
       // The Command Table sits at the origin — flag when the player is close
@@ -352,13 +366,14 @@ export function FrontMap3D({
       const nextNearTable = Math.hypot(rig.body.position.x, rig.body.position.z) < TABLE_TRIGGER_RADIUS;
       if (nextNearTable !== nearTableRef.current) {
         nearTableRef.current = nextNearTable;
-        setNearTable(nextNearTable);
+        setPortalCue((prev) => (prev.nearTable === nextNearTable ? prev : { ...prev, nearTable: nextNearTable }));
       }
 
       rig.update(delta);
       renderer.render(scene, camera);
       if (!sceneRuntime.disposed) raf = requestAnimationFrame(animate);
     };
+    // react-doctor-disable-next-line react-doctor/no-initialize-state -- The RAF loop mirrors portal proximity from the Three.js runtime after the scene exists.
     animate();
 
     return () => {
@@ -416,21 +431,19 @@ export function FrontMap3D({
         </div>
       )}
 
-      <PauseMenu
+      <GamePauseMenu
+        slug={GAME_SLUG}
         open={paused && !pauseSettings}
-        kicker="Warline Front"
-        title="Paused"
-        subtitle="The lanes hold while you stand at the threshold."
         status={pauseStatus}
         onResume={() => resumeRef.current()}
         actions={pauseActions}
       />
 
       {paused && pauseSettings && (
-        <GameSettingsScreen
+        <GameAudioSettingsScreen
           open
-          onClose={() => setPauseSettings(false)}
-          kicker="Audio Settings"
+          slug={GAME_SLUG}
+          onClose={() => setPauseUi((prev) => ({ ...prev, settings: false }))}
           backgroundImage={menuHero}
         />
       )}

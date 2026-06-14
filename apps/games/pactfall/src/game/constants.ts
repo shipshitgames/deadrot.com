@@ -31,6 +31,9 @@ export const CONSTANTS = {
     length: 64, // along Z
     width: 14, // along X
     laneClamp: 6, // how far off-center the champion can stray (|x|)
+    // Lateral gap between parallel lanes. Only "mid" is live in this slice; the
+    // value lets the map model place dormant top/bot lanes for later (see map.ts).
+    laneSpacing: 20,
   },
 
   // Champion (the player)
@@ -103,8 +106,10 @@ export const CONSTANTS = {
     maxKillSfxPerFrame: 3,
     shake: {
       championKill: 0.5,
+      towerKill: 0.45, // a toppled tower is a momentum swing — nearly a takedown
       playerHit: 0.16,
       playerDeath: 0.7,
+      baseFall: 0.85, // the match-ending blow — the heaviest jolt in the game
     },
   },
 
@@ -131,6 +136,18 @@ export const CONSTANTS = {
     buffMultiplier: 1.8, // champion damage multiplier while buffed
   },
 
+  // Towers (lane structures that gate the push to the base). Each team fields a
+  // line of towers in its half of the lane; the enemy base can only be sieged
+  // once that team's towers have fallen. Towers are stationary auto-attackers.
+  tower: {
+    maxHp: 450, // tougher than a champion, softer than a base — a real timesink
+    radius: 1.4,
+    height: 5,
+    attackRange: 9, // matches champion auto-range: dive a live tower and it bites
+    attackDamage: 30, // hits harder than a champion auto (22) so towers deter dives
+    attackCooldown: 0.8,
+  },
+
   // Bases (the win/lose objectives)
   base: {
     maxHp: 1000,
@@ -138,7 +155,8 @@ export const CONSTANTS = {
     height: 6,
     friendlyZ: -30, // Pyre base (yours)
     enemyZ: 30, // Warden base (theirs)
-    // A base only takes champion fire once the lane is "pushed" near it.
+    // A base only takes champion fire once the lane is "pushed" near it AND the
+    // defending team's towers have all fallen (see EntitySystem base-gating).
     championRange: 7,
   },
 } as const;

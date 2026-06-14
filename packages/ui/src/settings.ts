@@ -10,11 +10,10 @@ export type GlobalGameSettingsPatch = Partial<Omit<GlobalGameSettings, "effectLe
   effectLevels?: Partial<GlobalEffectLevels>;
 };
 
-export const GLOBAL_GAME_SETTINGS_KEY = "shipshitgames.gameSettings.v1";
-export const GLOBAL_GAME_SETTINGS_EVENT = "shipshitgames:game-settings";
-export const DEFAULT_EFFECTS_LEVEL = 1;
-export const GLOBAL_EFFECT_KEYS = ["music", "sound", "particles", "flash", "shake"] as const;
-export const DEFAULT_GLOBAL_EFFECT_LEVELS: GlobalEffectLevels = {
+const GLOBAL_GAME_SETTINGS_KEY = "shipshitgames.gameSettings.v1";
+const GLOBAL_GAME_SETTINGS_EVENT = "shipshitgames:game-settings";
+const DEFAULT_EFFECTS_LEVEL = 1;
+const DEFAULT_GLOBAL_EFFECT_LEVELS: GlobalEffectLevels = {
   music: DEFAULT_EFFECTS_LEVEL,
   sound: DEFAULT_EFFECTS_LEVEL,
   particles: DEFAULT_EFFECTS_LEVEL,

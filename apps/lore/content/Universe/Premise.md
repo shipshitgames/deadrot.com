@@ -34,15 +34,24 @@ the Scourge is the only true enemy. Their rivalry plays out in sanctioned arenas
 ([[Pactfall]]), never as open war while the Scourge still bleeds through.
 
 ## Scales of one war
-- **[[Zero-Day]]** — *the night we lost the sky*: first contact in orbit and atmosphere, the
-  battle humanity loses. The origin; everything else is after the fall.
 - **[[Deadlane]]** — *hold the lane*: stop the Scourge pouring from a breach. Macro, defensive.
 - **[[Scourge-Survivors]]** — *survive the swarm*: a lone Purger, drowning in the Scourge,
   pushing deeper room by room. Micro, offensive, DOOM-fast and bloody.
 - **[[Starblight]]** — *burn the orbital infection*: pilots intercept Scourge spores,
-  infected wreckage, and breach-ships before they fall into the surface war.
+  infected wreckage, and breach-ships before they fall into the surface war. It also carries
+  **[[Zero-Day]]** as the first-contact last stand: the sky battle humanity loses before every
+  Resistance-era front exists.
 - **[[Pactfall]]** — *test the Pact*: sanctioned human rivalry under pressure from the
   Scourge neutral threat.
+- **[[Brawl]]** — *survive the pocket*: trench-war close combat when soldiers are cut off in
+  dead-air, shell holes, broken causeways, and no-man's-land. Duel proves the 1v1 lost-fighter
+  fantasy; Arena Brawl widens the same pocket to several fighters and Scourge pressure.
+- **[[Redline]]** — *outrun the Choir*: courier runs keep holdouts talking when the lanes and
+  wires are cut.
+- **[[Rothulk]]** — *burn it from the inside*: Pyre sabotage climbs living breach-ships and
+  ignites the repeater-core.
+- **[[Warline]]** — *manage the front*: the strategy-lite layer where these operations report
+  pressure, resources, and region shifts.
 
 When a lane **falls** in Deadlane, the Pyre send a Purger into that breach in
 Scourge-Survivors — the games hand off to each other. Shared [[Scourge|horde]],

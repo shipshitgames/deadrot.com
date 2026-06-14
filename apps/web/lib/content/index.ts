@@ -14,10 +14,6 @@ import {
   getCharacter,
   getCreature,
   getFaction,
-  type LoreLocation,
-  locations,
-  type TimelineEvent,
-  timelineEvents,
   type Universe,
   universe,
 } from "@shipshitgames/assets/lore";
@@ -28,7 +24,7 @@ import { assetUrl } from "@/lib/assets";
 // derivative of the Obsidian vault — so this hub can never drift from canon.
 // This module layers the roster metadata from @deadrot/catalog on top.
 
-export type { Accent, Character, Creature, Faction, Feature, LoreLocation, TimelineEvent, Universe };
+export type { Accent, Character, Creature, Faction, Feature, Universe };
 export type GameStatus = "PLAYABLE" | "IN DEV" | "CONCEPT";
 
 export interface Game extends GameLore {
@@ -39,7 +35,7 @@ export interface Game extends GameLore {
 
 // Derived from @deadrot/catalog (the single source of truth) rather than re-listed
 // here: each game app gets a source link + same-origin demo route + its status;
-// concept titles (e.g. zero-day) get status only.
+// concept titles get status only.
 const GAME_SOURCE_ROOT = "https://github.com/shipshitgames/deadrot.com/tree/master/apps/games";
 const gameSource = (slug: string) => `${GAME_SOURCE_ROOT}/${slug}`;
 
@@ -55,10 +51,10 @@ export const games: Game[] = gameLore.map((g) => ({
   ...g,
   ...(GAME_META[g.slug] ?? { status: "CONCEPT" as GameStatus }),
 }));
-export { bestiary, characters, factions, locations, timelineEvents, universe };
+export { bestiary, characters, factions, universe };
 
 // ── Accent system ────────────────────────────────────────────────────────────
-export const ACCENT_HEX: Record<Accent, string> = {
+const ACCENT_HEX: Record<Accent, string> = {
   blood: "#c1121f",
   hellfire: "#ff6a00",
   toxic: "#8bdc1f",
@@ -131,15 +127,10 @@ const SPRITE_BASE_PATHS: Record<string, string> = {
 
 export const gameCoverUrl = (slug: string) =>
   assetUrl(
-    slug === "zero-day"
-      ? "/concepts/zero-day/ui/social/og.png"
-      : slug === "scourge-survivors"
-        ? "/games/scourge-survivors/ui/cover/gameplay.webp"
-        : `/games/${slug}/ui/menu/title.webp`,
+    slug === "scourge-survivors"
+      ? "/games/scourge-survivors/ui/cover/gameplay.webp"
+      : `/games/${slug}/ui/menu/title.webp`,
   );
-
-export const gameSocialImageUrl = (slug: string) =>
-  assetUrl(slug === "zero-day" ? "/concepts/zero-day/ui/social/og.png" : `/games/${slug}/ui/social/og.jpg`);
 
 export const spriteUrl = (base: string | null) => {
   if (!base) return null;

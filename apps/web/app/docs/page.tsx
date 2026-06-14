@@ -1,5 +1,6 @@
 import { BookOpen, Boxes, ExternalLink, Gamepad2, GitBranch, ScrollText, Terminal } from "lucide-react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { StatusBadge } from "@/components/game/game-card";
 import { Backdrop } from "@/components/site/atmosphere";
@@ -39,16 +40,19 @@ export const metadata: Metadata = createSocialMetadata({
   openGraphTitle: "DEADROT Docs",
 });
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- This static public docs page is intentionally kept in one scan-friendly document.
 export default function DocsPage() {
   return (
     <main style={accentVars("hellfire")}>
       <section id="start" className="relative overflow-hidden px-6 pt-32 pb-16 sm:pb-20">
         <Backdrop />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={assetUrl("/universe/hero.webp")}
           alt=""
           aria-hidden
+          fill
+          priority
+          sizes="100vw"
           className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20"
           style={{ imageRendering: "pixelated" }}
         />
@@ -230,11 +234,11 @@ export default function DocsPage() {
                         <p className="font-display text-sm font-bold uppercase tracking-widest text-bone">First Read</p>
                         <RosterLine
                           label="Humans"
-                          value={humanRoster.length ? humanRoster.join(", ") : "Pre-schism humanity"}
+                          value={humanRoster.length ? humanRoster.join(", ") : "No fixed character roster"}
                         />
                         <RosterLine
                           label="Scourge"
-                          value={scourgeRoster.length ? scourgeRoster.join(", ") : "First-contact horde not locked"}
+                          value={scourgeRoster.length ? scourgeRoster.join(", ") : "No fixed Scourge roster"}
                         />
                         <div className="mt-4 flex flex-wrap gap-2">
                           <Button
