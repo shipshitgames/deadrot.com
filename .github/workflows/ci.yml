@@ -1,9 +1,11 @@
 name: CI
 
-# Regroups the fast PR checks (lint/format/typecheck/assets + unit tests) under
-# one workflow. The two jobs still run in PARALLEL (separate runners); they are
-# kept as distinct jobs on purpose because `master` and `staging` branch
-# protection require these exact job names as status checks:
+# Fast trunk gate. Trunk-based workflow: `master` is the only long-lived branch,
+# every change lands via a short-lived PR into master. These two jobs are the
+# REQUIRED status checks on master PRs (kept fast on purpose); the heavy E2E suite
+# runs at release time (see release.yml), not on every PR.
+# The two jobs run in PARALLEL (separate runners) and are kept as distinct jobs
+# because `master` branch protection requires these exact job names:
 #   - "Lint, format, typecheck, assets"
 #   - "Unit tests"
 # Renaming or merging them into a single job would break those required checks.
@@ -12,9 +14,6 @@ on:
   pull_request:
   push:
     branches:
-      - develop
-      - staging
-      - main
       - master
   workflow_dispatch:
 

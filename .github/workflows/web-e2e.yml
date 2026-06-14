@@ -14,9 +14,6 @@ on:
       - ".github/workflows/web-e2e.yml"
   push:
     branches:
-      - develop
-      - staging
-      - main
       - master
     paths:
       - "apps/web/**"

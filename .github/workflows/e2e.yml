@@ -11,9 +11,6 @@ on:
       - "skills/**"
   push:
     branches:
-      - develop
-      - staging
-      - main
       - master
     paths-ignore:
       - "**/*.md"
