@@ -70,7 +70,14 @@ export const UPGRADES: UpgradeDef[] = [
     max: 6,
     kind: "weapon",
   },
-  { id: "dmg", name: "Incendiary Rounds", desc: "+25% damage (all sources)", icon: "fire", max: 5, kind: "passive" },
+  {
+    id: "dmg",
+    name: "Incendiary Rounds",
+    desc: "+25% damage (all sources) · advances Weapon Tier",
+    icon: "fire",
+    max: 5,
+    kind: "passive",
+  },
   {
     id: "amp",
     name: "Cauterizer Feed",
@@ -79,11 +86,18 @@ export const UPGRADES: UpgradeDef[] = [
     max: 5,
     kind: "passive",
   },
-  { id: "rate", name: "Stoke the Chamber", desc: "+18% fire rate", icon: "lightning", max: 5, kind: "passive" },
+  {
+    id: "rate",
+    name: "Stoke the Chamber",
+    desc: "+18% fire rate · advances Weapon Tier",
+    icon: "lightning",
+    max: 5,
+    kind: "passive",
+  },
   {
     id: "multishot",
     name: "Splinter Ignition",
-    desc: "+1 projectile on your gun and Pyre auto-weapons",
+    desc: "+1 projectile on your gun and Pyre auto-weapons · advances Weapon Tier",
     icon: "trident",
     max: 3,
     kind: "passive",
@@ -91,7 +105,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: "crit",
     name: "Weakpoint Catechism",
-    desc: "+12% critical hit chance (2× damage)",
+    desc: "+12% critical hit chance (2× damage) · advances Weapon Tier",
     icon: "target",
     max: 4,
     kind: "passive",
@@ -220,6 +234,49 @@ export function mainWeaponVisualTier(upgradeLevels: Partial<Record<UpgradeId, nu
   if (score >= 1) return "tier-2";
   return "base";
 }
+
+/**
+ * Each weapon tier is a real power spike, not just a paint job (#279): crossing
+ * into a tier multiplies the player's MAIN-weapon hit damage (gun + melee). The
+ * three Pyre auto-weapons keep their own `amp` path, so the tier specifically
+ * rewards leaning into the gun build. Monotonic, so a tier-up always reads as
+ * "my weapon hits harder".
+ *
+ * Combined gun-damage curve (intentional, documented for acceptance #2): the four
+ * offensive picks (dmg/rate/multishot/crit) both raise the visual tier AND, via the
+ * `dmg` card, the linear `statDamageMul` (+25%/level). For a pure-`dmg` build the two
+ * stack MULTIPLICATIVELY — e.g. dmg L4 → tier-3: statDamageMul 2.0 × tier 1.18 = ×2.36;
+ * dmg L12 → evolved: 4.0 × 1.45 = ×5.8. This is by design: the tier mul is a deliberately
+ * SMALL top-up (≤ +45%) layered on the dominant linear curve, so it sweetens the gun build
+ * without dwarfing it or trivialising difficulty. The tier mul is applied exactly ONCE per
+ * shot/melee in WeaponSystem (multiplied into `dmgMul`, never added, never re-applied).
+ */
+export const MAIN_WEAPON_TIER_DAMAGE_MUL: Record<MainWeaponVisualTier, number> = {
+  base: 1,
+  "tier-2": 1.08,
+  "tier-3": 1.18,
+  "tier-4": 1.3,
+  evolved: 1.45,
+};
+
+/** Damage multiplier the player's main weapon gains at a given visual tier. */
+export function mainWeaponTierDamageMul(tier: MainWeaponVisualTier): number {
+  return MAIN_WEAPON_TIER_DAMAGE_MUL[tier];
+}
+
+/** 0-based ordinal of a tier (base = 0 … evolved = 4) for HUD pips / comparisons. */
+export function mainWeaponTierIndex(tier: MainWeaponVisualTier): number {
+  return MAIN_WEAPON_VISUAL_TIERS.indexOf(tier);
+}
+
+/** Short HUD/banner label for a weapon tier. */
+export const MAIN_WEAPON_TIER_LABEL: Record<MainWeaponVisualTier, string> = {
+  base: "TIER I",
+  "tier-2": "TIER II",
+  "tier-3": "TIER III",
+  "tier-4": "TIER IV",
+  evolved: "EVOLVED",
+};
 
 export function availableEvolutionChoice(
   upgradeLevels: Partial<Record<UpgradeId, number>>,

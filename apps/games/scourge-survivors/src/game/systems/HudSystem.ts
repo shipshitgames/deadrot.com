@@ -3,7 +3,13 @@ import { audio } from "../../audio/AudioEngine";
 import { BERSERK_TIME, RELOAD_TIME, TOTAL_WAVES, WEAPON_ORDER, WEAPONS } from "../constants";
 import type { GameContext } from "../context";
 import { currentMissionCheckpoint, currentMissionEncounter, currentMissionObjective } from "../data/missions";
-import { EVOLUTIONS, SURVIVOR_CLASSES } from "../data/survivors";
+import {
+  EVOLUTIONS,
+  MAIN_WEAPON_TIER_LABEL,
+  mainWeaponTierDamageMul,
+  mainWeaponTierIndex,
+  SURVIVOR_CLASSES,
+} from "../data/survivors";
 import { weaponIdentityFor } from "../data/weaponIdentity";
 import type { GameSystems } from "../systems";
 import type { HUDState } from "../types";
@@ -91,6 +97,7 @@ export class HudSystem {
     const evolved = Object.entries(this.sys.survivors.evolved)
       .filter(([, on]) => on)
       .map(([id]) => EVOLUTIONS[id as keyof typeof EVOLUTIONS].name);
+    const weaponTier = this.sys.survivors.mainWeaponVisualTier();
     const runMode: HUDState["runMode"] = this.ctx.multiplayer
       ? "coop"
       : this.ctx.survivors
@@ -195,6 +202,10 @@ export class HudSystem {
       survivorDodge: Math.round(Math.min(0.95, this.ctx.statDodge) * 100),
       survivorGrace: Math.round(this.ctx.statGrace * 100) / 100,
       survivorEvolved: evolved,
+      survivorWeaponTier: weaponTier,
+      survivorWeaponTierLabel: MAIN_WEAPON_TIER_LABEL[weaponTier],
+      survivorWeaponTierIndex: mainWeaponTierIndex(weaponTier),
+      survivorWeaponTierDamageMul: mainWeaponTierDamageMul(weaponTier),
       level: this.sys.survivors.level,
       xp: Math.floor(this.sys.survivors.xp),
       xpToNext: this.sys.survivors.xpToNext,
