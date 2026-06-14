@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type PickupKind, STARTING_WEAPON, WEAPON_ORDER, WEAPONS, type WeaponId } from "../game/constants";
-import { MAP_PICKER } from "../game/data/maps";
+import { MAP_PICKER, SANDBOX_MAP_PICKER } from "../game/data/maps";
 import { MAIN_WEAPON_VISUAL_TIERS, type MainWeaponVisualTier } from "../game/data/survivors";
 import type { SandboxEnemyKind } from "../game/Game";
 import { RUNTIME_AUDIO_ASSET_URLS, RUNTIME_VISUAL_ASSET_URLS, weaponSpriteAssetId } from "../game/spriteAssets";
@@ -399,7 +399,7 @@ export function SandboxPanel({
             <LabButton onClick={() => onStart()}>Reset Sandbox</LabButton>
           </div>
           <div className="mt-2 grid grid-cols-2 gap-2">
-            {MAP_PICKER.map((map) => (
+            {SANDBOX_MAP_PICKER.map((map) => (
               <LabButton
                 key={map.id}
                 active={state.mapName === map.name}

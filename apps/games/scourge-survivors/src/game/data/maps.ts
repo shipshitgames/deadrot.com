@@ -36,6 +36,7 @@ import {
   type ArenaPlatform,
   type ArenaRamp,
   type ArenaRoom,
+  GROUND_LEVEL_ID,
   normalizeArenaLayout,
 } from "@deadrot/game-kit/maps";
 import type { MapBounds } from "@shipshitgames/engine";
@@ -459,6 +460,94 @@ const PERDITION: ArenaMap = {
   ],
 };
 
+// ============================================================================
+// THE GANTRY — a sandbox-only v2 STRUCTURAL demonstrator (issue #82). Not part
+// of the canon campaign descent and deliberately kept OUT of the MAPS registry
+// (campaign-order invariants stay intact); it lives in SANDBOX_MAPS and is
+// reachable from the dev SandboxPanel + e2e harness via startSandbox("gantry").
+//
+// It exercises every runtime path ArenaSystem.buildArena / PlayerSystem now
+// consume from `layout`: multiple ROOMS, a raised LEVEL (the mezzanine gantry)
+// with its walkable floor slab, a climbable RAMP up to it, jump/step PLATFORMS,
+// and authored breachSpawn ANCHORS that swap enemy spawning from procedural
+// scatter to fixed mouths. Presentation reuses The Maw's theme/materials/assets
+// (loreId "maw") so it ships no new texture ids.
+//
+// Geometry: a front YARD at ground (z ≳ -2) and a raised GANTRY deck at y=3
+// (z ≲ -2) spanning the breach throat. A central ramp (x≈0) is the only walk-up;
+// retaining walls flank it so the deck reads solid. Enemies breach from the deck
+// and the two flanks; the objective core sits on the deck.
+const GANTRY: ArenaMap = {
+  id: "gantry",
+  loreId: "maw",
+  front: "breach",
+  name: "The Gantry",
+  subtitle: "Sandbox: a multi-level span over the breach throat",
+  icon: "maw",
+  accent: "#6acf3c",
+  theme: MAW.theme,
+  materials: arenaMaterials("maw"),
+  environment: MAW.environment,
+  spawn: { x: 0, z: 30 },
+  // All geometry is homed in rooms; the flat list stays empty so the adapter
+  // uses the authored rooms verbatim (no synthesized root room).
+  obstacles: [],
+  levels: [{ id: "mezzanine", y: 3, name: "Gantry Deck" }],
+  rooms: [
+    {
+      id: "yard",
+      name: "Approach Yard",
+      bounds: { kind: "rect", minX: -40, maxX: 40, minZ: -2, maxZ: 40 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        // Retaining walls of the raised deck, with a central gap for the ramp.
+        { x: -20, z: -2, w: 36, h: 3, d: 1.5, mat: "wall" },
+        { x: 20, z: -2, w: 36, h: 3, d: 1.5, mat: "wall" },
+        // Ground cover.
+        { x: -14, z: 18, w: 2.6, h: 2.6, d: 2.6, mat: "crate" },
+        { x: 14, z: 14, w: 2.6, h: 2.6, d: 2.6, mat: "crate" },
+        { x: 0, z: 22, w: 2.2, h: 6, d: 2.2, mat: "pillar" },
+      ],
+    },
+    {
+      id: "gantry-deck",
+      name: "Gantry Deck",
+      bounds: { kind: "rect", minX: -40, maxX: 40, minZ: -40, maxZ: -2 },
+      levelId: "mezzanine",
+      obstacles: [
+        // Rendered at the deck elevation (roomY = 3): pillars + a low parapet.
+        { x: -18, z: -22, w: 2, h: 6, d: 2, mat: "pillar" },
+        { x: 18, z: -22, w: 2, h: 6, d: 2, mat: "pillar" },
+        { x: 0, z: -12, w: 6, h: 1.0, d: 2.4, mat: "wall" },
+      ],
+    },
+  ],
+  ramps: [
+    {
+      id: "deck-ramp",
+      kind: "ramp",
+      from: { x: 0, z: 4 },
+      to: { x: 0, z: -2 },
+      width: 6,
+      fromLevelId: GROUND_LEVEL_ID,
+      toLevelId: "mezzanine",
+    },
+  ],
+  platforms: [
+    // Step up from the ground yard (top 0.4 ≤ player step height).
+    { id: "yard-step", x: 22, z: 28, w: 5, d: 5, y: 0.4, thickness: 0.4, levelId: GROUND_LEVEL_ID },
+    // Overlook step on the deck (top 3.4 — a step up from the deck floor at 3).
+    { id: "deck-overlook", x: 0, z: -32, w: 12, d: 6, y: 3.4, thickness: 0.5, levelId: "mezzanine" },
+  ],
+  anchors: [
+    { kind: "playerSpawn", id: "player-spawn", x: 0, z: 30, levelId: GROUND_LEVEL_ID },
+    { kind: "breachSpawn", id: "deck-breach", x: 0, z: -36, levelId: "mezzanine", laneId: "north" },
+    { kind: "breachSpawn", id: "east-breach", x: 34, z: -20, levelId: "mezzanine", laneId: "east" },
+    { kind: "breachSpawn", id: "west-breach", x: -34, z: -20, levelId: "mezzanine", laneId: "west" },
+    { kind: "objective", id: "core", x: 0, z: -26, levelId: "mezzanine" },
+  ],
+};
+
 // ----------------------------------------------------------------------------
 
 /** v1→v2 adapter entry point: attaches the normalized structural layout. */
@@ -475,6 +564,17 @@ export const MAPS: Record<string, NormalizedArenaMap> = {
 };
 
 /**
+ * Sandbox-only maps: dev/e2e-reachable demonstrators that are NOT part of the
+ * campaign and NOT in MAPS (so CAMPAIGN_ORDER/MAPS invariants stay intact).
+ * getMap falls through to here, so startSandbox("gantry") resolves a real,
+ * normalized map without polluting the campaign registry or its texture-preload
+ * list (these reuse a campaign map's material ids — see GANTRY).
+ */
+export const SANDBOX_MAPS: Record<string, NormalizedArenaMap> = {
+  gantry: normalizeMap(GANTRY),
+};
+
+/**
  * Canonical campaign order — the canon descent into the breach:
  * Ashgate → The Hollow Lanes → The Maw → Perdition.
  */
@@ -484,7 +584,7 @@ export const CAMPAIGN_ORDER: string[] = ["ashgate", "hollowlanes", "maw", "perdi
 export const DEFAULT_MAP_ID = "ashgate";
 
 export function getMap(id: string): NormalizedArenaMap {
-  return MAPS[id] ?? MAPS[DEFAULT_MAP_ID];
+  return MAPS[id] ?? SANDBOX_MAPS[id] ?? MAPS[DEFAULT_MAP_ID];
 }
 
 /** Resolve a saved/requested map id to a real one, falling back to the default. */
@@ -514,6 +614,21 @@ export const MAP_PICKER: MapMeta[] = CAMPAIGN_ORDER.map((id) => {
   const m = MAPS[id];
   return { id: m.id, name: m.name, subtitle: m.subtitle, icon: m.icon, accent: m.accent };
 });
+
+/** Picker list for the dev sandbox: the campaign maps plus the sandbox-only
+ *  demonstrators (e.g. The Gantry). Used ONLY for the map-switch buttons —
+ *  texture preload stays on MAP_PICKER so no `arena-gantry-*` assets are
+ *  requested (sandbox maps reuse a campaign map's material ids). */
+export const SANDBOX_MAP_PICKER: MapMeta[] = [
+  ...MAP_PICKER,
+  ...Object.values(SANDBOX_MAPS).map((m) => ({
+    id: m.id,
+    name: m.name,
+    subtitle: m.subtitle,
+    icon: m.icon,
+    accent: m.accent,
+  })),
+];
 
 /** Compile-time drift gate: engine MapBounds ⇄ game-kit ArenaBounds must stay mutually
  *  assignable (game-kit duplicates the union to stay engine-free). If either side

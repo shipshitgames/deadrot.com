@@ -1,11 +1,24 @@
-import { anchorsOfKind, flattenObstacles } from "@deadrot/game-kit/maps";
+import {
+  type ArenaLayout,
+  anchorsOfKind,
+  firstAnchor,
+  flattenObstacles,
+  normalizeArenaLayout,
+} from "@deadrot/game-kit/maps";
 import { makeBounds } from "@shipshitgames/engine";
 import * as THREE from "three";
-import { PLAYER_HEIGHT, WALL_HEIGHT, WALL_THICKNESS } from "../constants";
+import { PLAYER_HEIGHT, PLAYER_STEP_HEIGHT, WALL_HEIGHT, WALL_THICKNESS } from "../constants";
 import type { GameContext } from "../context";
-import { type ArenaMap, DEFAULT_ARENA_BOUNDS, DEFAULT_ARENA_MATERIALS, type ObstacleMat } from "../data/maps";
+import {
+  type ArenaMap,
+  DEFAULT_ARENA_BOUNDS,
+  DEFAULT_ARENA_MATERIALS,
+  type MapObstacle,
+  type ObstacleMat,
+} from "../data/maps";
 import { arenaTexture, arenaTextureRepeat } from "../spriteAssets";
 import type { GameSystems } from "../systems";
+import { levelYById, platformBox, rampStepBoxes, roomFloorSlab, roomLevelY, type SolidBox } from "./arenaGeometry";
 
 export interface ArenaDebugSnapshot {
   mapId: string;
@@ -23,6 +36,8 @@ export interface ArenaDebugSnapshot {
   solidMeshes: number;
   raycastTargets: number;
   obstacleBoxes: number;
+  /** Raised walkable AABBs (v2 room floors + platforms + ramp steps); 0 for flat maps. */
+  surfaceBoxes: number;
   /** v2 adapter observability — null when the current map has no normalized layout.
    *  Field names are the contract #82's e2e extends. */
   layout: {
@@ -73,6 +88,7 @@ export class ArenaSystem {
     this.propCount = 0;
     this.ctx.solidMeshes = [];
     this.ctx.obstacleBoxes = [];
+    this.ctx.surfaceBoxes = [];
     this.ctx.rig.setColliders([]);
   }
 
@@ -180,28 +196,60 @@ export class ArenaSystem {
       this.arenaObjects.push(trim);
     }
 
-    // --- interior obstacles ---
+    // --- structural layout: rooms (+ raised floors), platforms, ramps ---
+    // Read the normalized v2 view. For a v1 map this is one whole-bounds root
+    // room at ground level with platforms/ramps empty, so the loop below builds
+    // exactly the same floor + obstacle meshes (same order) as before #82 — the
+    // byte-identity invariant the arena-v2 e2e locks in.
+    const layout: ArenaLayout<MapObstacle> =
+      map.layout ?? normalizeArenaLayout<MapObstacle>(map, { defaultBounds: DEFAULT_ARENA_BOUNDS });
+    const levelY = levelYById(layout.levels);
+
     const matFor = (m: ObstacleMat) => (m === "pillar" ? pillarMat : m === "wall" ? wallMat : crateMat);
-    const groundTop = new Map<string, number>(); // tracks box-top heights so stacks sit on top
-    for (const o of map.obstacles) {
-      const mesh = new THREE.Mesh(new THREE.BoxGeometry(o.w, o.h, o.d), matFor(o.mat));
-      const key = `${o.x}:${o.z}`;
-      let y = o.h / 2;
-      if (o.elevated) {
-        y = (groundTop.get(key) ?? 0) + o.h / 2; // rest on the box below it
-      } else {
-        groundTop.set(key, o.h);
+    for (const room of layout.rooms) {
+      const roomY = roomLevelY(room, levelY);
+      // A raised room gets a walkable floor slab from the ground up to its level
+      // surface. Ground rooms (the v1 case) get null → no extra geometry.
+      const slab = roomFloorSlab(room, roomY);
+      if (slab) this.addStructuralBox(slab, floorMat);
+
+      const groundTop = new Map<string, number>(); // box-top heights so stacks sit on top (per room)
+      for (const o of room.obstacles) {
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(o.w, o.h, o.d), matFor(o.mat));
+        const key = `${o.x}:${o.z}`;
+        let localTop = 0;
+        if (o.elevated) {
+          localTop = groundTop.get(key) ?? 0; // rest on the box below it
+        } else {
+          groundTop.set(key, o.h);
+        }
+        mesh.position.set(o.x, roomY + localTop + o.h / 2, o.z);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.userData = { solid: true };
+        this.ctx.scene.add(mesh);
+        this.ctx.solidMeshes.push(mesh);
+        this.arenaObjects.push(mesh);
+        // Elevated boxes are decorative silhouette — drawn + shootable, not colliders.
+        if (!o.elevated) this.ctx.obstacleBoxes.push(new THREE.Box3().setFromObject(mesh));
       }
-      mesh.position.set(o.x, y, o.z);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      mesh.userData = { solid: true };
-      this.ctx.scene.add(mesh);
-      this.ctx.solidMeshes.push(mesh);
-      this.arenaObjects.push(mesh);
-      // Elevated boxes are decorative silhouette — drawn + shootable, not colliders.
-      if (!o.elevated) this.ctx.obstacleBoxes.push(new THREE.Box3().setFromObject(mesh));
     }
+
+    // Raised slabs you stand on / jump onto (walkable tops, not push-out walls).
+    for (const platform of layout.platforms) {
+      this.addStructuralBox(platformBox(platform), crateMat);
+    }
+
+    // Ramps/stairs as a climbable staircase of solid boxes (each rise ≤ the step
+    // height so groundUnder snaps the player up them).
+    for (const ramp of layout.ramps) {
+      const fromY = levelY.get(ramp.fromLevelId) ?? 0;
+      const toY = levelY.get(ramp.toLevelId) ?? 0;
+      for (const step of rampStepBoxes(ramp, fromY, toY, PLAYER_STEP_HEIGHT)) {
+        this.addStructuralBox(step, wallMat);
+      }
+    }
+
     this.buildFloorDecals(map);
     this.buildArenaProps(map);
 
@@ -209,16 +257,43 @@ export class ArenaSystem {
     this.ctx.rig.setColliders(this.ctx.solidMeshes);
   }
 
-  /** Position the player at the current map's spawn, facing the arena centre. */
+  /** Render a structural SolidBox (raised room floor, platform, or ramp step):
+   *  a shadowed, shootable mesh whose top is a WALKABLE surface (groundUnder
+   *  scans ctx.surfaceBoxes). Deliberately not added to obstacleBoxes — push-out
+   *  would shove the player off a ramp mid-climb. */
+  private addStructuralBox(box: SolidBox, material: THREE.Material) {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(box.w, box.h, box.d), material);
+    mesh.position.set(box.x, box.y, box.z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.userData = { solid: true };
+    this.ctx.scene.add(mesh);
+    this.ctx.solidMeshes.push(mesh);
+    this.arenaObjects.push(mesh);
+    this.ctx.surfaceBoxes.push(new THREE.Box3().setFromObject(mesh));
+  }
+
+  /** Position the player at the current map's playerSpawn anchor (the v2 source
+   *  of truth — synthesized from the v1 `spawn` for flat maps), honoring its
+   *  floor level and optional facing. Falls back to the raw `spawn` if a map has
+   *  no layout. */
   placeAtSpawn() {
-    const s = this.ctx.currentMap.spawn;
+    const layout = this.ctx.currentMap.layout;
+    const anchor = layout ? firstAnchor(layout, "playerSpawn") : undefined;
+    const s = anchor ?? this.ctx.currentMap.spawn;
+    const levelY = anchor?.levelId && layout ? (levelYById(layout.levels).get(anchor.levelId) ?? 0) : 0;
     this.ctx.velocity.set(0, 0, 0);
     this.ctx.wasSprinting = false;
     this.ctx.sprintStartBoostTimer = 0;
     this.ctx.canJump = false;
-    // Centre spawns face into the arena (-Z); off-centre spawns face the origin.
+    if (anchor?.facing !== undefined) {
+      // Honor an authored yaw (0 faces −Z; positive rotates toward −X).
+      this.ctx.rig.placeAt(s.x, PLAYER_HEIGHT + levelY, s.z, -Math.sin(anchor.facing), -Math.cos(anchor.facing));
+      return;
+    }
+    // Centre spawns face into the arena (−Z); off-centre spawns face the origin.
     const centre = Math.abs(s.x) < 0.001 && Math.abs(s.z) < 0.001;
-    this.ctx.rig.placeAt(s.x, PLAYER_HEIGHT, s.z, centre ? 0 : -s.x, centre ? -10 : -s.z);
+    this.ctx.rig.placeAt(s.x, PLAYER_HEIGHT + levelY, s.z, centre ? 0 : -s.x, centre ? -10 : -s.z);
   }
 
   debugSnapshot(): ArenaDebugSnapshot {
@@ -241,6 +316,7 @@ export class ArenaSystem {
       solidMeshes: this.ctx.solidMeshes.length,
       raycastTargets: this.ctx.raycastTargets.length,
       obstacleBoxes: this.ctx.obstacleBoxes.length,
+      surfaceBoxes: this.ctx.surfaceBoxes.length,
       layout: layout
         ? {
             rooms: layout.rooms.length,
