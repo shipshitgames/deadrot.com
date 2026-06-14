@@ -8,9 +8,15 @@ import {
   mainWeaponVisualTier,
   runGold,
   SHOP_BY_ID,
+  SURV_HP_RAMP_PER_SEC,
+  SURV_SPEED_RAMP_PER_SEC,
   SURVIVOR_CLASS_IDS,
   SURVIVOR_CLASSES,
+  SURVIVOR_RUN_CHAPTERS,
+  SURVIVOR_RUN_GOAL_TIME,
   survivorBuildList,
+  survivorChapterAt,
+  survivorChapterStart,
   survivorStartingWeapon,
   UPGRADE_BY_ID,
   UPGRADES,
@@ -149,5 +155,34 @@ describe("survivors progression data", () => {
     expect(mainWeaponVisualTier({ dmg: 2, rate: 2 })).toBe("tier-3");
     expect(mainWeaponVisualTier({ dmg: 5, rate: 3 })).toBe("tier-4");
     expect(mainWeaponVisualTier({ dmg: 5, rate: 4, multishot: 3 })).toBe("evolved");
+  });
+});
+
+describe("survivors run timeline (#278 — the Toll)", () => {
+  it("runs four chapters that sum to the 10:00 reaper arrival", () => {
+    expect(SURVIVOR_RUN_CHAPTERS.map((chapter) => chapter.duration)).toEqual([135, 145, 155, 165]);
+    expect(SURVIVOR_RUN_GOAL_TIME).toBe(600);
+  });
+
+  it("keeps chapter lookups consistent across the stretched boundaries", () => {
+    expect(survivorChapterStart(0)).toBe(0);
+    expect(survivorChapterStart(1)).toBe(135);
+    expect(survivorChapterStart(2)).toBe(280);
+    expect(survivorChapterStart(3)).toBe(435);
+
+    expect(survivorChapterAt(0)).toBe(0);
+    expect(survivorChapterAt(134.9)).toBe(0);
+    expect(survivorChapterAt(135)).toBe(1);
+    expect(survivorChapterAt(280)).toBe(2);
+    expect(survivorChapterAt(435)).toBe(3);
+    // past the toll the run is reaper territory, still the final chapter
+    expect(survivorChapterAt(600)).toBe(3);
+  });
+
+  it("preserves the old 270s difficulty endpoint at the new 600s goal", () => {
+    // Renormalization (see data/survivors.ts): the curve is stretched, not
+    // raised — the ramp × goal-time product matches the pre-#278 values.
+    expect(SURVIVOR_RUN_GOAL_TIME * SURV_HP_RAMP_PER_SEC).toBeCloseTo(270 * 0.01, 1);
+    expect(SURVIVOR_RUN_GOAL_TIME * SURV_SPEED_RAMP_PER_SEC).toBeCloseTo(270 * 0.0035, 1);
   });
 });

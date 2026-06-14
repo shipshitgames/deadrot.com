@@ -228,11 +228,12 @@ export function CombatOverlays({ state }: { state: HUDState }) {
   ].filter((stat): stat is { label: string; value: string } => Boolean(stat));
   const playing = status === "playing";
   const berserkActive = playing && berserk > 0;
+  const bossBannerName = state.bossName ?? SCOURGE_THREAT_TIERS.breachBoss.banner;
   const bossLabel = bossShielded
-    ? `${SCOURGE_THREAT_TIERS.breachBoss.banner} SHIELD`
+    ? `${bossBannerName} SHIELD`
     : bossEnraged
-      ? `${SCOURGE_THREAT_TIERS.breachBoss.banner} FRENZY`
-      : SCOURGE_THREAT_TIERS.breachBoss.banner;
+      ? `${bossBannerName} FRENZY`
+      : bossBannerName;
 
   return (
     <>
@@ -379,7 +380,7 @@ export function CombatOverlays({ state }: { state: HUDState }) {
             <div>
               <div className={STAT_LABEL}>Wave</div>
               <div className={`${STAT_VALUE}${bossActive ? " text-danger tracking-[0.1em] animate-bosspulse" : ""}`}>
-                {bossActive ? SCOURGE_THREAT_TIERS.breachBoss.banner : `${wave}/${totalWaves}`}
+                {bossActive ? bossBannerName : `${wave}/${totalWaves}`}
               </div>
             </div>
           )}

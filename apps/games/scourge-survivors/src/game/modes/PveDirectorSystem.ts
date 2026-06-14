@@ -21,6 +21,7 @@ import {
   ENEMY_SPEED_MAX,
   ENEMY_SPEED_MIN,
   FIRST_WAVE_DELAY,
+  REAPER_SCORE,
   SCOURGE_WAVE_SCHEDULE,
   STAGE_DIFFICULTY_STEP,
   WAVE_BREAK,
@@ -40,6 +41,8 @@ export class PveDirectorSystem {
   bossActive = false;
   bossEnemy: Enemy | null = null;
   bossMaxHealth = BOSS_HEALTH;
+  /** Lore-given name for the HUD boss bar (Survivors toll); null → generic banner. */
+  bossName: string | null = null;
 
   /**
    * Genre-neutral wave pacing lives in the shared director; this system is its
@@ -80,6 +83,7 @@ export class PveDirectorSystem {
     this.director.reset();
     this.bossActive = false;
     this.bossEnemy = null;
+    this.bossName = null;
   }
 
   /** Freeze wave progression when an outside authority (e.g. a co-op room) owns pacing. */
@@ -136,6 +140,7 @@ export class PveDirectorSystem {
     });
     this.bossEnemy = enemy;
     this.bossMaxHealth = bossHp;
+    this.bossName = null; // campaign breach-boss keeps the generic banner (HUD falls back)
   }
 
   getFreeEnemy(): Enemy {
@@ -193,6 +198,32 @@ export class PveDirectorSystem {
     }
 
     if (this.ctx.survivors) {
+      // The toll itself: killing it seals the breach and ends the run, so it skips
+      // the elite drop/XP economy entirely — the victory IS the reward. Identity is
+      // the director-held reference (Survivors elites also carry isBoss).
+      if (this.sys.survivors.isReaper(enemy)) {
+        this.ctx.score += REAPER_SCORE;
+        this.bossActive = false;
+        this.bossEnemy = null;
+        this.bossName = null;
+        this.sys.survivors.reaper = null;
+        this.sys.fx.spawnEnemyDeath(deathPos, {
+          headshot,
+          elite: true,
+          scale: 2.5,
+          color: 0xff2d55,
+          spriteKind: deathFx.kind,
+          spriteView: deathFx.view,
+          spriteFlip: deathFx.flip,
+        });
+        // Player-death-first ordering: if the run already ended this frame the
+        // victory beat must not fire over the death screen.
+        if (this.ctx.status !== "gameover") {
+          this.sys.hud.showToast("BREACH SEALED");
+          this.sys.gameOver.gameOver("win");
+        }
+        return;
+      }
       const affixed = enemy.eliteAffix !== null;
       this.ctx.score += wasBoss ? 250 : 10;
       this.sys.fx.spawnEnemyDeath(deathPos, {

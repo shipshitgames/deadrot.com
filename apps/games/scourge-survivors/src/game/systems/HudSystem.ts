@@ -143,6 +143,7 @@ export class HudSystem {
         this.sys.pve.bossActive && this.sys.pve.bossEnemy && this.sys.pve.bossEnemy.alive
           ? this.sys.pve.bossEnemy.health / this.sys.pve.bossMaxHealth
           : 0,
+      bossName: this.sys.pve.bossName,
       outcome: this.ctx.outcome,
       weapon: spec.name,
       weapons,
