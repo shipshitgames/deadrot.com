@@ -28,6 +28,10 @@
       "types": "./src/maps/index.ts",
       "default": "./src/maps/index.ts"
     },
+    "./modes": {
+      "types": "./src/modes/index.ts",
+      "default": "./src/modes/index.ts"
+    },
     "./telemetry": {
       "types": "./src/telemetry/index.ts",
       "default": "./src/telemetry/index.ts"

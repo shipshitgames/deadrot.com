@@ -1,3 +1,4 @@
+import { type SpawnDescriptor, WaveDirector } from "@deadrot/game-kit/modes";
 import type * as THREE from "three";
 import { audio } from "../../audio/AudioEngine";
 import {
@@ -20,11 +21,11 @@ import {
   ENEMY_SPEED_MAX,
   ENEMY_SPEED_MIN,
   FIRST_WAVE_DELAY,
+  SCOURGE_WAVE_SCHEDULE,
   STAGE_DIFFICULTY_STEP,
-  TOTAL_WAVES,
   WAVE_BREAK,
   WAVE_SPAWN_INTERVAL,
-  WAVES,
+  type WaveConfig,
   WEAPONS,
 } from "../constants";
 import type { GameContext } from "../context";
@@ -35,72 +36,59 @@ import { Enemy } from "../entities/Enemy";
 import type { GameSystems } from "../systems";
 
 export class PveDirectorSystem {
-  // Wave state
-  waveIndex = 0;
-  waveActive = false;
-  waveBreakTimer = FIRST_WAVE_DELAY;
-  spawnTimer = 0;
-  killsThisWave = 0;
-  spawnedThisWave = 0;
+  // Boss state stays game-side: spawning, death, and HUD reads are Scourge-specific.
   bossActive = false;
   bossEnemy: Enemy | null = null;
   bossMaxHealth = BOSS_HEALTH;
 
+  /**
+   * Genre-neutral wave pacing lives in the shared director; this system is its
+   * Scourge host — it owns enemy spawning, the breach boss, and the economy,
+   * and lets the director drive timing, the stagger gate, and wave progress.
+   */
+  private readonly director: WaveDirector<WaveConfig>;
+
   constructor(
     private ctx: GameContext,
     private sys: GameSystems,
-  ) {}
+  ) {
+    this.director = new WaveDirector<WaveConfig>(
+      SCOURGE_WAVE_SCHEDULE,
+      { firstWaveDelay: FIRST_WAVE_DELAY, waveBreak: WAVE_BREAK, spawnInterval: WAVE_SPAWN_INTERVAL },
+      {
+        aliveCount: () => this.ctx.aliveCount,
+        spawn: (descriptor) => this.spawnWaveEnemy(descriptor),
+        startBoss: () => {
+          this.bossActive = true;
+          this.sys.hud.announce(SCOURGE_THREAT_TIERS.breachBoss.banner);
+          this.spawnBoss();
+        },
+        onWaveStart: (waveNumber) => this.sys.hud.announce(`WAVE ${waveNumber}`),
+        onWaveCleared: (cleared, total) =>
+          this.sys.hud.announce(cleared >= total ? "FINAL WAVE CLEARED" : `WAVE ${cleared} CLEARED`),
+      },
+    );
+  }
+
+  /** 1-based-friendly read of the active wave index (HUD + spawn tuning). */
+  get waveIndex(): number {
+    return this.director.waveIndex;
+  }
 
   startWaveSystem() {
     for (const e of this.ctx.enemies) e.kill();
-    this.waveIndex = 0;
-    this.waveActive = false;
-    this.waveBreakTimer = FIRST_WAVE_DELAY;
-    this.spawnTimer = 0;
-    this.killsThisWave = 0;
-    this.spawnedThisWave = 0;
+    this.director.reset();
     this.bossActive = false;
     this.bossEnemy = null;
   }
 
+  /** Freeze wave progression when an outside authority (e.g. a co-op room) owns pacing. */
+  suspendWaves() {
+    this.director.suspend();
+  }
+
   updateWaves(delta: number) {
-    if (!this.waveActive) {
-      this.waveBreakTimer -= delta;
-      if (this.waveBreakTimer <= 0) this.startWave();
-      return;
-    }
-    if (this.waveIndex >= TOTAL_WAVES) return; // boss wave: victory handled on death
-
-    const wave = WAVES[this.waveIndex];
-    this.spawnTimer -= delta;
-    if (this.spawnedThisWave < wave.count && this.ctx.aliveCount < wave.concurrent && this.spawnTimer <= 0) {
-      this.spawnWaveEnemy();
-      this.spawnedThisWave++;
-      this.spawnTimer = WAVE_SPAWN_INTERVAL;
-    }
-    if (this.killsThisWave >= wave.count && this.ctx.aliveCount === 0) this.completeWave();
-  }
-
-  startWave() {
-    this.waveActive = true;
-    this.killsThisWave = 0;
-    this.spawnedThisWave = 0;
-    this.spawnTimer = 0;
-    if (this.waveIndex < TOTAL_WAVES) {
-      this.sys.hud.announce(`WAVE ${this.waveIndex + 1}`);
-    } else {
-      this.bossActive = true;
-      this.sys.hud.announce(SCOURGE_THREAT_TIERS.breachBoss.banner);
-      this.spawnBoss();
-    }
-  }
-
-  completeWave() {
-    this.waveActive = false;
-    const cleared = this.waveIndex + 1;
-    this.waveIndex++;
-    this.waveBreakTimer = WAVE_BREAK;
-    this.sys.hud.announce(cleared >= TOTAL_WAVES ? "FINAL WAVE CLEARED" : `WAVE ${cleared} CLEARED`);
+    this.director.update(delta);
   }
 
   /** Per-stage difficulty scalar for the structured descent (1.0 on stage 1, no effect elsewhere). */
@@ -108,11 +96,11 @@ export class PveDirectorSystem {
     return 1 + STAGE_DIFFICULTY_STEP * this.ctx.campaignStage;
   }
 
-  spawnWaveEnemy() {
-    const wave = WAVES[this.waveIndex];
+  spawnWaveEnemy(descriptor: SpawnDescriptor<WaveConfig>) {
+    const wave = descriptor.plan.meta;
     const enemy = this.getFreeEnemy();
     const pt = this.sys.player.randomSpawnPoint();
-    const arch = campaignArchetypeForWave(this.waveIndex, this.spawnedThisWave, this.ctx.campaignStage);
+    const arch = campaignArchetypeForWave(descriptor.waveIndex, descriptor.ordinal, this.ctx.campaignStage);
     enemy.spawnAt(pt.x, pt.z, {
       maxHealth: ENEMY_MAX_HEALTH * wave.healthMul * this.stageMul() * arch.hpMul,
       speed: (ENEMY_SPEED_MIN + Math.random() * (ENEMY_SPEED_MAX - ENEMY_SPEED_MIN)) * wave.speedMul * arch.speedMul,
@@ -252,7 +240,8 @@ export class PveDirectorSystem {
         spriteView: deathFx.view,
         spriteFlip: deathFx.flip,
       });
-      this.killsThisWave++;
+      // a campaign kill counts toward clearing the active wave
+      this.director.notifyProgress();
       this.sys.pickups.maybeDropPickup(enemy.position);
       this.spawnSplitterChildren(enemy, deathPos);
     }
