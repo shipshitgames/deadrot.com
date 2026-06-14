@@ -18,8 +18,13 @@ export const ARENA_RULES = {
   respawnInvuln: 1.4,
   /** Where ring-out'd fighters drop back in from. */
   respawn: { x: 0, y: 8 },
-  /** Even start positions on the main platform (player takes index 0). */
-  spawnPoints: [-5, 5, -2.5, 2.5],
+  /** Start positions on the main platform (player takes index 0). Slots are
+   *  filled by prefix (2/3/4 fighters use the first N), so the ORDER matters:
+   *  every prefix must keep fighters ≥4 apart — clear of the bot engage range
+   *  (2.6) and max attack reach (2.9) — or packed 3-4 line-ups trade hits on the
+   *  opening frame (no free hits at the bell, and the fresh-start snapshot stays
+   *  at 0 damage). Outer pair first, then the inner pair: min spacing is 4. */
+  spawnPoints: [-6, 6, -2, 2],
   /** Solid main platform: standing requires x within [left, right], top at y=0. */
   platform: { left: -7, right: 7, top: 0 },
   /** One-way raised platforms — land from above, pass through from below. */
