@@ -2,6 +2,11 @@
 
 const DEFAULT_TARGET_PROJECTS = [1, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
+// Agent-routing lane labels. An open issue is expected to carry one of these
+// (Codex/Claude lanes) or have a human assignee (Vincent's manual lane). See
+// .agents/memory and the agent-routing convention for context.
+const LANE_LABELS = ["codex:automation", "claude:routine"];
+
 const config = {
   org: process.env.BOARD_HYGIENE_ORG ?? "shipshitgames",
   repoOwner: process.env.BOARD_HYGIENE_REPO_OWNER ?? "shipshitgames",
@@ -12,6 +17,7 @@ const config = {
   chunkSize: numberFromEnv("BOARD_HYGIENE_CHUNK_SIZE", 8),
   rateFloor: numberFromEnv("BOARD_HYGIENE_GRAPHQL_RATE_FLOOR", 1500),
   sleepMs: numberFromEnv("BOARD_HYGIENE_SLEEP_MS", 1500),
+  laneCheck: boolFromEnv("BOARD_HYGIENE_LANE_CHECK", true),
 };
 
 const token = process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN;
@@ -51,7 +57,7 @@ if (!hubProject) {
   throw new Error(`Hub project #${config.hubProjectNumber} is not in BOARD_HYGIENE_PROJECTS.`);
 }
 
-const boardlessIssues = await loadBoardlessOpenIssues();
+const { boardless: boardlessIssues, laneless: lanelessIssues } = await loadOpenIssues();
 
 console.log(
   `Prepared ${existingUpdates.length} existing field update(s) and ${boardlessIssues.length} boardless issue add(s).`,
@@ -62,6 +68,8 @@ await applyFieldUpdates(existingUpdates, "existing project items");
 for (const issue of boardlessIssues) {
   await addIssueToHub(issue, hubProject);
 }
+
+reportLanelessIssues(lanelessIssues);
 
 if (lastRateLimit) {
   console.log(`GraphQL remaining=${lastRateLimit.remaining} reset=${lastRateLimit.resetAt ?? "unknown"}`);
@@ -386,8 +394,9 @@ function singleSelectValues(item) {
   return values;
 }
 
-async function loadBoardlessOpenIssues() {
+async function loadOpenIssues() {
   const boardless = [];
+  const laneless = [];
   let cursor = null;
 
   do {
@@ -401,6 +410,16 @@ async function loadBoardlessOpenIssues() {
                 number
                 title
                 url
+                labels(first: 50) {
+                  nodes {
+                    name
+                  }
+                }
+                assignees(first: 10) {
+                  nodes {
+                    login
+                  }
+                }
                 projectItems(first: 25) {
                   nodes {
                     id
@@ -432,12 +451,39 @@ async function loadBoardlessOpenIssues() {
       if (issue.projectItems.nodes.length === 0) {
         boardless.push(issue);
       }
+
+      const labelNames = new Set(issue.labels.nodes.map((label) => label.name));
+      const hasLaneLabel = LANE_LABELS.some((name) => labelNames.has(name));
+      const hasAssignee = issue.assignees.nodes.length > 0;
+
+      if (!hasLaneLabel && !hasAssignee) {
+        laneless.push(issue);
+      }
     }
 
     cursor = issueConnection.pageInfo.hasNextPage ? issueConnection.pageInfo.endCursor : null;
   } while (cursor);
 
-  return boardless;
+  return { boardless, laneless };
+}
+
+function reportLanelessIssues(laneless) {
+  if (!config.laneCheck) {
+    return;
+  }
+
+  if (laneless.length === 0) {
+    console.log("Lane check: every open issue has a lane label or human assignee.");
+    return;
+  }
+
+  console.warn(
+    `Lane check: ${laneless.length} open issue(s) have no lane label (${LANE_LABELS.join("/")}) and no assignee:`,
+  );
+
+  for (const issue of laneless) {
+    console.warn(`  - #${issue.number} ${issue.title} ${issue.url}`);
+  }
 }
 
 async function applyFieldUpdates(updates, label) {
