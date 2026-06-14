@@ -1,6 +1,7 @@
 import {
   type ArenaLayout,
   anchorsOfKind,
+  type BiomeId,
   firstAnchor,
   flattenObstacles,
   normalizeArenaLayout,
@@ -14,14 +15,31 @@ import {
   DEFAULT_ARENA_BOUNDS,
   DEFAULT_ARENA_MATERIALS,
   type MapObstacle,
+  type NormalizedArenaMap,
   type ObstacleMat,
 } from "../data/maps";
 import { arenaTexture, arenaTextureRepeat } from "../spriteAssets";
 import type { GameSystems } from "../systems";
 import { levelYById, platformBox, rampStepBoxes, roomFloorSlab, roomLevelY, type SolidBox } from "./arenaGeometry";
 
+/** Live-scene theme readback (#80): every field is read back from the scene,
+ *  fog, material, and light objects — never echoed from map data — so e2e can
+ *  prove the biome actually landed on the renderer. */
+export interface ArenaThemeSnapshot {
+  bg: number;
+  fogNear: number;
+  fogFar: number;
+  floorTint: number;
+  wallTint: number;
+  trim: number;
+  accentA: { color: number; x: number; y: number; z: number };
+  accentB: { color: number; x: number; y: number; z: number };
+}
+
 export interface ArenaDebugSnapshot {
   mapId: string;
+  /** Biome preset id of the current map (#80) — presentation-only identity. */
+  biomeId: BiomeId;
   bounds: {
     minX: number;
     maxX: number;
@@ -38,6 +56,9 @@ export interface ArenaDebugSnapshot {
   obstacleBoxes: number;
   /** Raised walkable AABBs (v2 room floors + platforms + ramp steps); 0 for flat maps. */
   surfaceBoxes: number;
+  /** Live theme readback — null until buildArena has dressed a scene (and after
+   *  clearArena tears one down without a rebuild). */
+  theme: ArenaThemeSnapshot | null;
   /** v2 adapter observability — null when the current map has no normalized layout.
    *  Field names are the contract #82's e2e extends. */
   layout: {
@@ -58,6 +79,11 @@ export class ArenaSystem {
   private silhouetteCount = 0;
   private decalCount = 0;
   private propCount = 0;
+  // Live refs to the three themed materials so debugSnapshot reads colours off
+  // the actual scene (#80), not the map data. Null between builds.
+  private floorMat: THREE.MeshStandardMaterial | null = null;
+  private wallMat: THREE.MeshStandardMaterial | null = null;
+  private trimMat: THREE.MeshStandardMaterial | null = null;
 
   constructor(
     private ctx: GameContext,
@@ -86,15 +112,19 @@ export class ArenaSystem {
     this.silhouetteCount = 0;
     this.decalCount = 0;
     this.propCount = 0;
+    this.floorMat = null;
+    this.wallMat = null;
+    this.trimMat = null;
     this.ctx.solidMeshes = [];
     this.ctx.obstacleBoxes = [];
     this.ctx.surfaceBoxes = [];
     this.ctx.rig.setColliders([]);
   }
 
-  /** Build (or rebuild) the arena from a map definition: theme + boundary walls
-   *  + interior obstacles. Maps default to the 80x80 FPS footprint and may opt into custom bounds. */
-  buildArena(map: ArenaMap) {
+  /** Build (or rebuild) the arena from a registry-normalized map: resolved
+   *  biome theme + boundary walls + interior obstacles. Maps default to the
+   *  80x80 FPS footprint and may opt into custom bounds. */
+  buildArena(map: NormalizedArenaMap) {
     this.clearArena();
     this.ctx.currentMap = map;
     this.ctx.bounds = makeBounds(map.bounds ?? DEFAULT_ARENA_BOUNDS);
@@ -149,6 +179,10 @@ export class ArenaSystem {
       metalness: 0.32,
     });
     this.arenaMaterials.push(floorMat, wallMat, trimMat, crateMat, pillarMat);
+    // Keep live refs so debugSnapshot reads tints off the scene materials (#80).
+    this.floorMat = floorMat;
+    this.wallMat = wallMat;
+    this.trimMat = trimMat;
 
     // --- floor ---
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(width, depth), floorMat);
@@ -158,7 +192,7 @@ export class ArenaSystem {
     this.ctx.scene.add(floor);
     this.arenaObjects.push(floor);
 
-    // --- boundary walls (+ neon trim) ---
+    // --- boundary walls (+ emissive ember trim) ---
     const spanX = width + WALL_THICKNESS;
     const spanZ = depth + WALL_THICKNESS;
     const wallDefs: Array<{
@@ -302,6 +336,7 @@ export class ArenaSystem {
     const layout = this.ctx.currentMap.layout;
     return {
       mapId: this.ctx.currentMap.id,
+      biomeId: this.ctx.currentMap.biomeId,
       bounds: {
         minX: bounds.minX,
         maxX: bounds.maxX,
@@ -317,6 +352,7 @@ export class ArenaSystem {
       raycastTargets: this.ctx.raycastTargets.length,
       obstacleBoxes: this.ctx.obstacleBoxes.length,
       surfaceBoxes: this.ctx.surfaceBoxes.length,
+      theme: this.liveThemeSnapshot(),
       layout: layout
         ? {
             rooms: layout.rooms.length,
@@ -332,6 +368,37 @@ export class ArenaSystem {
             },
           }
         : null,
+    };
+  }
+
+  /** Read the theme back off the LIVE scene objects (#80): scene background,
+   *  scene fog, the floor/wall/trim material colours, and the two accent
+   *  lights — deliberately NOT echoed from map data, so a snapshot proves what
+   *  the renderer is actually showing. Null until buildArena has run. */
+  private liveThemeSnapshot(): ArenaThemeSnapshot | null {
+    const { scene, accentA, accentB } = this.ctx;
+    const fog = scene.fog instanceof THREE.Fog ? scene.fog : null;
+    const bg = scene.background instanceof THREE.Color ? scene.background : null;
+    if (!fog || !bg || !this.floorMat || !this.wallMat || !this.trimMat) return null;
+    return {
+      bg: bg.getHex(),
+      fogNear: fog.near,
+      fogFar: fog.far,
+      floorTint: this.floorMat.color.getHex(),
+      wallTint: this.wallMat.color.getHex(),
+      trim: this.trimMat.color.getHex(),
+      accentA: {
+        color: accentA.color.getHex(),
+        x: accentA.position.x,
+        y: accentA.position.y,
+        z: accentA.position.z,
+      },
+      accentB: {
+        color: accentB.color.getHex(),
+        x: accentB.position.x,
+        y: accentB.position.y,
+        z: accentB.position.z,
+      },
     };
   }
 

@@ -17,6 +17,18 @@ export {
   SYNTH_PLAYER_SPAWN_ID,
 } from "./arenaLayout";
 export {
+  BIOME_IDS,
+  BIOMES,
+  type BiomeAccentLight,
+  type BiomeId,
+  type BiomePreset,
+  type BiomeTheme,
+  type BiomeThemeOverrides,
+  DEFAULT_BIOME_ID,
+  isBiomeId,
+  resolveBiomeTheme,
+} from "./biomes";
+export {
   type ArenaLayoutSource,
   anchorsOfKind,
   firstAnchor,
