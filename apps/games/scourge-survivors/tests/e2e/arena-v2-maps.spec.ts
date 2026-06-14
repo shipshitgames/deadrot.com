@@ -16,6 +16,10 @@ type ArenaDebugSnapshot = {
   };
   solidMeshes: number;
   raycastTargets: number;
+  /** Collider AABBs (non-elevated obstacles → push-out). */
+  obstacleBoxes: number;
+  /** Raised walkable AABBs (v2 room floors + platforms + ramp steps); 0 for flat maps. */
+  surfaceBoxes: number;
   /** Populated only when the current map carries a normalized v2 layout — the
    *  honest proof that MAPS routed the map through normalizeArenaLayout. */
   layout: {
@@ -110,7 +114,74 @@ test.describe("arena v2 map layouts", () => {
       expect(result.bounds, `${result.mapId} bounds`).toEqual({ minX: -40, maxX: 40, minZ: -40, maxZ: 40 });
       expect(result.solidMeshes, `${result.mapId} solidMeshes`).toBeGreaterThan(4);
       expect(result.raycastTargets, `${result.mapId} raycastTargets`).toBe(result.solidMeshes);
+      // Flat v1 maps build ZERO raised surfaces — the #82 collider split adds no
+      // walkable geometry. Colliders are the non-elevated obstacles, so they never
+      // exceed the flattened obstacle count (some maps mark decals as `elevated`).
+      expect(result.surfaceBoxes, `${result.mapId} surfaceBoxes`).toBe(0);
+      expect(result.obstacleBoxes, `${result.mapId} obstacleBoxes`).toBeLessThanOrEqual(result.solidMeshes - 4);
+      expect(result.obstacleBoxes, `${result.mapId} obstacleBoxes`).toBeGreaterThan(0);
     }
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test("boots the structural sandbox map (The Gantry) with walkable raised geometry", async ({ page }) => {
+    const consoleErrors: string[] = [];
+    page.on("console", (msg) => {
+      if (msg.type() === "error") consoleErrors.push(msg.text());
+    });
+    page.on("pageerror", (error) => consoleErrors.push(String(error)));
+
+    await page.goto("/?sandbox=1");
+    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
+    await expect(page.getByTestId("game-canvas")).toBeVisible();
+
+    await page.evaluate(() => {
+      (window as unknown as { __fpsGame: { startSandbox: (mapId: string) => void } }).__fpsGame.startSandbox("gantry");
+    });
+
+    // Boot the sandbox run on the gantry (poll mapId before reading geometry).
+    await expect.poll(() => snapshot(page).then((state) => state.sandbox)).toBe(true);
+    await expect.poll(() => arenaSnapshot(page).then((state) => state.mapId)).toBe("gantry");
+    await expect.poll(() => snapshot(page).then((state) => state.mapName)).toBe("The Gantry");
+
+    // Drive past the pointer-lock gate and prove the sim ticks on this map.
+    await page.evaluate(() => {
+      type DevGame = { ctx: { status: string }; sys: { hud: { emit: () => void } } };
+      const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
+      game.ctx.status = "playing";
+      game.sys.hud.emit();
+    });
+    await expect.poll(() => snapshot(page).then((state) => state.status)).toBe("playing");
+    await expect.poll(() => gameTime(page)).toBeGreaterThan(0);
+
+    const result = await arenaSnapshot(page);
+
+    // The structural layout flowed through normalizeArenaLayout: two rooms, the
+    // raised mezzanine level, a climbable ramp, two platforms, and the authored
+    // breach mouths + objective (no v1-style synthesized single room).
+    expect(result.layout).toEqual({
+      rooms: 2,
+      levels: 2,
+      ramps: 1,
+      platforms: 2,
+      flattenedObstacles: 8,
+      anchors: { playerSpawn: 1, breachSpawn: 3, objective: 1, extraction: 0 },
+    });
+    // Standard arena footprint, reused from the default bounds.
+    expect(result.bounds).toEqual({ minX: -40, maxX: 40, minZ: -40, maxZ: 40 });
+
+    // Raised geometry was actually built AND routed to the walkable surface set
+    // (room slab + platforms + ramp steps), not the collider set. The collider
+    // count still matches the 8 authored obstacles.
+    expect(result.surfaceBoxes).toBeGreaterThan(0);
+    expect(result.obstacleBoxes).toBe(result.layout?.flattenedObstacles);
+    expect(result.solidMeshes).toBeGreaterThan(result.layout!.flattenedObstacles + 4);
+    // Every solid mesh beyond the 4 walls and the obstacle meshes is a raised
+    // walkable surface: solidMeshes = 4 walls + obstacles + surfaces.
+    expect(result.surfaceBoxes).toBe(result.solidMeshes - 4 - result.layout!.flattenedObstacles);
+    // All geometry is still shootable.
+    expect(result.raycastTargets).toBe(result.solidMeshes);
 
     expect(consoleErrors).toEqual([]);
   });

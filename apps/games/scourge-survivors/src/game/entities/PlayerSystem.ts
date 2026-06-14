@@ -1,3 +1,4 @@
+import { type ArenaLayout, anchorsOfKind } from "@deadrot/game-kit/maps";
 import { RectScatterSpawnProvider, type SpawnPointProvider } from "@shipshitgames/engine";
 import type * as THREE from "three";
 import { audio } from "../../audio/AudioEngine";
@@ -26,7 +27,9 @@ import {
   type WeaponId,
 } from "../constants";
 import type { GameContext } from "../context";
+import type { MapObstacle } from "../data/maps";
 import type { GameSystems } from "../systems";
+import { createBreachSpawnProvider } from "./breachSpawn";
 
 export class PlayerSystem {
   constructor(
@@ -34,18 +37,28 @@ export class PlayerSystem {
     private sys: GameSystems,
   ) {}
 
+  /** Reject a spawn candidate that lands in (or just beside) a collider. Shared
+   *  by both spawn seams below. */
+  private readonly spawnBlocked = (x: number, z: number) =>
+    this.ctx.obstacleBoxes.some(
+      (box) => x > box.min.x - 1.5 && x < box.max.x + 1.5 && z > box.min.z - 1.5 && z < box.max.z + 1.5,
+    );
+
   /**
    * Spawn seam: scatter enemies across the arena, away from the player and clear
    * of obstacles. The arena scatter lives in the engine ({@link RectScatterSpawnProvider});
-   * this just feeds it the live bounds + the FPS obstacle test.
+   * this just feeds it the live bounds + the FPS obstacle test. The v1 default,
+   * used by any map that authors no `breachSpawn` anchors.
    */
-  private spawnProvider: SpawnPointProvider = new RectScatterSpawnProvider({
+  private rectSpawnProvider: SpawnPointProvider = new RectScatterSpawnProvider({
     bounds: () => this.ctx.bounds,
-    blocked: (x, z) =>
-      this.ctx.obstacleBoxes.some(
-        (box) => x > box.min.x - 1.5 && x < box.max.x + 1.5 && z > box.min.z - 1.5 && z < box.max.z + 1.5,
-      ),
+    blocked: this.spawnBlocked,
   });
+
+  // Point-based spawner, lazily built for maps that author breach mouths, and
+  // rebuilt when the active layout changes (cached by layout reference).
+  private breachSpawnProvider: SpawnPointProvider | null = null;
+  private breachLayout: ArenaLayout<MapObstacle> | null = null;
 
   updatePlayerMovement(delta: number) {
     this.updateStance(delta);
@@ -139,11 +152,16 @@ export class PlayerSystem {
     const footY = pos.y - this.ctx.stanceHeight;
     const snap = this.ctx.canJump ? PLAYER_STEP_HEIGHT : GROUND_SNAP_DOWN;
     let groundY = 0;
-    for (const box of this.ctx.obstacleBoxes) {
-      if (!this.overlapsXZ(pos, box, PLAYER_RADIUS * 0.65)) continue;
+    const lift = (box: THREE.Box3) => {
+      if (!this.overlapsXZ(pos, box, PLAYER_RADIUS * 0.65)) return;
       const top = box.max.y;
       if (top > groundY && top <= footY + snap) groundY = top;
-    }
+    };
+    // Obstacle tops (stand on crates) + raised walkable surfaces from the v2
+    // layout (room floors, platforms, ramp steps). surfaceBoxes is empty for
+    // flat v1 maps, so their step-up behavior is unchanged.
+    for (const box of this.ctx.obstacleBoxes) lift(box);
+    for (const box of this.ctx.surfaceBoxes) lift(box);
     return groundY;
   }
 
@@ -219,7 +237,31 @@ export class PlayerSystem {
 
   randomSpawnPoint(): { x: number; z: number } {
     const p = this.ctx.body.position;
-    return this.spawnProvider.next({ avoidX: p.x, avoidZ: p.z });
+    return this.resolveSpawnProvider().next({ avoidX: p.x, avoidZ: p.z });
+  }
+
+  /** Pick the spawn seam for the active map: authored breach mouths when the
+   *  layout declares any (v2 point-based spawning), else the procedural arena
+   *  scatter (the v1 default — an empty breachSpawn set IS that contract). The
+   *  breach provider is cached and only rebuilt when the layout reference
+   *  changes (i.e. on a real map switch). */
+  private resolveSpawnProvider(): SpawnPointProvider {
+    const layout = this.ctx.currentMap.layout ?? null;
+    const breaches = layout ? anchorsOfKind(layout, "breachSpawn") : [];
+    if (breaches.length === 0) {
+      this.breachSpawnProvider = null;
+      this.breachLayout = null;
+      return this.rectSpawnProvider;
+    }
+    if (this.breachLayout !== layout || !this.breachSpawnProvider) {
+      this.breachSpawnProvider = createBreachSpawnProvider({
+        points: breaches.map((anchor) => ({ x: anchor.x, z: anchor.z })),
+        bounds: () => this.ctx.bounds,
+        blocked: this.spawnBlocked,
+      });
+      this.breachLayout = layout;
+    }
+    return this.breachSpawnProvider;
   }
 
   resetPlayer(startingWeapon: WeaponId = STARTING_WEAPON) {

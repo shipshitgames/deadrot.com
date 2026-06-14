@@ -1,6 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 
-import { GameLockBadge } from "@/components/game/game-lock";
+import { GameAccessBadge } from "@/components/game/access-badge";
 import { Badge } from "@/components/ui/badge";
 import { accentVars, gameCoverUrl, type Game, type GameStatus } from "@/lib/content";
 import { cn } from "@/lib/utils";
@@ -28,10 +29,11 @@ export function GameCard({ game }: { game: Game }) {
     >
       <div aria-hidden className="absolute inset-0">
         {/* Pixel game cover (locked house style #62) */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={gameCoverUrl(game.slug)}
           alt=""
+          fill
+          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           className="absolute inset-0 h-full w-full object-cover opacity-85 transition-transform duration-500 group-hover:scale-105"
           style={{ imageRendering: "pixelated" }}
         />
@@ -42,8 +44,7 @@ export function GameCard({ game }: { game: Game }) {
 
       <div className="relative z-10 p-5">
         <div className="mb-2 flex items-center gap-2">
-          <StatusBadge status={game.status} />
-          <GameLockBadge slug={game.slug} />
+          <GameAccessBadge slug={game.slug} status={game.status} />
           <span className="text-[0.65rem] uppercase tracking-widest text-ash">{game.genre}</span>
         </div>
         <h3 className="font-display text-2xl font-bold uppercase leading-none tracking-tight text-bone">

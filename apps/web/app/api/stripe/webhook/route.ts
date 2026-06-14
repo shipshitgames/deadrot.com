@@ -3,10 +3,19 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
 import { COLLECTION_FLAG } from "@/lib/access";
+import { CHECKED_AT_KEY, GRANTED_VIA_KEY, isShipshitSubscription, PURCHASED_AT_KEY } from "@/lib/shipshit-entitlement";
+import { shipshitSyncEnabled, syncShipshitEntitlement } from "@/lib/shipshit-entitlement-sync";
 
 // Stripe webhook: on a paid Checkout Session for the Deadrot Collection,
 // record the entitlement on the Clerk user (publicMetadata.deadrotCollection).
 // proxy.ts reads it from session claims; no database needed for v1 (#330).
+//
+// Also subscribed to customer.subscription.created/updated/deleted: the
+// shared Stripe account carries the shipshit.games Studio Pass, whose
+// lifecycle grants/revokes the collection here (cross-property entitlement —
+// see lib/shipshit-entitlement.ts). Subscription events are treated only as
+// "reconcile this customer now" triggers; the actual grant/revoke re-derives
+// from Stripe's current state, so out-of-order deliveries are harmless.
 //
 // NOTE: with trailingSlash:true the endpoint MUST be registered with the
 // trailing slash (/api/stripe/webhook/) — Stripe treats the 308 redirect on
@@ -63,7 +72,11 @@ export async function POST(req: Request) {
       await client.users.updateUserMetadata(userId, {
         publicMetadata: {
           [COLLECTION_FLAG]: true,
-          deadrotCollectionPurchasedAt: new Date().toISOString(),
+          [PURCHASED_AT_KEY]: new Date().toISOString(),
+          // A purchase is permanent: clear any revocable subscription-grant
+          // marker so a later shipshit.games lapse can never revoke paid access.
+          [GRANTED_VIA_KEY]: null,
+          [CHECKED_AT_KEY]: null,
         },
       });
     } catch (err) {
@@ -76,6 +89,56 @@ export async function POST(req: Request) {
       // Transient (Clerk down, rate limit): 500 so Stripe retries with backoff.
       console.error(`[stripe-webhook] failed to grant ${userId} from session ${session.id}`, err);
       return NextResponse.json({ error: "Fulfillment failed" }, { status: 500 });
+    }
+  }
+
+  // Studio Pass lifecycle (cross-property entitlement). The shared account
+  // also bills unrelated subscriptions — only ones matching the Studio Pass
+  // price lookup-key/product allowlist reconcile anything here.
+  if (
+    event.type === "customer.subscription.created" ||
+    event.type === "customer.subscription.updated" ||
+    event.type === "customer.subscription.deleted"
+  ) {
+    const subscription = event.data.object;
+    if (!shipshitSyncEnabled() || !isShipshitSubscription(subscription)) {
+      return NextResponse.json({ received: true });
+    }
+
+    try {
+      const customerId = typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
+      const customer = await stripe.customers.retrieve(customerId);
+      const email = customer.deleted ? null : customer.email;
+      if (!email) {
+        // No address to bridge on — the pull-side sync (proxy//unlock) still
+        // covers the user if they ever show up here with a verified email.
+        console.error(
+          `[stripe-webhook] shipshit sub ${subscription.id}: customer ${customerId} has no email — skipping`,
+        );
+        return NextResponse.json({ received: true });
+      }
+
+      const client = await clerkClient();
+      const { data: users } = await client.users.getUserList({
+        emailAddress: [email],
+        limit: 10,
+      });
+      const target = email.toLowerCase();
+      for (const user of users) {
+        // Only a VERIFIED address proves ownership — an unverified sign-up
+        // with a subscriber's email must never inherit their entitlement.
+        const verified = user.emailAddresses.some(
+          (addr) => addr.emailAddress.toLowerCase() === target && addr.verification?.status === "verified",
+        );
+        if (!verified) continue;
+        // Full reconcile (not the event payload): grants on active/trialing,
+        // revokes lapsed "shipshit-sub" grants, never touches purchases.
+        await syncShipshitEntitlement(user);
+      }
+    } catch (err) {
+      // Transient (Stripe/Clerk down): 500 so Stripe retries with backoff.
+      console.error(`[stripe-webhook] shipshit sub ${subscription.id}: reconcile failed`, err);
+      return NextResponse.json({ error: "Entitlement sync failed" }, { status: 500 });
     }
   }
 

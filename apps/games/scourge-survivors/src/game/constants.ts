@@ -1,5 +1,7 @@
 // Central place for all gameplay tunables. Units are roughly meters / seconds.
 
+import type { WaveSchedule } from "@deadrot/game-kit/modes";
+
 export const ARENA_HALF = 40; // arena spans [-40, 40] on X and Z -> 80x80 floor
 export const WALL_HEIGHT = 6;
 export const WALL_THICKNESS = 1.5;
@@ -27,11 +29,7 @@ export const PLAYER_MAX_HEALTH = 100;
 // Weapon
 export const MAGAZINE_SIZE = 15;
 export const START_RESERVE = 75;
-export const RESERVE_CAP = 300;
-export const AMMO_PER_KILL = 12;
 export const RELOAD_TIME = 1.2; // seconds
-export const FIRE_INTERVAL = 0.18; // seconds between shots
-export const WEAPON_DAMAGE = 26; // sidearm baseline
 export const HEADSHOT_MULTIPLIER = 2.2;
 
 // Melee knife — always available (no ammo), the guaranteed fallback so you can
@@ -47,7 +45,6 @@ export const ENEMY_MAX_HEALTH = 100;
 export const ENEMY_SPEED_MIN = 2.6;
 export const ENEMY_SPEED_MAX = 4.2;
 export const ENEMY_RADIUS = 0.6;
-export const ENEMY_HEIGHT = 1.7;
 export const ENEMY_ATTACK_RANGE = 2.2;
 export const ENEMY_ATTACK_DAMAGE = 9;
 export const ENEMY_ATTACK_INTERVAL = 0.9; // seconds between an enemy's hits
@@ -68,6 +65,17 @@ export const WAVES: WaveConfig[] = [
   { count: 12, concurrent: 6, healthMul: 1.6, speedMul: 1.25 },
 ];
 export const TOTAL_WAVES = WAVES.length; // breach-boss arrives after the final wave
+
+/**
+ * Genre-neutral schedule the shared {@link WaveDirector} consumes. Each plan keeps
+ * its source {@link WaveConfig} as `meta` so the spawner can read the per-wave
+ * health/speed multipliers when the director gates a spawn.
+ */
+export const SCOURGE_WAVE_SCHEDULE: WaveSchedule<WaveConfig> = WAVES.map((wave) => ({
+  count: wave.count,
+  concurrent: wave.concurrent,
+  meta: wave,
+}));
 
 // ---- Structured descent (multi-map run) ------------------------------------
 // Each descent stage runs the full WAVES + breach-boss on a different map;
@@ -244,7 +252,7 @@ export const PICKUP_DROP_CHANCE = 0.5; // chance a normal kill drops something
 export const PICKUP_RADIUS = 1.7; // walk within this to collect
 export const PICKUP_TTL = 16; // seconds before a drop despawns
 export const HEALTH_PICKUP_AMOUNT = 35;
-export const BERSERK_DAMAGE_MULT = 2;
+const BERSERK_DAMAGE_MULT = 2;
 export const BERSERK_TIME = 10;
 export const BERSERK_FIRE_RATE_MULT = 1.35;
 export const BERSERK_MOVE_MULT = 1.16;
@@ -254,7 +262,6 @@ export const DAMAGE_BOOST_TIME = BERSERK_TIME;
 export const DUAL_WEAPON_TIME = 12;
 
 // ---- Enemy ranged fire ----------------------------------------------------
-export const ENEMY_RANGED_CHANCE = 0.45; // fraction of mobs that shoot back
 export const ENEMY_FIRE_INTERVAL = 1.7;
 export const ENEMY_FIRE_RANGE = 30; // max distance a mob will open fire
 export const ENEMY_PREFERRED_RANGE = 12; // ranged mobs try to hold this gap

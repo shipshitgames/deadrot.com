@@ -70,7 +70,14 @@ export const UPGRADES: UpgradeDef[] = [
     max: 6,
     kind: "weapon",
   },
-  { id: "dmg", name: "Incendiary Rounds", desc: "+25% damage (all sources)", icon: "fire", max: 5, kind: "passive" },
+  {
+    id: "dmg",
+    name: "Incendiary Rounds",
+    desc: "+25% damage (all sources) · advances Weapon Tier",
+    icon: "fire",
+    max: 5,
+    kind: "passive",
+  },
   {
     id: "amp",
     name: "Cauterizer Feed",
@@ -79,11 +86,18 @@ export const UPGRADES: UpgradeDef[] = [
     max: 5,
     kind: "passive",
   },
-  { id: "rate", name: "Stoke the Chamber", desc: "+18% fire rate", icon: "lightning", max: 5, kind: "passive" },
+  {
+    id: "rate",
+    name: "Stoke the Chamber",
+    desc: "+18% fire rate · advances Weapon Tier",
+    icon: "lightning",
+    max: 5,
+    kind: "passive",
+  },
   {
     id: "multishot",
     name: "Splinter Ignition",
-    desc: "+1 projectile on your gun and Pyre auto-weapons",
+    desc: "+1 projectile on your gun and Pyre auto-weapons · advances Weapon Tier",
     icon: "trident",
     max: 3,
     kind: "passive",
@@ -91,7 +105,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: "crit",
     name: "Weakpoint Catechism",
-    desc: "+12% critical hit chance (2× damage)",
+    desc: "+12% critical hit chance (2× damage) · advances Weapon Tier",
     icon: "target",
     max: 4,
     kind: "passive",
@@ -220,6 +234,49 @@ export function mainWeaponVisualTier(upgradeLevels: Partial<Record<UpgradeId, nu
   if (score >= 1) return "tier-2";
   return "base";
 }
+
+/**
+ * Each weapon tier is a real power spike, not just a paint job (#279): crossing
+ * into a tier multiplies the player's MAIN-weapon hit damage (gun + melee). The
+ * three Pyre auto-weapons keep their own `amp` path, so the tier specifically
+ * rewards leaning into the gun build. Monotonic, so a tier-up always reads as
+ * "my weapon hits harder".
+ *
+ * Combined gun-damage curve (intentional, documented for acceptance #2): the four
+ * offensive picks (dmg/rate/multishot/crit) both raise the visual tier AND, via the
+ * `dmg` card, the linear `statDamageMul` (+25%/level). For a pure-`dmg` build the two
+ * stack MULTIPLICATIVELY — e.g. dmg L4 → tier-3: statDamageMul 2.0 × tier 1.18 = ×2.36;
+ * dmg L12 → evolved: 4.0 × 1.45 = ×5.8. This is by design: the tier mul is a deliberately
+ * SMALL top-up (≤ +45%) layered on the dominant linear curve, so it sweetens the gun build
+ * without dwarfing it or trivialising difficulty. The tier mul is applied exactly ONCE per
+ * shot/melee in WeaponSystem (multiplied into `dmgMul`, never added, never re-applied).
+ */
+export const MAIN_WEAPON_TIER_DAMAGE_MUL: Record<MainWeaponVisualTier, number> = {
+  base: 1,
+  "tier-2": 1.08,
+  "tier-3": 1.18,
+  "tier-4": 1.3,
+  evolved: 1.45,
+};
+
+/** Damage multiplier the player's main weapon gains at a given visual tier. */
+export function mainWeaponTierDamageMul(tier: MainWeaponVisualTier): number {
+  return MAIN_WEAPON_TIER_DAMAGE_MUL[tier];
+}
+
+/** 0-based ordinal of a tier (base = 0 … evolved = 4) for HUD pips / comparisons. */
+export function mainWeaponTierIndex(tier: MainWeaponVisualTier): number {
+  return MAIN_WEAPON_VISUAL_TIERS.indexOf(tier);
+}
+
+/** Short HUD/banner label for a weapon tier. */
+export const MAIN_WEAPON_TIER_LABEL: Record<MainWeaponVisualTier, string> = {
+  base: "TIER I",
+  "tier-2": "TIER II",
+  "tier-3": "TIER III",
+  "tier-4": "TIER IV",
+  evolved: "EVOLVED",
+};
 
 export function availableEvolutionChoice(
   upgradeLevels: Partial<Record<UpgradeId, number>>,
@@ -504,7 +561,7 @@ export const SHOP_UPGRADES: ShopDef[] = [
   },
   { id: "magnetP", name: "Ichor Draw", desc: "+24% base pickup radius", icon: "magnet", max: 4, baseCost: 30 },
   { id: "scholar", name: "Breach Lessons", desc: "+12% XP gained", icon: "chart", max: 4, baseCost: 40 },
-  { id: "greed", name: "Salvage Tithe", desc: "+18% gold earned per run", icon: "gold", max: 4, baseCost: 50 },
+  { id: "greed", name: "Salvage Tithe", desc: "+15% gold earned per run", icon: "gold", max: 4, baseCost: 50 },
   // --- Starting weapons: buy these to begin a run already armed (build variety) ---
   {
     id: "arsenal",
@@ -512,7 +569,7 @@ export const SHOP_UPGRADES: ShopDef[] = [
     desc: "Start every run with Cautery Ring Lv1",
     icon: "orbit",
     max: 1,
-    baseCost: 95,
+    baseCost: 120,
   },
   {
     id: "munitions",
@@ -520,7 +577,7 @@ export const SHOP_UPGRADES: ShopDef[] = [
     desc: "Start every run with Ember-Seeker Bolts Lv1",
     icon: "bolt",
     max: 1,
-    baseCost: 95,
+    baseCost: 120,
   },
   {
     id: "pulsar",
@@ -528,7 +585,7 @@ export const SHOP_UPGRADES: ShopDef[] = [
     desc: "Start every run with Breachfire Nova Lv1",
     icon: "nova",
     max: 1,
-    baseCost: 110,
+    baseCost: 140,
   },
 ];
 
@@ -537,13 +594,73 @@ export const SHOP_BY_ID: Record<ShopId, ShopDef> = Object.fromEntries(SHOP_UPGRA
   ShopDef
 >;
 
-/** Cost to buy the next tier (current tier -> tier+1). */
+// ---- Economy tuning (see ECONOMY.md) ---------------------------------------
+// Design goal (#277): permanent meta-progression should span MANY runs and can
+// never be bought out in one. Maxing the whole shop costs `shopTotalCost()`
+// (~4.3k gold across 33 tiers); a single run is hard-capped at `RUN_GOLD_CAP`,
+// which is roughly a third of that — so even a record run buys only a slice.
+
+/** Per-tier cost escalation for {@link shopCost}: the next tier costs more for
+ *  every tier already owned (quadratic), turning late tiers into real goals. */
+const SHOP_COST_LINEAR = 0.8;
+const SHOP_COST_QUADRATIC = 0.25;
+
+/** Cost to buy the next tier (current tier -> tier+1). Escalates per owned tier. */
 export function shopCost(def: ShopDef, tier: number): number {
-  return Math.round(def.baseCost * (1 + tier * 0.55));
+  const t = Math.max(0, tier);
+  return Math.round(def.baseCost * (1 + t * SHOP_COST_LINEAR + t * t * SHOP_COST_QUADRATIC));
 }
 
-/** Gold awarded for a finished Survivors run. */
+/** Gold to take a single upgrade from `fromTier` up to its max. */
+export function shopUpgradeCost(def: ShopDef, fromTier = 0): number {
+  let total = 0;
+  for (let tier = Math.max(0, fromTier); tier < def.max; tier++) total += shopCost(def, tier);
+  return total;
+}
+
+/** Gold to fully max EVERY shop upgrade from scratch. */
+export function shopTotalCost(): number {
+  return SHOP_UPGRADES.reduce((sum, def) => sum + shopUpgradeCost(def, 0), 0);
+}
+
+/** Gold still needed to fully max the shop from the player's current tiers. */
+export function shopRemainingCost(tiers: Record<string, number>): number {
+  return SHOP_UPGRADES.reduce((sum, def) => sum + shopUpgradeCost(def, tiers[def.id] ?? 0), 0);
+}
+
+/** Total purchasable tiers across the whole shop (sum of every upgrade's max). */
+export const SHOP_TOTAL_TIERS = SHOP_UPGRADES.reduce((sum, def) => sum + def.max, 0);
+
+/** How many tiers the player currently owns across the whole shop. */
+export function shopTiersOwned(tiers: Record<string, number>): number {
+  return SHOP_UPGRADES.reduce((sum, def) => sum + Math.min(def.max, Math.max(0, Math.floor(tiers[def.id] ?? 0))), 0);
+}
+
+/** A single run can never earn more than this. Keeps one run from funding the
+ *  whole shop no matter how long or lucky it is; stays well below
+ *  {@link shopTotalCost}. */
+export const RUN_GOLD_CAP = 1500;
+
+/** Gold awarded for a finished Survivors run, hard-capped at {@link RUN_GOLD_CAP}.
+ *  Income is intentionally a fraction of the shop total so progression is paced
+ *  across many runs (kills + level + survival time, boosted by the greed tier). */
 export function runGold(kills: number, level: number, time: number, greedTier: number): number {
-  const base = kills * 3.5 + level * 14 + time * 1.35;
-  return Math.floor(base * (1 + 0.18 * greedTier));
+  const base = kills * 0.9 + level * 5 + time * 0.4;
+  const greedMul = 1 + 0.15 * Math.max(0, greedTier);
+  return Math.min(RUN_GOLD_CAP, Math.floor(Math.max(0, base) * greedMul));
+}
+
+/** A single run can never bank more than this much biomass into the shared
+ *  Warline pool, so no one run can swing the global war effort (#280). Sits
+ *  well under `WAR_EFFORT.unitPerTier` (5000) — banking a tier takes teamwork. */
+export const RUN_BIOMASS_CAP = 2500;
+
+/** War-resource (biomass) salvaged from a finished Survivors run, banked into
+ *  the shared cross-game Warline pool (#280). Harvested mostly from slain
+ *  scourge (kills), with a small survival-time + level bonus; hard-capped at
+ *  {@link RUN_BIOMASS_CAP}. Pure + deterministic so the contribution is
+ *  unit-testable without a network. */
+export function runBiomass(kills: number, level: number, time: number): number {
+  const harvested = kills * 1.5 + level * 8 + time * 0.6;
+  return Math.min(RUN_BIOMASS_CAP, Math.floor(Math.max(0, harvested)));
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GameCard } from "@/components/game/game-card";
@@ -46,10 +47,11 @@ export default async function CharacterPage({ params }: { params: Promise<{ slug
             />
             <div className="vignette absolute inset-0" aria-hidden />
             {sprite ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={sprite}
                 alt={character.name}
+                width={512}
+                height={512}
                 className="relative z-10 h-[360px] object-contain drop-shadow-[0_16px_48px_color-mix(in_srgb,var(--page-accent)_55%,transparent)]"
               />
             ) : (
@@ -98,8 +100,8 @@ export default async function CharacterPage({ params }: { params: Promise<{ slug
         <div className="mx-auto max-w-3xl">
           <Eyebrow>Dossier</Eyebrow>
           <div className="mt-5 space-y-5">
-            {character.overview.split("\n\n").map((p, i) => (
-              <p key={i} className="leading-relaxed text-ash">
+            {character.overview.split("\n\n").map((p) => (
+              <p key={p} className="leading-relaxed text-ash">
                 {p}
               </p>
             ))}
@@ -113,8 +115,8 @@ export default async function CharacterPage({ params }: { params: Promise<{ slug
           <div>
             <h2 className="font-display text-2xl font-bold uppercase tracking-tight text-bone">Gameplay Read</h2>
             <ul className="mt-6 space-y-2">
-              {character.gameplayRead.map((item, i) => (
-                <li key={i} className="border-l-2 border-[var(--page-accent)] pl-3 py-1 text-ash">
+              {character.gameplayRead.map((item) => (
+                <li key={item} className="border-l-2 border-[var(--page-accent)] pl-3 py-1 text-ash">
                   {item}
                 </li>
               ))}
@@ -123,8 +125,8 @@ export default async function CharacterPage({ params }: { params: Promise<{ slug
           <div>
             <h2 className="font-display text-2xl font-bold uppercase tracking-tight text-bone">Visual Design</h2>
             <ul className="mt-6 space-y-2">
-              {character.visualMotifs.map((item, i) => (
-                <li key={i} className="border-l-2 border-[var(--page-accent)] pl-3 py-1 text-ash">
+              {character.visualMotifs.map((item) => (
+                <li key={item} className="border-l-2 border-[var(--page-accent)] pl-3 py-1 text-ash">
                   {item}
                 </li>
               ))}

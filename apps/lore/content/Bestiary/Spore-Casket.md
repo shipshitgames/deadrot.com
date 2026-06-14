@@ -7,7 +7,7 @@ status: canon
 ---
 # Spore-Casket
 
-**At a glance:** [[Scourge-Host-Families|Voidship Host]] living spore mine - a coffin of infected hull, mycelial slurry, and stolen corpse-seed that drifts through [[The-Skyhook|Skyhook]] debris fields - not a [[CANON|Choir]] repeater or a breach; it is physical host payload waiting to burst - counter is distance, flak, fire, and clean burn vectors - appears in [[Starblight]] / [[Zero-Day]] / [[Warline]].
+**At a glance:** [[Scourge-Host-Families|Voidship Host]] living spore mine - a coffin of infected hull, mycelial slurry, and stolen corpse-seed that drifts through [[The-Skyhook|Skyhook]] debris fields - not a [[CANON|Choir]] repeater or a breach; it is physical host payload waiting to burst - counter is distance, flak, fire, and clean burn vectors - appears in [[Starblight]] / [[Warline]], with its first sighting in [[Zero-Day]].
 
 The first rule in orbit is never chase the quiet ones.
 
@@ -63,6 +63,5 @@ Scourge orbital spore mine, voidship host grown from a rusted escape pod and mis
 
 ## Appears In
 
-- [[Starblight]] - the living mine field around carriers and [[Descant]] screens; pilots clear caskets at range before a burst contaminates the Skyhook or blocks a firing vector.
-- [[Zero-Day]] - one of the first quiet payloads humanity mistakes for dead wreckage during the sky battle, before anyone understands that the Scourge wears ships as readily as flesh.
+- [[Starblight]] - the living mine field around carriers and [[Descant]] screens; pilots clear caskets at range before a burst contaminates the Skyhook or blocks a firing vector. In the [[Zero-Day]] prologue, it is one of the first quiet payloads humanity mistakes for dead wreckage.
 - [[Warline]] - an orbital intercept result: caskets burned high reduce surface breach pressure; caskets missed become bad news for the lane reports below.

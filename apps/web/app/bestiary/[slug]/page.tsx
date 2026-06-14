@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GameCard } from "@/components/game/game-card";
@@ -44,10 +45,11 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
               className="absolute inset-0 bg-[radial-gradient(75%_60%_at_50%_10%,color-mix(in_srgb,var(--page-accent)_22%,transparent),transparent_72%)]"
             />
             {sprite ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={sprite}
                 alt={creature.name}
+                width={512}
+                height={512}
                 className="relative z-10 h-[78%] object-contain drop-shadow-[0_12px_40px_color-mix(in_srgb,var(--page-accent)_50%,transparent)]"
               />
             ) : (
@@ -80,8 +82,8 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         <div className="mx-auto max-w-7xl">
           <Eyebrow>Threat Dossier</Eyebrow>
           <div className="mt-5 max-w-3xl space-y-5">
-            {creature.overview.split("\n\n").map((p, i) => (
-              <p key={i} className="leading-relaxed text-ash">
+            {creature.overview.split("\n\n").map((p) => (
+              <p key={p} className="leading-relaxed text-ash">
                 {p}
               </p>
             ))}
@@ -97,8 +99,8 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
               Threat Read
             </h2>
             <ul className="mt-6 space-y-4">
-              {creature.gameplayRead.map((item, i) => (
-                <li key={i} className="border-l-2 border-[var(--page-accent)] pl-4 leading-relaxed text-ash">
+              {creature.gameplayRead.map((item) => (
+                <li key={item} className="border-l-2 border-[var(--page-accent)] pl-4 leading-relaxed text-ash">
                   {item}
                 </li>
               ))}
@@ -109,8 +111,8 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
               Recognize It
             </h2>
             <ul className="mt-6 space-y-4">
-              {creature.visualMotifs.map((item, i) => (
-                <li key={i} className="border-l-2 border-[var(--page-accent)] pl-4 leading-relaxed text-ash">
+              {creature.visualMotifs.map((item) => (
+                <li key={item} className="border-l-2 border-[var(--page-accent)] pl-4 leading-relaxed text-ash">
                   {item}
                 </li>
               ))}

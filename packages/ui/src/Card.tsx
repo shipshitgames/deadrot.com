@@ -23,11 +23,3 @@ export function Card({ asChild = false, className, children, ...props }: CardPro
     </div>
   );
 }
-
-export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
-  return <h3 className={cn("ssg-section-heading", className)} {...props} />;
-}
-
-export function CardBody({ className, ...props }: CardProps) {
-  return <div className={cn("ssg-card-body", className)} {...props} />;
-}

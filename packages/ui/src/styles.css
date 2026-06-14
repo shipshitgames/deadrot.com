@@ -681,8 +681,9 @@
   white-space: nowrap;
 }
 
-/* Quick-jump strip (GameJumpMenu): direct links into the other games, rendered
-   as the last item inside .ssg-main-menu-nav on every title menu. */
+/* Quick-jump strip (GameJumpMenu): direct links into the other games. In the
+   full title menu it sits as the last item inside .ssg-main-menu-nav; on the
+   splash gate it can render as a compact centered strip under the Enter prompt. */
 .ssg-game-jump {
   display: flex;
   flex-direction: column;
@@ -735,6 +736,29 @@
 .ssg-game-jump__link:focus-visible {
   outline: 2px solid var(--ssg-game-jump-accent);
   outline-offset: 2px;
+}
+
+.ssg-game-jump--splash {
+  width: min(560px, 92vw);
+  align-items: center;
+  margin-top: -12px;
+  padding-top: 12px;
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  animation: ssg-menu-rise 0.5s ease-out 0.24s forwards;
+}
+
+.ssg-game-jump--splash .ssg-game-jump__label {
+  color: rgba(233, 227, 214, 0.62);
+}
+
+.ssg-game-jump--splash .ssg-game-jump__links {
+  justify-content: center;
+}
+
+.ssg-game-jump--splash .ssg-game-jump__link {
+  background: linear-gradient(110deg, rgba(12, 12, 13, 0.72), rgba(24, 22, 22, 0.52));
+  font-size: 10px;
 }
 
 @keyframes ssg-menu-atmosphere {
@@ -999,7 +1023,8 @@
     font-size: clamp(1.72rem, 8.2vw, 3.1rem);
   }
 
-  .ssg-main-menu-nav {
+  .ssg-main-menu-nav,
+  .ssg-game-jump--splash {
     width: min(354px, 100%);
   }
 
@@ -1025,6 +1050,79 @@
   }
 }
 
+@media (max-height: 560px) {
+  .ssg-main-menu-layout--splash {
+    gap: 10px;
+    padding-top: 62px;
+    padding-bottom: 18px;
+  }
+
+  .ssg-main-menu-layout--splash .ssg-menu-kicker {
+    font-size: 11px;
+  }
+
+  .ssg-main-menu-layout--splash .ssg-main-menu-title {
+    margin-top: 6px;
+    font-size: 3.35rem;
+  }
+
+  .ssg-main-menu-layout--splash .ssg-main-menu-subtitle {
+    max-width: min(620px, 92vw);
+    margin-top: 8px;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .ssg-main-menu-layout--splash .ssg-main-menu-status {
+    margin-top: 8px;
+  }
+
+  .ssg-main-menu-layout--splash .ssg-main-menu-enter {
+    padding: 7px 4px;
+  }
+
+  .ssg-game-jump--splash {
+    margin-top: -4px;
+    padding-top: 8px;
+  }
+}
+
+@media (max-height: 420px) {
+  .ssg-main-menu-layout--splash {
+    gap: 8px;
+  }
+
+  .ssg-main-menu-layout--splash .ssg-main-menu-title {
+    font-size: 3rem;
+  }
+
+  .ssg-main-menu-layout--splash .ssg-main-menu-enter {
+    order: 2;
+    padding: 4px;
+  }
+
+  .ssg-game-jump--splash {
+    order: 1;
+    gap: 5px;
+    width: min(520px, 92vw);
+    margin-top: 0;
+    padding-top: 6px;
+  }
+
+  .ssg-game-jump--splash .ssg-game-jump__label {
+    font-size: 9px;
+  }
+
+  .ssg-game-jump--splash .ssg-game-jump__links {
+    gap: 4px;
+  }
+
+  .ssg-game-jump--splash .ssg-game-jump__link {
+    padding: 4px 7px;
+    font-size: 9px;
+  }
+}
+
 @media (max-width: 420px) {
   .ssg-main-menu-action__meta {
     display: none;
@@ -1035,12 +1133,14 @@
   .ssg-main-menu-screen::before,
   .ssg-main-menu-particles,
   .ssg-main-menu-copy,
-  .ssg-main-menu-nav {
+  .ssg-main-menu-nav,
+  .ssg-game-jump--splash {
     animation: none;
   }
 
   .ssg-main-menu-copy,
-  .ssg-main-menu-nav {
+  .ssg-main-menu-nav,
+  .ssg-game-jump--splash {
     opacity: 1;
     transform: none;
   }

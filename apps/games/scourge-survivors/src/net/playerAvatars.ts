@@ -13,7 +13,7 @@ export const PLAYER_AVATAR_OPTIONS: PlayerAvatarOption[] = [
   { id: "medic", name: "Patch", role: "Support rig" },
 ];
 
-export const PLAYER_SLOT_COLORS = [0x35e0ff, 0xff4dcb, 0xffb02e, 0x39d353, 0x9b5cff, 0xff3b6b];
+const PLAYER_SLOT_COLORS = [0x35e0ff, 0xff4dcb, 0xffb02e, 0x39d353, 0x9b5cff, 0xff3b6b];
 
 export function normalizePlayerAvatar(value: unknown): PlayerAvatarId {
   return PLAYER_AVATAR_OPTIONS.some((a) => a.id === value) ? (value as PlayerAvatarId) : "ranger";

@@ -3,15 +3,15 @@ import type * as THREE from "three";
 
 export const PLAYER_HEIGHT = 1.7;
 export const PLAYER_RADIUS = 0.72;
-export const MOVE_SPEED = 8.25;
-export const MOVE_ACCEL = 72;
-export const MOVE_DAMPING = 11;
-export const MOVE_BRAKE_DAMPING = 18;
-export const MOVE_START_BOOST_TIME = 0.14;
-export const MOVE_START_BOOST_MULT = 0.24;
-export const MOVE_STOP_EPSILON = 0.05;
+const MOVE_SPEED = 8.25;
+const MOVE_ACCEL = 72;
+const MOVE_DAMPING = 11;
+const MOVE_BRAKE_DAMPING = 18;
+const MOVE_START_BOOST_TIME = 0.14;
+const MOVE_START_BOOST_MULT = 0.24;
+const MOVE_STOP_EPSILON = 0.05;
 export const JUMP_VELOCITY = 7.6;
-export const GRAVITY = 22;
+const GRAVITY = 22;
 
 export interface JumpState {
   velocity: number;

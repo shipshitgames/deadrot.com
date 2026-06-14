@@ -33,7 +33,8 @@ You buy your world time; you do not "win."
 
 ### 3. Origin — the void, and the night we lost
 The Scourge came from **space**. Humanity's **first contact was a space battle, and we lost**
-— not ready, too many. It made landfall, and the world fell. → the origin game **[[Zero-Day]]**.
+— not ready, too many. It made landfall, and the world fell. → the origin sequence **[[Zero-Day]]**,
+now folded into **[[Starblight]]** as its first-contact last-stand mode.
 **Every other title is the Resistance era**, months-to-years *after* the fall, as humanity
 claws back a war it has already mostly lost.
 

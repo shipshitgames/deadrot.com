@@ -1,8 +1,13 @@
 import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type PickupKind, STARTING_WEAPON, WEAPON_ORDER, WEAPONS, type WeaponId } from "../game/constants";
-import { MAP_PICKER } from "../game/data/maps";
-import { MAIN_WEAPON_VISUAL_TIERS, type MainWeaponVisualTier } from "../game/data/survivors";
+import { MAP_PICKER, SANDBOX_MAP_PICKER } from "../game/data/maps";
+import {
+  MAIN_WEAPON_TIER_LABEL,
+  MAIN_WEAPON_VISUAL_TIERS,
+  mainWeaponTierDamageMul,
+  type MainWeaponVisualTier,
+} from "../game/data/survivors";
 import type { SandboxEnemyKind } from "../game/Game";
 import { RUNTIME_AUDIO_ASSET_URLS, RUNTIME_VISUAL_ASSET_URLS, weaponSpriteAssetId } from "../game/spriteAssets";
 import type { HUDState } from "../game/types";
@@ -72,14 +77,10 @@ const arenaFloor = visualAssetUrl("arena-floor");
 const arenaWall = visualAssetUrl("arena-wall");
 const arenaColumn = visualAssetUrl("arena-column");
 const arenaBlock = visualAssetUrl("arena-block");
-const menuHeroJpg = visualAssetUrl("ui-menu-hero-jpg");
-const menuHeroPng = visualAssetUrl("ui-menu-hero-png");
-const menuCardBreach = visualAssetUrl("ui-card-breach-jpg");
-const menuCardBreachPng = visualAssetUrl("ui-card-breach-png");
-const menuCardBastion = visualAssetUrl("ui-card-bastion-jpg");
-const menuCardBastionPng = visualAssetUrl("ui-card-bastion-png");
-const menuCardFleshworks = visualAssetUrl("ui-card-fleshworks-jpg");
-const menuCardFleshworksPng = visualAssetUrl("ui-card-fleshworks-png");
+const menuHero = visualAssetUrl("ui-menu-hero");
+const menuCardBreach = visualAssetUrl("ui-card-breach");
+const menuCardBastion = visualAssetUrl("ui-card-bastion");
+const menuCardFleshworks = visualAssetUrl("ui-card-fleshworks");
 
 const WEAPON_IMAGES: Record<WeaponId, string> = {
   pistol: weaponPistol,
@@ -146,14 +147,10 @@ const VISUAL_ASSETS: VisualAsset[] = [
       kind: "texture" as const,
     })),
   ),
-  { id: "ui-hero-jpg", label: "Menu hero jpg", src: menuHeroJpg, kind: "ui" },
-  { id: "ui-hero-png", label: "Menu hero png", src: menuHeroPng, kind: "ui" },
-  { id: "ui-breach-jpg", label: "Breach card jpg", src: menuCardBreach, kind: "ui" },
-  { id: "ui-breach-png", label: "Breach card png", src: menuCardBreachPng, kind: "ui" },
-  { id: "ui-bastion-jpg", label: "Bastion card jpg", src: menuCardBastion, kind: "ui" },
-  { id: "ui-bastion-png", label: "Bastion card png", src: menuCardBastionPng, kind: "ui" },
-  { id: "ui-fleshworks-jpg", label: "Fleshworks card jpg", src: menuCardFleshworks, kind: "ui" },
-  { id: "ui-fleshworks-png", label: "Fleshworks card png", src: menuCardFleshworksPng, kind: "ui" },
+  { id: "ui-hero", label: "Menu hero", src: menuHero, kind: "ui" },
+  { id: "ui-breach", label: "Breach card", src: menuCardBreach, kind: "ui" },
+  { id: "ui-bastion", label: "Bastion card", src: menuCardBastion, kind: "ui" },
+  { id: "ui-fleshworks", label: "Fleshworks card", src: menuCardFleshworks, kind: "ui" },
 ];
 
 const AUDIO_ASSETS: AudioAsset[] = [
@@ -173,6 +170,7 @@ const AUDIO_ASSETS: AudioAsset[] = [
 
 const PICKUP_KINDS: PickupKind[] = ["health", "ammo", "damage", "dual", ...WEAPON_ORDER];
 const ASSET_FILTERS: Array<"all" | AssetKind | "audio"> = ["all", "sprite", "texture", "ui", "audio"];
+const EMPTY_CAPTIONS_TRACK = "data:text/vtt;charset=utf-8,WEBVTT";
 
 function cx(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(" ");
@@ -291,7 +289,15 @@ function AudioList({ assets }: { assets: AudioAsset[] }) {
             <span className="truncate font-bold">{asset.label}</span>
             <span className="shrink-0 uppercase tracking-[0.12em] text-white/45">{asset.kind}</span>
           </div>
-          <audio controls loop={asset.kind === "music"} src={asset.src} className="h-[30px] w-full" />
+          <audio
+            controls
+            loop={asset.kind === "music"}
+            src={asset.src}
+            className="h-[30px] w-full"
+            aria-label={`${asset.label} ${asset.kind} preview`}
+          >
+            <track kind="captions" src={EMPTY_CAPTIONS_TRACK} srcLang="en" label="No spoken audio" />
+          </audio>
         </div>
       ))}
     </div>
@@ -339,6 +345,7 @@ export function SandboxPanel({
       panel.scrollBy({ top: event.deltaY, left: event.deltaX, behavior: "auto" });
     };
 
+    // react-doctor-disable-next-line react-doctor/client-passive-event-listeners -- The handler intentionally calls preventDefault so wheel input scrolls this sandbox panel.
     window.addEventListener("wheel", scrollLabsPanel, { passive: false });
     return () => window.removeEventListener("wheel", scrollLabsPanel);
   }, [state.status]);
@@ -389,7 +396,7 @@ export function SandboxPanel({
             <LabButton onClick={() => onStart()}>Reset Sandbox</LabButton>
           </div>
           <div className="mt-2 grid grid-cols-2 gap-2">
-            {MAP_PICKER.map((map) => (
+            {SANDBOX_MAP_PICKER.map((map) => (
               <LabButton
                 key={map.id}
                 active={state.mapName === map.name}
@@ -445,6 +452,9 @@ export function SandboxPanel({
               </button>
             ))}
           </div>
+          <div className="mt-1 text-[10px] uppercase tracking-[0.08em] text-white/55" data-testid="sandbox-tier-dmg">
+            {MAIN_WEAPON_TIER_LABEL[sbTier]} · gun damage ×{mainWeaponTierDamageMul(sbTier).toFixed(2)}
+          </div>
           <div className="mt-2 grid grid-cols-3 gap-2">
             <LabButton onClick={onFire}>Fire Once</LabButton>
             <LabButton onClick={onRefill}>Refill</LabButton>
@@ -457,6 +467,7 @@ export function SandboxPanel({
             <span className="text-[11px] uppercase tracking-[0.12em] text-white/45">Count</span>
             <input
               type="range"
+              aria-label="Spawn count"
               min={1}
               max={12}
               value={spawnCount}

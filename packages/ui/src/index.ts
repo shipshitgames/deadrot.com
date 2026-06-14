@@ -1,7 +1,9 @@
 export type { ButtonProps, ButtonSize, ButtonVariant } from "./Button";
 export { Button } from "./Button";
 export type { CardProps } from "./Card";
-export { Card, CardBody, CardTitle } from "./Card";
+export { Card } from "./Card";
+export { CardBody } from "./CardBody";
+export { CardTitle } from "./CardTitle";
 export type { CodexEntry, CodexScreenProps } from "./Codex";
 export { CodexScreen } from "./Codex";
 export type { ClassValue } from "./cn";
@@ -23,6 +25,26 @@ export {
 export { DEFAULT_AUDIO_SLIDER_KEYS } from "./GameSettings.constants";
 export type { GameSettingsScreenProps } from "./GameSettingsScreen";
 export { GameSettingsScreen } from "./GameSettingsScreen";
+export type {
+  GameMenuConfig,
+  GameMenuTitleHtmlOptions,
+  GameMenuTitleLineConfig,
+  GameMenuTitleTone,
+} from "./gameMenuConfig";
+export {
+  GAME_MENU_CONFIGS,
+  gameMenuConfig,
+  gameMenuCopyHtml,
+  gameMenuTitleHtml,
+  gameMenuTitleText,
+} from "./gameMenuConfig";
+export type {
+  GameAudioSettingsScreenProps,
+  GameMenuCopyProps,
+  GameMenuTitleProps,
+  GamePauseMenuProps,
+} from "./GameMenuShell";
+export { GameAudioSettingsScreen, GameMenuCopy, GameMenuTitle, GamePauseMenu } from "./GameMenuShell";
 export type { GameJumpTarget } from "./lobby";
 export {
   GAME_JUMP_DEFAULT_LABEL,

@@ -122,6 +122,11 @@ gameArtDirection:
     camera: "isometric 3/4-view champion sprites"
     assetFraming: "MOBA-scale heroes with readable ability silhouettes and faction crests"
     paletteBias: "faction identity first, then blood/hellfire combat states"
+  brawl:
+    title: "Brawl"
+    camera: "side-on / 3/4-view trench-fighter sprites"
+    assetFraming: "fighters, impacts, trench hazards, and ring-out silhouettes readable in Duel and 2-4 fighter arena distance"
+    paletteBias: "mud, gunmetal, bone-white trench marks, blood-hot impact reads, toxic only for Scourge pressure"
   starblight:
     title: "Starblight"
     camera: "side-on / top-down arcade space-shooter sprites"
@@ -205,6 +210,7 @@ assetgen:
     scourge-survivors: first-person game billboard sprite, front-facing, full body
     deadlane: top-down / high-angle game sprite, silhouette readable from above
     pactfall: isometric 3/4-view game sprite, champion scale
+    brawl: side-on / 3/4-view trench-fighter sprite, readable in Duel and 2-4 fighter arena distance
     starblight: side-on / top-down arcade space-shooter sprite, crisp readable silhouette
     redline: side-on Sonic-like runner sprite, profile silhouette readable at courier-lane speed
     rothulk: side-on Mario-like platformer sprite, profile silhouette, clear readable pose

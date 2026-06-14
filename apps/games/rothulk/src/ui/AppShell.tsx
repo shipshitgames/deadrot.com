@@ -1,8 +1,11 @@
 import menuHero from "@shipshitgames/assets/games/rothulk/ui/menu/title.webp";
 import {
+  GameAudioSettingsScreen,
   GameJumpMenu,
-  GameSettingsScreen,
+  GameMenuTitle,
+  GamePauseMenu,
   GlobalMusicToggle,
+  gameMenuConfig,
   goToWarlineLobby,
   MainMenuAction,
   MainMenuCopy,
@@ -11,11 +14,8 @@ import {
   MainMenuNav,
   MainMenuScreen,
   MainMenuStatus,
-  MainMenuTitle,
-  MainMenuTitleLine,
   MainMenuTopBar,
   MenuKicker,
-  PauseMenu,
   useEnterToReveal,
 } from "@shipshitgames/ui";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -25,6 +25,9 @@ import type { Game } from "../game/Game";
 interface AppShellProps {
   createGame: (canvas: HTMLCanvasElement) => Game;
 }
+
+const GAME_SLUG = "rothulk";
+const menu = gameMenuConfig(GAME_SLUG);
 
 export function AppShell({ createGame }: AppShellProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -99,7 +102,7 @@ export function AppShell({ createGame }: AppShellProps) {
 
   return (
     <>
-      <canvas id="scene" ref={canvasRef} />
+      <canvas id="scene" data-testid="game-canvas" ref={canvasRef} />
 
       <div id="hud" aria-hidden="true">
         <div className="hud-top">
@@ -140,21 +143,17 @@ export function AppShell({ createGame }: AppShellProps) {
       {!started && (
         <MainMenuScreen id="banner" className="banner" backgroundImage={menuHero}>
           <MainMenuTopBar mark="SSG" meta="0 gold" aria-hidden>
-            Pyre infiltration
+            {menu.topBar}
           </MainMenuTopBar>
           <MainMenuLayout className={revealed ? "ssg-main-menu-layout--menu" : "ssg-main-menu-layout--splash"}>
             <MainMenuCopy hidden={revealed}>
-              <MenuKicker>Pyre Infiltration</MenuKicker>
-              <MainMenuTitle>
-                <MainMenuTitleLine>ROT</MainMenuTitleLine>
-                <MainMenuTitleLine tone="hot">HULK</MainMenuTitleLine>
-              </MainMenuTitle>
-              <p className="ssg-main-menu-subtitle">
-                Climb the living Scourge hulk. Ignite the breach-core. Escape the severed node.
-              </p>
+              <MenuKicker>{menu.titleKicker}</MenuKicker>
+              <GameMenuTitle config={menu} />
+              <p className="ssg-main-menu-subtitle">{menu.titleSubtitle}</p>
               <MainMenuStatus>
-                <span>Boarding spike armed</span>
-                <span>Core at crown</span>
+                {menu.titleStatus.map((item) => (
+                  <span key={item}>{item}</span>
+                ))}
               </MainMenuStatus>
             </MainMenuCopy>
             {/* Nav stays mounted; the splash gate only hides it until
@@ -182,32 +181,35 @@ export function AppShell({ createGame }: AppShellProps) {
               <MainMenuAction
                 type="button"
                 variant="default"
-                label="← Back to Warline"
-                meta="Lobby"
+                label={menu.backToWarlineLabel}
+                meta={menu.backToWarlineMeta}
                 onClick={() => goToWarlineLobby()}
               />
-              <GameJumpMenu currentSlug="rothulk" />
+              <GameJumpMenu currentSlug={GAME_SLUG} label={menu.fastTravelLabel} />
             </MainMenuNav>
-            {!revealed && <MainMenuEnterPrompt />}
+            {!revealed && (
+              <>
+                <MainMenuEnterPrompt />
+                <GameJumpMenu currentSlug={GAME_SLUG} label={menu.fastTravelLabel} className="ssg-game-jump--splash" />
+              </>
+            )}
           </MainMenuLayout>
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>
       )}
 
       {showSettings && (
-        <GameSettingsScreen
+        <GameAudioSettingsScreen
           open
+          slug={GAME_SLUG}
           onClose={() => setShowSettings(false)}
-          kicker="The Pyre // Console"
           backgroundImage={menuHero}
         />
       )}
 
-      <PauseMenu
+      <GamePauseMenu
+        slug={GAME_SLUG}
         open={paused}
-        kicker="Pyre Infiltration"
-        title="Paused"
-        subtitle="The hulk stirs while you hold. Resume the breach when ready."
         status={pauseStatus}
         onResume={() => gameRef.current?.resume()}
         actions={pauseActions}

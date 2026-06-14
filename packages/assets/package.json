@@ -40,9 +40,10 @@
     "tokens"
   ],
   "scripts": {
-    "assets:check": "node scripts/check-assets.mjs",
+    "assets:check": "node scripts/check-assets.mjs && node scripts/check-asset-formats.mjs",
     "assets:clean-sprites": "bun ../../../shipshitgames/packages/assetgen/src/cli.ts clean-sprites",
     "assets:sync-codex-images": "node scripts/sync-codex-generated-images.mjs",
+    "assets:to-webp": "node scripts/to-webp.mjs",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "test": "bun test tests",

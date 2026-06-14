@@ -53,7 +53,14 @@ export default defineConfig({
   projects: games.flatMap((game) =>
     activeViewports.map((viewport) => ({
       name: `${game.slug}:${viewport.name}`,
-      testMatch: /games\.spec\.ts/,
+      testMatch: [
+        /games\.spec\.ts/,
+        /rothulk-platforming\.spec\.ts/,
+        /warline-reporting\.spec\.ts/,
+        /warline-war-effort\.spec\.ts/,
+        /pactfall-moba\.spec\.ts/,
+        /brawl-arena\.spec\.ts/,
+      ],
       use: {
         ...viewport.device,
         baseURL: `http://127.0.0.1:${game.port}`,

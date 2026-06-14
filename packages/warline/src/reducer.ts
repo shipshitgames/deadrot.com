@@ -7,7 +7,7 @@
 
 import { applyNarrative } from "./events";
 import { breachById, clamp, createInitialWorld, laneById, neighborsOf, regionById } from "./map";
-import { GAME_OPERATIONS } from "./operations";
+import { GAME_OPERATIONS, warResourceFor } from "./operations";
 import type {
   Breach,
   Faction,
@@ -19,8 +19,17 @@ import type {
   WarEvent,
   WorldState,
 } from "./types";
-import { ECON, ESCALATION, TICK } from "./types";
+import { ECON, ESCALATION, MAX_CONTRIBUTION, TICK } from "./types";
 import { cloneWorld, isHuman, pushEvent } from "./world";
+
+/**
+ * Looted war-resource units a run actually banks: finite and clamped to
+ * [0, MAX_CONTRIBUTION] (#280). Non-finite/negative/absent values bank nothing.
+ */
+export function clampContribution(value: number | undefined): number {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) return 0;
+  return Math.min(value, MAX_CONTRIBUTION);
+}
 
 export interface ApplyResult {
   state: WorldState;
@@ -290,6 +299,16 @@ export function applyOperation(state: WorldState, result: OperationResult, now: 
   // Defeats still get a small recon trickle (spec §4).
   if (!victory) {
     credited.intel = (credited.intel ?? 0) + 8;
+  }
+
+  // Looted war resource banked from the run (#280) — credited to the game's
+  // canonical WAR_RESOURCE regardless of outcome, on top of the operation's own
+  // payout. This is the collection that funds the shared war-effort bonus.
+  const contributed = clampContribution(result.contributed);
+  if (contributed > 0) {
+    const res = warResourceFor(result.game);
+    credited[res] = (credited[res] ?? 0) + contributed;
+    fx(`${res} salvage banked`, contributed);
   }
 
   credit(next, credited);
