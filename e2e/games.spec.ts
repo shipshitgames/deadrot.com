@@ -54,8 +54,10 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
     path: "/",
     canvasSelector: "#scene",
     async assertLoaded(page) {
-      await expect(page.getByText("PYRE BASE", { exact: true })).toBeVisible();
-      await expect(page.getByText("WARDEN BASE", { exact: true })).toBeVisible();
+      // The base meter labels carry a live tower readout span ("2/2"), so the
+      // label text is composite — match the stable meter containers by id.
+      await expect(page.locator("#meter-base-friendly")).toBeVisible();
+      await expect(page.locator("#meter-base-enemy")).toBeVisible();
       await expect(page.getByText("SCOURGE BUFF", { exact: true })).toBeVisible();
       await expect(page.locator("#arena-name")).not.toBeEmpty();
     },

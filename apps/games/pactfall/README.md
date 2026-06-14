@@ -18,7 +18,12 @@ and a pulsing toxic-green Scourge blob at the heart of the lane.
   front line actually moves). Yours are hellfire-tinted; the Wardens' are gunmetal. Minions siege and
   chip whichever base they reach.
 - A neutral **Scourge blob** pulses at center. Kill it for a **temporary damage buff** (it respawns).
-- **Push to the Warden base and destroy it to WIN.** If your Pyre base falls, you **LOSE**.
+- A **tower line gates each base.** Two towers per side stand on the live lane between center and the
+  base they shield. A base **cannot be damaged while any of its towers still stand** — towers take
+  priority over the base for champions, minions, and auto-attack alike, and a standing tower **shoots
+  back** at anything that dives it. Topple a side's whole line and its base is exposed (the HUD tower
+  readout flips to **OPEN**).
+- **Raze the Warden tower line, then destroy the base to WIN.** If your Pyre base falls, you **LOSE**.
 
 ## Controls
 
@@ -71,6 +76,7 @@ src/
   game/
     Game.ts                # thin owner of state + the rAF loop
     constants.ts           # CONSTANTS + COLORS (all tunables)
+    map.ts                 # data-driven lane/tower/base/objective model (ASHGATE_MAP)
     types.ts               # Entity / Phase types
     factory.ts             # primitive meshes for each entity
     systems/
@@ -83,6 +89,33 @@ src/
 
 Tunables (HP, speeds, ranges, cooldowns, spawn cadence, buff duration) all live in
 `src/game/constants.ts`.
+
+## Map & lanes
+
+The arena is described **as data** in `src/game/map.ts` (`ASHGATE_MAP`) — the sim builds
+itself from that model rather than hard-coding positions:
+
+- The model already names **all three canonical lanes** (`top`, `mid`, `bot`), each with its own
+  lateral offset and a full, symmetric tower line for both teams. Only **mid is `active`** in this
+  slice; `top`/`bot` are fully described but dormant.
+- Nothing in the sim hard-codes "one lane". `EntitySystem` builds towers, spawns minions, and the
+  HUD tallies structures by iterating `activeLanes(map)` — flipping a lane's `active` flag is all it
+  takes to light it up.
+- Every derived position is computed from the data: a tower's Z **lerps** from its owner's base toward
+  the enemy base by its `t` fraction (outer → inner), and bases sit at the canonical lane ends.
+- `objectives` enumerate the win/lose conditions (destroy enemy base, defend base) plus the optional
+  Scourge, each flagged `decisive` or not.
+
+### Three-lane expansion
+
+This slice ships **single-lane** by design (Scope) — but the data model is shaped so the full
+three-lane MOBA is a content change, not a rewrite. Activating `top`/`bot` (and the wave/AI tuning
+that a three-lane push needs) is tracked in follow-up issues
+[#206](https://github.com/shipshitgames/deadrot.com/issues/206),
+[#209](https://github.com/shipshitgames/deadrot.com/issues/209),
+[#213](https://github.com/shipshitgames/deadrot.com/issues/213),
+[#214](https://github.com/shipshitgames/deadrot.com/issues/214), and
+[#215](https://github.com/shipshitgames/deadrot.com/issues/215).
 
 ## Universe
 

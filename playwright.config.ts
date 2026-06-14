@@ -58,6 +58,7 @@ export default defineConfig({
         /rothulk-platforming\.spec\.ts/,
         /warline-reporting\.spec\.ts/,
         /warline-war-effort\.spec\.ts/,
+        /pactfall-moba\.spec\.ts/,
       ],
       use: {
         ...viewport.device,
