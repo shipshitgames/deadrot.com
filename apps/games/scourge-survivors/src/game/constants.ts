@@ -1,5 +1,7 @@
 // Central place for all gameplay tunables. Units are roughly meters / seconds.
 
+import type { WaveSchedule } from "@deadrot/game-kit/modes";
+
 export const ARENA_HALF = 40; // arena spans [-40, 40] on X and Z -> 80x80 floor
 export const WALL_HEIGHT = 6;
 export const WALL_THICKNESS = 1.5;
@@ -63,6 +65,17 @@ export const WAVES: WaveConfig[] = [
   { count: 12, concurrent: 6, healthMul: 1.6, speedMul: 1.25 },
 ];
 export const TOTAL_WAVES = WAVES.length; // breach-boss arrives after the final wave
+
+/**
+ * Genre-neutral schedule the shared {@link WaveDirector} consumes. Each plan keeps
+ * its source {@link WaveConfig} as `meta` so the spawner can read the per-wave
+ * health/speed multipliers when the director gates a spawn.
+ */
+export const SCOURGE_WAVE_SCHEDULE: WaveSchedule<WaveConfig> = WAVES.map((wave) => ({
+  count: wave.count,
+  concurrent: wave.concurrent,
+  meta: wave,
+}));
 
 // ---- Structured descent (multi-map run) ------------------------------------
 // Each descent stage runs the full WAVES + breach-boss on a different map;

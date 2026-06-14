@@ -38,10 +38,9 @@ export class MultiplayerSystem {
 
     // Disable solo run progression while the co-op room owns pacing.
     for (const e of this.ctx.enemies) e.kill();
-    this.sys.pve.waveActive = false;
+    this.sys.pve.suspendWaves();
     this.sys.pve.bossActive = false;
     this.sys.pve.bossEnemy = null;
-    this.sys.pve.waveBreakTimer = 1e9;
     this.sys.projectiles.clearProjectiles();
     while (this.sys.pickups.pickups.length) this.sys.pickups.removePickup(this.sys.pickups.pickups.length - 1);
 
