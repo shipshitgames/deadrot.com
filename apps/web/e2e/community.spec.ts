@@ -11,7 +11,9 @@ import { expect, test } from "@playwright/test";
 const HERO_TITLE = "Build It With Us";
 const ISSUE_NEW_PREFIX = "https://github.com/shipshitgames/deadrot.com/issues/new";
 
-// All roster slugs the page is expected to render (PLAYABLE -> "Open Preview").
+// All roster slugs the page is expected to render. Phase varies by build
+// maturity (PLAYABLE -> "Open Preview", IN DEV -> "In Development"); both keep
+// feedback open, so every slug renders a card with the GitHub deep links below.
 const EXPECTED_SLUGS = [
   "deadlane",
   "pactfall",

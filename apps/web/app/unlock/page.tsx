@@ -126,8 +126,9 @@ export default async function UnlockPage({
           <>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ash">
               One purchase, every game — {COLLECTION_PRICE_LABEL}, forever. No subscription, no unlock grind. Early
-              buyers: code <span className="font-display text-hellfire">{EARLY_BUYER_CODE}</span> at checkout drops it
-              to <span className="text-bone">{EARLY_BUYER_PRICE_LABEL}</span> — first 1,000 only.
+              buyers: the <span className="font-display text-hellfire">{EARLY_BUYER_CODE}</span> discount drops it to{" "}
+              <span className="text-bone">{EARLY_BUYER_PRICE_LABEL}</span>, applied automatically at checkout — first
+              1,000 only.
             </p>
             <div className="mt-8">
               {authEnabled ? (
