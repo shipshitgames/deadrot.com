@@ -173,10 +173,14 @@ function removeSourcemapReferences(dir) {
 }
 
 // Invoke sentry-cli through `bunx` so it resolves even when the caller runs us
-// via `node` (no node_modules/.bin on PATH). @sentry/cli is intentionally not a
-// dependency — adding it would churn the frozen lockfile in CI.
+// via `node` (no node_modules/.bin on PATH). The package is `@sentry/cli` (its
+// bin is `sentry-cli`); `bunx @sentry/cli` runs that bin. `bunx sentry-cli`
+// instead fetches an unrelated, executable-less `sentry-cli` package and dies
+// with "could not determine executable to run" on any host without it cached.
+// @sentry/cli is intentionally not a dependency — adding it would churn the
+// frozen lockfile in CI.
 function sentryCli(commandArgs, options = {}) {
-  run("bunx", ["sentry-cli", ...commandArgs], options);
+  run("bunx", ["@sentry/cli", ...commandArgs], options);
 }
 
 function run(command, commandArgs, options = {}) {
