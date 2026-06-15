@@ -27,6 +27,8 @@ against it. A MOBA mechanic pulled straight from the canon.
 The human rivalry made playable: a sanctioned arena where the Pact bends, but must not break.
 The name points at the danger of the Pact falling, not just at lanes.
 
+**Warline operation — Contested Lane:** A Pyre–Warden grudge gets settled in the arena over a single contested lane, turning the rivalry into pressure on one front instead of a broken Pact.
+
 ## Run loop
 
 Uses the shared [[Survivors-Loop]]: escalating lane pressure, XP/scrap/blood drops, 1-of-3

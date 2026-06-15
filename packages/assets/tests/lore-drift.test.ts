@@ -100,6 +100,14 @@ test("lore cross-references resolve", () => {
   }
 });
 
+test("every game declares a Warline operation role", () => {
+  for (const g of gameLore) {
+    assert.ok(g.warlineRole, `game "${g.slug}" missing warlineRole`);
+    assert.ok(g.warlineRole.operation.trim().length > 0, `game "${g.slug}" warlineRole.operation empty`);
+    assert.ok(g.warlineRole.line.trim().length > 0, `game "${g.slug}" warlineRole.line empty`);
+  }
+});
+
 test("accents stay inside the DOOM palette vocabulary", () => {
   for (const entry of [...gameLore, ...factions, ...characters, ...bestiary, ...locations]) {
     assert.ok(ACCENTS.has(entry.accent), `"${entry.slug}" has unknown accent "${entry.accent}"`);
