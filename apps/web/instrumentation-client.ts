@@ -14,4 +14,9 @@ if (dsn) {
   });
 }
 
+// NOTE (#384): the feature-flag layer (lib/flags.ts) evaluates flags server-side
+// via PostHog's stateless decide endpoint (raw fetch, no SDK), so there is no
+// posthog-js client init here. Keeping the browser bundle free of the SDK is what
+// makes the layer vendor-agnostic — call sites import only from lib/flags.
+
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
