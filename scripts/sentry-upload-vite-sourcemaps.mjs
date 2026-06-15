@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 const apps = [
+  { name: "brawl", dir: "apps/games/brawl", project: "deadrot-brawl" },
   { name: "deadlane", dir: "apps/games/deadlane", project: "deadrot-deadlane" },
   { name: "pactfall", dir: "apps/games/pactfall", project: "deadrot-pactfall" },
   { name: "redline", dir: "apps/games/redline", project: "deadrot-redline" },
@@ -27,6 +28,19 @@ const selectedApps = new Set(
     .map((app) => app.trim())
     .filter(Boolean),
 );
+// Override the directory whose sourcemaps we inject/upload/strip. The prebuilt
+// deploy (`vercel build`) copies dist -> .vercel/output/static BEFORE this runs,
+// so the DEPLOYED bundle lives there; pointing at it makes the injected debug IDs
+// land in the shipped JS and the maps get stripped from what's actually served.
+const distDirOverride = args
+  .filter((arg) => arg.startsWith("--dist-dir="))
+  .map((arg) => arg.slice("--dist-dir=".length).trim())
+  .filter(Boolean)
+  .at(-1);
+
+if (distDirOverride && selectedApps.size !== 1) {
+  fail("--dist-dir requires exactly one --app=<name>.");
+}
 
 loadEnvFile(path.join(root, ".env.production"));
 loadEnvFile(path.join(root, ".env.local"), { overrideFileValues: true });
@@ -48,9 +62,9 @@ console.log(`Sentry release: ${release}`);
 console.log(`Apps: ${appsToUpload.map((app) => app.name).join(", ")}`);
 
 for (const app of appsToUpload) {
-  const distDir = path.join(root, app.dir, "dist");
+  const distDir = distDirOverride ? path.resolve(root, distDirOverride) : path.join(root, app.dir, "dist");
   if (!existsSync(distDir)) {
-    fail(`${app.name}: missing dist directory. Run its production build first.`);
+    fail(`${app.name}: missing build output at ${distDir}. Run its production build first.`);
   }
 
   const mapFiles = findFiles(distDir, (file) => file.endsWith(".map"));
@@ -59,14 +73,14 @@ for (const app of appsToUpload) {
   }
 
   if (!dryRun) {
-    run("sentry-cli", ["releases", "new", "--org", org, "--project", app.project, release], { allowFailure: true });
+    sentryCli(["releases", "new", "--org", org, "--project", app.project, release], { allowFailure: true });
   }
 
   console.log(`\n${app.name}: injecting debug IDs`);
-  run("sentry-cli", ["sourcemaps", "inject", "--org", org, "--project", app.project, "--release", release, distDir]);
+  sentryCli(["sourcemaps", "inject", "--org", org, "--project", app.project, "--release", release, distDir]);
 
   console.log(`${app.name}: uploading ${mapFiles.length} source maps`);
-  run("sentry-cli", [
+  sentryCli([
     "sourcemaps",
     "upload",
     "--org",
@@ -91,7 +105,7 @@ for (const app of appsToUpload) {
   }
 
   if (!dryRun) {
-    run("sentry-cli", ["releases", "finalize", "--org", org, "--project", app.project, release], {
+    sentryCli(["releases", "finalize", "--org", org, "--project", app.project, release], {
       allowFailure: true,
     });
   }
@@ -156,6 +170,13 @@ function removeSourcemapReferences(dir) {
     const after = before.replace(/\n?\/\/# sourceMappingURL=.*?\.map\s*$/gm, "");
     if (after !== before && !dryRun) writeFileSync(file, after);
   }
+}
+
+// Invoke sentry-cli through `bunx` so it resolves even when the caller runs us
+// via `node` (no node_modules/.bin on PATH). @sentry/cli is intentionally not a
+// dependency — adding it would churn the frozen lockfile in CI.
+function sentryCli(commandArgs, options = {}) {
+  run("bunx", ["sentry-cli", ...commandArgs], options);
 }
 
 function run(command, commandArgs, options = {}) {
