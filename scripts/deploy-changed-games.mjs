@@ -32,6 +32,14 @@ const gamePackages = new Map(
   }),
 );
 
+// Non-game Vercel projects that also ship on a release (tag-cut, `--all`) or when
+// their own files change. Same prebuilt flow as the games; they carry no game
+// Sentry sourcemaps, so the Sentry step is skipped for them.
+const EXTRA_APPS = [
+  { slug: "web", dir: "apps/web" },
+  { slug: "lore", dir: "apps/lore" },
+];
+
 const changedFiles = all ? [] : unique([...gitChangedFiles(), ...gitLocalChangedFiles(), ...gitUntrackedFiles()]);
 const deployReasons = new Map(gameDirs.map((slug) => [slug, []]));
 
@@ -43,16 +51,24 @@ if (all) {
 
 const gamesToDeploy = gameDirs.filter((slug) => deployReasons.get(slug).length > 0);
 
-if (!gamesToDeploy.length) {
-  console.log(`No game code changes detected between ${base} and ${head}; skipping game deploys.`);
+// Unified deploy set: changed/`--all` games (with Sentry sourcemaps) plus the
+// non-game Vercel apps when releasing or when their own files changed.
+const targets = gamesToDeploy.map((slug) => ({ slug, dir: `apps/games/${slug}`, sentry: true }));
+for (const app of EXTRA_APPS) {
+  if (all || changedFiles.some((file) => file.startsWith(`${app.dir}/`))) {
+    targets.push({ slug: app.slug, dir: app.dir, sentry: false });
+  }
+}
+
+if (!targets.length) {
+  console.log(`No deployable changes detected between ${base} and ${head}; nothing to deploy.`);
   process.exit(0);
 }
 
-console.log(`Game deploy candidates (${preview ? "preview" : "production"}):`);
-for (const slug of gamesToDeploy) {
-  const reasons = deployReasons.get(slug).slice(0, 6).join(", ");
-  const more = deployReasons.get(slug).length > 6 ? ` (+${deployReasons.get(slug).length - 6} more)` : "";
-  console.log(`- ${slug}: ${reasons}${more}`);
+console.log(`Deploy candidates (${preview ? "preview" : "production"}):`);
+for (const t of targets) {
+  const reason = t.sentry ? deployReasons.get(t.slug).slice(0, 4).join(", ") : all ? "--all" : "changed files";
+  console.log(`- ${t.slug} (${t.dir}): ${reason}`);
 }
 
 if (dryRun) process.exit(0);
@@ -60,33 +76,35 @@ if (dryRun) process.exit(0);
 const target = preview ? "preview" : "production";
 const prodFlag = preview ? [] : ["--prod"];
 
-for (const slug of gamesToDeploy) {
-  const cwd = path.join(gamesRoot, slug);
+for (const t of targets) {
+  const cwd = path.join(repoRoot, t.dir);
   // The target project is selected via env (VERCEL_PROJECT_ID/ORG_ID), NOT --cwd:
-  // `vercel --cwd apps/games/<slug>` makes Vercel apply rootDirectory on top of
-  // the cwd (apps/games/<slug>/apps/games/<slug>) and every command fails.
-  const link = readProjectLink(cwd, slug);
+  // `vercel --cwd <app>` makes Vercel apply rootDirectory on top of the cwd
+  // (<app>/<app>) and every command fails.
+  const link = readProjectLink(cwd, t.slug);
   const deployEnv = { ...process.env, VERCEL_ORG_ID: link.orgId, VERCEL_PROJECT_ID: link.projectId };
 
   if (!noBuild) {
     // Build locally and deploy the prebuilt output (`vercel build` → .vercel/output,
     // `deploy --prebuilt`). This uploads only the built output (~MBs) instead of the
     // whole working tree (~1.3GB of source + tracked assets) and skips a redundant
-    // remote build. We reset repo-root .vercel first so each game pulls/builds clean;
-    // the committed per-game links under apps/games/<slug>/.vercel are untouched.
+    // remote build. We reset repo-root .vercel first so each app pulls/builds clean;
+    // the committed per-app links under <app>/.vercel are untouched.
     rmSync(path.join(repoRoot, ".vercel"), { recursive: true, force: true });
     run("bunx", ["vercel", "pull", "--yes", `--environment=${target}`], repoRoot, deployEnv);
     run("bunx", ["vercel", "build", ...prodFlag], repoRoot, deployEnv);
-    // Upload sourcemaps from the PREBUILT output (.vercel/output/static), the
-    // dir that actually ships — so injected debug IDs land in the deployed JS and
-    // maps are stripped from what's served. Best-effort: a Sentry hiccup (missing
-    // project, CLI download blip) must never block a production release.
-    runBestEffort(
-      "node",
-      ["scripts/sentry-upload-vite-sourcemaps.mjs", `--app=${slug}`, "--dist-dir=.vercel/output/static"],
-      repoRoot,
-      `${slug}: Sentry sourcemap upload`,
-    );
+    // Upload sourcemaps from the PREBUILT output (.vercel/output/static), the dir
+    // that actually ships — so injected debug IDs land in the deployed JS and maps
+    // are stripped from what's served. Games only; best-effort: a Sentry hiccup
+    // (missing project, CLI download blip) must never block a production release.
+    if (t.sentry) {
+      runBestEffort(
+        "node",
+        ["scripts/sentry-upload-vite-sourcemaps.mjs", `--app=${t.slug}`, "--dist-dir=.vercel/output/static"],
+        repoRoot,
+        `${t.slug}: Sentry sourcemap upload`,
+      );
+    }
   }
   run("bunx", ["vercel", "deploy", "--prebuilt", ...prodFlag, "--yes"], repoRoot, deployEnv);
 }
