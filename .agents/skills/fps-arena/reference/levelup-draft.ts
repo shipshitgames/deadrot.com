@@ -2,8 +2,8 @@
 // Vampire-Survivors XP loop + 1-of-3 level-up draft. React renders the cards from
 // the HUD snapshot and calls pickUpgrade(id) when the player clicks one.
 import type { GameContext } from "../context";
+import { UPGRADE_BY_ID, UPGRADES, type UpgradeId, xpForLevel } from "../data/survivors";
 import type { GameSystems } from "../systems";
-import { UPGRADES, UPGRADE_BY_ID, xpForLevel, type UpgradeId } from "../data/survivors";
 import type { UpgradeChoice } from "../types";
 
 export class SurvivorsDraft {

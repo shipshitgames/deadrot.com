@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-
-import { Button } from "@/components/ui/button";
-import { Eyebrow } from "@/components/site/eyebrow";
-import { Backdrop } from "@/components/site/atmosphere";
+import { FactionCardGrid } from "@/components/faction/faction-card-grid";
 import { AccessStateBadge } from "@/components/game/access-badge";
 import { GameCard } from "@/components/game/game-card";
-import { FactionCardGrid } from "@/components/faction/faction-card-grid";
+import { Backdrop } from "@/components/site/atmosphere";
+import { Eyebrow } from "@/components/site/eyebrow";
 import { Waitlist } from "@/components/site/waitlist";
+import { Button } from "@/components/ui/button";
 import { COLLECTION_PRICE_LABEL, EARLY_BUYER_CODE, EARLY_BUYER_PRICE_LABEL } from "@/lib/access";
 import { ACCESS_STATE_ORDER, ACCESS_STATE_PRESENTATION } from "@/lib/access-state";
 import { assetUrl } from "@/lib/assets";

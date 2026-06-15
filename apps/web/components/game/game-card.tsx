@@ -1,9 +1,9 @@
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 
 import { GameAccessBadge } from "@/components/game/access-badge";
 import { Badge } from "@/components/ui/badge";
-import { accentVars, gameCoverUrl, type Game, type GameStatus } from "@/lib/content";
+import { accentVars, type Game, type GameStatus, gameCoverUrl } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
 const STATUS_STYLES: Record<GameStatus, string> = {

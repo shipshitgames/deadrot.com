@@ -4,8 +4,8 @@
 //
 // NOT a drop-in: trim to your tunables. The load-bearing details are marked //!.
 import * as THREE from "three";
-import { ENEMY_SPRITE_TEXTURES } from "../spriteAssets";
 import { ARENA_HALF, ENEMY_RADIUS } from "../constants";
+import { ENEMY_SPRITE_TEXTURES } from "../spriteAssets";
 
 type View = "front" | "side" | "back";
 export interface DamageResult {

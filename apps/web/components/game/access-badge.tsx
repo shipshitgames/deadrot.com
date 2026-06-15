@@ -5,7 +5,7 @@ import { Lock } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { authEnabled, hasCollection, isLockedGameSlug } from "@/lib/access";
-import { type AccessState, ACCESS_STATE_PRESENTATION, baseAccessState, resolveAccessState } from "@/lib/access-state";
+import { ACCESS_STATE_PRESENTATION, type AccessState, baseAccessState, resolveAccessState } from "@/lib/access-state";
 import type { GameStatus } from "@/lib/content";
 import { cn } from "@/lib/utils";
 

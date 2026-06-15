@@ -5,8 +5,8 @@ import { MAP_PICKER, SANDBOX_MAP_PICKER } from "../game/data/maps";
 import {
   MAIN_WEAPON_TIER_LABEL,
   MAIN_WEAPON_VISUAL_TIERS,
-  mainWeaponTierDamageMul,
   type MainWeaponVisualTier,
+  mainWeaponTierDamageMul,
 } from "../game/data/survivors";
 import type { SandboxEnemyKind } from "../game/Game";
 import { RUNTIME_AUDIO_ASSET_URLS, RUNTIME_VISUAL_ASSET_URLS, weaponSpriteAssetId } from "../game/spriteAssets";

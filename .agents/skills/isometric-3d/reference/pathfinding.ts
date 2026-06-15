@@ -1,4 +1,4 @@
-import type { TileGrid, Tile } from "./TileGrid";
+import type { Tile, TileGrid } from "./TileGrid";
 
 // A* over the tile grid. Pure — no Three.js, no system deps. 4-neighbour.
 // Linear-scan open set is fine for small boards; swap in a binary heap if your
