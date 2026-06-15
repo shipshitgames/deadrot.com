@@ -99,3 +99,65 @@ jobs:
 
       - name: Run cross-game catalog unit tests
         run: bun run test:e2e:unit
+
+  # Coverage gate for the agreed enforced scope (issue #6): the pure-logic
+  # runtime packages @deadrot/catalog, @deadrot/game-kit, and
+  # @shipshitgames/warline must stay at >=80% line+function coverage. This job
+  # is intentionally NOT one of the two required-status jobs above; promoting it
+  # to required branch protection is tracked separately (#385). It still goes
+  # red (failing the run) when coverage drops below the baseline.
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Cache Bun install cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run coverage gate (agreed scope)
+        run: bun run test:coverage
+
+      - name: Coverage summary
+        if: always()
+        run: |
+          {
+            echo "### Coverage gate (agreed scope)"
+            echo ""
+            echo "Enforced \`>=80%\` line + function coverage on the pure-logic runtime packages:"
+            echo "- \`@deadrot/catalog\`"
+            echo "- \`@deadrot/game-kit\`"
+            echo "- \`@shipshitgames/warline\`"
+            echo ""
+            echo "Per-package \`lcov.info\` + text reports are attached as the \`coverage-reports\` artifact. See \`docs/coverage.md\` for the policy and how to run it locally."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          # Just the final lcov reports — bun also drops transient
+          # .lcov.info.<hash>.tmp files in coverage/ that would clutter the artifact.
+          path: |
+            packages/catalog/coverage/lcov.info
+            packages/game-kit/coverage/lcov.info
+            packages/warline/coverage/lcov.info
+          if-no-files-found: warn
+          retention-days: 14

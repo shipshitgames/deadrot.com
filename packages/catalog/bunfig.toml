@@ -1,0 +1,10 @@
+# Coverage gate for @deadrot/catalog — part of the repo coverage baseline (#6).
+# This package is pure ESM data + derivation helpers (the game roster), so it
+# sits in the *enforced* coverage scope: the gate fails CI if it drops below the
+# 80% baseline. bun test reports function + line coverage (its model has no
+# separate branch metric); see docs/coverage.md for the repo-wide policy.
+[test]
+coverage = true
+coverageReporter = ["text", "lcov"]
+coverageThreshold = 0.8
+coverageSkipTestFiles = true
