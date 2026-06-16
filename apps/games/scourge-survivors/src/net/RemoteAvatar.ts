@@ -1,3 +1,4 @@
+import type { RemotePeer } from "@deadrot/game-kit/net";
 import * as THREE from "three";
 import { chooseDirectionalSpriteFrame, type DirectionalSpriteView } from "../game/directionalSprites";
 import { PLAYER_AVATAR_SCALES, PLAYER_AVATAR_SPRITES } from "../game/spriteAssets";
@@ -25,7 +26,7 @@ interface RemoteAvatarInfo {
  * transform and billboards its nametag / health bar at the camera. Its hidden
  * body and head meshes are registered as raycast targets (userData.remoteId).
  */
-export class RemoteAvatar {
+export class RemoteAvatar implements RemotePeer {
   readonly group = new THREE.Group();
   readonly hitMeshes: THREE.Mesh[] = [];
   readonly id: string;

@@ -315,14 +315,14 @@ export class WeaponSystem {
       if (res.died) this.sys.pve.onEnemyDeath(enemy, false);
     }
 
-    if (this.ctx.multiplayer && this.sys.multiplayer.net) {
-      for (const r of this.sys.multiplayer.remotePlayers.values()) {
+    if (this.ctx.multiplayer && this.sys.multiplayer.active) {
+      for (const r of this.sys.multiplayer.peers()) {
         const rx = r.group.position.x - px;
         const rz = r.group.position.z - pz;
         const d = Math.hypot(rx, rz);
         if (d > MELEE_RANGE + 0.6) continue;
         if (d > 0.0001 && (rx * dirX + rz * dirZ) / d < MELEE_ARC_DOT) continue;
-        this.sys.multiplayer.net.sendHit(r.id, MELEE_DAMAGE * dmgMul);
+        this.sys.multiplayer.sendHit(r.id, MELEE_DAMAGE * dmgMul);
         hitAny = true;
       }
     }
@@ -416,7 +416,7 @@ export class WeaponSystem {
             // Co-op room hit sync: the server owns remote health/kills.
             const headshot = ud.part === "head";
             const dmg = spec.damage * dmgMult * (headshot ? headshotMultiplier : 1);
-            this.sys.multiplayer.net?.sendHit(ud.remoteId, dmg);
+            this.sys.multiplayer.sendHit(ud.remoteId, dmg);
             endPoint = h.point.clone();
             this.sys.hud.addDamageNumber(h.point, dmg, headshot ? "head" : "normal");
             if (headshot) {

@@ -364,6 +364,11 @@ export class Game {
     this.sys.multiplayer.leaveMultiplayer(toMenu);
   }
 
+  /** Live co-op room state — exposed on `window.__fpsGame` for the e2e harness. */
+  multiplayerDebugSnapshot() {
+    return this.sys.multiplayer.debugSnapshot();
+  }
+
   setShopUpgrades(tiers: Record<string, number>) {
     this.sys.survivors.setShopUpgrades(tiers);
   }
