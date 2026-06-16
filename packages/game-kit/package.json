@@ -53,6 +53,7 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test tests",
     "test:unit": "bun test tests",
+    "test:coverage": "bun test --coverage tests",
     "deps:update": "bunx npm-check-updates -u --cooldown 3h --removeRange && bun install"
   },
   "dependencies": {
