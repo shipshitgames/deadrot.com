@@ -6,12 +6,15 @@ import { expect, type Page, test } from "@playwright/test";
 // Unlike pactfall/rothulk/brawl, deadlane exposes NO window debug hook —
 // `new Game(canvas)` in main.ts never lands on window/globalThis and every Game
 // field is private. So the only deterministic levers are (a) the DEPLOY button
-// click and (b) the real fixed-step sim, which keeps running WITHOUT pointer
-// lock after DEPLOY (requestCapture() rejects silently in headless Chromium but
-// pausedForCapture stays false, so step()/director() fire every frame on the
-// wall-clock loop). Every assertion therefore reads the React-rendered HUD DOM
-// (the #stat-* spans + #hint-text + the #hud-banner `hidden` class) that
-// HudSystem.update() refreshes each displayed frame via the bannerBridge store.
+// click and (b) the real fixed-step sim, which advances director()/the breach
+// economy every frame on the wall-clock loop once the run is live. The run is
+// only live while `!pausedForCapture`, and the rig pauses the run whenever
+// pointer lock is released — headless pointer-lock behaviour is platform
+// dependent (it freezes the run on the Linux CI runner), so boot() neutralizes
+// requestPointerLock to keep the run live deterministically. Every assertion
+// then reads the React-rendered HUD DOM (the #stat-* spans + #hint-text + the
+// #hud-banner `hidden` class) that HudSystem.update() refreshes each displayed
+// frame via the bannerBridge store.
 //
 // We deliberately do NOT assert a tower build: building requires the player to
 // be in buildRange of an unoccupied non-path cell AND aiming at it under
@@ -21,6 +24,11 @@ import { expect, type Page, test } from "@playwright/test";
 
 test("the wave director launches wave 1 on its own after DEPLOY", async ({ page }, testInfo) => {
   test.skip(!testInfo.project.name.startsWith("deadlane:"), "Deadlane-only lane-defense regression.");
+
+  // The 7.5s build window is wall-clock-paced, but the fixed loop clamps dt to
+  // maxDelta (0.05s), so heavy frame throttling on a cold CI runner can stretch
+  // sim time past wall time. Widen past the 45s suite default for slow boots.
+  test.setTimeout(60_000);
 
   const { consoleErrors, pageErrors } = await boot(page);
   await deploy(page);
@@ -35,7 +43,7 @@ test("the wave director launches wave 1 on its own after DEPLOY", async ({ page 
   // Beyond smoke: the director ends the 7.5s inter-wave build window and calls
   // beginWave(), flipping #stat-wave to "1 / 10" with no input from us. Format
   // is `${wave} / ${total}` with spaces around the slash (HudSystem.update).
-  await expect(page.locator("#stat-wave")).toHaveText("1 / 10", { timeout: 20_000 });
+  await expect(page.locator("#stat-wave")).toHaveText("1 / 10", { timeout: 30_000 });
 
   expectNoUnexpectedErrors(consoleErrors, pageErrors);
 });
@@ -126,6 +134,20 @@ async function boot(page: Page): Promise<CapturedErrors> {
     if (message.type() === "error") consoleErrors.push(message.text());
   });
   page.on("pageerror", (error) => pageErrors.push(String(error)));
+
+  // Neutralize pointer lock so the run never auto-pauses. After DEPLOY the rig
+  // calls requestPointerLock(); headless behaviour is platform-dependent — on
+  // the Linux CI runner the lock briefly engages then releases, which fires the
+  // rig "release" handler -> Game.pauseRun() -> pausedForCapture = true, and
+  // step() then skips director()/the breach sim so the run is frozen at wave 0.
+  // The sim needs NO pointer lock to advance (step() only gates on
+  // isRunLive() && !pausedForCapture and input is set active in startRun), so a
+  // no-op lock that never changes pointer-lock state keeps pausedForCapture
+  // false and the director live on every platform. Must run before the engine
+  // wires its pointerlockchange listeners — addInitScript fires pre-navigation.
+  await page.addInitScript(() => {
+    Element.prototype.requestPointerLock = () => Promise.resolve();
+  });
 
   await page.goto("/");
 
