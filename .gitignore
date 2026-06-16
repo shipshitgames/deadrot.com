@@ -17,9 +17,6 @@ tmp/
 .env.*
 !.env.example
 
-# API deploy image tarball (built in CI, shipped to EC2 — never committed)
-apps/api/deploy/*.tar.gz
-
 # git worktrees created by the /worktree skill
 .worktrees/
 .claude/
