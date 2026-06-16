@@ -24,6 +24,10 @@
       "types": "./src/core/index.ts",
       "default": "./src/core/index.ts"
     },
+    "./hud": {
+      "types": "./src/hud/index.ts",
+      "default": "./src/hud/index.ts"
+    },
     "./maps": {
       "types": "./src/maps/index.ts",
       "default": "./src/maps/index.ts"

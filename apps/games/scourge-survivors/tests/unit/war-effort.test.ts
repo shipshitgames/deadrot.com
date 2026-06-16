@@ -137,7 +137,7 @@ function meleeWith(opts: { warEffortDamageMul: number; statDamageMul?: number; e
     multiplayer: false, // skip the remote-player melee branch
   } as unknown as GameContext;
   const sys = {
-    hud: { addDamageNumber: () => {}, hitMarkerSeq: 0, emit: () => {} },
+    hud: { addDamageNumber: () => {}, hitSeq: 0, emit: () => {} },
     fx: { spawnBloodHit: () => {}, addShake: () => {} },
     pve: { onEnemyDeath: () => {} },
   } as unknown as GameSystems;
