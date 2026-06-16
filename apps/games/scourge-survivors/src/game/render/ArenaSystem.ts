@@ -21,6 +21,15 @@ import {
 import { arenaTexture, arenaTextureRepeat } from "../spriteAssets";
 import type { GameSystems } from "../systems";
 import { levelYById, platformBox, rampStepBoxes, roomFloorSlab, roomLevelY, type SolidBox } from "./arenaGeometry";
+import {
+  isInCorePlayArea,
+  type LiveReadabilityReport,
+  luminance,
+  playAreaDiagonal,
+  playAreaExtents,
+  READABILITY_BUDGET,
+  scoreLiveReadability,
+} from "./readability";
 
 /** Live-scene theme readback (#80): every field is read back from the scene,
  *  fog, material, and light objects — never echoed from map data — so e2e can
@@ -59,6 +68,12 @@ export interface ArenaDebugSnapshot {
   /** Live theme readback — null until buildArena has dressed a scene (and after
    *  clearArena tears one down without a rebuild). */
   theme: ArenaThemeSnapshot | null;
+  /** Live combat-readability readback (#35): opacity maxima measured off the
+   *  built decal/prop/haze materials, plus the scene's fog + background, scored
+   *  against READABILITY_BUDGET. Proves the RENDERED arena (not just the
+   *  authored data the unit audit checks) keeps targets legible. Null until
+   *  buildArena has dressed a scene. */
+  readability: LiveReadabilityReport | null;
   /** v2 adapter observability — null when the current map has no normalized layout.
    *  Field names are the contract #82's e2e extends. */
   layout: {
@@ -84,6 +99,12 @@ export class ArenaSystem {
   private floorMat: THREE.MeshStandardMaterial | null = null;
   private wallMat: THREE.MeshStandardMaterial | null = null;
   private trimMat: THREE.MeshStandardMaterial | null = null;
+  // Live refs to the dressing materials so the readability readback (#35) reads
+  // opacities off the actual scene, mirroring the #80 theme readback. The prop
+  // refs carry whether the sprite sits in the core play area (stricter ceiling).
+  private decalMats: THREE.MeshBasicMaterial[] = [];
+  private propMats: Array<{ mat: THREE.SpriteMaterial; inCore: boolean }> = [];
+  private hazeMat: THREE.MeshBasicMaterial | null = null;
 
   constructor(
     private ctx: GameContext,
@@ -115,6 +136,9 @@ export class ArenaSystem {
     this.floorMat = null;
     this.wallMat = null;
     this.trimMat = null;
+    this.decalMats = [];
+    this.propMats = [];
+    this.hazeMat = null;
     this.ctx.solidMeshes = [];
     this.ctx.obstacleBoxes = [];
     this.ctx.surfaceBoxes = [];
@@ -353,6 +377,7 @@ export class ArenaSystem {
       obstacleBoxes: this.ctx.obstacleBoxes.length,
       surfaceBoxes: this.ctx.surfaceBoxes.length,
       theme: this.liveThemeSnapshot(),
+      readability: this.liveReadabilitySnapshot(),
       layout: layout
         ? {
             rooms: layout.rooms.length,
@@ -402,6 +427,40 @@ export class ArenaSystem {
     };
   }
 
+  /** Measure combat readability off the LIVE scene (#35): opacity maxima read
+   *  back from the built decal/prop/haze materials, the scene fog range, and the
+   *  scene background luminance — then score them against READABILITY_BUDGET.
+   *  Deliberately NOT echoed from map data so a snapshot proves the renderer is
+   *  actually showing a legible arena. Null until buildArena has dressed one. */
+  private liveReadabilitySnapshot(): LiveReadabilityReport | null {
+    const { scene } = this.ctx;
+    const fog = scene.fog instanceof THREE.Fog ? scene.fog : null;
+    const bg = scene.background instanceof THREE.Color ? scene.background : null;
+    if (!fog || !bg) return null;
+    let maxDecalOpacity = 0;
+    for (const m of this.decalMats) maxDecalOpacity = Math.max(maxDecalOpacity, m.opacity);
+    let maxPropOpacity = 0;
+    let maxInPlayPropOpacity = 0;
+    for (const { mat, inCore } of this.propMats) {
+      maxPropOpacity = Math.max(maxPropOpacity, mat.opacity);
+      if (inCore) maxInPlayPropOpacity = Math.max(maxInPlayPropOpacity, mat.opacity);
+    }
+    // fogFarRequired is read off ctx.bounds — the live WorldBounds buildArena
+    // actually built the floor + walls on — not the authored map.bounds, so the
+    // whole readback is measured against the rendered arena (#80), not data.
+    const b = this.ctx.bounds;
+    return scoreLiveReadability({
+      maxDecalOpacity,
+      maxPropOpacity,
+      maxInPlayPropOpacity,
+      horizonOpacity: this.hazeMat?.opacity ?? 0,
+      fogNear: fog.near,
+      fogFar: fog.far,
+      fogFarRequired: playAreaDiagonal({ minX: b.minX, maxX: b.maxX, minZ: b.minZ, maxZ: b.maxZ }),
+      backgroundLuminance: luminance(bg.getHex()),
+    });
+  }
+
   private buildDistantEnvironment(map: ArenaMap) {
     const env = map.environment;
     const bounds = this.ctx.bounds;
@@ -434,6 +493,9 @@ export class ArenaSystem {
     haze.position.set(centerX, 12, centerZ);
     haze.renderOrder = -18;
     this.addEnvironmentMesh(haze, hazeMat);
+    // Live ref for the readability readback (#35) — the haze opacity is the
+    // horizon-wash measure that must stay a faint band behind the fight.
+    this.hazeMat = hazeMat;
 
     const horizonMat = new THREE.MeshBasicMaterial({
       color: env.skyHorizon,
@@ -485,12 +547,14 @@ export class ArenaSystem {
       this.ctx.scene.add(mesh);
       this.arenaObjects.push(mesh);
       this.arenaMaterials.push(mat);
+      this.decalMats.push(mat);
       this.decalCount += 1;
       this.environmentObjectCount += 1;
     }
   }
 
   private buildArenaProps(map: ArenaMap) {
+    const ext = playAreaExtents(map.bounds);
     for (const prop of map.environment.props) {
       const mat = new THREE.SpriteMaterial({
         map: this.makeTexture(prop.texture),
@@ -509,6 +573,9 @@ export class ArenaSystem {
       this.ctx.scene.add(sprite);
       this.arenaObjects.push(sprite);
       this.arenaMaterials.push(mat);
+      // Live ref + core-play-area flag for the readability readback (#35): props
+      // inside the core (where they can occlude a target) carry a stricter cap.
+      this.propMats.push({ mat, inCore: isInCorePlayArea(prop.x, prop.z, ext, READABILITY_BUDGET.corePlayAreaMargin) });
       this.propCount += 1;
       this.environmentObjectCount += 1;
     }
