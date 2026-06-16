@@ -48,6 +48,8 @@ The orbital front. [[Zero-Day]] is when the sky fell; Starblight is the nightly 
 it from falling again. [[Deadlane]] holds the ground lanes; [[Scourge-Survivors]] descends into
 breaches; Starblight intercepts the infection before it reaches the ground.
 
+**Warline operation — Orbital Intercept:** Pilots burn Scourge contamination out of orbit before it falls into the ground war — cut the rot in the sky and fewer breaches root below.
+
 ## Zero Day Mode
 
 Zero Day is the first-contact last stand folded into Starblight. It should play with the same

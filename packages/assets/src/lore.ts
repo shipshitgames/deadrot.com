@@ -24,6 +24,13 @@ export interface Feature {
   desc: string;
 }
 
+export interface WarlineRole {
+  /** Short operation label as it reads on the Warline front (e.g. "Breach Purge"). */
+  operation: string;
+  /** One sentence: what running this operation buys the shared front. */
+  line: string;
+}
+
 /**
  * A game's lore entry. Deploy/status/repo metadata deliberately lives in
  * @deadrot/catalog (the roster source of truth), not here — consumers merge.
@@ -38,6 +45,7 @@ export interface GameLore {
   accent: Accent;
   overview: string;
   features: Feature[];
+  warlineRole: WarlineRole;
   characterSlugs: string[];
   enemySlugs: string[];
 }

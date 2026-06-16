@@ -46,6 +46,15 @@ export function GameCard({ game }: { game: Game }) {
         <div className="mb-2 flex items-center gap-2">
           <GameAccessBadge slug={game.slug} status={game.status} />
           <span className="text-[0.65rem] uppercase tracking-widest text-ash">{game.genre}</span>
+          <span aria-hidden className="text-[0.65rem] text-gunmetal">
+            {"·"}
+          </span>
+          <span
+            data-testid="game-card-operation"
+            className="truncate text-[0.65rem] uppercase tracking-widest text-[var(--page-accent)]"
+          >
+            {game.warlineRole.operation}
+          </span>
         </div>
         <h3 className="font-display text-2xl font-bold uppercase leading-none tracking-tight text-bone">
           {game.title}

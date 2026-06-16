@@ -9,6 +9,7 @@ import { Backdrop } from "@/components/site/atmosphere";
 import { AccessStateBadge } from "@/components/game/access-badge";
 import { GameCard } from "@/components/game/game-card";
 import { FactionCardGrid } from "@/components/faction/faction-card-grid";
+import { SeasonOne } from "@/components/site/season-one";
 import { Waitlist } from "@/components/site/waitlist";
 import { COLLECTION_PRICE_LABEL, EARLY_BUYER_CODE, EARLY_BUYER_PRICE_LABEL } from "@/lib/access";
 import { ACCESS_STATE_ORDER, ACCESS_STATE_PRESENTATION } from "@/lib/access-state";
@@ -150,6 +151,9 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* ── SEASON ONE ───────────────────────────────────────────────────── */}
+      <SeasonOne />
+
       {/* ── WARLINE ──────────────────────────────────────────────────────── */}
       <section
         id="warline"
@@ -229,8 +233,8 @@ export default async function Home() {
           </h2>
           <p className="mt-5 max-w-xl leading-relaxed text-ash">
             Deadrot is built in the open — preview and community builds ship rough and evolve on stream, not as a
-            finished-game promise. Join the waitlist for first access to new games, new horrors, and the persistent war.
-            No spam, just the war.
+            finished-game promise. Join the front: the season opens in waves, and the waitlist gets first access the
+            moment each new build comes online. No spam, just the war.
           </p>
           <div className="relative mt-9 w-full">
             <Waitlist />

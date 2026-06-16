@@ -14,6 +14,8 @@ Scourge]] flooding from a breach.
 ## Canon role
 The defensive front of the war (see [[Premise]]). Each level = a named lane / chokepoint.
 
+**Warline operation — Lane Hold:** Wardens man a named chokepoint and refuse to let it fall — every lane held is a region the Choir can't push the horde through.
+
 ## Hooks
 Shares the [[Scourge|horde]] and [[Style-Bible|look]] with [[Scourge-Survivors]]. Towers
 are in-world Warden tech.
