@@ -184,7 +184,7 @@ jobs:
       - run: echo "All release checks passed for ${{ github.ref_name }}."
 
   deploy:
-    name: Deploy all games to production
+    name: Deploy all Vercel apps to production
     needs: release-gate
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -207,6 +207,50 @@ jobs:
           restore-keys: |
             bun-${{ runner.os }}-
       - run: bun install --frozen-lockfile
-      - name: Deploy all games (production)
-        # A release deploys the whole catalog so prod always matches the tag.
+      - name: Deploy all Vercel apps (production)
+        # A release deploys the whole catalog (8 games + web + lore) so prod
+        # always matches the tag.
         run: node scripts/deploy-changed-games.mjs --all
+
+  deploy-api:
+    name: Deploy API to EC2
+    needs: release-gate
+    # Dormant until the EC2 deploy is provisioned (secrets API_DEPLOY_SSH_KEY +
+    # TS_OAUTH_CLIENT_ID/SECRET, the tag:ci Tailscale ACL, and SSM
+    # /shipshit/production/DATABASE_URL). Set repo variable API_DEPLOY_ENABLED=true
+    # to turn it on — until then a release deploys only the Vercel apps.
+    if: ${{ vars.API_DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build API image
+        run: |
+          docker build -f apps/api/Dockerfile \
+            -t deadrot-api:release -t "deadrot-api:${GITHUB_REF_NAME}" .
+          docker save deadrot-api:release | gzip >apps/api/deploy/deadrot-api-image.tar.gz
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+      - name: Install deploy key
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "${{ secrets.API_DEPLOY_SSH_KEY }}" >~/.ssh/deploy.pem
+          chmod 600 ~/.ssh/deploy.pem
+      - name: Ship assets and deploy
+        run: |
+          ssh_opts="-i $HOME/.ssh/deploy.pem -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+          # shellcheck disable=SC2086
+          scp $ssh_opts \
+            apps/api/deploy/docker-compose.production.yml \
+            apps/api/deploy/deploy-production.sh \
+            apps/api/deploy/render-ssm-env.sh \
+            apps/api/deploy/deadrot-api-image.tar.gz \
+            ec2-user@shipshit-api:~/cloud/docker/
+          # shellcheck disable=SC2086
+          ssh $ssh_opts ec2-user@shipshit-api \
+            'chmod +x ~/cloud/docker/*.sh && cd ~/cloud && ./docker/deploy-production.sh'
