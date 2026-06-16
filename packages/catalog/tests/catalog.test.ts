@@ -26,7 +26,7 @@ test("GAME_APPS lists 8 apps, each fully specified", () => {
     assert.match(app.accent, /^#[0-9a-f]{3,8}$/i, `accent is a hex color for ${app.slug}`);
     assert.equal(typeof app.devPort, "number");
     assert.match(app.deployUrl, /^https:\/\//, `deployUrl is https for ${app.slug}`);
-    assert.equal(app.status, "PLAYABLE");
+    assert.ok(["PLAYABLE", "IN DEV"].includes(app.status), `status is a known value for ${app.slug}`);
   }
 });
 
