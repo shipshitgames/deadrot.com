@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Runs ON the shipshit-api EC2 host (CI scps this + docker-compose.deadrot.yml to
-# ~/cloud/docker and invokes it over Tailscale SSH). Deploys ONLY the deadrot-api
+# ~/cloud/docker and invokes it over Tailscale SSH). Deploys ONLY the api-deadrot-com
 # container — it reuses the host's canonical render-ssm-env.sh / .env.production and
 # never touches the api.shipshit.games compose, scripts, or container.
 #
@@ -32,7 +32,7 @@ if [ ! -f ../.env.production ]; then
 fi
 
 export IMAGE_TAG
-echo "==> pull + up deadrot-api (${IMAGE_TAG})"
+echo "==> pull + up api-deadrot-com (${IMAGE_TAG})"
 docker compose -f "${COMPOSE}" pull
 docker compose -f "${COMPOSE}" up -d
 docker logout ghcr.io >/dev/null 2>&1 || true
@@ -40,13 +40,13 @@ docker logout ghcr.io >/dev/null 2>&1 || true
 echo "==> wait for /health/ready"
 for _ in $(seq 1 30); do
   if curl -fsS http://127.0.0.1:3004/health/ready >/dev/null 2>&1; then
-    echo "deadrot-api healthy"
+    echo "api-deadrot-com healthy"
     docker image prune -f >/dev/null 2>&1 || true
     exit 0
   fi
   sleep 2
 done
 
-echo "deadrot-api did not become healthy in time; recent logs:" >&2
+echo "api-deadrot-com did not become healthy in time; recent logs:" >&2
 docker compose -f "${COMPOSE}" logs --tail=80 >&2 || true
 exit 1
