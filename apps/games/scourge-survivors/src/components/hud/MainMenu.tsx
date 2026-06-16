@@ -36,7 +36,7 @@ import {
 import { WEAPON_IDENTITIES } from "../../game/data/weaponIdentity";
 import { MENU_HERO_URL, PLAYER_AVATAR_PREVIEW_URLS } from "../../game/spriteAssets";
 import type { ScoreEntry, ShopState } from "../../game/storage";
-import type { HUDState } from "../../game/types";
+import type { HudState } from "../../game/types";
 import { normalizePlayerAvatar, PLAYER_AVATAR_OPTIONS, type PlayerAvatarId } from "../../net/playerAvatars";
 import { PixelIcon } from "../PixelIcon";
 import { IconText, Leaderboard, MENU_HEADING } from "./shared";
@@ -550,7 +550,7 @@ export function MainMenu({
   onClearScores,
   onBuyShop,
 }: {
-  state: HUDState;
+  state: HudState;
   scores: ScoreEntry[];
   shop: ShopState;
   suppressMenu: boolean;

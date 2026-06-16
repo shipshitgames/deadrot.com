@@ -328,7 +328,7 @@ export class WeaponSystem {
     }
 
     if (hitAny) {
-      this.sys.hud.hitMarkerSeq++;
+      this.sys.hud.hitSeq++;
       this.sys.fx.addShake(0.14);
     }
     this.sys.hud.emit();
@@ -421,10 +421,10 @@ export class WeaponSystem {
             this.sys.hud.addDamageNumber(h.point, dmg, headshot ? "head" : "normal");
             if (headshot) {
               this.ctx.headshots++;
-              this.sys.hud.headshotSeq++;
+              this.sys.hud.emphasisSeq++;
               audio.sfx("headshot");
             } else {
-              this.sys.hud.hitMarkerSeq++;
+              this.sys.hud.hitSeq++;
               audio.sfx("hit");
             }
             break;
@@ -441,12 +441,12 @@ export class WeaponSystem {
               this.sys.fx.spawnBloodHit(h.point, headshot);
             }
             if (res.blocked) {
-              this.sys.hud.hitMarkerSeq++; // shield ping (no damage)
+              this.sys.hud.hitSeq++; // shield ping (no damage)
               audio.sfx("shieldhit");
             } else if (res.died) {
               if (headshot) {
                 this.ctx.headshots++;
-                this.sys.hud.headshotSeq++;
+                this.sys.hud.emphasisSeq++;
                 this.sys.hud.showToast("HEADSHOT!");
                 this.sys.fx.addShake(0.2);
                 audio.sfx("headshot");
@@ -454,11 +454,11 @@ export class WeaponSystem {
               this.sys.pve.onEnemyDeath(ud.enemy, headshot);
             } else if (headshot) {
               this.ctx.headshots++;
-              this.sys.hud.headshotSeq++;
+              this.sys.hud.emphasisSeq++;
               this.sys.fx.addShake(0.16);
               audio.sfx("headshot");
             } else {
-              this.sys.hud.hitMarkerSeq++;
+              this.sys.hud.hitSeq++;
               audio.sfx("hit");
             }
             break;

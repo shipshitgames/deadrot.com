@@ -2,7 +2,7 @@ import { PixelConfetti, UpgradeCard } from "@shipshitgames/ui";
 import { type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, useRef } from "react";
 import type { SurvivorClassId } from "../game/data/survivors";
 import type { ScoreEntry, ShopState } from "../game/storage";
-import type { HUDState } from "../game/types";
+import type { HudState } from "../game/types";
 import type { PlayerAvatarId } from "../net/playerAvatars";
 import { CombatOverlays } from "./hud/CombatOverlays";
 import { GameOverScreen } from "./hud/GameOverScreen";
@@ -12,7 +12,7 @@ import { IconText, OVERLAY } from "./hud/shared";
 import { PixelIcon } from "./PixelIcon";
 
 interface Props {
-  state: HUDState;
+  state: HudState;
   scores: ScoreEntry[];
   onLock: () => void;
   onRestart: () => void;
@@ -40,7 +40,7 @@ function LevelUpDraft({
   onReroll,
   onBanish,
 }: {
-  state: HUDState;
+  state: HudState;
   onPick: (id: string) => void;
   onReroll: () => void;
   onBanish: (id: string) => void;

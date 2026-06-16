@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { ScoreEntry } from "../../game/storage";
-import type { HUDState } from "../../game/types";
+import type { HudState } from "../../game/types";
 import { PixelIcon, type PixelIconId } from "../PixelIcon";
 
 // ----------------------------------------------------------------- shared utility class strings
@@ -37,7 +37,7 @@ export function formatTime(seconds: number): string {
   return `${m}:${r.toString().padStart(2, "0")}`;
 }
 
-export function runModeLabel(mode?: HUDState["runMode"]): string {
+export function runModeLabel(mode?: HudState["runMode"]): string {
   switch (mode) {
     case "structured":
       return "Structured";

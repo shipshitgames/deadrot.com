@@ -1,7 +1,7 @@
 import { Button, GlobalGameSettingsPanel, VictoryScreen } from "@shipshitgames/ui";
 import { useRef, useState } from "react";
 import type { ScoreEntry, ShopState } from "../../game/storage";
-import type { HUDState } from "../../game/types";
+import type { HudState } from "../../game/types";
 import { PixelIcon } from "../PixelIcon";
 import { Shop } from "./MainMenu";
 import { formatTime, IconText, Leaderboard, OVERLAY, runModeLabel, STAT_LABEL, STAT_SUB, STAT_VALUE } from "./shared";
@@ -27,7 +27,7 @@ export function GameOverScreen({
   onBuyShop,
   onClearScores,
 }: {
-  state: HUDState;
+  state: HudState;
   scores: ScoreEntry[];
   shop: ShopState;
   lastRunGold: number;

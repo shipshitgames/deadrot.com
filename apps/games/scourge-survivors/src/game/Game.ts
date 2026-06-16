@@ -326,9 +326,9 @@ export class Game {
         this.sys.pve.onEnemyDeath(enemy, headshot);
       } else if (headshot) {
         this.ctx.headshots++;
-        this.sys.hud.headshotSeq++;
+        this.sys.hud.emphasisSeq++;
       } else {
-        this.sys.hud.hitMarkerSeq++;
+        this.sys.hud.hitSeq++;
       }
     }
     this.sys.hud.emit();
