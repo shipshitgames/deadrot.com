@@ -22,27 +22,23 @@ auto-deploys on a master push.
 The container binds `127.0.0.1:3004`; the host reverse proxy / ALB fronts it for
 `api.deadrot.com`.
 
-## Enabling it
+## Access model
 
-The `deploy-api` job is **gated behind repo variable `API_DEPLOY_ENABLED`** and stays
-dormant (a release deploys only the Vercel apps) until you set `API_DEPLOY_ENABLED=true`.
-Provision everything below first, then flip the variable.
+CI authenticates to the **org Tailscale OAuth client** (`TAILSCALE_CLIENT_ID` /
+`TAILSCALE_CLIENT_SECRET`, org-level secrets) as `tag:ci`, then reaches the box over
+**Tailscale SSH** — there is **no SSH key in CI**. Public SSH on the host is firewalled.
 
-## Required before the first release deploy
+## Required for the deploy to succeed
 
-These are provisioned **outside** this repo and are not yet in place:
-
-- **GitHub Actions secrets** (repo or `production` environment):
-  - `API_DEPLOY_SSH_KEY` — the `shipshit-api-deploy` private key (PEM).
-  - `TS_OAUTH_CLIENT_ID` + `TS_OAUTH_SECRET` — Tailscale OAuth client for the CI node.
-- **Tailscale ACL** — allow `tag:ci` to SSH `tag:`-of-`shipshit-api` (port 22).
-- **AWS SSM** — `/shipshit/production/DATABASE_URL` (RDS) must exist; optionally
-  `ALLOWED_ORIGINS`, `CDN_ORIGIN`, `DATABASE_SSL_MODE`. The instance role needs
-  `ssm:GetParametersByPath` (+ kms:Decrypt for SecureString).
-- **Host firewall / fronting** — the reverse proxy on the box (or ALB) must point
-  `api.deadrot.com` at `127.0.0.1:3004`. **The deploy does not change DNS** — the
-  container comes up "dark" until `api.deadrot.com` is pointed at this host, so a
-  release is safe to run before cutover.
+- **Tailscale ACL** — grant `tag:ci` → SSH `ec2-user@shipshit-api`, and Tailscale SSH
+  must be enabled on the host (`tailscale set --ssh`).
+- **AWS SSM** — `/shipshit/production/DATABASE_URL` (RDS) exists ✅; instance role has
+  `ssm:GetParametersByPath` + `kms:Decrypt`. `ALLOWED_ORIGINS` / `CDN_ORIGIN` /
+  `DATABASE_SSL_MODE` are optional (defaults in `apps/api/src/config.ts`).
+- **Fronting** — the deploy binds `127.0.0.1:3004` and **does not change DNS**. The
+  container comes up "dark" until `api.deadrot.com` is pointed at `shipshit-api`
+  (today it still serves from the separate `52.8.153.188` host), so a release is safe
+  to run before cutover.
 
 ## Manual deploy (from a machine on the tailnet)
 
