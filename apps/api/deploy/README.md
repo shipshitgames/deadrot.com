@@ -1,7 +1,8 @@
 # Deadrot API — production deploy
 
-`deadrot-api` (a Bun + Postgres service) runs as a Docker container on the
-**`shipshit-api`** EC2 host, **co-located alongside `api.shipshit.games`** — one
+The Deadrot API (a Bun + Postgres service) runs as the **`api-deadrot-com`** Docker
+container on the **`shipshit-api`** EC2 host, **co-located alongside `api.shipshit.games`**
+(its `api-shipshit-games` container) — one
 box for both, since traffic is minimal. It deploys from the `deploy-api` job in
 `.github/workflows/release.yml` on every `vX.Y.Z` tag, next to the Vercel deploy.
 Nothing auto-deploys on a master push.
@@ -16,13 +17,13 @@ Nothing auto-deploys on a master push.
 3. CI `scp`s **only** `docker-compose.deadrot.yml` + `deploy-deadrot.sh` to
    `~/cloud/docker/` and runs `deploy-deadrot.sh`, which: logs into ghcr, refreshes
    the shared `.env.production` via the host's **canonical `render-ssm-env.sh`**,
-   `docker compose up -d` the `deadrot-api` container, and waits on
+   `docker compose up -d` the `api-deadrot-com` container, and waits on
    `http://127.0.0.1:3004/health/ready`.
 
 ### Isolation from `api.shipshit.games`
 
-- Separate compose project (`name: deadrot-api`), container (`deadrot-api`), and
-  port (`3004` vs `3003`). The deploy **never writes the api.shipshit.games toolkit
+- Separate compose project + container (`api-deadrot-com`) and port (`3004` vs `3003`).
+  The deploy **never writes the api.shipshit.games toolkit
   files** (`docker-compose.production.yml`, `deploy-production.sh`, `render-ssm-env.sh`)
   — it only adds `docker-compose.deadrot.yml` + `deploy-deadrot.sh`.
 - `DATABASE_URL` comes from the shared `/shipshit/production/DATABASE_URL` (same RDS).

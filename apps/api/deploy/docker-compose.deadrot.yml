@@ -4,12 +4,12 @@
 # repo to ghcr; the host pulls it. DATABASE_URL comes from the host's shared
 # ../.env.production (rendered from /shipshit/production by the canonical
 # render-ssm-env.sh); everything else is deadrot-specific and set here.
-name: deadrot-api
+name: api-deadrot-com
 
 services:
-  deadrot-api:
+  api-deadrot-com:
     image: ghcr.io/shipshitgames/deadrot.com/api:${IMAGE_TAG:-latest}
-    container_name: deadrot-api
+    container_name: api-deadrot-com
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
