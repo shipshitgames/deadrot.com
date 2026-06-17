@@ -1,5 +1,5 @@
 import { Button, GlobalGameSettingsPanel, VictoryScreen } from "@shipshitgames/ui";
-import { useRef, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 import type { ScoreEntry, ShopState } from "../../game/storage";
 import type { HudState } from "../../game/types";
 import { PixelIcon } from "../PixelIcon";
@@ -12,6 +12,26 @@ function SettingsRow({ className = "mt-4" }: { className?: string }) {
   return (
     <div className={`pointer-events-auto flex justify-center ${className}`} onClick={(e) => e.stopPropagation()}>
       <GlobalGameSettingsPanel inline className="w-[min(360px,86vw)]" />
+    </div>
+  );
+}
+
+function SummaryFact({
+  label,
+  value,
+  sub,
+  testId,
+}: {
+  label: ReactNode;
+  value: ReactNode;
+  sub?: ReactNode;
+  testId?: string;
+}) {
+  return (
+    <div className="scourge-run-summary-cell" data-testid={testId}>
+      <div className={STAT_LABEL}>{label}</div>
+      <div className="scourge-run-summary-value">{value}</div>
+      {sub && <div className={STAT_SUB}>{sub}</div>}
     </div>
   );
 }
@@ -73,79 +93,68 @@ export function GameOverScreen({
       ? "Breach-boss down — run cleared"
       : "You were overrun";
 
-  const summaryTitle =
-    outcome === "win" ? (survivors ? "RUN SEALED" : "VICTORY") : survivors ? "RUN SUMMARY" : "GAME OVER";
+  const summaryTitle = survivors ? "RUN SUMMARY" : outcome === "win" ? "VICTORY" : "GAME OVER";
 
   const summaryBody = (
-    <>
+    <div className="scourge-gameover-summary" data-testid="gameover-summary">
       {survivors && (
-        <div className="mb-[14px] w-[min(860px,94vw)] rounded-lg border border-white/10 bg-black/35 px-4 py-3">
-          <div className="grid grid-cols-1 gap-x-5 gap-y-3 text-left min-[640px]:grid-cols-2 lg:grid-cols-3">
-            <div>
-              <div className={STAT_LABEL}>Mode</div>
-              <div className={`${STAT_VALUE} !text-[18px] leading-tight break-words`}>
-                {runModeLabel(state.runMode)}
-              </div>
-              <div className={STAT_SUB}>{outcome === "win" ? "sealed" : "lost"}</div>
-            </div>
-            <div>
-              <div className={STAT_LABEL}>Depth</div>
-              <div className={`${STAT_VALUE} !text-[18px] leading-tight break-words`}>
-                {state.runDepth}/{state.runDepthTotal}
-              </div>
-              <div className={STAT_SUB}>{state.runDepthName}</div>
-            </div>
-            <div>
-              <div className={STAT_LABEL}>Operator</div>
-              <div className={`${STAT_VALUE} !text-[18px] leading-tight break-words`}>
-                <IconText icon={state.survivorClassIcon} size={20}>
+        <section className="scourge-run-summary-card" data-testid="run-detail-summary">
+          <div className="scourge-run-summary-grid">
+            <SummaryFact
+              label="Mode"
+              value={runModeLabel(state.runMode)}
+              sub={outcome === "win" ? "sealed" : "lost"}
+              testId="summary-mode"
+            />
+            <SummaryFact
+              label="Depth"
+              value={`${state.runDepth}/${state.runDepthTotal}`}
+              sub={state.runDepthName}
+              testId="summary-depth"
+            />
+            <SummaryFact
+              label="Operator"
+              value={
+                <IconText icon={state.survivorClassIcon} size={20} className="scourge-run-summary-icon-value">
                   {state.survivorClassName}
                 </IconText>
-              </div>
-              <div className={STAT_SUB}>{state.survivorClassRole}</div>
-            </div>
-            <div>
-              <div className={STAT_LABEL}>Level</div>
-              <div className={`${STAT_VALUE} !text-[18px] leading-tight break-words`}>{state.level}</div>
-              <div className={STAT_SUB}>
-                {state.survivorEvolved.length ? `${state.survivorEvolved.length} evolved` : "no evolutions"}
-              </div>
-            </div>
-            <div>
-              <div className={STAT_LABEL}>Kills</div>
-              <div className={`${STAT_VALUE} !text-[18px] leading-tight break-words`}>{kills}</div>
-              <div className={STAT_SUB}>{headshots} headshots</div>
-            </div>
-            <div>
-              <div className={STAT_LABEL}>Gold</div>
-              <div className={`${STAT_VALUE} !text-[18px] leading-tight break-words`}>
-                <IconText icon="gold" size={18}>
+              }
+              sub={state.survivorClassRole}
+              testId="summary-operator"
+            />
+            <SummaryFact
+              label="Level"
+              value={state.level}
+              sub={state.survivorEvolved.length ? `${state.survivorEvolved.length} evolved` : "no evolutions"}
+              testId="summary-level"
+            />
+            <SummaryFact label="Kills" value={kills} sub={`${headshots} headshots`} testId="summary-kills" />
+            <SummaryFact
+              label="Gold"
+              value={
+                <IconText icon="gold" size={18} className="scourge-run-summary-icon-value">
                   +{lastRunGold.toLocaleString()}
                 </IconText>
-              </div>
-              <div className={STAT_SUB}>saved to shop</div>
-            </div>
+              }
+              sub="saved to shop"
+              testId="summary-gold"
+            />
           </div>
           {state.survivorEvolved.length > 0 && (
-            <div className="mt-3 flex flex-wrap justify-center gap-2">
+            <div className="scourge-run-chip-row scourge-run-chip-row--evolutions">
               {state.survivorEvolved.map((name) => (
-                <span
-                  key={name}
-                  className="rounded-md border border-[#ffd166]/45 bg-[#ffd166]/10 px-2 py-1 text-[12px] font-bold uppercase tracking-[0.08em] text-[#ffd166]"
-                >
+                <span key={name} className="scourge-run-chip scourge-run-chip--evolved">
                   {name}
                 </span>
               ))}
             </div>
           )}
           {state.build.length > 0 && (
-            <div className="mt-3 flex max-w-full flex-wrap justify-center gap-1.5">
-              {state.build.slice(0, 14).map((b) => (
+            <div className="scourge-run-chip-row">
+              {state.build.slice(0, 18).map((b) => (
                 <span
                   key={b.id}
-                  className={`inline-flex items-center gap-[5px] rounded-md border px-2 py-1 text-[12px] ${
-                    b.evolved ? "border-[#ffd166]/50 text-[#ffd166]" : "border-white/15 text-white/75"
-                  }`}
+                  className={`scourge-run-chip ${b.evolved ? "scourge-run-chip--evolved" : ""}`}
                   title={b.name}
                 >
                   <PixelIcon id={b.icon} size={15} label={b.name} /> {b.level}
@@ -153,38 +162,43 @@ export function GameOverScreen({
               ))}
             </div>
           )}
-        </div>
+        </section>
       )}
-      <div className="flex flex-wrap justify-center gap-x-9 gap-y-4 my-[14px] mb-[26px]">
+      <div className="scourge-end-metrics" data-testid="run-metrics">
         <div>
           <div className={STAT_LABEL}>Score</div>
-          <div className={`${STAT_VALUE} !text-[34px]`}>{score.toLocaleString()}</div>
+          <div className={`${STAT_VALUE} scourge-end-metric-value`}>{score.toLocaleString()}</div>
         </div>
         <div>
           <div className={STAT_LABEL}>Kills</div>
-          <div className={`${STAT_VALUE} !text-[34px]`}>{kills}</div>
+          <div className={`${STAT_VALUE} scourge-end-metric-value`}>{kills}</div>
         </div>
         <div>
           <div className={STAT_LABEL}>Headshots</div>
-          <div className={`${STAT_VALUE} !text-[34px]`}>{headshots}</div>
+          <div className={`${STAT_VALUE} scourge-end-metric-value`}>{headshots}</div>
         </div>
         <div>
           <div className={STAT_LABEL}>Time</div>
-          <div className={`${STAT_VALUE} !text-[34px]`}>{formatTime(time)}</div>
+          <div className={`${STAT_VALUE} scourge-end-metric-value`}>{formatTime(time)}</div>
         </div>
       </div>
       {survivors && lastRunGold > 0 && (
-        <div className="my-[6px] mb-[10px] text-[#ffd166] text-[16px] font-bold [text-shadow:0_0_12px_rgba(255,209,102,0.6)]">
+        <div className="scourge-gold-callout">
           <IconText icon="gold" size={18}>
             +{lastRunGold.toLocaleString()} gold earned · spend it in the Shop
           </IconText>
         </div>
       )}
-      <Leaderboard scores={scores} highlight={currentRun} onClear={onClearScores} />
-    </>
+      <Leaderboard
+        className="scourge-summary-leaderboard"
+        scores={scores}
+        highlight={currentRun}
+        onClear={onClearScores}
+      />
+    </div>
   );
 
-  const summaryActions = (
+  const summaryActionButtons = (
     <>
       <Button variant="default" onClick={onRestart} type="button">
         <IconText icon="restart" size={16}>
@@ -239,15 +253,19 @@ export function GameOverScreen({
   if (outcome === "win") {
     return (
       <VictoryScreen
-        className="cursor-default"
+        className="cursor-default scourge-victory-screen"
         kicker={summaryKicker}
         title={summaryTitle}
         subtitle={survivors ? "Gold banked. Breach pressure falling. Spend before the next descent." : undefined}
         confettiSeed={`${score}-${kills}-${Math.round(time)}`}
-        actions={summaryActions}
+        actions={
+          <div className="scourge-victory-actions-stack">
+            <div className="scourge-summary-actions">{summaryActionButtons}</div>
+            <SettingsRow className="mt-0" />
+          </div>
+        }
       >
         {summaryBody}
-        <SettingsRow />
       </VictoryScreen>
     );
   }
@@ -259,7 +277,7 @@ export function GameOverScreen({
         {summaryTitle}
       </h1>
       {summaryBody}
-      <div className="flex gap-3 mt-4">{summaryActions}</div>
+      <div className="scourge-summary-actions mt-4">{summaryActionButtons}</div>
       <SettingsRow />
     </div>
   );
