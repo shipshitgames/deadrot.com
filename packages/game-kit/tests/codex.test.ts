@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { bestiary, characters, locations } from "@shipshitgames/assets/lore";
-import { CODEX_ACCENT_HEX, codexEntriesForGame } from "../src/codex";
+import { CODEX_ACCENT_HEX, codexEntriesForGame, publicCodexAnchor, publicCodexHref } from "../src/codex";
 
 test("includes exactly the lore that lists the game in appearsIn", () => {
   const entries = codexEntriesForGame("deadlane");
@@ -90,4 +90,13 @@ test("accent map stays on the DOOM palette and never fabricates sprite URLs", ()
       assert.ok(Object.values(CODEX_ACCENT_HEX).includes(entry.accentHex ?? ""), `${entry.slug} off-palette accent`);
     }
   }
+});
+
+test("public codex helpers build stable game-openable deep links", () => {
+  assert.equal(publicCodexAnchor("game", "scourge-survivors"), "codex-game-scourge-survivors");
+  assert.equal(publicCodexHref("game", "scourge-survivors"), "/codex#codex-game-scourge-survivors");
+  assert.equal(
+    publicCodexHref("bestiary", "Breach-Boss", "/deadrot/codex/"),
+    "/deadrot/codex#codex-bestiary-breach-boss",
+  );
 });

@@ -1,5 +1,5 @@
 import { type Accent, type GameStatus, gamesByStatus } from "@/lib/content";
-import { buildFeedbackUrl, knownIssuesUrl, releaseNotesUrl } from "@/lib/feedback";
+import { buildFeedbackUrl, knownIssuesUrl } from "@/lib/feedback";
 
 // The community page treats every game as an open build the player can shape.
 // Data here is derived from the catalog-backed roster (gamesByStatus) so it can
@@ -95,5 +95,5 @@ export const SITE_FEEDBACK_URL = buildFeedbackUrl({
   scopeLabel: "the deadrot.com site",
   kind: "idea",
 });
-export const RELEASE_NOTES_URL = releaseNotesUrl();
+export const RELEASE_NOTES_URL = "/builds";
 export const SITE_KNOWN_ISSUES_URL = knownIssuesUrl();
