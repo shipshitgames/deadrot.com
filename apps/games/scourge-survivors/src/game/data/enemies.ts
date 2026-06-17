@@ -1,7 +1,15 @@
 // Shared Scourge enemy archetypes. These are deliberately data-first so both
 // structured runs and Survivors swarms can mix the same readable host variants.
 
-export type EnemyArchetypeId = "grunt" | "swarmling" | "charger" | "shooter" | "flier" | "tank" | "splitter";
+export type EnemyArchetypeId =
+  | "grunt"
+  | "swarmling"
+  | "hound"
+  | "charger"
+  | "shooter"
+  | "flier"
+  | "tank"
+  | "splitter";
 export type ScourgeThreatTier = "swarm" | "elite" | "breachBoss";
 
 export const SCOURGE_THREAT_TIERS: Record<
@@ -83,6 +91,22 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
     spawnAfter: 10,
     earlyWeight: 0.22,
     lateWeight: 0.34,
+  },
+  hound: {
+    id: "hound",
+    name: "Wound-Hound",
+    loreTier: "swarm",
+    speedMul: 1.72,
+    hpMul: 0.58,
+    scale: 0.86,
+    color: 0x8bdc1f,
+    attackDamage: 4,
+    xp: 2,
+    mass: 0.62,
+    staggerMul: 1.45,
+    spawnAfter: 16,
+    earlyWeight: 0.16,
+    lateWeight: 0.3,
   },
   charger: {
     id: "charger",
@@ -176,6 +200,7 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
 export const SURVIVORS_ARCHETYPE_IDS: EnemyArchetypeId[] = [
   "grunt",
   "swarmling",
+  "hound",
   "charger",
   "shooter",
   "flier",
@@ -209,6 +234,7 @@ export function pickWeightedEnemyArchetype(runTime: number, chapterIndex = 0): E
 export function campaignArchetypeForWave(waveIndex: number, spawnIndex: number, stageIndex: number): EnemyArchetypeDef {
   const cadence = (spawnIndex + waveIndex * 2 + stageIndex) % 8;
   if (waveIndex >= 2 && cadence === 0) return ENEMY_ARCHETYPES.tank;
+  if (waveIndex >= 1 && cadence === 1) return ENEMY_ARCHETYPES.hound;
   if (waveIndex >= 1 && cadence === 2) return ENEMY_ARCHETYPES.charger;
   if (waveIndex >= 1 && cadence === 3) return ENEMY_ARCHETYPES.flier;
   if (cadence === 4 || cadence === 5) return ENEMY_ARCHETYPES.shooter;

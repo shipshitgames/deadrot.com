@@ -6,7 +6,7 @@ supersededBy: ../Style-Bible.md
 
 # 2026-06-04 Website Portrait Placeholders
 
-> **PRE-LOCK / OFF-CANON** — this batch predates the 2026-06-04 house-style lock; its "Hi-fi stylized concept render … no pixel art" rules contradict the locked medium-chunky DETAILED PIXEL ART medium ([[Style-Bible]] §1–2, §11). There is no separate hi-fi/website track — website portraits are the locked pixel medium too. Kept for history; these placeholder plates are slated for regeneration in the pixel style. (The "rejected for drifting into pixel art" note below is inverted under the lock — pixel art is now the correct target.)
+> **PRE-LOCK / OFF-CANON** — this batch predates the active 2026-06-17 comic-book / cel-ink lock. There is no separate hi-fi/website track — website portraits use the locked comic medium too. Kept for history; these placeholder plates are slated for regeneration in the comic style.
 
 ## Scope
 
@@ -17,7 +17,7 @@ supersededBy: ../Style-Bible.md
 ## Shared Prompt Rules
 
 - Square website portrait plate, single centered subject, generous padding.
-- Medium-chunky detailed PIXEL ART in the locked [[Style-Bible]] house style, with heavy-metal album-cover grime expressed through crisp pixels, ordered dithering, and DOOM palette discipline.
+- Clean comic-book / cel-shaded ink in the locked [[Style-Bible]] house style, with heavy-metal album-cover grime expressed through bold contour lines, flat readable value blocks, and DOOM palette discipline.
 - Near-black `#0a0a0a` void background, hard hellfire rim-light, blood-hot falloff, crushed shadows.
 - Warm DOOM grade: blood, hellfire, rust, gunmetal, coal, and bone.
 - Toxic green appears only on Scourge breach cores and parasite nodes.

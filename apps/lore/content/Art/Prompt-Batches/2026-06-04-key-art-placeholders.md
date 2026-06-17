@@ -6,7 +6,7 @@ supersededBy: ../Style-Bible.md
 
 # 2026-06-04 Key Art Placeholders
 
-> **PRE-LOCK / OFF-CANON** — this batch predates the 2026-06-04 house-style lock, and its "Hi-fi stylized concept render, **not pixel art**" rule directly contradicts the locked medium (medium-chunky DETAILED PIXEL ART; see [[Style-Bible]] §1–2, §11). Kept as a historical record. The placeholder assets it produced are to be regenerated in the locked pixel style; do **not** reuse these hi-fi prompt rules.
+> **PRE-LOCK / OFF-CANON** — this batch predates the active 2026-06-17 comic-book / cel-ink lock. Kept as a historical record. The placeholder assets it produced are to be regenerated in the locked comic style; do **not** reuse these hi-fi prompt rules.
 
 ## Scope
 
@@ -16,7 +16,7 @@ supersededBy: ../Style-Bible.md
 
 ## Shared Art Rules
 
-- Medium-chunky detailed PIXEL ART in the locked [[Style-Bible]] house style; not smooth 3D, not photoreal, not painted concept art.
+- Clean comic-book / cel-shaded ink in the locked [[Style-Bible]] house style; not pixel art, not smooth 3D, not photoreal, not generic painted concept art.
 - Near-black void, hard hellfire rim-light, crushed shadows, warm DOOM grade.
 - Blood, hellfire, rust, gunmetal, coal, and bone dominate.
 - Toxic green appears only on Scourge breach cores and parasite nodes.

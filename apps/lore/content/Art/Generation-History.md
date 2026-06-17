@@ -36,6 +36,24 @@ reviewed outside runtime paths under `packages/assets/_archive/`.
 - Decision:
 ```
 
+## 2026-06-17 - comic-book-master-atlas - v01
+
+- Status: exploratory masters attached to lore.
+- Game: shared Deadrot lore + [[Scourge-Survivors]] runtime probe.
+- Faction: Pyre, Wardens, Scourge.
+- Character/role: bestiary roster, human roster, UI/codex, pause screen, combat wallpaper mood.
+- View: comic-book master boards.
+- Tool: built-in `image_gen`.
+- Plan: Codex built-in.
+- Kind: ai-2d-comic-master-reference.
+- Source output: selected files under `packages/assets/_archive/raw-generator-cache/codex-generated-images/2026-06-17/raw/019ed273-1c2a-7320-9b42-92655439fad6/`.
+- Workspace draft: `packages/assets/sources/generated/2026-06-17/lore/comic-v01/`.
+- Final asset: `packages/assets/masters/art/lore-comic-v01/`.
+- Prompt source: [[Art/Comic-Book-Master-Atlas-v01]] and the user-directed comic-book exploration pass.
+- Post-processing: copied selected generated PNG masters; cropped [[Wound-Hound]] into 256x128 WebP runtime views with `ffmpeg` + `cwebp`.
+- Notes: This is not the final production sprite pass. It establishes a comic master language and a playable fast-animal foe lane without promoting the rejected dotted/stippled look.
+- Decision: keep for review; generate dedicated Wound-Hound turnaround and per-entry comic masters next.
+
 ## 2026-06-03 - pyre-ranger-front - v01
 
 - Status: draft, not wired into the game.
@@ -115,7 +133,7 @@ reviewed outside runtime paths under `packages/assets/_archive/`.
   - `packages/assets/universe/hero.webp`
 - Prompt source: `lore/Universe/Style-Bible.md` and `lore/Art/Prompt-Batches/2026-06-04-key-art-placeholders.md`.
 - Post-processing: resized/cropped outputs with ffmpeg to 1280x720 for Zero Day and 1920x1080 for the homepage hero.
-- Notes: draft placeholders follow the locked void/rim-light/DOOM-grade art bible. Homepage and game-detail/card slots now render generated key art instead of sprite-only or CSS placeholders. **Medium mismatch (flagged 2026-06-04 audit):** the batch used a *hi-fi concept render*, which contradicts the locked house medium (medium-chunky pixel art, [[Style-Bible]] §1–2). These are off-canon placeholders pending regeneration in the locked pixel style.
+- Notes: draft placeholders follow the locked void/rim-light/DOOM-grade art bible. Homepage and game-detail/card slots now render generated key art instead of sprite-only or CSS placeholders. **Medium mismatch (updated 2026-06-17):** the batch used a *hi-fi concept render*, and the later pixel target has also been superseded by the locked comic-book/cel-ink direction. These are off-canon placeholders pending regeneration in the locked comic style.
 - Decision: use as review placeholders; character, bestiary, and faction image slots still need their own generation pass.
 
 ## 2026-06-04 - website-portrait-placeholders - v01
@@ -135,7 +153,7 @@ reviewed outside runtime paths under `packages/assets/_archive/`.
 - Prompt source: `lore/Universe/Style-Bible.md`, `lore/Art/Character-Prompt-Library.md`, and `lore/Art/Prompt-Batches/2026-06-04-website-portrait-placeholders.md`.
 - Post-processing: resized/padded to `768x768` PNG intermediates with ffmpeg, then converted to WebP with `cwebp`; project-local PNG intermediates removed after conversion.
 - Notes: Existing Scourge Survivors runtime sprites remain in place. These draft plates fill website card and dossier placeholders only.
-- Decision: wired for review; replace with promoted asset-pipeline outputs later when final portrait/style-lock assets exist. **Off-canon (flagged 2026-06-04 audit):** prompts were hi-fi render, not the locked pixel medium ([[Style-Bible]] §1–2); regenerate in the locked pixel style.
+- Decision: wired for review; replace with promoted asset-pipeline outputs later when final portrait/style-lock assets exist. **Off-canon (updated 2026-06-17):** prompts were hi-fi render, and the later pixel target has also been superseded by the locked comic-book/cel-ink direction; regenerate in the locked comic style.
 
 ## 2026-06-04 - game-previs - v01
 

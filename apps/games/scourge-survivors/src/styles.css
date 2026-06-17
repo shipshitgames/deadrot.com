@@ -8,11 +8,23 @@
   src: url("@shipshitgames/assets/shared/fonts/press-start-2p.ttf") format("truetype");
 }
 
+@font-face {
+  font-family: "SSG Comic Condensed";
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+  src: url("@shipshitgames/assets/shared/fonts/oswald.woff2") format("woff2");
+}
+
 :root {
-  /* Literal stack — do NOT reference var(--ssg-font-mono): packages/ui sets
-     --ssg-font-mono to var(--ssg-font-pixel), so referencing it back here forms
-     a cycle that resolves to empty and drops the title to a serif fallback. */
-  --ssg-font-pixel: "SSG Press Start", ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Keep the old pixel face available for legacy debug surfaces, but the active
+     game UI now uses the comic display stack. */
+  --ssg-font-legacy-pixel: "SSG Press Start", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --ssg-font-comic: "SSG Comic Condensed", "Arial Black", Impact, sans-serif;
+  --ssg-font-pixel: var(--ssg-font-comic);
+  --ssg-font-display: var(--ssg-font-comic);
+  --ssg-font-mono: var(--ssg-font-comic);
+  --ssg-font-ui: var(--ssg-font-comic);
 }
 
 @theme {
@@ -23,7 +35,7 @@
   --color-ink: #0a0a0a;
   --color-fg: #e9e3d6;
 
-  --font-sans: var(--ssg-font-pixel);
+  --font-sans: var(--ssg-font-comic);
 
   --animate-hit: hitpop 0.18s ease-out;
   --animate-hit-kill: hitpop 0.28s ease-out;
@@ -128,6 +140,24 @@
     }
     100% {
       transform: translate(-50%, 0) scale(1);
+    }
+  }
+  @keyframes comic-sfx-pop {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -50%) rotate(-12deg) scale(0.54);
+    }
+    16% {
+      opacity: 1;
+      transform: translate(-50%, -50%) rotate(-8deg) scale(1.18);
+    }
+    52% {
+      opacity: 1;
+      transform: translate(-50%, -50%) rotate(-7deg) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -72%) rotate(-4deg) scale(0.92);
     }
   }
 }
@@ -266,7 +296,7 @@
     width: min(540px, 72vw);
     transform: translateX(-50%);
     color: var(--ssg-bone);
-    font-family: var(--ssg-font-pixel);
+    font-family: var(--ssg-font-comic);
     text-transform: uppercase;
     pointer-events: none;
   }
@@ -367,7 +397,7 @@
     background: rgba(5, 5, 5, 0.52);
     color: var(--ssg-bone);
     padding: 10px 16px;
-    font-family: var(--ssg-font-pixel);
+    font-family: var(--ssg-font-comic);
     font-size: 12px;
     font-weight: 900;
     letter-spacing: 0.14em;
@@ -422,12 +452,607 @@
     backdrop-filter: blur(10px);
   }
 
+  .game-root .scourge-menu-content .ssg-menu-item {
+    position: relative;
+    overflow: visible;
+    border: 3px solid #050505;
+    border-radius: 16px 8px 18px 10px;
+    background:
+      radial-gradient(130% 120% at 0% 50%, rgba(255, 42, 24, 0.42), transparent 48%),
+      linear-gradient(180deg, rgba(26, 26, 29, 0.92), rgba(7, 7, 8, 0.92));
+    box-shadow:
+      6px 7px 0 rgba(0, 0, 0, 0.68),
+      inset 0 0 0 2px rgba(255, 255, 255, 0.035);
+    isolation: isolate;
+  }
+
+  .game-root .scourge-menu-content .ssg-menu-item::before,
+  .game-root .scourge-menu-content .ssg-menu-item::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+  }
+
+  .game-root .scourge-menu-content .ssg-menu-item::before {
+    inset: 6px;
+    z-index: 1;
+    border: 1px solid rgba(233, 227, 214, 0.15);
+    border-radius: 12px 6px 14px 8px;
+  }
+
+  .game-root .scourge-menu-content .ssg-menu-item::after {
+    right: 18px;
+    bottom: -13px;
+    z-index: 0;
+    width: 26px;
+    height: 22px;
+    border-right: 3px solid #050505;
+    border-bottom: 3px solid #050505;
+    background: linear-gradient(135deg, rgba(7, 7, 8, 0.95) 0 49%, transparent 50%);
+    box-shadow: 4px 5px 0 rgba(0, 0, 0, 0.48);
+    transform: skewX(-18deg) rotate(6deg);
+  }
+
+  .game-root .scourge-menu-content .ssg-menu-item > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  .game-root .scourge-menu-content .ssg-menu-item__icon {
+    color: #ffd166;
+    text-shadow: 2px 2px 0 #050505;
+  }
+
+  .game-root .scourge-menu-content .ssg-menu-item__copy b {
+    color: #fff2cf;
+    font-style: italic;
+    text-shadow:
+      2px 2px 0 #050505,
+      3px 3px 0 rgba(193, 18, 31, 0.62);
+  }
+
+  .game-root .scourge-menu-content .ssg-menu-item__copy small {
+    color: rgba(233, 227, 214, 0.72);
+  }
+
+  .game-root .scourge-menu-content .ssg-menu-item:hover:not(:disabled) {
+    transform: translate(-2px, -2px) rotate(-0.25deg);
+    border-color: #050505;
+    background:
+      radial-gradient(120% 110% at 0% 50%, rgba(255, 42, 24, 0.72), transparent 52%),
+      linear-gradient(180deg, rgba(44, 22, 18, 0.98), rgba(12, 8, 8, 0.96));
+    box-shadow:
+      9px 10px 0 rgba(0, 0, 0, 0.76),
+      inset 0 0 0 2px rgba(255, 255, 255, 0.05),
+      0 0 22px rgba(255, 42, 24, 0.26);
+  }
+
+  .game-root .scourge-menu-content .ssg-menu-card {
+    overflow: visible;
+    border: 3px solid #050505;
+    border-radius: 18px 10px 22px 12px;
+    background:
+      linear-gradient(180deg, rgba(28, 28, 30, 0.96), rgba(7, 7, 8, 0.96)),
+      radial-gradient(circle at 14% 22%, rgba(255, 106, 0, 0.18), transparent 44%);
+    box-shadow:
+      7px 8px 0 rgba(0, 0, 0, 0.72),
+      inset 0 0 0 2px rgba(255, 255, 255, 0.04),
+      inset 0 0 0 4px rgba(255, 106, 0, 0.08);
+  }
+
+  .game-root .scourge-menu-content .ssg-menu-card::before {
+    inset: 8px;
+    border: 2px solid rgba(233, 227, 214, 0.16);
+    border-radius: 14px 8px 18px 10px;
+    box-shadow: none;
+  }
+
+  .game-root .scourge-menu-content .ssg-menu-card::after {
+    left: auto;
+    top: auto;
+    right: 30px;
+    bottom: -17px;
+    width: 34px;
+    height: 28px;
+    border-right: 3px solid #050505;
+    border-bottom: 3px solid #050505;
+    background: linear-gradient(135deg, rgba(7, 7, 8, 0.98) 0 49%, transparent 50%);
+    box-shadow: 5px 6px 0 rgba(0, 0, 0, 0.48);
+    transform: skewX(-16deg) rotate(7deg);
+    transform-origin: top left;
+  }
+
+  .game-root .scourge-menu-content .ssg-menu-card__media {
+    margin: 10px 0 10px 10px;
+    border: 3px solid #050505;
+    border-radius: 12px 6px 14px 8px;
+  }
+
+  .game-root .scourge-menu-content .ssg-menu-card__media::after {
+    background:
+      linear-gradient(90deg, rgba(0, 0, 0, 0.02), rgba(10, 10, 10, 0.78)),
+      radial-gradient(circle at 50% 36%, transparent 0 52%, rgba(0, 0, 0, 0.46) 100%);
+  }
+
+  .game-root .scourge-menu-content .ssg-menu-card__title {
+    color: #f4efe3;
+    font-style: italic;
+    text-shadow:
+      2px 2px 0 #050505,
+      4px 4px 0 rgba(193, 18, 31, 0.72);
+  }
+
+  .game-root .scourge-menu-content .ssg-menu-card__desc {
+    color: rgba(233, 227, 214, 0.76);
+  }
+
+  .game-root .scourge-menu-content .ssg-menu-card__command {
+    border: 3px solid #050505;
+    border-radius: 999px 18px 999px 18px;
+    background: #ff2a18;
+    color: #fff8de;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.72);
+    font-style: italic;
+  }
+
+  .game-root .scourge-menu-content .ssg-menu-card:hover:not(:disabled) {
+    transform: translate(-2px, -2px) rotate(-0.35deg);
+    border-color: #050505;
+    box-shadow:
+      10px 11px 0 rgba(0, 0, 0, 0.78),
+      inset 0 0 0 2px rgba(255, 255, 255, 0.06),
+      inset 0 0 0 4px rgba(255, 106, 0, 0.14),
+      0 0 24px rgba(255, 42, 24, 0.28);
+  }
+
+  .game-root .ssg-upgrade-card {
+    overflow: visible;
+    border: 4px solid #050505;
+    border-radius: 22px 16px 26px 14px;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(255, 176, 46, 0.3), transparent 56%),
+      linear-gradient(180deg, #fff2cf, #dfc38c);
+    box-shadow:
+      8px 9px 0 rgba(0, 0, 0, 0.72),
+      inset 0 0 0 2px rgba(255, 255, 255, 0.42),
+      inset 0 -18px 0 rgba(49, 31, 16, 0.08);
+    color: #090909;
+  }
+
+  .game-root .ssg-upgrade-card::before,
+  .game-root .ssg-upgrade-card::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+  }
+
+  .game-root .ssg-upgrade-card::before {
+    inset: 8px;
+    z-index: 1;
+    border: 2px solid rgba(5, 5, 5, 0.22);
+    border-radius: 16px 12px 20px 10px;
+  }
+
+  .game-root .ssg-upgrade-card::after {
+    right: 30px;
+    bottom: -22px;
+    z-index: 0;
+    width: 42px;
+    height: 34px;
+    border-right: 4px solid #050505;
+    border-bottom: 4px solid #050505;
+    background: linear-gradient(135deg, #dfc38c 0 49%, transparent 50%);
+    box-shadow: 6px 7px 0 rgba(0, 0, 0, 0.58);
+    transform: skewX(-18deg) rotate(8deg);
+    transform-origin: top left;
+  }
+
+  .game-root .ssg-upgrade-card > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  .game-root .ssg-upgrade-card__title {
+    color: #050505;
+    font-size: 18px;
+    font-style: italic;
+    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.64);
+  }
+
+  .game-root .ssg-upgrade-card__desc {
+    color: rgba(5, 5, 5, 0.76);
+    font-size: 13px;
+  }
+
+  .game-root .ssg-upgrade-card__meta {
+    color: #5d7e00;
+  }
+
+  .game-root .ssg-upgrade-card__key,
+  .game-root .ssg-upgrade-card__badge {
+    border: 2px solid #050505;
+    border-radius: 999px;
+    background: #050505;
+    color: #fff2cf;
+  }
+
+  .game-root .ssg-upgrade-card__plaque,
+  .game-root .ssg-upgrade-card__icon {
+    border: 4px solid #050505;
+    border-radius: 50% 44% 50% 42%;
+    background:
+      radial-gradient(circle at 50% 40%, rgba(255, 176, 46, 0.35), transparent 68%),
+      linear-gradient(180deg, #171719, #050505);
+    box-shadow:
+      5px 5px 0 rgba(0, 0, 0, 0.36),
+      inset 0 0 0 2px rgba(255, 255, 255, 0.08);
+  }
+
+  .game-root .ssg-upgrade-card__plaque[data-tip]::after {
+    border: 3px solid #050505;
+    border-radius: 16px 10px 18px 12px;
+    background: #fff2cf;
+    color: #050505;
+    box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.66);
+  }
+
+  .game-root .ssg-upgrade-card:hover:not(:disabled) {
+    transform: translate(-2px, -2px) rotate(0.45deg);
+    border-color: #050505;
+    box-shadow:
+      11px 12px 0 rgba(0, 0, 0, 0.78),
+      inset 0 0 0 2px rgba(255, 255, 255, 0.48),
+      0 0 28px rgba(255, 176, 46, 0.34);
+  }
+
+  .game-root .ssg-upgrade-card--featured {
+    background:
+      radial-gradient(circle at 50% 0%, rgba(255, 42, 24, 0.34), transparent 56%),
+      linear-gradient(180deg, #ffe0a0, #ff9d2f);
+  }
+
+  .game-root .ssg-upgrade-card--featured .ssg-upgrade-card__title,
+  .game-root .ssg-upgrade-card--featured .ssg-upgrade-card__plaque,
+  .game-root .ssg-upgrade-card--featured .ssg-upgrade-card__icon {
+    color: #ffb02e;
+  }
+
+  .game-root .ssg-upgrade-card--featured::after {
+    background: linear-gradient(135deg, #ff9d2f 0 49%, transparent 50%);
+  }
+
   @media (max-width: 620px) {
     .scourge-menu-content {
       align-items: flex-start;
       padding: 76px 12px 24px;
     }
   }
+}
+
+/* App-level comic card skin. This stays unlayered so it wins over the shared
+   package card/menu primitives, which are also unlayered. */
+.game-root .ssg-main-menu-action {
+  overflow: visible;
+  border: 3px solid #050505;
+  border-radius: 17px 8px 19px 10px;
+  box-shadow:
+    7px 8px 0 rgba(0, 0, 0, 0.72),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.04),
+    inset 0 -18px 36px rgba(0, 0, 0, 0.22);
+  font-family: var(--ssg-font-comic);
+  isolation: isolate;
+}
+
+.game-root .ssg-main-menu-action::before {
+  inset: 6px;
+  z-index: 1;
+  border: 1px solid rgba(233, 227, 214, 0.18);
+  border-radius: 12px 5px 14px 7px;
+  background:
+    linear-gradient(90deg, var(--ssg-menu-action-wound, rgba(193, 18, 31, 0.28)), transparent 34%),
+    repeating-linear-gradient(110deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 9px);
+  mix-blend-mode: screen;
+  opacity: 0.88;
+}
+
+.game-root .ssg-main-menu-action::after {
+  content: "";
+  position: absolute;
+  right: 24px;
+  bottom: -14px;
+  z-index: 0;
+  width: 28px;
+  height: 23px;
+  border-right: 3px solid #050505;
+  border-bottom: 3px solid #050505;
+  background: linear-gradient(135deg, rgba(9, 8, 8, 0.96) 0 49%, transparent 50%);
+  box-shadow: 4px 5px 0 rgba(0, 0, 0, 0.48);
+  pointer-events: none;
+  transform: skewX(-18deg) rotate(6deg);
+}
+
+.game-root .ssg-main-menu-action--primary::after {
+  background: linear-gradient(135deg, rgba(160, 10, 12, 0.98) 0 49%, transparent 50%);
+}
+
+.game-root .ssg-main-menu-action__label,
+.game-root .ssg-main-menu-action__meta {
+  z-index: 2;
+}
+
+.game-root .ssg-main-menu-action__label {
+  color: #fff2cf;
+  font-style: italic;
+  text-shadow:
+    2px 2px 0 #050505,
+    3px 3px 0 rgba(193, 18, 31, 0.62);
+}
+
+.game-root .ssg-main-menu-action__meta {
+  color: rgba(233, 227, 214, 0.78);
+}
+
+.game-root .ssg-main-menu-action:hover:not(:disabled),
+.game-root .ssg-main-menu-action:focus-visible {
+  transform: translate(-3px, -2px) rotate(-0.24deg);
+  border-color: #050505;
+  box-shadow:
+    10px 11px 0 rgba(0, 0, 0, 0.78),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.06),
+    0 0 24px rgba(255, 42, 24, 0.28);
+}
+
+.game-root .scourge-menu-content .ssg-menu-item {
+  position: relative;
+  overflow: visible;
+  border: 3px solid #050505;
+  border-radius: 16px 8px 18px 10px;
+  background:
+    radial-gradient(130% 120% at 0% 50%, rgba(255, 42, 24, 0.42), transparent 48%),
+    linear-gradient(180deg, rgba(26, 26, 29, 0.92), rgba(7, 7, 8, 0.92));
+  box-shadow:
+    6px 7px 0 rgba(0, 0, 0, 0.68),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.035);
+  isolation: isolate;
+}
+
+.game-root .scourge-menu-content .ssg-menu-item::before,
+.game-root .scourge-menu-content .ssg-menu-item::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.game-root .scourge-menu-content .ssg-menu-item::before {
+  inset: 6px;
+  z-index: 1;
+  border: 1px solid rgba(233, 227, 214, 0.15);
+  border-radius: 12px 6px 14px 8px;
+}
+
+.game-root .scourge-menu-content .ssg-menu-item::after {
+  right: 18px;
+  bottom: -13px;
+  z-index: 0;
+  width: 26px;
+  height: 22px;
+  border-right: 3px solid #050505;
+  border-bottom: 3px solid #050505;
+  background: linear-gradient(135deg, rgba(7, 7, 8, 0.95) 0 49%, transparent 50%);
+  box-shadow: 4px 5px 0 rgba(0, 0, 0, 0.48);
+  transform: skewX(-18deg) rotate(6deg);
+}
+
+.game-root .scourge-menu-content .ssg-menu-item > * {
+  position: relative;
+  z-index: 2;
+}
+
+.game-root .scourge-menu-content .ssg-menu-item__icon {
+  color: #ffd166;
+  text-shadow: 2px 2px 0 #050505;
+}
+
+.game-root .scourge-menu-content .ssg-menu-item__copy b {
+  color: #fff2cf;
+  font-style: italic;
+  text-shadow:
+    2px 2px 0 #050505,
+    3px 3px 0 rgba(193, 18, 31, 0.62);
+}
+
+.game-root .scourge-menu-content .ssg-menu-item__copy small {
+  color: rgba(233, 227, 214, 0.72);
+}
+
+.game-root .scourge-menu-content .ssg-menu-item:hover:not(:disabled) {
+  transform: translate(-2px, -2px) rotate(-0.25deg);
+  border-color: #050505;
+  background:
+    radial-gradient(120% 110% at 0% 50%, rgba(255, 42, 24, 0.72), transparent 52%),
+    linear-gradient(180deg, rgba(44, 22, 18, 0.98), rgba(12, 8, 8, 0.96));
+  box-shadow:
+    9px 10px 0 rgba(0, 0, 0, 0.76),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.05),
+    0 0 22px rgba(255, 42, 24, 0.26);
+}
+
+.game-root .scourge-menu-content .ssg-menu-card {
+  overflow: visible;
+  border: 3px solid #050505;
+  border-radius: 18px 10px 22px 12px;
+  background:
+    linear-gradient(180deg, rgba(28, 28, 30, 0.96), rgba(7, 7, 8, 0.96)),
+    radial-gradient(circle at 14% 22%, rgba(255, 106, 0, 0.18), transparent 44%);
+  box-shadow:
+    7px 8px 0 rgba(0, 0, 0, 0.72),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.04),
+    inset 0 0 0 4px rgba(255, 106, 0, 0.08);
+}
+
+.game-root .scourge-menu-content .ssg-menu-card::before {
+  inset: 8px;
+  border: 2px solid rgba(233, 227, 214, 0.16);
+  border-radius: 14px 8px 18px 10px;
+  box-shadow: none;
+}
+
+.game-root .scourge-menu-content .ssg-menu-card::after {
+  left: auto;
+  top: auto;
+  right: 30px;
+  bottom: -17px;
+  width: 34px;
+  height: 28px;
+  border-right: 3px solid #050505;
+  border-bottom: 3px solid #050505;
+  background: linear-gradient(135deg, rgba(7, 7, 8, 0.98) 0 49%, transparent 50%);
+  box-shadow: 5px 6px 0 rgba(0, 0, 0, 0.48);
+  transform: skewX(-16deg) rotate(7deg);
+  transform-origin: top left;
+}
+
+.game-root .scourge-menu-content .ssg-menu-card__media {
+  margin: 10px 0 10px 10px;
+  border: 3px solid #050505;
+  border-radius: 12px 6px 14px 8px;
+}
+
+.game-root .scourge-menu-content .ssg-menu-card__title {
+  color: #f4efe3;
+  font-style: italic;
+  text-shadow:
+    2px 2px 0 #050505,
+    4px 4px 0 rgba(193, 18, 31, 0.72);
+}
+
+.game-root .scourge-menu-content .ssg-menu-card__desc {
+  color: rgba(233, 227, 214, 0.76);
+}
+
+.game-root .scourge-menu-content .ssg-menu-card__command {
+  border: 3px solid #050505;
+  border-radius: 999px 18px 999px 18px;
+  background: #ff2a18;
+  color: #fff8de;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.72);
+  font-style: italic;
+}
+
+.game-root .ssg-upgrade-card {
+  overflow: visible;
+  border: 4px solid #050505;
+  border-radius: 22px 16px 26px 14px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 176, 46, 0.3), transparent 56%),
+    linear-gradient(180deg, #fff2cf, #dfc38c);
+  box-shadow:
+    8px 9px 0 rgba(0, 0, 0, 0.72),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.42),
+    inset 0 -18px 0 rgba(49, 31, 16, 0.08);
+  color: #090909;
+}
+
+.game-root .ssg-upgrade-card::before,
+.game-root .ssg-upgrade-card::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.game-root .ssg-upgrade-card::before {
+  inset: 8px;
+  z-index: 1;
+  border: 2px solid rgba(5, 5, 5, 0.22);
+  border-radius: 16px 12px 20px 10px;
+}
+
+.game-root .ssg-upgrade-card::after {
+  right: 30px;
+  bottom: -22px;
+  z-index: 0;
+  width: 42px;
+  height: 34px;
+  border-right: 4px solid #050505;
+  border-bottom: 4px solid #050505;
+  background: linear-gradient(135deg, #dfc38c 0 49%, transparent 50%);
+  box-shadow: 6px 7px 0 rgba(0, 0, 0, 0.58);
+  transform: skewX(-18deg) rotate(8deg);
+  transform-origin: top left;
+}
+
+.game-root .ssg-upgrade-card > * {
+  position: relative;
+  z-index: 2;
+}
+
+.game-root .ssg-upgrade-card__title {
+  color: #050505;
+  font-size: 18px;
+  font-style: italic;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.64);
+}
+
+.game-root .ssg-upgrade-card__desc {
+  color: rgba(5, 5, 5, 0.76);
+  font-size: 13px;
+}
+
+.game-root .ssg-upgrade-card__meta {
+  color: #5d7e00;
+}
+
+.game-root .ssg-upgrade-card__key,
+.game-root .ssg-upgrade-card__badge {
+  border: 2px solid #050505;
+  border-radius: 999px;
+  background: #050505;
+  color: #fff2cf;
+}
+
+.game-root .ssg-upgrade-card__plaque,
+.game-root .ssg-upgrade-card__icon {
+  border: 4px solid #050505;
+  border-radius: 50% 44% 50% 42%;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(255, 176, 46, 0.35), transparent 68%),
+    linear-gradient(180deg, #171719, #050505);
+  box-shadow:
+    5px 5px 0 rgba(0, 0, 0, 0.36),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.08);
+}
+
+.game-root .ssg-upgrade-card__plaque[data-tip]::after {
+  border: 3px solid #050505;
+  border-radius: 16px 10px 18px 12px;
+  background: #fff2cf;
+  color: #050505;
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.66);
+}
+
+.game-root .ssg-upgrade-card:hover:not(:disabled) {
+  transform: translate(-2px, -2px) rotate(0.45deg);
+  border-color: #050505;
+  box-shadow:
+    11px 12px 0 rgba(0, 0, 0, 0.78),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.48),
+    0 0 28px rgba(255, 176, 46, 0.34);
+}
+
+.game-root .ssg-upgrade-card--featured {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 42, 24, 0.34), transparent 56%),
+    linear-gradient(180deg, #ffe0a0, #ff9d2f);
+}
+
+.game-root .ssg-upgrade-card--featured .ssg-upgrade-card__title,
+.game-root .ssg-upgrade-card--featured .ssg-upgrade-card__plaque,
+.game-root .ssg-upgrade-card--featured .ssg-upgrade-card__icon {
+  color: #ffb02e;
+}
+
+.game-root .ssg-upgrade-card--featured::after {
+  background: linear-gradient(135deg, #ff9d2f 0 49%, transparent 50%);
 }
 
 /* Combat and system-screen typography pass. */
@@ -439,19 +1064,23 @@
 .game-root .ssg-survivor-xp,
 .game-root .ssg-lock-prompt,
 .game-root .ssg-menu-screen,
+.game-root .ssg-pause-screen,
+.game-root .ssg-pause-menu,
 .game-root .ssg-section-heading,
 .game-root .scourge-scoreboard,
 .game-root .scourge-boss-label,
 .game-root .scourge-combo-counter,
 .game-root .scourge-combat-banner,
 .game-root .scourge-combat-toast,
+.game-root .scourge-comic-sfx,
 .game-root .scourge-damage-number,
 .game-root .scourge-berserk-meter,
 .game-root .scourge-damage-boost {
-  font-family: var(--ssg-font-pixel);
+  font-family: var(--ssg-font-comic);
   letter-spacing: 0;
-  image-rendering: pixelated;
-  -webkit-font-smoothing: none;
+  font-stretch: condensed;
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
 }
 
 .game-root .ssg-hud-corner,
@@ -579,11 +1208,62 @@
 .game-root .scourge-combat-toast {
   transform: translateX(-50%);
   text-align: center;
+  font-style: italic;
+  letter-spacing: 0.02em;
   text-shadow:
     4px 0 0 rgba(5, 5, 5, 0.96),
     0 4px 0 rgba(5, 5, 5, 0.96),
     4px 4px 0 rgba(61, 0, 4, 0.92),
     0 0 28px rgba(255, 106, 0, 0.78);
+}
+
+.game-root .scourge-comic-sfx {
+  z-index: 7;
+  min-width: max-content;
+  padding: 0 0.08em;
+  color: #ffd166;
+  font-size: 54px;
+  font-style: italic;
+  font-weight: 900;
+  line-height: 0.9;
+  pointer-events: none;
+  text-align: center;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  text-shadow:
+    5px 0 0 rgba(5, 5, 5, 0.98),
+    0 5px 0 rgba(5, 5, 5, 0.98),
+    5px 5px 0 rgba(91, 6, 18, 0.98),
+    -3px 3px 0 rgba(193, 18, 31, 0.92),
+    0 0 22px rgba(255, 106, 0, 0.75);
+  opacity: 0;
+  animation: comic-sfx-pop 0.54s cubic-bezier(0.2, 0.98, 0.22, 1) forwards;
+}
+
+.game-root .scourge-comic-sfx::before {
+  position: absolute;
+  z-index: -1;
+  inset: -0.18em -0.34em -0.16em;
+  content: "";
+  background:
+    linear-gradient(135deg, rgba(255, 42, 24, 0.82), rgba(255, 106, 0, 0.18)),
+    rgba(5, 5, 5, 0.42);
+  clip-path: polygon(2% 38%, 16% 0, 38% 16%, 57% 2%, 72% 24%, 98% 14%, 84% 55%, 96% 88%, 66% 78%, 45% 100%, 34% 78%, 0 90%, 12% 58%);
+  filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.38));
+}
+
+.game-root .scourge-comic-sfx--hit {
+  color: #e9e3d6;
+  font-size: 42px;
+}
+
+.game-root .scourge-comic-sfx--head {
+  color: #ffd166;
+  font-size: 64px;
+}
+
+.game-root .scourge-comic-sfx--kill {
+  color: #ff2a18;
+  font-size: 58px;
 }
 
 .game-root .scourge-damage-number {

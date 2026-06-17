@@ -52,6 +52,14 @@ It does not make the Scourge smarter. It makes dumb hunger point in one directio
 - Death state: snout crown split and dark, throat sacs deflated so the loss of tracking reads clearly.
 - Must stay readable in [[Redline]] side framing, [[Scourge-Survivors]] close FPS framing, and [[Deadlane]] high camera.
 
+## Comic Book Master
+
+![Scourge comic master lineup](/assets/sources/generated/2026-06-17/lore/comic-v01/scourge-master-lineup-comic-v01.png)
+
+- Atlas: [[Art/Comic-Book-Master-Atlas-v01|Comic Book Master Atlas v01]]
+- Runtime v01: `packages/assets/games/scourge-survivors/enemies/scourge/wound-hound/{front,side,back}.webp`
+- Status: first playable Scourge Survivors crop from the comic Scourge board; needs a dedicated Wound-Hound front/true-side/back generation pass before final lock.
+
 ## Prompt Seed
 
 Scourge low tracker creature, chitin warhost hound built low to the ground with a long split rib-snout instead of a face, no eyes, wet toxic-green scent membranes and heat pits packed along the muzzle, black chitin over stolen bone, hooked forelimbs and splayed claws, throat sacs under the jaw pulsing before a tearing bark, whisker-tendrils dragging through ash, spitting sticky parasite musk marker, blood and rust and gunmetal, DOOM-like heavy shadows, no neon.

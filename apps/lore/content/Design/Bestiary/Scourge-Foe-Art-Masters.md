@@ -9,12 +9,21 @@ updated: 2026-06-11
 This is the lore-app attachment point for Scourge foe art masters. Game runtime
 sprites are derivatives; they do not define canon.
 
+## Current Lock
+
+The active target is clean comic-book / cel-shaded ink. Pixel-art runtime files
+are scaffolding until replaced. A master sheet is acceptable only if it can drive
+runtime production: isolated subjects, fixed camera, full body, shared baseline,
+large gutters, no overlap, no cropped limbs, and no shadows/floor that complicate
+cutout.
+
 ## Status
 
 | Foe | Status | Lore Attachment | Design Lock |
 | --- | --- | --- | --- |
 | [[Swarm-Ripper]] | Candidate master attached | `/assets/lore/art-masters/scourge/swarm-ripper/swarm-ripper-master-fast-candidate.png` | [[Swarm-Ripper-DESIGN]] |
 | [[Swarm-Spitter]] | Runtime visual lock attached; runtime-derived high-res candidate needs cleanup | `/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-runtime-visual-lock.png` | [[Swarm-Spitter-DESIGN]] |
+| [[Wound-Hound]] | Comic atlas reference + first playable Scourge Survivors crop attached | `/assets/sources/generated/2026-06-17/lore/comic-v01/scourge-master-lineup-comic-v01.png` | [[Art/Comic-Book-Master-Atlas-v01]] |
 | [[Breach-Boss]] | Candidate breach-engine master attached | `/assets/lore/art-masters/scourge/breach-boss/breach-boss-breach-engine-master-turnaround.png` | [[Breach-Boss-DESIGN]] |
 | [[Graft-Breacher]] | Candidate master attached | `/assets/lore/art-masters/scourge/graft-breacher/graft-breacher-master-turnaround.png` | [[Graft-Breacher-DESIGN]] |
 | [[Orbital-Breach-Carrier]] | Candidate master attached | `/assets/lore/art-masters/scourge/orbital-breach-carrier/orbital-breach-carrier-master-turnaround.png` | [[Orbital-Breach-Carrier-DESIGN]] |
@@ -39,6 +48,8 @@ pass, but they do not define canon.
 
 ![Swarm Spitter high-res candidate reference](/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-master-turnaround.png)
 
+![Scourge comic master lineup](/assets/sources/generated/2026-06-17/lore/comic-v01/scourge-master-lineup-comic-v01.png)
+
 ![Breach Boss breach-engine master turnaround](/assets/lore/art-masters/scourge/breach-boss/breach-boss-breach-engine-master-turnaround.png)
 
 ![Graft Breacher master turnaround](/assets/lore/art-masters/scourge/graft-breacher/graft-breacher-master-turnaround.png)
@@ -58,5 +69,7 @@ pass, but they do not define canon.
 ## Next Generation Pass
 
 - Review the candidate masters in-lore, approve or request targeted variants,
-  then split/pixel-clean runtime derivatives from approved sheets only.
+  then cutout-clean runtime derivatives from approved sheets only.
 - Regenerate game sprites from approved masters only.
+- Generate per-asset sheets, not crowded lineups: one enemy per front/side/back
+  sheet, one FPS weapon per viewmodel sheet.

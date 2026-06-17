@@ -35,7 +35,7 @@ import {
 import { chasePlayerStrategy, redirectBlockedRangedRetreat } from "./ChasePlayerStrategy";
 
 const HEALTHBAR_WIDTH = 0.95;
-type EnemySpriteKind = "melee" | "ranged" | "flying" | "boss";
+type EnemySpriteKind = "melee" | "ranged" | "flying" | "hound" | "boss";
 type EnemySpriteView = DirectionalSpriteView;
 
 export interface DamageResult {
@@ -331,6 +331,7 @@ export class Enemy extends Agent {
   private spriteKind(): EnemySpriteKind {
     if (this.isBoss) return "boss";
     if (this.flying) return "flying";
+    if (this.archetype === "hound") return "hound";
     return this.ranged ? "ranged" : "melee";
   }
 
