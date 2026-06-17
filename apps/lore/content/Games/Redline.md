@@ -22,6 +22,8 @@ A severed holdout is a dead holdout; the runner is the human repeater the Choir 
 Both factions field couriers under [[Timeline|the Pact]] — a Pyre runner carries a burn
 order, a Warden runner carries a hold order, and on the road they run the same gauntlet.
 
+**Warline operation — Logistics Run:** A courier carries the message between holdouts on foot when the Scourge cuts the comms — outrun the Choir and the front stays connected.
+
 ## The hook — speed beats omniscience
 The Scourge is near-omniscient *while it's massed and connected* ([[CANON]] §5), but its
 coordination has a tempo, and a runner at full **redline** is faster than the Choir can

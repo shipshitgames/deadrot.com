@@ -81,10 +81,10 @@ export class Enemy {
 
   update(
     delta: number,
-    elapsed: number,
+    _elapsed: number,
     playerPos: THREE.Vector3,
     peers: Enemy[],
-    cameraQuat: THREE.Quaternion,
+    _cameraQuat: THREE.Quaternion,
   ): EnemyTick {
     const tick: EnemyTick = { melee: 0, shots: [] };
     if (!this.alive) return tick;

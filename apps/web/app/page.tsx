@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { unstable_cache } from "next/cache";
 import Image from "next/image";
 import Link from "next/link";
 import { FactionCardGrid } from "@/components/faction/faction-card-grid";
@@ -6,15 +7,33 @@ import { AccessStateBadge } from "@/components/game/access-badge";
 import { GameCard } from "@/components/game/game-card";
 import { Backdrop } from "@/components/site/atmosphere";
 import { Eyebrow } from "@/components/site/eyebrow";
+import { SeasonOne } from "@/components/site/season-one";
 import { Waitlist } from "@/components/site/waitlist";
 import { Button } from "@/components/ui/button";
 import { COLLECTION_PRICE_LABEL, EARLY_BUYER_CODE, EARLY_BUYER_PRICE_LABEL } from "@/lib/access";
 import { ACCESS_STATE_ORDER, ACCESS_STATE_PRESENTATION } from "@/lib/access-state";
 import { assetUrl } from "@/lib/assets";
 import { accentVars, gamesByStatus, universe } from "@/lib/content";
+import { fetchRemoteFlags, selectVisibleGames } from "@/lib/flags";
 import { createSocialMetadata } from "@/lib/social";
 
 const WATCH = "https://youtube.com/@shipshitshow";
+
+// Game visibility (#384): the PostHog ramp is consulted ONCE per ISR window, not
+// per request. PostHog's decide call is a POST (uncacheable by Next's fetch data
+// cache), so a naive `await fetchRemoteFlags()` in render would force the whole
+// homepage to dynamic + a 2s-timeout POST on every visit. `unstable_cache` caches
+// the *result* for 60s instead, so the page stays statically prerendered (ISR)
+// and a flag flip propagates within the window. The anonymous evaluation is
+// shared by all visitors (visibility is not per-user on the public lobby).
+const cachedRemoteFlags = unstable_cache(() => fetchRemoteFlags(), ["home-game-visibility-flags"], {
+  revalidate: 60,
+  tags: ["game-visibility"],
+});
+
+// ISR: regenerate at most once per 60s so the remote flag ramp shows up without a
+// redeploy, while keeping the homepage static (no per-request network on the hot path).
+export const revalidate = 60;
 
 export const metadata: Metadata = createSocialMetadata({
   title: "DEADROT",
@@ -23,8 +42,13 @@ export const metadata: Metadata = createSocialMetadata({
   openGraphTitle: "DEADROT - Ship Shit Games",
 });
 
-export default function Home() {
-  const gallery = gamesByStatus;
+export default async function Home() {
+  // Drop any game whose visibility flag is killed / not yet ramped. The remote map
+  // is cached (above); the FLAG_OVERRIDES kill-switch is still applied fresh inside
+  // selectVisibleGames, so it stays instant. Default-on, so without PostHog or an
+  // override every game shows exactly as before — this never grants access (the
+  // proxy gate still enforces the paywall on whatever stays visible).
+  const gallery = selectVisibleGames(gamesByStatus, await cachedRemoteFlags());
   const premiseLead = universe.premise.split("\n\n")[0];
 
   return (
@@ -126,6 +150,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── SEASON ONE ───────────────────────────────────────────────────── */}
+      <SeasonOne />
+
       {/* ── WARLINE ──────────────────────────────────────────────────────── */}
       <section
         id="warline"
@@ -205,8 +232,8 @@ export default function Home() {
           </h2>
           <p className="mt-5 max-w-xl leading-relaxed text-ash">
             Deadrot is built in the open — preview and community builds ship rough and evolve on stream, not as a
-            finished-game promise. Join the waitlist for first access to new games, new horrors, and the persistent war.
-            No spam, just the war.
+            finished-game promise. Join the front: the season opens in waves, and the waitlist gets first access the
+            moment each new build comes online. No spam, just the war.
           </p>
           <div className="relative mt-9 w-full">
             <Waitlist />

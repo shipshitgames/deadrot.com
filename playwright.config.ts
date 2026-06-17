@@ -60,6 +60,8 @@ export default defineConfig({
         /warline-war-effort\.spec\.ts/,
         /pactfall-moba\.spec\.ts/,
         /brawl-arena\.spec\.ts/,
+        /scourge-arena-environments\.spec\.ts/,
+        /scourge-arena-readability\.spec\.ts/,
       ],
       use: {
         ...viewport.device,

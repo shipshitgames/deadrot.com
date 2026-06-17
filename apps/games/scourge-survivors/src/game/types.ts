@@ -1,3 +1,4 @@
+import type { FloatNumber, HudCore, HudListener } from "@deadrot/game-kit/hud";
 import type { PixelIconId } from "../assets/ui/pixelIcons";
 import type { MainWeaponVisualTier } from "./data/survivors";
 
@@ -38,10 +39,16 @@ export interface WeaponIdentityState {
   dualCompatible: boolean;
 }
 
-export interface HUDState {
+/**
+ * Scourge Survivors' game-specific HUD fields — everything beyond the genre-neutral
+ * core (vitals, feedback channels, floating combat numbers) that the shared
+ * {@link HudCoreSystem} owns. Composed with the core into {@link HudState} below.
+ *
+ * The game's own status machine lives here (not in the engine) so the shared core
+ * stays free of Scourge-specific phases like `levelup`.
+ */
+export interface ScourgeHudExt {
   status: GameStatus;
-  playerHealth: number;
-  maxPlayerHealth: number;
   ammo: number; // rounds in current magazine
   magazineSize: number;
   reserve: number; // rounds in reserve
@@ -97,19 +104,6 @@ export interface HUDState {
   /** Breach-boss ability state (only meaningful while bossActive). */
   bossShielded: boolean;
   bossEnraged: boolean;
-  /** Monotonic counters used by the HUD to trigger transient animations. */
-  hitMarkerSeq: number;
-  headshotSeq: number;
-  killSeq: number;
-  damageSeq: number;
-  /** Transient centre-screen banner ("WAVE 2", "BREACH-BOSS", ...). */
-  banner: string;
-  bannerSeq: number;
-  /** Small transient toast for pickups ("+ SHOTGUN", "+35 HP", ...). */
-  toast: string;
-  toastSeq: number;
-  /** Floating damage numbers, anchored to where the hit landed (screen %). */
-  damageNumbers: DamageNumber[];
   /** Co-op breach room state. */
   multiplayer: boolean;
   connected: boolean;
@@ -160,14 +154,17 @@ export interface HUDState {
   banishes: number;
 }
 
-export interface DamageNumber {
-  id: number;
-  /** Screen position as a percentage of the viewport (0–100). */
-  x: number;
-  y: number;
-  amount: number;
-  kind: "normal" | "head" | "crit";
-}
+/**
+ * The full Scourge Survivors HUD frame: the shared genre-neutral core (vitals,
+ * feedback channels, floating combat numbers) merged with this game's
+ * {@link ScourgeHudExt}. HUD components read every field flat — `state.banner`,
+ * `state.playerHealth`, `state.ammo` — exactly as they did against the old
+ * monolithic state object, so nothing downstream had to change.
+ */
+export type HudState = HudCore<ScourgeHudExt>;
+
+/** Floating combat number on the HUD frame (engine type; was the local `DamageNumber`). */
+export type { FloatNumber };
 
 export interface ScoreboardEntry {
   id: string;
@@ -177,4 +174,4 @@ export interface ScoreboardEntry {
   you: boolean;
 }
 
-export type StateListener = (state: HUDState) => void;
+export type StateListener = HudListener<ScourgeHudExt>;

@@ -1,0 +1,27 @@
+# Coverage gate for @deadrot/game-kit — part of the repo coverage baseline (#6).
+# game-kit is in the *enforced* coverage scope: CI fails if its pure-logic
+# surface drops below the 80% baseline. bun test reports function + line
+# coverage (no separate branch metric); see docs/coverage.md for the policy.
+#
+# coveragePathIgnorePatterns scopes the gate to game-kit's own pure-logic
+# surface:
+#   - **/warline/src/**, **/assets/src/** — workspace *source* deps that get
+#     instrumented transitively, but are exercised by their OWN suites, not ours.
+#   - src/audio/AudioEngine.ts, src/audio/bindSettings.ts, src/juice/**,
+#     src/telemetry/browser.ts — WebAudio / DOM / canvas runtime modules with no
+#     headless unit surface. The audio exclusion is file-scoped, NOT blanket
+#     src/audio/**: the procedural sfxPalette.ts is pure (cue fns over an injected
+#     Synth) and IS gated — see tests/sfxPalette.test.ts.
+[test]
+coverage = true
+coverageReporter = ["text", "lcov"]
+coverageThreshold = 0.8
+coverageSkipTestFiles = true
+coveragePathIgnorePatterns = [
+  "**/warline/src/**",
+  "**/assets/src/**",
+  "**/src/audio/AudioEngine.ts",
+  "**/src/audio/bindSettings.ts",
+  "**/src/juice/**",
+  "**/src/telemetry/browser.ts",
+]

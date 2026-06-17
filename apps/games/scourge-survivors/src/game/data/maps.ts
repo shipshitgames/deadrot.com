@@ -227,8 +227,10 @@ const ASHGATE: ArenaMap = {
       { x: -28, z: -25, w: 7, d: 10, texture: "arena-ashgate-decal", color: 0xc1121f, opacity: 0.16, rotation: -0.55 },
     ],
     props: [
-      { x: -30, z: -20, w: 5.2, h: 8.4, texture: "arena-ashgate-prop", color: 0xff8a3c, opacity: 0.9 },
-      { x: 30, z: 20, w: 5.2, h: 8.4, texture: "arena-ashgate-prop", color: 0xff6a00, opacity: 0.86 },
+      // In-core props capped at the readability budget's 0.85 so a Scourge
+      // sprite is never fully hidden behind them at gameplay distance (#35).
+      { x: -30, z: -20, w: 5.2, h: 8.4, texture: "arena-ashgate-prop", color: 0xff8a3c, opacity: 0.85 },
+      { x: 30, z: 20, w: 5.2, h: 8.4, texture: "arena-ashgate-prop", color: 0xff6a00, opacity: 0.85 },
       { x: -6, z: 26, w: 4.3, h: 7, texture: "arena-ashgate-prop", color: 0xb89274, opacity: 0.78 },
       { x: 32, z: -7, w: 4.1, h: 6.8, texture: "arena-ashgate-prop", color: 0xff8a3c, opacity: 0.74 },
     ],
@@ -288,8 +290,10 @@ const HOLLOWLANES: ArenaMap = {
       { x: 0, z: 25, w: 16, d: 8, texture: "arena-hollowlanes-decal", color: 0xf6efe2, opacity: 0.2, rotation: 0.2 },
     ],
     props: [
-      { x: -9, z: -22, w: 4.6, h: 7.4, texture: "arena-hollowlanes-prop", color: 0xf6efe2, opacity: 0.96 },
-      { x: 9, z: -22, w: 4.6, h: 7.4, texture: "arena-hollowlanes-prop", color: 0xf6efe2, opacity: 0.96 },
+      // Bone-pale pillars dropped from near-opaque 0.96 to the readability
+      // budget's 0.85 in-core ceiling so they read as cover, not walls (#35).
+      { x: -9, z: -22, w: 4.6, h: 7.4, texture: "arena-hollowlanes-prop", color: 0xf6efe2, opacity: 0.85 },
+      { x: 9, z: -22, w: 4.6, h: 7.4, texture: "arena-hollowlanes-prop", color: 0xf6efe2, opacity: 0.85 },
       { x: -21, z: 21, w: 4.3, h: 7, texture: "arena-hollowlanes-prop", color: 0xcdbfae, opacity: 0.84 },
       { x: 21, z: 21, w: 4.3, h: 7, texture: "arena-hollowlanes-prop", color: 0xcdbfae, opacity: 0.84 },
       { x: 0, z: 31, w: 4.8, h: 7.8, texture: "arena-hollowlanes-prop", color: 0xf6efe2, opacity: 0.8 },
@@ -349,8 +353,10 @@ const MAW: ArenaMap = {
       { x: 18, z: 0, w: 9, d: 12, texture: "arena-maw-decal", color: 0x6b7a5a, opacity: 0.18, rotation: -1.57 },
     ],
     props: [
-      { x: -11, z: -24, w: 4.2, h: 9.2, texture: "arena-maw-prop", color: 0x8bdc1f, opacity: 0.88 },
-      { x: 11, z: -24, w: 4.2, h: 9.2, texture: "arena-maw-prop", color: 0x8bdc1f, opacity: 0.88 },
+      // Capped at the readability budget's 0.85 in-core ceiling; the toxic glow
+      // still reads, but a Scourge sprite behind one stays visible (#35).
+      { x: -11, z: -24, w: 4.2, h: 9.2, texture: "arena-maw-prop", color: 0x8bdc1f, opacity: 0.85 },
+      { x: 11, z: -24, w: 4.2, h: 9.2, texture: "arena-maw-prop", color: 0x8bdc1f, opacity: 0.85 },
       { x: -23, z: 18, w: 5, h: 10.5, texture: "arena-maw-prop", color: 0x6acf3c, opacity: 0.82 },
       { x: 23, z: 18, w: 5, h: 10.5, texture: "arena-maw-prop", color: 0x6acf3c, opacity: 0.82 },
     ],
@@ -415,8 +421,10 @@ const PERDITION: ArenaMap = {
       { x: 0, z: -24, w: 18, d: 9, texture: "arena-perdition-decal", color: 0x9a5560, opacity: 0.16 },
     ],
     props: [
-      { x: -14, z: 0, w: 4.5, h: 8.8, texture: "arena-perdition-prop", color: 0xff2a18, opacity: 0.88 },
-      { x: 14, z: 0, w: 4.5, h: 8.8, texture: "arena-perdition-prop", color: 0xff2a18, opacity: 0.88 },
+      // The two central core-flanking props sit right where the fight happens —
+      // capped at the readability budget's 0.85 in-core ceiling (#35).
+      { x: -14, z: 0, w: 4.5, h: 8.8, texture: "arena-perdition-prop", color: 0xff2a18, opacity: 0.85 },
+      { x: 14, z: 0, w: 4.5, h: 8.8, texture: "arena-perdition-prop", color: 0xff2a18, opacity: 0.85 },
       { x: 0, z: -14, w: 4, h: 8.2, texture: "arena-perdition-prop", color: 0xc1121f, opacity: 0.8 },
       { x: 0, z: 14, w: 4, h: 8.2, texture: "arena-perdition-prop", color: 0xc1121f, opacity: 0.8 },
     ],

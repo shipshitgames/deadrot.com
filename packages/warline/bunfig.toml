@@ -1,0 +1,14 @@
+# Coverage gate for @shipshitgames/warline — part of the repo coverage baseline
+# (#6). warline is the dependency-free, deterministic war-state machine, so it
+# is in the *enforced* coverage scope: CI fails if it drops below the 80%
+# baseline. bun test reports function + line coverage (no separate branch
+# metric); see docs/coverage.md for the repo-wide policy.
+#
+# client.ts is the browser/network (partysocket) front client — it has no
+# headless unit surface, so it is excluded from the pure-state-machine gate.
+[test]
+coverage = true
+coverageReporter = ["text", "lcov"]
+coverageThreshold = 0.8
+coverageSkipTestFiles = true
+coveragePathIgnorePatterns = ["**/client.ts"]
