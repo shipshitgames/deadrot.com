@@ -33,6 +33,7 @@
     "e2e:ui": "playwright test --ui",
     "e2e:report": "playwright show-report",
     "social:check": "node scripts/check-social-metadata.mjs",
+    "codex:check": "bun test packages/assets/tests/lore-drift.test.ts packages/game-kit/tests/codex.test.ts apps/web/tests/unit/codex.test.ts",
     "check:secrets": "node scripts/check-secrets.mjs",
     "assets:check": "node scripts/check-assets.mjs && bun run --cwd packages/assets assets:budgets --check",
     "assets:budgets": "bun run --cwd packages/assets assets:budgets",

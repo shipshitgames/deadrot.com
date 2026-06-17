@@ -6,6 +6,7 @@ import { DeadrotBrand } from "@/components/site/deadrot-brand";
 const LINKS: { label: string; href: string; ext?: boolean }[] = [
   { label: "Docs", href: "/docs" },
   { label: "Community", href: "/community" },
+  { label: "Codex", href: "/codex" },
   { label: "Universe / Lore", href: "/universe" },
   { label: "Ship Shit Games", href: "https://shipshitgames.com", ext: true },
   { label: "GitHub", href: "https://github.com/shipshitgames", ext: true },

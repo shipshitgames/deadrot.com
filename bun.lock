@@ -295,6 +295,7 @@
       "dependencies": {
         "@clerk/nextjs": "^7.5.1",
         "@deadrot/catalog": "workspace:*",
+        "@deadrot/game-kit": "workspace:*",
         "@radix-ui/react-slot": "^1.2.4",
         "@sentry/nextjs": "^10.57.0",
         "@shipshitgames/assets": "workspace:*",
