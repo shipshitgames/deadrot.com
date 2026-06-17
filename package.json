@@ -10,6 +10,8 @@
   ],
   "scripts": {
     "dev": "turbo run dev",
+    "demo:dev": "node scripts/demo-stack.mjs",
+    "demo:smoke": "node scripts/demo-smoke.mjs",
     "build": "turbo run build",
     "format": "biome format --write .",
     "format:check": "biome format .",
