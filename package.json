@@ -28,6 +28,7 @@
     "test:e2e": "playwright install chromium && playwright test",
     "test:e2e:web": "playwright install chromium && playwright test -c apps/web/playwright.config.ts",
     "test:e2e:workspaces": "turbo run test:e2e",
+    "proof:tours": "playwright install chromium && node scripts/run-proof-tours.mjs",
     "e2e:docker": "scripts/run-e2e-docker.sh",
     "e2e:ui": "playwright test --ui",
     "e2e:report": "playwright show-report",
