@@ -37,6 +37,8 @@ Brawl outcomes are **prototype war signals**, not permanent canon by default. A 
 a lane, humiliate a faction, or mark a Scourge champion for later lore, but authored canon still
 has to promote the event.
 
+**Warline operation — Champion Duel:** One battlefield duel rallies a contested lane — a champion's win banks into the shared war record as pressure on that front.
+
 ## Modes
 
 ### Duel

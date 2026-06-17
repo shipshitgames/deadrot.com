@@ -2,7 +2,7 @@ import type { GameSlug } from "@deadrot/catalog";
 import type { HTMLAttributes, ReactNode } from "react";
 import type { GameSettingsScreenProps } from "./GameSettingsScreen";
 import { GameSettingsScreen } from "./GameSettingsScreen";
-import { gameMenuConfig, type GameMenuConfig } from "./gameMenuConfig";
+import { type GameMenuConfig, gameMenuConfig } from "./gameMenuConfig";
 import { MainMenuCopy, MainMenuStatus, MainMenuTitle, MainMenuTitleLine, MenuKicker } from "./Menu";
 import type { PauseMenuProps } from "./PauseMenu";
 import { PauseMenu } from "./PauseMenu";

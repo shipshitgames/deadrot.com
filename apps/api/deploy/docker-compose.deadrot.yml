@@ -1,0 +1,41 @@
+# deadrot-api, co-located on the shipshit-api EC2 host ALONGSIDE api.shipshit.games.
+# This is a SEPARATE compose project (name: deadrot-api) and container so it never
+# touches the api.shipshit.games service. Image is built+pushed from the deadrot.com
+# repo to ghcr; the host pulls it. DATABASE_URL comes from the host's shared
+# ../.env.production (rendered from /shipshit/production by the canonical
+# render-ssm-env.sh); everything else is deadrot-specific and set here.
+name: api-deadrot-com
+
+services:
+  api-deadrot-com:
+    image: ghcr.io/shipshitgames/deadrot.com/api:${IMAGE_TAG:-latest}
+    container_name: api-deadrot-com
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    ports:
+      # Bound to localhost; the host reverse proxy fronts api.deadrot.com to it.
+      # 3004 so it never collides with api.shipshit.games on 3003.
+      - "127.0.0.1:3004:3004"
+    env_file:
+      # Shared host env (DATABASE_URL etc.) — same file api.shipshit.games uses.
+      - ../.env.production
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=3004
+      - SERVICE_NAME=deadrot-api
+      - ALLOWED_ORIGINS=https://deadrot.com,https://www.deadrot.com
+      - CDN_ORIGIN=https://cdn.deadrot.com
+    healthcheck:
+      test:
+        - CMD
+        - bun
+        - -e
+        - "fetch('http://127.0.0.1:3004/health/live').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3

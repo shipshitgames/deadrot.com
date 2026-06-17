@@ -13,6 +13,22 @@ const e2eDir = import.meta.dir;
 const VIEWPORTS = ["desktop", "mobile"] as const;
 const slugs = GAME_APPS.map((game) => game.slug);
 
+const originalGameSlugFilter = process.env.E2E_GAME_SLUGS;
+const originalViewportFilter = process.env.E2E_VIEWPORT;
+delete process.env.E2E_GAME_SLUGS;
+delete process.env.E2E_VIEWPORT;
+const { default: playwrightConfig } = await import("../playwright.config");
+if (originalGameSlugFilter === undefined) {
+  delete process.env.E2E_GAME_SLUGS;
+} else {
+  process.env.E2E_GAME_SLUGS = originalGameSlugFilter;
+}
+if (originalViewportFilter === undefined) {
+  delete process.env.E2E_VIEWPORT;
+} else {
+  process.env.E2E_VIEWPORT = originalViewportFilter;
+}
+
 // Every e2e/*.spec.ts that is a per-game deep spec — i.e. not the shared boot
 // smoke (games.spec.ts), which iterates all games via gameSpecs rather than
 // owning a single slug.
@@ -81,9 +97,10 @@ describe("deep-spec-per-game", () => {
 
 describe("project-matrix completeness", () => {
   test("matrix is GAME_APPS.length × [desktop, mobile] with both viewports per slug", () => {
-    const projectNames = slugs.flatMap((slug) => VIEWPORTS.map((viewport) => `${slug}:${viewport}`));
+    const projectNames = (playwrightConfig.projects ?? []).map((project) => project.name);
+    const expectedProjectNames = slugs.flatMap((slug) => VIEWPORTS.map((viewport) => `${slug}:${viewport}`));
 
-    expect(projectNames.length).toBe(GAME_APPS.length * 2);
+    expect(projectNames.toSorted()).toEqual(expectedProjectNames.toSorted());
     expect(new Set(projectNames).size).toBe(projectNames.length);
 
     for (const slug of slugs) {

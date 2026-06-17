@@ -125,6 +125,18 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       {/* ── OVERVIEW ─────────────────────────────────────────────────────── */}
       <section className="relative border-t border-gunmetal/40 px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-7xl">
+          <div className="mb-12 max-w-3xl rounded-md border border-[var(--page-accent)]/30 bg-coal p-6">
+            <Eyebrow>Warline operation</Eyebrow>
+            <p
+              data-testid="warline-operation"
+              data-slug={game.slug}
+              className="mt-3 font-display text-2xl font-bold uppercase tracking-tight text-bone"
+            >
+              {game.warlineRole.operation}
+            </p>
+            <p className="mt-2 leading-relaxed text-ash">{game.warlineRole.line}</p>
+          </div>
+
           <Eyebrow>The Mission</Eyebrow>
           <h2 className="mt-3 font-display text-4xl font-bold uppercase tracking-tight text-bone sm:text-5xl">
             Overview

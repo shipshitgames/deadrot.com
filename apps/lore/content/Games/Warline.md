@@ -26,6 +26,8 @@ Scourge is pressuring the lanes, and which operations buy the world more time.
 Warline outcomes are **provisional** until promoted into authored lore. A run can shift the
 prototype front without automatically rewriting [[Timeline]] or a Location page.
 
+**Warline operation — The Front:** The war console itself: every purge, hold, duel, intercept, run, and sabotage reports here, spending shared resources to buy the world more time.
+
 ## Current Resources
 
 - `scrap` — Warden material, repairs, tower parts, field industry.

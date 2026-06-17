@@ -1,7 +1,7 @@
 #!/usr/bin/env node
+import { spawnSync } from "node:child_process";
 import { appendFileSync, existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 
 const repoRoot = path.resolve(new URL("..", import.meta.url).pathname);
 const gamesRoot = path.join(repoRoot, "apps/games");

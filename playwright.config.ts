@@ -60,6 +60,8 @@ export default defineConfig({
         /warline-war-effort\.spec\.ts/,
         /pactfall-moba\.spec\.ts/,
         /brawl-arena\.spec\.ts/,
+        /scourge-arena-environments\.spec\.ts/,
+        /scourge-arena-readability\.spec\.ts/,
         // Dedicated deep-gameplay specs for the games that previously only had
         // the shared boot smoke (the per-game coverage invariant is enforced by
         // e2e/coverage.test.ts).

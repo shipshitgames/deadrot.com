@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://shipshit.dev/schemas/assets-index.json",
+  "title": "Deadrot canonical asset index",
+  "description": "Generated index of every shipped media asset in packages/assets: stable id, kind, owning game, local + CDN address, media type, byte size, content hash, and intrinsic dimensions. Produced by scripts/generate-asset-index.mjs (deadrot.com#343); regenerate with `bun run --cwd packages/assets assets:index`.",
+  "type": "object",
+  "required": ["version", "cdnBase", "assetCount", "assets"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "string", "description": "Format version of the index document." },
+    "generator": { "type": "string", "description": "Script that produced this file." },
+    "note": { "type": "string" },
+    "cdnBase": {
+      "type": "string",
+      "description": "Default CDN origin; overridable at runtime via ASSET_BASE_URL or an explicit baseUrl.",
+      "format": "uri"
+    },
+    "assetCount": { "type": "integer", "minimum": 0 },
+    "assets": {
+      "type": "array",
+      "description": "Every shipped media asset, sorted by package-relative path.",
+      "items": { "$ref": "#/definitions/asset" }
+    }
+  },
+  "definitions": {
+    "asset": {
+      "type": "object",
+      "required": ["id", "kind", "game", "path", "cdnPath", "mediaType", "bytes", "sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Stable id: POSIX package-relative path without the media extension."
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["image", "vector", "video", "audio", "font"],
+          "description": "Semantic family. webm/mp4 under an audio/ tree resolve to 'audio'."
+        },
+        "game": {
+          "type": ["string", "null"],
+          "description": "Owning game slug (the games/<slug>/ directory), or null for non-game roots (shared, brand, universe, entities, concepts, tokens)."
+        },
+        "path": {
+          "type": "string",
+          "description": "Package-relative path (with extension), for dev/build tooling."
+        },
+        "cdnPath": {
+          "type": "string",
+          "description": "CDN-relative path, joined onto a base origin for deployed runtime."
+        },
+        "mediaType": {
+          "type": "string",
+          "description": "IANA media (MIME) type, e.g. image/webp."
+        },
+        "bytes": { "type": "integer", "minimum": 0, "description": "File size in bytes." },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Hex SHA-256 of the file contents."
+        },
+        "width": { "type": "integer", "minimum": 1, "description": "Intrinsic width in px, where available." },
+        "height": { "type": "integer", "minimum": 1, "description": "Intrinsic height in px, where available." },
+        "provenance": { "type": "string", "description": "Provenance note, where recorded." },
+        "license": { "type": "string", "description": "License note, where recorded." }
+      }
+    }
+  }
+}

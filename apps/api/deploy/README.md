@@ -1,52 +1,53 @@
 # Deadrot API — production deploy
 
-The API (`deadrot-api`, a Bun + Postgres service) runs as a Docker container on an
-EC2 host (`shipshit-api`, AL2023), reached over **Tailscale** (public SSH is
-firewalled). It is deployed by the **`deploy-api`** job in `.github/workflows/release.yml`
-on every `vX.Y.Z` tag — the same release that deploys the Vercel projects. Nothing
-auto-deploys on a master push.
+The Deadrot API (a Bun + Postgres service) runs as the **`api-deadrot-com`** Docker
+container on the **`shipshit-api`** EC2 host, **co-located alongside `api.shipshit.games`**
+(its `api-shipshit-games` container) — one
+box for both, since traffic is minimal. It deploys from the `deploy-api` job in
+`.github/workflows/release.yml` on every `vX.Y.Z` tag, next to the Vercel deploy.
+Nothing auto-deploys on a master push.
 
 ## How a release deploys it
 
-1. CI builds the image from `apps/api/Dockerfile` (full monorepo context) and
-   `docker save | gzip`s it — no registry.
-2. CI joins the tailnet (`tailscale/github-action`, tag `tag:ci`) and `scp`s this
-   directory's files + the image tarball to `ec2-user@shipshit-api:~/cloud/docker/`.
-3. CI runs `cd ~/cloud && ./docker/deploy-production.sh` on the box, which:
-   - `docker load`s the image,
-   - renders `.env` from **AWS SSM `/shipshit/production/*`** via the instance role
-     (`render-ssm-env.sh`),
-   - `docker compose up -d`,
-   - waits for `http://127.0.0.1:3004/health/ready`.
+1. CI builds `apps/api/Dockerfile` and pushes to **ghcr** at
+   `ghcr.io/shipshitgames/deadrot.com/api:<sha>` (its own package — never collides
+   with `ghcr.io/shipshitgames/shipshit.games/api`).
+2. CI joins the tailnet as `tag:ci` and reaches the host over **Tailscale SSH** (no
+   key in CI; public SSH is firewalled).
+3. CI `scp`s **only** `docker-compose.deadrot.yml` + `deploy-deadrot.sh` to
+   `~/cloud/docker/` and runs `deploy-deadrot.sh`, which: logs into ghcr, refreshes
+   the shared `.env.production` via the host's **canonical `render-ssm-env.sh`**,
+   `docker compose up -d` the `api-deadrot-com` container, and waits on
+   `http://127.0.0.1:3004/health/ready`.
 
-The container binds `127.0.0.1:3004`; the host reverse proxy / ALB fronts it for
-`api.deadrot.com`.
+### Isolation from `api.shipshit.games`
 
-## Access model
+- Separate compose project + container (`api-deadrot-com`) and port (`3004` vs `3003`).
+  The deploy **never writes the api.shipshit.games toolkit
+  files** (`docker-compose.production.yml`, `deploy-production.sh`, `render-ssm-env.sh`)
+  — it only adds `docker-compose.deadrot.yml` + `deploy-deadrot.sh`.
+- `DATABASE_URL` comes from the shared `/shipshit/production/DATABASE_URL` (same RDS).
+  If deadrot should use a *separate* database, add a distinct SSM param and point the
+  compose `env`/`env_file` at it.
 
-CI authenticates to the **org Tailscale OAuth client** (`TAILSCALE_CLIENT_ID` /
-`TAILSCALE_CLIENT_SECRET`, org-level secrets) as `tag:ci`, then reaches the box over
-**Tailscale SSH** — there is **no SSH key in CI**. Public SSH on the host is firewalled.
+## Provisioned / required
 
-## Required for the deploy to succeed
+- **Tailscale:** org secrets `TAILSCALE_CLIENT_ID` / `TAILSCALE_CLIENT_SECRET`; ACL
+  grants `tag:ci → ssh ec2-user@tag:server`; Tailscale SSH enabled on the host. ✅
+- **ghcr:** pushed under the deadrot.com repo (`GITHUB_TOKEN`, `packages: write`); the
+  host pulls with the same token.
+- **SSM:** `/shipshit/production/DATABASE_URL` exists ✅ (instance role reads it).
+- **Fronting:** the container binds `127.0.0.1:3004`; the deploy does **not** change
+  DNS. `api.deadrot.com` still serves from `52.8.153.188` until you front this host at
+  `:3004` and cut over — so a release is safe to run before then.
 
-- **Tailscale ACL** — grant `tag:ci` → SSH `ec2-user@shipshit-api`, and Tailscale SSH
-  must be enabled on the host (`tailscale set --ssh`).
-- **AWS SSM** — `/shipshit/production/DATABASE_URL` (RDS) exists ✅; instance role has
-  `ssm:GetParametersByPath` + `kms:Decrypt`. `ALLOWED_ORIGINS` / `CDN_ORIGIN` /
-  `DATABASE_SSL_MODE` are optional (defaults in `apps/api/src/config.ts`).
-- **Fronting** — the deploy binds `127.0.0.1:3004` and **does not change DNS**. The
-  container comes up "dark" until `api.deadrot.com` is pointed at `shipshit-api`
-  (today it still serves from the separate `52.8.153.188` host), so a release is safe
-  to run before cutover.
-
-## Manual deploy (from a machine on the tailnet)
+## Manual deploy (from a tailnet machine)
 
 ```bash
-docker build -f apps/api/Dockerfile -t deadrot-api:release .
-docker save deadrot-api:release | gzip > apps/api/deploy/deadrot-api-image.tar.gz
-scp -i ~/.ssh/shipshit-api-deploy.pem -o IdentitiesOnly=yes apps/api/deploy/* \
+image=ghcr.io/shipshitgames/deadrot.com/api
+docker build -f apps/api/Dockerfile -t "$image:manual" . && docker push "$image:manual"
+scp apps/api/deploy/docker-compose.deadrot.yml apps/api/deploy/deploy-deadrot.sh \
   ec2-user@shipshit-api:~/cloud/docker/
-ssh -i ~/.ssh/shipshit-api-deploy.pem -o IdentitiesOnly=yes ec2-user@shipshit-api \
-  'cd ~/cloud && ./docker/deploy-production.sh'
+ssh ec2-user@shipshit-api \
+  "IMAGE_TAG=manual GHCR_USER=<you> GHCR_TOKEN=<gh-pat> ~/cloud/docker/deploy-deadrot.sh"
 ```

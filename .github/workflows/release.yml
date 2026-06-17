@@ -218,32 +218,40 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: production
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v6
-      - name: Build API image
+      # Build + push deadrot's image to ghcr (the box pulls it — same model as
+      # api.shipshit.games). Image repo is the deadrot.com repo's own package, so
+      # it never collides with ghcr.io/shipshitgames/shipshit.games/api.
+      - name: Build and push image to ghcr
         run: |
-          docker build -f apps/api/Dockerfile \
-            -t deadrot-api:release -t "deadrot-api:${GITHUB_REF_NAME}" .
-          docker save deadrot-api:release | gzip >apps/api/deploy/deadrot-api-image.tar.gz
-      # CI joins the tailnet as tag:ci (org Tailscale OAuth client) and reaches the
-      # box over Tailscale SSH — no SSH key in CI. Requires the tailnet ACL to grant
-      # tag:ci → SSH ec2-user@shipshit-api and Tailscale SSH enabled on the host.
+          image="ghcr.io/${GITHUB_REPOSITORY,,}/api"
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker build -f apps/api/Dockerfile -t "${image}:${GITHUB_SHA}" -t "${image}:latest" .
+          docker push "${image}:${GITHUB_SHA}"
+          docker push "${image}:latest"
+      # Join the tailnet as tag:ci and reach the host over Tailscale SSH — no key.
       - name: Connect to Tailscale
         uses: tailscale/github-action@v3
         with:
           oauth-client-id: ${{ secrets.TAILSCALE_CLIENT_ID }}
           oauth-secret: ${{ secrets.TAILSCALE_CLIENT_SECRET }}
           tags: tag:ci
-      - name: Ship assets and deploy
+      # Co-located deploy: ship ONLY deadrot's compose + deploy script (never the
+      # api.shipshit.games toolkit), then bring up the deadrot-api container.
+      - name: Deploy deadrot-api (co-located on shipshit-api)
         run: |
           ssh_opts="-o StrictHostKeyChecking=accept-new"
           # shellcheck disable=SC2086
           scp $ssh_opts \
-            apps/api/deploy/docker-compose.production.yml \
-            apps/api/deploy/deploy-production.sh \
-            apps/api/deploy/render-ssm-env.sh \
-            apps/api/deploy/deadrot-api-image.tar.gz \
+            apps/api/deploy/docker-compose.deadrot.yml \
+            apps/api/deploy/deploy-deadrot.sh \
             ec2-user@shipshit-api:~/cloud/docker/
           # shellcheck disable=SC2086
           ssh $ssh_opts ec2-user@shipshit-api \
-            'chmod +x ~/cloud/docker/*.sh && cd ~/cloud && ./docker/deploy-production.sh'
+            "chmod +x ~/cloud/docker/deploy-deadrot.sh && \
+             IMAGE_TAG='${GITHUB_SHA}' GHCR_USER='${{ github.actor }}' GHCR_TOKEN='${{ secrets.GITHUB_TOKEN }}' \
+             ~/cloud/docker/deploy-deadrot.sh"

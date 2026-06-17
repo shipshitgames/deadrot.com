@@ -85,6 +85,7 @@ Useful checks:
 
 ```bash
 bun run assets:check
+bun run test:coverage   # line+function coverage gate (catalog, game-kit, warline)
 bun run e2e        # cross-game Playwright suite
 bun run e2e:docker
 bun run e2e:ui
@@ -92,7 +93,8 @@ bun run e2e:ui
 
 E2E artifacts are written to `.artifacts/e2e/`. See
 [`docs/e2e.md`](docs/e2e.md) for local UI mode, report viewing, and CI
-expectations.
+expectations. The coverage baseline (enforced scope, exclusions, and how to add
+a package) is documented in [`docs/coverage.md`](docs/coverage.md).
 
 ## Game Deploys
 

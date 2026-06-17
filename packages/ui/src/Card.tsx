@@ -1,4 +1,4 @@
-import { Children, cloneElement, isValidElement, type HTMLAttributes, type ReactElement } from "react";
+import { Children, cloneElement, type HTMLAttributes, isValidElement, type ReactElement } from "react";
 import { cn } from "./cn";
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
