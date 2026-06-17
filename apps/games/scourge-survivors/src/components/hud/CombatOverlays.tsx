@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { SCOURGE_THREAT_TIERS } from "../../game/data/enemies";
 import type { HudState } from "../../game/types";
 import { PixelIcon } from "../PixelIcon";
@@ -47,6 +48,35 @@ function HitMarker({ seq, variant }: { seq: number; variant: "hit" | "kill" | "h
       <span className={`${bar} left-1/2 w-[3px] h-[10px] -translate-x-1/2 bottom-0`} />
       <span className={`${bar} top-1/2 h-[3px] w-[10px] -translate-y-1/2 left-0`} />
       <span className={`${bar} top-1/2 h-[3px] w-[10px] -translate-y-1/2 right-0`} />
+    </div>
+  );
+}
+
+const COMIC_SFX_WORDS = {
+  hit: ["KRAK", "THUD", "CHNK", "TAK"],
+  head: ["HEADSHOT", "KRAK", "CRACK"],
+  kill: ["RIP", "SPLAT", "CHUNK", "BURN"],
+} as const;
+
+function ComicSfxWord({ seq, variant }: { seq: number; variant: keyof typeof COMIC_SFX_WORDS }) {
+  if (seq <= 0) return null;
+  const words = COMIC_SFX_WORDS[variant];
+  const word = words[seq % words.length];
+  const left = variant === "head" ? "58%" : variant === "kill" ? "43%" : "52%";
+  const top = variant === "head" ? "42%" : variant === "kill" ? "47%" : "45%";
+  return (
+    <div
+      key={`comic-sfx-${variant}-${seq}`}
+      className={`scourge-comic-sfx scourge-comic-sfx--${variant} absolute select-none`}
+      style={
+        {
+          left,
+          top,
+        } as CSSProperties
+      }
+      aria-hidden
+    >
+      {word}
     </div>
   );
 }
@@ -271,6 +301,9 @@ export function CombatOverlays({ state }: { state: HudState }) {
       <HitMarker seq={hitSeq} variant="hit" />
       <HitMarker seq={emphasisSeq} variant="head" />
       <HitMarker seq={killSeq} variant="kill" />
+      {playing && <ComicSfxWord seq={hitSeq} variant="hit" />}
+      {playing && <ComicSfxWord seq={emphasisSeq} variant="head" />}
+      {playing && <ComicSfxWord seq={killSeq} variant="kill" />}
       {damageSeq > 0 && (
         <div
           key={`d-${damageSeq}`}

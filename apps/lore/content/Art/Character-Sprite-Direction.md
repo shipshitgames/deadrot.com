@@ -7,7 +7,7 @@ supersededBy: Universe/Style-Bible.md
 ---
 # Character Sprite Direction
 
-> **SUPERSEDED** — see [[Style-Bible]] §2 for the locked pixel-art medium (the ~110px pixel grid is the production size, **not** the 640–704px cutout figures below) and §13 for the current prompt skeletons. Kept for history; the faction/host-family language here is folded into the Style-Bible.
+> **SUPERSEDED** — see [[Style-Bible]] §2 for the locked comic-book / cel-ink medium and §13 for the current production prompt skeletons. Kept for history; the faction/host-family language here is folded into the Style-Bible.
 
 This is the shared visual direction for character sprites across Ship Shit Games.
 It turns the current lore into practical generation rules before final assets are
@@ -32,15 +32,15 @@ Character sprites are full-body 2D billboard cutouts for 3D games.
 - Use separate front, side, and back views.
 - Keep feet anchored to one baseline; no cropped boots.
 - Use a centered, readable, orthographic-ish pose.
-- Use transparent final PNG/WebP cutouts; default to HERO/VOID + rembg before pixel-grid downscale.
+- Use transparent final PNG/WebP cutouts; default to HERO/VOID + rembg or a strict flat-background cutout sheet.
 - Avoid text, logos with readable words, UI frames, background scenes, cast shadows, and floor planes.
 - Preserve strong silhouettes so units remain readable at FPS distance and tower-defense zoom.
 
-For the locked pixel pipeline:
+For the legacy pixel pipeline only:
 
 - Rank-and-file sprites target roughly 110 px tall after post.
 - Boss sprites target roughly 180 px tall after post.
-- Source renders may be larger, but production assets should preserve the locked pixel grid.
+- Source renders may be larger, but legacy pixel assets should preserve the old pixel grid.
 - Side views can be mirrored in code, so one side view is enough unless a future game needs asymmetric animation.
 
 ## Global Look

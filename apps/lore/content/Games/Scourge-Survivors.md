@@ -22,7 +22,8 @@ This is the flagship implementation of the shared [[Survivors-Loop]].
 
 ## First Sprite Roster
 - Pyre avatars: [[Ranger]], [[Bulwark]], [[Vector]], [[Patch]].
-- Scourge enemies: [[Swarm-Ripper]], [[Swarm-Spitter]], [[Breach-Boss]].
+- Scourge enemies: [[Swarm-Ripper]], [[Swarm-Spitter]], [[Wound-Hound]], [[Breach-Boss]].
+- Fast animal pressure now has a canon slot: [[Wound-Hound]] is the low, fragile tracker that reaches the operator faster than the standard [[Swarm-Ripper]].
 
 ## Player Kit
 

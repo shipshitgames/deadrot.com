@@ -33,7 +33,7 @@ function expectLicenseRecord(entry: { license?: unknown }, id: string) {
 
 function scourgeEnemySpritePaths() {
   const paths: string[] = [];
-  const enemySpriteIds = ["enemy-melee", "enemy-ranged", "enemy-flying", "boss"] as const;
+  const enemySpriteIds = ["enemy-melee", "enemy-ranged", "enemy-flying", "enemy-hound", "boss"] as const;
 
   for (const id of enemySpriteIds) {
     for (const view of Object.values(manifest.sprites[id].views)) paths.push(view.path);
@@ -82,7 +82,7 @@ describe("asset manifest", () => {
   it("defines catalog aliases for all Scourge runtime surfaces", () => {
     expect(Object.keys(manifest.runtime.weapons).sort()).toEqual(["cannon", "pistol", "shotgun", "smg", "sniper"]);
     expect(Object.keys(manifest.runtime.players).sort()).toEqual(["heavy", "medic", "ranger", "scout"]);
-    expect(Object.keys(manifest.runtime.enemies).sort()).toEqual(["boss", "flying", "melee", "ranged"]);
+    expect(Object.keys(manifest.runtime.enemies).sort()).toEqual(["boss", "flying", "hound", "melee", "ranged"]);
     expect(Object.keys(manifest.runtime.pickups).sort()).toEqual(["ammo", "damage", "dual", "health", "xpBlood"]);
     expect(Object.keys(manifest.runtime.projectiles).sort()).toEqual(["bolt", "boss", "enemy", "orb"]);
     expect(Object.keys(manifest.runtime.fx).sort()).toEqual(["muzzleFlash"]);
@@ -131,6 +131,7 @@ describe("asset manifest", () => {
       "enemy-melee",
       "enemy-ranged",
       "enemy-flying",
+      "enemy-hound",
       "boss",
       "player-ranger",
       "player-heavy",
@@ -151,14 +152,14 @@ describe("asset manifest", () => {
   });
 
   it("keeps promoted enemy sprites low-resolution and nearest-filtered for pixel art", () => {
-    const enemySpriteIds = ["enemy-melee", "enemy-ranged", "enemy-flying", "boss"] as const;
+    const enemySpriteIds = ["enemy-melee", "enemy-ranged", "enemy-flying", "enemy-hound", "boss"] as const;
 
     for (const id of enemySpriteIds) {
       const entry = manifest.sprites[id];
       expect(entry.filter, id).toBe("nearest");
 
       for (const view of Object.values(entry.views)) {
-        expect(view.dimensions[0], `${id} width`).toBeLessThanOrEqual(128);
+        expect(view.dimensions[0], `${id} width`).toBeLessThanOrEqual(id === "enemy-hound" ? 256 : 128);
         expect(view.dimensions[1], `${id} height`).toBeLessThanOrEqual(id === "boss" ? 180 : 128);
       }
     }
@@ -168,7 +169,7 @@ describe("asset manifest", () => {
     const hash = createHash("sha256");
     const paths = scourgeEnemySpritePaths();
 
-    expect(paths).toHaveLength(228);
+    expect(paths).toHaveLength(285);
 
     for (const path of paths) {
       hash.update(path);
@@ -177,7 +178,7 @@ describe("asset manifest", () => {
       hash.update("\0");
     }
 
-    expect(hash.digest("hex")).toBe("6bd4f67a7cf04e6a2657c0c4613e46f2b04b7de7c9c4d62810bceab0279a0f53");
+    expect(hash.digest("hex")).toBe("fc4e03208cc242061cd550e229baf8f83b9c8ec1bce9d9d55e449f74a40db75d");
   });
 
   it("defines weapon sprite metadata needed for first-person runtime placement", () => {

@@ -18,7 +18,7 @@ import type { PlayerAvatarId } from "../net/playerAvatars";
 import type { WeaponId } from "./constants";
 import { MAIN_WEAPON_VISUAL_TIERS, type MainWeaponVisualTier } from "./data/survivors";
 
-export type EnemySpriteKind = "melee" | "ranged" | "flying" | "boss";
+export type EnemySpriteKind = "melee" | "ranged" | "flying" | "hound" | "boss";
 export type EnemySpriteView = SpriteView;
 export type EnemySpriteAnimationState = "move" | "attack" | "death";
 
@@ -168,6 +168,7 @@ export const ENEMY_SPRITE_TEXTURES: Record<EnemySpriteKind, Record<EnemySpriteVi
   melee: textureViews(enemySpriteAssetId("melee")),
   ranged: textureViews(enemySpriteAssetId("ranged")),
   flying: textureViews(enemySpriteAssetId("flying")),
+  hound: textureViews(enemySpriteAssetId("hound")),
   boss: textureViews(enemySpriteAssetId("boss")),
 };
 
@@ -178,6 +179,7 @@ export const ENEMY_SPRITE_ANIMATION_TEXTURES: Record<
   melee: animationStateViews("melee"),
   ranged: animationStateViews("ranged"),
   flying: animationStateViews("flying"),
+  hound: animationStateViews("hound"),
   boss: animationStateViews("boss"),
 };
 
@@ -188,6 +190,7 @@ export const ENEMY_SPRITE_ANIMATION_META: Record<
   melee: animationStateMeta("melee"),
   ranged: animationStateMeta("ranged"),
   flying: animationStateMeta("flying"),
+  hound: animationStateMeta("hound"),
   boss: animationStateMeta("boss"),
 };
 
@@ -195,6 +198,7 @@ export const ENEMY_SPRITE_SCALES: Record<EnemySpriteKind, Record<EnemySpriteView
   melee: scaleViews(enemySpriteAssetId("melee")),
   ranged: scaleViews(enemySpriteAssetId("ranged")),
   flying: scaleViews(enemySpriteAssetId("flying")),
+  hound: scaleViews(enemySpriteAssetId("hound")),
   boss: scaleViews(enemySpriteAssetId("boss")),
 };
 

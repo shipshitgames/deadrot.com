@@ -1412,6 +1412,52 @@
         "kind": "runtime comic-style Scourge Survivors exploratory asset",
         "scope": "Scourge Survivors runtime opt-in comic pack"
       }
+    },
+    "enemy-hound": {
+      "type": "sprite",
+      "filter": "nearest",
+      "views": {
+        "front": {
+          "path": "games/scourge-survivors/enemies/scourge/wound-hound/front.webp",
+          "dimensions": [
+            256,
+            128
+          ],
+          "scale": [
+            1.78,
+            1.12
+          ]
+        },
+        "side": {
+          "path": "games/scourge-survivors/enemies/scourge/wound-hound/side.webp",
+          "dimensions": [
+            256,
+            128
+          ],
+          "scale": [
+            2.08,
+            1.18
+          ]
+        },
+        "back": {
+          "path": "games/scourge-survivors/enemies/scourge/wound-hound/back.webp",
+          "dimensions": [
+            256,
+            128
+          ],
+          "scale": [
+            1.78,
+            1.12
+          ]
+        }
+      },
+      "license": {
+        "tool": "built-in image_gen + ffmpeg crop + cwebp",
+        "plan": "built-in image_gen",
+        "date": "2026-06-17",
+        "kind": "AI generated comic Scourge Wound-Hound runtime crop derived from lore comic master sheet",
+        "scope": "Scourge Survivors runtime exploratory fast animal foe"
+      }
     }
   },
   "textures": {
@@ -2252,6 +2298,17 @@
           "actions": {
             "move": "lurch",
             "attack": "barrage",
+            "death": "death"
+          }
+        }
+      },
+      "hound": {
+        "sprite": "enemy-hound",
+        "animation": {
+          "entity": "wound-hound",
+          "actions": {
+            "move": "run",
+            "attack": "mark",
             "death": "death"
           }
         }

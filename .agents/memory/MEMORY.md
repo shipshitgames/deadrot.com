@@ -1,6 +1,6 @@
 # Deadrot Monorepo - Repo Memory
 
-last_verified: 2026-06-12
+last_verified: 2026-06-17
 
 ## What this is
 The shipped Deadrot monorepo (Turborepo + Bun), GitHub
@@ -79,6 +79,27 @@ asks for that move. The current Deadrot Obsidian vault is
 ## Asset Rule
 If it ships to players, is imported by a game, or is part of Deadrot asset
 history that must be preserved, it belongs under `packages/assets`.
+
+## Art Direction Lock
+
+As of 2026-06-17, Deadrot's target visual language is **clean comic-book /
+cel-shaded ink**, not chunky pixel art. The desired read is a violent playable
+comic page: bold black contour lines, flat readable value blocks, graphic
+shadows, controlled grime, sharp silhouettes, and faction color discipline.
+
+Pixel-art assets may remain as temporary runtime scaffolding while production
+comic sheets are generated and promoted, but new masters should not reinforce
+the old pixel target. Avoid halftone dots, stipple fields, noisy speckles,
+dithered pixel grids, fake bokeh, and painterly sparkle. The Scourge must read
+as parasite takeover in every design: host flesh/armor/machine being worn,
+ruptured seams, tendrils through joints, black chitin over stolen bone/metal,
+and toxic-green breach cores only as parasite organs.
+
+Comic runtime assets still follow the normal custody pipeline: generated
+originals under `packages/assets/sources/generated`, approved non-runtime
+masters under `packages/assets/masters`, runtime rasters as WebP under
+`packages/assets/games/<game>/...`, and manifest/license records before game
+code references them.
 
 Runtime asset folders should be semantic and scan-friendly. Prefer grouping by
 game, domain, faction, and name, for example:
