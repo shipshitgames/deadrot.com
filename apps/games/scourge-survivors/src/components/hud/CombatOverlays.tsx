@@ -68,10 +68,12 @@ function ComicSfxWord({ seq, variant }: { seq: number; variant: keyof typeof COM
     <div
       key={`comic-sfx-${variant}-${seq}`}
       className={`scourge-comic-sfx scourge-comic-sfx--${variant} absolute select-none`}
-      style={{
-        left,
-        top,
-      } as CSSProperties}
+      style={
+        {
+          left,
+          top,
+        } as CSSProperties
+      }
       aria-hidden
     >
       {word}

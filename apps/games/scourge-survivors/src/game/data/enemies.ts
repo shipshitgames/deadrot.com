@@ -1,15 +1,7 @@
 // Shared Scourge enemy archetypes. These are deliberately data-first so both
 // structured runs and Survivors swarms can mix the same readable host variants.
 
-export type EnemyArchetypeId =
-  | "grunt"
-  | "swarmling"
-  | "hound"
-  | "charger"
-  | "shooter"
-  | "flier"
-  | "tank"
-  | "splitter";
+export type EnemyArchetypeId = "grunt" | "swarmling" | "hound" | "charger" | "shooter" | "flier" | "tank" | "splitter";
 export type ScourgeThreatTier = "swarm" | "elite" | "breachBoss";
 
 export const SCOURGE_THREAT_TIERS: Record<
