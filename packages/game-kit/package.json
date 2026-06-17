@@ -24,6 +24,10 @@
       "types": "./src/core/index.ts",
       "default": "./src/core/index.ts"
     },
+    "./codex": {
+      "types": "./src/codex.ts",
+      "default": "./src/codex.ts"
+    },
     "./hud": {
       "types": "./src/hud/index.ts",
       "default": "./src/hud/index.ts"

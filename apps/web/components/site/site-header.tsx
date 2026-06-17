@@ -28,6 +28,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { label: "Games", href: "/#games" },
   { label: "Docs", href: "/docs" },
+  { label: "Codex", href: "/codex" },
   { label: "Universe", href: "/universe" },
   { label: "Factions", href: "/universe#factions" },
   { label: "Bestiary", href: "/universe#bestiary" },
@@ -142,7 +143,7 @@ export function SiteHeader() {
 
         {/* xl breakpoint, not md: nine items plus auth controls measure ~1136px
             and overflow every narrower tier (measured at 1024). */}
-        <nav className="hidden items-center gap-6 xl:flex">
+        <nav className="hidden items-center gap-5 xl:flex">
           {VISIBLE_NAV.map((i) => (
             <NavLink key={i.href} item={i} />
           ))}
