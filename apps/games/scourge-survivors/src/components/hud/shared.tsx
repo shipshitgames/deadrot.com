@@ -64,16 +64,18 @@ export function Leaderboard({
   scores,
   highlight,
   onClear,
+  className = "",
 }: {
   scores: ScoreEntry[];
   highlight?: ScoreEntry | null;
   onClear?: () => void;
+  className?: string;
 }) {
   const th = "text-[10px] tracking-[0.08em] uppercase opacity-50 text-right px-[6px] py-[2px] font-semibold";
   const td = "text-[14px] text-right px-[6px] py-[3px]";
   return (
     <div
-      className="pointer-events-auto min-w-[320px] bg-white/[0.04] border border-white/10 rounded-[10px] px-[14px] py-3"
+      className={`pointer-events-auto min-w-[320px] bg-white/[0.04] border border-white/10 rounded-[10px] px-[14px] py-3 ${className}`}
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex items-center justify-between mb-2">
