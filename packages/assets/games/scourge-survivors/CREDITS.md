@@ -1,5 +1,21 @@
 # Asset Credits
 
+## 2026-06-17 - comic menu wallpaper exploration
+
+- Status: promoted into runtime menu UI.
+- Game: Scourge Survivors.
+- Role: title and pause menu wallpaper.
+- Tool: built-in `image_gen`.
+- Plan: Codex built-in.
+- Kind: comic style exploration illustration.
+- Source master:
+  `packages/assets/masters/art/style-tests/comic-v01/pyre-assault-comic-illustration-v01.png`.
+- Final asset: `ui/menu/comic-pyre-assault.webp`.
+- Post-processing: encoded from the preserved PNG master to WebP with
+  `cwebp -q 88 -m 6`.
+- Notes: This is UI wallpaper art only. It is not reused as arena wall/floor
+  material.
+
 ## 2026-06-08 - Scourge enemy cutout re-extraction
 
 - Status: promoted into runtime.

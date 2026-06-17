@@ -27,7 +27,9 @@ They took its salvage, its grief, and its dead, and built something meaner aroun
 
 Against the Scourge's weakness ([[CANON]] §6) their doctrine is **starve and sever**: burn
 the hosts it feeds on and destroy the **Choir repeaters** from the inside, so the local horde
-goes feral.
+goes feral. A Purger's kit is built for that distance: firearm first, [[Cautery-Cleaver]]
+when the room gets too close, [[Blackout-Nail]] when the Choir carrier finally shows its
+throat.
 
 ## Command & structure
 The Pyre has **no chain of command** in the Warden sense, and treats one as a liability — a

@@ -17,6 +17,10 @@ colors:
   bone: "#e9e3d6"
   ash: "#9b958a"
   toxic: "#8bdc1f"
+  acidOchre: "#b9a83a"
+  hazardYellow: "#d6a21f"
+  bruisedViolet: "#5a3a6f"
+  verdigris: "#3f6b5d"
 typography:
   display:
     fontFamily: "\"SSG Press Start\", ui-monospace, SFMono-Regular, Menlo, monospace"
@@ -105,7 +109,7 @@ gameArtDirection:
   shared:
     medium: "medium-chunky high-detail pixel art"
     renderRules: "nearest-neighbor scaling, lossless hard edges, ordered dithering, no anti-aliasing"
-    paletteRules: "void/coal/gunmetal bodies, blood/rust grime, bone highlights, hellfire rim light"
+    paletteRules: "void/coal/gunmetal bodies, blood/rust grime, bone highlights, hellfire rim light, muted role-color lanes under the same warm grade"
     enemyRules: "silhouette first; parasites must visibly infest or rewrite a host"
   scourge-survivors:
     title: "Scourge Survivors"
@@ -164,10 +168,15 @@ assetgen:
     {tokens.void}/{tokens.coal}/{tokens.gunmetal} body with
     {tokens.blood}/{tokens.rust} grime and {tokens.bone} highlights, premium
     modern pixel-art (Blasphemous, Dead Cells) crossed with remastered 1990s DOOM
-    sprites, detailed but not noisy, NO neon, no text, no watermark, no UI, single
-    subject only, near-black background, it MUST read as chunky pixel art made of
-    visible square pixels, NOT a smooth 3D render, NOT photorealistic, NOT
-    anti-aliased, NOT painted concept art
+    sprites, plus muted role-color lanes under the same dirty warm grade:
+    sick acid-ochre {tokens.acidOchre} sacs, worn hazard-yellow
+    {tokens.hazardYellow} stencils, bruised-violet {tokens.bruisedViolet}
+    membranes, oxidized verdigris {tokens.verdigris} metal only where the
+    subject's material or role earns them, toxic-green {tokens.toxic} only for
+    Scourge breach cores and organs, detailed but not noisy, NO neon, no text, no
+    watermark, no UI, single subject only, near-black background, it MUST read as
+    chunky pixel art made of visible square pixels, NOT a smooth 3D render, NOT
+    photorealistic, NOT anti-aliased, NOT painted concept art
 
   # Always-on style exclusions. Dual-use (see negativeMode per provider).
   # Also emitted standalone as the top-level `negativePromptSet:` below.
@@ -231,8 +240,10 @@ assetgen:
       races: ruptured host flesh, invasive tendrils, embedded toxic-green
       ({tokens.toxic}) breach cores, black chitin over stolen bone/metal, fused
       wreckage or machinery; vary host family among flesh, chitin, mycelial,
-      machine-graft, bone-titan, or voidship; never a standalone generic demon
-      or alien; if it lacks this grammar it is only a monster, not the Scourge
+      machine-graft, bone-titan, or voidship, and use muted host color lanes
+      under the same warm grade so roles remain readable; never a standalone
+      generic demon or alien; if it lacks this grammar it is only a monster, not
+      the Scourge
 
   # PIXEL post-pipeline — the AI only APPROXIMATES pixels; THIS enforces the real
   # grid + palette. cutout -> box-downscale to the grid -> hard palette remap.
@@ -390,8 +401,13 @@ agents, artists, and future generators.
 | `bone` | `#e9e3d6` | headings / strong text |
 | `ash` | `#9b958a` | body / dim text |
 | `toxic` | `#8bdc1f` | **the Scourge only** — sickly bio-glow, sparingly |
+| `acidOchre` | `#b9a83a` | muted spore sacs, bile membranes, ranged hazard reads |
+| `hazardYellow` | `#d6a21f` | Warden hazard marks, worn stencils, industrial warnings |
+| `bruisedViolet` | `#5a3a6f` | muted wing membranes / voidship shadow tissue, never neon |
+| `verdigris` | `#3f6b5d` | oxidized old metal and voidship corrosion, desaturated only |
 
-Rule: **red + fire + metal + bone.** Toxic-green is reserved for the Scourge. Never neon.
+Rule: **red + fire + metal + bone** as the grade, with muted lane colors for readability.
+Toxic-green is reserved for the Scourge. Never neon.
 
 Scourge rule: the Scourge is a **parasite first**. Scourge assets should show infestation,
 host takeover, invasive growth, fused wreckage, stolen bone/metal, ruptured tissue, and
@@ -399,6 +415,10 @@ embedded breach cores. Avoid generic standalone demons, clean aliens, or monster
 not look like they are wearing, consuming, or rewriting a host. The army can include
 multiple conquered host races and ruined technologies, but all forms need the same
 parasite grammar: toxic-green nodes, black chitin, wet tissue, tendrils, and rupture seams.
+Use role lanes to keep foes identifiable at speed: blood-red heavy melee, acid-ochre /
+toxic ranged sacs, bruised-violet membranes for light flyers, rust / verdigris machine
+corrosion, and bone / ash for titans and exposed armor. All lanes pass through the same
+dirty warm DOOM grade; none become clean body paint.
 
 ## Typography
 
@@ -434,9 +454,10 @@ parasite grammar: toxic-green nodes, black chitin, wet tissue, tendrils, and rup
 
 ## Do's and Don'ts
 
-**Do:** lead with red + fire + metal + bone; UPPERCASE pixel headers; reserve toxic-green
-for the Scourge; make Scourge forms read as parasitic infestation; use ember glow sparingly;
-keep edges hard and high-contrast.
+**Do:** lead with red + fire + metal + bone; use muted lane colors to separate roles while
+preserving the same tint; UPPERCASE pixel headers; reserve toxic-green for the Scourge; make
+Scourge forms read as parasitic infestation; use ember glow sparingly; keep edges hard and
+high-contrast.
 
 **Don't:** magenta/cyan or any neon; soft/large glows; pastel or low-contrast text;
 heavy rounding; clean/minimal sci-fi. If it doesn't feel like blood on gunmetal, it's wrong.

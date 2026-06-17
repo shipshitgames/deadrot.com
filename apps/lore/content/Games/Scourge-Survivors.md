@@ -24,6 +24,14 @@ This is the flagship implementation of the shared [[Survivors-Loop]].
 - Pyre avatars: [[Ranger]], [[Bulwark]], [[Vector]], [[Patch]].
 - Scourge enemies: [[Swarm-Ripper]], [[Swarm-Spitter]], [[Breach-Boss]].
 
+## Player Kit
+
+- Firearms are the run's selectable gun slots; upgrades push their tier, heat, and feedback.
+- [[Cautery-Cleaver]] is the always-carried Pyre melee fallback: a short no-ammo `F` / `V`
+  swing for the bad seconds when the swarm is inside gun range.
+- Pyre auto-weapons such as Cautery Ring, Ember-Seeker Bolts, and Breachfire Nova orbit the
+  same doctrine: burn the source, make space, keep descending.
+
 ## Canon role
 The offensive front (see [[Premise]]). You go into the breach where [[Deadlane]]'s
 [[The-Wardens|Wardens]] can only hold the line. The deepest region is [[Perdition]].

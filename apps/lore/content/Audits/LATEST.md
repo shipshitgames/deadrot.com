@@ -37,10 +37,11 @@ digest structure. The remaining issues require Vincent/art-direction judgment.
   `Art/Prompt-Batches/2026-06-05-scourge-animation-pack.md`,
   `Art/Style-Lock-Audit-2026-06-05.md`, and `Art/style-refs/README.md`.
 - `index.md` fixed the broken path-qualified wikilink from `[[Factions/Scourge|Scourge]]`
-  to `[[Bestiary/Scourge|Scourge]]`.
+  to `[[Bestiary/Overview/Scourge|Scourge]]`.
 - Added missing `**At a glance:**` digest lines to four canon bestiary entries that already
-  had full body sections and `Appears In` blocks: `Bestiary/Aeolian.md`,
-  `Bestiary/Bourdon.md`, `Bestiary/Chorister.md`, and `Bestiary/Descant.md`.
+  had full body sections and `Appears In` blocks: `Bestiary/Relays/Aeolian.md`,
+  `Bestiary/Relays/Bourdon.md`, `Bestiary/Relays/Chorister.md`, and
+  `Bestiary/Relays/Descant.md`.
 
 ## Needs a human decision
 
@@ -88,9 +89,12 @@ digest structure. The remaining issues require Vincent/art-direction judgment.
 
 ### 5. Scourge host-family frontmatter remains incomplete on draft/mixed entries
 
-- Files: `Bestiary/Breach-Boss.md`, `Bestiary/Orbital-Breach-Carrier.md`,
-  `Bestiary/Scourge-Fighter.md`, `Bestiary/Swarm-Ripper.md`,
-  `Bestiary/Swarm-Spitter.md`, and `Bestiary/Trucebreaker.md`
+- Files: `Bestiary/Bosses/Breach-Boss.md`,
+  `Bestiary/Aircraft/Orbital-Breach-Carrier.md`,
+  `Bestiary/Aircraft/Scourge-Fighter.md`,
+  `Bestiary/Soldiers/Swarm-Ripper.md`,
+  `Bestiary/Soldiers/Swarm-Spitter.md`, and
+  `Bestiary/Bosses/Trucebreaker.md`
 - Issue: `Scourge-Host-Families.md` says generation batches should record threat role and
   host family. These pages either represent draft, mixed, or multi-variant roles where the
   host-family value is not fully pinned.

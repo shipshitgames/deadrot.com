@@ -19,6 +19,25 @@ define lore canon.
 ## Scourge Art Masters
 
 - [[Design/Bestiary/Scourge-Foe-Art-Masters|Scourge Foe Art Masters]]
+
+## Character Art Masters
+
+- [[Design/Characters/Character-Art-Masters|Character Art Masters]]
+
+## Combat Key Art
+
+- [[Art/Combat-Wallpapers-v05|Combat Wallpapers v05]]
+
+Wallpaper/key art should look like realistic official promotional game
+illustration: foreground heroes, distant enemy silhouettes, cracked ground,
+rubble, smoke, embers, weathered armor, clean faction separation, and broad
+red-black atmosphere. Keep the warzone grit, but keep it in large readable
+forms. Do not let Scourge cores, background monsters, rim light, or fog turn
+into speckled bloom, tiny point lights, firefly particles, stipple, halftone,
+pixel grain, or dotted texture.
+
+## Active Bestiary Locks
+
 - [[Design/Bestiary/Swarm-Ripper-DESIGN|Swarm Ripper Design Lock]]
 - [[Design/Bestiary/Swarm-Spitter-DESIGN|Swarm Spitter Design Lock]]
 - [[Design/Bestiary/Breach-Boss-DESIGN|Breach-Boss Design Lock]]

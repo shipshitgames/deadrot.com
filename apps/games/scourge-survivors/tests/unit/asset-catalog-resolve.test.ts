@@ -76,7 +76,7 @@ describe("asset catalog resolution (#76)", () => {
   describe("runtime ui lookups", () => {
     it("resolves a ui id to its asset ref and a resolvable url", () => {
       const ref = ASSET_CATALOG.ui("menuTitle");
-      expect(ref.asset).toBe("ui-cover-gameplay");
+      expect(ref.asset).toBe(ASSET_MANIFEST.runtime.ui.menuTitle.asset);
       const url = ASSET_CATALOG.runtimeUiUrl("menuTitle");
       expect(url).toMatch(URL_EXT);
       // runtimeUiUrl must agree with resolving the underlying ui asset directly.

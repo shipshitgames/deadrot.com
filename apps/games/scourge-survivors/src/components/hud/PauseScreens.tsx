@@ -1,5 +1,6 @@
 import { Button, GameAudioSettingsScreen, GamePauseMenu, type PauseMenuAction } from "@shipshitgames/ui";
-import { type ReactNode, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
+import { MELEE_WEAPON_NAME } from "../../game/constants";
 import { SCOURGE_THREAT_TIERS } from "../../game/data/enemies";
 import { MENU_HERO_URL } from "../../game/spriteAssets";
 import type { HudState } from "../../game/types";
@@ -12,6 +13,7 @@ export function PauseScreens({
   state,
   suppressMenu,
   onLock,
+  onEscapeResume,
   onRestart,
   onLeaveRoom,
   onMenu,
@@ -19,6 +21,7 @@ export function PauseScreens({
   state: HudState;
   suppressMenu: boolean;
   onLock: () => void;
+  onEscapeResume: () => void;
   onRestart: () => void;
   onLeaveRoom: () => void;
   onMenu: () => void;
@@ -32,6 +35,22 @@ export function PauseScreens({
     prevStatusRef.current = status;
     if (status !== "paused" && pausePanel !== "none") setPausePanel("none");
   }
+
+  const handleEscapeResume = useEffectEvent(() => {
+    onEscapeResume();
+  });
+
+  useEffect(() => {
+    if (status !== "paused" || suppressMenu || pausePanel !== "none") return;
+    const resumeOnEscape = (event: KeyboardEvent) => {
+      if (event.code !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      handleEscapeResume();
+    };
+    window.addEventListener("keydown", resumeOnEscape, { capture: true });
+    return () => window.removeEventListener("keydown", resumeOnEscape, { capture: true });
+  }, [pausePanel, status, suppressMenu]);
 
   // Status row + real actions for the shared PauseMenu (mirrors the title menu;
   // no shop affordance). Multiplayer surfaces breach/connection info + Leave.
@@ -101,6 +120,7 @@ export function PauseScreens({
           slug={GAME_SLUG}
           open
           className="pause-ui"
+          backgroundImage={MENU_HERO_URL}
           kicker={multiplayer ? "Breach run" : "Pyre breach"}
           subtitle={multiplayer ? "Hold the line — the breach keeps churning while you regroup." : undefined}
           status={pauseStatus}
@@ -178,7 +198,7 @@ export function PauseScreens({
                 <span>
                   <kbd>F</kbd> / <kbd>V</kbd>
                 </span>{" "}
-                Melee
+                {MELEE_WEAPON_NAME}
               </div>
               <div>
                 <span>
