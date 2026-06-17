@@ -143,10 +143,7 @@ export function GameOverScreen({
           {state.survivorEvolved.length > 0 && (
             <div className="scourge-run-chip-row scourge-run-chip-row--evolutions">
               {state.survivorEvolved.map((name) => (
-                <span
-                  key={name}
-                  className="scourge-run-chip scourge-run-chip--evolved"
-                >
+                <span key={name} className="scourge-run-chip scourge-run-chip--evolved">
                   {name}
                 </span>
               ))}
