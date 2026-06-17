@@ -3,7 +3,7 @@ type: design-lock
 status: candidate-review
 subject: Swarm-Ripper
 subjectType: creature
-canon: Bestiary/Swarm-Ripper
+canon: Bestiary/Soldiers/Swarm-Ripper
 styleBible: Style-Bible
 lockedDate:
 ---

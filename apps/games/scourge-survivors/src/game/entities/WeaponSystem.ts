@@ -274,7 +274,7 @@ export class WeaponSystem {
     this.doMelee();
   }
 
-  /** Knife swing: always available (no ammo). Hits a frontal cluster of enemies. */
+  /** Cautery Cleaver swing: always available (no ammo). Hits a frontal cluster. */
   doMelee() {
     const berserkMul = this.ctx.damageBoostTimer > 0 ? BERSERK_FIRE_RATE_MULT : 1;
     this.meleeCd = MELEE_COOLDOWN / berserkMul;
@@ -565,7 +565,7 @@ export class WeaponSystem {
       this.applyWeaponModel(this.ctx.activeWeapon, shouldUseAdsSprite);
 
     if (this.meleeAnim > 0) {
-      // quick knife swipe (takes priority over reload/idle pose)
+      // quick cleaver swipe (takes priority over reload/idle pose)
       const t = 1 - this.meleeAnim / 0.22;
       const slash = Math.sin(Math.min(1, t) * Math.PI);
       this.weapon.position.set(

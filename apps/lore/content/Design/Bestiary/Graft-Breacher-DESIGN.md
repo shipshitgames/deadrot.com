@@ -3,7 +3,7 @@ type: design-lock
 status: candidate-master
 subject: Graft-Breacher
 subjectType: creature
-canon: Bestiary/Graft-Breacher
+canon: Bestiary/Vehicles/Graft-Breacher
 styleBible: Style-Bible
 lockedDate:
 ---

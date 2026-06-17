@@ -15,6 +15,7 @@ interface Props {
   state: HudState;
   scores: ScoreEntry[];
   onLock: () => void;
+  onEscapeResume: () => void;
   onRestart: () => void;
   onClearScores: () => void;
   onStartMultiplayer: (name: string, room: string, avatar: PlayerAvatarId) => void;
@@ -131,6 +132,7 @@ export function HUD({
   state,
   scores,
   onLock,
+  onEscapeResume,
   onRestart,
   onClearScores,
   onStartMultiplayer,
@@ -184,6 +186,7 @@ export function HUD({
         state={state}
         suppressMenu={suppressMenu}
         onLock={onLock}
+        onEscapeResume={onEscapeResume}
         onRestart={onRestart}
         onLeaveRoom={onLeaveRoom}
         onMenu={onMenu}

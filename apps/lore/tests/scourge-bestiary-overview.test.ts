@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const contentRoot = path.resolve(testDir, "../content");
 const bestiaryDir = path.join(contentRoot, "Bestiary");
-const scourgePath = path.join(bestiaryDir, "Scourge.md");
+const scourgePath = path.join(bestiaryDir, "Overview", "Scourge.md");
 const indexPath = path.join(contentRoot, "00-Index.md");
 
 // The Scourge overview is the index hub for the whole bestiary (#133). It must
@@ -126,7 +126,7 @@ describe("Scourge bestiary overview (#133)", () => {
 
   test("indexes every catalogued bestiary creature note", () => {
     const content = readContent(scourgePath);
-    const creatures = bestiaryBasenames().filter((name) => name !== "Scourge");
+    const creatures = bestiaryBasenames().filter((name) => name !== "Scourge" && name !== "index");
 
     assert(creatures.length >= 20, `Expected a populated bestiary, found ${creatures.length} creatures`);
 

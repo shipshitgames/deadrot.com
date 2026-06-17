@@ -3,7 +3,7 @@ type: design-lock
 status: candidate-master
 subject: Breach-Boss
 subjectType: creature
-canon: Bestiary/Breach-Boss
+canon: Bestiary/Bosses/Breach-Boss
 styleBible: Style-Bible
 lockedDate:
 ---

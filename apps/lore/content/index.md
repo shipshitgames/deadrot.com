@@ -18,7 +18,8 @@ New here? Start with the locked contract, then follow the wikilinks and open the
 
 ## The world
 - **Factions** — [[Factions/The-Pyre|The Pyre]] · [[Factions/The-Wardens|The Wardens]] · [[Factions/The-Listeners|The Listeners]]
-- **Bestiary** — the [[Bestiary/Scourge|Scourge]] and its host-families
+- **Bestiary** — the [[Bestiary/index|Scourge bestiary]], [[Scourge]], and host-families
+- **Characters** — the [[Characters/index|playable and faction character roster]]
 - **Characters**, **Locations**, **Games** — browse via the explorer on the left
 
 ## Play

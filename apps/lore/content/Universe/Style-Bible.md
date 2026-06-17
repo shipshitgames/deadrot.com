@@ -26,6 +26,8 @@ That is the whole bet: **amazing by default from a single prompt, forgiving of v
 
 The tone is [[Scourge]]-canon: brutal, fast, gallows-humor, streamable. The naming is hard and short — DEADLANE, lanes, breaches, the Rot, Purgers, Perdition. The look matches: blood on gunmetal, lit by furnace fire. If an asset doesn't feel like that, burn it and reshoot.
 
+The current shorthand is **DOOM x Berserk** for the Scourge and **Berserk x DOOM x Gears of War x God of War** for human operators: DOOM supplies the furnace, gunmetal, speed, and gore; Berserk supplies mass, silhouette cruelty, and the sense that the body has become a weapon; Gears-like infantry weight supplies battered practical armor; God-of-War-like mythic brutality supplies the readable heroic shape. These are taste notes, not a license to copy named characters, costumes, or fantasy decoration. No elegant swords, capes, clean white sci-fi, blue hero glow, or ornate paladin armor.
+
 ---
 
 ## 2. The house look (locked)
@@ -97,7 +99,9 @@ This is the lighting rig, and it does not change. Two ingredients, both always o
 
 ## 7. Color discipline
 
-The one rule: **red + fire + metal + bone.** Near-monochrome **warm** grade. Bodies are desaturated — ash, charcoal, oxblood — so the **only saturated color in the frame is the emissive hellfire** (the heavy-metal-album-cover read). The sole exception is **the Scourge**, and only its breach cores: `toxic #8bdc1f`, as glow, never as body paint.
+The one rule: **red + fire + metal + bone as the grade.** The roster should not collapse into one unreadable red-green wall. Bodies stay desaturated — ash, charcoal, oxblood, rust, old bone — and then each host family or combat role gets a **muted material lane** under the same warm tint.
+
+The saturated colors are still controlled: emissive hellfire is hot, and **the Scourge** alone gets `toxic #8bdc1f` in breach cores / organs. Additional lanes exist for readability, not prettiness: acid-ochre sacs, bruised-violet membranes, hazard-yellow stencils, verdigris corrosion. They must feel stained into the material after the DOOM grade, never painted on top.
 
 | Token | Hex | Use |
 |-------|-----|-----|
@@ -112,8 +116,25 @@ The one rule: **red + fire + metal + bone.** Near-monochrome **warm** grade. Bod
 | `bone` | `#e9e3d6` | bone, ceramic, stencils, strong reads |
 | `ash` | `#9b958a` | dust, faded markings, dim detail |
 | `toxic` | `#8bdc1f` | **the Scourge ONLY** — breach-core / node glow, sparingly |
+| `acidOchre` | `#b9a83a` | spore sacs, bile membranes, ranged hazard organs |
+| `hazardYellow` | `#d6a21f` | Warden hazard marks, worn industrial stencils |
+| `bruisedViolet` | `#5a3a6f` | wing membranes / voidship shadow tissue, muted only |
+| `verdigris` | `#3f6b5d` | oxidized old metal, voidship corrosion, never clean teal |
 
 **Forbidden everywhere:** neon, magenta, cyan, cyberpunk glow, cool blue/teal grades, pastels, rainbow saturation. *If it doesn't feel like blood on gunmetal, it's wrong.*
+
+### Color lanes: same tint, clearer reads
+
+Use lanes to answer "what am I looking at?" from one asset to another:
+
+- **Heavy melee / Ripper lane:** blood, oxblood, black chitin, bone blades, tiny toxic core.
+- **Ranged / Spitter lane:** acidOchre sacs and sick toxic organs, darker limbs, clear projectile anatomy.
+- **Airborne lane:** bruisedViolet membranes, red-black body, bone tips, small toxic organs.
+- **Machine-graft lane:** gunmetal, rust, verdigris corrosion, cables as tendrils, toxic engine-organ.
+- **Warden lane:** gunmetal and worn steel with hazardYellow stencils, ember hardware, square silhouettes.
+- **Pyre lane:** coal / gunmetal armor, bone ceramic plates, hellfire heat seams, bloodHot furnace reads.
+
+The lane color must sit inside the material. A purple membrane is allowed; a purple monster is not. An ochre acid sac is allowed; yellow body paint is not. A verdigris corroded plate is allowed; clean teal tech glow is not.
 
 ### Lock the palette in post, not in the model
 
@@ -191,14 +212,14 @@ The third faction, [[The-Listeners]], reads visually as battered Warden/Pyre sal
 
 Same parasite grammar, different host underneath. Pick a host family per batch; the same threat role can ship as several hosts across games.
 
-| Host family | Visual read | Typical use |
-|-------------|-------------|-------------|
-| **Rot-flesh** | the default first-read: humanoid/animal body split open by parasite growth, ruined armor or bone still visible, wet red tissue, black chitin, toxic-green nodes | base swarm, early Scourge-Survivors enemies, common Deadlane waves |
-| **Chitin warhost** | conquered shell-world race: hard carapace, mandibles, hooked/blade limbs, claw clusters, tendrils through the joints | fast melee, elite chargers, armored swarm |
-| **Mycelial spore host** | fungal colony body: bulging sacs, breathing vents, fibrous root tendrils, spores implied by silhouette, toxic-green nodes | spitters, area denial, Starblight mines, breach growth |
-| **Machine-graft host** | hijacked machine/weapon/drone: rusted metal shell, cables as tendrils, parasite tissue through the seams, barrels and engines turned into organs | ranged units, tower-breakers, Deadlane siege, infected weapons |
-| **Bone-titan host** | huge alien megafauna/warrior frame: horns, rib cages, bone plates, massive limbs bound into a war body by parasite tissue | bosses, minibosses, Pactfall neutral objectives, heavy waves |
-| **Voidship host** | infected craft / orbital wreckage: hull plates as armor, engines as organs, cables as tendrils, toxic-green breach heart | Starblight, Scourge-Fighter, Orbital-Breach-Carrier, orbital bosses |
+| Host family | Visual read | Color lane | Typical use |
+|-------------|-------------|------------|-------------|
+| **Rot-flesh** | the default first-read: humanoid/animal body split open by parasite growth, ruined armor or bone still visible, wet red tissue, black chitin, toxic-green nodes | oxblood, black chitin, bone, tiny toxic nodes | base swarm, early Scourge-Survivors enemies, common Deadlane waves |
+| **Chitin warhost** | conquered shell-world race: hard carapace, mandibles, hooked/blade limbs, claw clusters, tendrils through the joints | dark shell, bone hooks, rust-orange edge wear | fast melee, elite chargers, armored swarm |
+| **Mycelial spore host** | fungal colony body: bulging sacs, breathing vents, fibrous root tendrils, spores implied by silhouette, toxic-green nodes | acidOchre sacs, sick toxic organs, ash-grey fibers | spitters, area denial, Starblight mines, breach growth |
+| **Machine-graft host** | hijacked machine/weapon/drone: rusted metal shell, cables as tendrils, parasite tissue through the seams, barrels and engines turned into organs | gunmetal, rust, verdigris corrosion, toxic engine-organ | ranged units, tower-breakers, Deadlane siege, infected weapons |
+| **Bone-titan host** | huge alien megafauna/warrior frame: horns, rib cages, bone plates, massive limbs bound into a war body by parasite tissue | bone / ash plates, dark marrow red, toxic core | bosses, minibosses, Pactfall neutral objectives, heavy waves |
+| **Voidship host** | infected craft / orbital wreckage: hull plates as armor, engines as organs, cables as tendrils, toxic-green breach heart | void-black hull, gunmetal, bruisedViolet shadow tissue, verdigris scarring | Starblight, Scourge-Fighter, Orbital-Breach-Carrier, orbital bosses |
 
 For every Scourge batch, record both the **threat role** (Ripper, Spitter, elite, boss, craft, carrier…) and the **host family** so the army stays varied but coherent.
 

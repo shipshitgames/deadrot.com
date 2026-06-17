@@ -3,7 +3,7 @@ type: design-lock
 status: candidate-master
 subject: Scourge-Fighter
 subjectType: creature
-canon: Bestiary/Scourge-Fighter
+canon: Bestiary/Aircraft/Scourge-Fighter
 styleBible: Style-Bible
 lockedDate:
 ---

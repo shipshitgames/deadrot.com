@@ -17,6 +17,10 @@ colors:
   bone: "#e9e3d6"
   ash: "#9b958a"
   toxic: "#8bdc1f"
+  acidOchre: "#b9a83a"
+  hazardYellow: "#d6a21f"
+  bruisedViolet: "#5a3a6f"
+  verdigris: "#3f6b5d"
 typography:
   display:
     fontFamily: "\"SSG Comic Condensed\", \"Arial Black\", Impact, sans-serif"
@@ -231,8 +235,10 @@ assetgen:
       races: ruptured host flesh, invasive tendrils, embedded toxic-green
       ({tokens.toxic}) breach cores, black chitin over stolen bone/metal, fused
       wreckage or machinery; vary host family among flesh, chitin, mycelial,
-      machine-graft, bone-titan, or voidship; never a standalone generic demon
-      or alien; if it lacks this grammar it is only a monster, not the Scourge
+      machine-graft, bone-titan, or voidship, and use muted host color lanes
+      under the same warm grade so roles remain readable; never a standalone
+      generic demon or alien; if it lacks this grammar it is only a monster, not
+      the Scourge
 
   # Legacy pixel post-pipeline kept for old scaffolding assets only. New comic
   # runtime sheets should use cutout cleanup, WebP encoding, and manifest records
@@ -394,8 +400,13 @@ agents, artists, and future generators.
 | `bone` | `#e9e3d6` | headings / strong text |
 | `ash` | `#9b958a` | body / dim text |
 | `toxic` | `#8bdc1f` | **the Scourge only** — sickly bio-glow, sparingly |
+| `acidOchre` | `#b9a83a` | muted spore sacs, bile membranes, ranged hazard reads |
+| `hazardYellow` | `#d6a21f` | Warden hazard marks, worn stencils, industrial warnings |
+| `bruisedViolet` | `#5a3a6f` | muted wing membranes / voidship shadow tissue, never neon |
+| `verdigris` | `#3f6b5d` | oxidized old metal and voidship corrosion, desaturated only |
 
-Rule: **red + fire + metal + bone.** Toxic-green is reserved for the Scourge. Never neon.
+Rule: **red + fire + metal + bone** as the grade, with muted lane colors for readability.
+Toxic-green is reserved for the Scourge. Never neon.
 
 Scourge rule: the Scourge is a **parasite first**. Scourge assets should show infestation,
 host takeover, invasive growth, fused wreckage, stolen bone/metal, ruptured tissue, and
@@ -403,6 +414,10 @@ embedded breach cores. Avoid generic standalone demons, clean aliens, or monster
 not look like they are wearing, consuming, or rewriting a host. The army can include
 multiple conquered host races and ruined technologies, but all forms need the same
 parasite grammar: toxic-green nodes, black chitin, wet tissue, tendrils, and rupture seams.
+Use role lanes to keep foes identifiable at speed: blood-red heavy melee, acid-ochre /
+toxic ranged sacs, bruised-violet membranes for light flyers, rust / verdigris machine
+corrosion, and bone / ash for titans and exposed armor. All lanes pass through the same
+dirty warm DOOM grade; none become clean body paint.
 
 ## Typography
 
