@@ -30,6 +30,10 @@ export interface CodexEntriesOptions {
   unlockedSlugs?: Set<string>;
 }
 
+export type PublicCodexKind = "game" | "faction" | "character" | "bestiary" | "location" | "timeline";
+
+export const PUBLIC_CODEX_BASE_PATH = "/codex";
+
 /** Lore accent names → DOOM palette hex (packages/assets/tokens). */
 export const CODEX_ACCENT_HEX: Record<Accent, string> = {
   blood: "#c1121f",
@@ -100,6 +104,23 @@ export function codexEntriesForGame(gameSlug: string, opts: CodexEntriesOptions 
     );
 
   return [...creatureEntries, ...characterEntries, ...locationEntries];
+}
+
+/**
+ * Stable public codex anchor shared by the hub and games. Game menus, codex
+ * overlays, or post-run summaries can link to these IDs without knowing the
+ * hub's internal route files.
+ */
+export function publicCodexAnchor(kind: PublicCodexKind, slug: string): string {
+  return `codex-${kind}-${slug.trim().toLowerCase()}`;
+}
+
+export function publicCodexHref(
+  kind: PublicCodexKind,
+  slug: string,
+  basePath: string = PUBLIC_CODEX_BASE_PATH,
+): string {
+  return `${basePath.replace(/\/$/, "")}#${publicCodexAnchor(kind, slug)}`;
 }
 
 /** Keep only sections that actually have bullet points. */

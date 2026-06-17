@@ -71,6 +71,18 @@ const webSourceChecks = [
     contains: ["createSocialMetadata", "DEADROT Docs", 'path: "/docs"'],
   },
   {
+    file: "apps/web/app/builds/page.tsx",
+    contains: ["createSocialMetadata", "Deadrot Build Notes", 'path: "/builds"'],
+  },
+  {
+    file: "apps/web/app/builds/[slug]/page.tsx",
+    contains: ["createSocialMetadata", "Deadrot Build Notes", "path: `/builds/", "note.slug}`"],
+  },
+  {
+    file: "apps/web/app/codex/page.tsx",
+    contains: ["createSocialMetadata", "Deadrot Codex", 'path: "/codex"'],
+  },
+  {
     file: "apps/web/app/universe/page.tsx",
     contains: ["createSocialMetadata", "The DEADROT Universe", 'path: "/universe"'],
   },
