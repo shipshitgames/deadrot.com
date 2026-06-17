@@ -166,10 +166,8 @@ describe("site-level feedback URLs", () => {
     expect(labels).toContain(FEEDBACK_LABEL);
   });
 
-  test("RELEASE_NOTES_URL is the releases page of the feedback repo", () => {
-    const url = new URL(RELEASE_NOTES_URL);
-    expect(url.origin).toBe("https://github.com");
-    expect(url.pathname).toBe(`/${FEEDBACK_REPO}/releases`);
+  test("RELEASE_NOTES_URL points at the internal build notes surface", () => {
+    expect(RELEASE_NOTES_URL).toBe("/builds");
   });
 
   test("SITE_KNOWN_ISSUES_URL is the project-wide issue search on the feedback repo", () => {
