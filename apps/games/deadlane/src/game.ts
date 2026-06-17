@@ -16,6 +16,36 @@ import { setPauseSnapshot } from "./ui/pauseBridge";
 import { isBossWave, waveComposition } from "./waves";
 
 /**
+ * Dev/E2E-only headless sim driver, attached to window as `__deadlaneGame`
+ * (mirrors `__rothulkGame` / `__pactfallGame`). Playwright drives the
+ * deterministic fixed-step sim through this handle instead of waiting on
+ * rendered frames: on a slow/headless runner the rAF loop is wall-clock-starved
+ * (createFixedLoop clamps each frame's dt to maxDelta), so a real-time wait for
+ * the wave director / breach economy is impractically slow and viewport
+ * dependent. The handle is stripped from production bundles by the
+ * `import.meta.env.DEV` guard at its install site.
+ */
+interface DeadlaneDebug {
+  /** Synchronous run-state snapshot the e2e specs assert against (no THREE refs). */
+  snapshot(): {
+    phase: GameState["phase"];
+    wave: number;
+    totalWaves: number;
+    baseHp: number;
+    gold: number;
+    creepCount: number;
+    paused: boolean;
+  };
+  /**
+   * Advance the sim by `seconds` of fixed-step time — replays the loop's own
+   * update callback (`elapsed += fixedDt; step(fixedDt)`) at the same fixedDt,
+   * so it is byte-for-byte identical to live play but needs no rAF, pointer
+   * lock, or WebGL draw. Returns the resulting phase.
+   */
+  fastForward(seconds: number): GameState["phase"];
+}
+
+/**
  * Game — the thin owner of shared state + the systems, per studio convention.
  * Simulation runs on the shared fixed-step loop (1/120) for determinism; HUD
  * writes, juice, and rendering happen once per displayed frame.
@@ -65,6 +95,37 @@ export class Game {
       render: (_alpha, frameDt) => this.renderFrame(frameDt),
     });
     this.loop.start();
+
+    // Dev/E2E only: expose a headless sim driver so Playwright can advance the
+    // director + breach economy deterministically without depending on render
+    // FPS. step()/state/elapsed are private, so the handle must be installed
+    // from inside the class. Vite statically evaluates import.meta.env.DEV to
+    // false in production builds, dead-code-eliminating the whole block.
+    if (import.meta.env.DEV) {
+      (window as unknown as { __deadlaneGame?: DeadlaneDebug }).__deadlaneGame = {
+        snapshot: () => ({
+          phase: this.state.phase,
+          wave: this.state.wave,
+          totalWaves: CONSTANTS.waves.total,
+          baseHp: this.state.baseHp,
+          gold: this.state.gold,
+          creepCount: this.state.creeps.length,
+          paused: this.pausedForCapture,
+        }),
+        fastForward: (seconds) => {
+          const fixedDt = CONSTANTS.loop.fixedDt;
+          const steps = Math.max(0, Math.round(seconds / fixedDt));
+          for (let i = 0; i < steps; i++) {
+            this.elapsed += fixedDt;
+            this.step(fixedDt);
+          }
+          // Sync the HUD store once so DOM-reading assertions see fresh values;
+          // never render.render() — that would touch WebGL.
+          this.hud.update(this.state);
+          return this.state.phase;
+        },
+      };
+    }
   }
 
   // ---- state transitions ----------------------------------------------------
