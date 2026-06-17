@@ -24,6 +24,14 @@
       "types": "./src/core/index.ts",
       "default": "./src/core/index.ts"
     },
+    "./codex": {
+      "types": "./src/codex.ts",
+      "default": "./src/codex.ts"
+    },
+    "./hud": {
+      "types": "./src/hud/index.ts",
+      "default": "./src/hud/index.ts"
+    },
     "./maps": {
       "types": "./src/maps/index.ts",
       "default": "./src/maps/index.ts"
@@ -31,6 +39,10 @@
     "./modes": {
       "types": "./src/modes/index.ts",
       "default": "./src/modes/index.ts"
+    },
+    "./net": {
+      "types": "./src/net/index.ts",
+      "default": "./src/net/index.ts"
     },
     "./telemetry": {
       "types": "./src/telemetry/index.ts",
@@ -53,6 +65,7 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test tests",
     "test:unit": "bun test tests",
+    "test:coverage": "bun test --coverage tests",
     "deps:update": "bunx npm-check-updates -u --cooldown 3h --removeRange && bun install"
   },
   "dependencies": {
@@ -60,6 +73,7 @@
     "@shipshitgames/assets": "workspace:*",
     "@shipshitgames/ui": "workspace:*",
     "@shipshitgames/warline": "workspace:*",
+    "partysocket": "^1.1.19",
     "posthog-js": "^1.386.6"
   },
   "peerDependencies": {

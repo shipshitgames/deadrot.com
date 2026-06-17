@@ -37,7 +37,7 @@ import {
   saveScore,
   saveShop,
 } from "./game/storage";
-import type { HUDState } from "./game/types";
+import type { HudState } from "./game/types";
 import type { PlayerAvatarId } from "./net/playerAvatars";
 import { WarEffortBadge } from "./WarEffortBadge";
 
@@ -47,7 +47,7 @@ const SandboxPanel = import.meta.env.DEV
 
 const INITIAL_WEAPON_IDENTITY = weaponIdentityFor(STARTING_WEAPON);
 
-const INITIAL_STATE: HUDState = {
+const INITIAL_STATE: HudState = {
   status: "pointerlock-needed",
   playerHealth: PLAYER_MAX_HEALTH,
   maxPlayerHealth: PLAYER_MAX_HEALTH,
@@ -94,8 +94,8 @@ const INITIAL_STATE: HUDState = {
   adsZoomLevels: 1,
   bossShielded: false,
   bossEnraged: false,
-  hitMarkerSeq: 0,
-  headshotSeq: 0,
+  hitSeq: 0,
+  emphasisSeq: 0,
   killSeq: 0,
   damageSeq: 0,
   banner: "",
@@ -151,8 +151,8 @@ const INITIAL_STATE: HUDState = {
 export default function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Game | null>(null);
-  const hudRef = useRef<HUDState>(INITIAL_STATE);
-  const [hud, setHudState] = useState<HUDState>(INITIAL_STATE);
+  const hudRef = useRef<HudState>(INITIAL_STATE);
+  const [hud, setHudState] = useState<HudState>(INITIAL_STATE);
   const [scores, setScores] = useState<ScoreEntry[]>(() => loadScores());
   const [shop, setShop] = useState<ShopState>(() => loadShop());
   const lastRunGoldRef = useRef(0);
@@ -187,7 +187,7 @@ export default function App() {
   // Record a run on the leaderboard (and award Survivors gold) once per
   // game-over, right where the engine pushes the HUD snapshot — the game-over
   // "event" originates here, not in a React render.
-  const setHud = useCallback((next: HUDState) => {
+  const setHud = useCallback((next: HudState) => {
     hudRef.current = next;
     if (next.status === "gameover" && next.outcome && !next.sandbox && !savedRef.current) {
       savedRef.current = true;
@@ -269,10 +269,10 @@ export default function App() {
     game.start();
     if (initialSandbox) game.startSandbox();
     if (import.meta.env.DEV) {
-      (window as unknown as { __fpsGame?: Game; __fpsAudio?: typeof audio; __hudSnapshot?: () => HUDState }).__fpsGame =
+      (window as unknown as { __fpsGame?: Game; __fpsAudio?: typeof audio; __hudSnapshot?: () => HudState }).__fpsGame =
         game;
-      (window as unknown as { __fpsAudio?: typeof audio; __hudSnapshot?: () => HUDState }).__fpsAudio = audio;
-      (window as unknown as { __hudSnapshot?: () => HUDState }).__hudSnapshot = () => hudRef.current;
+      (window as unknown as { __fpsAudio?: typeof audio; __hudSnapshot?: () => HudState }).__fpsAudio = audio;
+      (window as unknown as { __hudSnapshot?: () => HudState }).__hudSnapshot = () => hudRef.current;
     }
     return () => {
       game.dispose();

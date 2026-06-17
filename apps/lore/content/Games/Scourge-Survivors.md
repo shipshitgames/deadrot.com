@@ -36,6 +36,8 @@ This is the flagship implementation of the shared [[Survivors-Loop]].
 The offensive front (see [[Premise]]). You go into the breach where [[Deadlane]]'s
 [[The-Wardens|Wardens]] can only hold the line. The deepest region is [[Perdition]].
 
+**Warline operation — Breach Purge:** A lone Pyre operator drops into a live breach to grind the Scourge down from the inside — every run thins a nest the front is bleeding to contain.
+
 ## Maps
 Many breach-arenas with rooms and levels — each a chamber of the breach (see the map set).
 

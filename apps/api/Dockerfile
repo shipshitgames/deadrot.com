@@ -8,6 +8,10 @@ COPY package.json bun.lock turbo.json tsconfig.base.json ./
 COPY apps/api/package.json apps/api/package.json
 COPY apps/web/package.json apps/web/package.json
 COPY apps/lore/package.json apps/lore/package.json
+# Every workspace member's package.json must be present or `bun install
+# --frozen-lockfile` below can't resolve the frozen lockfile. Keep in sync with
+# apps/games/* and packages/* — a missing member fails the build (brawl was).
+COPY apps/games/brawl/package.json apps/games/brawl/package.json
 COPY apps/games/deadlane/package.json apps/games/deadlane/package.json
 COPY apps/games/pactfall/package.json apps/games/pactfall/package.json
 COPY apps/games/redline/package.json apps/games/redline/package.json

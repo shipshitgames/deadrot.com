@@ -26,7 +26,7 @@ export const GAME_APPS = [
     accent: "#c1121f",
     devPort: 5174,
     deployUrl: "https://deadlane-one.vercel.app",
-    status: "PLAYABLE",
+    status: "IN DEV",
   },
   {
     slug: "pactfall",
@@ -34,7 +34,7 @@ export const GAME_APPS = [
     accent: "#e9e3d6",
     devPort: 5175,
     deployUrl: "https://pactfall.vercel.app",
-    status: "PLAYABLE",
+    status: "IN DEV",
   },
   {
     slug: "redline",
@@ -42,7 +42,7 @@ export const GAME_APPS = [
     accent: "#ff2a18",
     devPort: 5176,
     deployUrl: "https://redline-eight-theta.vercel.app",
-    status: "PLAYABLE",
+    status: "IN DEV",
   },
   {
     slug: "rothulk",
@@ -50,7 +50,7 @@ export const GAME_APPS = [
     accent: "#cdbfae",
     devPort: 5177,
     deployUrl: "https://rothulk.vercel.app",
-    status: "PLAYABLE",
+    status: "IN DEV",
   },
   {
     slug: "scourge-survivors",
@@ -66,7 +66,7 @@ export const GAME_APPS = [
     accent: "#8bdc1f",
     devPort: 5179,
     deployUrl: "https://starblight.vercel.app",
-    status: "PLAYABLE",
+    status: "IN DEV",
   },
   // Warline is the persistent lobby / front door (EPIC #34), a Vite SPA backed by
   // the PartyKit server at warline.vincentshipsit.partykit.dev.
@@ -84,7 +84,7 @@ export const GAME_APPS = [
     accent: "#c1121f",
     devPort: 5181,
     deployUrl: "https://brawl.vercel.app",
-    status: "PLAYABLE",
+    status: "IN DEV",
   },
 ];
 

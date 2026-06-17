@@ -35,6 +35,7 @@ function FighterChip({ fighter }: { fighter: ArenaFighterHud }) {
       </div>
       <div className="arena-chip__row">
         <span className="arena-chip__damage">{fighter.eliminated ? "—" : `${fighter.damage}%`}</span>
+        {/* react-doctor-disable-next-line react-doctor/prefer-tag-over-role -- The stock indicator is a dynamic count of decorative <i> pips, not an image file; role="img" + aria-label is the correct way to announce them as one unit to screen readers. */}
         <span className="arena-chip__stocks" role="img" aria-label={`${fighter.stocks} stocks remaining`}>
           {Array.from({ length: Math.max(0, fighter.stocks) }, (_, index) => (
             <i key={index} className="arena-pip" />

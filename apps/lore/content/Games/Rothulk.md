@@ -22,6 +22,8 @@ lanes from outside, Rothulk is the **quiet climb up the spine of the nest** to t
 keeps it connected. Tonally the Pyre creed made playable: *to hold is to die slowly; the only
 cure is fire.* (See [[Premise]], [[Timeline|The Descent]].)
 
+**Warline operation — Breach Sabotage:** A Pyre saboteur climbs a beached breach-hulk to ignite its core and sever the local node — one sabotaged nest goes feral and blind on the board.
+
 ## The hook — platform up a living nest
 The bio-hulk is the level *and* the enemy. You ascend chambers of pulsing host-flesh, ride
 spore-geysers, ride and crush living platforms, and route around the Choir's sight by staying

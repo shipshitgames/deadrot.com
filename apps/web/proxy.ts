@@ -2,6 +2,7 @@ import { clerkClient, clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/
 import { type NextRequest, NextResponse } from "next/server";
 
 import { authEnabled, FREE_GAME_SLUGS, LOCKED_GAME_SLUGS } from "@/lib/access";
+import { isGameVisibleSync } from "@/lib/flags";
 import { ensureShipshitEntitlement } from "@/lib/shipshit-entitlement-sync";
 
 // Shell-level game gate (epic #330). In prod this runs BEFORE the next.config
@@ -32,6 +33,18 @@ function signInUrl(req: NextRequest): string {
 }
 
 const gate = clerkMiddleware(async (auth, req) => {
+  // Feature-flag visibility (#384) composes WITH the paywall but is a separate
+  // system: a game whose visibility flag is OFF is hidden for everyone — owners
+  // included — because a flag never grants access, it only hides. This runs
+  // BEFORE auth so a killed game never even prompts a sign-in; the lobby gallery
+  // already drops it. Deterministic env kill-switch here is the edge backstop
+  // (no network on the hot path); the live PostHog ramp drives the gallery.
+  if (isFreeGameRoute(req) || isLockedGameRoute(req)) {
+    const slug = req.nextUrl.pathname.split("/")[1];
+    // A matched game route always has a slug segment; the guard is belt-and-braces
+    // so an empty string can never resolve a flag (gameVisibilityFlag("") would).
+    if (slug && !isGameVisibleSync(slug)) return NextResponse.redirect(new URL("/", req.url));
+  }
   if (isFreeGameRoute(req)) {
     await auth.protect({ unauthenticatedUrl: signInUrl(req) });
     return;

@@ -36,6 +36,14 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: !CI,
     timeout: 120_000,
+    // Feature-flag kill-switch (#384) so flags.spec.ts can exercise game
+    // visibility end-to-end: Rothulk is flipped OFF by default while every other
+    // game stays default-ON. PostHog stays unconfigured, so this deterministic
+    // FLAG_OVERRIDES is the only flag input — no network, fully reproducible.
+    env: {
+      ...process.env,
+      FLAG_OVERRIDES: process.env.FLAG_OVERRIDES ?? JSON.stringify({ "game-rothulk-visible": false }),
+    },
   },
   projects: [
     { name: "web:desktop", use: { ...devices["Desktop Chrome"] } },

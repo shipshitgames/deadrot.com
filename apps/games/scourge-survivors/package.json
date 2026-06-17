@@ -27,7 +27,6 @@
     "@shipshitgames/assets": "workspace:*",
     "@shipshitgames/engine": "^0.2.0",
     "@shipshitgames/ui": "workspace:*",
-    "partysocket": "^1.1.19",
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "three": "^0.169.0"

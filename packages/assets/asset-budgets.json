@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "categories": {
+    "small-arcade": {
+      "maxTotalBytes": 2097152,
+      "maxInitialBytes": 1048576,
+      "maxFileBytes": 1048576,
+      "minManifestCoverage": 0
+    },
+    "3d-arena": {
+      "maxTotalBytes": 31457280,
+      "maxInitialBytes": 8388608,
+      "maxFileBytes": 4194304,
+      "minManifestCoverage": 0.7
+    },
+    "hub-meta": {
+      "maxTotalBytes": 12582912,
+      "maxInitialBytes": 3145728,
+      "maxFileBytes": 4194304,
+      "minManifestCoverage": 0
+    }
+  },
+  "games": {
+    "brawl": {
+      "category": "small-arcade"
+    },
+    "deadlane": {
+      "category": "small-arcade"
+    },
+    "pactfall": {
+      "category": "small-arcade"
+    },
+    "redline": {
+      "category": "small-arcade"
+    },
+    "rothulk": {
+      "category": "small-arcade"
+    },
+    "scourge-survivors": {
+      "category": "3d-arena"
+    },
+    "starblight": {
+      "category": "small-arcade"
+    },
+    "warline": {
+      "category": "hub-meta"
+    }
+  }
+}

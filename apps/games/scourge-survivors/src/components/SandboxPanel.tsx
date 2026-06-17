@@ -5,15 +5,15 @@ import { MAP_PICKER, SANDBOX_MAP_PICKER } from "../game/data/maps";
 import {
   MAIN_WEAPON_TIER_LABEL,
   MAIN_WEAPON_VISUAL_TIERS,
-  mainWeaponTierDamageMul,
   type MainWeaponVisualTier,
+  mainWeaponTierDamageMul,
 } from "../game/data/survivors";
 import type { SandboxEnemyKind } from "../game/Game";
 import { RUNTIME_AUDIO_ASSET_URLS, RUNTIME_VISUAL_ASSET_URLS, weaponSpriteAssetId } from "../game/spriteAssets";
-import type { HUDState } from "../game/types";
+import type { HudState } from "../game/types";
 
 interface Props {
-  state: HUDState;
+  state: HudState;
   onStart: (mapId?: string) => void;
   onExit: () => void;
   onLock: () => void;

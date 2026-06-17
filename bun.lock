@@ -135,7 +135,6 @@
         "@shipshitgames/assets": "workspace:*",
         "@shipshitgames/engine": "^0.2.0",
         "@shipshitgames/ui": "workspace:*",
-        "partysocket": "^1.1.19",
         "react": "19.2.7",
         "react-dom": "19.2.7",
         "three": "^0.169.0",
@@ -296,6 +295,7 @@
       "dependencies": {
         "@clerk/nextjs": "^7.5.1",
         "@deadrot/catalog": "workspace:*",
+        "@deadrot/game-kit": "workspace:*",
         "@radix-ui/react-slot": "^1.2.4",
         "@sentry/nextjs": "^10.57.0",
         "@shipshitgames/assets": "workspace:*",
@@ -343,6 +343,7 @@
         "@shipshitgames/assets": "workspace:*",
         "@shipshitgames/ui": "workspace:*",
         "@shipshitgames/warline": "workspace:*",
+        "partysocket": "^1.1.19",
         "posthog-js": "^1.386.6",
       },
       "devDependencies": {

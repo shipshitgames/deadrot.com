@@ -1,4 +1,4 @@
-import { accentVars, type Accent } from "@/lib/content";
+import { type Accent, accentVars } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
 /** Abstract faction sigil tinted by accent — placeholder emblem until key art lands. */

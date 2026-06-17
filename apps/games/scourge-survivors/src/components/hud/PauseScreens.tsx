@@ -3,7 +3,7 @@ import { type ReactNode, useEffect, useEffectEvent, useMemo, useRef, useState } 
 import { MELEE_WEAPON_NAME } from "../../game/constants";
 import { SCOURGE_THREAT_TIERS } from "../../game/data/enemies";
 import { MENU_HERO_URL } from "../../game/spriteAssets";
-import type { HUDState } from "../../game/types";
+import type { HudState } from "../../game/types";
 import { IconText, OVERLAY } from "./shared";
 
 const GAME_SLUG = "scourge-survivors";
@@ -18,7 +18,7 @@ export function PauseScreens({
   onLeaveRoom,
   onMenu,
 }: {
-  state: HUDState;
+  state: HudState;
   suppressMenu: boolean;
   onLock: () => void;
   onEscapeResume: () => void;

@@ -1,4 +1,5 @@
 import { Bug, GitBranch, Lightbulb, ListChecks, MessageSquarePlus, Rocket } from "lucide-react";
+import Link from "next/link";
 
 import { CommunityBuildCard } from "@/components/community/community-build-card";
 import { Backdrop } from "@/components/site/atmosphere";
@@ -41,10 +42,10 @@ export default function CommunityPage() {
               variant="outline"
               className="border-gunmetal font-display uppercase tracking-widest text-bone hover:border-hellfire hover:text-hellfire"
             >
-              <a href={RELEASE_NOTES_URL} target="_blank" rel="noreferrer">
+              <Link href={RELEASE_NOTES_URL}>
                 <Rocket aria-hidden />
-                Release Notes
-              </a>
+                Build Notes
+              </Link>
             </Button>
             <Button
               asChild

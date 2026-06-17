@@ -315,20 +315,20 @@ export class WeaponSystem {
       if (res.died) this.sys.pve.onEnemyDeath(enemy, false);
     }
 
-    if (this.ctx.multiplayer && this.sys.multiplayer.net) {
-      for (const r of this.sys.multiplayer.remotePlayers.values()) {
+    if (this.ctx.multiplayer && this.sys.multiplayer.active) {
+      for (const r of this.sys.multiplayer.peers()) {
         const rx = r.group.position.x - px;
         const rz = r.group.position.z - pz;
         const d = Math.hypot(rx, rz);
         if (d > MELEE_RANGE + 0.6) continue;
         if (d > 0.0001 && (rx * dirX + rz * dirZ) / d < MELEE_ARC_DOT) continue;
-        this.sys.multiplayer.net.sendHit(r.id, MELEE_DAMAGE * dmgMul);
+        this.sys.multiplayer.sendHit(r.id, MELEE_DAMAGE * dmgMul);
         hitAny = true;
       }
     }
 
     if (hitAny) {
-      this.sys.hud.hitMarkerSeq++;
+      this.sys.hud.hitSeq++;
       this.sys.fx.addShake(0.14);
     }
     this.sys.hud.emit();
@@ -416,15 +416,15 @@ export class WeaponSystem {
             // Co-op room hit sync: the server owns remote health/kills.
             const headshot = ud.part === "head";
             const dmg = spec.damage * dmgMult * (headshot ? headshotMultiplier : 1);
-            this.sys.multiplayer.net?.sendHit(ud.remoteId, dmg);
+            this.sys.multiplayer.sendHit(ud.remoteId, dmg);
             endPoint = h.point.clone();
             this.sys.hud.addDamageNumber(h.point, dmg, headshot ? "head" : "normal");
             if (headshot) {
               this.ctx.headshots++;
-              this.sys.hud.headshotSeq++;
+              this.sys.hud.emphasisSeq++;
               audio.sfx("headshot");
             } else {
-              this.sys.hud.hitMarkerSeq++;
+              this.sys.hud.hitSeq++;
               audio.sfx("hit");
             }
             break;
@@ -441,12 +441,12 @@ export class WeaponSystem {
               this.sys.fx.spawnBloodHit(h.point, headshot);
             }
             if (res.blocked) {
-              this.sys.hud.hitMarkerSeq++; // shield ping (no damage)
+              this.sys.hud.hitSeq++; // shield ping (no damage)
               audio.sfx("shieldhit");
             } else if (res.died) {
               if (headshot) {
                 this.ctx.headshots++;
-                this.sys.hud.headshotSeq++;
+                this.sys.hud.emphasisSeq++;
                 this.sys.hud.showToast("HEADSHOT!");
                 this.sys.fx.addShake(0.2);
                 audio.sfx("headshot");
@@ -454,11 +454,11 @@ export class WeaponSystem {
               this.sys.pve.onEnemyDeath(ud.enemy, headshot);
             } else if (headshot) {
               this.ctx.headshots++;
-              this.sys.hud.headshotSeq++;
+              this.sys.hud.emphasisSeq++;
               this.sys.fx.addShake(0.16);
               audio.sfx("headshot");
             } else {
-              this.sys.hud.hitMarkerSeq++;
+              this.sys.hud.hitSeq++;
               audio.sfx("hit");
             }
             break;

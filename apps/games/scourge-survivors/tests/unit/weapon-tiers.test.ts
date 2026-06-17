@@ -3,11 +3,11 @@ import {
   MAIN_WEAPON_TIER_DAMAGE_MUL,
   MAIN_WEAPON_TIER_LABEL,
   MAIN_WEAPON_VISUAL_TIERS,
+  type MainWeaponVisualTier,
   mainWeaponTierDamageMul,
   mainWeaponTierIndex,
   mainWeaponUpgradeScore,
   mainWeaponVisualTier,
-  type MainWeaponVisualTier,
   UPGRADE_BY_ID,
   type UpgradeId,
 } from "../../src/game/data/survivors";

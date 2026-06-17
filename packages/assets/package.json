@@ -11,6 +11,10 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
+    "./asset-index": {
+      "types": "./src/asset-index.ts",
+      "default": "./src/asset-index.ts"
+    },
     "./scourge-survivors": {
       "types": "./src/scourge-survivors.ts",
       "default": "./src/scourge-survivors.ts"
@@ -25,11 +29,14 @@
     "./entities/*": "./entities/*",
     "./games/*": "./games/*",
     "./shared/*": "./shared/*",
-    "./tokens/*": "./tokens/*"
+    "./tokens/*": "./tokens/*",
+    "./universe/*": "./universe/*"
   },
   "files": [
     "assets-catalog.json",
     "assets-catalog.schema.json",
+    "assets.index.json",
+    "assets.index.schema.json",
     "brand",
     "concepts",
     "entities",
@@ -37,10 +44,14 @@
     "lore",
     "shared",
     "src",
-    "tokens"
+    "tokens",
+    "universe"
   ],
   "scripts": {
-    "assets:check": "node scripts/check-assets.mjs && node scripts/check-asset-formats.mjs",
+    "assets:check": "node scripts/check-assets.mjs && node scripts/check-asset-formats.mjs && node scripts/generate-asset-index.mjs --check && node scripts/asset-budgets.mjs --check",
+    "assets:budgets": "node scripts/asset-budgets.mjs",
+    "assets:index": "node scripts/generate-asset-index.mjs",
+    "assets:index:check": "node scripts/generate-asset-index.mjs --check",
     "assets:clean-sprites": "bun ../../../shipshitgames/packages/assetgen/src/cli.ts clean-sprites",
     "assets:sync-codex-images": "node scripts/sync-codex-generated-images.mjs",
     "assets:to-webp": "node scripts/to-webp.mjs",

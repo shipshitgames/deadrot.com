@@ -330,9 +330,9 @@ export class Game {
         this.sys.pve.onEnemyDeath(enemy, headshot);
       } else if (headshot) {
         this.ctx.headshots++;
-        this.sys.hud.headshotSeq++;
+        this.sys.hud.emphasisSeq++;
       } else {
-        this.sys.hud.hitMarkerSeq++;
+        this.sys.hud.hitSeq++;
       }
     }
     this.sys.hud.emit();
@@ -366,6 +366,11 @@ export class Game {
 
   leaveMultiplayer(toMenu = true) {
     this.sys.multiplayer.leaveMultiplayer(toMenu);
+  }
+
+  /** Live co-op room state — exposed on `window.__fpsGame` for the e2e harness. */
+  multiplayerDebugSnapshot() {
+    return this.sys.multiplayer.debugSnapshot();
   }
 
   setShopUpgrades(tiers: Record<string, number>) {
