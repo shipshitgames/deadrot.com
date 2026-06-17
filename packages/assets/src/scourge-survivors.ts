@@ -341,12 +341,11 @@ export function scourgeSurvivorsAnimationFrameUrl(
   const actionEntry = entityEntry.actions[action];
   if (!actionEntry) throw new Error(`Unknown Scourge Survivors animation action: ${entity}/${action}`);
   const frameId = String(frame).padStart(2, "0");
-  const pathTemplate = comicAssetsEnabled() && Object.keys(COMIC_ENEMY_VIEW_PATHS).length > 0
-    ? actionEntry.pathTemplate.replace("animations/scourge/", COMIC_ANIMATION_ROOT)
-    : actionEntry.pathTemplate;
-  const path = `games/scourge-survivors/${pathTemplate
-    .replace("{view}", view)
-    .replace("{frame}", frameId)}`;
+  const pathTemplate =
+    comicAssetsEnabled() && Object.keys(COMIC_ENEMY_VIEW_PATHS).length > 0
+      ? actionEntry.pathTemplate.replace("animations/scourge/", COMIC_ANIMATION_ROOT)
+      : actionEntry.pathTemplate;
+  const path = `games/scourge-survivors/${pathTemplate.replace("{view}", view).replace("{frame}", frameId)}`;
   return scourgeSurvivorsAssetUrl(path);
 }
 

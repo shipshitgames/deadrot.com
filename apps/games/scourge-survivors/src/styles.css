@@ -463,7 +463,10 @@
     linear-gradient(112deg, transparent 0 34%, rgba(255, 106, 0, 0.18) 34.4%, transparent 35%),
     linear-gradient(72deg, transparent 0 62%, rgba(233, 227, 214, 0.12) 62.4%, transparent 63%),
     linear-gradient(0deg, rgba(255, 255, 255, 0.055) 0 2px, transparent 2px 100%);
-  background-size: auto, auto, 100% 18px;
+  background-size:
+    auto,
+    auto,
+    100% 18px;
   mix-blend-mode: screen;
   opacity: 0.34;
 }
@@ -533,9 +536,7 @@
 }
 
 .game-root .ssg-main-menu-action {
-  background:
-    linear-gradient(180deg, rgba(233, 227, 214, 0.1), rgba(5, 5, 5, 0.72)),
-    rgba(20, 16, 15, 0.86);
+  background: linear-gradient(180deg, rgba(233, 227, 214, 0.1), rgba(5, 5, 5, 0.72)), rgba(20, 16, 15, 0.86);
   border-radius: 0;
   transform: skewX(-3deg);
 }
@@ -545,9 +546,7 @@
 }
 
 .game-root .ssg-main-menu-action--primary {
-  background:
-    linear-gradient(180deg, rgba(255, 209, 102, 0.42), rgba(255, 42, 24, 0.82)),
-    var(--ssg-blood-hot);
+  background: linear-gradient(180deg, rgba(255, 209, 102, 0.42), rgba(255, 42, 24, 0.82)), var(--ssg-blood-hot);
 }
 
 .game-root .ssg-main-menu-enter {
