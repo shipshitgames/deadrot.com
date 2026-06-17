@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 
 import {
-  FLAG_DEFAULTS,
   __setRemoteFetcher,
+  FLAG_DEFAULTS,
   fetchRemoteFlags,
   filterVisibleGames,
   flagDefault,

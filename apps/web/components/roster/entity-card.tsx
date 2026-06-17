@@ -1,7 +1,7 @@
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 
-import { accentVars, spriteUrl, type Accent } from "@/lib/content";
+import { type Accent, accentVars, spriteUrl } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
 /** Shared tile for characters and creatures. */

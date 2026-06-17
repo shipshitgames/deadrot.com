@@ -5,16 +5,16 @@ import { test } from "node:test";
 // asset-index-core.mjs. These are side-effect free (no fs, no process), so they
 // load and run cleanly under `bun test tests`.
 import {
-  INDEX_VERSION,
-  INDEXED_ROOTS,
-  MEDIA_EXTENSIONS,
   cdnPathFor,
   compareByPath,
   gameFor,
+  INDEX_VERSION,
+  INDEXED_ROOTS,
   idFor,
   isIndexableMedia,
   joinCdnUrl,
   kindFor,
+  MEDIA_EXTENSIONS,
   mediaTypeFor,
   toPosix,
 } from "../scripts/lib/asset-index-core.mjs";

@@ -1,5 +1,5 @@
-import { makeMoveIntent, RectBounds } from "@shipshitgames/engine";
 import { describe, expect, test } from "bun:test";
+import { makeMoveIntent, RectBounds } from "@shipshitgames/engine";
 import * as THREE from "three";
 import { createMoveState, resetMoveState, updateMovement } from "../../src/front/movement";
 

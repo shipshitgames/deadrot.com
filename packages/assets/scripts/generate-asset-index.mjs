@@ -23,16 +23,17 @@
 //   --check            do not write; exit 1 if the committed manifest is stale
 
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { extname } from "./lib/asset-format-policy.mjs";
 import {
-  DEFAULT_CDN_BASE,
-  INDEXED_ROOTS,
-  INDEX_VERSION,
   cdnPathFor,
   compareByPath,
+  DEFAULT_CDN_BASE,
   gameFor,
+  INDEX_VERSION,
+  INDEXED_ROOTS,
   idFor,
   isIndexableMedia,
   kindFor,
@@ -40,7 +41,6 @@ import {
   toPosix,
 } from "./lib/asset-index-core.mjs";
 import { dimensionsFromBuffer } from "./lib/image-size.mjs";
-import { extname } from "./lib/asset-format-policy.mjs";
 
 const defaultRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const INDEX_FILENAME = "assets.index.json";

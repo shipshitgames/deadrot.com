@@ -32,6 +32,18 @@
       }
     }
   },
+  "overrides": [
+    {
+      "includes": ["**/packages/*/src/index.ts"],
+      "assist": {
+        "actions": {
+          "source": {
+            "organizeImports": "off"
+          }
+        }
+      }
+    }
+  ],
   "formatter": {
     "enabled": true,
     "indentStyle": "space",

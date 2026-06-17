@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { CONSTANTS } from "../../src/constants";
-import { buildLevelAt, buildLevel1 } from "../../src/game/levels";
+import { buildLevel1, buildLevelAt } from "../../src/game/levels";
 import { platformToAABB, resolveAgainstSolids } from "../../src/game/physics";
 import type { LevelData } from "../../src/game/types";
 

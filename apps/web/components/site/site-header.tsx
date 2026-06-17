@@ -1,9 +1,9 @@
 "use client";
 
 import { Show, UserButton } from "@clerk/nextjs";
+import { ArrowUpRight, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowUpRight, Menu, X } from "lucide-react";
 
 import { DeadrotBrand } from "@/components/site/deadrot-brand";
 import { authEnabled } from "@/lib/access";

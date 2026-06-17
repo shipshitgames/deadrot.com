@@ -1,5 +1,5 @@
 import menuHero from "@shipshitgames/assets/games/redline/ui/menu/title.webp";
-import { GlobalMusicToggle, MainMenuLayout, MainMenuScreen, MainMenuTopBar, gameMenuConfig } from "@shipshitgames/ui";
+import { GlobalMusicToggle, gameMenuConfig, MainMenuLayout, MainMenuScreen, MainMenuTopBar } from "@shipshitgames/ui";
 import { GameOverlays } from "./overlays";
 
 const menu = gameMenuConfig("redline");

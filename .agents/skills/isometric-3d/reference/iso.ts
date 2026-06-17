@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { TileGrid, Tile } from "./TileGrid";
+import type { Tile, TileGrid } from "./TileGrid";
 
 // Pure pointer->tile projection. Raycast the ground plane (Y=0), then snap.
 // This is the iso analogue of the FPS centre-screen raycast in context.ts.

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { Buffer } from "node:buffer";
-import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
 // The image-size module is pure header parsing (no Vite import.meta.glob), so it
 // loads fine under `bun test`. We exercise every real WebP encoding the repo
