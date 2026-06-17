@@ -8,11 +8,23 @@
   src: url("@shipshitgames/assets/shared/fonts/press-start-2p.ttf") format("truetype");
 }
 
+@font-face {
+  font-family: "SSG Comic Block";
+  font-style: normal;
+  font-weight: 200 700;
+  font-display: swap;
+  src: url("@shipshitgames/assets/shared/fonts/oswald.woff2") format("woff2");
+}
+
 :root {
   /* Literal stack — do NOT reference var(--ssg-font-mono): packages/ui sets
      --ssg-font-mono to var(--ssg-font-pixel), so referencing it back here forms
      a cycle that resolves to empty and drops the title to a serif fallback. */
-  --ssg-font-pixel: "SSG Press Start", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --ssg-font-arcade: "SSG Press Start", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --ssg-font-comic: "SSG Comic Block", Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  --ssg-font-pixel: var(--ssg-font-comic);
+  --ssg-font-display: var(--ssg-font-comic);
+  --ssg-font-mono: var(--ssg-font-comic);
 }
 
 @theme {
@@ -427,6 +439,144 @@
       align-items: flex-start;
       padding: 76px 12px 24px;
     }
+  }
+}
+
+/* Comic/XIII-style menu pass: clean ink panels over generated illustration art. */
+.game-root .ssg-main-menu-screen {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.54), transparent 28%, rgba(0, 0, 0, 0.82)),
+    linear-gradient(90deg, rgba(5, 5, 5, 0.92), rgba(5, 5, 5, 0.34) 46%, rgba(5, 5, 5, 0.82)),
+    var(--ssg-main-menu-image, linear-gradient(135deg, #070707, #180607 42%, #080808));
+  background-position: center;
+  background-size: cover;
+  font-family: var(--ssg-font-comic);
+  image-rendering: auto;
+}
+
+.game-root .ssg-main-menu-particles {
+  display: none;
+}
+
+.game-root .ssg-main-menu-screen::before {
+  background:
+    linear-gradient(112deg, transparent 0 34%, rgba(255, 106, 0, 0.18) 34.4%, transparent 35%),
+    linear-gradient(72deg, transparent 0 62%, rgba(233, 227, 214, 0.12) 62.4%, transparent 63%),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.055) 0 2px, transparent 2px 100%);
+  background-size: auto, auto, 100% 18px;
+  mix-blend-mode: screen;
+  opacity: 0.34;
+}
+
+.game-root .ssg-main-menu-screen::after {
+  background:
+    radial-gradient(ellipse at 50% 54%, transparent 22%, rgba(0, 0, 0, 0.7) 100%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.28), transparent 45%, rgba(0, 0, 0, 0.76));
+}
+
+.game-root .ssg-main-menu-copy::before {
+  background:
+    linear-gradient(96deg, rgba(5, 5, 5, 0.86), rgba(193, 18, 31, 0.36) 56%, transparent 82%),
+    linear-gradient(116deg, transparent 0 48%, rgba(233, 227, 214, 0.16) 48.5%, transparent 49%);
+  border: 3px solid rgba(5, 5, 5, 0.92);
+  clip-path: polygon(0 14%, 94% 0, 100% 78%, 8% 100%);
+}
+
+.game-root .ssg-main-menu-title {
+  font-family: var(--ssg-font-comic);
+  font-size: 92px;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: 0;
+  text-shadow:
+    5px 0 0 rgba(5, 5, 5, 0.98),
+    0 5px 0 rgba(5, 5, 5, 0.98),
+    -3px 3px 0 rgba(5, 5, 5, 0.98),
+    8px 8px 0 rgba(61, 0, 4, 0.92),
+    0 0 28px rgba(255, 42, 24, 0.62);
+}
+
+.game-root .ssg-main-menu-title--pixel {
+  font-size: 72px;
+  image-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+}
+
+.game-root .ssg-main-menu-title-line {
+  transform: skewX(-7deg);
+}
+
+.game-root .ssg-main-menu-title-line--bone::before,
+.game-root .ssg-main-menu-title-line--hot::after,
+.game-root .ssg-main-menu-title-line--ember::after {
+  display: none;
+}
+
+.game-root .ssg-main-menu-subtitle,
+.game-root .ssg-main-menu-status,
+.game-root .ssg-main-menu-topbar,
+.game-root .ssg-main-menu-nav__label,
+.game-root .ssg-main-menu-action,
+.game-root .ssg-main-menu-enter {
+  font-family: var(--ssg-font-comic);
+  letter-spacing: 0;
+}
+
+.game-root .ssg-main-menu-action,
+.game-root .ssg-main-menu-status span,
+.game-root .ssg-main-menu-enter {
+  border: 2px solid rgba(5, 5, 5, 0.9);
+  box-shadow:
+    4px 4px 0 rgba(5, 5, 5, 0.92),
+    inset 0 -2px 0 rgba(233, 227, 214, 0.16);
+}
+
+.game-root .ssg-main-menu-action {
+  background:
+    linear-gradient(180deg, rgba(233, 227, 214, 0.1), rgba(5, 5, 5, 0.72)),
+    rgba(20, 16, 15, 0.86);
+  border-radius: 0;
+  transform: skewX(-3deg);
+}
+
+.game-root .ssg-main-menu-action > * {
+  transform: skewX(3deg);
+}
+
+.game-root .ssg-main-menu-action--primary {
+  background:
+    linear-gradient(180deg, rgba(255, 209, 102, 0.42), rgba(255, 42, 24, 0.82)),
+    var(--ssg-blood-hot);
+}
+
+.game-root .ssg-main-menu-enter {
+  background: rgba(233, 227, 214, 0.92);
+  color: #170709;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.game-root .ssg-main-menu-screen--pause {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.66)),
+    linear-gradient(90deg, rgba(5, 5, 5, 0.9), rgba(5, 5, 5, 0.42), rgba(5, 5, 5, 0.86)),
+    var(--ssg-main-menu-image, transparent);
+  background-position: center;
+  background-size: cover;
+}
+
+@media (max-width: 720px) {
+  .game-root .ssg-main-menu-title {
+    font-size: 58px;
+  }
+
+  .game-root .ssg-main-menu-title--pixel {
+    font-size: 44px;
+  }
+
+  .game-root .ssg-main-menu-enter {
+    font-size: 20px;
   }
 }
 

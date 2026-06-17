@@ -195,6 +195,13 @@ export class InputSystem {
         if (this.ctx.status === "paused") this.requestLock();
       },
 
+      onActionKey: (code, e) => {
+        if (code === "Escape" && this.ctx.status === "playing") {
+          e.preventDefault();
+          this.pauseFromEscape();
+        }
+      },
+
       onPointerDown: (button) => {
         if (!this.ctx.rig.captured || this.ctx.status !== "playing") return;
         if (button === 2) {
@@ -226,6 +233,11 @@ export class InputSystem {
   // --------------------------------------------------- pointer-lock capture (FPS)
 
   private onLocomotionKeyDown = (e: KeyboardEvent) => {
+    if (e.code === "Escape" && this.ctx.status === "paused") {
+      e.preventDefault();
+      this.requestLock();
+      return;
+    }
     if (this.ctx.status !== "playing") return;
     if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
       this.ctx.wantsSprint = true;
@@ -263,5 +275,26 @@ export class InputSystem {
 
   requestLock() {
     this.captureRig?.requestCapture();
+  }
+
+  resumeFromPauseWithoutCapture(): void {
+    if (this.ctx.status !== "paused") return;
+    this.ctx.status = "pointerlock-needed";
+    this.ctx.firing = false;
+    this.sys.weapon.stopAds();
+    clearMoveIntent(this.ctx.move);
+    this.captureRig?.clearLocomotionModifiers();
+    this.sys.hud.emit();
+  }
+
+  private pauseFromEscape(): void {
+    if (this.ctx.status !== "playing") return;
+    this.ctx.status = "paused";
+    this.ctx.firing = false;
+    this.sys.weapon.stopAds();
+    clearMoveIntent(this.ctx.move);
+    this.captureRig?.clearLocomotionModifiers();
+    this.captureRig?.releaseCapture(true);
+    this.sys.hud.emit();
   }
 }

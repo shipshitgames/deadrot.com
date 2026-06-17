@@ -162,6 +162,10 @@ export class Game {
     this.sys.input.requestLock();
   }
 
+  resumeFromPauseWithoutCapture() {
+    this.sys.input.resumeFromPauseWithoutCapture();
+  }
+
   startCampaign(startMapId?: string) {
     this.ctx.sandbox = false;
     this.sys.mission.startCampaign(startMapId);

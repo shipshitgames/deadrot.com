@@ -1865,6 +1865,22 @@
         "scope": "Scourge Survivors runtime UI"
       }
     },
+    "ui-menu-comic-pyre-assault": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/menu/comic-pyre-assault.webp",
+      "role": "menu-background",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "license": {
+        "tool": "built-in image_gen",
+        "plan": "Codex built-in",
+        "date": "2026-06-17",
+        "kind": "comic style exploration illustration promoted as menu wallpaper",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
     "ui-card-bastion": {
       "type": "ui",
       "path": "games/scourge-survivors/ui/cards/codex/bastion.webp",
@@ -2018,7 +2034,7 @@
     },
     "ui": {
       "menuTitle": {
-        "asset": "ui-cover-gameplay"
+        "asset": "ui-menu-comic-pyre-assault"
       },
       "menuHero": {
         "asset": "ui-menu-hero"

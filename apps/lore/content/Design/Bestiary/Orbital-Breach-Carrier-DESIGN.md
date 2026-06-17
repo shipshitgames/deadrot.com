@@ -3,7 +3,7 @@ type: design-lock
 status: candidate-master
 subject: Orbital-Breach-Carrier
 subjectType: creature
-canon: Bestiary/Orbital-Breach-Carrier
+canon: Bestiary/Aircraft/Orbital-Breach-Carrier
 styleBible: Style-Bible
 lockedDate:
 ---

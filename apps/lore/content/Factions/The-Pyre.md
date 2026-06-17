@@ -20,7 +20,9 @@ the Scourge, the Pyre want to *make it pay for every world.*
 
 Against the Scourge's weakness ([[CANON]] §6) their doctrine is **starve and sever**: burn
 the hosts it feeds on and destroy the **Choir repeaters** from the inside, so the local horde
-goes feral.
+goes feral. A Purger's kit is built for that distance: firearm first, [[Cautery-Cleaver]]
+when the room gets too close, [[Blackout-Nail]] when the Choir carrier finally shows its
+throat.
 
 ## Playstyle
 Aggressive, high-risk DPS / infiltration. → [[Scourge-Survivors]] (FPS).

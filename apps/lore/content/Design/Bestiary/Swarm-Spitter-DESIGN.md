@@ -3,7 +3,7 @@ type: design-lock
 status: runtime-derived-master-candidate
 subject: Swarm-Spitter
 subjectType: creature
-canon: Bestiary/Swarm-Spitter
+canon: Bestiary/Soldiers/Swarm-Spitter
 styleBible: Style-Bible
 lockedDate:
 ---

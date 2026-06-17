@@ -147,6 +147,7 @@ const INITIAL_STATE: HUDState = {
   banishes: 0,
 };
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- Scourge Survivors keeps the imperative Three.js game shell in one boundary; splitting it belongs in a dedicated engine/UI refactor.
 export default function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Game | null>(null);
@@ -283,6 +284,9 @@ export default function App() {
     audio.unlock();
     gameRef.current?.requestLock();
   }, []);
+  const handleEscapeResume = useCallback(() => {
+    gameRef.current?.resumeFromPauseWithoutCapture();
+  }, []);
   const handleRestart = useCallback(() => {
     audio.unlock();
     const current = hudRef.current;
@@ -405,6 +409,7 @@ export default function App() {
         state={hud}
         scores={scores}
         onLock={handleLock}
+        onEscapeResume={handleEscapeResume}
         onRestart={handleRestart}
         onClearScores={handleClearScores}
         onStartMultiplayer={handleStartMultiplayer}

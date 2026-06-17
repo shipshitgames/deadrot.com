@@ -32,13 +32,14 @@ export const START_RESERVE = 75;
 export const RELOAD_TIME = 1.2; // seconds
 export const HEADSHOT_MULTIPLIER = 2.2;
 
-// Melee knife — always available (no ammo), the guaranteed fallback so you can
-// never be locked out of fighting when ammo runs dry. Works in every mode.
+// Cautery Cleaver — always available (no ammo), the guaranteed fallback so you
+// can never be locked out of fighting when ammo runs dry. Works in every mode.
+export const MELEE_WEAPON_NAME = "Cautery Cleaver";
 export const MELEE_DAMAGE = 48;
 export const MELEE_RANGE = 3.0;
 export const MELEE_COOLDOWN = 0.5;
 export const MELEE_ARC_DOT = 0.55; // cos(~57°): frontal cone, hits a small cluster
-export const MELEE_KNOCKBACK = 7; // a satisfying shove on the knife
+export const MELEE_KNOCKBACK = 7; // a satisfying shove on the cleaver
 
 // Enemies (base stats; waves scale these)
 export const ENEMY_MAX_HEALTH = 100;
