@@ -9,7 +9,9 @@ status: core canon
 The endless, mutating horde that pours from the [[Cosmology|breaches]] — the through-line
 antagonist of the entire universe. Every Ship Shit Games title is, at its core, a
 **Scourge** game. Closest analogue: the **Zerg** — a swarming, adapting hive-thing with
-**no single general**.
+**no single general**. This note is the index hub for the whole bestiary: the
+[[#Bestiary index|index below]] links every catalogued host, and
+[[Scourge-Host-Families]] keeps their forms coherent.
 
 ## Nature
 A spreading intelligence, not a commander. It overwhelms through mass and mutation.
@@ -19,6 +21,12 @@ spread, an AI-like mind with no off-switch. It consumes hosts to death and so al
 more; it has crossed and consumed worlds before this one (and **jumps on** when one is spent),
 so the army is full of different host races and ruined technologies wearing the same parasite
 grammar.
+
+> [!note] Canon lock
+> Earlier drafts called the Scourge a free-standing **fungal rot**. Canon ([[CANON]] §1)
+> supersedes that: it is a **host-dependent parasite** with no body of its own. The
+> mycelial, fungal, and spore-host expressions in the bestiary are *host families it wears*,
+> not the parasite itself.
 
 ## The Choir & its weakness
 The Scourge is a **hive mind** — it knows everything its parts know at once, over a signal
@@ -39,18 +47,43 @@ The silhouette can change wildly by host family, but the parasite signature shou
 obvious.
 
 ## Threat tiers
-- **Swarm** — the cannon-fodder masses you mow down: [[Swarm-Ripper]] and [[Swarm-Spitter]].
-- **Elites** — tougher, mutated variants with special attacks; spike the pressure mid-run.
-  See [[Render]], [[Rot-Engine]], [[Graft-Breacher]].
-- **Breach-bosses** — monstrous expressions of the Scourge that hold a breach, such as
-  [[Breach-Boss]], [[Trucebreaker]], and [[Orbital-Breach-Carrier]].
-- **Orbital infection** — craft and carrier forms such as [[Scourge-Fighter]].
+Three readable tiers, drawn from [[Scourge-Survivors]]' enemy roster:
 
-[[Scourge-Survivors]] already fields melee, ranged, and a boss — the seed of the bestiary.
-Catalogue individuals from `Templates/Creature.md`.
+- **Swarm** — the cannon-fodder host-mass that wins through **density**, not skill. Its
+  catalogued cores are **melee** rushers ([[Swarm-Ripper]]) and **ranged** spitters
+  ([[Swarm-Spitter]]) plus low trackers and skirmishers ([[Wound-Hound]]); in-game the same
+  tier also fields faster chargers, heavier brutes, and splitting hosts. Individually
+  trivial; lethal in numbers.
+- **Elites** — tougher, **mutated** variants that **spike the pressure** mid-run with
+  special attacks, area-denial, and grafts: [[Render]], [[Rot-Engine]], [[Graft-Breacher]],
+  [[Sower]], [[Spore-Lung]], and the heavy [[Cairn]]. They don't replace the swarm — they
+  punish you while it floods in.
+- **Breach-bosses** — monstrous war-bodies that hold a breach as an objective. The
+  Survivors boss **shields** its core, **enrages** into a frenzy as it loses health, and
+  answers with **barrages**: [[Breach-Boss]], the truce-breaking [[Trucebreaker]], and the
+  orbital [[Orbital-Breach-Carrier]].
+
+[[Scourge-Survivors]] already fields melee, ranged, elites, and a shield/enrage/barrage boss
+— the seed of the whole bestiary. Catalogue new individuals from `Templates/Creature.md`.
+
+## Bestiary index
+Every catalogued host, grouped by role. New creature notes should slot into one of these
+groups and link back here.
+
+- **Swarm — melee & ranged fodder:** [[Swarm-Ripper]] (melee), [[Swarm-Spitter]] (ranged),
+  [[Wound-Hound]] (tracker/skirmisher).
+- **Elites — mutated pressure spikes:** [[Render]], [[Rot-Engine]], [[Graft-Breacher]],
+  [[Sower]], [[Spore-Lung]], [[Cairn]].
+- **The Choir — relay & signal hosts:** [[Chorister]], [[Cantor]], [[Carillon]], [[Quaver]],
+  [[Aeolian]], [[Bourdon]], [[Descant]].
+- **Carriers, biomass & payload:** [[Braid-Worm]], [[Gristle-Vat]], [[Spore-Casket]].
+- **Breach-bosses & objective monsters:** [[Breach-Boss]], [[Trucebreaker]],
+  [[Orbital-Breach-Carrier]].
+- **Orbital craft:** [[Scourge-Fighter]].
+- **Taxonomy & host families:** [[Scourge-Host-Families]].
 
 ## Across the games
-- [[Deadlane]] — the Scourge as waves the [[The-Wardens|Wardens]] funnel and grind down.
-- [[Scourge-Survivors]] — the Scourge up close, swarming a lone [[The-Pyre|Purger]].
+- [[Deadlane]] — the Scourge as **waves** the [[The-Wardens|Wardens]] funnel and grind down.
+- [[Scourge-Survivors]] — the Scourge **up close**, swarming a lone [[The-Pyre|Purger]].
 - [[Starblight]] — the Scourge in orbit: spores, infected wreckage, breach-ships, and
   parasite growth crossing the sky before it falls into the lanes.
