@@ -29,8 +29,8 @@
      --ssg-font-mono to var(--ssg-font-pixel), so referencing it back here forms
      a cycle that resolves to empty and drops the title to a serif fallback. */
   --ssg-font-arcade: "SSG Press Start", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --ssg-font-comic-display: Impact, "SSG Comic Condensed", "Arial Black", Haettenschweiler, "Arial Narrow Bold",
-    sans-serif;
+  --ssg-font-comic-display:
+    Impact, "SSG Comic Condensed", "Arial Black", Haettenschweiler, "Arial Narrow Bold", sans-serif;
   --ssg-font-comic-body: "SSG Comic Body", "Trebuchet MS", "Chalkboard SE", system-ui, sans-serif;
   --ssg-font-comic: var(--ssg-font-comic-display);
   --ssg-font-pixel: var(--ssg-font-comic-display);
@@ -1217,9 +1217,7 @@
   overflow-x: auto;
   overflow-y: auto;
   border-color: rgba(255, 106, 0, 0.26);
-  background:
-    linear-gradient(180deg, rgba(255, 106, 0, 0.08), rgba(5, 5, 5, 0.06)),
-    rgba(5, 5, 5, 0.5);
+  background: linear-gradient(180deg, rgba(255, 106, 0, 0.08), rgba(5, 5, 5, 0.06)), rgba(5, 5, 5, 0.5);
   padding: 16px;
   text-align: left;
   box-shadow:
