@@ -31,6 +31,7 @@ Start here, follow the links, open the graph view.
 - [[Style-Bakeoff]] — house-look validation · outcome locked 2026-06-04 _(active)_
 - [[Art/Style-Lock-Audit-2026-06-05|Style Lock Audit 2026-06-05]] — asset/style lock follow-up audit _(active)_
 - [[Character-Asset-Status]] — visual asset review board with sprite/portrait previews, source paths, and lock status _(active)_
+- [[Art/Lore-Asset-Map|Lore Asset Map]] — generated coverage map from lore entries to package art, catalog variants, runtime manifests, masters, and sources _(active)_
 - [[Art/style-refs/README|Locked Style References]] — pinned per-game style-reference files _(active)_
 - [[Art/Prompt-Batches/2026-06-03-gallery-thumbnails-and-menu-ui|2026-06-03 Gallery Thumbnails and Menu UI]] — historical web/menu prompt batch
 - [[Art/Prompt-Batches/2026-06-03-scourge-host-family-concepts|2026-06-03 Scourge Host Family Concepts]] — historical Scourge host-family exploration

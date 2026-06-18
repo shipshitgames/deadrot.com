@@ -1,0 +1,2268 @@
+{
+  "version": 1,
+  "generatedBy": "packages/assets/scripts/generate-lore-art-map.mjs",
+  "summary": {
+    "entries": 27,
+    "locked": 2,
+    "runtimeLinked": 5,
+    "inProgress": 19,
+    "drafted": 0,
+    "missing": 1,
+    "catalogLinked": 22,
+    "runtimeManifestLinked": 7,
+    "packageLinked": 26,
+    "hasMasters": 15,
+    "hasSources": 15
+  },
+  "entries": [
+    {
+      "type": "bestiary",
+      "slug": "breach-boss",
+      "name": "Breach-Boss",
+      "notePath": "Bestiary/Bosses/Breach-Boss.md",
+      "appearsIn": [
+        "scourge-survivors",
+        "deadlane",
+        "rothulk"
+      ],
+      "spriteBase": "boss",
+      "catalogEntities": [
+        "breach-boss"
+      ],
+      "catalog": {
+        "expected": 3,
+        "existing": 2,
+        "missing": 1,
+        "variants": [
+          {
+            "entityId": "breach-boss",
+            "game": "deadlane",
+            "path": "entities/breach-boss/deadlane.webp",
+            "exists": true
+          },
+          {
+            "entityId": "breach-boss",
+            "game": "rothulk",
+            "path": null,
+            "exists": false
+          },
+          {
+            "entityId": "breach-boss",
+            "game": "scourge-survivors",
+            "path": "entities/breach-boss/scourge-survivors.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 7,
+        "generated": 7,
+        "records": [
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "comic-boss",
+            "keyPath": "comic-boss.views.back",
+            "path": "games/scourge-survivors/enemies/scourge-comic/breach-boss/back.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "Codex built-in image_gen comic asset pass",
+              "date": "2026-06-17",
+              "kind": "runtime comic-style Scourge Survivors exploratory asset",
+              "scope": "Scourge Survivors runtime opt-in comic pack"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "comic-boss",
+            "keyPath": "comic-boss.views.front",
+            "path": "games/scourge-survivors/enemies/scourge-comic/breach-boss/front.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "Codex built-in image_gen comic asset pass",
+              "date": "2026-06-17",
+              "kind": "runtime comic-style Scourge Survivors exploratory asset",
+              "scope": "Scourge Survivors runtime opt-in comic pack"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "comic-boss",
+            "keyPath": "comic-boss.views.side",
+            "path": "games/scourge-survivors/enemies/scourge-comic/breach-boss/side.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "Codex built-in image_gen comic asset pass",
+              "date": "2026-06-17",
+              "kind": "runtime comic-style Scourge Survivors exploratory asset",
+              "scope": "Scourge Survivors runtime opt-in comic pack"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "boss",
+            "keyPath": "boss.views.back",
+            "path": "games/scourge-survivors/enemies/scourge/breach-boss/back.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-06-05",
+              "kind": "AI generated 2D Scourge boss sprite sheet",
+              "scope": "Scourge Survivors runtime"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "boss",
+            "keyPath": "boss.views.front",
+            "path": "games/scourge-survivors/enemies/scourge/breach-boss/front.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-06-05",
+              "kind": "AI generated 2D Scourge boss sprite sheet",
+              "scope": "Scourge Survivors runtime"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "boss",
+            "keyPath": "boss.views.side",
+            "path": "games/scourge-survivors/enemies/scourge/breach-boss/side.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-06-05",
+              "kind": "AI generated 2D Scourge boss sprite sheet",
+              "scope": "Scourge Survivors runtime"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "projectile-boss",
+            "keyPath": "projectile-boss",
+            "path": "games/scourge-survivors/projectiles/scourge/boss-barrage.webp",
+            "license": {
+              "tool": "legacy repository asset",
+              "plan": "prototype",
+              "date": "2026-06-02",
+              "kind": "generated 2D projectile sprite",
+              "scope": "project prototype"
+            },
+            "exists": true,
+            "generated": true
+          }
+        ]
+      },
+      "packageAssets": {
+        "count": 3,
+        "paths": [
+          "packages/assets/entities/breach-boss/deadlane.webp",
+          "packages/assets/entities/breach-boss/pactfall.webp",
+          "packages/assets/entities/breach-boss/scourge-survivors.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/enemies/breach-boss.webp"
+        ]
+      },
+      "masters": {
+        "count": 4,
+        "paths": [
+          "packages/assets/masters/art/wallpapers/combat-v03/pact-boss-standoff-wallpaper-v03.png",
+          "packages/assets/masters/art/wallpapers/combat-v05/gritty-warzone-matte-boss-wallpaper-v05.png",
+          "packages/assets/lore/art-masters/scourge/breach-boss/breach-boss-breach-engine-master-turnaround.png",
+          "packages/assets/lore/art-masters/scourge/breach-boss/breach-boss-runtime-placeholder.webp"
+        ]
+      },
+      "sources": {
+        "count": 7,
+        "paths": [
+          "packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/breach-boss-breach-engine-master-turnaround.png",
+          "packages/assets/sources/generated/2026-06-17/lore/wallpapers/combat-v03/pact-boss-standoff-wallpaper-v03.png",
+          "packages/assets/sources/generated/2026-06-17/lore/wallpapers/combat-v05/gritty-warzone-matte-boss-wallpaper-v05.png",
+          "packages/assets/sources/generated/lore-art-style-bakeoff/2026-06-04/d2-boss-breachheart.png",
+          "packages/assets/sources/generated/scourge-survivors/animation-sheets/2026-06-11/breach-boss-barrage-sheet.png",
+          "packages/assets/sources/generated/scourge-survivors/animation-sheets/2026-06-11/breach-boss-death-sheet.png",
+          "packages/assets/sources/generated/scourge-survivors/animation-sheets/2026-06-11/breach-boss-lurch-sheet.png"
+        ]
+      },
+      "manual": {
+        "note": "Breach-Boss",
+        "good": "Good",
+        "locked": "Yes",
+        "source": "`packages/assets/games/scourge-survivors/enemies/scourge/breach-boss/{front,side,back}.webp`",
+        "nextAction": "Wire animation frames into renderer."
+      },
+      "status": "locked"
+    },
+    {
+      "type": "bestiary",
+      "slug": "graft-breacher",
+      "name": "Graft-Breacher",
+      "notePath": "Bestiary/Vehicles/Graft-Breacher.md",
+      "appearsIn": [
+        "deadlane",
+        "scourge-survivors",
+        "rothulk"
+      ],
+      "spriteBase": "portrait-graft-breacher",
+      "catalogEntities": [
+        "graft-breacher"
+      ],
+      "catalog": {
+        "expected": 3,
+        "existing": 2,
+        "missing": 1,
+        "variants": [
+          {
+            "entityId": "graft-breacher",
+            "game": "deadlane",
+            "path": "entities/graft-breacher/deadlane.webp",
+            "exists": true
+          },
+          {
+            "entityId": "graft-breacher",
+            "game": "rothulk",
+            "path": null,
+            "exists": false
+          },
+          {
+            "entityId": "graft-breacher",
+            "game": "scourge-survivors",
+            "path": "entities/graft-breacher/scourge-survivors.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 2,
+        "paths": [
+          "packages/assets/entities/graft-breacher/deadlane.webp",
+          "packages/assets/entities/graft-breacher/scourge-survivors.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/enemies/graft-breacher.webp"
+        ]
+      },
+      "masters": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/art-masters/scourge/graft-breacher/graft-breacher-master-turnaround.png"
+        ]
+      },
+      "sources": {
+        "count": 1,
+        "paths": [
+          "packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/graft-breacher-master-turnaround.png"
+        ]
+      },
+      "manual": {
+        "note": "Graft-Breacher",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/entities/graft-breacher/deadlane.webp`",
+        "nextAction": "Generate final per-game variants."
+      },
+      "status": "in-progress"
+    },
+    {
+      "type": "bestiary",
+      "slug": "orbital-breach-carrier",
+      "name": "Orbital Breach Carrier",
+      "notePath": "Bestiary/Aircraft/Orbital-Breach-Carrier.md",
+      "appearsIn": [
+        "starblight"
+      ],
+      "spriteBase": "portrait-orbital-breach-carrier",
+      "catalogEntities": [
+        "orbital-breach-carrier"
+      ],
+      "catalog": {
+        "expected": 1,
+        "existing": 1,
+        "missing": 0,
+        "variants": [
+          {
+            "entityId": "orbital-breach-carrier",
+            "game": "starblight",
+            "path": "entities/orbital-breach-carrier/starblight.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 1,
+        "paths": [
+          "packages/assets/entities/orbital-breach-carrier/starblight.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/enemies/orbital-breach-carrier.webp"
+        ]
+      },
+      "masters": {
+        "count": 2,
+        "paths": [
+          "packages/assets/lore/art-masters/scourge/orbital-breach-carrier/orbital-breach-carrier-master-turnaround.png",
+          "packages/assets/lore/art-masters/scourge/orbital-breach-carrier/orbital-breach-carrier-runtime-placeholder.webp"
+        ]
+      },
+      "sources": {
+        "count": 1,
+        "paths": [
+          "packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/orbital-breach-carrier-master-turnaround.png"
+        ]
+      },
+      "manual": {
+        "note": "Orbital-Breach-Carrier",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/entities/orbital-breach-carrier/starblight.webp`",
+        "nextAction": "Replace with final Starblight boss render."
+      },
+      "status": "in-progress"
+    },
+    {
+      "type": "bestiary",
+      "slug": "render",
+      "name": "Render",
+      "notePath": "Bestiary/Soldiers/Render.md",
+      "appearsIn": [
+        "scourge-survivors",
+        "deadlane",
+        "redline"
+      ],
+      "spriteBase": "portrait-render",
+      "catalogEntities": [
+        "scourge-elite"
+      ],
+      "catalog": {
+        "expected": 3,
+        "existing": 2,
+        "missing": 1,
+        "variants": [
+          {
+            "entityId": "scourge-elite",
+            "game": "deadlane",
+            "path": "entities/scourge-elite/deadlane.webp",
+            "exists": true
+          },
+          {
+            "entityId": "scourge-elite",
+            "game": "redline",
+            "path": null,
+            "exists": false
+          },
+          {
+            "entityId": "scourge-elite",
+            "game": "scourge-survivors",
+            "path": "entities/scourge-elite/scourge-survivors.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 3,
+        "paths": [
+          "packages/assets/entities/scourge-elite/deadlane.webp",
+          "packages/assets/entities/scourge-elite/pactfall.webp",
+          "packages/assets/entities/scourge-elite/scourge-survivors.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/enemies/render.webp"
+        ]
+      },
+      "masters": {
+        "count": 1,
+        "paths": [
+          "packages/assets/masters/art/scourge/bestiary-v02/render-master-v02.png"
+        ]
+      },
+      "sources": {
+        "count": 1,
+        "paths": [
+          "packages/assets/sources/generated/2026-06-16/lore/bestiary/master-candidates/render-master-v02.png"
+        ]
+      },
+      "manual": {
+        "note": "Render",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/entities/scourge-elite/deadlane.webp`",
+        "nextAction": "Generate final per-game variants."
+      },
+      "status": "in-progress"
+    },
+    {
+      "type": "bestiary",
+      "slug": "rot-engine",
+      "name": "Rot-Engine",
+      "notePath": "Bestiary/Vehicles/Rot-Engine.md",
+      "appearsIn": [
+        "deadlane",
+        "scourge-survivors",
+        "redline"
+      ],
+      "spriteBase": "portrait-rot-engine",
+      "catalogEntities": [
+        "rot-engine"
+      ],
+      "catalog": {
+        "expected": 3,
+        "existing": 2,
+        "missing": 1,
+        "variants": [
+          {
+            "entityId": "rot-engine",
+            "game": "deadlane",
+            "path": "entities/rot-engine/deadlane.webp",
+            "exists": true
+          },
+          {
+            "entityId": "rot-engine",
+            "game": "redline",
+            "path": null,
+            "exists": false
+          },
+          {
+            "entityId": "rot-engine",
+            "game": "scourge-survivors",
+            "path": "entities/rot-engine/scourge-survivors.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 2,
+        "paths": [
+          "packages/assets/entities/rot-engine/deadlane.webp",
+          "packages/assets/entities/rot-engine/scourge-survivors.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/enemies/rot-engine.webp"
+        ]
+      },
+      "masters": {
+        "count": 1,
+        "paths": [
+          "packages/assets/masters/art/scourge/bestiary-v02/rot-engine-master-v02.png"
+        ]
+      },
+      "sources": {
+        "count": 1,
+        "paths": [
+          "packages/assets/sources/generated/2026-06-16/lore/bestiary/master-candidates/rot-engine-master-v02.png"
+        ]
+      },
+      "manual": {
+        "note": "Rot-Engine",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/entities/rot-engine/deadlane.webp`",
+        "nextAction": "Generate final Deadlane camera render."
+      },
+      "status": "in-progress"
+    },
+    {
+      "type": "bestiary",
+      "slug": "scourge",
+      "name": "The Scourge",
+      "notePath": "Bestiary/Overview/Scourge.md",
+      "appearsIn": [
+        "scourge-survivors",
+        "deadlane",
+        "pactfall",
+        "starblight",
+        "redline",
+        "rothulk"
+      ],
+      "spriteBase": "portrait-scourge",
+      "catalogEntities": [],
+      "catalog": {
+        "expected": 0,
+        "existing": 0,
+        "missing": 0,
+        "variants": []
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 0,
+        "paths": []
+      },
+      "previews": {
+        "count": 0,
+        "paths": []
+      },
+      "masters": {
+        "count": 0,
+        "paths": []
+      },
+      "sources": {
+        "count": 0,
+        "paths": []
+      },
+      "manual": null,
+      "status": "missing"
+    },
+    {
+      "type": "bestiary",
+      "slug": "scourge-fighter",
+      "name": "Scourge Fighter",
+      "notePath": "Bestiary/Aircraft/Scourge-Fighter.md",
+      "appearsIn": [
+        "starblight"
+      ],
+      "spriteBase": "portrait-scourge-fighter",
+      "catalogEntities": [
+        "scourge-fighter"
+      ],
+      "catalog": {
+        "expected": 1,
+        "existing": 1,
+        "missing": 0,
+        "variants": [
+          {
+            "entityId": "scourge-fighter",
+            "game": "starblight",
+            "path": "entities/scourge-fighter/starblight.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 1,
+        "paths": [
+          "packages/assets/entities/scourge-fighter/starblight.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/enemies/scourge-fighter.webp"
+        ]
+      },
+      "masters": {
+        "count": 6,
+        "paths": [
+          "packages/assets/lore/art-masters/scourge/scourge-fighter/scourge-fighter-master-turnaround.png",
+          "packages/assets/lore/art-masters/scourge/scourge-fighter/scourge-fighter-runtime-placeholder.webp",
+          "packages/assets/lore/art-masters/scourge/scourge-fighter/winged-scourge-animation-sheets/winged-scourge-animation-sheet-01.png",
+          "packages/assets/lore/art-masters/scourge/scourge-fighter/winged-scourge-animation-sheets/winged-scourge-animation-sheet-02.png",
+          "packages/assets/lore/art-masters/scourge/scourge-fighter/winged-scourge-animation-sheets/winged-scourge-animation-sheet-03.png",
+          "packages/assets/lore/art-masters/scourge/scourge-fighter/winged-scourge-animation-sheets/winged-scourge-animation-sheet-04.png"
+        ]
+      },
+      "sources": {
+        "count": 1,
+        "paths": [
+          "packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/scourge-fighter-master-turnaround.png"
+        ]
+      },
+      "manual": {
+        "note": "Scourge-Fighter",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/entities/scourge-fighter/starblight.webp`",
+        "nextAction": "Replace with final Starblight sprite/ship render."
+      },
+      "status": "in-progress"
+    },
+    {
+      "type": "bestiary",
+      "slug": "scourge-host-families",
+      "name": "Scourge Host Families",
+      "notePath": "Bestiary/Overview/Scourge-Host-Families.md",
+      "appearsIn": [
+        "scourge-survivors",
+        "deadlane",
+        "starblight",
+        "pactfall",
+        "redline",
+        "rothulk"
+      ],
+      "spriteBase": "portrait-scourge-host-families",
+      "catalogEntities": [],
+      "catalog": {
+        "expected": 0,
+        "existing": 0,
+        "missing": 0,
+        "variants": []
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 1,
+        "paths": [
+          "packages/assets/entities/scourge-host-families/shared.webp"
+        ]
+      },
+      "previews": {
+        "count": 0,
+        "paths": []
+      },
+      "masters": {
+        "count": 0,
+        "paths": []
+      },
+      "sources": {
+        "count": 0,
+        "paths": []
+      },
+      "manual": null,
+      "status": "in-progress"
+    },
+    {
+      "type": "bestiary",
+      "slug": "swarm-ripper",
+      "name": "Swarm Ripper",
+      "notePath": "Bestiary/Soldiers/Swarm-Ripper.md",
+      "appearsIn": [
+        "scourge-survivors",
+        "deadlane",
+        "redline"
+      ],
+      "spriteBase": "enemy-melee",
+      "catalogEntities": [
+        "scourge-swarm"
+      ],
+      "catalog": {
+        "expected": 3,
+        "existing": 2,
+        "missing": 1,
+        "variants": [
+          {
+            "entityId": "scourge-swarm",
+            "game": "deadlane",
+            "path": "entities/scourge-swarm/deadlane.webp",
+            "exists": true
+          },
+          {
+            "entityId": "scourge-swarm",
+            "game": "redline",
+            "path": null,
+            "exists": false
+          },
+          {
+            "entityId": "scourge-swarm",
+            "game": "scourge-survivors",
+            "path": "entities/scourge-swarm/scourge-survivors.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 6,
+        "generated": 6,
+        "records": [
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "comic-enemy-melee",
+            "keyPath": "comic-enemy-melee.views.back",
+            "path": "games/scourge-survivors/enemies/scourge-comic/host-grunt/back.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "Codex built-in image_gen comic asset pass",
+              "date": "2026-06-17",
+              "kind": "runtime comic-style Scourge Survivors exploratory asset",
+              "scope": "Scourge Survivors runtime opt-in comic pack"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "comic-enemy-melee",
+            "keyPath": "comic-enemy-melee.views.front",
+            "path": "games/scourge-survivors/enemies/scourge-comic/host-grunt/front.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "Codex built-in image_gen comic asset pass",
+              "date": "2026-06-17",
+              "kind": "runtime comic-style Scourge Survivors exploratory asset",
+              "scope": "Scourge Survivors runtime opt-in comic pack"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "comic-enemy-melee",
+            "keyPath": "comic-enemy-melee.views.side",
+            "path": "games/scourge-survivors/enemies/scourge-comic/host-grunt/side.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "Codex built-in image_gen comic asset pass",
+              "date": "2026-06-17",
+              "kind": "runtime comic-style Scourge Survivors exploratory asset",
+              "scope": "Scourge Survivors runtime opt-in comic pack"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "enemy-melee",
+            "keyPath": "enemy-melee.views.back",
+            "path": "games/scourge-survivors/enemies/scourge/host-grunt/back.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-06-05",
+              "kind": "AI generated 2D Scourge melee host sprite sheet with body-grown bone sword blades",
+              "scope": "Scourge Survivors runtime"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "enemy-melee",
+            "keyPath": "enemy-melee.views.front",
+            "path": "games/scourge-survivors/enemies/scourge/host-grunt/front.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-06-05",
+              "kind": "AI generated 2D Scourge melee host sprite sheet with body-grown bone sword blades",
+              "scope": "Scourge Survivors runtime"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "enemy-melee",
+            "keyPath": "enemy-melee.views.side",
+            "path": "games/scourge-survivors/enemies/scourge/host-grunt/side.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-06-05",
+              "kind": "AI generated 2D Scourge melee host sprite sheet with body-grown bone sword blades",
+              "scope": "Scourge Survivors runtime"
+            },
+            "exists": true,
+            "generated": true
+          }
+        ]
+      },
+      "packageAssets": {
+        "count": 3,
+        "paths": [
+          "packages/assets/entities/scourge-swarm/deadlane.webp",
+          "packages/assets/entities/scourge-swarm/pactfall.webp",
+          "packages/assets/entities/scourge-swarm/scourge-survivors.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/enemies/swarm-ripper-host-grunt.webp"
+        ]
+      },
+      "masters": {
+        "count": 21,
+        "paths": [
+          "packages/assets/masters/art/scourge/bestiary-v02/swarm-ripper-master-v02.png",
+          "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-01.png",
+          "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-02.png",
+          "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-03.png",
+          "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-04.png",
+          "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-05.png",
+          "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-06.png",
+          "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-07.png",
+          "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-08.png",
+          "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-09.png",
+          "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-10.png",
+          "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-11.png"
+        ]
+      },
+      "sources": {
+        "count": 19,
+        "paths": [
+          "packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper-master-candidate-fast.png",
+          "packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper-master-candidate-heavy.png",
+          "packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper-turnaround-candidate.png",
+          "packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper/reference/index.md",
+          "packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper/reference/swarm-ripper-reference-01.png",
+          "packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper/reference/swarm-ripper-reference-02.png",
+          "packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper/reference/swarm-ripper-reference-03.png",
+          "packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper/reference/swarm-ripper-reference-04.png",
+          "packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper/reference/swarm-ripper-reference-05.png",
+          "packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper/reference/swarm-ripper-reference-06.png",
+          "packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper/reference/swarm-ripper-reference-07.png",
+          "packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper/reference/swarm-ripper-reference-08.png"
+        ]
+      },
+      "manual": {
+        "note": "Swarm-Ripper",
+        "good": "Good",
+        "locked": "Yes",
+        "source": "`packages/assets/games/scourge-survivors/enemies/scourge/host-grunt/{front,side,back}.webp`",
+        "nextAction": "Wire animation frames into renderer."
+      },
+      "status": "locked"
+    },
+    {
+      "type": "bestiary",
+      "slug": "swarm-spitter",
+      "name": "Swarm Spitter",
+      "notePath": "Bestiary/Soldiers/Swarm-Spitter.md",
+      "appearsIn": [
+        "scourge-survivors",
+        "deadlane",
+        "rothulk"
+      ],
+      "spriteBase": "enemy-ranged",
+      "catalogEntities": [
+        "scourge-spitter"
+      ],
+      "catalog": {
+        "expected": 3,
+        "existing": 2,
+        "missing": 1,
+        "variants": [
+          {
+            "entityId": "scourge-spitter",
+            "game": "deadlane",
+            "path": "entities/scourge-spitter/deadlane.webp",
+            "exists": true
+          },
+          {
+            "entityId": "scourge-spitter",
+            "game": "rothulk",
+            "path": null,
+            "exists": false
+          },
+          {
+            "entityId": "scourge-spitter",
+            "game": "scourge-survivors",
+            "path": "entities/scourge-spitter/scourge-survivors.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 6,
+        "generated": 6,
+        "records": [
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "comic-enemy-ranged",
+            "keyPath": "comic-enemy-ranged.views.back",
+            "path": "games/scourge-survivors/enemies/scourge-comic/spitter-host/back.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "Codex built-in image_gen comic asset pass",
+              "date": "2026-06-17",
+              "kind": "runtime comic-style Scourge Survivors exploratory asset",
+              "scope": "Scourge Survivors runtime opt-in comic pack"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "comic-enemy-ranged",
+            "keyPath": "comic-enemy-ranged.views.front",
+            "path": "games/scourge-survivors/enemies/scourge-comic/spitter-host/front.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "Codex built-in image_gen comic asset pass",
+              "date": "2026-06-17",
+              "kind": "runtime comic-style Scourge Survivors exploratory asset",
+              "scope": "Scourge Survivors runtime opt-in comic pack"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "comic-enemy-ranged",
+            "keyPath": "comic-enemy-ranged.views.side",
+            "path": "games/scourge-survivors/enemies/scourge-comic/spitter-host/side.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "Codex built-in image_gen comic asset pass",
+              "date": "2026-06-17",
+              "kind": "runtime comic-style Scourge Survivors exploratory asset",
+              "scope": "Scourge Survivors runtime opt-in comic pack"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "enemy-ranged",
+            "keyPath": "enemy-ranged.views.back",
+            "path": "games/scourge-survivors/enemies/scourge/spitter-host/back.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-06-05",
+              "kind": "AI generated 2D Scourge ranged spitter sprite sheet, chartreuse acid readability lane",
+              "scope": "Scourge Survivors runtime"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "enemy-ranged",
+            "keyPath": "enemy-ranged.views.front",
+            "path": "games/scourge-survivors/enemies/scourge/spitter-host/front.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-06-05",
+              "kind": "AI generated 2D Scourge ranged spitter sprite sheet, chartreuse acid readability lane",
+              "scope": "Scourge Survivors runtime"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "enemy-ranged",
+            "keyPath": "enemy-ranged.views.side",
+            "path": "games/scourge-survivors/enemies/scourge/spitter-host/side.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-06-05",
+              "kind": "AI generated 2D Scourge ranged spitter sprite sheet, chartreuse acid readability lane",
+              "scope": "Scourge Survivors runtime"
+            },
+            "exists": true,
+            "generated": true
+          }
+        ]
+      },
+      "packageAssets": {
+        "count": 2,
+        "paths": [
+          "packages/assets/entities/scourge-spitter/deadlane.webp",
+          "packages/assets/entities/scourge-spitter/scourge-survivors.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/enemies/swarm-spitter-host.webp"
+        ]
+      },
+      "masters": {
+        "count": 4,
+        "paths": [
+          "packages/assets/masters/art/scourge/bestiary-v02/swarm-spitter-master-v02.png",
+          "packages/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-master-turnaround.png",
+          "packages/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-runtime-placeholder.webp",
+          "packages/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-runtime-visual-lock.png"
+        ]
+      },
+      "sources": {
+        "count": 3,
+        "paths": [
+          "packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/swarm-spitter-master-turnaround.png",
+          "packages/assets/sources/generated/2026-06-12/lore/bestiary/scourge-foes/swarm-spitter-runtime-derived-master-turnaround.png",
+          "packages/assets/sources/generated/2026-06-16/lore/bestiary/master-candidates/swarm-spitter-master-v02.png"
+        ]
+      },
+      "manual": {
+        "note": "Swarm-Spitter",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/games/scourge-survivors/enemies/scourge/spitter-host/{front,side,back}.webp`",
+        "nextAction": "Review against locked reference, then promote/lock or regenerate."
+      },
+      "status": "runtime-linked"
+    },
+    {
+      "type": "bestiary",
+      "slug": "trucebreaker",
+      "name": "Trucebreaker",
+      "notePath": "Bestiary/Bosses/Trucebreaker.md",
+      "appearsIn": [
+        "pactfall"
+      ],
+      "spriteBase": "portrait-trucebreaker",
+      "catalogEntities": [
+        "trucebreaker"
+      ],
+      "catalog": {
+        "expected": 1,
+        "existing": 1,
+        "missing": 0,
+        "variants": [
+          {
+            "entityId": "trucebreaker",
+            "game": "pactfall",
+            "path": "entities/trucebreaker/pactfall.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 1,
+        "paths": [
+          "packages/assets/entities/trucebreaker/pactfall.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/enemies/trucebreaker.webp"
+        ]
+      },
+      "masters": {
+        "count": 3,
+        "paths": [
+          "packages/assets/masters/art/scourge/bestiary-v01/trucebreaker-master-v01.png",
+          "packages/assets/masters/art/scourge/bestiary-v02/trucebreaker-master-v02.png",
+          "packages/assets/masters/art/wallpapers/combat-v02/trucebreaker-arena-clean-wallpaper-v02.png"
+        ]
+      },
+      "sources": {
+        "count": 3,
+        "paths": [
+          "packages/assets/sources/generated/2026-06-16/lore/bestiary/master-candidates/trucebreaker-master-v01.png",
+          "packages/assets/sources/generated/2026-06-16/lore/bestiary/master-candidates/trucebreaker-master-v02.png",
+          "packages/assets/sources/generated/2026-06-17/lore/wallpapers/combat-v02/trucebreaker-arena-clean-wallpaper-v02.png"
+        ]
+      },
+      "manual": {
+        "note": "Trucebreaker",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/entities/trucebreaker/pactfall.webp`",
+        "nextAction": "Replace with final Pactfall boss render."
+      },
+      "status": "in-progress"
+    },
+    {
+      "type": "character",
+      "slug": "bulwark",
+      "name": "Bulwark",
+      "notePath": "Characters/Pyre/Bulwark.md",
+      "appearsIn": [
+        "scourge-survivors"
+      ],
+      "spriteBase": "player-heavy-front",
+      "catalogEntities": [
+        "pyre-bulwark"
+      ],
+      "catalog": {
+        "expected": 1,
+        "existing": 1,
+        "missing": 0,
+        "variants": [
+          {
+            "entityId": "pyre-bulwark",
+            "game": "scourge-survivors",
+            "path": "entities/pyre-bulwark/scourge-survivors.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 3,
+        "generated": 3,
+        "records": [
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "player-heavy",
+            "keyPath": "player-heavy.views.back",
+            "path": "games/scourge-survivors/players/pyre/bulwark/back.webp",
+            "license": {
+              "tool": "legacy repository asset",
+              "plan": "prototype",
+              "date": "2026-06-02",
+              "kind": "generated 2D player sprite",
+              "scope": "project prototype"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "player-heavy",
+            "keyPath": "player-heavy.views.front",
+            "path": "games/scourge-survivors/players/pyre/bulwark/front.webp",
+            "license": {
+              "tool": "legacy repository asset",
+              "plan": "prototype",
+              "date": "2026-06-02",
+              "kind": "generated 2D player sprite",
+              "scope": "project prototype"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "player-heavy",
+            "keyPath": "player-heavy.views.side",
+            "path": "games/scourge-survivors/players/pyre/bulwark/side.webp",
+            "license": {
+              "tool": "legacy repository asset",
+              "plan": "prototype",
+              "date": "2026-06-02",
+              "kind": "generated 2D player sprite",
+              "scope": "project prototype"
+            },
+            "exists": true,
+            "generated": true
+          }
+        ]
+      },
+      "packageAssets": {
+        "count": 2,
+        "paths": [
+          "packages/assets/entities/pyre-bulwark/pactfall.webp",
+          "packages/assets/entities/pyre-bulwark/scourge-survivors.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/characters/bulwark.webp"
+        ]
+      },
+      "masters": {
+        "count": 1,
+        "paths": [
+          "packages/assets/masters/art/characters/v01/bulwark-master-v01.png"
+        ]
+      },
+      "sources": {
+        "count": 1,
+        "paths": [
+          "packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/bulwark-master-v01.png"
+        ]
+      },
+      "manual": {
+        "note": "Bulwark",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/games/scourge-survivors/players/pyre/bulwark/{front,side,back}.webp`",
+        "nextAction": "Regenerate as locked comic/cel-ink production turnaround."
+      },
+      "status": "runtime-linked"
+    },
+    {
+      "type": "character",
+      "slug": "field-engineer",
+      "name": "Field Engineer",
+      "notePath": "Characters/Wardens/Field-Engineer.md",
+      "appearsIn": [
+        "deadlane"
+      ],
+      "spriteBase": "portrait-field-engineer",
+      "catalogEntities": [
+        "warden-field-engineer"
+      ],
+      "catalog": {
+        "expected": 1,
+        "existing": 1,
+        "missing": 0,
+        "variants": [
+          {
+            "entityId": "warden-field-engineer",
+            "game": "deadlane",
+            "path": "entities/warden-field-engineer/deadlane.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 2,
+        "paths": [
+          "packages/assets/entities/warden-field-engineer/deadlane.webp",
+          "packages/assets/entities/warden-field-engineer/pactfall.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/characters/field-engineer.webp"
+        ]
+      },
+      "masters": {
+        "count": 0,
+        "paths": []
+      },
+      "sources": {
+        "count": 0,
+        "paths": []
+      },
+      "manual": {
+        "note": "Field-Engineer",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/entities/warden-field-engineer/deadlane.webp`",
+        "nextAction": "Replace catalog plate with final Deadlane camera render."
+      },
+      "status": "in-progress"
+    },
+    {
+      "type": "character",
+      "slug": "lane-gunner",
+      "name": "Lane Gunner",
+      "notePath": "Characters/Wardens/Lane-Gunner.md",
+      "appearsIn": [
+        "deadlane"
+      ],
+      "spriteBase": "portrait-lane-gunner",
+      "catalogEntities": [
+        "warden-lane-gunner"
+      ],
+      "catalog": {
+        "expected": 1,
+        "existing": 1,
+        "missing": 0,
+        "variants": [
+          {
+            "entityId": "warden-lane-gunner",
+            "game": "deadlane",
+            "path": "entities/warden-lane-gunner/deadlane.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 2,
+        "paths": [
+          "packages/assets/entities/warden-lane-gunner/deadlane.webp",
+          "packages/assets/entities/warden-lane-gunner/pactfall.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/characters/lane-gunner.webp"
+        ]
+      },
+      "masters": {
+        "count": 1,
+        "paths": [
+          "packages/assets/masters/art/characters/v01/lane-gunner-master-v01.png"
+        ]
+      },
+      "sources": {
+        "count": 1,
+        "paths": [
+          "packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/lane-gunner-master-v01.png"
+        ]
+      },
+      "manual": {
+        "note": "Lane-Gunner",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/entities/warden-lane-gunner/deadlane.webp`",
+        "nextAction": "Replace catalog plate with final Deadlane camera render."
+      },
+      "status": "in-progress"
+    },
+    {
+      "type": "character",
+      "slug": "patch",
+      "name": "Patch",
+      "notePath": "Characters/Pyre/Patch.md",
+      "appearsIn": [
+        "scourge-survivors"
+      ],
+      "spriteBase": "player-medic-front",
+      "catalogEntities": [
+        "pyre-patch"
+      ],
+      "catalog": {
+        "expected": 1,
+        "existing": 1,
+        "missing": 0,
+        "variants": [
+          {
+            "entityId": "pyre-patch",
+            "game": "scourge-survivors",
+            "path": "entities/pyre-patch/scourge-survivors.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 3,
+        "generated": 3,
+        "records": [
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "player-medic",
+            "keyPath": "player-medic.views.back",
+            "path": "games/scourge-survivors/players/pyre/patch/back.webp",
+            "license": {
+              "tool": "legacy repository asset",
+              "plan": "prototype",
+              "date": "2026-06-02",
+              "kind": "generated 2D player sprite",
+              "scope": "project prototype"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "player-medic",
+            "keyPath": "player-medic.views.front",
+            "path": "games/scourge-survivors/players/pyre/patch/front.webp",
+            "license": {
+              "tool": "legacy repository asset",
+              "plan": "prototype",
+              "date": "2026-06-02",
+              "kind": "generated 2D player sprite",
+              "scope": "project prototype"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "player-medic",
+            "keyPath": "player-medic.views.side",
+            "path": "games/scourge-survivors/players/pyre/patch/side.webp",
+            "license": {
+              "tool": "legacy repository asset",
+              "plan": "prototype",
+              "date": "2026-06-02",
+              "kind": "generated 2D player sprite",
+              "scope": "project prototype"
+            },
+            "exists": true,
+            "generated": true
+          }
+        ]
+      },
+      "packageAssets": {
+        "count": 2,
+        "paths": [
+          "packages/assets/entities/pyre-patch/pactfall.webp",
+          "packages/assets/entities/pyre-patch/scourge-survivors.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/characters/patch.webp"
+        ]
+      },
+      "masters": {
+        "count": 1,
+        "paths": [
+          "packages/assets/masters/art/characters/v01/patch-master-v01.png"
+        ]
+      },
+      "sources": {
+        "count": 1,
+        "paths": [
+          "packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/patch-master-v01.png"
+        ]
+      },
+      "manual": {
+        "note": "Patch",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/games/scourge-survivors/players/pyre/patch/{front,side,back}.webp`",
+        "nextAction": "Regenerate as locked comic/cel-ink production turnaround."
+      },
+      "status": "runtime-linked"
+    },
+    {
+      "type": "character",
+      "slug": "pyre-cauterizer",
+      "name": "Pyre Cauterizer",
+      "notePath": "Characters/Pyre/Pyre-Cauterizer.md",
+      "appearsIn": [
+        "pactfall"
+      ],
+      "spriteBase": "portrait-pyre-cauterizer",
+      "catalogEntities": [
+        "pyre-cauterizer"
+      ],
+      "catalog": {
+        "expected": 1,
+        "existing": 1,
+        "missing": 0,
+        "variants": [
+          {
+            "entityId": "pyre-cauterizer",
+            "game": "pactfall",
+            "path": "entities/pyre-cauterizer/pactfall.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 1,
+        "paths": [
+          "packages/assets/entities/pyre-cauterizer/pactfall.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/characters/pyre-cauterizer.webp"
+        ]
+      },
+      "masters": {
+        "count": 0,
+        "paths": []
+      },
+      "sources": {
+        "count": 0,
+        "paths": []
+      },
+      "manual": {
+        "note": "Pyre-Cauterizer",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/entities/pyre-cauterizer/pactfall.webp`",
+        "nextAction": "Replace catalog plate with final Pactfall arena render."
+      },
+      "status": "in-progress"
+    },
+    {
+      "type": "character",
+      "slug": "pyre-courier",
+      "name": "Pyre Courier",
+      "notePath": "Characters/Couriers/Pyre-Courier.md",
+      "appearsIn": [
+        "redline"
+      ],
+      "spriteBase": "portrait-pyre-courier",
+      "catalogEntities": [],
+      "catalog": {
+        "expected": 0,
+        "existing": 0,
+        "missing": 0,
+        "variants": []
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 1,
+        "paths": [
+          "packages/assets/entities/pyre-courier/redline.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/characters/pyre-courier.webp"
+        ]
+      },
+      "masters": {
+        "count": 0,
+        "paths": []
+      },
+      "sources": {
+        "count": 0,
+        "paths": []
+      },
+      "manual": {
+        "note": "Pyre-Courier",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/entities/pyre-courier/redline.webp`",
+        "nextAction": "Add shared catalog/runtime render."
+      },
+      "status": "in-progress"
+    },
+    {
+      "type": "character",
+      "slug": "pyre-duelist",
+      "name": "Pyre Duelist",
+      "notePath": "Characters/Pyre/Pyre-Duelist.md",
+      "appearsIn": [
+        "pactfall"
+      ],
+      "spriteBase": "portrait-pyre-duelist",
+      "catalogEntities": [
+        "pyre-duelist"
+      ],
+      "catalog": {
+        "expected": 1,
+        "existing": 1,
+        "missing": 0,
+        "variants": [
+          {
+            "entityId": "pyre-duelist",
+            "game": "pactfall",
+            "path": "entities/pyre-duelist/pactfall.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 1,
+        "paths": [
+          "packages/assets/entities/pyre-duelist/pactfall.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/characters/pyre-duelist.webp"
+        ]
+      },
+      "masters": {
+        "count": 0,
+        "paths": []
+      },
+      "sources": {
+        "count": 0,
+        "paths": []
+      },
+      "manual": {
+        "note": "Pyre-Duelist",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/entities/pyre-duelist/pactfall.webp`",
+        "nextAction": "Replace catalog plate with final Pactfall arena render."
+      },
+      "status": "in-progress"
+    },
+    {
+      "type": "character",
+      "slug": "pyre-interceptor-pilot",
+      "name": "Pyre Interceptor Pilot",
+      "notePath": "Characters/Pilots/Pyre-Interceptor-Pilot.md",
+      "appearsIn": [
+        "starblight"
+      ],
+      "spriteBase": "portrait-pyre-interceptor-pilot",
+      "catalogEntities": [
+        "pyre-interceptor-pilot"
+      ],
+      "catalog": {
+        "expected": 1,
+        "existing": 1,
+        "missing": 0,
+        "variants": [
+          {
+            "entityId": "pyre-interceptor-pilot",
+            "game": "starblight",
+            "path": "entities/pyre-interceptor-pilot/starblight.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 1,
+        "paths": [
+          "packages/assets/entities/pyre-interceptor-pilot/starblight.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/characters/pyre-interceptor-pilot.webp"
+        ]
+      },
+      "masters": {
+        "count": 0,
+        "paths": []
+      },
+      "sources": {
+        "count": 0,
+        "paths": []
+      },
+      "manual": {
+        "note": "Pyre-Interceptor-Pilot",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/entities/pyre-interceptor-pilot/starblight.webp`",
+        "nextAction": "Decide whether this is pilot portrait, cockpit sprite, or both."
+      },
+      "status": "in-progress"
+    },
+    {
+      "type": "character",
+      "slug": "pyre-saboteur",
+      "name": "Pyre Saboteur",
+      "notePath": "Characters/Pyre/Pyre-Saboteur.md",
+      "appearsIn": [
+        "rothulk"
+      ],
+      "spriteBase": "portrait-pyre-saboteur",
+      "catalogEntities": [],
+      "catalog": {
+        "expected": 0,
+        "existing": 0,
+        "missing": 0,
+        "variants": []
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 1,
+        "paths": [
+          "packages/assets/entities/pyre-saboteur/rothulk.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/characters/pyre-saboteur.webp"
+        ]
+      },
+      "masters": {
+        "count": 0,
+        "paths": []
+      },
+      "sources": {
+        "count": 0,
+        "paths": []
+      },
+      "manual": {
+        "note": "Pyre-Saboteur",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/entities/pyre-saboteur/rothulk.webp`",
+        "nextAction": "Add shared catalog/runtime render."
+      },
+      "status": "in-progress"
+    },
+    {
+      "type": "character",
+      "slug": "ranger",
+      "name": "Ranger",
+      "notePath": "Characters/Pyre/Ranger.md",
+      "appearsIn": [
+        "scourge-survivors"
+      ],
+      "spriteBase": "player-ranger-front",
+      "catalogEntities": [
+        "pyre-ranger"
+      ],
+      "catalog": {
+        "expected": 1,
+        "existing": 1,
+        "missing": 0,
+        "variants": [
+          {
+            "entityId": "pyre-ranger",
+            "game": "scourge-survivors",
+            "path": "entities/pyre-ranger/scourge-survivors.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 3,
+        "generated": 3,
+        "records": [
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "player-ranger",
+            "keyPath": "player-ranger.views.back",
+            "path": "games/scourge-survivors/players/pyre/ranger/back.webp",
+            "license": {
+              "tool": "legacy repository asset",
+              "plan": "prototype",
+              "date": "2026-06-02",
+              "kind": "generated 2D player sprite",
+              "scope": "project prototype"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "player-ranger",
+            "keyPath": "player-ranger.views.front",
+            "path": "games/scourge-survivors/players/pyre/ranger/front.webp",
+            "license": {
+              "tool": "legacy repository asset",
+              "plan": "prototype",
+              "date": "2026-06-02",
+              "kind": "generated 2D player sprite",
+              "scope": "project prototype"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "player-ranger",
+            "keyPath": "player-ranger.views.side",
+            "path": "games/scourge-survivors/players/pyre/ranger/side.webp",
+            "license": {
+              "tool": "legacy repository asset",
+              "plan": "prototype",
+              "date": "2026-06-02",
+              "kind": "generated 2D player sprite",
+              "scope": "project prototype"
+            },
+            "exists": true,
+            "generated": true
+          }
+        ]
+      },
+      "packageAssets": {
+        "count": 2,
+        "paths": [
+          "packages/assets/entities/pyre-ranger/pactfall.webp",
+          "packages/assets/entities/pyre-ranger/scourge-survivors.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/characters/ranger.webp"
+        ]
+      },
+      "masters": {
+        "count": 1,
+        "paths": [
+          "packages/assets/masters/art/characters/v01/ranger-master-v01.png"
+        ]
+      },
+      "sources": {
+        "count": 1,
+        "paths": [
+          "packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/ranger-master-v01.png"
+        ]
+      },
+      "manual": {
+        "note": "Ranger",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/games/scourge-survivors/players/pyre/ranger/{front,side,back}.webp`",
+        "nextAction": "Regenerate as locked comic/cel-ink production turnaround."
+      },
+      "status": "runtime-linked"
+    },
+    {
+      "type": "character",
+      "slug": "vector",
+      "name": "Vector",
+      "notePath": "Characters/Pyre/Vector.md",
+      "appearsIn": [
+        "scourge-survivors"
+      ],
+      "spriteBase": "player-scout-front",
+      "catalogEntities": [
+        "pyre-vector"
+      ],
+      "catalog": {
+        "expected": 1,
+        "existing": 1,
+        "missing": 0,
+        "variants": [
+          {
+            "entityId": "pyre-vector",
+            "game": "scourge-survivors",
+            "path": "entities/pyre-vector/scourge-survivors.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 3,
+        "generated": 3,
+        "records": [
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "player-scout",
+            "keyPath": "player-scout.views.back",
+            "path": "games/scourge-survivors/players/pyre/vector/back.webp",
+            "license": {
+              "tool": "legacy repository asset",
+              "plan": "prototype",
+              "date": "2026-06-02",
+              "kind": "generated 2D player sprite",
+              "scope": "project prototype"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "player-scout",
+            "keyPath": "player-scout.views.front",
+            "path": "games/scourge-survivors/players/pyre/vector/front.webp",
+            "license": {
+              "tool": "legacy repository asset",
+              "plan": "prototype",
+              "date": "2026-06-02",
+              "kind": "generated 2D player sprite",
+              "scope": "project prototype"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "player-scout",
+            "keyPath": "player-scout.views.side",
+            "path": "games/scourge-survivors/players/pyre/vector/side.webp",
+            "license": {
+              "tool": "legacy repository asset",
+              "plan": "prototype",
+              "date": "2026-06-02",
+              "kind": "generated 2D player sprite",
+              "scope": "project prototype"
+            },
+            "exists": true,
+            "generated": true
+          }
+        ]
+      },
+      "packageAssets": {
+        "count": 2,
+        "paths": [
+          "packages/assets/entities/pyre-vector/pactfall.webp",
+          "packages/assets/entities/pyre-vector/scourge-survivors.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/characters/vector.webp"
+        ]
+      },
+      "masters": {
+        "count": 1,
+        "paths": [
+          "packages/assets/masters/art/characters/v01/vector-master-v01.png"
+        ]
+      },
+      "sources": {
+        "count": 1,
+        "paths": [
+          "packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/vector-master-v01.png"
+        ]
+      },
+      "manual": {
+        "note": "Vector",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/games/scourge-survivors/players/pyre/vector/{front,side,back}.webp`",
+        "nextAction": "Regenerate as locked comic/cel-ink production turnaround."
+      },
+      "status": "runtime-linked"
+    },
+    {
+      "type": "character",
+      "slug": "wallwright",
+      "name": "Wallwright",
+      "notePath": "Characters/Wardens/Wallwright.md",
+      "appearsIn": [
+        "deadlane"
+      ],
+      "spriteBase": "portrait-wallwright",
+      "catalogEntities": [
+        "warden-wallwright"
+      ],
+      "catalog": {
+        "expected": 1,
+        "existing": 1,
+        "missing": 0,
+        "variants": [
+          {
+            "entityId": "warden-wallwright",
+            "game": "deadlane",
+            "path": "entities/warden-wallwright/deadlane.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 2,
+        "paths": [
+          "packages/assets/entities/warden-wallwright/deadlane.webp",
+          "packages/assets/entities/warden-wallwright/pactfall.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/characters/wallwright.webp"
+        ]
+      },
+      "masters": {
+        "count": 0,
+        "paths": []
+      },
+      "sources": {
+        "count": 0,
+        "paths": []
+      },
+      "manual": {
+        "note": "Wallwright",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/entities/warden-wallwright/deadlane.webp`",
+        "nextAction": "Replace catalog plate with final Deadlane camera render."
+      },
+      "status": "in-progress"
+    },
+    {
+      "type": "character",
+      "slug": "warden-artillerist",
+      "name": "Warden Artillerist",
+      "notePath": "Characters/Wardens/Warden-Artillerist.md",
+      "appearsIn": [
+        "pactfall"
+      ],
+      "spriteBase": "portrait-warden-artillerist",
+      "catalogEntities": [
+        "warden-artillerist"
+      ],
+      "catalog": {
+        "expected": 1,
+        "existing": 1,
+        "missing": 0,
+        "variants": [
+          {
+            "entityId": "warden-artillerist",
+            "game": "pactfall",
+            "path": "entities/warden-artillerist/pactfall.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 1,
+        "paths": [
+          "packages/assets/entities/warden-artillerist/pactfall.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/characters/warden-artillerist.webp"
+        ]
+      },
+      "masters": {
+        "count": 0,
+        "paths": []
+      },
+      "sources": {
+        "count": 0,
+        "paths": []
+      },
+      "manual": {
+        "note": "Warden-Artillerist",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/entities/warden-artillerist/pactfall.webp`",
+        "nextAction": "Replace catalog plate with final Pactfall arena render."
+      },
+      "status": "in-progress"
+    },
+    {
+      "type": "character",
+      "slug": "warden-bastion",
+      "name": "Warden Bastion",
+      "notePath": "Characters/Wardens/Warden-Bastion.md",
+      "appearsIn": [
+        "pactfall"
+      ],
+      "spriteBase": "portrait-warden-bastion",
+      "catalogEntities": [
+        "warden-bastion"
+      ],
+      "catalog": {
+        "expected": 1,
+        "existing": 1,
+        "missing": 0,
+        "variants": [
+          {
+            "entityId": "warden-bastion",
+            "game": "pactfall",
+            "path": "entities/warden-bastion/pactfall.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 1,
+        "paths": [
+          "packages/assets/entities/warden-bastion/pactfall.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/characters/warden-bastion.webp"
+        ]
+      },
+      "masters": {
+        "count": 1,
+        "paths": [
+          "packages/assets/masters/art/characters/v01/warden-bastion-master-v01.png"
+        ]
+      },
+      "sources": {
+        "count": 1,
+        "paths": [
+          "packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/warden-bastion-master-v01.png"
+        ]
+      },
+      "manual": {
+        "note": "Warden-Bastion",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/entities/warden-bastion/pactfall.webp`",
+        "nextAction": "Replace catalog plate with final Pactfall arena render."
+      },
+      "status": "in-progress"
+    },
+    {
+      "type": "character",
+      "slug": "warden-courier",
+      "name": "Warden Courier",
+      "notePath": "Characters/Couriers/Warden-Courier.md",
+      "appearsIn": [
+        "redline"
+      ],
+      "spriteBase": "portrait-warden-courier",
+      "catalogEntities": [],
+      "catalog": {
+        "expected": 0,
+        "existing": 0,
+        "missing": 0,
+        "variants": []
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 1,
+        "paths": [
+          "packages/assets/entities/warden-courier/redline.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/characters/warden-courier.webp"
+        ]
+      },
+      "masters": {
+        "count": 0,
+        "paths": []
+      },
+      "sources": {
+        "count": 0,
+        "paths": []
+      },
+      "manual": {
+        "note": "Warden-Courier",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/entities/warden-courier/redline.webp`",
+        "nextAction": "Add shared catalog/runtime render."
+      },
+      "status": "in-progress"
+    },
+    {
+      "type": "character",
+      "slug": "warden-defense-pilot",
+      "name": "Warden Defense Pilot",
+      "notePath": "Characters/Pilots/Warden-Defense-Pilot.md",
+      "appearsIn": [
+        "starblight"
+      ],
+      "spriteBase": "portrait-warden-defense-pilot",
+      "catalogEntities": [
+        "warden-defense-pilot"
+      ],
+      "catalog": {
+        "expected": 1,
+        "existing": 1,
+        "missing": 0,
+        "variants": [
+          {
+            "entityId": "warden-defense-pilot",
+            "game": "starblight",
+            "path": "entities/warden-defense-pilot/starblight.webp",
+            "exists": true
+          }
+        ]
+      },
+      "runtime": {
+        "existing": 0,
+        "generated": 0,
+        "records": []
+      },
+      "packageAssets": {
+        "count": 1,
+        "paths": [
+          "packages/assets/entities/warden-defense-pilot/starblight.webp"
+        ]
+      },
+      "previews": {
+        "count": 1,
+        "paths": [
+          "packages/assets/lore/asset-status/previews/characters/warden-defense-pilot.webp"
+        ]
+      },
+      "masters": {
+        "count": 0,
+        "paths": []
+      },
+      "sources": {
+        "count": 0,
+        "paths": []
+      },
+      "manual": {
+        "note": "Warden-Defense-Pilot",
+        "good": "Review",
+        "locked": "No",
+        "source": "`packages/assets/entities/warden-defense-pilot/starblight.webp`",
+        "nextAction": "Decide whether this is pilot portrait, cockpit sprite, or both."
+      },
+      "status": "in-progress"
+    }
+  ]
+}

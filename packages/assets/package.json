@@ -48,10 +48,12 @@
     "universe"
   ],
   "scripts": {
-    "assets:check": "node scripts/check-assets.mjs && node scripts/check-asset-formats.mjs && node scripts/generate-asset-index.mjs --check && node scripts/asset-budgets.mjs --check",
+    "assets:check": "node scripts/check-assets.mjs && node scripts/check-asset-formats.mjs && node scripts/generate-asset-index.mjs --check && node scripts/generate-lore-art-map.mjs --check && node scripts/asset-budgets.mjs --check",
     "assets:budgets": "node scripts/asset-budgets.mjs",
-    "assets:index": "node scripts/generate-asset-index.mjs",
-    "assets:index:check": "node scripts/generate-asset-index.mjs --check",
+    "assets:index": "node scripts/generate-asset-index.mjs && node scripts/generate-lore-art-map.mjs",
+    "assets:index:check": "node scripts/generate-asset-index.mjs --check && node scripts/generate-lore-art-map.mjs --check",
+    "lore:art-map": "node scripts/generate-lore-art-map.mjs",
+    "lore:art-map:check": "node scripts/generate-lore-art-map.mjs --check",
     "assets:clean-sprites": "bun ../../../shipshitgames/packages/assetgen/src/cli.ts clean-sprites",
     "assets:sync-codex-images": "node scripts/sync-codex-generated-images.mjs",
     "assets:to-webp": "node scripts/to-webp.mjs",
