@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { WEAPON_ORDER } from "../../src/game/constants";
 import type { GameContext } from "../../src/game/context";
 import type { GameSystems } from "../../src/game/systems";
-import { FpsActionHandler, fpsActionMap, PointerLockRig } from "../../src/game/systems/InputSystem";
+import { FpsActionHandler, fpsActionMap, InputSystem, PointerLockRig } from "../../src/game/systems/InputSystem";
 
 describe("engine input bindings", () => {
   it("applies default WASD movement and custom movement keys", () => {
@@ -95,6 +95,44 @@ describe("Scourge Survivors FPS input policy", () => {
     expect(clearTimeoutSpy).toHaveBeenCalledWith(0);
     expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 1300);
     expect(capture.lockRetry).toBe(42);
+  });
+
+  it("resumes a paused run directly back to play without requiring pointer lock", () => {
+    const { ctx, sys } = makePointerLockHarness();
+    ctx.status = "paused";
+    ctx.firing = true;
+    ctx.move.forward = true;
+    ctx.wantsSprint = true;
+    ctx.wantsCrouch = true;
+
+    const input = new InputSystem(ctx, sys as unknown as GameSystems);
+
+    input.resumeFromPauseWithoutCapture();
+
+    expect(ctx.status).toBe("playing");
+    expect(ctx.firing).toBe(false);
+    expect(ctx.move).toEqual({ forward: false, back: false, left: false, right: false });
+    expect(ctx.wantsSprint).toBe(false);
+    expect(ctx.wantsCrouch).toBe(false);
+    expect(sys.weapon.stopAds).toHaveBeenCalledTimes(1);
+    expect(sys.hud.emit).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not immediately resume pause from the same handled Escape keydown", () => {
+    const { ctx, sys } = makePointerLockHarness();
+    ctx.status = "paused";
+    const input = new InputSystem(ctx, sys as unknown as GameSystems);
+    const handledEscape = {
+      code: "Escape",
+      defaultPrevented: true,
+      preventDefault: vi.fn(),
+    } as unknown as KeyboardEvent;
+
+    (input as unknown as { onLocomotionKeyDown: (event: KeyboardEvent) => void }).onLocomotionKeyDown(handledEscape);
+
+    expect(ctx.status).toBe("paused");
+    expect(handledEscape.preventDefault).not.toHaveBeenCalled();
+    expect(sys.hud.emit).not.toHaveBeenCalled();
   });
 });
 

@@ -1,20 +1,10 @@
-import { Button, GlobalGameSettingsPanel, VictoryScreen } from "@shipshitgames/ui";
+import { Button, VictoryScreen } from "@shipshitgames/ui";
 import { type ReactNode, useRef, useState } from "react";
 import type { ScoreEntry, ShopState } from "../../game/storage";
 import type { HudState } from "../../game/types";
 import { PixelIcon } from "../PixelIcon";
 import { Shop } from "./MainMenu";
 import { formatTime, IconText, Leaderboard, OVERLAY, runModeLabel, STAT_LABEL, STAT_SUB, STAT_VALUE } from "./shared";
-
-// Music + SFX volume sliders, sourced from the shared global settings store.
-// Self-subscribing, so it needs no props beyond layout spacing.
-function SettingsRow({ className = "mt-4" }: { className?: string }) {
-  return (
-    <div className={`pointer-events-auto flex justify-center ${className}`} onClick={(e) => e.stopPropagation()}>
-      <GlobalGameSettingsPanel inline className="w-[min(360px,86vw)]" />
-    </div>
-  );
-}
 
 function SummaryFact({
   label,
@@ -58,11 +48,11 @@ export function GameOverScreen({
 }) {
   const { status, score, kills, headshots, time, outcome, survivors } = state;
 
-  const [gameOverPanel, setGameOverPanel] = useState<"summary" | "shop">("summary");
+  const [gameOverPanel, setGameOverPanel] = useState<"summary" | "shop" | "leaderboard">("summary");
   const prevStatusRef = useRef(status);
   if (status !== prevStatusRef.current) {
     prevStatusRef.current = status;
-    if (status !== "gameover" && gameOverPanel !== "summary") setGameOverPanel("summary");
+    if (gameOverPanel !== "summary") setGameOverPanel("summary");
   }
 
   const currentRun: ScoreEntry | null =
@@ -189,12 +179,6 @@ export function GameOverScreen({
           </IconText>
         </div>
       )}
-      <Leaderboard
-        className="scourge-summary-leaderboard"
-        scores={scores}
-        highlight={currentRun}
-        onClear={onClearScores}
-      />
     </div>
   );
 
@@ -212,6 +196,11 @@ export function GameOverScreen({
           </IconText>
         </Button>
       )}
+      <Button variant="ghost" onClick={() => setGameOverPanel("leaderboard")} type="button">
+        <IconText icon="trophy" size={16}>
+          Leaderboard
+        </IconText>
+      </Button>
       <Button variant="ghost" onClick={onMenu} type="button">
         <IconText icon="menu" size={16}>
           Main Menu
@@ -245,7 +234,40 @@ export function GameOverScreen({
             </IconText>
           </Button>
         </div>
-        <SettingsRow />
+      </div>
+    );
+  }
+
+  if (gameOverPanel === "leaderboard") {
+    return (
+      <div className={`${OVERLAY} cursor-default`}>
+        <div className="tracking-[0.35em] text-[13px] opacity-60 uppercase mb-[10px]">Local records</div>
+        <h1 className="m-0 mb-[16px] text-[44px] tracking-[0.04em] bg-clip-text text-transparent bg-gradient-to-r from-[#ffd166] to-[#ff6a00]">
+          LEADERBOARD
+        </h1>
+        <Leaderboard
+          className="scourge-gameover-leaderboard"
+          scores={scores}
+          highlight={currentRun}
+          onClear={onClearScores}
+        />
+        <div className="scourge-summary-actions mt-5">
+          <Button variant="ghost" onClick={() => setGameOverPanel("summary")} type="button">
+            <IconText icon="back" size={16}>
+              Run Summary
+            </IconText>
+          </Button>
+          <Button variant="default" onClick={onRestart} type="button">
+            <IconText icon="restart" size={16}>
+              Play Again
+            </IconText>
+          </Button>
+          <Button variant="ghost" onClick={onMenu} type="button">
+            <IconText icon="menu" size={16}>
+              Main Menu
+            </IconText>
+          </Button>
+        </div>
       </div>
     );
   }
@@ -261,7 +283,6 @@ export function GameOverScreen({
         actions={
           <div className="scourge-victory-actions-stack">
             <div className="scourge-summary-actions">{summaryActionButtons}</div>
-            <SettingsRow className="mt-0" />
           </div>
         }
       >
@@ -278,7 +299,6 @@ export function GameOverScreen({
       </h1>
       {summaryBody}
       <div className="scourge-summary-actions mt-4">{summaryActionButtons}</div>
-      <SettingsRow />
     </div>
   );
 }

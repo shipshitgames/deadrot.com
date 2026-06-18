@@ -88,7 +88,7 @@ export function GameSettingsScreen({
         <MainMenuNav aria-label="Settings">
           <MainMenuAction
             type="button"
-            variant="primary"
+            variant="back"
             label={backLabel}
             meta={backMeta}
             onClick={() => onClose?.()}

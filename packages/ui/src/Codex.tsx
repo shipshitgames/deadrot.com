@@ -160,7 +160,7 @@ export function CodexScreen({
         <MainMenuNav aria-label="Codex" className="ssg-codex-nav">
           <MainMenuAction
             type="button"
-            variant="primary"
+            variant="back"
             label={backLabel}
             meta={backMeta}
             onClick={() => onClose?.()}

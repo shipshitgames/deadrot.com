@@ -107,7 +107,7 @@ export interface MainMenuActionProps extends Omit<ButtonHTMLAttributes<HTMLButto
   icon?: ReactNode;
   label: ReactNode;
   meta?: ReactNode;
-  variant?: "default" | "primary" | "shop" | "coop" | "records" | "settings" | "dev";
+  variant?: "default" | "primary" | "shop" | "coop" | "records" | "settings" | "dev" | "back";
 }
 
 export function MainMenuAction({
