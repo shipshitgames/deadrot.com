@@ -12,7 +12,6 @@ const GAME_SLUG = "scourge-survivors";
 export function PauseScreens({
   state,
   suppressMenu,
-  onLock,
   onEscapeResume,
   onRestart,
   onLeaveRoom,
@@ -20,7 +19,6 @@ export function PauseScreens({
 }: {
   state: HudState;
   suppressMenu: boolean;
-  onLock: () => void;
   onEscapeResume: () => void;
   onRestart: () => void;
   onLeaveRoom: () => void;
@@ -124,7 +122,7 @@ export function PauseScreens({
           kicker={multiplayer ? "Breach run" : "Pyre breach"}
           subtitle={multiplayer ? "Hold the line — the breach keeps churning while you regroup." : undefined}
           status={pauseStatus}
-          onResume={onLock}
+          onResume={onEscapeResume}
           actions={pauseActions}
         />
       )}
@@ -146,7 +144,7 @@ export function PauseScreens({
             type="button"
             className="absolute inset-0 cursor-default border-0 bg-transparent"
             aria-label="Resume run"
-            onClick={onLock}
+            onClick={onEscapeResume}
           />
           <h2 className="relative z-[1] m-0 mb-[18px] text-[30px] font-bold">
             <IconText icon="gamepad" size={26}>

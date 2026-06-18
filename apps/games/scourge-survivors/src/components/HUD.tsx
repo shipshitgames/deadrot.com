@@ -165,7 +165,7 @@ export function HUD({
 
       {showLockPrompt && (
         <button type="button" className="ssg-lock-prompt" onClick={onLock}>
-          Click to lock
+          Click to play
         </button>
       )}
 
@@ -185,7 +185,6 @@ export function HUD({
       <PauseScreens
         state={state}
         suppressMenu={suppressMenu}
-        onLock={onLock}
         onEscapeResume={onEscapeResume}
         onRestart={onRestart}
         onLeaveRoom={onLeaveRoom}
