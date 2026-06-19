@@ -295,7 +295,8 @@ export class ArenaSystem {
 
     // Raised slabs you stand on / jump onto (walkable tops, not push-out walls).
     for (const platform of layout.platforms) {
-      this.addStructuralBox(platformBox(platform), crateMat);
+      const box = platformBox(platform);
+      if (box) this.addStructuralBox(box, crateMat);
     }
 
     // Ramps/stairs as a climbable staircase of solid boxes (each rise ≤ the step

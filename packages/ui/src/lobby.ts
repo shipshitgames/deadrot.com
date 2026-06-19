@@ -59,6 +59,13 @@ export interface GameJumpTarget {
  * The playable front games as quick-jump links, in the canonical
  * Scourge-universe order, excluding `currentSlug`. Warline itself is excluded:
  * game menus give the lobby its own dedicated "Back to Warline" action.
+ *
+ * NOTE: this deliberately surfaces only games whose catalog `status` is
+ * "PLAYABLE", which is INTENTIONALLY narrower than PLAYABLE_GAME_SLUGS (roster
+ * membership — orthogonal to status). Games still "IN DEV" are omitted so the
+ * strip never links players into an unfinished game. Today only Scourge
+ * Survivors is "PLAYABLE", so the strip is short by design — this filter is NOT
+ * a no-op; don't remove it without intending to expose in-dev games.
  */
 export function gameJumpTargets(currentSlug?: GameSlug): GameJumpTarget[] {
   return PLAYABLE_GAME_SLUGS.filter((slug) => slug !== currentSlug).flatMap((slug) => {

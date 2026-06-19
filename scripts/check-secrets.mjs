@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 import { execFileSync } from "node:child_process";
-import { readFileSync, statSync } from "node:fs";
+import { readFileSync, realpathSync, statSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 const scanHistory = process.argv.includes("--history");
 const maxBytes = 5 * 1024 * 1024;
 
-const patterns = [
+export const patterns = [
   ["AWS access key id", /\b(?:AKIA|ASIA)[0-9A-Z]{16}\b/],
   ["AWS secret access key assignment", /\baws_secret_access_key\s*[:=]\s*["']?[^"'\s#]+/i],
   ["AWS session token assignment", /\baws_session_token\s*[:=]\s*["']?[^"'\s#]+/i],
@@ -19,14 +20,19 @@ const patterns = [
   ["Mongo URL with credentials", /mongodb(?:\+srv)?:\/\/[^\s:@]+:[^\s@]+@/i],
 ];
 
-const allowed = [
+export const allowed = [
   /placeholder/i,
   /example/i,
   /dummy/i,
   /changeme/i,
   /replace/i,
   /your_/i,
-  /ci[_-]?/i,
+  // CI placeholder values only — must be an explicit `ci-<marker>` / `ci_<marker>`
+  // token. The previous `/ci[_-]?/i` collapsed to the bare 2-letter substring
+  // "ci", which is present in ordinary words (deCIsion, speCIfic, assoCIate, …),
+  // so any line containing such a word was exempted and a real secret on it would
+  // slip through the scan. Keep this anchored and value-context-scoped.
+  /\bci[_-](?:secret|token|key|password|placeholder|dummy|fake|stub|value|val)\b/i,
   /<redacted>/i,
   /\$\{/,
   /process\.env/,
@@ -46,11 +52,11 @@ function nulList(args) {
   return output ? output.split("\0").filter(Boolean) : [];
 }
 
-function isAllowed(line) {
+export function isAllowed(line) {
   return allowed.some((pattern) => pattern.test(line));
 }
 
-function matchingPattern(line) {
+export function matchingPattern(line) {
   if (isAllowed(line)) return null;
   for (const [name, pattern] of patterns) {
     if (pattern.test(line)) return name;
@@ -144,15 +150,27 @@ function scanGitHistory() {
   });
 }
 
-const findings = [...scanWorkingTree(), ...(scanHistory ? scanGitHistory() : [])];
-
-if (findings.length > 0) {
-  console.error("Potential secrets found. Values are intentionally not printed.");
-  for (const finding of findings) {
-    const prefix = finding.commit ? `${finding.commit} ` : "";
-    console.error(`${prefix}${finding.file}:${finding.line} ${finding.match}`);
+// Only run the scan when invoked directly as a CLI (node scripts/check-secrets.mjs).
+// Importing the module (e.g. from a unit test) must NOT trigger a full repo scan.
+function isDirectRun() {
+  try {
+    return Boolean(process.argv[1]) && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
   }
-  process.exit(1);
 }
 
-console.log(`Secret scan passed (${scanHistory ? "working tree + history" : "working tree"}).`);
+if (isDirectRun()) {
+  const findings = [...scanWorkingTree(), ...(scanHistory ? scanGitHistory() : [])];
+
+  if (findings.length > 0) {
+    console.error("Potential secrets found. Values are intentionally not printed.");
+    for (const finding of findings) {
+      const prefix = finding.commit ? `${finding.commit} ` : "";
+      console.error(`${prefix}${finding.file}:${finding.line} ${finding.match}`);
+    }
+    process.exit(1);
+  }
+
+  console.log(`Secret scan passed (${scanHistory ? "working tree + history" : "working tree"}).`);
+}

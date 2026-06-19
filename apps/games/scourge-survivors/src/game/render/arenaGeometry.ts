@@ -67,9 +67,12 @@ export function roomFloorSlab(room: ArenaRoom<ArenaVolume>, y: number): SolidBox
 
 /** A raised walkable slab. `thickness` is the slab depth below its top; omitted
  *  = a solid plinth filled down to the ground (matches the schema's "pass under"
- *  contract). The top surface always lands at `p.y`. */
-export function platformBox(p: ArenaPlatform): SolidBox {
+ *  contract). The top surface always lands at `p.y`. Returns null for a
+ *  ground-or-below platform (h <= 0) — mirroring roomFloorSlab/rampStepBoxes —
+ *  so a degenerate (zero/negative-height) box is never emitted. */
+export function platformBox(p: ArenaPlatform): SolidBox | null {
   const h = p.thickness ?? p.y;
+  if (h <= 0) return null;
   return { x: p.x, z: p.z, y: p.y - h / 2, w: p.w, h, d: p.d };
 }
 

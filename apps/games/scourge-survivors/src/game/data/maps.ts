@@ -476,7 +476,9 @@ const GANTRY: ArenaMap = {
   icon: "maw",
   accent: "#6acf3c",
   biomeId: "rot",
-  theme: MAW.theme,
+  // No explicit `theme`: normalizeMap resolves it from biomeId ("rot") — the same
+  // theme The Maw uses. (A literal `theme: MAW.theme` here was dead: raw map
+  // literals no longer author `theme`, so MAW.theme is undefined.)
   materials: arenaMaterials("maw"),
   environment: MAW.environment,
   spawn: { x: 0, z: 30 },

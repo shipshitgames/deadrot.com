@@ -357,7 +357,7 @@ export class Game {
     if (!this.player || !this.opponent) return;
     this.timer = Math.max(0, this.timer - delta);
     this.updatePlayerInput();
-    this.updateAi(delta);
+    this.updateAi();
     this.updateFighter(this.player, delta);
     this.updateFighter(this.opponent, delta);
     this.resolveSpacing();
@@ -390,12 +390,15 @@ export class Game {
     if (queued) this.startAttack(player, queued);
   }
 
-  private updateAi(delta: number) {
+  private updateAi() {
     if (!this.player || !this.opponent || this.opponent.hurt > 0) return;
     const opponent = this.opponent;
     const distance = Math.abs(this.player.x - opponent.x);
     opponent.facing = this.player.x >= opponent.x ? 1 : -1;
-    opponent.cooldown = Math.max(0, opponent.cooldown - delta);
+    // Cooldown is decremented once per frame in updateFighter (mirroring the
+    // arena bot, which defers to updateArenaPhysics). updateAi must NOT decrement
+    // it — doing so drained the opponent's cooldown at 2×, halving its attack
+    // interval. (That removal is also why this method no longer needs `delta`.)
     const playerThreat = Boolean(this.player.attack && distance < 2.8);
     opponent.blocking = playerThreat && opponent.y <= 0.01 && opponent.cooldown <= 0.18;
     if (opponent.blocking) {
@@ -413,6 +416,9 @@ export class Game {
 
   private updateFighter(fighter: RuntimeFighter, delta: number) {
     fighter.cooldown = Math.max(0, fighter.cooldown - delta);
+    // Captured before the decrement so it matches the hurt>0 check that made
+    // updatePlayerInput/updateAi early-return (leaving vx unreset) this frame.
+    const inHitstun = fighter.hurt > 0;
     fighter.hurt = Math.max(0, fighter.hurt - delta);
     fighter.x += fighter.vx * delta;
     fighter.x = Math.max(-ARENA.halfWidth, Math.min(ARENA.halfWidth, fighter.x));
@@ -421,6 +427,14 @@ export class Game {
     if (fighter.y <= 0) {
       fighter.y = 0;
       fighter.vy = 0;
+    }
+    // During hitstun the input/AI steps don't refresh vx, so a fighter hit
+    // mid-walk would glide at its stale walk speed. Damp horizontal velocity
+    // (mirroring the arena path) so only the intended knockback carries through,
+    // decaying smoothly instead of holding constant for the whole hurt window.
+    if (inHitstun) {
+      const drag = fighter.y <= 0.01 ? ARENA_RULES.groundDrag : ARENA_RULES.airDrag;
+      fighter.vx *= Math.exp(-drag * delta);
     }
   }
 

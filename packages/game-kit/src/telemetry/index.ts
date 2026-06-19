@@ -345,6 +345,11 @@ function isBalanceEvent(value: unknown): value is BalanceEvent {
 
 function flattenEvent(event: BalanceEvent): Record<string, unknown> {
   return {
+    // User-supplied properties go FIRST so they can never shadow the canonical
+    // identity fields below. game/mode/build/ts are emitted unprefixed, so a
+    // property literally named one of those would otherwise overwrite the
+    // authoritative event field and corrupt cross-game attribution silently.
+    ...event.properties,
     schema: event.schema,
     event_id: event.eventId,
     session_id: event.sessionId,
@@ -355,7 +360,6 @@ function flattenEvent(event: BalanceEvent): Record<string, unknown> {
     tuning_version: event.tuningVersion,
     ts: event.ts,
     elapsed_sec: event.elapsedSec,
-    ...event.properties,
   };
 }
 

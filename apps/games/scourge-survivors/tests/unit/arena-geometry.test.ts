@@ -73,6 +73,7 @@ describe("platformBox", () => {
   it("places the walkable top at p.y with an explicit thickness", () => {
     const p: ArenaPlatform = { id: "o", x: 4, z: -6, w: 12, d: 6, y: 3.4, thickness: 0.5 };
     const b = platformBox(p);
+    if (!b) throw new Error("expected a platform box");
     expect(b.y + b.h / 2).toBeCloseTo(3.4); // top
     expect(b.h).toBeCloseTo(0.5);
     expect(b.y - b.h / 2).toBeCloseTo(2.9); // you can pass under it
@@ -84,9 +85,17 @@ describe("platformBox", () => {
 
   it("defaults to a solid plinth filled down to the ground when thickness is omitted", () => {
     const b = platformBox({ id: "o", x: 0, z: 0, w: 5, d: 5, y: 1.2 });
+    if (!b) throw new Error("expected a platform box");
     expect(b.h).toBeCloseTo(1.2);
     expect(b.y - b.h / 2).toBeCloseTo(0); // grounded
     expect(b.y + b.h / 2).toBeCloseTo(1.2); // top
+  });
+
+  it("returns null for a ground-or-below platform (no degenerate geometry)", () => {
+    // thickness omitted => h defaults to p.y; a non-positive y would otherwise
+    // produce a zero/negative-height box. Mirrors roomFloorSlab's guard.
+    expect(platformBox({ id: "o", x: 0, z: 0, w: 5, d: 5, y: 0 })).toBeNull();
+    expect(platformBox({ id: "o", x: 0, z: 0, w: 5, d: 5, y: -2 })).toBeNull();
   });
 });
 

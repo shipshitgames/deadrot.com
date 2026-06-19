@@ -1,6 +1,9 @@
 import animationManifestData from "../games/scourge-survivors/animations/scourge/animation-pack.json" with {
   type: "json",
 };
+import comicAnimationManifestData from "../games/scourge-survivors/animations/scourge-comic/animation-pack.json" with {
+  type: "json",
+};
 import manifestData from "../games/scourge-survivors/assets.json" with { type: "json" };
 
 export type Vec2 = [number, number];
@@ -221,6 +224,15 @@ const COMIC_TEXTURE_PATHS: Partial<Record<string, string>> = {};
 
 const COMIC_ANIMATION_ROOT = "animations/scourge-comic/";
 
+// Entities that actually ship comic animation frames. The comic pack is a
+// SUBSET of the default pack (e.g. wound-hound has no comic frames), so the
+// path-root rewrite below must be scoped to these — a blanket swap would point a
+// comic-less entity at a non-existent path and throw at module load, crashing
+// the whole game in comic mode rather than just falling back for that entity.
+const COMIC_ANIMATION_ENTITIES = new Set(
+  Object.keys((comicAnimationManifestData as { entities?: Record<string, unknown> }).entities ?? {}),
+);
+
 function comicArenaTexturePath(id: string): string | undefined {
   const direct = COMIC_TEXTURE_PATHS[id];
   if (direct) return direct;
@@ -341,8 +353,11 @@ export function scourgeSurvivorsAnimationFrameUrl(
   const actionEntry = entityEntry.actions[action];
   if (!actionEntry) throw new Error(`Unknown Scourge Survivors animation action: ${entity}/${action}`);
   const frameId = String(frame).padStart(2, "0");
+  // Only rewrite to the comic pack for entities that have comic frames; others
+  // (e.g. wound-hound) keep the default pack so comic mode can't crash on a
+  // missing-file lookup.
   const pathTemplate =
-    comicAssetsEnabled() && Object.keys(COMIC_ENEMY_VIEW_PATHS).length > 0
+    comicAssetsEnabled() && COMIC_ANIMATION_ENTITIES.has(entity)
       ? actionEntry.pathTemplate.replace("animations/scourge/", COMIC_ANIMATION_ROOT)
       : actionEntry.pathTemplate;
   const path = `games/scourge-survivors/${pathTemplate.replace("{view}", view).replace("{frame}", frameId)}`;

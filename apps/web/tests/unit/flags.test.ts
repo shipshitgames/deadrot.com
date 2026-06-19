@@ -6,6 +6,7 @@ import {
   fetchRemoteFlags,
   filterVisibleGames,
   flagDefault,
+  flattenV2Flags,
   gameVisibilityFlag,
   isEnabled,
   isEnabledSync,
@@ -221,6 +222,105 @@ describe("normalizeRemoteFlags", () => {
       "flag-a": true,
       "flag-b": true,
     });
+  });
+});
+
+// ── 5b. flattenV2Flags + the real /flags?v=2 response contract ───────────────
+//
+// Regression guard for the silent-empty bug: posthogFetcher hits `/flags?v=2`,
+// whose body is a NESTED `flags` map ({ key, enabled, variant, ... }), NOT the
+// legacy flat `featureFlags` map. flattenV2Flags must collapse it to the
+// bool|variant shape normalizeRemoteFlags consumes; the integration test drives
+// the real posthogFetcher against a realistic v2 payload so the response-shape
+// contract is actually exercised end to end.
+
+describe("flattenV2Flags", () => {
+  test("enabled:true with no variant => true", () => {
+    expect(flattenV2Flags({ "game-rothulk-visible": { key: "game-rothulk-visible", enabled: true } })).toEqual({
+      "game-rothulk-visible": true,
+    });
+  });
+
+  test("enabled:false => false", () => {
+    expect(flattenV2Flags({ "game-rothulk-visible": { key: "game-rothulk-visible", enabled: false } })).toEqual({
+      "game-rothulk-visible": false,
+    });
+  });
+
+  test("enabled:true with a variant carries the variant string through", () => {
+    expect(
+      flattenV2Flags({ "some-experiment": { key: "some-experiment", enabled: true, variant: "control" } }),
+    ).toEqual({ "some-experiment": "control" });
+  });
+
+  test("undefined / empty flags map returns {}", () => {
+    expect(flattenV2Flags(undefined)).toEqual({});
+    expect(flattenV2Flags({})).toEqual({});
+  });
+
+  test("composes with normalizeRemoteFlags to yield resolvable booleans", () => {
+    const flat = flattenV2Flags({
+      "game-a-visible": { key: "game-a-visible", enabled: true },
+      "game-b-visible": { key: "game-b-visible", enabled: false },
+      "exp-c": { key: "exp-c", enabled: true, variant: "test" },
+    });
+    expect(normalizeRemoteFlags(flat)).toEqual({
+      "game-a-visible": true,
+      "game-b-visible": false,
+      "exp-c": true,
+    });
+  });
+});
+
+describe("posthogFetcher parses a real /flags?v=2 body", () => {
+  const realFetch = globalThis.fetch;
+  let originalKey: string | undefined;
+
+  beforeEach(() => {
+    originalKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+    process.env.NEXT_PUBLIC_POSTHOG_KEY = "phc_test_key";
+    __setRemoteFetcher(null); // use the REAL posthogFetcher, not a stub
+  });
+
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+    if (originalKey === undefined) delete process.env.NEXT_PUBLIC_POSTHOG_KEY;
+    else process.env.NEXT_PUBLIC_POSTHOG_KEY = originalKey;
+  });
+
+  test("nested v2 flags resolve (was silently {} when parsed as featureFlags)", async () => {
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          flags: {
+            "game-rothulk-visible": { key: "game-rothulk-visible", enabled: false, variant: null, reason: {} },
+            "game-deadlane-visible": { key: "game-deadlane-visible", enabled: true, variant: null, reason: {} },
+            "exp-hero": { key: "exp-hero", enabled: true, variant: "variant-b", reason: {} },
+          },
+          errorsWhileComputingFlags: false,
+          requestId: "01890-test",
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      )) as typeof fetch;
+
+    const remote = await fetchRemoteFlags({ id: "user_123" });
+    expect(remote).toEqual({
+      "game-rothulk-visible": false,
+      "game-deadlane-visible": true,
+      "exp-hero": true,
+    });
+  });
+
+  test("a legacy flat featureFlags body no longer leaks through (yields {})", async () => {
+    // Defends against a regression to the old code path: a body with ONLY the
+    // legacy `featureFlags` key and no `flags` key must resolve to {}.
+    globalThis.fetch = (async () =>
+      new Response(JSON.stringify({ featureFlags: { "game-rothulk-visible": false } }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      })) as typeof fetch;
+
+    expect(await fetchRemoteFlags()).toEqual({});
   });
 });
 

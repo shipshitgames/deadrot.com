@@ -85,8 +85,18 @@ PostHog API directly — so the vendor can be swapped without touching feature c
 FLAG_OVERRIDES='{"game-rothulk-visible":false}'
 ```
 
-Set it in the deploy env (or flip the flag to 0% in PostHog) and the gallery
-drops the card and the proxy turns away direct `/{slug}/` visits.
+**To fully kill a game at the gate you must use the env override.** Setting
+`FLAG_OVERRIDES` drops the card from the gallery **and** makes the proxy turn
+away direct `/{slug}/` visits, because the edge gate (`isGameVisibleSync`) reads
+only the env override + registry default — never PostHog (no network on the hot
+path).
+
+Flipping the PostHog flag to 0% only drops the card from the **gallery** (the
+async render path). It does **not** block direct `/{slug}/` navigation — the
+proxy never sees the PostHog value. Use a PostHog ramp for visibility/rollout;
+use `FLAG_OVERRIDES` when you need a game to be unreachable by direct URL.
+(Access to paid games is always enforced independently by the Clerk/Stripe
+paywall regardless of the visibility flag.)
 
 ## Cleanup habit — delete the flag after full rollout
 
