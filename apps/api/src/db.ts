@@ -28,13 +28,25 @@ function createPool(config: ApiConfig): Pool {
   };
 
   if (config.databaseSslMode !== "disable") {
-    poolConfig.ssl =
-      config.databaseSslMode === "verify-full" || config.databaseSslMode === "require"
-        ? true
-        : { rejectUnauthorized: false };
+    // Per libpq/Postgres convention, only `verify-full` performs full CA-chain +
+    // hostname verification (pg `ssl: true` => rejectUnauthorized: true). `require`
+    // means "encrypt, but do NOT verify the certificate" — so it must NOT map to
+    // full verification, or a self-signed / internal-CA Postgres set to `require`
+    // would fail to connect. `no-verify` and `require` both encrypt without verify.
+    poolConfig.ssl = config.databaseSslMode === "verify-full" ? true : { rejectUnauthorized: false };
   }
 
-  return new Pool(poolConfig);
+  const pool = new Pool(poolConfig);
+
+  // pg emits `error` out-of-band when a backend error or network partition hits
+  // an idle pooled client (Postgres reboot/failover/idle-connection drop). With
+  // no listener Node turns that into an uncaught exception that would crash this
+  // single long-running service. Logging it lets pg quietly drop the bad client.
+  pool.on("error", (error) => {
+    console.error(`[${config.serviceName}] idle database client error`, error);
+  });
+
+  return pool;
 }
 
 export function getPool(config: ApiConfig): Pool {

@@ -129,8 +129,13 @@ export function createTransport(options: NetTransportOptions): NetTransport {
       const stamp = now();
       const last = lastSent.get(type) ?? Number.NEGATIVE_INFINITY;
       if (stamp - last < minIntervalMs) return false;
-      lastSent.set(type, stamp);
-      return rawSend(type, payload);
+      // Only consume the throttle window when the frame is actually sent. A send
+      // dropped because the socket isn't OPEN (e.g. still CONNECTING) must not
+      // advance the clock, or the first genuinely-sendable frame after open
+      // would be suppressed for up to one interval.
+      const sent = rawSend(type, payload);
+      if (sent) lastSent.set(type, stamp);
+      return sent;
     },
     disconnect() {
       if (socket) {

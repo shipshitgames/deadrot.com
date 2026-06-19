@@ -131,11 +131,33 @@ async function posthogFetcher(user: FlagUser): Promise<Record<string, boolean>> 
       signal: AbortSignal.timeout(2000),
     });
     if (!res.ok) return {};
-    const data = (await res.json()) as { featureFlags?: Record<string, unknown> };
-    return normalizeRemoteFlags(data.featureFlags);
+    // The `/flags?v=2` endpoint returns a top-level `flags` map whose values are
+    // NESTED detail objects (`{ key, enabled, variant, ... }`) — NOT the flat
+    // `featureFlags` boolean/variant map of the legacy `/decide` endpoint.
+    // Flatten to the `bool | "<variant>"` shape normalizeRemoteFlags expects.
+    const data = (await res.json()) as { flags?: Record<string, V2FlagDetail> };
+    return normalizeRemoteFlags(flattenV2Flags(data.flags));
   } catch {
     return {};
   }
+}
+
+/** A single flag entry in PostHog's `/flags?v=2` response. */
+type V2FlagDetail = { enabled?: boolean; variant?: string | null };
+
+/**
+ * Flatten PostHog's `/flags?v=2` nested `flags` map into the flat
+ * `true | false | "<variant>"` shape normalizeRemoteFlags consumes. `enabled`
+ * gates on/off; when on with a multivariate `variant`, carry the variant string
+ * through as the (truthy) value. Malformed/absent entries are skipped.
+ */
+export function flattenV2Flags(flags: Record<string, V2FlagDetail> | undefined): Record<string, boolean | string> {
+  const out: Record<string, boolean | string> = {};
+  for (const [key, detail] of Object.entries(flags ?? {})) {
+    if (!detail || typeof detail !== "object") continue;
+    out[key] = detail.enabled === true ? (typeof detail.variant === "string" ? detail.variant : true) : false;
+  }
+  return out;
 }
 
 /**

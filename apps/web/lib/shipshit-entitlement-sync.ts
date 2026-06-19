@@ -49,17 +49,22 @@ function verifiedEmails(user: User): string[] {
  */
 async function hasActiveShipshitSubscription(stripe: Stripe, emails: readonly string[]): Promise<boolean> {
   for (const email of emails) {
-    const customers = await stripe.customers.list({ email, limit: 100 });
-    for (const customer of customers.data) {
-      const subscriptions = await stripe.subscriptions.list({
-        customer: customer.id,
-        status: "all",
-        limit: 100,
-      });
-      const match = subscriptions.data.some(
-        (sub) => ACTIVE_SUB_STATUSES.includes(sub.status) && isShipshitSubscription(sub),
-      );
-      if (match) return true;
+    // Auto-paginate customers: a shared email can map to more than one Stripe
+    // customer, so a single 100-item page could otherwise truncate the right one.
+    for await (const customer of stripe.customers.list({ email, limit: 100 })) {
+      // Query ONLY the active statuses, not status:"all". Canceled/incomplete
+      // history can exceed one page and push the live Studio Pass off it (which
+      // would read as "no subscription"); querying by active status keeps the
+      // result set tiny, and auto-pagination is a belt-and-braces safety net.
+      for (const status of ACTIVE_SUB_STATUSES) {
+        for await (const sub of stripe.subscriptions.list({
+          customer: customer.id,
+          status: status as Stripe.SubscriptionListParams.Status,
+          limit: 100,
+        })) {
+          if (isShipshitSubscription(sub)) return true;
+        }
+      }
     }
   }
   return false;

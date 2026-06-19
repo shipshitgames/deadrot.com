@@ -36,9 +36,15 @@ const gate = clerkMiddleware(async (auth, req) => {
   // Feature-flag visibility (#384) composes WITH the paywall but is a separate
   // system: a game whose visibility flag is OFF is hidden for everyone — owners
   // included — because a flag never grants access, it only hides. This runs
-  // BEFORE auth so a killed game never even prompts a sign-in; the lobby gallery
-  // already drops it. Deterministic env kill-switch here is the edge backstop
-  // (no network on the hot path); the live PostHog ramp drives the gallery.
+  // BEFORE auth so an env-killed game never even prompts a sign-in.
+  //
+  // IMPORTANT — this gate uses the SYNC path (isGameVisibleSync), which honors
+  // ONLY the FLAG_OVERRIDES env kill-switch + registry default; it deliberately
+  // does NOT consult PostHog (no network on the edge hot path). So a PostHog-only
+  // ramp-down drops the card from the gallery (async path) but does NOT block
+  // direct /<slug>/ navigation here. To truly dark-ship/kill a game at the gate
+  // you MUST set a FLAG_OVERRIDES entry; a PostHog 0% ramp is a gallery hide only.
+  // (Access to paid games is still independently enforced by the paywall below.)
   if (isFreeGameRoute(req) || isLockedGameRoute(req)) {
     const slug = req.nextUrl.pathname.split("/")[1];
     // A matched game route always has a slug segment; the guard is belt-and-braces

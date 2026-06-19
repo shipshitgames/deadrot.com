@@ -134,9 +134,11 @@ function webpSize(buf) {
 
   if (fourcc === "VP8X") {
     // Extended: canvas width-1 / height-1 as 24-bit LE at offsets 24 / 27.
+    // The +1 already guarantees a minimum of 1, so guard with > 0 (consistent
+    // with the VP8/VP8L branches) — `> 1` wrongly rejected valid 1px-edge images.
     const width = (u24le(buf, 24) ?? 0) + 1;
     const height = (u24le(buf, 27) ?? 0) + 1;
-    return width > 1 && height > 1 ? { width, height } : null;
+    return width > 0 && height > 0 ? { width, height } : null;
   }
 
   return null;
