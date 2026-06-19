@@ -22,7 +22,8 @@
       "!apps/lore/content",
       "!apps/lore/docs",
       "!packages/assets/games",
-      "!packages/assets/sources"
+      "!packages/assets/sources",
+      "!packages/assets/lore/art-map.json"
     ]
   },
   "assist": {

@@ -173,6 +173,20 @@ Run the package boundary check before merging asset changes:
 bun run --cwd packages/assets assets:check
 ```
 
+Refresh the lore-to-art coverage map after adding or promoting lore art:
+
+```bash
+bun run --cwd packages/assets lore:art-map
+```
+
+The generated outputs are:
+
+- `packages/assets/lore/art-map.json` for tools and automation
+- `apps/lore/content/Art/Lore-Asset-Map.md` for Obsidian/Quartz review
+
+`assets:index` also refreshes the lore art map, and `assets:check` fails if it is
+stale.
+
 When Codex generates images, immediately rescue the global Codex cache into this
 repo before reviewing or pruning anything:
 
