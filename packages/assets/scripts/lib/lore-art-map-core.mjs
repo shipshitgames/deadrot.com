@@ -151,7 +151,9 @@ function runtimeMatches(entry, runtimeRecords, assetIndexByPath) {
 }
 
 function catalogCoverage(entry, catalogEntities, assetIndexByPath) {
-  const games = entry.appearsIn?.length ? entry.appearsIn : unique(catalogEntities.flatMap((entity) => entity.games ?? []));
+  const games = entry.appearsIn?.length
+    ? entry.appearsIn
+    : unique(catalogEntities.flatMap((entity) => entity.games ?? []));
   const variants = [];
   for (const entity of catalogEntities) {
     for (const game of games) {
@@ -318,7 +320,9 @@ export function renderLoreArtMapMarkdown(report) {
     lines.push("All tracked entries have at least catalog, runtime, or master coverage.");
   } else {
     for (const entry of weak) {
-      lines.push(`- ${wiki(entry)}: ${entry.status}; appears in ${entry.appearsIn.join(", ") || "no game"}; spriteBase \`${entry.spriteBase ?? "none"}\`.`);
+      lines.push(
+        `- ${wiki(entry)}: ${entry.status}; appears in ${entry.appearsIn.join(", ") || "no game"}; spriteBase \`${entry.spriteBase ?? "none"}\`.`,
+      );
     }
   }
 

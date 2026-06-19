@@ -87,7 +87,8 @@ test("buildLoreArtMap links lore entries to catalog variants, runtime records, a
       ["ranger", "Characters/Pyre/Ranger.md"],
       ["swarm-ripper", "Bestiary/Soldiers/Swarm-Ripper.md"],
     ]),
-    manualStatusMarkdown: "| Lore note | Preview | Game/use | Good? | Locked? | Current package source | Next action |\n| --- | --- | --- | --- | --- | --- | --- |\n| [[Ranger]] | img | game | Good | Yes | source | done |\n",
+    manualStatusMarkdown:
+      "| Lore note | Preview | Game/use | Good? | Locked? | Current package source | Next action |\n| --- | --- | --- | --- | --- | --- | --- |\n| [[Ranger]] | img | game | Good | Yes | source | done |\n",
   });
 
   const ranger = report.entries.find((entry) => entry.slug === "ranger");

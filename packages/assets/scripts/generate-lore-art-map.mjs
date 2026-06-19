@@ -3,12 +3,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import {
-  buildLoreArtMap,
-  renderLoreArtMapMarkdown,
-  serializeLoreArtMap,
-  slugify,
-} from "./lib/lore-art-map-core.mjs";
+import { buildLoreArtMap, renderLoreArtMapMarkdown, serializeLoreArtMap, slugify } from "./lib/lore-art-map-core.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const assetsRoot = resolve(scriptDir, "..");
