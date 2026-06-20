@@ -41,3 +41,9 @@ Redline runners carrying orders through broken lanes.
 
 - [[Pyre-Courier]]
 - [[Warden-Courier]]
+
+## Listeners
+
+Founding practitioner of the heresy; keeper of the Quiet Room protocol.
+
+- [[Tell]]
