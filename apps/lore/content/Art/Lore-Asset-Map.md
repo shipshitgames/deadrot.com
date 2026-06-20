@@ -10,14 +10,14 @@ Generated coverage board for lore entries and their package-owned generated art.
 
 ## Summary
 
-- Entries: 27
+- Entries: 29
 - Locked: 2
 - Runtime linked: 5
-- In progress: 19
+- In progress: 21
 - Drafted only: 0
 - Missing: 1
 - Catalog-linked: 22
-- Runtime manifest-linked: 7
+- Runtime manifest-linked: 9
 - Package asset-linked: 26
 - Has masters: 15
 - Has generated sources: 15
@@ -29,6 +29,7 @@ Generated coverage board for lore entries and their package-owned generated art.
 | [[Breach-Boss|Breach-Boss]] | bestiary | locked | scourge-survivors, deadlane, rothulk | 2/3 | 7 | 3 | 4 | 7 | Yes | Wire animation frames into renderer. |
 | [[Graft-Breacher|Graft-Breacher]] | bestiary | in-progress | deadlane, scourge-survivors, rothulk | 2/3 | 0 | 2 | 1 | 1 | No | Generate final per-game variants. |
 | [[Orbital-Breach-Carrier|Orbital Breach Carrier]] | bestiary | in-progress | starblight | 1/1 | 0 | 1 | 2 | 1 | No | Replace with final Starblight boss render. |
+| [[Quaver|Quaver]] | bestiary | in-progress | scourge-survivors, deadlane | none | 6 | 0 | 0 | 0 | - | - |
 | [[Render|Render]] | bestiary | in-progress | scourge-survivors, deadlane, redline | 2/3 | 0 | 3 | 1 | 1 | No | Generate final per-game variants. |
 | [[Rot-Engine|Rot-Engine]] | bestiary | in-progress | deadlane, scourge-survivors, redline | 2/3 | 0 | 2 | 1 | 1 | No | Generate final Deadlane camera render. |
 | [[Scourge|The Scourge]] | bestiary | missing | scourge-survivors, deadlane, pactfall, starblight, redline, rothulk | none | 0 | 0 | 0 | 0 | - | - |
@@ -37,6 +38,7 @@ Generated coverage board for lore entries and their package-owned generated art.
 | [[Swarm-Ripper|Swarm Ripper]] | bestiary | locked | scourge-survivors, deadlane, redline | 2/3 | 6 | 3 | 21 | 19 | Yes | Wire animation frames into renderer. |
 | [[Swarm-Spitter|Swarm Spitter]] | bestiary | runtime-linked | scourge-survivors, deadlane, rothulk | 2/3 | 6 | 2 | 4 | 3 | No | Review against locked reference, then promote/lock or regenerate. |
 | [[Trucebreaker|Trucebreaker]] | bestiary | in-progress | pactfall | 1/1 | 0 | 1 | 3 | 3 | No | Replace with final Pactfall boss render. |
+| [[Wound-Hound|Wound-Hound]] | bestiary | in-progress | scourge-survivors, deadlane, redline | none | 3 | 0 | 0 | 0 | - | - |
 | [[Bulwark|Bulwark]] | character | runtime-linked | scourge-survivors | 1/1 | 3 | 2 | 1 | 1 | No | Regenerate as locked comic/cel-ink production turnaround. |
 | [[Field-Engineer|Field Engineer]] | character | in-progress | deadlane | 1/1 | 0 | 2 | 0 | 0 | No | Replace catalog plate with final Deadlane camera render. |
 | [[Lane-Gunner|Lane Gunner]] | character | in-progress | deadlane | 1/1 | 0 | 2 | 1 | 1 | No | Replace catalog plate with final Deadlane camera render. |
@@ -101,6 +103,20 @@ Generated coverage board for lore entries and their package-owned generated art.
 - Preview paths: `packages/assets/lore/asset-status/previews/enemies/orbital-breach-carrier.webp`
 - Master paths: `packages/assets/lore/art-masters/scourge/orbital-breach-carrier/orbital-breach-carrier-master-turnaround.png`<br>`packages/assets/lore/art-masters/scourge/orbital-breach-carrier/orbital-breach-carrier-runtime-placeholder.webp`
 - Generated source paths: `packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/orbital-breach-carrier-master-turnaround.png`
+
+### Quaver
+
+- Type: bestiary
+- Status: in-progress
+- Note: `Bestiary/Relays/Quaver.md`
+- Sprite base: `enemy-flying`
+- Catalog entities: none
+- Catalog variants: none
+- Runtime records: 6
+- Package asset paths: -
+- Preview paths: -
+- Master paths: -
+- Generated source paths: -
 
 ### Render
 
@@ -213,6 +229,20 @@ Generated coverage board for lore entries and their package-owned generated art.
 - Preview paths: `packages/assets/lore/asset-status/previews/enemies/trucebreaker.webp`
 - Master paths: `packages/assets/masters/art/scourge/bestiary-v01/trucebreaker-master-v01.png`<br>`packages/assets/masters/art/scourge/bestiary-v02/trucebreaker-master-v02.png`<br>`packages/assets/masters/art/wallpapers/combat-v02/trucebreaker-arena-clean-wallpaper-v02.png`
 - Generated source paths: `packages/assets/sources/generated/2026-06-16/lore/bestiary/master-candidates/trucebreaker-master-v01.png`<br>`packages/assets/sources/generated/2026-06-16/lore/bestiary/master-candidates/trucebreaker-master-v02.png`<br>`packages/assets/sources/generated/2026-06-17/lore/wallpapers/combat-v02/trucebreaker-arena-clean-wallpaper-v02.png`
+
+### Wound-Hound
+
+- Type: bestiary
+- Status: in-progress
+- Note: `Bestiary/Animals/Wound-Hound.md`
+- Sprite base: `enemy-hound`
+- Catalog entities: none
+- Catalog variants: none
+- Runtime records: 3
+- Package asset paths: -
+- Preview paths: -
+- Master paths: -
+- Generated source paths: -
 
 ### Bulwark
 
