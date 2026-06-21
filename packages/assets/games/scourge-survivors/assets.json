@@ -197,8 +197,8 @@
       ],
       "filter": "nearest",
       "scale": [
-        0.6,
-        1
+        0.564,
+        0.94
       ],
       "weapon": {
         "offset": [
@@ -313,8 +313,8 @@
       ],
       "filter": "nearest",
       "scale": [
-        0.6,
-        1
+        0.582,
+        0.97
       ],
       "weapon": {
         "offset": [
@@ -360,8 +360,8 @@
       ],
       "filter": "nearest",
       "scale": [
-        0.6,
-        1
+        0.618,
+        1.03
       ],
       "weapon": {
         "offset": [
@@ -407,8 +407,8 @@
       ],
       "filter": "nearest",
       "scale": [
-        0.6,
-        1
+        0.636,
+        1.06
       ],
       "weapon": {
         "offset": [
