@@ -12,15 +12,19 @@ name: api-deadrot-com
 services:
   api-deadrot-com:
     image: ghcr.io/shipshitgames/deadrot.com/api:${IMAGE_TAG:-latest}
-    container_name: api-deadrot-com
+    container_name: deadrot-api
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
     cap_drop:
       - ALL
+    networks:
+      # Caddy proxies api.deadrot.com -> deadrot-api:3004 by container name over
+      # this shared host network, so container_name above is load-bearing.
+      - shipshit
     ports:
-      # Bound to localhost; the host reverse proxy fronts api.deadrot.com to it.
-      # 3004 so it never collides with api.shipshit.dev on 3003.
+      # Localhost publish kept for the deploy health check (curls localhost:3004).
+      # Caddy reaches this container over the `shipshit` network, not this port.
       - "127.0.0.1:3004:3004"
     env_file:
       # Deadrot's OWN env, rendered by deploy-deadrot.sh from the
@@ -50,3 +54,8 @@ services:
       timeout: 5s
       start_period: 10s
       retries: 3
+
+# Shared external bridge created on the host (carries api.shipshit.dev + Caddy).
+networks:
+  shipshit:
+    external: true
