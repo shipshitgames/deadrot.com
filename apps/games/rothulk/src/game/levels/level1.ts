@@ -147,7 +147,7 @@ export function buildLevel1(): LevelData {
   return {
     name: "The Rothulk",
     loreId: "cinder",
-    front: "hulk",
+    front: "breach", // Cinder Flats is a breach front (apps/lore/content/Maps.md)
     width: 130,
     spawn: { x: CONSTANTS.HERO_SPAWN_X, y: CONSTANTS.HERO_SPAWN_Y },
     platforms,
