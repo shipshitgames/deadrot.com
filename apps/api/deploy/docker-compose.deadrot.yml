@@ -1,9 +1,12 @@
-# deadrot-api, co-located on the shipshit-api EC2 host ALONGSIDE api.shipshit.games.
-# This is a SEPARATE compose project (name: deadrot-api) and container so it never
-# touches the api.shipshit.games service. Image is built+pushed from the deadrot.com
-# repo to ghcr; the host pulls it. DATABASE_URL comes from the host's shared
-# ../.env.production (rendered from /shipshit/production by the canonical
-# render-ssm-env.sh); everything else is deadrot-specific and set here.
+# deadrot-api, co-located on the us-west-1 EC2 host that serves api.deadrot.com
+# (52.8.153.188 / i-00e74422e719396c3) ALONGSIDE api.shipshit.dev. This is a
+# SEPARATE compose project (name: api-deadrot-com) and container so it never
+# touches the api.shipshit.dev service. Image is built+pushed from the deadrot.com
+# repo to ghcr; the host pulls it. DATABASE_URL (deadrot-api RDS) comes from
+# deadrot's OWN env file, rendered by deploy-deadrot.sh from the
+# /shipshit/production/deadrot SSM subtree (us-east-1) — NOT the host's shared
+# ../.env.production (whose DATABASE_URL is the api-shipshit-dev RDS). Everything
+# else is deadrot-specific and set here.
 name: api-deadrot-com
 
 services:
@@ -17,12 +20,20 @@ services:
       - ALL
     ports:
       # Bound to localhost; the host reverse proxy fronts api.deadrot.com to it.
-      # 3004 so it never collides with api.shipshit.games on 3003.
+      # 3004 so it never collides with api.shipshit.dev on 3003.
       - "127.0.0.1:3004:3004"
     env_file:
-      # Shared host env (DATABASE_URL etc.) — same file api.shipshit.games uses.
-      - ../.env.production
+      # Deadrot's OWN env, rendered by deploy-deadrot.sh from the
+      # /shipshit/production/deadrot SSM subtree. Its load-bearing contribution is
+      # DATABASE_URL -> deadrot-api RDS (+ DATABASE_SSL_MODE). The operational keys
+      # the subtree also carries (NODE_ENV/HOST/PORT/SERVICE_NAME/ALLOWED_ORIGINS/
+      # CDN_ORIGIN) are intentionally PINNED in `environment:` below — which wins
+      # over env_file — so editing those in SSM has no effect here.
+      # NOT ../.env.production (that is api.shipshit.dev's shared env).
+      - .env.deadrot.production
     environment:
+      # Pinned operational config; overrides any same-named env_file key above.
+      # HOST/PORT MUST stay 0.0.0.0/3004 to match the published port + healthcheck.
       - NODE_ENV=production
       - HOST=0.0.0.0
       - PORT=3004
