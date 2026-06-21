@@ -187,9 +187,7 @@ function isDirectRun() {
 }
 
 if (isDirectRun()) {
-  const findings = scanStaged
-    ? scanStagedFiles()
-    : [...scanWorkingTree(), ...(scanHistory ? scanGitHistory() : [])];
+  const findings = scanStaged ? scanStagedFiles() : [...scanWorkingTree(), ...(scanHistory ? scanGitHistory() : [])];
 
   if (findings.length > 0) {
     console.error("Potential secrets found. Values are intentionally not printed.");
