@@ -1,5 +1,24 @@
 #!/bin/sh
 
+# secret-scan hook start
+# Block commits that introduce credentials/connection strings into staged
+# content. Reuses the CI-vetted scanner (scripts/check-secrets.mjs) in a fast
+# --staged mode so local commits and CI enforce the exact same rules. The
+# scanner never prints secret values, only file:line + the matched rule name.
+secret_scan_repo_root=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+if command -v node >/dev/null 2>&1 && [ -f "$secret_scan_repo_root/scripts/check-secrets.mjs" ]; then
+  if ! node "$secret_scan_repo_root/scripts/check-secrets.mjs" --staged; then
+    printf '%s\n' \
+      "Commit blocked: potential secret in staged changes (see file:line above)." \
+      "If this is a false positive, adjust the staged content or the allow-list in" \
+      "scripts/check-secrets.mjs. Never commit real credentials — they belong in SSM." >&2
+    exit 1
+  fi
+else
+  printf '%s\n' "secret-scan: node or scanner missing; skipping staged secret scan." >&2
+fi
+# secret-scan hook end
+
 # react-doctor hook start
 react_doctor_scan_staged_files() {
   if [ -x "./node_modules/.bin/react-doctor" ]; then
