@@ -69,6 +69,7 @@ Start here, follow the links, open the graph view.
 ## Canon Anchors
 
 - [[Zero-Day]] — _the night we lost the sky_ (first-contact last stand; now the [[Starblight]] prologue / memory mode)
+- [[The-Kerath]] — _the civilization the Chitin Warhost was_ (conquered world; first intelligible memory in the Choir; grounds [[CANON]] §2) _(draft)_
 
 ## Games (entries in the canon)
 
