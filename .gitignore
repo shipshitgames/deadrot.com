@@ -23,6 +23,11 @@ tmp/
 .claude/worktrees/
 .vercel
 
+# Agent session logs: keep the dir (.keep) but never commit its contents — this is
+# a PUBLIC repo and auto-generated session summaries don't belong in git.
+.agents/SESSIONS/*
+!.agents/SESSIONS/.keep
+
 # Local credentials and private keys
 .aws/
 **/.aws/
