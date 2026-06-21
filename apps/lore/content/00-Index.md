@@ -60,6 +60,7 @@ Start here, follow the links, open the graph view.
 - [[The-Pyre]] — offense; burn the source → Scourge Survivors
 - [[The-Wardens]] — defense; hold the line → Deadlane
 - [[The-Listeners]] — heresy; understand the Choir _(concept)_
+- [[Null]] — the first Listener; Warden Fork operator who heard the Choir too clearly and started the heresy _(character)_
 - [[The-Quiet-Rooms]] — Listener black-room practice; keep severed Choir nodes alive to study
 - [[The-Dead-Air-Liturgy]] — Pact dead-air drill; clear carriers after the cut
 - [[The-Brace-Ledger]] — Warden wall sheet; hold target, reserve threshold, and Pact gate promise
