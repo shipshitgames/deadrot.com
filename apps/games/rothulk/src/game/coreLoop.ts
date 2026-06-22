@@ -29,10 +29,13 @@ export function shouldCompleteEscape(heroX: number, heroY: number, exit: ExitGoa
   return phase !== "won" && distance(heroX, heroY, exit.x, exit.y) < exit.radius;
 }
 
+// HUD objective text for each beat of the Breach Sabotage op (#364): ignite the
+// core, collapse the node (escape the fire), then run the severed nest feral —
+// the same beats the briefing frames (see game/data/operation.ts).
 export function objectiveForPhase(phase: CoreLoopPhase, checkpointReached: boolean): string {
-  if (phase === "escape") return "ESCAPE THE SEVERED HULK";
-  if (phase === "won") return "HULK SEVERED // LANE CLEARED";
-  return checkpointReached ? "PUSH DEEPER // IGNITE THE CORE" : "REACH + IGNITE THE CORE";
+  if (phase === "escape") return "CORE LIT // ESCAPE THE COLLAPSE";
+  if (phase === "won") return "NODE SEVERED // LANE GOES FERAL";
+  return checkpointReached ? "PUSH DEEPER // IGNITE THE CORE" : "CLIMB THE NEST // IGNITE THE CORE";
 }
 
 export function progressForPhase(heroX: number, levelWidth: number, phase: CoreLoopPhase): number {

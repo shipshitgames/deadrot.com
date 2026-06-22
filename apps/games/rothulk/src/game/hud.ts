@@ -44,7 +44,7 @@ export class Hud {
   showBigToast(mode: GameMode) {
     if (mode === "won") {
       this.toast.innerHTML =
-        '<span class="big win">HULK SEVERED</span><span class="small">CORE IGNITED // LOCAL NODE BLIND &mdash; PRESS R TO RUN IT AGAIN</span>';
+        '<span class="big win">HULK SEVERED</span><span class="small">CORE IGNITED // NODE CUT FROM THE CHOIR &mdash; ONE NEST GOES FERAL AND BLIND. PRESS R TO RUN IT AGAIN</span>';
     } else if (mode === "gameover") {
       this.toast.innerHTML =
         '<span class="big dead">CONSUMED</span><span class="small">THE SCOURGE TAKES YOU &mdash; PRESS R TO RETRY</span>';
