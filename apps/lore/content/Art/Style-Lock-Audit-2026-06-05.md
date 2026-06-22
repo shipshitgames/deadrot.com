@@ -9,8 +9,8 @@ date: 2026-06-05
 ## Answer
 
 Yes, we have the prompt. The exact prompt that produced the locked reference
-family is preserved in `Art/style-bakeoff/run-d2.sh`. The specific image
-`d2-ripper-medium.png` maps to `PROMPT[ripper-medium]`:
+family is preserved in `Art/style-bakeoff/run-d2.sh`. The specific package image
+`packages/assets/sources/generated/lore-art-style-bakeoff/2026-06-04/d2-ripper-medium.png` maps to `PROMPT[ripper-medium]`:
 
 ```text
 STYLE: HIGH-DETAIL PIXEL ART game sprite tuned for GAMEPLAY readability. TRUE
@@ -47,8 +47,8 @@ Mechanically present after this audit pass:
 - `packages/assets/assets-catalog.json` has no pending entity renders for the
   games it declares in each entity row.
 - Scourge Survivors consumes `@shipshitgames/assets/scourge-survivors`.
-- Per-game style-reference files now exist in `Art/style-refs/`.
-- The DOOM palette file now exists at `Art/grade/doom.gpl`.
+- Per-game style-reference files now exist in `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/`.
+- The DOOM palette file now exists at `packages/assets/tokens/palettes/doom.gpl`.
 - Shared catalog assets now resolve under `packages/assets/shared/`.
 
 Still drifting / incomplete:
@@ -85,14 +85,13 @@ Superseded asset families:
 
 ## Pinned Files
 
-- `Art/style-refs/scourge-survivors.webp`
-- `Art/style-refs/shared.webp`
-- `Art/style-bakeoff/d2-ripper-medium.png`
-- `packages/assets/sources/lore-art/style-refs/scourge-survivors.webp`
-- `packages/assets/sources/lore-art/style-refs/shared.webp`
+- `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/scourge-survivors.webp`
+- `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/scourge-survivors.webp`
+- `packages/assets/sources/generated/lore-art-style-bakeoff/2026-06-04/d2-ripper-medium.png`
 
-The generated-output history remains preserved under
-`packages/assets/sources/lore-art/style-bakeoff/`.
+After the 2026-06-11 asset cleanup, generated-output history no longer lives
+inside runtime paths. Review-only source material belongs in
+`packages/assets/_archive/` or outside git.
 
 ## First-Pass Assets Added
 
@@ -102,5 +101,4 @@ The generated-output history remains preserved under
 - 5 shared UI SVGs under `packages/assets/shared/ui/`.
 - 2 self-hosted WOFF2 font files under `packages/assets/shared/fonts/`.
 - 3 shared synthetic OGG audio cues under `packages/assets/shared/audio/`.
-- The post-grade palette file at `Art/grade/doom.gpl`, mirrored under
-  `packages/assets/sources/lore-art/grade/doom.gpl`.
+- The post-grade palette file at `packages/assets/tokens/palettes/doom.gpl`.

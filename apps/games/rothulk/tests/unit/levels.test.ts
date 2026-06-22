@@ -82,7 +82,7 @@ describe("Rothulk level list", () => {
     });
   }
 
-  test("level 1 keeps the original Rothulk layout (gameplay-identical)", () => {
+  test("level 1 keeps the Rothulk layout shape with a polished opener", () => {
     const level = buildLevelAt(0);
     expect(level.name).toBe("The Rothulk");
     expect(level.width).toBe(130);
@@ -94,7 +94,7 @@ describe("Rothulk level list", () => {
     expect(level.movers.length).toBe(2);
     expect(level.hazards.length).toBe(4);
     expect(level.scourge.length).toBe(6);
-    expect(level.embers.length).toBe(11);
+    expect(level.embers.length).toBe(13);
     // The original level has no second-roster enemies.
     expect(level.spitters).toEqual([]);
     expect(level.chargers).toEqual([]);

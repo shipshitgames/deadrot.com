@@ -1,10 +1,12 @@
 "use client";
 
+import { Show, UserButton } from "@clerk/nextjs";
+import { ArrowUpRight, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowUpRight, Menu, X } from "lucide-react";
 
 import { DeadrotBrand } from "@/components/site/deadrot-brand";
+import { authEnabled } from "@/lib/access";
 import { cn } from "@/lib/utils";
 
 const WATCH = "https://youtube.com/@shipshitshow";
@@ -26,6 +28,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { label: "Games", href: "/#games" },
   { label: "Docs", href: "/docs" },
+  { label: "Codex", href: "/codex" },
   { label: "Universe", href: "/universe" },
   { label: "Factions", href: "/universe#factions" },
   { label: "Bestiary", href: "/universe#bestiary" },
@@ -34,7 +37,37 @@ const NAV: NavItem[] = [
   // is a rewrite to the SPA (apps/games/warline), not a Next route.
   { label: "Warline", href: "/warline/", accent: "toxic", plainAnchor: true },
   { label: "Watch", href: WATCH, external: true, accent: "hellfire" },
+  // Early-access paywall (epic #330): one purchase unlocks every game.
+  { label: "Unlock", href: "/unlock/", accent: "hellfire" },
 ];
+
+// Keyless builds (CI, dev without secrets) have no working purchase funnel —
+// don't advertise a dead-end Unlock page. authEnabled is build-time inlined,
+// so server and client agree and hydration stays clean.
+const VISIBLE_NAV = authEnabled ? NAV : NAV.filter((item) => item.href !== "/unlock/");
+
+// Sign-in / account controls. Clerk components only render when the publishable
+// key is configured — without it there is no ClerkProvider and they would throw.
+function AuthControls({ mobile, onNavigate }: { mobile?: boolean; onNavigate?: () => void }) {
+  if (!authEnabled) return null;
+  const signInClassName = cn(
+    mobile && "py-2",
+    "font-display text-sm font-bold uppercase tracking-widest",
+    (mobile ? MOBILE_COLOR : DESKTOP_COLOR).default,
+  );
+  return (
+    <>
+      <Show when="signed-out">
+        <Link href="/sign-in" onClick={onNavigate} className={signInClassName}>
+          Sign in
+        </Link>
+      </Show>
+      <Show when="signed-in">
+        <UserButton />
+      </Show>
+    </>
+  );
+}
 
 // Exact color/hover class suffixes from the original hand-written anchors.
 const DESKTOP_COLOR: Record<NonNullable<NavItem["accent"]> | "default", string> = {
@@ -85,12 +118,11 @@ function NavLink({ item, mobile, onNavigate }: { item: NavItem; mobile?: boolean
 }
 
 export function SiteHeader() {
-  const [scrolled, setScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(() => (typeof window === "undefined" ? false : window.scrollY > 24));
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -109,15 +141,18 @@ export function SiteHeader() {
           <DeadrotBrand variant="target" imageClassName="h-9 w-9 sm:h-10 sm:w-10" />
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
-          {NAV.map((i) => (
+        {/* xl breakpoint, not md: nine items plus auth controls measure ~1136px
+            and overflow every narrower tier (measured at 1024). */}
+        <nav className="hidden items-center gap-5 xl:flex">
+          {VISIBLE_NAV.map((i) => (
             <NavLink key={i.href} item={i} />
           ))}
+          <AuthControls />
         </nav>
 
         <button
           onClick={() => setOpen((o) => !o)}
-          className="text-bone md:hidden"
+          className="text-bone xl:hidden"
           aria-label="Toggle menu"
           type="button"
         >
@@ -126,10 +161,11 @@ export function SiteHeader() {
       </div>
 
       {open ? (
-        <nav className="flex flex-col gap-1 border-t border-gunmetal/60 bg-void/95 px-6 py-4 backdrop-blur-md md:hidden">
-          {NAV.map((i) => (
+        <nav className="flex flex-col gap-1 border-t border-gunmetal/60 bg-void/95 px-6 py-4 backdrop-blur-md xl:hidden">
+          {VISIBLE_NAV.map((i) => (
             <NavLink key={i.href} item={i} mobile onNavigate={() => setOpen(false)} />
           ))}
+          <AuthControls mobile onNavigate={() => setOpen(false)} />
         </nav>
       ) : null}
     </header>

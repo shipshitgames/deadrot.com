@@ -1,14 +1,54 @@
-import { anchorsOfKind, flattenObstacles } from "@deadrot/game-kit/maps";
+import {
+  type ArenaLayout,
+  anchorsOfKind,
+  type BiomeId,
+  firstAnchor,
+  flattenObstacles,
+  normalizeArenaLayout,
+} from "@deadrot/game-kit/maps";
 import { makeBounds } from "@shipshitgames/engine";
 import * as THREE from "three";
-import { PLAYER_HEIGHT, WALL_HEIGHT, WALL_THICKNESS } from "../constants";
+import { PLAYER_HEIGHT, PLAYER_STEP_HEIGHT, WALL_HEIGHT, WALL_THICKNESS } from "../constants";
 import type { GameContext } from "../context";
-import { type ArenaMap, DEFAULT_ARENA_BOUNDS, DEFAULT_ARENA_MATERIALS, type ObstacleMat } from "../data/maps";
+import {
+  type ArenaMap,
+  DEFAULT_ARENA_BOUNDS,
+  DEFAULT_ARENA_MATERIALS,
+  type MapObstacle,
+  type NormalizedArenaMap,
+  type ObstacleMat,
+} from "../data/maps";
 import { arenaTexture, arenaTextureRepeat } from "../spriteAssets";
 import type { GameSystems } from "../systems";
+import { levelYById, platformBox, rampStepBoxes, roomFloorSlab, roomLevelY, type SolidBox } from "./arenaGeometry";
+import {
+  isInCorePlayArea,
+  type LiveReadabilityReport,
+  luminance,
+  playAreaDiagonal,
+  playAreaExtents,
+  READABILITY_BUDGET,
+  scoreLiveReadability,
+} from "./readability";
+
+/** Live-scene theme readback (#80): every field is read back from the scene,
+ *  fog, material, and light objects — never echoed from map data — so e2e can
+ *  prove the biome actually landed on the renderer. */
+export interface ArenaThemeSnapshot {
+  bg: number;
+  fogNear: number;
+  fogFar: number;
+  floorTint: number;
+  wallTint: number;
+  trim: number;
+  accentA: { color: number; x: number; y: number; z: number };
+  accentB: { color: number; x: number; y: number; z: number };
+}
 
 export interface ArenaDebugSnapshot {
   mapId: string;
+  /** Biome preset id of the current map (#80) — presentation-only identity. */
+  biomeId: BiomeId;
   bounds: {
     minX: number;
     maxX: number;
@@ -23,6 +63,17 @@ export interface ArenaDebugSnapshot {
   solidMeshes: number;
   raycastTargets: number;
   obstacleBoxes: number;
+  /** Raised walkable AABBs (v2 room floors + platforms + ramp steps); 0 for flat maps. */
+  surfaceBoxes: number;
+  /** Live theme readback — null until buildArena has dressed a scene (and after
+   *  clearArena tears one down without a rebuild). */
+  theme: ArenaThemeSnapshot | null;
+  /** Live combat-readability readback (#35): opacity maxima measured off the
+   *  built decal/prop/haze materials, plus the scene's fog + background, scored
+   *  against READABILITY_BUDGET. Proves the RENDERED arena (not just the
+   *  authored data the unit audit checks) keeps targets legible. Null until
+   *  buildArena has dressed a scene. */
+  readability: LiveReadabilityReport | null;
   /** v2 adapter observability — null when the current map has no normalized layout.
    *  Field names are the contract #82's e2e extends. */
   layout: {
@@ -43,6 +94,17 @@ export class ArenaSystem {
   private silhouetteCount = 0;
   private decalCount = 0;
   private propCount = 0;
+  // Live refs to the three themed materials so debugSnapshot reads colours off
+  // the actual scene (#80), not the map data. Null between builds.
+  private floorMat: THREE.MeshStandardMaterial | null = null;
+  private wallMat: THREE.MeshStandardMaterial | null = null;
+  private trimMat: THREE.MeshStandardMaterial | null = null;
+  // Live refs to the dressing materials so the readability readback (#35) reads
+  // opacities off the actual scene, mirroring the #80 theme readback. The prop
+  // refs carry whether the sprite sits in the core play area (stricter ceiling).
+  private decalMats: THREE.MeshBasicMaterial[] = [];
+  private propMats: Array<{ mat: THREE.SpriteMaterial; inCore: boolean }> = [];
+  private hazeMat: THREE.MeshBasicMaterial | null = null;
 
   constructor(
     private ctx: GameContext,
@@ -71,14 +133,22 @@ export class ArenaSystem {
     this.silhouetteCount = 0;
     this.decalCount = 0;
     this.propCount = 0;
+    this.floorMat = null;
+    this.wallMat = null;
+    this.trimMat = null;
+    this.decalMats = [];
+    this.propMats = [];
+    this.hazeMat = null;
     this.ctx.solidMeshes = [];
     this.ctx.obstacleBoxes = [];
+    this.ctx.surfaceBoxes = [];
     this.ctx.rig.setColliders([]);
   }
 
-  /** Build (or rebuild) the arena from a map definition: theme + boundary walls
-   *  + interior obstacles. Maps default to the 80x80 FPS footprint and may opt into custom bounds. */
-  buildArena(map: ArenaMap) {
+  /** Build (or rebuild) the arena from a registry-normalized map: resolved
+   *  biome theme + boundary walls + interior obstacles. Maps default to the
+   *  80x80 FPS footprint and may opt into custom bounds. */
+  buildArena(map: NormalizedArenaMap) {
     this.clearArena();
     this.ctx.currentMap = map;
     this.ctx.bounds = makeBounds(map.bounds ?? DEFAULT_ARENA_BOUNDS);
@@ -133,6 +203,10 @@ export class ArenaSystem {
       metalness: 0.32,
     });
     this.arenaMaterials.push(floorMat, wallMat, trimMat, crateMat, pillarMat);
+    // Keep live refs so debugSnapshot reads tints off the scene materials (#80).
+    this.floorMat = floorMat;
+    this.wallMat = wallMat;
+    this.trimMat = trimMat;
 
     // --- floor ---
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(width, depth), floorMat);
@@ -142,7 +216,7 @@ export class ArenaSystem {
     this.ctx.scene.add(floor);
     this.arenaObjects.push(floor);
 
-    // --- boundary walls (+ neon trim) ---
+    // --- boundary walls (+ emissive ember trim) ---
     const spanX = width + WALL_THICKNESS;
     const spanZ = depth + WALL_THICKNESS;
     const wallDefs: Array<{
@@ -180,28 +254,61 @@ export class ArenaSystem {
       this.arenaObjects.push(trim);
     }
 
-    // --- interior obstacles ---
+    // --- structural layout: rooms (+ raised floors), platforms, ramps ---
+    // Read the normalized v2 view. For a v1 map this is one whole-bounds root
+    // room at ground level with platforms/ramps empty, so the loop below builds
+    // exactly the same floor + obstacle meshes (same order) as before #82 — the
+    // byte-identity invariant the arena-v2 e2e locks in.
+    const layout: ArenaLayout<MapObstacle> =
+      map.layout ?? normalizeArenaLayout<MapObstacle>(map, { defaultBounds: DEFAULT_ARENA_BOUNDS });
+    const levelY = levelYById(layout.levels);
+
     const matFor = (m: ObstacleMat) => (m === "pillar" ? pillarMat : m === "wall" ? wallMat : crateMat);
-    const groundTop = new Map<string, number>(); // tracks box-top heights so stacks sit on top
-    for (const o of map.obstacles) {
-      const mesh = new THREE.Mesh(new THREE.BoxGeometry(o.w, o.h, o.d), matFor(o.mat));
-      const key = `${o.x}:${o.z}`;
-      let y = o.h / 2;
-      if (o.elevated) {
-        y = (groundTop.get(key) ?? 0) + o.h / 2; // rest on the box below it
-      } else {
-        groundTop.set(key, o.h);
+    for (const room of layout.rooms) {
+      const roomY = roomLevelY(room, levelY);
+      // A raised room gets a walkable floor slab from the ground up to its level
+      // surface. Ground rooms (the v1 case) get null → no extra geometry.
+      const slab = roomFloorSlab(room, roomY);
+      if (slab) this.addStructuralBox(slab, floorMat);
+
+      const groundTop = new Map<string, number>(); // box-top heights so stacks sit on top (per room)
+      for (const o of room.obstacles) {
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(o.w, o.h, o.d), matFor(o.mat));
+        const key = `${o.x}:${o.z}`;
+        let localTop = 0;
+        if (o.elevated) {
+          localTop = groundTop.get(key) ?? 0; // rest on the box below it
+        } else {
+          groundTop.set(key, o.h);
+        }
+        mesh.position.set(o.x, roomY + localTop + o.h / 2, o.z);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.userData = { solid: true };
+        this.ctx.scene.add(mesh);
+        this.ctx.solidMeshes.push(mesh);
+        this.arenaObjects.push(mesh);
+        // Elevated boxes are decorative silhouette — drawn + shootable, not colliders.
+        if (!o.elevated) this.ctx.obstacleBoxes.push(new THREE.Box3().setFromObject(mesh));
       }
-      mesh.position.set(o.x, y, o.z);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      mesh.userData = { solid: true };
-      this.ctx.scene.add(mesh);
-      this.ctx.solidMeshes.push(mesh);
-      this.arenaObjects.push(mesh);
-      // Elevated boxes are decorative silhouette — drawn + shootable, not colliders.
-      if (!o.elevated) this.ctx.obstacleBoxes.push(new THREE.Box3().setFromObject(mesh));
     }
+
+    // Raised slabs you stand on / jump onto (walkable tops, not push-out walls).
+    for (const platform of layout.platforms) {
+      const box = platformBox(platform);
+      if (box) this.addStructuralBox(box, crateMat);
+    }
+
+    // Ramps/stairs as a climbable staircase of solid boxes (each rise ≤ the step
+    // height so groundUnder snaps the player up them).
+    for (const ramp of layout.ramps) {
+      const fromY = levelY.get(ramp.fromLevelId) ?? 0;
+      const toY = levelY.get(ramp.toLevelId) ?? 0;
+      for (const step of rampStepBoxes(ramp, fromY, toY, PLAYER_STEP_HEIGHT)) {
+        this.addStructuralBox(step, wallMat);
+      }
+    }
+
     this.buildFloorDecals(map);
     this.buildArenaProps(map);
 
@@ -209,14 +316,43 @@ export class ArenaSystem {
     this.ctx.rig.setColliders(this.ctx.solidMeshes);
   }
 
-  /** Position the player at the current map's spawn, facing the arena centre. */
+  /** Render a structural SolidBox (raised room floor, platform, or ramp step):
+   *  a shadowed, shootable mesh whose top is a WALKABLE surface (groundUnder
+   *  scans ctx.surfaceBoxes). Deliberately not added to obstacleBoxes — push-out
+   *  would shove the player off a ramp mid-climb. */
+  private addStructuralBox(box: SolidBox, material: THREE.Material) {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(box.w, box.h, box.d), material);
+    mesh.position.set(box.x, box.y, box.z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.userData = { solid: true };
+    this.ctx.scene.add(mesh);
+    this.ctx.solidMeshes.push(mesh);
+    this.arenaObjects.push(mesh);
+    this.ctx.surfaceBoxes.push(new THREE.Box3().setFromObject(mesh));
+  }
+
+  /** Position the player at the current map's playerSpawn anchor (the v2 source
+   *  of truth — synthesized from the v1 `spawn` for flat maps), honoring its
+   *  floor level and optional facing. Falls back to the raw `spawn` if a map has
+   *  no layout. */
   placeAtSpawn() {
-    const s = this.ctx.currentMap.spawn;
+    const layout = this.ctx.currentMap.layout;
+    const anchor = layout ? firstAnchor(layout, "playerSpawn") : undefined;
+    const s = anchor ?? this.ctx.currentMap.spawn;
+    const levelY = anchor?.levelId && layout ? (levelYById(layout.levels).get(anchor.levelId) ?? 0) : 0;
     this.ctx.velocity.set(0, 0, 0);
+    this.ctx.wasSprinting = false;
+    this.ctx.sprintStartBoostTimer = 0;
     this.ctx.canJump = false;
-    // Centre spawns face into the arena (-Z); off-centre spawns face the origin.
+    if (anchor?.facing !== undefined) {
+      // Honor an authored yaw (0 faces −Z; positive rotates toward −X).
+      this.ctx.rig.placeAt(s.x, PLAYER_HEIGHT + levelY, s.z, -Math.sin(anchor.facing), -Math.cos(anchor.facing));
+      return;
+    }
+    // Centre spawns face into the arena (−Z); off-centre spawns face the origin.
     const centre = Math.abs(s.x) < 0.001 && Math.abs(s.z) < 0.001;
-    this.ctx.rig.placeAt(s.x, PLAYER_HEIGHT, s.z, centre ? 0 : -s.x, centre ? -10 : -s.z);
+    this.ctx.rig.placeAt(s.x, PLAYER_HEIGHT + levelY, s.z, centre ? 0 : -s.x, centre ? -10 : -s.z);
   }
 
   debugSnapshot(): ArenaDebugSnapshot {
@@ -225,6 +361,7 @@ export class ArenaSystem {
     const layout = this.ctx.currentMap.layout;
     return {
       mapId: this.ctx.currentMap.id,
+      biomeId: this.ctx.currentMap.biomeId,
       bounds: {
         minX: bounds.minX,
         maxX: bounds.maxX,
@@ -239,6 +376,9 @@ export class ArenaSystem {
       solidMeshes: this.ctx.solidMeshes.length,
       raycastTargets: this.ctx.raycastTargets.length,
       obstacleBoxes: this.ctx.obstacleBoxes.length,
+      surfaceBoxes: this.ctx.surfaceBoxes.length,
+      theme: this.liveThemeSnapshot(),
+      readability: this.liveReadabilitySnapshot(),
       layout: layout
         ? {
             rooms: layout.rooms.length,
@@ -255,6 +395,71 @@ export class ArenaSystem {
           }
         : null,
     };
+  }
+
+  /** Read the theme back off the LIVE scene objects (#80): scene background,
+   *  scene fog, the floor/wall/trim material colours, and the two accent
+   *  lights — deliberately NOT echoed from map data, so a snapshot proves what
+   *  the renderer is actually showing. Null until buildArena has run. */
+  private liveThemeSnapshot(): ArenaThemeSnapshot | null {
+    const { scene, accentA, accentB } = this.ctx;
+    const fog = scene.fog instanceof THREE.Fog ? scene.fog : null;
+    const bg = scene.background instanceof THREE.Color ? scene.background : null;
+    if (!fog || !bg || !this.floorMat || !this.wallMat || !this.trimMat) return null;
+    return {
+      bg: bg.getHex(),
+      fogNear: fog.near,
+      fogFar: fog.far,
+      floorTint: this.floorMat.color.getHex(),
+      wallTint: this.wallMat.color.getHex(),
+      trim: this.trimMat.color.getHex(),
+      accentA: {
+        color: accentA.color.getHex(),
+        x: accentA.position.x,
+        y: accentA.position.y,
+        z: accentA.position.z,
+      },
+      accentB: {
+        color: accentB.color.getHex(),
+        x: accentB.position.x,
+        y: accentB.position.y,
+        z: accentB.position.z,
+      },
+    };
+  }
+
+  /** Measure combat readability off the LIVE scene (#35): opacity maxima read
+   *  back from the built decal/prop/haze materials, the scene fog range, and the
+   *  scene background luminance — then score them against READABILITY_BUDGET.
+   *  Deliberately NOT echoed from map data so a snapshot proves the renderer is
+   *  actually showing a legible arena. Null until buildArena has dressed one. */
+  private liveReadabilitySnapshot(): LiveReadabilityReport | null {
+    const { scene } = this.ctx;
+    const fog = scene.fog instanceof THREE.Fog ? scene.fog : null;
+    const bg = scene.background instanceof THREE.Color ? scene.background : null;
+    if (!fog || !bg) return null;
+    let maxDecalOpacity = 0;
+    for (const m of this.decalMats) maxDecalOpacity = Math.max(maxDecalOpacity, m.opacity);
+    let maxPropOpacity = 0;
+    let maxInPlayPropOpacity = 0;
+    for (const { mat, inCore } of this.propMats) {
+      maxPropOpacity = Math.max(maxPropOpacity, mat.opacity);
+      if (inCore) maxInPlayPropOpacity = Math.max(maxInPlayPropOpacity, mat.opacity);
+    }
+    // fogFarRequired is read off ctx.bounds — the live WorldBounds buildArena
+    // actually built the floor + walls on — not the authored map.bounds, so the
+    // whole readback is measured against the rendered arena (#80), not data.
+    const b = this.ctx.bounds;
+    return scoreLiveReadability({
+      maxDecalOpacity,
+      maxPropOpacity,
+      maxInPlayPropOpacity,
+      horizonOpacity: this.hazeMat?.opacity ?? 0,
+      fogNear: fog.near,
+      fogFar: fog.far,
+      fogFarRequired: playAreaDiagonal({ minX: b.minX, maxX: b.maxX, minZ: b.minZ, maxZ: b.maxZ }),
+      backgroundLuminance: luminance(bg.getHex()),
+    });
   }
 
   private buildDistantEnvironment(map: ArenaMap) {
@@ -289,6 +494,9 @@ export class ArenaSystem {
     haze.position.set(centerX, 12, centerZ);
     haze.renderOrder = -18;
     this.addEnvironmentMesh(haze, hazeMat);
+    // Live ref for the readability readback (#35) — the haze opacity is the
+    // horizon-wash measure that must stay a faint band behind the fight.
+    this.hazeMat = hazeMat;
 
     const horizonMat = new THREE.MeshBasicMaterial({
       color: env.skyHorizon,
@@ -340,12 +548,14 @@ export class ArenaSystem {
       this.ctx.scene.add(mesh);
       this.arenaObjects.push(mesh);
       this.arenaMaterials.push(mat);
+      this.decalMats.push(mat);
       this.decalCount += 1;
       this.environmentObjectCount += 1;
     }
   }
 
   private buildArenaProps(map: ArenaMap) {
+    const ext = playAreaExtents(map.bounds);
     for (const prop of map.environment.props) {
       const mat = new THREE.SpriteMaterial({
         map: this.makeTexture(prop.texture),
@@ -364,6 +574,9 @@ export class ArenaSystem {
       this.ctx.scene.add(sprite);
       this.arenaObjects.push(sprite);
       this.arenaMaterials.push(mat);
+      // Live ref + core-play-area flag for the readability readback (#35): props
+      // inside the core (where they can occlude a target) carry a stricter cap.
+      this.propMats.push({ mat, inCore: isInCorePlayArea(prop.x, prop.z, ext, READABILITY_BUDGET.corePlayAreaMargin) });
       this.propCount += 1;
       this.environmentObjectCount += 1;
     }

@@ -21,10 +21,14 @@ import {
 } from "../constants";
 import type { GameContext } from "../context";
 import { WEAPON_VIEW_X, WEAPON_VIEW_Y, WEAPON_VIEW_Z } from "../data/internalTypes";
-import type { MainWeaponVisualTier } from "../data/survivors";
+import { type MainWeaponVisualTier, mainWeaponTierDamageMul } from "../data/survivors";
+import { mainWeaponTierViewScale, weaponTierCellUv, weaponTierCellUvMirrored } from "../data/weaponView";
 import {
   MUZZLE_FLASH_TEXTURE,
   WEAPON_SPRITE_TEXTURES,
+  weaponAdsSpriteConfig,
+  weaponAdsSpriteTexture,
+  weaponHasAdsSprite,
   weaponSheetColumns,
   weaponSpriteConfig,
   weaponSpriteTexture,
@@ -44,21 +48,14 @@ const SHOOT_SFX: Record<WeaponId, "shoot" | "shootSmg" | "shootSniper" | "shootS
 
 /** Every weapon ships ONE view-model image and visibly "powers up" as the run's damage
  *  build climbs, via FX rather than per-tier art: a hellfire tint ramp (TIER_GLOW) plus
- *  a slight size growth (TIER_SCALE) so each tier reads as a bigger, hotter gun. */
+ *  a slight size growth (MAIN_WEAPON_TIER_VIEW_SCALE, in ../data/weaponView) so each tier
+ *  reads as a bigger, hotter gun. */
 const TIER_GLOW: Record<MainWeaponVisualTier, number> = {
   base: 0xffffff,
   "tier-2": 0xffe0b0,
   "tier-3": 0xffbb6e,
   "tier-4": 0xff8f3a,
   evolved: 0xffd24d,
-};
-/** View-model size multiplier per tier — the gun grows as it ascends. */
-const TIER_SCALE: Record<MainWeaponVisualTier, number> = {
-  base: 1,
-  "tier-2": 1.05,
-  "tier-3": 1.1,
-  "tier-4": 1.16,
-  evolved: 1.24,
 };
 
 export class WeaponSystem {
@@ -81,6 +78,7 @@ export class WeaponSystem {
   meleeAnim = 0;
   private muzzleFlashBaseRotation = 0;
   private currentFov = CAMERA_BASE_FOV;
+  private weaponAdsSpriteActive = false;
 
   constructor(
     private ctx: GameContext,
@@ -169,7 +167,7 @@ export class WeaponSystem {
     this.applyWeaponModel(this.ctx.activeWeapon);
   }
 
-  applyWeaponModel(id: WeaponId) {
+  applyWeaponModel(id: WeaponId, adsSprite = this.weaponAdsSpriteActive) {
     const spec = WEAPONS[id];
     this.weaponAccentMat.color.setHex(spec.accent);
     this.weaponAccentMat.emissive.setHex(spec.accent);
@@ -178,16 +176,19 @@ export class WeaponSystem {
     this.weaponBarrel.position.set(0, 0.02, -0.2 - spec.barrelLen / 2);
 
     const tier = this.activeWeaponVisualTier(id);
-    const sprite = weaponSpriteConfig(id);
-    const tierScale = TIER_SCALE[tier];
+    const useAdsSprite = adsSprite && weaponHasAdsSprite(id);
+    this.weaponAdsSpriteActive = useAdsSprite;
+    const sprite = useAdsSprite ? weaponAdsSpriteConfig(id) : weaponSpriteConfig(id);
+    const tierScale = mainWeaponTierViewScale(tier);
     // The view-model texture is a horizontal tier SHEET; select this tier's cell by UV
     // offset (columns=1 for a single-image weapon, so this is a no-op there).
     const cols = weaponSheetColumns(id);
     const cell = weaponTierCellIndex(id, tier);
-    const tex = weaponSpriteTexture(id);
+    const cellUv = weaponTierCellUv(cell, cols);
+    const tex = useAdsSprite ? weaponAdsSpriteTexture(id) : weaponSpriteTexture(id);
     tex.wrapS = THREE.RepeatWrapping;
-    tex.repeat.x = 1 / cols;
-    tex.offset.x = cell / cols;
+    tex.repeat.x = cellUv.repeat;
+    tex.offset.x = cellUv.offset;
     this.weaponSpriteMat.map = tex;
     this.weaponSpriteMat.needsUpdate = true;
     this.weaponSprite.scale.set(sprite.scale[0] * tierScale, sprite.scale[1] * tierScale, 1);
@@ -195,10 +196,11 @@ export class WeaponSystem {
     // Mirror the same cell to the opposite side for the dual-weapon bonus (akimbo read).
     // Sprite scale can't flip UVs, so use a horizontally-flipped clone of the same cell.
     this.dualMapClone?.dispose();
+    const mirrorUv = weaponTierCellUvMirrored(cell, cols);
     const flipped = tex.clone();
     flipped.wrapS = THREE.RepeatWrapping;
-    flipped.repeat.x = -1 / cols;
-    flipped.offset.x = (cell + 1) / cols;
+    flipped.repeat.x = mirrorUv.repeat;
+    flipped.offset.x = mirrorUv.offset;
     flipped.needsUpdate = true;
     this.dualMapClone = flipped;
     this.weaponSpriteDualMat.map = flipped;
@@ -268,7 +270,7 @@ export class WeaponSystem {
     this.doMelee();
   }
 
-  /** Knife swing: always available (no ammo). Hits a frontal cluster of enemies. */
+  /** Cautery Cleaver swing: always available (no ammo). Hits a frontal cluster. */
   doMelee() {
     const berserkMul = this.ctx.damageBoostTimer > 0 ? BERSERK_FIRE_RATE_MULT : 1;
     this.meleeCd = MELEE_COOLDOWN / berserkMul;
@@ -281,7 +283,11 @@ export class WeaponSystem {
     const dirZ = this.ctx._fwd.z / flen;
     const px = this.ctx.body.position.x;
     const pz = this.ctx.body.position.z;
-    const dmgMul = (this.ctx.damageBoostTimer > 0 ? DAMAGE_BOOST_MULT : 1) * this.ctx.statDamageMul;
+    const dmgMul =
+      (this.ctx.damageBoostTimer > 0 ? DAMAGE_BOOST_MULT : 1) *
+      this.ctx.statDamageMul *
+      this.ctx.warEffortDamageMul *
+      mainWeaponTierDamageMul(this.activeWeaponVisualTier());
     const knockbackMul = this.ctx.damageBoostTimer > 0 ? BERSERK_KNOCKBACK_MULT : 1;
     let hitAny = false;
 
@@ -305,20 +311,20 @@ export class WeaponSystem {
       if (res.died) this.sys.pve.onEnemyDeath(enemy, false);
     }
 
-    if (this.ctx.multiplayer && this.sys.multiplayer.net) {
-      for (const r of this.sys.multiplayer.remotePlayers.values()) {
+    if (this.ctx.multiplayer && this.sys.multiplayer.active) {
+      for (const r of this.sys.multiplayer.peers()) {
         const rx = r.group.position.x - px;
         const rz = r.group.position.z - pz;
         const d = Math.hypot(rx, rz);
         if (d > MELEE_RANGE + 0.6) continue;
         if (d > 0.0001 && (rx * dirX + rz * dirZ) / d < MELEE_ARC_DOT) continue;
-        this.sys.multiplayer.net.sendHit(r.id, MELEE_DAMAGE * dmgMul);
+        this.sys.multiplayer.sendHit(r.id, MELEE_DAMAGE * dmgMul);
         hitAny = true;
       }
     }
 
     if (hitAny) {
-      this.sys.hud.hitMarkerSeq++;
+      this.sys.hud.hitSeq++;
       this.sys.fx.addShake(0.14);
     }
     this.sys.hud.emit();
@@ -355,7 +361,14 @@ export class WeaponSystem {
     this.ctx._right.crossVectors(this.ctx._fwd, this.ctx._worldUp).normalize();
     this.ctx._up.crossVectors(this.ctx._right, this.ctx._fwd).normalize();
 
-    const dmgMult = (berserkActive ? DAMAGE_BOOST_MULT : 1) * this.ctx.statDamageMul;
+    // Weapon-tier power spike (#279): the same visual tier that drives the gun's
+    // glow/scale also multiplies its hit damage, so climbing a tier is a real reward.
+    // War-effort buff (#280) stacks multiplicatively on top.
+    const dmgMult =
+      (berserkActive ? DAMAGE_BOOST_MULT : 1) *
+      this.ctx.statDamageMul *
+      this.ctx.warEffortDamageMul *
+      mainWeaponTierDamageMul(this.activeWeaponVisualTier());
     const knockbackMul = berserkActive ? BERSERK_KNOCKBACK_MULT : 1;
     const headshotMultiplier = spec.headshotMultiplier ?? HEADSHOT_MULTIPLIER;
     const muzzleWorld = this.ctx.muzzleFlash.getWorldPosition(new THREE.Vector3());
@@ -399,15 +412,15 @@ export class WeaponSystem {
             // Co-op room hit sync: the server owns remote health/kills.
             const headshot = ud.part === "head";
             const dmg = spec.damage * dmgMult * (headshot ? headshotMultiplier : 1);
-            this.sys.multiplayer.net?.sendHit(ud.remoteId, dmg);
+            this.sys.multiplayer.sendHit(ud.remoteId, dmg);
             endPoint = h.point.clone();
             this.sys.hud.addDamageNumber(h.point, dmg, headshot ? "head" : "normal");
             if (headshot) {
               this.ctx.headshots++;
-              this.sys.hud.headshotSeq++;
+              this.sys.hud.emphasisSeq++;
               audio.sfx("headshot");
             } else {
-              this.sys.hud.hitMarkerSeq++;
+              this.sys.hud.hitSeq++;
               audio.sfx("hit");
             }
             break;
@@ -424,12 +437,12 @@ export class WeaponSystem {
               this.sys.fx.spawnBloodHit(h.point, headshot);
             }
             if (res.blocked) {
-              this.sys.hud.hitMarkerSeq++; // shield ping (no damage)
+              this.sys.hud.hitSeq++; // shield ping (no damage)
               audio.sfx("shieldhit");
             } else if (res.died) {
               if (headshot) {
                 this.ctx.headshots++;
-                this.sys.hud.headshotSeq++;
+                this.sys.hud.emphasisSeq++;
                 this.sys.hud.showToast("HEADSHOT!");
                 this.sys.fx.addShake(0.2);
                 audio.sfx("headshot");
@@ -437,11 +450,11 @@ export class WeaponSystem {
               this.sys.pve.onEnemyDeath(ud.enemy, headshot);
             } else if (headshot) {
               this.ctx.headshots++;
-              this.sys.hud.headshotSeq++;
+              this.sys.hud.emphasisSeq++;
               this.sys.fx.addShake(0.16);
               audio.sfx("headshot");
             } else {
-              this.sys.hud.hitMarkerSeq++;
+              this.sys.hud.hitSeq++;
               audio.sfx("hit");
             }
             break;
@@ -539,9 +552,16 @@ export class WeaponSystem {
 
   updateWeapon(delta: number) {
     this.updateAds(delta);
+    const shouldUseAdsSprite =
+      this.ctx.status === "playing" &&
+      this.ctx.aimingDownSights &&
+      this.ctx.adsT > 0.45 &&
+      weaponHasAdsSprite(this.ctx.activeWeapon);
+    if (shouldUseAdsSprite !== this.weaponAdsSpriteActive)
+      this.applyWeaponModel(this.ctx.activeWeapon, shouldUseAdsSprite);
 
     if (this.meleeAnim > 0) {
-      // quick knife swipe (takes priority over reload/idle pose)
+      // quick cleaver swipe (takes priority over reload/idle pose)
       const t = 1 - this.meleeAnim / 0.22;
       const slash = Math.sin(Math.min(1, t) * Math.PI);
       this.weapon.position.set(

@@ -213,3 +213,7 @@ export function matrixRows(catalog: AssetCatalog): MatrixRow[] {
 }
 
 export * as scourgeSurvivors from "./scourge-survivors";
+
+// Canonical asset index resolver (deadrot.com#343): local path + CDN URL
+// resolution over the generated `assets.index.json`.
+export * from "./asset-index";

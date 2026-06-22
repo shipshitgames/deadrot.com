@@ -52,8 +52,8 @@ export interface MissionRunState {
   stages: MissionStageState[];
 }
 
-export const ASHGATE_BREACH_MISSION_ID = "ashgate-breach";
-export const ASHGATE_BREACH_MISSION_TITLE = "Ashgate Breach";
+const ASHGATE_BREACH_MISSION_ID = "ashgate-breach";
+const ASHGATE_BREACH_MISSION_TITLE = "Ashgate Breach";
 
 export function createIdleMissionState(): MissionRunState {
   return {

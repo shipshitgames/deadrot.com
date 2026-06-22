@@ -8,8 +8,8 @@ This folder pins the image-reference files named by `DESIGN.md`
 
 ## Primary Visual Pin
 
-`scourge-survivors.webp` is sourced from
-`../style-bakeoff/d2-ripper-medium.png`. This is the locked house look:
+`packages/assets/sources/generated/lore-art-style-refs/2026-06-04/scourge-survivors.webp` is sourced from
+`packages/assets/sources/generated/lore-art-style-bakeoff/2026-06-04/d2-ripper-medium.png`. This is the locked house look:
 
 - high-detail medium-chunky pixel art
 - visible square pixel grid, roughly 110px-tall runtime sprite target
@@ -28,13 +28,13 @@ new asset.
 These are style pins, not final gameplay assets. Replace a game's file only with
 a stronger locked-medium image in that game's camera:
 
-- `scourge-survivors.webp` - exact `d2-ripper-medium` visual lock.
-- `deadlane.webp` - first top-down/lane pre-viz ref.
-- `pactfall.webp` - first isometric arena pre-viz ref.
-- `starblight.webp` - first side/top-down orbital pre-viz ref.
-- `redline.webp` - first runner-camera pre-viz ref.
-- `rothulk.webp` - first platformer-camera pre-viz ref.
-- `shared.webp` - exact `d2-ripper-medium` visual lock for fallback use.
+- `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/scourge-survivors.webp` - exact `d2-ripper-medium` visual lock.
+- `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/deadlane.webp` - first top-down/lane pre-viz ref.
+- `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/pactfall.webp` - first isometric arena pre-viz ref.
+- `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/starblight.webp` - first side/top-down orbital pre-viz ref.
+- `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/redline.webp` - first runner-camera pre-viz ref.
+- `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/rothulk.webp` - first platformer-camera pre-viz ref.
+- `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/scourge-survivors.webp` - exact `d2-ripper-medium` visual lock for fallback use.
 
 ## Drift Rule
 

@@ -1,13 +1,15 @@
-// Redline audio: the shared Deadrot engine with the zero-asset house SFX
-// palette (jump / land / dash / gem / hurt / victory / uiSelect) plus the
-// shared hellfire-pulse music bed. Levels/mute follow the global settings store.
+// Redline audio: the shared Deadrot engine with promoted shared samples plus
+// the house fallback palette for cues that are still procedural. Levels/mute
+// follow the global settings store.
 
 import { bindAudioToGlobalSettings, createDeadrotAudio } from "@deadrot/game-kit/audio";
-import hellfirePulse from "@shipshitgames/assets/shared/audio/hellfire-pulse.ogg?url";
+import hellfirePulse from "@shipshitgames/assets/shared/audio/hellfire-pulse.webm?url";
+import hitImpact from "@shipshitgames/assets/shared/audio/sfx/hit.webm?url";
 
 export const audio = createDeadrotAudio({
   musicTracks: { main: { url: hellfirePulse, volume: 0.18, loop: true } },
   defaultTrack: "main",
+  sfxSamples: { hit: { url: hitImpact, volume: 0.86, loop: false } },
 });
 
 bindAudioToGlobalSettings(audio);

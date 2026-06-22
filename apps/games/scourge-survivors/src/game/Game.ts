@@ -162,14 +162,18 @@ export class Game {
     this.sys.input.requestLock();
   }
 
+  resumeFromPauseWithoutCapture() {
+    this.sys.input.resumeFromPauseWithoutCapture();
+  }
+
   startCampaign(startMapId?: string) {
     this.ctx.sandbox = false;
     this.sys.mission.startCampaign(startMapId);
   }
 
-  startSurvivors(classId?: SurvivorClassId) {
+  startSurvivors(classId?: SurvivorClassId, mapId?: string) {
     this.ctx.sandbox = false;
-    this.sys.survivors.startSurvivors(classId);
+    this.sys.survivors.startSurvivors(classId, mapId);
   }
 
   setSurvivorClass(classId: SurvivorClassId) {
@@ -326,9 +330,9 @@ export class Game {
         this.sys.pve.onEnemyDeath(enemy, headshot);
       } else if (headshot) {
         this.ctx.headshots++;
-        this.sys.hud.headshotSeq++;
+        this.sys.hud.emphasisSeq++;
       } else {
-        this.sys.hud.hitMarkerSeq++;
+        this.sys.hud.hitSeq++;
       }
     }
     this.sys.hud.emit();
@@ -364,8 +368,23 @@ export class Game {
     this.sys.multiplayer.leaveMultiplayer(toMenu);
   }
 
+  /** Live co-op room state — exposed on `window.__fpsGame` for the e2e harness. */
+  multiplayerDebugSnapshot() {
+    return this.sys.multiplayer.debugSnapshot();
+  }
+
   setShopUpgrades(tiers: Record<string, number>) {
     this.sys.survivors.setShopUpgrades(tiers);
+  }
+
+  /**
+   * Apply the shared cross-game War-Effort damage multiplier (#280): the global
+   * buff the pooled Warline resources unlock for every game. Set once at run
+   * start from the front. A non-finite or below-1 value leaves the run unbuffed
+   * (multiplier 1), so an offline player is never penalised.
+   */
+  setWarEffortDamageMul(mult: number) {
+    this.ctx.warEffortDamageMul = Number.isFinite(mult) && mult >= 1 ? mult : 1;
   }
 
   pickUpgrade(id: string) {

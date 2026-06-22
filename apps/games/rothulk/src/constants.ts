@@ -38,17 +38,17 @@ export const CONSTANTS = {
   // --- Horizontal movement -------------------------------------------------
   MOVE_SPEED: 9, // max run speed
   ACCEL: 70, // ground acceleration toward target speed
-  AIR_ACCEL: 40, // weaker air control
+  AIR_ACCEL: 48, // weaker air control
   FRICTION: 60, // ground deceleration when no input
 
   // --- Jump feel (variable height + assists) -------------------------------
   GRAVITY: 55, // base downward accel
-  FALL_GRAVITY_MULT: 1.7, // heavier gravity while falling = snappy arc
-  LOW_JUMP_MULT: 2.6, // extra gravity when jump released early (short hop)
-  JUMP_VELOCITY: 19, // initial upward velocity on a full jump
+  FALL_GRAVITY_MULT: 1.55, // heavier gravity while falling = snappy arc
+  LOW_JUMP_MULT: 2.3, // extra gravity when jump released early (short hop)
+  JUMP_VELOCITY: 20, // initial upward velocity on a full jump
   MAX_FALL_SPEED: 34, // terminal velocity
-  COYOTE_TIME: 0.1, // grace window to still jump after leaving a ledge
-  JUMP_BUFFER: 0.12, // grace window to queue a jump before landing
+  COYOTE_TIME: 0.14, // grace window to still jump after leaving a ledge
+  JUMP_BUFFER: 0.16, // grace window to queue a jump before landing
   STOMP_BOUNCE: 16, // upward velocity after stomping a Scourge
 
   // --- Combat / damage -----------------------------------------------------
@@ -103,6 +103,6 @@ export const CONSTANTS = {
   SHAKE_DEATH: 0.6, // kick on hero death
   SHAKE_IGNITE: 0.6, // kick on core ignition / hulk severance
   SHAKE_WALLHIT: 0.2, // kick when a charger slams a wall nearby
-  LAND_DUST_MIN_FALL: 6, // landing speed that kicks dust + the land cue
+  LAND_DUST_MIN_FALL: 5.5, // landing speed that kicks dust + the land cue
   SFX_FRAME_CAP: 4, // max one-shot cues per displayed frame
 } as const;

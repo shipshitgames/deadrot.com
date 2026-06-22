@@ -24,6 +24,8 @@ Nobody in Ashgate talks about winning. They talk about the next shift. The found
 ## Role in the war
 A **holdout** — the [[The-Wardens|Warden]] capital and the primary [[Deadlane]] theater, the one place three lanes converge. Its value was never walls (it had none) but **output and position**: the foundries that arm the Resistance and the [[CANON|repeater]] crown that keeps the [[CANON|Choir]] signal fragmented at the city's edge. Hold Ashgate and the lane network stays coherent; lose it and the Resistance splinters into pockets the Choir can swallow one at a time (see [[Cosmology]]; [[CANON]] §6 — isolation is the win condition). It does not break the signal so much as keep the lanes behind it survivable for the Wardens who do.
 
+Visual lock: [[Design/Locations/Ashgate-DESIGN|Ashgate Design Lock]].
+
 ## Appears In
 - [[Deadlane]] — the primary map theater; Wardens defend Ashgate's outer towers and inner lanes against the Scourge waves.
 - [[Scourge-Survivors]] — the staging ground; Purgers launch from the eastern towers when a lane falls, and it's the last sight before [[Perdition]].

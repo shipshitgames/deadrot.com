@@ -23,7 +23,7 @@ export function buildLevel1(): LevelData {
   platforms.push(slab(0, 0, 14));
   platforms.push(slab(16, 0, 6));
   // small step up
-  platforms.push(slab(24, 2, 4));
+  platforms.push(slab(23.5, 2, 5));
   platforms.push(slab(30, 4, 5));
 
   // --- Gap with acid below + floating slabs --------------------------------
@@ -130,6 +130,8 @@ export function buildLevel1(): LevelData {
 
   const embers: Ember[] = [
     mkEmber(8, 2),
+    mkEmber(17.5, 2.2),
+    mkEmber(22.5, 3.5),
     mkEmber(25, 4),
     mkEmber(38, 5),
     mkEmber(44, 7),

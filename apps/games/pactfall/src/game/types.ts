@@ -1,7 +1,7 @@
 import type * as THREE from "three";
 import type { Team } from "./constants";
 
-export type EntityKind = "champion" | "minion" | "scourge" | "base";
+export type EntityKind = "champion" | "minion" | "scourge" | "base" | "tower";
 
 // A flat, struct-ish entity. Systems read/write these fields directly; the
 // mesh is the visual twin kept in sync each frame.
@@ -61,4 +61,27 @@ export interface GameEvents {
   playerDamage: number; // total damage the player champion took this frame
   playerDied: boolean;
   buffGained: boolean; // the Scourge fell and the buff was granted
+}
+
+// ---- debug / e2e snapshot ---------------------------------------------------
+// A flat, serializable view of the run, exposed on window for the e2e harness
+// (mirrors the __brawlSnapshot / __rothulkGame.debugSnapshot patterns). Read-only
+// — the harness never mutates the sim through it.
+
+export interface TeamStructureSnapshot {
+  towersTotal: number;
+  towersStanding: number;
+  baseHp: number;
+  baseVulnerable: boolean; // true once this team's towers are all down
+}
+
+export interface GameSnapshot {
+  phase: Phase;
+  paused: boolean;
+  elapsed: number;
+  buffed: boolean;
+  map: { id: string; name: string; lanes: number; activeLanes: number; primaryLane: string };
+  champion: { hp: number; maxHp: number; mana: number; alive: boolean; x: number; z: number };
+  minions: Record<Team, number>;
+  structures: Record<Team, TeamStructureSnapshot>;
 }

@@ -7,6 +7,12 @@ const siteOrigin = "https://deadrot.com";
 
 const gameEntries = [
   {
+    slug: "brawl",
+    title: "Brawl - DEADROT",
+    description: "Choose a faction fighter and settle a one-on-one battlefield clash against the Scourge.",
+    image: `${siteOrigin}/images/og/games/brawl.png`,
+  },
+  {
     slug: "deadlane",
     title: "DEADLANE - DEADROT",
     description:
@@ -63,6 +69,18 @@ const webSourceChecks = [
   {
     file: "apps/web/app/docs/page.tsx",
     contains: ["createSocialMetadata", "DEADROT Docs", 'path: "/docs"'],
+  },
+  {
+    file: "apps/web/app/builds/page.tsx",
+    contains: ["createSocialMetadata", "Deadrot Build Notes", 'path: "/builds"'],
+  },
+  {
+    file: "apps/web/app/builds/[slug]/page.tsx",
+    contains: ["createSocialMetadata", "Deadrot Build Notes", "path: `/builds/", "note.slug}`"],
+  },
+  {
+    file: "apps/web/app/codex/page.tsx",
+    contains: ["createSocialMetadata", "Deadrot Codex", 'path: "/codex"'],
   },
   {
     file: "apps/web/app/universe/page.tsx",

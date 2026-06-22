@@ -244,6 +244,11 @@ export default class Warline implements Party.Server {
   private isOperationResult(v: unknown): v is OperationResult {
     if (typeof v !== "object" || v === null) return false;
     const r = v as Record<string, unknown>;
+    // `contributed` is optional looted war resource (#280): if present it must be
+    // a finite number — the reducer clamps the value, but a non-number is malformed.
+    if (r.contributed !== undefined && (typeof r.contributed !== "number" || !Number.isFinite(r.contributed))) {
+      return false;
+    }
     return (
       typeof r.game === "string" &&
       GAME_SLUGS.includes(r.game as GameSlug) &&

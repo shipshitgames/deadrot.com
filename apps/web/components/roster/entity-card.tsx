@@ -1,6 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
 
-import { accentVars, spriteUrl, type Accent } from "@/lib/content";
+import { type Accent, accentVars, spriteUrl } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
 /** Shared tile for characters and creatures. */
@@ -34,10 +35,11 @@ export function EntityCard({
       <div aria-hidden className="absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(75%_60%_at_50%_8%,color-mix(in_srgb,var(--page-accent)_20%,transparent),transparent_72%)]" />
         {sprite ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={sprite}
             alt={name}
+            width={320}
+            height={320}
             className="absolute left-1/2 top-5 h-36 -translate-x-1/2 object-contain drop-shadow-[0_8px_24px_color-mix(in_srgb,var(--page-accent)_45%,transparent)] transition-transform duration-500 group-hover:scale-105"
           />
         ) : (

@@ -1,0 +1,15 @@
+GIMP Palette
+Name: Deadrot DOOM Grade
+Columns: 4
+#
+ 10  10  10 void
+ 18  18  20 coal
+ 30  30  34 iron
+ 52  52  60 gunmetal
+193  18  31 blood
+255  42  24 bloodHot
+255 106   0 hellfire
+138  75  42 rust
+233 227 214 bone
+155 149 138 ash
+139 220  31 toxic

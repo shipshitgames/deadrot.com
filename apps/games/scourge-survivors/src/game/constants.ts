@@ -1,5 +1,7 @@
 // Central place for all gameplay tunables. Units are roughly meters / seconds.
 
+import type { WaveSchedule } from "@deadrot/game-kit/modes";
+
 export const ARENA_HALF = 40; // arena spans [-40, 40] on X and Z -> 80x80 floor
 export const WALL_HEIGHT = 6;
 export const WALL_THICKNESS = 1.5;
@@ -13,8 +15,11 @@ export const GRAVITY = 30;
 export const JUMP_VELOCITY = 11;
 export const MOVE_ACCEL = 120; // higher = snappier; steady-state speed ~= accel / damping
 export const MOVE_DAMPING = 13; // crisper start/stop (DOOM-snappy, less ice-skating)
+export const MOVE_BRAKE_DAMPING = 18; // faster braking when input is released
 export const MOVE_STOP_EPSILON = 0.6; // snap velocity to 0 below this when no input (kills the long glide)
 export const SPRINT_ACCEL_MULT = 1.45;
+export const SPRINT_START_BOOST_TIME = 0.16; // short shove when committing to a run
+export const SPRINT_START_BOOST_MULT = 0.32; // additive accel at the start of a sprint
 export const CROUCH_ACCEL_MULT = 0.48;
 export const STANCE_LERP = 18;
 export const PLAYER_STEP_HEIGHT = 0.45;
@@ -24,27 +29,23 @@ export const PLAYER_MAX_HEALTH = 100;
 // Weapon
 export const MAGAZINE_SIZE = 15;
 export const START_RESERVE = 75;
-export const RESERVE_CAP = 300;
-export const AMMO_PER_KILL = 12;
 export const RELOAD_TIME = 1.2; // seconds
-export const FIRE_INTERVAL = 0.18; // seconds between shots
-export const WEAPON_DAMAGE = 26; // sidearm baseline
 export const HEADSHOT_MULTIPLIER = 2.2;
 
-// Melee knife — always available (no ammo), the guaranteed fallback so you can
-// never be locked out of fighting when ammo runs dry. Works in every mode.
+// Cautery Cleaver — always available (no ammo), the guaranteed fallback so you
+// can never be locked out of fighting when ammo runs dry. Works in every mode.
+export const MELEE_WEAPON_NAME = "Cautery Cleaver";
 export const MELEE_DAMAGE = 48;
 export const MELEE_RANGE = 3.0;
 export const MELEE_COOLDOWN = 0.5;
 export const MELEE_ARC_DOT = 0.55; // cos(~57°): frontal cone, hits a small cluster
-export const MELEE_KNOCKBACK = 7; // a satisfying shove on the knife
+export const MELEE_KNOCKBACK = 7; // a satisfying shove on the cleaver
 
 // Enemies (base stats; waves scale these)
 export const ENEMY_MAX_HEALTH = 100;
 export const ENEMY_SPEED_MIN = 2.6;
 export const ENEMY_SPEED_MAX = 4.2;
 export const ENEMY_RADIUS = 0.6;
-export const ENEMY_HEIGHT = 1.7;
 export const ENEMY_ATTACK_RANGE = 2.2;
 export const ENEMY_ATTACK_DAMAGE = 9;
 export const ENEMY_ATTACK_INTERVAL = 0.9; // seconds between an enemy's hits
@@ -65,6 +66,17 @@ export const WAVES: WaveConfig[] = [
   { count: 12, concurrent: 6, healthMul: 1.6, speedMul: 1.25 },
 ];
 export const TOTAL_WAVES = WAVES.length; // breach-boss arrives after the final wave
+
+/**
+ * Genre-neutral schedule the shared {@link WaveDirector} consumes. Each plan keeps
+ * its source {@link WaveConfig} as `meta` so the spawner can read the per-wave
+ * health/speed multipliers when the director gates a spawn.
+ */
+export const SCOURGE_WAVE_SCHEDULE: WaveSchedule<WaveConfig> = WAVES.map((wave) => ({
+  count: wave.count,
+  concurrent: wave.concurrent,
+  meta: wave,
+}));
 
 // ---- Structured descent (multi-map run) ------------------------------------
 // Each descent stage runs the full WAVES + breach-boss on a different map;
@@ -87,6 +99,30 @@ export const BOSS_ATTACK_RANGE = 4.4;
 export const BOSS_SCORE = 2500;
 export const BOSS_COLOR = 0xff1f4f;
 export const BOSS_RESERVE_BONUS = 60; // ammo granted for slaying the boss
+
+// ---- The Toll: the 10:00 Survivors reaper (#278) ---------------------------
+// At SURVIVOR_RUN_GOAL_TIME the timed win is gone — the breach sends a HUGE
+// named reaper instead. Identity (lore name + tint) lives in data/reaper.ts.
+export const REAPER_SCALE = 4.2; // visibly dwarfs the BOSS_SCALE 2.6 breach-boss
+export const REAPER_HEALTH = 9000;
+// One-shot math: the deepest possible defensive pool is PLAYER_MAX_HEALTH 100
+// + in-run maxhp 5×30 + permanent vigor 5×18 + best class HP bonus 45 + ward
+// shields 4×24 + best class shield 24 = 505 effective HP, and the armor cap in
+// PlayerSystem.damagePlayer is 0.78 — so a guaranteed one-shot needs raw
+// damage > 505 / 0.22 ≈ 2296. 2400 × 0.22 = 528 clears it with margin.
+// (Dodge / grace i-frames evading a single strike is accepted, VS-style.)
+export const REAPER_TOUCH_DAMAGE = 2400;
+export const REAPER_RESISTED_TOUCH_DAMAGE = 60; // once permanent scars qualify (canResistReaper) strikes bruise, not erase
+export const REAPER_ATTACK_INTERVAL = 0.75;
+export const REAPER_ATTACK_RANGE = 5.6;
+export const REAPER_PROJECTILE_DAMAGE = 30; // barrage is chip pressure only — the TOUCH is the killer
+export const REAPER_SCORE = 5000;
+export const REAPER_WARNING_LEAD = 12; // seconds of dread between the warning toast and arrival
+export const REAPER_RESIST_TOTAL_TIERS = 28; // permanent shop tiers (of 33 total) needed to withstand strikes
+export const REAPER_RESIST_VIGOR_TIERS = 4; // ...and the Ash-Hardened Suit near-maxed specifically
+// ~1.10× the player's base steady-state speed (MOVE_ACCEL / MOVE_DAMPING ≈
+// 9.23 u/s): walking never escapes it, sprinting (1.45×) buys readable space.
+export const REAPER_SPEED = 10.2;
 
 // ---- Weapons --------------------------------------------------------------
 export type WeaponId = "pistol" | "smg" | "shotgun" | "cannon" | "sniper";
@@ -241,7 +277,7 @@ export const PICKUP_DROP_CHANCE = 0.5; // chance a normal kill drops something
 export const PICKUP_RADIUS = 1.7; // walk within this to collect
 export const PICKUP_TTL = 16; // seconds before a drop despawns
 export const HEALTH_PICKUP_AMOUNT = 35;
-export const BERSERK_DAMAGE_MULT = 2;
+const BERSERK_DAMAGE_MULT = 2;
 export const BERSERK_TIME = 10;
 export const BERSERK_FIRE_RATE_MULT = 1.35;
 export const BERSERK_MOVE_MULT = 1.16;
@@ -251,7 +287,6 @@ export const DAMAGE_BOOST_TIME = BERSERK_TIME;
 export const DUAL_WEAPON_TIME = 12;
 
 // ---- Enemy ranged fire ----------------------------------------------------
-export const ENEMY_RANGED_CHANCE = 0.45; // fraction of mobs that shoot back
 export const ENEMY_FIRE_INTERVAL = 1.7;
 export const ENEMY_FIRE_RANGE = 30; // max distance a mob will open fire
 export const ENEMY_PREFERRED_RANGE = 12; // ranged mobs try to hold this gap

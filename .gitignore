@@ -19,8 +19,43 @@ tmp/
 
 # git worktrees created by the /worktree skill
 .worktrees/
+.claude/
+.claude/worktrees/
 .vercel
 
-# Local source archives generated while preparing runtime assets.
-packages/assets/sources/
-packages/assets/**/sources/
+# Local credentials and private keys
+.aws/
+**/.aws/
+*.pem
+*.p12
+*.pfx
+*.private-key
+*.key
+*.ppk
+id_rsa*
+id_ed25519*
+.pgpass
+*.pgpass
+
+# Secret-bearing artifacts (incident hardening 2026-06-18). Patterns are scoped
+# to credential-shaped filenames so they never swallow legit files like
+# .github/workflows/secret-scan.yml or scripts/check-secrets.mjs. Real secrets
+# belong in AWS SSM Parameter Store, never on disk.
+*.secret
+*.secrets
+secrets.json
+secrets.yaml
+secrets.yml
+*password*.txt
+*passwd*.txt
+*-url-*.txt
+*-url.txt
+*-db-url*.txt
+*.connection-string
+*credentials*.json
+
+# Local source archives generated while preparing runtime assets. Curated,
+# successful generation history under sources/generated is intentionally tracked.
+packages/assets/sources/*
+!packages/assets/sources/generated/
+!packages/assets/sources/generated/**

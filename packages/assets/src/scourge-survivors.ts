@@ -1,7 +1,10 @@
-import manifestData from "../games/scourge-survivors/assets.json" with { type: "json" };
 import animationManifestData from "../games/scourge-survivors/animations/scourge/animation-pack.json" with {
   type: "json",
 };
+import comicAnimationManifestData from "../games/scourge-survivors/animations/scourge-comic/animation-pack.json" with {
+  type: "json",
+};
+import manifestData from "../games/scourge-survivors/assets.json" with { type: "json" };
 
 export type Vec2 = [number, number];
 export type Vec3 = [number, number, number];
@@ -34,6 +37,15 @@ export interface SpriteEntry {
     offset: Vec3;
     muzzle: Vec3;
     flashScale: number;
+    flashRotation?: number;
+  };
+  adsSprite?: {
+    path: string;
+    dimensions: Vec2;
+    scale?: Vec2;
+    offset?: Vec3;
+    muzzle?: Vec3;
+    flashScale?: number;
     flashRotation?: number;
   };
   /**
@@ -155,8 +167,9 @@ const scourgeSurvivorsAssetModules = import.meta.glob<string>(
     "../games/scourge-survivors/textures/**/*.webp",
     "../games/scourge-survivors/fx/**/*.webp",
     "../games/scourge-survivors/ui/icons/pixel/*.webp",
-    "../games/scourge-survivors/ui/cards/**/*.{jpg,png}",
-    "../games/scourge-survivors/ui/menu/**/*.{jpg,png,webp}",
+    "../games/scourge-survivors/ui/cards/**/*.webp",
+    "../games/scourge-survivors/ui/cover/**/*.webp",
+    "../games/scourge-survivors/ui/menu/**/*.webp",
     "../games/scourge-survivors/audio/**/*.webm",
     "../games/scourge-survivors/fonts/*.ttf",
   ],
@@ -166,6 +179,107 @@ const scourgeSurvivorsAssetModules = import.meta.glob<string>(
     import: "default",
   },
 );
+
+const COMIC_STYLE_ENV_KEY = "VITE_DEADROT_COMIC_ASSETS";
+
+function comicAssetsEnabled(): boolean {
+  const env = (import.meta as unknown as { env?: Record<string, string | boolean | undefined> }).env;
+  const value = env?.[COMIC_STYLE_ENV_KEY];
+  return value === true || value === "1" || value === "true";
+}
+
+// Opt-in comic foe exploration. These files are runtime-scale exploratory
+// cutouts, not the final production master pass, but they let the game test the
+// comic silhouette/color direction without touching the default pack.
+const COMIC_ENEMY_VIEW_PATHS: Partial<Record<string, Record<SpriteView, string>>> = {
+  "enemy-melee": {
+    front: "games/scourge-survivors/enemies/scourge-comic/host-grunt/front.webp",
+    side: "games/scourge-survivors/enemies/scourge-comic/host-grunt/side.webp",
+    back: "games/scourge-survivors/enemies/scourge-comic/host-grunt/back.webp",
+  },
+  "enemy-ranged": {
+    front: "games/scourge-survivors/enemies/scourge-comic/spitter-host/front.webp",
+    side: "games/scourge-survivors/enemies/scourge-comic/spitter-host/side.webp",
+    back: "games/scourge-survivors/enemies/scourge-comic/spitter-host/back.webp",
+  },
+  "enemy-flying": {
+    front: "games/scourge-survivors/enemies/scourge-comic/winged-host/front.webp",
+    side: "games/scourge-survivors/enemies/scourge-comic/winged-host/side.webp",
+    back: "games/scourge-survivors/enemies/scourge-comic/winged-host/back.webp",
+  },
+  boss: {
+    front: "games/scourge-survivors/enemies/scourge-comic/breach-boss/front.webp",
+    side: "games/scourge-survivors/enemies/scourge-comic/breach-boss/side.webp",
+    back: "games/scourge-survivors/enemies/scourge-comic/breach-boss/back.webp",
+  },
+};
+
+// Disabled until the comic pack has true per-weapon FPS view-model masters.
+// Object/codex sheets and magenta lineups are not valid player-facing weapons.
+const COMIC_WEAPON_PATHS: Partial<Record<string, string>> = {};
+
+// Disabled until image-model generated material sheets are promoted. Cropping
+// combat/key art into wall/floor textures is not a valid material asset.
+const COMIC_TEXTURE_PATHS: Partial<Record<string, string>> = {};
+
+const COMIC_ANIMATION_ROOT = "animations/scourge-comic/";
+
+// Entities that actually ship comic animation frames. The comic pack is a
+// SUBSET of the default pack (e.g. wound-hound has no comic frames), so the
+// path-root rewrite below must be scoped to these — a blanket swap would point a
+// comic-less entity at a non-existent path and throw at module load, crashing
+// the whole game in comic mode rather than just falling back for that entity.
+const COMIC_ANIMATION_ENTITIES = new Set(
+  Object.keys((comicAnimationManifestData as { entities?: Record<string, unknown> }).entities ?? {}),
+);
+
+function comicArenaTexturePath(id: string): string | undefined {
+  const direct = COMIC_TEXTURE_PATHS[id];
+  if (direct) return direct;
+  return undefined;
+}
+
+function comicSpriteEntry(id: string, entry: SpriteEntry): SpriteEntry {
+  if (!comicAssetsEnabled()) return entry;
+  const viewPaths = COMIC_ENEMY_VIEW_PATHS[id];
+  if (viewPaths && entry.views) {
+    return {
+      ...entry,
+      filter: "linear",
+      views: Object.fromEntries(
+        Object.entries(entry.views).map(([view, viewEntry]) => [
+          view,
+          {
+            ...viewEntry,
+            path: viewPaths[view as SpriteView] ?? viewEntry.path,
+          },
+        ]),
+      ) as Partial<Record<SpriteView, SpriteViewEntry>>,
+    };
+  }
+  const weaponPath = COMIC_WEAPON_PATHS[id];
+  if (weaponPath && entry.path) {
+    return {
+      ...entry,
+      path: weaponPath,
+      filter: "linear",
+      adsSprite:
+        id === "weapon-sniper" && entry.adsSprite
+          ? {
+              ...entry.adsSprite,
+              path: "games/scourge-survivors/weapons/pyre-comic/sniper-ads-tiers.webp",
+            }
+          : entry.adsSprite,
+    };
+  }
+  return entry;
+}
+
+function comicTextureEntry(id: string, entry: TextureEntry): TextureEntry {
+  if (!comicAssetsEnabled()) return entry;
+  const path = comicArenaTexturePath(id);
+  return path ? { ...entry, path } : entry;
+}
 
 export function scourgeSurvivorsAssetUrl(path: string): string {
   const key = `../${path}`;
@@ -177,13 +291,13 @@ export function scourgeSurvivorsAssetUrl(path: string): string {
 export function scourgeSurvivorsSpriteEntry(id: string): SpriteEntry {
   const entry = SCOURGE_SURVIVORS_ASSET_MANIFEST.sprites[id];
   if (!entry) throw new Error(`Unknown Scourge Survivors sprite asset id: ${id}`);
-  return entry;
+  return comicSpriteEntry(id, entry);
 }
 
 export function scourgeSurvivorsTextureEntry(id: string): TextureEntry {
   const entry = SCOURGE_SURVIVORS_ASSET_MANIFEST.textures[id];
   if (!entry) throw new Error(`Unknown Scourge Survivors texture asset id: ${id}`);
-  return entry;
+  return comicTextureEntry(id, entry);
 }
 
 export function scourgeSurvivorsAudioEntry(id: string): AudioEntry {
@@ -239,9 +353,14 @@ export function scourgeSurvivorsAnimationFrameUrl(
   const actionEntry = entityEntry.actions[action];
   if (!actionEntry) throw new Error(`Unknown Scourge Survivors animation action: ${entity}/${action}`);
   const frameId = String(frame).padStart(2, "0");
-  const path = `games/scourge-survivors/${actionEntry.pathTemplate
-    .replace("{view}", view)
-    .replace("{frame}", frameId)}`;
+  // Only rewrite to the comic pack for entities that have comic frames; others
+  // (e.g. wound-hound) keep the default pack so comic mode can't crash on a
+  // missing-file lookup.
+  const pathTemplate =
+    comicAssetsEnabled() && COMIC_ANIMATION_ENTITIES.has(entity)
+      ? actionEntry.pathTemplate.replace("animations/scourge/", COMIC_ANIMATION_ROOT)
+      : actionEntry.pathTemplate;
+  const path = `games/scourge-survivors/${pathTemplate.replace("{view}", view).replace("{frame}", frameId)}`;
   return scourgeSurvivorsAssetUrl(path);
 }
 

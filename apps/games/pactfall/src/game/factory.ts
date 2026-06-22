@@ -125,6 +125,48 @@ export function makeScourge(): Entity {
   });
 }
 
+export function makeTower(team: Team): Entity {
+  const pyre = team === "pyre";
+  const g = new THREE.Group();
+
+  // A squat fortified pylon: narrower and shorter than a base so the lane reads
+  // as base > tower > champion at a glance.
+  const shaft = new THREE.Mesh(
+    new THREE.CylinderGeometry(CONSTANTS.tower.radius, CONSTANTS.tower.radius * 1.25, CONSTANTS.tower.height, 6),
+    new THREE.MeshStandardMaterial({
+      color: COLORS.gunmetal,
+      emissive: pyre ? COLORS.hellfire : COLORS.blood,
+      emissiveIntensity: 0.35,
+      roughness: 0.7,
+      metalness: 0.55,
+    }),
+  );
+  g.add(shaft);
+
+  // A glowing eye atop the tower so its team and "alive" state read at a glance.
+  const eye = new THREE.Mesh(
+    new THREE.OctahedronGeometry(CONSTANTS.tower.radius * 0.55),
+    new THREE.MeshStandardMaterial({
+      color: pyre ? COLORS.hellfire : COLORS.bloodHot,
+      emissive: pyre ? COLORS.hellfire : COLORS.bloodHot,
+      emissiveIntensity: 1.1,
+    }),
+  );
+  eye.position.y = CONSTANTS.tower.height / 2 + 0.5;
+  g.add(eye);
+
+  return baseEntity({
+    kind: "tower",
+    team,
+    mesh: g,
+    maxHp: CONSTANTS.tower.maxHp,
+    radius: CONSTANTS.tower.radius,
+    attackRange: CONSTANTS.tower.attackRange,
+    attackDamage: CONSTANTS.tower.attackDamage,
+    attackCooldown: CONSTANTS.tower.attackCooldown,
+  });
+}
+
 export function makeBase(team: Team): Entity {
   const pyre = team === "pyre";
   const g = new THREE.Group();

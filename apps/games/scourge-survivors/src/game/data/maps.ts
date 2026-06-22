@@ -22,8 +22,19 @@
 // and a playerSpawn anchor from `spawn`. Note: `elevated` obstacle stacking is
 // a render-only quirk that floor levels will subsume in #82.
 //
+// Biome presentation layer (issue #80): maps no longer author a theme block.
+// Each map authors a `biomeId` (plus optional per-map `themeOverrides`) and
+// the MAPS registry resolves the concrete `theme` at module load via
+// `resolveBiomeTheme` — mirroring the `layout` normalization above — so every
+// map handed out by MAPS/getMap/campaignSequence carries a resolved MapTheme.
+// The presets live in `@deadrot/game-kit/maps` (the canon-checked biome
+// catalog shared across games). `biomeId` is presentation-only: it does NOT
+// replace `loreId`/`front`, which stay the lore-registry join keys.
+//
 // Palette is canon DOOM (see DESIGN.md / Style-Bible): blood + fire + metal +
-// bone, no neon. Toxic-green is reserved for the Scourge only.
+// bone — ember discipline, sourced glow only (vents, lamps, seams), never
+// saturated signage. Toxic-green is reserved for the Scourge only (the `rot`
+// biome carries it).
 //
 // Layouts were generated + geometrically validated by a multi-agent design
 // pass (no out-of-bounds boxes, no overlaps/slivers, clear player spawns).
@@ -36,7 +47,13 @@ import {
   type ArenaPlatform,
   type ArenaRamp,
   type ArenaRoom,
+  type BiomeAccentLight,
+  type BiomeId,
+  type BiomeTheme,
+  type BiomeThemeOverrides,
+  GROUND_LEVEL_ID,
   normalizeArenaLayout,
+  resolveBiomeTheme,
 } from "@deadrot/game-kit/maps";
 import type { MapBounds } from "@shipshitgames/engine";
 import type { PixelIconId } from "../../assets/ui/pixelIcons";
@@ -66,23 +83,14 @@ export interface MapObstacle {
   elevated?: boolean;
 }
 
-export interface MapLight {
-  color: number;
-  x: number;
-  y: number;
-  z: number;
-}
+/** Game-local alias for the shared biome accent-light shape (one of the two
+ *  coloured rim lights). Kept exported so existing importers keep compiling. */
+export type MapLight = BiomeAccentLight;
 
-export interface MapTheme {
-  bg: number; // scene background + fog colour
-  fogNear: number;
-  fogFar: number;
-  floorTint: number; // multiplied over the floor texture
-  wallTint: number; // multiplied over walls + obstacle textures
-  trim: number; // emissive neon edge colour
-  accentA: MapLight; // two coloured rim lights
-  accentB: MapLight;
-}
+/** Game-local alias for the shared biome theme: background + fog colour, fog
+ *  range, floor/wall tints, the emissive ember trim colour, and the two accent
+ *  rim lights. Resolved from `biomeId` + `themeOverrides` by the registry. */
+export type MapTheme = BiomeTheme;
 
 export interface ArenaSilhouette {
   x: number;
@@ -136,7 +144,17 @@ export interface ArenaMap {
   icon: PixelIconId;
   accent: string; // css hex for the picker card border / glow
   bounds?: MapBounds; // defaults to DEFAULT_ARENA_BOUNDS so current FPS tuning stays unchanged
-  theme: MapTheme;
+  /** Biome preset id the registry resolves into `theme` at module load (see
+   *  `@deadrot/game-kit/maps`). Presentation-only — it does NOT replace the
+   *  `loreId`/`front` lore-registry join keys. */
+  biomeId: BiomeId;
+  /** Optional per-map adjustments layered over the biome preset by
+   *  `resolveBiomeTheme` (scalars replace; accent overrides merge per-field). */
+  themeOverrides?: BiomeThemeOverrides;
+  /** Resolved presentation palette — populated by the MAPS registry at module
+   *  load from `biomeId` + `themeOverrides`; always present on maps from
+   *  MAPS/getMap/campaignSequence. Do not author directly. */
+  theme?: MapTheme;
   materials: ArenaMaterialSet;
   environment: ArenaEnvironment;
   spawn: { x: number; z: number }; // player start (faces the arena centre)
@@ -164,8 +182,8 @@ export interface ArenaMap {
   layout?: ArenaLayout<MapObstacle>;
 }
 
-/** An ArenaMap whose layout has been populated — what the registry hands out. */
-export type NormalizedArenaMap = ArenaMap & { layout: ArenaLayout<MapObstacle> };
+/** An ArenaMap whose layout + theme have been populated — what the registry hands out. */
+export type NormalizedArenaMap = ArenaMap & { layout: ArenaLayout<MapObstacle>; theme: MapTheme };
 
 function arenaMaterials(mapId: string): ArenaMaterialSet {
   return {
@@ -188,16 +206,7 @@ const ASHGATE: ArenaMap = {
   subtitle: "The eastern foundry-wall — where the Purgers drop in",
   icon: "foundry",
   accent: "#ff6a00",
-  theme: {
-    bg: 0x160d08,
-    fogNear: 34,
-    fogFar: 165,
-    floorTint: 0xc9a98a,
-    wallTint: 0xb89274,
-    trim: 0xff6a00,
-    accentA: { color: 0xff6a00, x: -26, y: 8, z: -26 },
-    accentB: { color: 0xff8a3c, x: 26, y: 9, z: 26 },
-  },
+  biomeId: "foundry",
   materials: arenaMaterials("ashgate"),
   environment: {
     skyTop: 0x090505,
@@ -218,8 +227,10 @@ const ASHGATE: ArenaMap = {
       { x: -28, z: -25, w: 7, d: 10, texture: "arena-ashgate-decal", color: 0xc1121f, opacity: 0.16, rotation: -0.55 },
     ],
     props: [
-      { x: -30, z: -20, w: 5.2, h: 8.4, texture: "arena-ashgate-prop", color: 0xff8a3c, opacity: 0.9 },
-      { x: 30, z: 20, w: 5.2, h: 8.4, texture: "arena-ashgate-prop", color: 0xff6a00, opacity: 0.86 },
+      // In-core props capped at the readability budget's 0.85 so a Scourge
+      // sprite is never fully hidden behind them at gameplay distance (#35).
+      { x: -30, z: -20, w: 5.2, h: 8.4, texture: "arena-ashgate-prop", color: 0xff8a3c, opacity: 0.85 },
+      { x: 30, z: 20, w: 5.2, h: 8.4, texture: "arena-ashgate-prop", color: 0xff6a00, opacity: 0.85 },
       { x: -6, z: 26, w: 4.3, h: 7, texture: "arena-ashgate-prop", color: 0xb89274, opacity: 0.78 },
       { x: 32, z: -7, w: 4.1, h: 6.8, texture: "arena-ashgate-prop", color: 0xff8a3c, opacity: 0.74 },
     ],
@@ -247,7 +258,8 @@ const ASHGATE: ArenaMap = {
 
 // ============================================================================
 // THE HOLLOW LANES — dead corridors between the holdouts: long slab aisles with
-// junction chokepoints. Desaturated bone/gunmetal grey — dead, lightless, no neon.
+// junction chokepoints. Desaturated bone/gunmetal grey — dead, lightless, no
+// ember glow left.
 // ============================================================================
 const HOLLOWLANES: ArenaMap = {
   id: "hollowlanes",
@@ -257,16 +269,7 @@ const HOLLOWLANES: ArenaMap = {
   subtitle: "Dead corridors between the holdouts",
   icon: "bone",
   accent: "#cdbfae",
-  theme: {
-    bg: 0x181818,
-    fogNear: 30,
-    fogFar: 150,
-    floorTint: 0xd4c8b7,
-    wallTint: 0xc4b8a6,
-    trim: 0xcdbfae,
-    accentA: { color: 0xcdbfae, x: -26, y: 9, z: -26 },
-    accentB: { color: 0x9b958a, x: 26, y: 9, z: 26 },
-  },
+  biomeId: "bone",
   materials: arenaMaterials("hollowlanes"),
   environment: {
     skyTop: 0x0c0c0d,
@@ -287,8 +290,10 @@ const HOLLOWLANES: ArenaMap = {
       { x: 0, z: 25, w: 16, d: 8, texture: "arena-hollowlanes-decal", color: 0xf6efe2, opacity: 0.2, rotation: 0.2 },
     ],
     props: [
-      { x: -9, z: -22, w: 4.6, h: 7.4, texture: "arena-hollowlanes-prop", color: 0xf6efe2, opacity: 0.96 },
-      { x: 9, z: -22, w: 4.6, h: 7.4, texture: "arena-hollowlanes-prop", color: 0xf6efe2, opacity: 0.96 },
+      // Bone-pale pillars dropped from near-opaque 0.96 to the readability
+      // budget's 0.85 in-core ceiling so they read as cover, not walls (#35).
+      { x: -9, z: -22, w: 4.6, h: 7.4, texture: "arena-hollowlanes-prop", color: 0xf6efe2, opacity: 0.85 },
+      { x: 9, z: -22, w: 4.6, h: 7.4, texture: "arena-hollowlanes-prop", color: 0xf6efe2, opacity: 0.85 },
       { x: -21, z: 21, w: 4.3, h: 7, texture: "arena-hollowlanes-prop", color: 0xcdbfae, opacity: 0.84 },
       { x: 21, z: 21, w: 4.3, h: 7, texture: "arena-hollowlanes-prop", color: 0xcdbfae, opacity: 0.84 },
       { x: 0, z: 31, w: 4.8, h: 7.8, texture: "arena-hollowlanes-prop", color: 0xf6efe2, opacity: 0.8 },
@@ -326,16 +331,7 @@ const MAW: ArenaMap = {
   subtitle: "An exposed span over the breach throat",
   icon: "maw",
   accent: "#6acf3c",
-  theme: {
-    bg: 0x0a0f08,
-    fogNear: 38,
-    fogFar: 175,
-    floorTint: 0x6b7a5a,
-    wallTint: 0x5a6b4a,
-    trim: 0x6acf3c,
-    accentA: { color: 0x8bdc1f, x: -26, y: 9, z: -26 },
-    accentB: { color: 0x6acf3c, x: 26, y: 9, z: 26 },
-  },
+  biomeId: "rot",
   materials: arenaMaterials("maw"),
   environment: {
     skyTop: 0x050706,
@@ -357,8 +353,10 @@ const MAW: ArenaMap = {
       { x: 18, z: 0, w: 9, d: 12, texture: "arena-maw-decal", color: 0x6b7a5a, opacity: 0.18, rotation: -1.57 },
     ],
     props: [
-      { x: -11, z: -24, w: 4.2, h: 9.2, texture: "arena-maw-prop", color: 0x8bdc1f, opacity: 0.88 },
-      { x: 11, z: -24, w: 4.2, h: 9.2, texture: "arena-maw-prop", color: 0x8bdc1f, opacity: 0.88 },
+      // Capped at the readability budget's 0.85 in-core ceiling; the toxic glow
+      // still reads, but a Scourge sprite behind one stays visible (#35).
+      { x: -11, z: -24, w: 4.2, h: 9.2, texture: "arena-maw-prop", color: 0x8bdc1f, opacity: 0.85 },
+      { x: 11, z: -24, w: 4.2, h: 9.2, texture: "arena-maw-prop", color: 0x8bdc1f, opacity: 0.85 },
       { x: -23, z: 18, w: 5, h: 10.5, texture: "arena-maw-prop", color: 0x6acf3c, opacity: 0.82 },
       { x: 23, z: 18, w: 5, h: 10.5, texture: "arena-maw-prop", color: 0x6acf3c, opacity: 0.82 },
     ],
@@ -392,16 +390,7 @@ const PERDITION: ArenaMap = {
   subtitle: "The source pulses — few Purgers walk out",
   icon: "fire",
   accent: "#c1121f",
-  theme: {
-    bg: 0x1a0408,
-    fogNear: 34,
-    fogFar: 165,
-    floorTint: 0x9a5560,
-    wallTint: 0x86424e,
-    trim: 0xc1121f,
-    accentA: { color: 0xc1121f, x: -26, y: 9, z: -26 },
-    accentB: { color: 0xff2a18, x: 26, y: 8, z: 26 },
-  },
+  biomeId: "perdition",
   materials: arenaMaterials("perdition"),
   environment: {
     skyTop: 0x070103,
@@ -432,8 +421,10 @@ const PERDITION: ArenaMap = {
       { x: 0, z: -24, w: 18, d: 9, texture: "arena-perdition-decal", color: 0x9a5560, opacity: 0.16 },
     ],
     props: [
-      { x: -14, z: 0, w: 4.5, h: 8.8, texture: "arena-perdition-prop", color: 0xff2a18, opacity: 0.88 },
-      { x: 14, z: 0, w: 4.5, h: 8.8, texture: "arena-perdition-prop", color: 0xff2a18, opacity: 0.88 },
+      // The two central core-flanking props sit right where the fight happens —
+      // capped at the readability budget's 0.85 in-core ceiling (#35).
+      { x: -14, z: 0, w: 4.5, h: 8.8, texture: "arena-perdition-prop", color: 0xff2a18, opacity: 0.85 },
+      { x: 14, z: 0, w: 4.5, h: 8.8, texture: "arena-perdition-prop", color: 0xff2a18, opacity: 0.85 },
       { x: 0, z: -14, w: 4, h: 8.2, texture: "arena-perdition-prop", color: 0xc1121f, opacity: 0.8 },
       { x: 0, z: 14, w: 4, h: 8.2, texture: "arena-perdition-prop", color: 0xc1121f, opacity: 0.8 },
     ],
@@ -459,11 +450,108 @@ const PERDITION: ArenaMap = {
   ],
 };
 
+// ============================================================================
+// THE GANTRY — a sandbox-only v2 STRUCTURAL demonstrator (issue #82). Not part
+// of the canon campaign descent and deliberately kept OUT of the MAPS registry
+// (campaign-order invariants stay intact); it lives in SANDBOX_MAPS and is
+// reachable from the dev SandboxPanel + e2e harness via startSandbox("gantry").
+//
+// It exercises every runtime path ArenaSystem.buildArena / PlayerSystem now
+// consume from `layout`: multiple ROOMS, a raised LEVEL (the mezzanine gantry)
+// with its walkable floor slab, a climbable RAMP up to it, jump/step PLATFORMS,
+// and authored breachSpawn ANCHORS that swap enemy spawning from procedural
+// scatter to fixed mouths. Presentation reuses The Maw's theme/materials/assets
+// (loreId "maw") so it ships no new texture ids.
+//
+// Geometry: a front YARD at ground (z ≳ -2) and a raised GANTRY deck at y=3
+// (z ≲ -2) spanning the breach throat. A central ramp (x≈0) is the only walk-up;
+// retaining walls flank it so the deck reads solid. Enemies breach from the deck
+// and the two flanks; the objective core sits on the deck.
+const GANTRY: ArenaMap = {
+  id: "gantry",
+  loreId: "maw",
+  front: "breach",
+  name: "The Gantry",
+  subtitle: "Sandbox: a multi-level span over the breach throat",
+  icon: "maw",
+  accent: "#6acf3c",
+  biomeId: "rot",
+  // No explicit `theme`: normalizeMap resolves it from biomeId ("rot") — the same
+  // theme The Maw uses. (A literal `theme: MAW.theme` here was dead: raw map
+  // literals no longer author `theme`, so MAW.theme is undefined.)
+  materials: arenaMaterials("maw"),
+  environment: MAW.environment,
+  spawn: { x: 0, z: 30 },
+  // All geometry is homed in rooms; the flat list stays empty so the adapter
+  // uses the authored rooms verbatim (no synthesized root room).
+  obstacles: [],
+  levels: [{ id: "mezzanine", y: 3, name: "Gantry Deck" }],
+  rooms: [
+    {
+      id: "yard",
+      name: "Approach Yard",
+      bounds: { kind: "rect", minX: -40, maxX: 40, minZ: -2, maxZ: 40 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        // Retaining walls of the raised deck, with a central gap for the ramp.
+        { x: -20, z: -2, w: 36, h: 3, d: 1.5, mat: "wall" },
+        { x: 20, z: -2, w: 36, h: 3, d: 1.5, mat: "wall" },
+        // Ground cover.
+        { x: -14, z: 18, w: 2.6, h: 2.6, d: 2.6, mat: "crate" },
+        { x: 14, z: 14, w: 2.6, h: 2.6, d: 2.6, mat: "crate" },
+        { x: 0, z: 22, w: 2.2, h: 6, d: 2.2, mat: "pillar" },
+      ],
+    },
+    {
+      id: "gantry-deck",
+      name: "Gantry Deck",
+      bounds: { kind: "rect", minX: -40, maxX: 40, minZ: -40, maxZ: -2 },
+      levelId: "mezzanine",
+      obstacles: [
+        // Rendered at the deck elevation (roomY = 3): pillars + a low parapet.
+        { x: -18, z: -22, w: 2, h: 6, d: 2, mat: "pillar" },
+        { x: 18, z: -22, w: 2, h: 6, d: 2, mat: "pillar" },
+        { x: 0, z: -12, w: 6, h: 1.0, d: 2.4, mat: "wall" },
+      ],
+    },
+  ],
+  ramps: [
+    {
+      id: "deck-ramp",
+      kind: "ramp",
+      from: { x: 0, z: 4 },
+      to: { x: 0, z: -2 },
+      width: 6,
+      fromLevelId: GROUND_LEVEL_ID,
+      toLevelId: "mezzanine",
+    },
+  ],
+  platforms: [
+    // Step up from the ground yard (top 0.4 ≤ player step height).
+    { id: "yard-step", x: 22, z: 28, w: 5, d: 5, y: 0.4, thickness: 0.4, levelId: GROUND_LEVEL_ID },
+    // Overlook step on the deck (top 3.4 — a step up from the deck floor at 3).
+    { id: "deck-overlook", x: 0, z: -32, w: 12, d: 6, y: 3.4, thickness: 0.5, levelId: "mezzanine" },
+  ],
+  anchors: [
+    { kind: "playerSpawn", id: "player-spawn", x: 0, z: 30, levelId: GROUND_LEVEL_ID },
+    { kind: "breachSpawn", id: "deck-breach", x: 0, z: -36, levelId: "mezzanine", laneId: "north" },
+    { kind: "breachSpawn", id: "east-breach", x: 34, z: -20, levelId: "mezzanine", laneId: "east" },
+    { kind: "breachSpawn", id: "west-breach", x: -34, z: -20, levelId: "mezzanine", laneId: "west" },
+    { kind: "objective", id: "core", x: 0, z: -26, levelId: "mezzanine" },
+  ],
+};
+
 // ----------------------------------------------------------------------------
 
-/** v1→v2 adapter entry point: attaches the normalized structural layout. */
+/** Registry normalization entry point: attaches the normalized structural
+ *  layout AND resolves the presentation theme from `biomeId` + the optional
+ *  per-map `themeOverrides` (issue #80). */
 function normalizeMap(map: ArenaMap): NormalizedArenaMap {
-  return { ...map, layout: normalizeArenaLayout<MapObstacle>(map, { defaultBounds: DEFAULT_ARENA_BOUNDS }) };
+  return {
+    ...map,
+    layout: normalizeArenaLayout<MapObstacle>(map, { defaultBounds: DEFAULT_ARENA_BOUNDS }),
+    theme: resolveBiomeTheme(map.biomeId, map.themeOverrides),
+  };
 }
 
 /** All campaign maps, keyed by id. */
@@ -472,6 +560,17 @@ export const MAPS: Record<string, NormalizedArenaMap> = {
   hollowlanes: normalizeMap(HOLLOWLANES),
   maw: normalizeMap(MAW),
   perdition: normalizeMap(PERDITION),
+};
+
+/**
+ * Sandbox-only maps: dev/e2e-reachable demonstrators that are NOT part of the
+ * campaign and NOT in MAPS (so CAMPAIGN_ORDER/MAPS invariants stay intact).
+ * getMap falls through to here, so startSandbox("gantry") resolves a real,
+ * normalized map without polluting the campaign registry or its texture-preload
+ * list (these reuse a campaign map's material ids — see GANTRY).
+ */
+export const SANDBOX_MAPS: Record<string, NormalizedArenaMap> = {
+  gantry: normalizeMap(GANTRY),
 };
 
 /**
@@ -484,7 +583,12 @@ export const CAMPAIGN_ORDER: string[] = ["ashgate", "hollowlanes", "maw", "perdi
 export const DEFAULT_MAP_ID = "ashgate";
 
 export function getMap(id: string): NormalizedArenaMap {
-  return MAPS[id] ?? MAPS[DEFAULT_MAP_ID];
+  return MAPS[id] ?? SANDBOX_MAPS[id] ?? MAPS[DEFAULT_MAP_ID];
+}
+
+/** Resolve a saved/requested map id to a real one, falling back to the default. */
+export function normalizeMapId(id?: string | null): string {
+  return id && MAPS[id] ? id : DEFAULT_MAP_ID;
 }
 
 /**
@@ -509,6 +613,21 @@ export const MAP_PICKER: MapMeta[] = CAMPAIGN_ORDER.map((id) => {
   const m = MAPS[id];
   return { id: m.id, name: m.name, subtitle: m.subtitle, icon: m.icon, accent: m.accent };
 });
+
+/** Picker list for the dev sandbox: the campaign maps plus the sandbox-only
+ *  demonstrators (e.g. The Gantry). Used ONLY for the map-switch buttons —
+ *  texture preload stays on MAP_PICKER so no `arena-gantry-*` assets are
+ *  requested (sandbox maps reuse a campaign map's material ids). */
+export const SANDBOX_MAP_PICKER: MapMeta[] = [
+  ...MAP_PICKER,
+  ...Object.values(SANDBOX_MAPS).map((m) => ({
+    id: m.id,
+    name: m.name,
+    subtitle: m.subtitle,
+    icon: m.icon,
+    accent: m.accent,
+  })),
+];
 
 /** Compile-time drift gate: engine MapBounds ⇄ game-kit ArenaBounds must stay mutually
  *  assignable (game-kit duplicates the union to stay engine-free). If either side

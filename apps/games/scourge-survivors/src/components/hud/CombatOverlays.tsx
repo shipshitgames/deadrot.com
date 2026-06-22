@@ -1,5 +1,5 @@
 import { SCOURGE_THREAT_TIERS } from "../../game/data/enemies";
-import type { HUDState } from "../../game/types";
+import type { HudState } from "../../game/types";
 import { PixelIcon } from "../PixelIcon";
 import { formatTime, HUD_CORNER, IconText, runModeLabel, STAT_LABEL, STAT_SUB, STAT_VALUE } from "./shared";
 
@@ -76,7 +76,7 @@ function ReloadRing({ progress }: { progress: number }) {
   );
 }
 
-function Scoreboard({ board, room, connected }: { board: HUDState["scoreboard"]; room: string; connected: boolean }) {
+function Scoreboard({ board, room, connected }: { board: HudState["scoreboard"]; room: string; connected: boolean }) {
   return (
     <div className="scourge-scoreboard absolute top-[96px] right-[18px] min-w-[190px] border border-white/10 rounded-[2px] px-[10px] py-2 [font-variant-numeric:tabular-nums]">
       <div className="flex justify-between text-[12px] tracking-[0.06em] opacity-85 mb-[5px] pb-1 border-b border-white/10">
@@ -106,7 +106,7 @@ function Scoreboard({ board, room, connected }: { board: HUDState["scoreboard"];
   );
 }
 
-function SurvivorsHud({ state }: { state: HUDState }) {
+function SurvivorsHud({ state }: { state: HudState }) {
   const frac = state.xpToNext > 0 ? state.xp / state.xpToNext : 0;
   return (
     <>
@@ -164,7 +164,8 @@ function SurvivorsHud({ state }: { state: HUDState }) {
 }
 
 /** Everything drawn during live combat: crosshair, hit feedback, meters, panels. */
-export function CombatOverlays({ state }: { state: HUDState }) {
+// react-doctor-disable-next-line react-doctor/no-giant-component -- The HUD overlay is a cohesive render-only surface with shared transient state.
+export function CombatOverlays({ state }: { state: HudState }) {
   const {
     status,
     playerHealth,
@@ -197,8 +198,8 @@ export function CombatOverlays({ state }: { state: HUDState }) {
     ads,
     adsZoom,
     adsZoomLevels,
-    hitMarkerSeq,
-    headshotSeq,
+    hitSeq,
+    emphasisSeq,
     killSeq,
     damageSeq,
     banner,
@@ -227,11 +228,12 @@ export function CombatOverlays({ state }: { state: HUDState }) {
   ].filter((stat): stat is { label: string; value: string } => Boolean(stat));
   const playing = status === "playing";
   const berserkActive = playing && berserk > 0;
+  const bossBannerName = state.bossName ?? SCOURGE_THREAT_TIERS.breachBoss.banner;
   const bossLabel = bossShielded
-    ? `${SCOURGE_THREAT_TIERS.breachBoss.banner} SHIELD`
+    ? `${bossBannerName} SHIELD`
     : bossEnraged
-      ? `${SCOURGE_THREAT_TIERS.breachBoss.banner} FRENZY`
-      : SCOURGE_THREAT_TIERS.breachBoss.banner;
+      ? `${bossBannerName} FRENZY`
+      : bossBannerName;
 
   return (
     <>
@@ -266,8 +268,8 @@ export function CombatOverlays({ state }: { state: HUDState }) {
         </div>
       )}
       {playing && reloading && <ReloadRing progress={reloadProgress} />}
-      <HitMarker seq={hitMarkerSeq} variant="hit" />
-      <HitMarker seq={headshotSeq} variant="head" />
+      <HitMarker seq={hitSeq} variant="hit" />
+      <HitMarker seq={emphasisSeq} variant="head" />
       <HitMarker seq={killSeq} variant="kill" />
       {damageSeq > 0 && (
         <div
@@ -378,7 +380,7 @@ export function CombatOverlays({ state }: { state: HUDState }) {
             <div>
               <div className={STAT_LABEL}>Wave</div>
               <div className={`${STAT_VALUE}${bossActive ? " text-danger tracking-[0.1em] animate-bosspulse" : ""}`}>
-                {bossActive ? SCOURGE_THREAT_TIERS.breachBoss.banner : `${wave}/${totalWaves}`}
+                {bossActive ? bossBannerName : `${wave}/${totalWaves}`}
               </div>
             </div>
           )}
@@ -471,6 +473,31 @@ export function CombatOverlays({ state }: { state: HUDState }) {
         className={`${HUD_CORNER} scourge-weapon-panel right-[18px] bottom-[18px] text-right min-w-[178px]`}
         data-testid="weapon-panel"
       >
+        {survivors && (
+          <div
+            className="scourge-weapon-tier flex items-center justify-end gap-[6px] mb-[4px]"
+            data-testid="survivor-weapon-tier"
+            title={`Weapon ${state.survivorWeaponTierLabel} — ×${state.survivorWeaponTierDamageMul.toFixed(2)} gun damage`}
+            aria-hidden
+          >
+            <span className="text-[10px] font-black uppercase tracking-[0.08em] text-[#ffb26b]">
+              {state.survivorWeaponTierLabel}
+            </span>
+            <span className="flex items-center gap-[2px]">
+              {Array.from({ length: 5 }, (_, i) => (
+                <i
+                  key={i}
+                  className={`inline-block h-[6px] w-[6px] rounded-[1px] ${
+                    i <= state.survivorWeaponTierIndex
+                      ? "bg-[#ff8f3a] shadow-[0_0_6px_rgba(255,143,58,0.6)]"
+                      : "bg-white/15"
+                  }`}
+                />
+              ))}
+            </span>
+            <span className="text-[10px] font-bold text-accent">×{state.survivorWeaponTierDamageMul.toFixed(2)}</span>
+          </div>
+        )}
         <div className="text-[13px] tracking-[0.12em] uppercase text-accent mb-[2px]">{weapon}</div>
         <div className="flex items-baseline justify-end gap-[6px]">
           <span className={`text-[30px] font-extrabold${ammo === 0 ? " text-danger" : ""}`}>{ammo}</span>

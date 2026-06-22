@@ -35,6 +35,9 @@ Scope: this entire `deadrotcom` repository.
 - Prefer workspace packages over local duplication.
 - Keep gameplay loops imperative and Three.js-centered; keep React in app shells
   and UI overlays.
+- Ship runtime raster (sprites, UI, textures) as WebP; PNG/JPEG are source/master
+  formats only (one exception: `ui/social/og.jpg`). See
+  `packages/assets/docs/asset-format-policy.md`; the `assets:check` gate enforces it.
 - Do not commit secrets, `.env` files, generated `dist`, `node_modules`, or
   local editor state.
 - Inspect `git status` before edits and preserve unrelated user changes.

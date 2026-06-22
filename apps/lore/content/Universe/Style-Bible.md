@@ -14,27 +14,29 @@ inherits:
 
 **At a glance:** the locked art bible · the one render look every creature/operator/machine wears · feeds [[DESIGN]] tokens + the `assetgen:` block · governs all 6 games.
 
-> **Status: LOCKED. House medium = medium-chunky DETAILED PIXEL ART** — decided 2026-06-04 via the style bake-off (shipshitgames/shipshitgames#62), NOT hi-fi render. This is the most-read art doc in the studio and it is the law. The render look, the lighting rig, the color discipline, the faction grammar, the Scourge parasite rule, and the per-asset recipes below are decided. Build on them — do not relitigate them. Palette and type tokens live in [[DESIGN]] (authoritative); this bible is their visual conscience. The machine-readable twin of everything here ships as the `assetgen:` block in [[DESIGN]]'s frontmatter, which the generator compiles into `style.generated.ts`. **Edit the bible, the generator changes.** One source of truth, no drift.
+> **Status: LOCKED. House medium = clean comic-book / cel-shaded ink** — decided 2026-06-17 after the pixel pass failed the readability and identity tests. The prior medium-chunky pixel-art target is now historical scaffolding only. This is the most-read art doc in the studio and it is the law. The render look, lighting rig, color discipline, faction grammar, Scourge parasite rule, and per-asset recipes are decided. Build on them — do not relitigate them. Palette and type tokens live in [[DESIGN]] (authoritative); this bible is their visual conscience. The machine-readable twin of everything here ships as the `assetgen:` block in [[DESIGN]]'s frontmatter. **Edit the bible, the generator changes.** One source of truth, no drift.
 
 ---
 
 ## 1. Philosophy — what we are making
 
-One parasite, six games, sixty-plus creatures, and a single world that has to read as one world from a billboard ten feet from a player's face down to a tower-defense unit the size of a thumbnail. We do not get coherence by hand-tuning each asset. We get it with two cheap, brutal levers — **one locked style-reference image per game** and **one DOOM color grade baked in post** — and a prompt skeleton frozen so hard that a noob with no taste can swap one line and get something amazing.
+One parasite, many games, sixty-plus creatures, and a single world that has to read as one world from a billboard ten feet from a player's face down to a tower-defense unit the size of a thumbnail. We do not get coherence by hand-tuning each asset. We get it with two cheap, brutal levers — **one locked style-reference image per game** and **one DOOM color grade baked in post** — and a prompt skeleton frozen so hard that a noob with no taste can swap one line and get something amazing.
 
 That is the whole bet: **amazing by default from a single prompt, forgiving of variance across the roster, reproducible at scale across providers.** The void, the rim-light, and the grade homogenize everything else. Optimize for that. Resist the urge to fiddle.
 
 The tone is [[Scourge]]-canon: brutal, fast, gallows-humor, streamable. The naming is hard and short — DEADLANE, lanes, breaches, the Rot, Purgers, Perdition. The look matches: blood on gunmetal, lit by furnace fire. If an asset doesn't feel like that, burn it and reshoot.
 
+The current shorthand is **DOOM x Berserk** for the Scourge and **Berserk x DOOM x Gears of War x God of War** for human operators: DOOM supplies the furnace, gunmetal, speed, and gore; Berserk supplies mass, silhouette cruelty, and the sense that the body has become a weapon; Gears-like infantry weight supplies battered practical armor; God-of-War-like mythic brutality supplies the readable heroic shape. These are taste notes, not a license to copy named characters, costumes, or fantasy decoration. No elegant swords, capes, clean white sci-fi, blue hero glow, or ornate paladin armor.
+
 ---
 
 ## 2. The house look (locked)
 
-**Medium-chunky DETAILED PIXEL ART.** True pixel art on a visible chunky pixel grid (rank-and-file ~110px tall; bosses ~180px) — bold hand-placed pixels with hard crisp edges, no anti-aliasing, ordered dithering, a fixed limited DOOM palette. High-detail and richly lit, like premium modern pixel-art (*Blasphemous*, *Dead Cells*) crossed with remastered 1990s DOOM sprites — but it reads **unmistakably as pixels**, never a smooth render. A single full-body subject, centered on a **near-black background**, with a **subtle dark outline** and one **hellfire rim-light** from a low side so it pops.
+**Clean comic-book / cel-shaded ink game art.** Bold black contour lines, graphic flat shadow shapes, hard readable value blocks, controlled grime, and strong silhouette signatures. The target read is a violent playable comic page: DOOM x Berserk x Gears x God of War weight, but game-readable and not buried in texture. A single subject or deliberate sheet layout sits on a plain background, with crisp cutout-friendly edges and one hellfire rim-light from a low side so it pops.
 
-It **is** chunky pixel art. It is **not** a smooth 3D render, **not** photorealistic, **not** anti-aliased, **not** painted concept art. The AI generator only *approximates* the grid — the **true pixel grid and palette are enforced in post** (box-downscale to the grid → hard palette remap → rembg cutout → lossless `.webp`), and sprites render in-engine with **NearestFilter**. If it looks airbrushed or like a rendered model, it's wrong. *(The chunkiness ladder settled this: finer reads as noise, bolder disintegrates — medium ~110px is the grid.)*
+It **is** comic/cel ink. It is **not** pixel art, **not** halftone dots, **not** stipple, **not** a field of noisy speckles, **not** a smooth 3D render, and **not** photorealistic. Runtime assets still ship as `.webp`, but production sheets should be high enough resolution to survive close FPS views before they are scaled in game.
 
-Silhouette-first is the law of this medium: at ~110px in a charging horde the **shape** carries the read, not the texture. Keep rank-and-file bold and simple; reserve fine detail for hero and boss. Coherence across the roster is pinned by the **fixed per-game style-reference image + the one fixed DOOM palette every sprite quantizes to** — not by per-asset fiddling.
+Silhouette-first is the law of this medium: in a charging horde the **shape** carries the read, not surface noise. Keep rank-and-file bold and simple; reserve fine line density for heroes and bosses. Coherence across the roster is pinned by the **fixed comic ink treatment + the one fixed DOOM palette family** — not by per-asset fiddling.
 
 ### What DOOM actually means here
 
@@ -97,7 +99,9 @@ This is the lighting rig, and it does not change. Two ingredients, both always o
 
 ## 7. Color discipline
 
-The one rule: **red + fire + metal + bone.** Near-monochrome **warm** grade. Bodies are desaturated — ash, charcoal, oxblood — so the **only saturated color in the frame is the emissive hellfire** (the heavy-metal-album-cover read). The sole exception is **the Scourge**, and only its breach cores: `toxic #8bdc1f`, as glow, never as body paint.
+The one rule: **red + fire + metal + bone as the grade.** The roster should not collapse into one unreadable red-green wall. Bodies stay desaturated — ash, charcoal, oxblood, rust, old bone — and then each host family or combat role gets a **muted material lane** under the same warm tint.
+
+The saturated colors are still controlled: emissive hellfire is hot, and **the Scourge** alone gets `toxic #8bdc1f` in breach cores / organs. Additional lanes exist for readability, not prettiness: acid-ochre sacs, bruised-violet membranes, hazard-yellow stencils, verdigris corrosion. They must feel stained into the material after the DOOM grade, never painted on top.
 
 | Token | Hex | Use |
 |-------|-----|-----|
@@ -112,8 +116,25 @@ The one rule: **red + fire + metal + bone.** Near-monochrome **warm** grade. Bod
 | `bone` | `#e9e3d6` | bone, ceramic, stencils, strong reads |
 | `ash` | `#9b958a` | dust, faded markings, dim detail |
 | `toxic` | `#8bdc1f` | **the Scourge ONLY** — breach-core / node glow, sparingly |
+| `acidOchre` | `#b9a83a` | spore sacs, bile membranes, ranged hazard organs |
+| `hazardYellow` | `#d6a21f` | Warden hazard marks, worn industrial stencils |
+| `bruisedViolet` | `#5a3a6f` | wing membranes / voidship shadow tissue, muted only |
+| `verdigris` | `#3f6b5d` | oxidized old metal, voidship corrosion, never clean teal |
 
 **Forbidden everywhere:** neon, magenta, cyan, cyberpunk glow, cool blue/teal grades, pastels, rainbow saturation. *If it doesn't feel like blood on gunmetal, it's wrong.*
+
+### Color lanes: same tint, clearer reads
+
+Use lanes to answer "what am I looking at?" from one asset to another:
+
+- **Heavy melee / Ripper lane:** blood, oxblood, black chitin, bone blades, tiny toxic core.
+- **Ranged / Spitter lane:** acidOchre sacs and sick toxic organs, darker limbs, clear projectile anatomy.
+- **Airborne lane:** bruisedViolet membranes, red-black body, bone tips, small toxic organs.
+- **Machine-graft lane:** gunmetal, rust, verdigris corrosion, cables as tendrils, toxic engine-organ.
+- **Warden lane:** gunmetal and worn steel with hazardYellow stencils, ember hardware, square silhouettes.
+- **Pyre lane:** coal / gunmetal armor, bone ceramic plates, hellfire heat seams, bloodHot furnace reads.
+
+The lane color must sit inside the material. A purple membrane is allowed; a purple monster is not. An ochre acid sac is allowed; yellow body paint is not. A verdigris corroded plate is allowed; clean teal tech glow is not.
 
 ### Lock the palette in post, not in the model
 
@@ -191,20 +212,20 @@ The third faction, [[The-Listeners]], reads visually as battered Warden/Pyre sal
 
 Same parasite grammar, different host underneath. Pick a host family per batch; the same threat role can ship as several hosts across games.
 
-| Host family | Visual read | Typical use |
-|-------------|-------------|-------------|
-| **Rot-flesh** | the default first-read: humanoid/animal body split open by parasite growth, ruined armor or bone still visible, wet red tissue, black chitin, toxic-green nodes | base swarm, early Scourge-Survivors enemies, common Deadlane waves |
-| **Chitin warhost** | conquered shell-world race: hard carapace, mandibles, hooked/blade limbs, claw clusters, tendrils through the joints | fast melee, elite chargers, armored swarm |
-| **Mycelial spore host** | fungal colony body: bulging sacs, breathing vents, fibrous root tendrils, spores implied by silhouette, toxic-green nodes | spitters, area denial, Starblight mines, breach growth |
-| **Machine-graft host** | hijacked machine/weapon/drone: rusted metal shell, cables as tendrils, parasite tissue through the seams, barrels and engines turned into organs | ranged units, tower-breakers, Deadlane siege, infected weapons |
-| **Bone-titan host** | huge alien megafauna/warrior frame: horns, rib cages, bone plates, massive limbs bound into a war body by parasite tissue | bosses, minibosses, Pactfall neutral objectives, heavy waves |
-| **Voidship host** | infected craft / orbital wreckage: hull plates as armor, engines as organs, cables as tendrils, toxic-green breach heart | Starblight, Scourge-Fighter, Orbital-Breach-Carrier, orbital bosses |
+| Host family | Visual read | Color lane | Typical use |
+|-------------|-------------|------------|-------------|
+| **Rot-flesh** | the default first-read: humanoid/animal body split open by parasite growth, ruined armor or bone still visible, wet red tissue, black chitin, toxic-green nodes | oxblood, black chitin, bone, tiny toxic nodes | base swarm, early Scourge-Survivors enemies, common Deadlane waves |
+| **Chitin warhost** | conquered shell-world race: hard carapace, mandibles, hooked/blade limbs, claw clusters, tendrils through the joints | dark shell, bone hooks, rust-orange edge wear | fast melee, elite chargers, armored swarm |
+| **Mycelial spore host** | fungal colony body: bulging sacs, breathing vents, fibrous root tendrils, spores implied by silhouette, toxic-green nodes | acidOchre sacs, sick toxic organs, ash-grey fibers | spitters, area denial, Starblight mines, breach growth |
+| **Machine-graft host** | hijacked machine/weapon/drone: rusted metal shell, cables as tendrils, parasite tissue through the seams, barrels and engines turned into organs | gunmetal, rust, verdigris corrosion, toxic engine-organ | ranged units, tower-breakers, Deadlane siege, infected weapons |
+| **Bone-titan host** | huge alien megafauna/warrior frame: horns, rib cages, bone plates, massive limbs bound into a war body by parasite tissue | bone / ash plates, dark marrow red, toxic core | bosses, minibosses, Pactfall neutral objectives, heavy waves |
+| **Voidship host** | infected craft / orbital wreckage: hull plates as armor, engines as organs, cables as tendrils, toxic-green breach heart | void-black hull, gunmetal, bruisedViolet shadow tissue, verdigris scarring | Starblight, Scourge-Fighter, Orbital-Breach-Carrier, orbital bosses |
 
 For every Scourge batch, record both the **threat role** (Ripper, Spitter, elite, boss, craft, carrier…) and the **host family** so the army stays varied but coherent.
 
 ---
 
-## 10. One look, six cameras — identity never changes
+## 10. One look, many cameras — identity never changes
 
 The style-ref pins the **rendering style and grade;** per-game **camera framing** changes around it. Same sculpt, same materials, same rim, same DOOM grade — re-shot from the game's angle. These framing strings are the canon `GAME_FRAMING` map (mirrored in the `assetgen:` block):
 
@@ -213,6 +234,7 @@ The style-ref pins the **rendering style and grade;** per-game **camera framing*
 | [[Scourge-Survivors]] | first-person billboard sprite, front-facing, full body |
 | [[Deadlane]] | top-down / high-angle, silhouette readable from above |
 | [[Pactfall]] | isometric 3/4 champion scale |
+| [[Brawl]] | side-on / 3/4 trench-fighter scale, readable from Duel and arena distance |
 | [[Starblight]] | side-on / top-down arcade, crisp readable silhouette |
 | [[Redline]] | side-on Sonic-like runner profile |
 | [[Rothulk]] | side-on Mario-like platformer profile |
@@ -232,18 +254,19 @@ A subject is rendered for one of two jobs. **Never request a rim-lit void and a 
 
 **Default to HERO/VOID + rembg.** gpt-image-2 cannot output transparency anyway; do not chase native alpha. The `transparent background` notion refers to the *final delivered cutout*, produced in post — not to the generated frame.
 
-**No separate "hi-fi" or website track.** Key art, marketing plates, and website character/bestiary portraits are the *same* locked pixel medium (§1–2) on the HERO/VOID background — not concept renders. Any prompt asking for "hi-fi render" or "not pixel art" is off-canon. The pre-lock 2026-06-04 placeholder batches that used hi-fi render are superseded; their assets are slated for regeneration in the locked pixel style.
+**No separate "hi-fi" or website track.** Key art, marketing plates, and website character/bestiary portraits use the same locked comic/cel-ink medium (§1–2) on the HERO/VOID background — not generic concept renders. Any prompt asking for pixel art, halftone dots, stipple, noisy speckled lights, or dotted texture is off-canon unless explicitly marked as legacy scaffolding.
 
 ---
 
 ## 12. The negative-prompt set
 
-Always-on style exclusions. On **FLUX/fal** these map to the real `negative_prompt` param; on **gpt-image-2 / codex** there is no negative field, so fold them into the positive suffix as `only / single / plain` constraints. The canonical set (machine twin: `DESIGN.md` → `assetgen.negativePrompts` — keep the two in sync, and **never** list `pixel art` here: it is the locked house medium, §1–2, not an exclusion):
+Always-on style exclusions. On providers with a real negative prompt these map there; on providers without one, fold them into the positive suffix as `only / single / plain` constraints. The canonical set (machine twin: `DESIGN.md` → `assetgen.negativePrompts`) now treats pixel art and dotted/noisy effects as exclusions:
 
 ```text
 photorealistic, photographic skin, shallow depth of field, lens bokeh, smooth 3D render,
-rendered 3D model, anti-aliased smooth edges, airbrushed, hi-fi render,
-flat 2D vector illustration, cel-shaded cartoon, anime, cute, chibi, slender elegant
+rendered 3D model, pixel art, visible square pixel grid, ordered dithering, halftone dots,
+stipple, dotted light artifacts, noisy speckles, airbrushed,
+flat 2D vector illustration, anime, cute, chibi, slender elegant
 graceful proportions, symmetrical pretty anatomy, humanoid fantasy knight in clean
 plate armor, medieval robes capes or swords, clean minimal sci-fi, superhero
 proportions, soft diffuse even lighting, bright daylight, high-key flat lighting,
@@ -264,7 +287,53 @@ logo, UI frames or HUD, cropped or close-up framing that hides the silhouette
 
 ---
 
-## 13. Per-asset-type direction + prompt skeletons
+## 13. Active Comic Prompt Skeleton
+
+Every recipe inherits the same spine — the comic house look (§2), the DOOM grade (§7), and the Scourge parasite rule (§9). Build prompts from these blocks and change only the subject, camera, and deliverable:
+
+```text
+[HOUSE LOOK]   clean comic-book / cel-shaded ink game asset, bold black contour
+               lines, graphic flat shadow shapes, readable silhouette-first design,
+               controlled grime, crisp cutout-friendly edges
+[SUBJECT]      {the variable block — creature, character, weapon, UI, arena}
+[FRAMING]      the target game's camera / asset job
+[LIGHTING]     one hard hellfire rim-light, orange-to-red, deep falloff into
+               crushed shadow, internal emissive glow from wounds, vents, eyes,
+               or toxic-green Scourge parasite cores
+[BACKGROUND]   plain background for runtime sheets, HERO/VOID for lore/marketing,
+               never wallpaper scenery for a sprite sheet
+[NEGATIVES]    no pixel art, no halftone dots, no stipple, no dotted light artifacts,
+               no noisy speckles, no painterly sparkle, no text unless UI type is
+               the actual deliverable
+```
+
+**FPS enemy sheet clause:**
+
+```text
+front, true side, and back views of the same design, full body, feet on one
+baseline, generous padding, transparent-cutout friendly, clean comic/cel ink,
+silhouette readable at first-person combat distance.
+```
+
+**FPS weapon sheet clause:**
+
+```text
+first-person weapon viewmodel with visible armored hands and forearms, hands
+gripping correctly, muzzle pointing away from the player into screen space,
+not reversed, clean comic/cel ink, transparent-cutout friendly background.
+```
+
+**UI / onomatopoeia clause:**
+
+```text
+comic-page UI board with slanted ink panels, heavy black borders, chunky
+hand-lettered display type, readable impact words such as KRAK, CHUNK, THUD,
+RIP, BURN, HEADSHOT, RELOAD; no pixel font, no halftone, no noisy speckles.
+```
+
+## 14. Historical Pixel Recipes
+
+The pixel recipes below are retained for old asset archaeology and temporary scaffolding only. They are **not** the active target for new Deadrot masters.
 
 Every recipe below inherits the same spine — the house look (§2) and the DOOM grade (§7) — and changes only the **camera, scale/anchor, and background track.** Build each prompt from five frozen blocks plus one variable block; freeze everything except `{...}` fields:
 
@@ -298,7 +367,7 @@ no floor plane, no cast shadow on a ground, no text, no watermark, no logo.
 ### 13.1 FPS billboard — `scourge-survivors` (multi-view: front / side / back)
 
 - **Framing:** *first-person game billboard sprite, front-facing, full body.* Subject faces camera dead-on (front); side and back views share the identical design so the engine can mirror the side in code.
-- **Scale / anchor:** single centered full-body figure, **feet on one baseline,** no cropped boots, generous even padding. Pixel-grid targets after post: **rank-and-file ≈ 110 px tall; bosses ≈ 180 px tall.** Source renders may be larger, but the production target is the locked pixel grid, not hi-fi cutout height.
+- **Scale / anchor:** single centered full-body figure, **feet on one baseline,** no cropped boots, generous even padding. Legacy pixel-grid targets after post were **rank-and-file ≈ 110 px tall; bosses ≈ 180 px tall.** New comic production sheets should keep higher source resolution and clean cutout padding.
 - **Look notes:** this is the **hero of the hero track** — seen nose-to-nose. Push the strongest internal emissive. Keep the silhouette legible in pure black at FPS distance. Side view = true profile (mirrorable); back view = rig / backpack / host-rupture readable. All three views are the *same design* — generate as a set or restate invariants between calls.
 
 ```text
@@ -510,7 +579,7 @@ Coherence comes from **conditioning, not seeds.** Seeds are a weak, provider-spe
 
 > **frozen prompt skeleton + swapped `{SUBJECT}` line + the game's pinned style-ref.**
 
-The reference-image paths are canon in the `assetgen:` block (`referenceImages.<game>` → `lore/Art/style-refs/<game>.webp`). The catalog/provider plumbing to pass them is downstream work, but the **paths are now law** so providers can wire `image_urls` later without another bible edit. Until the plumbing ships, generate against the ref manually in the noob loop.
+The reference-image paths are canon in the `assetgen:` block (`referenceImages.<game>` → `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/<game>.webp`). The catalog/provider plumbing to pass them is downstream work, but the **paths are now law** so providers can wire `image_urls` later without another bible edit. Until the plumbing ships, generate against the ref manually in the noob loop.
 
 ### Per provider
 

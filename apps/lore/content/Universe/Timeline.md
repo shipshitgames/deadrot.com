@@ -1,12 +1,19 @@
 # Timeline
 
+**At a glance:** the anchor events of the shared universe, in locked order · from [[Zero-Day]] (first contact, lost) through the Long Fall, the Schism that split the [[The-Wardens|Wardens]] and [[The-Pyre|Pyre]], the [[The-Pact|Pact]], and the Resistance-era Lane Wars and Descent · order is locked, exact dates stay [[CANON|open]].
+
 > Anchor events of the shared universe. Order is locked; exact dates are [[CANON|open]].
 
 - **Zero Day — the Invasion.** First contact with [[Scourge|the Scourge]] from the void.
-  Humanity fights the orbital and sky battle **and loses** — not ready, too many. The world
-  falls; the first breaches root groundside. The origin game: [[Zero-Day]]. *(See [[CANON]] §3.)*
-- **The Long Fall.** The months after Zero Day: cities consumed, fleets gone, survivors
-  scattering down the only roads left — the **lanes**. The old world ends here.
+  Humanity fights the orbital and sky battle **and loses** — not ready, too many. The
+  **Skywatch**, the old world's one fleet, breaks over **[[The-Lantern|the Lantern]]** until
+  the command ring goes dark; the evacuation runs out of **[[Cradle-Field]]** into a falling
+  sky and mostly never clears; the first breaches root groundside. The origin sequence:
+  [[Zero-Day]], now folded into [[Starblight]] as its first-contact last stand. *(See
+  [[CANON]] §3.)*
+- **The Long Fall.** The months after Zero Day: cities consumed, the **Skywatch** and every
+  fleet after it gone, survivors scattering down the only roads left — the **lanes**. The old
+  world ends here.
 - **The Schism.** The survivors split by doctrine. The remnant army holds and rebuilds as the
   [[The-Wardens|Wardens]]; a zealot order breaks away — the [[The-Pyre|Pyre]] — convinced that
   holding is just a slower death and the only cure is fire.

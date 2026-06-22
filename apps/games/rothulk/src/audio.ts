@@ -1,13 +1,15 @@
-// Rothulk audio: the shared Deadrot engine with the zero-asset house SFX
-// palette (the jump/land cues were literally authored for this game) plus the
-// shared breach-collapse music bed. Levels/mute follow the global settings store.
+// Rothulk audio: the shared Deadrot engine with promoted shared samples plus
+// the house fallback palette for cues that are still procedural. Levels/mute
+// follow the global settings store.
 
 import { bindAudioToGlobalSettings, createDeadrotAudio } from "@deadrot/game-kit/audio";
-import breachCollapse from "@shipshitgames/assets/shared/audio/breach-collapse.ogg?url";
+import breachCollapse from "@shipshitgames/assets/shared/audio/breach-collapse.webm?url";
+import hitImpact from "@shipshitgames/assets/shared/audio/sfx/hit.webm?url";
 
 export const audio = createDeadrotAudio({
   musicTracks: { main: { url: breachCollapse, volume: 0.18, loop: true } },
   defaultTrack: "main",
+  sfxSamples: { hit: { url: hitImpact, volume: 0.86, loop: false } },
 });
 
 bindAudioToGlobalSettings(audio);

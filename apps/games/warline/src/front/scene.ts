@@ -475,7 +475,7 @@ export function disposeObject(object: THREE.Object3D) {
   });
 }
 
-export function disposeMaterial(material: THREE.Material) {
+function disposeMaterial(material: THREE.Material) {
   const maybeMaps = material as THREE.Material & {
     map?: THREE.Texture;
     emissiveMap?: THREE.Texture;

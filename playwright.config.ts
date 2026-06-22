@@ -53,7 +53,25 @@ export default defineConfig({
   projects: games.flatMap((game) =>
     activeViewports.map((viewport) => ({
       name: `${game.slug}:${viewport.name}`,
-      testMatch: /games\.spec\.ts/,
+      testMatch: [
+        /games\.spec\.ts/,
+        /rothulk-platforming\.spec\.ts/,
+        /warline-reporting\.spec\.ts/,
+        /warline-war-effort\.spec\.ts/,
+        /pactfall-moba\.spec\.ts/,
+        /brawl-arena\.spec\.ts/,
+        /scourge-arena-environments\.spec\.ts/,
+        /scourge-arena-readability\.spec\.ts/,
+        /scourge-survivors-operation-summary\.spec\.ts/,
+        // Dedicated deep-gameplay specs for the games that previously only had
+        // the shared boot smoke (the per-game coverage invariant is enforced by
+        // e2e/coverage.test.ts).
+        /scourge-survivors-sandbox\.spec\.ts/,
+        /redline-courier\.spec\.ts/,
+        /starblight-drydock\.spec\.ts/,
+        /deadlane-defense\.spec\.ts/,
+        /warline-front\.spec\.ts/,
+      ],
       use: {
         ...viewport.device,
         baseURL: `http://127.0.0.1:${game.port}`,

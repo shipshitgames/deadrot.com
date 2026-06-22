@@ -86,13 +86,7 @@ export function GameSettingsScreen({
           {children}
         </MainMenuCopy>
         <MainMenuNav aria-label="Settings">
-          <MainMenuAction
-            type="button"
-            variant="primary"
-            label={backLabel}
-            meta={backMeta}
-            onClick={() => onClose?.()}
-          />
+          <MainMenuAction type="button" variant="back" label={backLabel} meta={backMeta} onClick={() => onClose?.()} />
         </MainMenuNav>
       </MainMenuLayout>
     </MainMenuScreen>

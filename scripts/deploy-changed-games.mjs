@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import { existsSync, readdirSync, readFileSync } from "node:fs";
-import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { existsSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import path from "node:path";
 
 const repoRoot = path.resolve(new URL("..", import.meta.url).pathname);
 const gamesRoot = path.join(repoRoot, "apps/games");
@@ -32,6 +32,14 @@ const gamePackages = new Map(
   }),
 );
 
+// Non-game Vercel projects that also ship on a release (tag-cut, `--all`) or when
+// their own files change. Same prebuilt flow as the games; they carry no game
+// Sentry sourcemaps, so the Sentry step is skipped for them.
+const EXTRA_APPS = [
+  { slug: "web", dir: "apps/web" },
+  { slug: "lore", dir: "apps/lore" },
+];
+
 const changedFiles = all ? [] : unique([...gitChangedFiles(), ...gitLocalChangedFiles(), ...gitUntrackedFiles()]);
 const deployReasons = new Map(gameDirs.map((slug) => [slug, []]));
 
@@ -43,24 +51,62 @@ if (all) {
 
 const gamesToDeploy = gameDirs.filter((slug) => deployReasons.get(slug).length > 0);
 
-if (!gamesToDeploy.length) {
-  console.log(`No game code changes detected between ${base} and ${head}; skipping game deploys.`);
+// Unified deploy set: changed/`--all` games (with Sentry sourcemaps) plus the
+// non-game Vercel apps when releasing or when their own files changed.
+const targets = gamesToDeploy.map((slug) => ({ slug, dir: `apps/games/${slug}`, sentry: true }));
+for (const app of EXTRA_APPS) {
+  if (all || changedFiles.some((file) => file.startsWith(`${app.dir}/`))) {
+    targets.push({ slug: app.slug, dir: app.dir, sentry: false });
+  }
+}
+
+if (!targets.length) {
+  console.log(`No deployable changes detected between ${base} and ${head}; nothing to deploy.`);
   process.exit(0);
 }
 
-console.log(`Game deploy candidates (${preview ? "preview" : "production"}):`);
-for (const slug of gamesToDeploy) {
-  const reasons = deployReasons.get(slug).slice(0, 6).join(", ");
-  const more = deployReasons.get(slug).length > 6 ? ` (+${deployReasons.get(slug).length - 6} more)` : "";
-  console.log(`- ${slug}: ${reasons}${more}`);
+console.log(`Deploy candidates (${preview ? "preview" : "production"}):`);
+for (const t of targets) {
+  const reason = t.sentry ? deployReasons.get(t.slug).slice(0, 4).join(", ") : all ? "--all" : "changed files";
+  console.log(`- ${t.slug} (${t.dir}): ${reason}`);
 }
 
 if (dryRun) process.exit(0);
 
-for (const slug of gamesToDeploy) {
-  const cwd = path.join(gamesRoot, slug);
-  if (!noBuild) run("bun", ["run", "build"], cwd);
-  run("bunx", ["vercel", "deploy", ...(preview ? [] : ["--prod"]), "--yes", "--cwd", cwd], repoRoot);
+const target = preview ? "preview" : "production";
+const prodFlag = preview ? [] : ["--prod"];
+
+for (const t of targets) {
+  const cwd = path.join(repoRoot, t.dir);
+  // The target project is selected via env (VERCEL_PROJECT_ID/ORG_ID), NOT --cwd:
+  // `vercel --cwd <app>` makes Vercel apply rootDirectory on top of the cwd
+  // (<app>/<app>) and every command fails.
+  const link = readProjectLink(cwd, t.slug);
+  const deployEnv = { ...process.env, VERCEL_ORG_ID: link.orgId, VERCEL_PROJECT_ID: link.projectId };
+
+  if (!noBuild) {
+    // Build locally and deploy the prebuilt output (`vercel build` → .vercel/output,
+    // `deploy --prebuilt`). This uploads only the built output (~MBs) instead of the
+    // whole working tree (~1.3GB of source + tracked assets) and skips a redundant
+    // remote build. We reset repo-root .vercel first so each app pulls/builds clean;
+    // the committed per-app links under <app>/.vercel are untouched.
+    rmSync(path.join(repoRoot, ".vercel"), { recursive: true, force: true });
+    run("bunx", ["vercel", "pull", "--yes", `--environment=${target}`], repoRoot, deployEnv);
+    run("bunx", ["vercel", "build", ...prodFlag], repoRoot, deployEnv);
+    // Upload sourcemaps from the PREBUILT output (.vercel/output/static), the dir
+    // that actually ships — so injected debug IDs land in the deployed JS and maps
+    // are stripped from what's served. Games only; best-effort: a Sentry hiccup
+    // (missing project, CLI download blip) must never block a production release.
+    if (t.sentry) {
+      runBestEffort(
+        "node",
+        ["scripts/sentry-upload-vite-sourcemaps.mjs", `--app=${t.slug}`, "--dist-dir=.vercel/output/static"],
+        repoRoot,
+        `${t.slug}: Sentry sourcemap upload`,
+      );
+    }
+  }
+  run("bunx", ["vercel", "deploy", "--prebuilt", ...prodFlag, "--yes"], repoRoot, deployEnv);
 }
 
 function flagValue(name) {
@@ -95,9 +141,37 @@ function runGit(gitArgs, required) {
   return result;
 }
 
-function run(command, commandArgs, cwd) {
-  const result = spawnSync(command, commandArgs, { cwd, stdio: "inherit", shell: false });
+function run(command, commandArgs, cwd, env) {
+  const result = spawnSync(command, commandArgs, { cwd, stdio: "inherit", shell: false, env: env ?? process.env });
   if (result.status !== 0) process.exit(result.status ?? 1);
+}
+
+// Like run(), but never aborts the deploy — used for the best-effort Sentry
+// sourcemap upload. Surfaces a GitHub-annotated warning so failures stay visible.
+function runBestEffort(command, commandArgs, cwd, label) {
+  const result = spawnSync(command, commandArgs, { cwd, stdio: "inherit", shell: false });
+  if (result.status !== 0) {
+    console.warn(
+      `::warning::${label} failed (status ${result.status ?? "unknown"}); continuing without blocking the deploy.`,
+    );
+  }
+}
+
+// Read a game's committed Vercel link (projectId/orgId). The deploy selects the
+// project via env from this file rather than --cwd; missing links are fatal
+// because an unlinked deploy would silently create the wrong project.
+function readProjectLink(cwd, slug) {
+  const linkPath = path.join(cwd, ".vercel", "project.json");
+  if (!existsSync(linkPath)) {
+    console.error(`${slug}: missing ${path.relative(repoRoot, linkPath)} — commit the Vercel project link.`);
+    process.exit(1);
+  }
+  const link = JSON.parse(readFileSync(linkPath, "utf8"));
+  if (!link.projectId || !link.orgId) {
+    console.error(`${slug}: ${path.relative(repoRoot, linkPath)} is missing projectId/orgId.`);
+    process.exit(1);
+  }
+  return link;
 }
 
 function lines(value) {

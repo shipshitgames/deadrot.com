@@ -1,5 +1,7 @@
 # Cosmology — the Rules of the World
 
+**At a glance:** the in-world rulebook for how the world works · the [[Scourge]] is a host-dependent parasite that punches in through physical **breach** nests and spreads along the **lanes** · its hive mind ([[CANON|the Choir]]) has a limited radius, so **isolation** — backed by **starvation**, denying it hosts — is how humanity fights at all · all load-bearing facts are locked in [[CANON]].
+
 > The load-bearing rules are **locked** in [[CANON]]. This page is the in-world telling.
 
 ## The Scourge's nature
@@ -11,7 +13,7 @@ extinguishes a world, and **jumps to the next**. See [[CANON]] §1–2 and [[Sco
 Where the Scourge **punches into a world from the void** — orbital descent, crashed
 breach-ships, the wound it burrows and roots into. Physical, entrenched **nests** that pulse,
 escalate, and spawn waves — *not* mystical rifts. The source of every game's groundside
-conflict. (Origin: [[Zero-Day]].)
+conflict. (Origin: [[Zero-Day]], the first-contact sequence inside [[Starblight]].)
 
 ## The Choir — the hive mind
 The Scourge knows everything its parts know, all at once, over a signal called **the Choir**.

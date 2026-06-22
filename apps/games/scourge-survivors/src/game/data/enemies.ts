@@ -1,7 +1,27 @@
 // Shared Scourge enemy archetypes. These are deliberately data-first so both
 // structured runs and Survivors swarms can mix the same readable host variants.
+//
+// Canon lineage. The vault (apps/lore/content/Bestiary) is the source of truth;
+// `@shipshitgames/assets/lore` is its typed derivative. Every archetype here is
+// a SWARM-tier host (`loreTier: "swarm"`). The bestiary's canon ELITES (Render
+// in the typed lore; Cairn, Sower in the vault) are a separate pressure tier
+// (SCOURGE_THREAT_TIERS.elite), and the named 10:00 reaper is the breach-boss —
+// so swarm archetypes are NOT renamed onto elite faces. Names map to canon as:
+//   grunt     → Swarm Ripper   (bestiary "swarm-ripper", melee fodder)
+//   shooter   → Swarm Spitter  (bestiary "swarm-spitter", ranged form)
+//   hound     → Wound-Hound    (bestiary "wound-hound", Chitin Warhost tracker)
+//   flier     → Quaver         (bestiary "quaver", airborne Rot-flesh relay)
+//   charger   → Chitin Charger (Chitin Warhost family, like the elite Render;
+//                               kept swarm-tier — a descriptive name, no slug)
+//   tank      → Bone-Hulk Swarm(Bone Titan Host bulk, like the miniboss Cairn;
+//                               kept swarm-tier — a descriptive name, no slug)
+//   swarmling → Feral Swarmling(severed/feral fodder, CANON §6 — descriptive)
+//   splitter  → Brood Splitter (buds smaller broods on death — descriptive)
+// The four bestiary-exact names (Swarm Ripper, Swarm Spitter, Wound-Hound,
+// Quaver) plus the Breach-Boss label are pinned to the typed lore by
+// tests/unit/enemy-bestiary-canon.test.ts — keep them in sync with the vault.
 
-export type EnemyArchetypeId = "grunt" | "swarmling" | "charger" | "shooter" | "flier" | "tank" | "splitter";
+export type EnemyArchetypeId = "grunt" | "swarmling" | "hound" | "charger" | "shooter" | "flier" | "tank" | "splitter";
 export type ScourgeThreatTier = "swarm" | "elite" | "breachBoss";
 
 export const SCOURGE_THREAT_TIERS: Record<
@@ -84,6 +104,22 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
     earlyWeight: 0.22,
     lateWeight: 0.34,
   },
+  hound: {
+    id: "hound",
+    name: "Wound-Hound",
+    loreTier: "swarm",
+    speedMul: 1.72,
+    hpMul: 0.58,
+    scale: 0.86,
+    color: 0x8bdc1f,
+    attackDamage: 4,
+    xp: 2,
+    mass: 0.62,
+    staggerMul: 1.45,
+    spawnAfter: 16,
+    earlyWeight: 0.16,
+    lateWeight: 0.3,
+  },
   charger: {
     id: "charger",
     name: "Chitin Charger",
@@ -120,7 +156,7 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
   },
   flier: {
     id: "flier",
-    name: "Quaver Host",
+    name: "Quaver",
     loreTier: "swarm",
     speedMul: 1.18,
     hpMul: 0.82,
@@ -176,6 +212,7 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
 export const SURVIVORS_ARCHETYPE_IDS: EnemyArchetypeId[] = [
   "grunt",
   "swarmling",
+  "hound",
   "charger",
   "shooter",
   "flier",
@@ -184,7 +221,9 @@ export const SURVIVORS_ARCHETYPE_IDS: EnemyArchetypeId[] = [
 ];
 
 export function pickWeightedEnemyArchetype(runTime: number, chapterIndex = 0): EnemyArchetypeDef {
-  const maturity = Math.max(0, Math.min(1, (runTime - 20) / 230 + chapterIndex * 0.08));
+  // Divisor renormalized for the 600s reaper timeline (#278): the mix matures
+  // near run end just like before — (600-20)/535 ≈ 1.08 vs old (270-20)/230 ≈ 1.09.
+  const maturity = Math.max(0, Math.min(1, (runTime - 20) / 535 + chapterIndex * 0.08));
   let total = 0;
   const weighted: { def: EnemyArchetypeDef; weight: number }[] = [];
   for (const id of SURVIVORS_ARCHETYPE_IDS) {
@@ -207,6 +246,7 @@ export function pickWeightedEnemyArchetype(runTime: number, chapterIndex = 0): E
 export function campaignArchetypeForWave(waveIndex: number, spawnIndex: number, stageIndex: number): EnemyArchetypeDef {
   const cadence = (spawnIndex + waveIndex * 2 + stageIndex) % 8;
   if (waveIndex >= 2 && cadence === 0) return ENEMY_ARCHETYPES.tank;
+  if (waveIndex >= 1 && cadence === 1) return ENEMY_ARCHETYPES.hound;
   if (waveIndex >= 1 && cadence === 2) return ENEMY_ARCHETYPES.charger;
   if (waveIndex >= 1 && cadence === 3) return ENEMY_ARCHETYPES.flier;
   if (cadence === 4 || cadence === 5) return ENEMY_ARCHETYPES.shooter;

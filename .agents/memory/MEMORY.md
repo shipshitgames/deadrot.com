@@ -1,6 +1,6 @@
 # Deadrot Monorepo - Repo Memory
 
-last_verified: 2026-06-10
+last_verified: 2026-06-17
 
 ## What this is
 The shipped Deadrot monorepo (Turborepo + Bun), GitHub
@@ -45,6 +45,8 @@ owned by the sibling `../shipshitgames` repo, not a Deadrot-owned package.
 
 Workflow expectations for agents are documented in
 `.agents/memory/workflow.md`.
+Master asset layout and sprite atlas conventions are documented in
+`.agents/memory/masters-and-sprite-atlases.md`.
 
 Studio tooling that builds/generates those assets lives in the sibling repo:
 
@@ -63,6 +65,13 @@ package path or release, not from a divergent local fork.
 Do not move `packages/assetgen` into this repo. Assetgen is the studio/product
 CLI we need to ship and dogfood from the sibling `shipshitgames` repo.
 
+When asset generation, cleanup, sprite splitting, atlas packing, pixelization,
+promotion, indexing, provider-cache rescue, or other reusable asset tooling is
+needed, implement or extend it in `../shipshitgames/packages/assetgen` or the
+Ship Shit Games CLI first. Product repos such as `deadrotcom` should call that
+CLI and store curated outputs, not grow duplicate one-off scripts. Track CLI
+coverage in `shipshitgames/shipshit.games#204`.
+
 Do not create a separate root `deadrotcom/lore` vault unless the user explicitly
 asks for that move. The current Deadrot Obsidian vault is
 `apps/lore/content`.
@@ -70,6 +79,27 @@ asks for that move. The current Deadrot Obsidian vault is
 ## Asset Rule
 If it ships to players, is imported by a game, or is part of Deadrot asset
 history that must be preserved, it belongs under `packages/assets`.
+
+## Art Direction Lock
+
+As of 2026-06-17, Deadrot's target visual language is **clean comic-book /
+cel-shaded ink**, not chunky pixel art. The desired read is a violent playable
+comic page: bold black contour lines, flat readable value blocks, graphic
+shadows, controlled grime, sharp silhouettes, and faction color discipline.
+
+Pixel-art assets may remain as temporary runtime scaffolding while production
+comic sheets are generated and promoted, but new masters should not reinforce
+the old pixel target. Avoid halftone dots, stipple fields, noisy speckles,
+dithered pixel grids, fake bokeh, and painterly sparkle. The Scourge must read
+as parasite takeover in every design: host flesh/armor/machine being worn,
+ruptured seams, tendrils through joints, black chitin over stolen bone/metal,
+and toxic-green breach cores only as parasite organs.
+
+Comic runtime assets still follow the normal custody pipeline: generated
+originals under `packages/assets/sources/generated`, approved non-runtime
+masters under `packages/assets/masters`, runtime rasters as WebP under
+`packages/assets/games/<game>/...`, and manifest/license records before game
+code references them.
 
 Runtime asset folders should be semantic and scan-friendly. Prefer grouping by
 game, domain, faction, and name, for example:
@@ -84,6 +114,19 @@ game, domain, faction, and name, for example:
 Do not leave permanent generated-image history in temporary cache folders such
 as `~/.codex/generated_images/`; preserve originals under
 `packages/assets/sources/generated/`.
+
+Non-runtime master assets also belong under `packages/assets`, not in the lore
+vault. Use `packages/assets/masters/<type>/<domain>/<asset-id>/` for new master
+types (`art`, `sprites`, `models`, `audio`, `ui`, etc.). Lore Markdown may
+reference/embed those package assets, but `apps/lore/content` should not become
+a second asset store. Existing `apps/lore/content/Assets/Art-Masters` files are
+legacy/migration debt until they are deliberately moved with links preserved.
+
+Sprite runtime should move toward atlas + JSON metadata packs. Source sheets may
+be `1xN` for single-view strips or `DxN` grids for directional animation; for
+Scourge Survivors billboard enemies, use `3xN` source sheets (`front`, `side`,
+`back` rows; frames as columns). Runtime systems should resolve sprites by
+manifest id and metadata, not by hardcoded grid math.
 
 ## Package Publishing Rule
 Do not publish Deadrot-specific `@deadrot/*` aliases/packages by default. While

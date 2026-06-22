@@ -1,0 +1,372 @@
+{
+  "version": "0.1.0",
+  "updated": "2026-06-12",
+  "scope": "shared audio assets used identically by Deadrot games",
+  "notes": [
+    "Runtime files stay under packages/assets/shared/audio.",
+    "Master exports and generation history stay under packages/assets/sources/generated.",
+    "Code-generated placeholders are marked as replacementStatus=needs-elevenlabs until promoted.",
+    "Procedural fallback cues come from @deadrot/game-kit/audio DEADROT_SFX_PALETTE until promoted to authored samples."
+  ],
+  "assets": [
+    {
+      "id": "audio-breach-collapse",
+      "title": "Breach Collapse SFX",
+      "kind": "sfx",
+      "runtimePath": "shared/audio/breach-collapse.webm",
+      "runtimeFormat": "webm-opus",
+      "durationSeconds": 2.008,
+      "loop": false,
+      "source": {
+        "type": "elevenlabs-sfx",
+        "tool": "ElevenLabs Sound Effects API",
+        "model": "eleven_text_to_sound_v2",
+        "masterPath": "sources/generated/2026-06-12/shared/audio/elevenlabs-examples/breach-collapse.mp3"
+      },
+      "replacementStatus": "promoted",
+      "elevenLabsPrompt": "A heavy non-musical sci-fi horror breach collapse: low metallic implosion, wet stone cracking, distant pressure-wave thump, toxic energy fizzling out. Designed for a dark pixel-art shooter when a monster portal seals. No melody, no vocals, one-shot, 1.5 to 2 seconds."
+    },
+    {
+      "id": "audio-choir-whisper",
+      "title": "Choir Whisper Ambience",
+      "kind": "ambience",
+      "runtimePath": "shared/audio/choir-whisper.webm",
+      "runtimeFormat": "webm-opus",
+      "durationSeconds": 4.008,
+      "loop": true,
+      "source": {
+        "type": "elevenlabs-sfx",
+        "tool": "ElevenLabs Sound Effects API",
+        "model": "eleven_text_to_sound_v2",
+        "masterPath": "sources/generated/2026-06-12/shared/audio/elevenlabs-examples/choir-whisper-loop.mp3"
+      },
+      "replacementStatus": "promoted",
+      "elevenLabsPrompt": "Loopable alien hive-mind ambience for a dark pixel-art shooter: layered organic whispers with no words, sub-bass biotech hum, faint chitin clicks, toxic electrical shimmer. Seamless loop, eerie and quiet, 4 seconds."
+    },
+    {
+      "id": "audio-hellfire-pulse",
+      "title": "Hellfire Pulse Loop",
+      "kind": "sfx",
+      "runtimePath": "shared/audio/hellfire-pulse.webm",
+      "runtimeFormat": "webm-opus",
+      "durationSeconds": 1.008,
+      "loop": false,
+      "source": {
+        "type": "elevenlabs-sfx",
+        "tool": "ElevenLabs Sound Effects API",
+        "model": "eleven_text_to_sound_v2",
+        "masterPath": "sources/generated/2026-06-12/shared/audio/elevenlabs-examples/hellfire-pulse.mp3"
+      },
+      "replacementStatus": "promoted",
+      "elevenLabsPrompt": "Short Pyre hellfire power pulse for a dark pixel-art shooter: compressed flame whoomp, ember crackle, hot mechanical ignition, small bass kick. Aggressive but clean UI/gameplay cue, no vocals, no melody, under 1 second."
+    },
+    {
+      "id": "audio-sfx-hit",
+      "title": "Hit Impact SFX",
+      "kind": "sfx",
+      "runtimePath": "shared/audio/sfx/hit.webm",
+      "runtimeFormat": "webm-opus",
+      "durationSeconds": 0.488,
+      "loop": false,
+      "source": {
+        "type": "elevenlabs-sfx",
+        "tool": "ElevenLabs Sound Effects API",
+        "model": "eleven_text_to_sound_v2",
+        "masterPath": "sources/generated/2026-06-12/shared/audio/elevenlabs-examples/hit-impact.mp3"
+      },
+      "replacementStatus": "promoted",
+      "elevenLabsPrompt": "Short meaty alien bullet impact for a dark pixel-art shooter: wet chitin slap, tiny bone crack, soft blood spurt, no tonal beep, one-shot, 0.25 seconds."
+    },
+    {
+      "id": "audio-victory-breach-sealed",
+      "title": "Verdict Thunder",
+      "kind": "music",
+      "runtimePath": "shared/audio/victory-breach-sealed.webm",
+      "runtimeFormat": "webm-opus",
+      "durationSeconds": 187.687,
+      "loop": false,
+      "source": {
+        "type": "suno-export",
+        "tool": "Suno",
+        "masterPath": "sources/generated/2026-06-12/shared/audio/verdict-thunder.mp3",
+        "metadata": {
+          "artist": "vincentshipsit",
+          "created": "2026-06-11T22:10:18.930345Z",
+          "sunoId": "c01be85a-797a-4804-879b-bec79f76bae3"
+        }
+      },
+      "replacementStatus": "ready-pending-license-confirmation",
+      "licenseNote": "Confirm the Suno account was Pro or Premier at generation time before shipping commercially."
+    }
+  ],
+  "proceduralFallbackCues": [
+    {
+      "cue": "shoot",
+      "currentSource": "covered by Scourge Survivors authored sample sfx-pistol-pyre; fallback remains in DEADROT_SFX_PALETTE",
+      "replacementStatus": "covered-in-scourge-survivors",
+      "usedByScourgeSurvivors": true,
+      "authoredSampleIds": ["sfx-pistol-pyre"]
+    },
+    {
+      "cue": "shootSmg",
+      "currentSource": "covered by Scourge Survivors authored sample sfx-smg; fallback remains in DEADROT_SFX_PALETTE",
+      "replacementStatus": "covered-in-scourge-survivors",
+      "usedByScourgeSurvivors": true,
+      "authoredSampleIds": ["sfx-smg"]
+    },
+    {
+      "cue": "shootSniper",
+      "currentSource": "covered by Scourge Survivors authored sample sfx-sniper; fallback remains in DEADROT_SFX_PALETTE",
+      "replacementStatus": "covered-in-scourge-survivors",
+      "usedByScourgeSurvivors": true,
+      "authoredSampleIds": ["sfx-sniper"]
+    },
+    {
+      "cue": "shootShotgun",
+      "currentSource": "covered by Scourge Survivors authored sample sfx-shotgun; fallback remains in DEADROT_SFX_PALETTE",
+      "replacementStatus": "covered-in-scourge-survivors",
+      "usedByScourgeSurvivors": true,
+      "authoredSampleIds": ["sfx-shotgun"]
+    },
+    {
+      "cue": "shootCannon",
+      "currentSource": "covered by Scourge Survivors authored sample sfx-cannon; fallback remains in DEADROT_SFX_PALETTE",
+      "replacementStatus": "covered-in-scourge-survivors",
+      "usedByScourgeSurvivors": true,
+      "authoredSampleIds": ["sfx-cannon"]
+    },
+    {
+      "cue": "hit",
+      "currentSource": "shared authored sample audio-sfx-hit",
+      "replacementStatus": "promoted",
+      "usedByScourgeSurvivors": true,
+      "runtimeAssetId": "audio-sfx-hit",
+      "runtimePath": "shared/audio/sfx/hit.webm",
+      "elevenLabsPrompt": "Short meaty alien bullet impact for a dark pixel-art shooter: wet chitin slap, tiny bone crack, soft blood spurt, no tonal beep, one-shot, 0.25 seconds."
+    },
+    {
+      "cue": "headshot",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": true,
+      "suggestedRuntimePath": "shared/audio/sfx/headshot.webm",
+      "elevenLabsPrompt": "Rewarding alien headshot cue: sharp skull pop, wet crystalline crack, tiny bright metal ping, punchy but not musical, one-shot, 0.45 seconds."
+    },
+    {
+      "cue": "kill",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator plus noise",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": true,
+      "suggestedRuntimePath": "shared/audio/sfx/kill.webm",
+      "elevenLabsPrompt": "Fast monster kill confirmation: crunchy organic collapse, wet splat, low gore thump, tiny debris scatter, arcade readable, no melody, one-shot, 0.5 seconds."
+    },
+    {
+      "cue": "reload",
+      "currentSource": "DEADROT_SFX_PALETTE procedural noise",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": true,
+      "suggestedRuntimePath": "shared/audio/sfx/reload.webm",
+      "elevenLabsPrompt": "Gritty sci-fi weapon reload: magazine scrape, metal latch click, brief mechanical rack, dry and close-mic, dark shooter tone, one-shot, 0.7 seconds."
+    },
+    {
+      "cue": "pickup",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": true,
+      "suggestedRuntimePath": "shared/audio/sfx/pickup.webm",
+      "elevenLabsPrompt": "Dark arcade pickup cue: small glassy bio-energy suck-in, quick gold spark, warm confirm tick, not cute, no melody, one-shot, 0.35 seconds."
+    },
+    {
+      "cue": "hurt",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator plus noise",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": true,
+      "suggestedRuntimePath": "shared/audio/sfx/hurt.webm",
+      "elevenLabsPrompt": "Player damage sting for a dark FPS: armor crunch, muffled body hit, short blood-pressure thump, harsh but readable, no voice, one-shot, 0.45 seconds."
+    },
+    {
+      "cue": "switch",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": true,
+      "suggestedRuntimePath": "shared/audio/sfx/switch.webm",
+      "elevenLabsPrompt": "Weapon switch UI/gameplay cue: fast metal slide, tiny selector click, low mechanical tick, satisfying and short, no melody, one-shot, 0.25 seconds."
+    },
+    {
+      "cue": "wave",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": true,
+      "suggestedRuntimePath": "shared/audio/sfx/wave.webm",
+      "elevenLabsPrompt": "Enemy wave warning cue: rising industrial alarm swell, distant hellish pressure, short distorted siren edge, no vocals, one-shot, 0.9 seconds."
+    },
+    {
+      "cue": "boss",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": true,
+      "suggestedRuntimePath": "shared/audio/sfx/boss.webm",
+      "elevenLabsPrompt": "Boss arrival sting: huge sub-bass creature roar blended with metal stress and distant war horn, oppressive, non-musical, one-shot, 1.4 seconds."
+    },
+    {
+      "cue": "victory",
+      "currentSource": "DEADROT_SFX_PALETTE procedural chord; separate long-form victory music exists as audio-victory-breach-sealed",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": true,
+      "suggestedRuntimePath": "shared/audio/sfx/victory-stinger.webm",
+      "elevenLabsPrompt": "Short victory stinger for a brutal pixel shooter: triumphant metal impact, bright synth-brass hit, crowdless arena release, no copyrighted motif, one-shot, 1.2 seconds."
+    },
+    {
+      "cue": "defeat",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": true,
+      "suggestedRuntimePath": "shared/audio/sfx/defeat.webm",
+      "elevenLabsPrompt": "Defeat sting for dark sci-fi shooter: descending industrial drone, broken armor clank, distant monster breath, bleak but short, no melody, one-shot, 1 second."
+    },
+    {
+      "cue": "shieldhit",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": true,
+      "suggestedRuntimePath": "shared/audio/sfx/shieldhit.webm",
+      "elevenLabsPrompt": "Energy shield hit cue: tight plasma snap, glassy deflection, tiny electric crackle, no cute chime, one-shot, 0.3 seconds."
+    },
+    {
+      "cue": "levelup",
+      "currentSource": "DEADROT_SFX_PALETTE procedural arpeggio",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": true,
+      "suggestedRuntimePath": "shared/audio/sfx/levelup.webm",
+      "elevenLabsPrompt": "Level-up fanfare for a dark survivor shooter: rising power surge, armored UI unlock, small triumphant synth-metal flourish, original, no retro chiptune, one-shot, 1.2 seconds."
+    },
+    {
+      "cue": "explosion",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator plus noise",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": true,
+      "suggestedRuntimePath": "shared/audio/sfx/explosion.webm",
+      "elevenLabsPrompt": "Close-range sci-fi gore explosion: low blast, wet debris, stone dust, ember crackle tail, aggressive but mix-friendly, one-shot, 1 second."
+    },
+    {
+      "cue": "dash",
+      "currentSource": "DEADROT_SFX_PALETTE procedural noise plus oscillator",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": true,
+      "suggestedRuntimePath": "shared/audio/sfx/dash.webm",
+      "elevenLabsPrompt": "Player dash whoosh: fast armored air displacement, hot plasma streak, tiny servo snap at end, no magic sparkle, one-shot, 0.45 seconds."
+    },
+    {
+      "cue": "dryfire",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator plus noise",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": false,
+      "suggestedRuntimePath": "shared/audio/sfx/dryfire.webm",
+      "elevenLabsPrompt": "Empty weapon dry-fire: hollow trigger click, dead chamber tick, small mechanical rattle, close-mic, one-shot, 0.25 seconds."
+    },
+    {
+      "cue": "shieldUp",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": true,
+      "suggestedRuntimePath": "shared/audio/sfx/shield-up.webm",
+      "elevenLabsPrompt": "Energy shield activation: quick charging hum, plasma membrane snap into place, low armor resonance, serious sci-fi tone, one-shot, 0.8 seconds."
+    },
+    {
+      "cue": "gem",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": false,
+      "suggestedRuntimePath": "shared/audio/sfx/gem.webm",
+      "elevenLabsPrompt": "Dark crystal pickup tick: brittle glass ping, faint energy inhale, tiny mineral sparkle, not cheerful, one-shot, 0.35 seconds."
+    },
+    {
+      "cue": "combo",
+      "currentSource": "DEADROT_SFX_PALETTE procedural arpeggio",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": true,
+      "suggestedRuntimePath": "shared/audio/sfx/combo.webm",
+      "elevenLabsPrompt": "Combo reward cue: three quick escalating metal UI hits with subtle power surge, brutal arcade energy, original, no chiptune melody, one-shot, 0.55 seconds."
+    },
+    {
+      "cue": "lowhealth",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": false,
+      "suggestedRuntimePath": "shared/audio/sfx/lowhealth.webm",
+      "elevenLabsPrompt": "Low health warning loop element: two muffled heartbeat thumps, distant tinnitus edge, armored suit stress, tense but not loud, one-shot, 0.9 seconds."
+    },
+    {
+      "cue": "breach",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator plus noise",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": true,
+      "suggestedRuntimePath": "shared/audio/sfx/breach.webm",
+      "elevenLabsPrompt": "Scourge breach opening cue: deep organic portal groan, pressure swell, toxic electric hiss, wet stone movement, no music, one-shot, 1.5 seconds."
+    },
+    {
+      "cue": "uiSelect",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": false,
+      "suggestedRuntimePath": "shared/audio/sfx/ui-select.webm",
+      "elevenLabsPrompt": "Dark game UI select tick: compact metal contact, tiny electronic confirm, restrained and readable, no tonal menu chime, one-shot, 0.2 seconds."
+    },
+    {
+      "cue": "gold",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": false,
+      "suggestedRuntimePath": "shared/audio/sfx/gold.webm",
+      "elevenLabsPrompt": "Gold earned cue for brutal pixel shooter: gritty coin clink, small treasure snap, warm metal sparkle without casino jingle, one-shot, 0.45 seconds."
+    },
+    {
+      "cue": "jump",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": false,
+      "suggestedRuntimePath": "shared/audio/sfx/jump.webm",
+      "elevenLabsPrompt": "Armored jump cue: short boot servo push, air puff, leather-metal movement, grounded and not cartoony, one-shot, 0.35 seconds."
+    },
+    {
+      "cue": "land",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator plus noise",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": false,
+      "suggestedRuntimePath": "shared/audio/sfx/land.webm",
+      "elevenLabsPrompt": "Armored landing impact: heavy boot thud on metal-stone floor, small dust crunch, low body weight, one-shot, 0.4 seconds."
+    },
+    {
+      "cue": "build",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator plus noise",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": false,
+      "suggestedRuntimePath": "shared/audio/sfx/build.webm",
+      "elevenLabsPrompt": "Construct/build cue: fast industrial clamp, welding spark burst, metal panel lock, compact strategy-game feedback, one-shot, 0.7 seconds."
+    },
+    {
+      "cue": "powerup",
+      "currentSource": "DEADROT_SFX_PALETTE procedural arpeggio",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": false,
+      "suggestedRuntimePath": "shared/audio/sfx/powerup.webm",
+      "elevenLabsPrompt": "Power-up activation: rising bio-mechanical charge, hot reactor shimmer, armored surge hit, heroic but dark, no melody, one-shot, 1 second."
+    },
+    {
+      "cue": "berserk",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator plus noise",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": true,
+      "suggestedRuntimePath": "shared/audio/sfx/berserk.webm",
+      "elevenLabsPrompt": "Berserk pickup cue: savage reactor overdrive, blood-rage ignition, distorted flame roar, aggressive organic-metal surge, one-shot, 1 seconds."
+    },
+    {
+      "cue": "laser",
+      "currentSource": "DEADROT_SFX_PALETTE procedural oscillator",
+      "replacementStatus": "needs-elevenlabs",
+      "usedByScourgeSurvivors": false,
+      "suggestedRuntimePath": "shared/audio/sfx/laser.webm",
+      "elevenLabsPrompt": "Sci-fi laser shot: sharp plasma discharge, hot electrical tail, compact pew with weight, not toy-like, one-shot, 0.35 seconds."
+    }
+  ]
+}

@@ -2,7 +2,7 @@ import { PixelConfetti, UpgradeCard } from "@shipshitgames/ui";
 import { type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, useRef } from "react";
 import type { SurvivorClassId } from "../game/data/survivors";
 import type { ScoreEntry, ShopState } from "../game/storage";
-import type { HUDState } from "../game/types";
+import type { HudState } from "../game/types";
 import type { PlayerAvatarId } from "../net/playerAvatars";
 import { CombatOverlays } from "./hud/CombatOverlays";
 import { GameOverScreen } from "./hud/GameOverScreen";
@@ -12,14 +12,15 @@ import { IconText, OVERLAY } from "./hud/shared";
 import { PixelIcon } from "./PixelIcon";
 
 interface Props {
-  state: HUDState;
+  state: HudState;
   scores: ScoreEntry[];
   onLock: () => void;
+  onEscapeResume: () => void;
   onRestart: () => void;
   onClearScores: () => void;
   onStartMultiplayer: (name: string, room: string, avatar: PlayerAvatarId) => void;
   onLeaveRoom: () => void;
-  onStartSurvivors: (classId?: SurvivorClassId) => void;
+  onStartSurvivors: (classId?: SurvivorClassId, mapId?: string) => void;
   onStartSandbox?: () => void;
   onPickUpgrade: (id: string) => void;
   onReroll: () => void;
@@ -40,7 +41,7 @@ function LevelUpDraft({
   onReroll,
   onBanish,
 }: {
-  state: HUDState;
+  state: HudState;
   onPick: (id: string) => void;
   onReroll: () => void;
   onBanish: (id: string) => void;
@@ -131,6 +132,7 @@ export function HUD({
   state,
   scores,
   onLock,
+  onEscapeResume,
   onRestart,
   onClearScores,
   onStartMultiplayer,
@@ -163,7 +165,7 @@ export function HUD({
 
       {showLockPrompt && (
         <button type="button" className="ssg-lock-prompt" onClick={onLock}>
-          Click to lock
+          Click to play
         </button>
       )}
 
@@ -183,7 +185,7 @@ export function HUD({
       <PauseScreens
         state={state}
         suppressMenu={suppressMenu}
-        onLock={onLock}
+        onEscapeResume={onEscapeResume}
         onRestart={onRestart}
         onLeaveRoom={onLeaveRoom}
         onMenu={onMenu}

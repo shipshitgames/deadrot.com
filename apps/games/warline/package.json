@@ -3,6 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "knip": {
+    "entry": [
+      "party/*.ts"
+    ]
+  },
   "scripts": {
     "dev": "vite",
     "dev:all": "concurrently -k -n web,party -c blue,magenta \"vite\" \"partykit dev\"",
@@ -16,12 +21,12 @@
     "deps:update": "bunx npm-check-updates -u --cooldown 3h --removeRange && bun install"
   },
   "dependencies": {
+    "@deadrot/catalog": "workspace:*",
     "@deadrot/game-kit": "workspace:*",
     "@shipshitgames/assets": "workspace:*",
     "@shipshitgames/engine": "^0.2.0",
     "@shipshitgames/ui": "workspace:*",
     "@shipshitgames/warline": "workspace:*",
-    "partysocket": "^1.1.19",
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "three": "0.184.0"

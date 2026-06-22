@@ -1,4 +1,5 @@
 import { recordWarResult } from "@deadrot/game-kit/core";
+import { reportWarlineOperation } from "@deadrot/game-kit/warline";
 import { audio } from "../audio";
 import { EntitySystem } from "../systems/EntitySystem";
 import { HudSystem } from "../systems/HudSystem";
@@ -89,6 +90,7 @@ export class Game {
         emitRunEnd(Math.round(this.salvage)); // bank salvage as Drydock wreckage
         // Bank the boss kill into the cross-game war record (Warline shows it).
         recordWarResult("starblight", { outcome: "victory", score: this.level, bossKill: true }, Date.now());
+        void reportWarlineOperation("starblight", { outcome: "victory", score: this.level });
         this.emitHud();
       },
     });
@@ -313,6 +315,7 @@ export class Game {
       emitRunEnd(Math.round(this.salvage)); // bank salvage as Drydock wreckage
       // Bank the loss into the cross-game war record (Warline shows it).
       recordWarResult("starblight", { outcome: "defeat", score: this.level }, Date.now());
+      void reportWarlineOperation("starblight", { outcome: "defeat", score: this.level });
       this.emitHud();
     }
   }

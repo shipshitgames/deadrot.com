@@ -78,6 +78,32 @@ Delegates To:
 8. Log.
    - Append final asset path, processing command, and decision to `lore/Art/Generation-History.md`.
 
+## Pixel-Art Master Workflow
+
+For a pixel-art game, the high-res master is the art-direction source, not the
+shipped sprite.
+
+1. Lock the role read first.
+   - If runtime sprites already read better at gameplay size, make a lore
+     `runtime visual lock` from those sprites and use it as the acceptance
+     target.
+   - Color lanes matter: preserve deliberate class reads such as acid-green
+     ranged foes versus red/heavy melee foes.
+2. Create a high-res master only after the role read is clear.
+   - The master must provide strict front, true side, and back views.
+   - A 3/4 pose is allowed only as an extra action/read pose.
+   - Reject "pretty creature sheets" where the side view is actually 3/4.
+3. Produce target-size sprite bases from the approved master.
+   - Downscaling is a starting point, not a final asset.
+   - Manually clean silhouette, palette, alpha, feet anchor, and matte residue at
+     runtime resolution.
+4. Generate animation frames from the cleaned sprite basis, not from raw
+   high-res art.
+5. Promote runtime assets only after visual QA at game scale.
+
+Do not call a generated high-res image "locked" if the existing runtime sprite
+has a clearer gameplay read.
+
 ## Commands
 
 Cut out a flat green source:

@@ -11,19 +11,9 @@ replit.nix
 # package-lock not used — the monorepo is bun (root bun.lock)
 package-lock.json
 
-# Heavy generated art/media binaries — not embedded in any note, so excluded from the
-# repo + deploy to avoid bloat. The Art/*.md ledgers ARE kept. To publish the binaries,
-# remove these lines (consider git-LFS) and rebuild.
-content/Art/**/*.webp
-content/Art/**/*.png
-content/Art/**/*.jpg
-content/Art/**/*.jpeg
-content/Art/**/*.gif
-content/Art/**/*.svg
-content/Art/**/*.mp4
-content/Art/**/*.webm
-content/Art/**/*.mp3
-content/Art/**/*.wav
+# Lore must not own binary art/media. Move assets to packages/assets and link them
+# from notes instead of hiding vault-local copies here.
 
 # OS noise inside the vault
 content/**/.DS_Store
+.vercel

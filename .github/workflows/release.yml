@@ -1,0 +1,337 @@
+name: Release
+
+# Trunk-based release. `master` is the only long-lived branch and every push to it
+# is a releasable candidate, but pushing to master does NOT deploy on its own.
+# Production is cut deliberately by pushing a semver tag:
+#
+#   git tag v1.4.0 && git push origin v1.4.0
+#
+# The tag runs the FULL heavy suite (all games' Playwright E2E, sharded per
+# game x viewport, plus web E2E, lint/typecheck/assets, unit, secret scan). Only
+# if every gate is green does the deploy job promote all games to production.
+#
+# Day-to-day PRs into master run the fast gate only (ci.yml); the expensive E2E
+# lives here so merges stay quick while releases stay safe.
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Ref (tag/sha) to release"
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  quality:
+    name: Lint, format, typecheck, assets
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+      - run: bun install --frozen-lockfile
+      - run: bun run format:check
+      - run: bun run lint
+      - run: bun run typecheck
+      - run: bun run --cwd packages/assets assets:check
+
+  unit:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+      - run: bun install --frozen-lockfile
+      - run: bun run test:unit
+      - run: bun run test:e2e:unit
+
+  web-e2e:
+    name: Web E2E (${{ matrix.view }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        view: [desktop, mobile]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+      - run: bun install --frozen-lockfile
+      - uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+      - run: bunx playwright install --with-deps chromium
+      - run: bunx playwright test -c apps/web/playwright.config.ts --project web:${{ matrix.view }}
+        env:
+          CI: true
+
+  all-games:
+    name: Enumerate all games
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      game_slugs: ${{ steps.detect.outputs.game_slugs }}
+      game_slugs_json: ${{ steps.detect.outputs.game_slugs_json }}
+      count: ${{ steps.detect.outputs.count }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - id: detect
+        # A release validates EVERY game, not just changed ones.
+        run: node scripts/changed-e2e-games.mjs --all
+
+  game-e2e:
+    name: Playwright (${{ matrix.game }}:${{ matrix.view }})
+    needs: all-games
+    if: needs.all-games.outputs.count != '0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        game: ${{ fromJSON(needs.all-games.outputs.game_slugs_json) }}
+        view: [desktop, mobile]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+      - run: bun install --frozen-lockfile
+      - uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+      - run: bunx playwright install --with-deps chromium
+      - run: bun run test:e2e
+        env:
+          CI: true
+          E2E_GAME_SLUGS: ${{ matrix.game }}
+          E2E_VIEWPORT: ${{ matrix.view }}
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-e2e-${{ matrix.game }}-${{ matrix.view }}-${{ github.run_id }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  secret-scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - run: node scripts/check-secrets.mjs --history
+
+  # Single gate so the deploy job has ONE dependency that means "everything green".
+  release-gate:
+    name: Release gate
+    needs: [quality, unit, web-e2e, all-games, game-e2e, secret-scan]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "All release checks passed for ${{ github.ref_name }}."
+
+  deploy:
+    name: Deploy all Vercel apps to production
+    needs: release-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+      - run: bun install --frozen-lockfile
+      - name: Deploy all Vercel apps (production)
+        # A release deploys the whole catalog (8 games + web + lore) so prod
+        # always matches the tag.
+        run: node scripts/deploy-changed-games.mjs --all
+
+  deploy-api:
+    name: Deploy API to EC2
+    needs: release-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v6
+      # Build + push deadrot's image to ghcr (the box pulls it — same model as
+      # api.shipshit.games). Image repo is the deadrot.com repo's own package, so
+      # it never collides with ghcr.io/shipshitgames/shipshit.games/api.
+      - name: Build and push image to ghcr
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}/api"
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker build -f apps/api/Dockerfile -t "${image}:${GITHUB_SHA}" -t "${image}:latest" .
+          docker push "${image}:${GITHUB_SHA}"
+          docker push "${image}:latest"
+      # Join the tailnet as tag:ci and reach the host over Tailscale SSH — no key.
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TAILSCALE_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TAILSCALE_CLIENT_SECRET }}
+          tags: tag:ci
+      # The deploy target is the us-west-1 EC2 host that serves api.deadrot.com
+      # (52.8.153.188 / i-00e74422e719396c3), co-located with api.shipshit.dev.
+      # It is addressed by its Tailscale IP via the repo variable
+      # TAILSCALE_INSTANCE_API_IP (same pattern as shipshit.games) so changing the
+      # host is an ops action, not a code change.
+      #
+      # PREREQUISITES (until these are met the reachability + identity gates below
+      # FAIL the release rather than silently deploying to the wrong/old box):
+      #   1. The us-west-1 box is joined to the tailnet with Tailscale SSH enabled
+      #      and the ACL grants `tag:ci -> ssh ec2-user@<that node>`.
+      #   2. The repo variable TAILSCALE_INSTANCE_API_IP is set to its 100.x IP.
+      # (Do NOT point this at the old `shipshit-api` node 100.73.69.120 — that is
+      # the stale us-east-1 box with no deadrot DB access.)
+      - name: Verify host reachability
+        env:
+          HOST_IP: ${{ vars.TAILSCALE_INSTANCE_API_IP }}
+        run: |
+          set -euo pipefail
+          if [ -z "${HOST_IP:-}" ]; then
+            echo "::error::TAILSCALE_INSTANCE_API_IP is not set. Join the us-west-1 api.deadrot.com host (52.8.153.188) to the tailnet and set this variable to its 100.x Tailscale IP."
+            exit 1
+          fi
+          timeout 30 bash -c 'until tailscale status >/dev/null 2>&1; do sleep 1; done'
+          # ssh/scp ride the DERP relay fine, so accept a relayed reply
+          # (--until-direct=false) and retry briefly to absorb the cold-NAT window
+          # right after tailscaled starts.
+          for attempt in $(seq 1 6); do
+            if tailscale ping --until-direct=false -c 1 --timeout 5s "$HOST_IP" >/dev/null 2>&1; then
+              echo "Host $HOST_IP reachable (attempt ${attempt})."
+              exit 0
+            fi
+            echo "Attempt ${attempt}: $HOST_IP not reachable yet; retrying in 5s..."
+            sleep 5
+          done
+          echo "::error::Cannot reach EC2 host at $HOST_IP via Tailscale after 6 attempts"
+          tailscale status
+          exit 1
+      # A ping proves liveness, NOT identity — and the stale node (shipshit-api ->
+      # us-east-1) is the one currently answering on the tailnet. So before shipping
+      # anything, SSH in and assert the box is in us-west-1 (the stale box is
+      # us-east-1). This closes the "operator set TAILSCALE_INSTANCE_API_IP to the
+      # old node" hole that the reachability gate alone cannot catch. Expected box:
+      # i-00e74422e719396c3 / 52.8.153.188 (printed below for the record).
+      - name: Verify host identity (us-west-1)
+        env:
+          HOST_IP: ${{ vars.TAILSCALE_INSTANCE_API_IP }}
+        run: |
+          set -euo pipefail
+          ident="$(ssh -o StrictHostKeyChecking=accept-new "ec2-user@${HOST_IP}" '
+            set -euo pipefail
+            tok=$(curl -fsS -X PUT "http://169.254.169.254/latest/api/token" \
+              -H "X-aws-ec2-metadata-token-ttl-seconds: 60")
+            reg=$(curl -fsS -H "X-aws-ec2-metadata-token: $tok" \
+              "http://169.254.169.254/latest/meta-data/placement/region")
+            iid=$(curl -fsS -H "X-aws-ec2-metadata-token: $tok" \
+              "http://169.254.169.254/latest/meta-data/instance-id")
+            printf "%s %s" "$reg" "$iid"
+          ')"
+          echo "Deploy target identity: ${ident}"
+          case "${ident}" in
+            "us-west-1 "*) echo "Host is in us-west-1 — OK." ;;
+            *)
+              echo "::error::Deploy target is NOT in us-west-1 (got: '${ident}'). Refusing to deploy — this is likely the stale us-east-1 box. Point TAILSCALE_INSTANCE_API_IP at the us-west-1 api.deadrot.com host (52.8.153.188 / i-00e74422e719396c3)."
+              exit 1
+              ;;
+          esac
+      # Co-located deploy: ship ONLY deadrot's compose + deploy script (never the
+      # api.shipshit.dev toolkit), then bring up the `deadrot-api` container on the
+      # shared `shipshit` docker network — the host's Caddy proxies api.deadrot.com
+      # -> deadrot-api:3004 by name. deploy-deadrot.sh hydrates deadrot's OWN env
+      # from the /shipshit/production/deadrot SSM subtree (in AWS_REGION, default
+      # us-east-1) -> the deadrot-api RDS; it does NOT reuse the host's shared
+      # .env.production.
+      - name: Deploy deadrot-api (co-located on api.shipshit.dev, us-west-1)
+        env:
+          HOST_IP: ${{ vars.TAILSCALE_INSTANCE_API_IP }}
+          AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+        run: |
+          set -euo pipefail
+          ssh_opts="-o StrictHostKeyChecking=accept-new"
+          # shellcheck disable=SC2086
+          ssh $ssh_opts "ec2-user@${HOST_IP}" "mkdir -p ~/cloud/docker"
+          # shellcheck disable=SC2086
+          scp $ssh_opts \
+            apps/api/deploy/docker-compose.deadrot.yml \
+            apps/api/deploy/deploy-deadrot.sh \
+            "ec2-user@${HOST_IP}:~/cloud/docker/"
+          # The ghcr token arrives over stdin (\$(cat) runs on the host), never on
+          # the remote command line — argv is world-readable via ps/proc on this
+          # co-tenant box; an env-assignment fed from stdin is not.
+          # shellcheck disable=SC2086
+          ssh $ssh_opts "ec2-user@${HOST_IP}" \
+            "chmod +x ~/cloud/docker/deploy-deadrot.sh && \
+             IMAGE_TAG='${GITHUB_SHA}' GHCR_USER='${{ github.actor }}' AWS_REGION='${AWS_REGION}' \
+             GHCR_TOKEN=\$(cat) ~/cloud/docker/deploy-deadrot.sh" <<< "${{ secrets.GITHUB_TOKEN }}"

@@ -63,8 +63,8 @@ export default async function FactionPage({ params }: { params: Promise<{ slug: 
         <div className="mx-auto max-w-3xl">
           <Eyebrow>Dossier</Eyebrow>
           <div className="mt-5 space-y-5">
-            {faction.overview.split("\n\n").map((p, i) => (
-              <p key={i} className="leading-relaxed text-ash">
+            {faction.overview.split("\n\n").map((p) => (
+              <p key={p} className="leading-relaxed text-ash">
                 {p}
               </p>
             ))}

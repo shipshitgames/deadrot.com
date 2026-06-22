@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { breachById, createInitialWorld, laneById, regionById } from "./map";
-import { applyOperation, magnitude, resetWorld, tick } from "./reducer";
+import { applyOperation, clampContribution, magnitude, resetWorld, tick } from "./reducer";
 import type { OperationResult, WorldState } from "./types";
-import { SCHEMA_VERSION, TICK } from "./types";
+import { MAX_CONTRIBUTION, SCHEMA_VERSION, TICK } from "./types";
 
 const NOW = 1_700_000_000_000;
 
@@ -115,6 +115,58 @@ test("defeat still trickles intel and is mild", () => {
   );
   assert.equal(credited.intel ?? 0, 8, "defeat recon trickle");
   assert.equal(breachById(state, "breach-perdition")!.intensity, before, "no purge on defeat");
+});
+
+test("clampContribution: floors junk to 0 and caps at MAX_CONTRIBUTION", () => {
+  assert.equal(clampContribution(undefined), 0);
+  assert.equal(clampContribution(-5), 0);
+  assert.equal(clampContribution(0), 0);
+  assert.equal(clampContribution(Number.NaN), 0);
+  assert.equal(clampContribution(Number.POSITIVE_INFINITY), 0);
+  assert.equal(clampContribution(250), 250);
+  assert.equal(clampContribution(MAX_CONTRIBUTION + 1), MAX_CONTRIBUTION);
+});
+
+test("contributed loot banks into the game's war resource (scourge → biomass)", () => {
+  const w = createInitialWorld(NOW);
+  const before = w.resources.biomass;
+  const { state, credited, breakdown } = applyOperation(w, op({ game: "scourge-survivors", contributed: 320 }), NOW);
+  // The full looted amount lands on top of the operation's own biomass payout.
+  assert.equal((credited.biomass ?? 0) >= 320, true, "looted biomass credited");
+  assert.equal(state.resources.biomass, before + (credited.biomass ?? 0));
+  // Transparent feed math records the salvage line.
+  assert.ok(
+    breakdown.effects.some((e) => e.label.includes("salvage banked") && e.value === 320),
+    "salvage banked shows in the breakdown",
+  );
+});
+
+test("contributed loot banks even on a defeat (you keep what you collected)", () => {
+  const w = createInitialWorld(NOW);
+  const before = w.resources.scrap;
+  // deadlane's war resource is scrap; a defeat normally credits no scrap.
+  const { state, credited } = applyOperation(w, op({ game: "deadlane", outcome: "defeat", contributed: 140 }), NOW);
+  assert.equal(credited.scrap ?? 0, 140, "looted scrap banked on defeat");
+  assert.equal(state.resources.scrap, before + 140);
+});
+
+test("invalid/absent contributed banks nothing extra", () => {
+  const w = createInitialWorld(NOW);
+  const baseline = applyOperation(w, op({ game: "redline", outcome: "defeat" }), NOW);
+  const withJunk = applyOperation(w, op({ game: "redline", outcome: "defeat", contributed: -99 }), NOW);
+  assert.deepEqual(withJunk.state.resources, baseline.state.resources);
+});
+
+test("contributed is clamped to MAX_CONTRIBUTION before crediting", () => {
+  const w = createInitialWorld(NOW);
+  const before = w.resources.biomass;
+  const { state } = applyOperation(
+    w,
+    op({ game: "scourge-survivors", outcome: "defeat", contributed: MAX_CONTRIBUTION * 10 }),
+    NOW,
+  );
+  // defeat credits no operation biomass, so the whole gain is the clamped loot.
+  assert.equal(state.resources.biomass - before, MAX_CONTRIBUTION);
 });
 
 test("tick raises pressure near a breach and never exceeds 100", () => {

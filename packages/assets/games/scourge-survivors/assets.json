@@ -197,14 +197,14 @@
       ],
       "filter": "nearest",
       "scale": [
-        0.6,
-        1.0
+        0.564,
+        0.94
       ],
       "weapon": {
         "offset": [
-          0.0,
-          0.0,
-          0.0
+          0,
+          0,
+          0
         ],
         "muzzle": [
           -0.25,
@@ -245,13 +245,13 @@
       "filter": "nearest",
       "scale": [
         0.6,
-        1.0
+        1
       ],
       "weapon": {
         "offset": [
-          0.0,
-          0.0,
-          0.0
+          0,
+          0,
+          0
         ],
         "muzzle": [
           -0.2,
@@ -259,6 +259,28 @@
           -0.1
         ],
         "flashScale": 0.32
+      },
+      "adsSprite": {
+        "path": "games/scourge-survivors/weapons/pyre/sniper-ads-tiers.webp",
+        "dimensions": [
+          2172,
+          724
+        ],
+        "scale": [
+          0.78,
+          1.3
+        ],
+        "offset": [
+          0,
+          0.05,
+          0
+        ],
+        "muzzle": [
+          -0.2,
+          0.3,
+          -0.1
+        ],
+        "flashScale": 0.26
       },
       "tierSheet": {
         "columns": 5,
@@ -291,14 +313,14 @@
       ],
       "filter": "nearest",
       "scale": [
-        0.6,
-        1.0
+        0.582,
+        0.97
       ],
       "weapon": {
         "offset": [
-          0.0,
-          0.0,
-          0.0
+          0,
+          0,
+          0
         ],
         "muzzle": [
           -0.23,
@@ -338,14 +360,14 @@
       ],
       "filter": "nearest",
       "scale": [
-        0.6,
-        1.0
+        0.618,
+        1.03
       ],
       "weapon": {
         "offset": [
-          0.0,
-          0.0,
-          0.0
+          0,
+          0,
+          0
         ],
         "muzzle": [
           -0.25,
@@ -385,14 +407,14 @@
       ],
       "filter": "nearest",
       "scale": [
-        0.6,
-        1.0
+        0.636,
+        1.06
       ],
       "weapon": {
         "offset": [
-          0.0,
-          0.0,
-          0.0
+          0,
+          0,
+          0
         ],
         "muzzle": [
           -0.2,
@@ -1097,6 +1119,344 @@
         "date": "2026-06-08",
         "kind": "AI weapon-only loot pickup sprite (sniper)",
         "scope": "Scourge Survivors runtime"
+      }
+    },
+    "comic-enemy-melee": {
+      "type": "sprite",
+      "filter": "nearest",
+      "views": {
+        "front": {
+          "path": "games/scourge-survivors/enemies/scourge-comic/host-grunt/front.webp",
+          "dimensions": [
+            128,
+            128
+          ]
+        },
+        "side": {
+          "path": "games/scourge-survivors/enemies/scourge-comic/host-grunt/side.webp",
+          "dimensions": [
+            128,
+            128
+          ]
+        },
+        "back": {
+          "path": "games/scourge-survivors/enemies/scourge-comic/host-grunt/back.webp",
+          "dimensions": [
+            128,
+            128
+          ]
+        }
+      },
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "Codex built-in image_gen comic asset pass",
+        "date": "2026-06-17",
+        "kind": "runtime comic-style Scourge Survivors exploratory asset",
+        "scope": "Scourge Survivors runtime opt-in comic pack"
+      }
+    },
+    "comic-enemy-ranged": {
+      "type": "sprite",
+      "filter": "nearest",
+      "views": {
+        "front": {
+          "path": "games/scourge-survivors/enemies/scourge-comic/spitter-host/front.webp",
+          "dimensions": [
+            128,
+            128
+          ]
+        },
+        "side": {
+          "path": "games/scourge-survivors/enemies/scourge-comic/spitter-host/side.webp",
+          "dimensions": [
+            128,
+            128
+          ]
+        },
+        "back": {
+          "path": "games/scourge-survivors/enemies/scourge-comic/spitter-host/back.webp",
+          "dimensions": [
+            128,
+            128
+          ]
+        }
+      },
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "Codex built-in image_gen comic asset pass",
+        "date": "2026-06-17",
+        "kind": "runtime comic-style Scourge Survivors exploratory asset",
+        "scope": "Scourge Survivors runtime opt-in comic pack"
+      }
+    },
+    "comic-enemy-flying": {
+      "type": "sprite",
+      "filter": "nearest",
+      "views": {
+        "front": {
+          "path": "games/scourge-survivors/enemies/scourge-comic/winged-host/front.webp",
+          "dimensions": [
+            128,
+            128
+          ]
+        },
+        "side": {
+          "path": "games/scourge-survivors/enemies/scourge-comic/winged-host/side.webp",
+          "dimensions": [
+            128,
+            128
+          ]
+        },
+        "back": {
+          "path": "games/scourge-survivors/enemies/scourge-comic/winged-host/back.webp",
+          "dimensions": [
+            128,
+            128
+          ]
+        }
+      },
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "Codex built-in image_gen comic asset pass",
+        "date": "2026-06-17",
+        "kind": "runtime comic-style Scourge Survivors exploratory asset",
+        "scope": "Scourge Survivors runtime opt-in comic pack"
+      }
+    },
+    "comic-boss": {
+      "type": "sprite",
+      "filter": "nearest",
+      "views": {
+        "front": {
+          "path": "games/scourge-survivors/enemies/scourge-comic/breach-boss/front.webp",
+          "dimensions": [
+            128,
+            180
+          ]
+        },
+        "side": {
+          "path": "games/scourge-survivors/enemies/scourge-comic/breach-boss/side.webp",
+          "dimensions": [
+            128,
+            180
+          ]
+        },
+        "back": {
+          "path": "games/scourge-survivors/enemies/scourge-comic/breach-boss/back.webp",
+          "dimensions": [
+            128,
+            180
+          ]
+        }
+      },
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "Codex built-in image_gen comic asset pass",
+        "date": "2026-06-17",
+        "kind": "runtime comic-style Scourge Survivors exploratory asset",
+        "scope": "Scourge Survivors runtime opt-in comic pack"
+      }
+    },
+    "comic-weapon-pistol": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre-comic/pistol-tiers.webp",
+      "dimensions": [
+        2172,
+        724
+      ],
+      "filter": "nearest",
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "Codex built-in image_gen comic asset pass",
+        "date": "2026-06-17",
+        "kind": "runtime comic-style Scourge Survivors exploratory asset",
+        "scope": "Scourge Survivors runtime opt-in comic pack"
+      }
+    },
+    "comic-weapon-shotgun": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre-comic/shotgun-tiers.webp",
+      "dimensions": [
+        2172,
+        724
+      ],
+      "filter": "nearest",
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "Codex built-in image_gen comic asset pass",
+        "date": "2026-06-17",
+        "kind": "runtime comic-style Scourge Survivors exploratory asset",
+        "scope": "Scourge Survivors runtime opt-in comic pack"
+      }
+    },
+    "comic-weapon-smg": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre-comic/smg-tiers.webp",
+      "dimensions": [
+        2172,
+        724
+      ],
+      "filter": "nearest",
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "Codex built-in image_gen comic asset pass",
+        "date": "2026-06-17",
+        "kind": "runtime comic-style Scourge Survivors exploratory asset",
+        "scope": "Scourge Survivors runtime opt-in comic pack"
+      }
+    },
+    "comic-weapon-cannon": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre-comic/cannon-tiers.webp",
+      "dimensions": [
+        2172,
+        724
+      ],
+      "filter": "nearest",
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "Codex built-in image_gen comic asset pass",
+        "date": "2026-06-17",
+        "kind": "runtime comic-style Scourge Survivors exploratory asset",
+        "scope": "Scourge Survivors runtime opt-in comic pack"
+      }
+    },
+    "comic-weapon-sniper": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre-comic/sniper-tiers.webp",
+      "dimensions": [
+        2172,
+        724
+      ],
+      "filter": "nearest",
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "Codex built-in image_gen comic asset pass",
+        "date": "2026-06-17",
+        "kind": "runtime comic-style Scourge Survivors exploratory asset",
+        "scope": "Scourge Survivors runtime opt-in comic pack"
+      }
+    },
+    "comic-weapon-sniper-ads": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre-comic/sniper-ads-tiers.webp",
+      "dimensions": [
+        2172,
+        724
+      ],
+      "filter": "nearest",
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
+      "license": {
+        "tool": "gpt-image-2",
+        "plan": "Codex built-in image_gen comic asset pass",
+        "date": "2026-06-17",
+        "kind": "runtime comic-style Scourge Survivors exploratory asset",
+        "scope": "Scourge Survivors runtime opt-in comic pack"
+      }
+    },
+    "enemy-hound": {
+      "type": "sprite",
+      "filter": "nearest",
+      "views": {
+        "front": {
+          "path": "games/scourge-survivors/enemies/scourge/wound-hound/front.webp",
+          "dimensions": [
+            256,
+            128
+          ],
+          "scale": [
+            1.78,
+            1.12
+          ]
+        },
+        "side": {
+          "path": "games/scourge-survivors/enemies/scourge/wound-hound/side.webp",
+          "dimensions": [
+            256,
+            128
+          ],
+          "scale": [
+            2.08,
+            1.18
+          ]
+        },
+        "back": {
+          "path": "games/scourge-survivors/enemies/scourge/wound-hound/back.webp",
+          "dimensions": [
+            256,
+            128
+          ],
+          "scale": [
+            1.78,
+            1.12
+          ]
+        }
+      },
+      "license": {
+        "tool": "built-in image_gen + ffmpeg crop + cwebp",
+        "plan": "built-in image_gen",
+        "date": "2026-06-17",
+        "kind": "AI generated comic Scourge Wound-Hound runtime crop derived from lore comic master sheet",
+        "scope": "Scourge Survivors runtime exploratory fast animal foe"
       }
     }
   },
@@ -1803,6 +2163,22 @@
     }
   },
   "ui": {
+    "ui-cover-gameplay": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/cover/gameplay.webp",
+      "role": "game-cover",
+      "dimensions": [
+        1200,
+        630
+      ],
+      "license": {
+        "tool": "legacy repository asset",
+        "plan": "prototype",
+        "date": "2026-06-11",
+        "kind": "Scourge Survivors gameplay cover",
+        "scope": "Scourge Survivors runtime UI and web game page"
+      }
+    },
     "ui-menu-title": {
       "type": "ui",
       "path": "games/scourge-survivors/ui/menu/title.webp",
@@ -1815,9 +2191,9 @@
         "scope": "Scourge Survivors runtime UI"
       }
     },
-    "ui-menu-hero-jpg": {
+    "ui-menu-hero": {
       "type": "ui",
-      "path": "games/scourge-survivors/ui/menu/scourge-hero.jpg",
+      "path": "games/scourge-survivors/ui/menu/scourge-hero.webp",
       "role": "menu-background",
       "license": {
         "tool": "legacy repository asset",
@@ -1827,21 +2203,25 @@
         "scope": "Scourge Survivors runtime UI"
       }
     },
-    "ui-menu-hero-png": {
+    "ui-menu-comic-pyre-assault": {
       "type": "ui",
-      "path": "games/scourge-survivors/ui/menu/scourge-hero.png",
+      "path": "games/scourge-survivors/ui/menu/comic-pyre-assault.webp",
       "role": "menu-background",
+      "dimensions": [
+        1672,
+        941
+      ],
       "license": {
-        "tool": "legacy repository asset",
-        "plan": "prototype",
-        "date": "2026-06-02",
-        "kind": "menu hero plate",
+        "tool": "built-in image_gen",
+        "plan": "Codex built-in",
+        "date": "2026-06-17",
+        "kind": "comic style exploration illustration promoted as menu wallpaper",
         "scope": "Scourge Survivors runtime UI"
       }
     },
-    "ui-card-bastion-jpg": {
+    "ui-card-bastion": {
       "type": "ui",
-      "path": "games/scourge-survivors/ui/cards/codex/bastion.jpg",
+      "path": "games/scourge-survivors/ui/cards/codex/bastion.webp",
       "role": "codex-card",
       "license": {
         "tool": "legacy repository asset",
@@ -1851,9 +2231,9 @@
         "scope": "Scourge Survivors runtime UI"
       }
     },
-    "ui-card-bastion-png": {
+    "ui-card-breach": {
       "type": "ui",
-      "path": "games/scourge-survivors/ui/cards/codex/bastion.png",
+      "path": "games/scourge-survivors/ui/cards/codex/breach.webp",
       "role": "codex-card",
       "license": {
         "tool": "legacy repository asset",
@@ -1863,45 +2243,9 @@
         "scope": "Scourge Survivors runtime UI"
       }
     },
-    "ui-card-breach-jpg": {
+    "ui-card-fleshworks": {
       "type": "ui",
-      "path": "games/scourge-survivors/ui/cards/codex/breach.jpg",
-      "role": "codex-card",
-      "license": {
-        "tool": "legacy repository asset",
-        "plan": "prototype",
-        "date": "2026-06-02",
-        "kind": "codex card illustration",
-        "scope": "Scourge Survivors runtime UI"
-      }
-    },
-    "ui-card-breach-png": {
-      "type": "ui",
-      "path": "games/scourge-survivors/ui/cards/codex/breach.png",
-      "role": "codex-card",
-      "license": {
-        "tool": "legacy repository asset",
-        "plan": "prototype",
-        "date": "2026-06-02",
-        "kind": "codex card illustration",
-        "scope": "Scourge Survivors runtime UI"
-      }
-    },
-    "ui-card-fleshworks-jpg": {
-      "type": "ui",
-      "path": "games/scourge-survivors/ui/cards/codex/fleshworks.jpg",
-      "role": "codex-card",
-      "license": {
-        "tool": "legacy repository asset",
-        "plan": "prototype",
-        "date": "2026-06-02",
-        "kind": "codex card illustration",
-        "scope": "Scourge Survivors runtime UI"
-      }
-    },
-    "ui-card-fleshworks-png": {
-      "type": "ui",
-      "path": "games/scourge-survivors/ui/cards/codex/fleshworks.png",
+      "path": "games/scourge-survivors/ui/cards/codex/fleshworks.webp",
       "role": "codex-card",
       "license": {
         "tool": "legacy repository asset",
@@ -1954,6 +2298,17 @@
           "actions": {
             "move": "lurch",
             "attack": "barrage",
+            "death": "death"
+          }
+        }
+      },
+      "hound": {
+        "sprite": "enemy-hound",
+        "animation": {
+          "entity": "wound-hound",
+          "actions": {
+            "move": "run",
+            "attack": "mark",
             "death": "death"
           }
         }
@@ -2028,31 +2383,19 @@
     },
     "ui": {
       "menuTitle": {
-        "asset": "ui-menu-title"
+        "asset": "ui-menu-comic-pyre-assault"
       },
-      "menuHeroJpg": {
-        "asset": "ui-menu-hero-jpg"
+      "menuHero": {
+        "asset": "ui-menu-hero"
       },
-      "menuHeroPng": {
-        "asset": "ui-menu-hero-png"
+      "cardBastion": {
+        "asset": "ui-card-bastion"
       },
-      "cardBastionJpg": {
-        "asset": "ui-card-bastion-jpg"
+      "cardBreach": {
+        "asset": "ui-card-breach"
       },
-      "cardBastionPng": {
-        "asset": "ui-card-bastion-png"
-      },
-      "cardBreachJpg": {
-        "asset": "ui-card-breach-jpg"
-      },
-      "cardBreachPng": {
-        "asset": "ui-card-breach-png"
-      },
-      "cardFleshworksJpg": {
-        "asset": "ui-card-fleshworks-jpg"
-      },
-      "cardFleshworksPng": {
-        "asset": "ui-card-fleshworks-png"
+      "cardFleshworks": {
+        "asset": "ui-card-fleshworks"
       }
     }
   }

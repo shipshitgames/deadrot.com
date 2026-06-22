@@ -16,6 +16,7 @@
 
 import { createFixedLoop, type FixedLoop } from "@deadrot/game-kit";
 import { recordWarResult } from "@deadrot/game-kit/core";
+import { reportWarlineOperation } from "@deadrot/game-kit/warline";
 import { audio } from "./audio";
 import { CAMERA, FEEDBACK, RUNNER } from "./constants";
 import { generateCourse } from "./course";
@@ -177,6 +178,8 @@ export class Game {
       { outcome: "victory", timeMs: Math.round(this.time * 1000), score: summary.total },
       Date.now(),
     );
+    // Report the delivery into the shared Warline front (config-gated, offline-safe).
+    void reportWarlineOperation("redline", { outcome: "victory", score: summary.total });
     this.hud.showWin(summary, records, () => this.startRun());
   }
 
@@ -185,6 +188,7 @@ export class Game {
     audio.sfx("defeat");
     // A lost run counts against the war record too — cargo in the pit is a defeat.
     recordWarResult("redline", { outcome: "defeat" }, Date.now());
+    void reportWarlineOperation("redline", { outcome: "defeat" });
     this.render.kickShake(0.8);
     this.hud.flashHit();
     this.hud.showDead(reason, () => this.startRun());

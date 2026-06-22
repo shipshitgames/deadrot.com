@@ -10,6 +10,8 @@ export class ShipController {
   ship!: THREE.Group;
   private shipVel = new THREE.Vector2(0, 0);
   private shipHeading = Math.PI / 2;
+  private wasThrusting = false;
+  private thrustStartBoostTimer = 0;
 
   private shipGeom = spritePlane("player", CONSTANTS.player.height);
 
@@ -33,6 +35,8 @@ export class ShipController {
     this.ship.position.set(0, 0, 0);
     this.shipVel.set(0, 0);
     this.shipHeading = Math.PI / 2;
+    this.wasThrusting = false;
+    this.thrustStartBoostTimer = 0;
     this.ship.rotation.set(0, 0, 0);
   }
 
@@ -63,10 +67,15 @@ export class ShipController {
     }
 
     if (thrust) {
+      if (!this.wasThrusting) this.thrustStartBoostTimer = p.thrustStartBoostTime;
+      const boost =
+        this.thrustStartBoostTimer > 0
+          ? 1 + p.thrustStartBoostMultiplier * (this.thrustStartBoostTimer / p.thrustStartBoostTime)
+          : 1;
       let ax = dvx - this.shipVel.x;
       let ay = dvy - this.shipVel.y;
       const al = Math.hypot(ax, ay);
-      const max = accel * dt;
+      const max = accel * boost * dt;
       if (al > max && al > 0) {
         ax = (ax / al) * max;
         ay = (ay / al) * max;
@@ -77,6 +86,8 @@ export class ShipController {
       const d = p.drag ** (dt * 60);
       this.shipVel.multiplyScalar(d);
     }
+    this.wasThrusting = thrust;
+    this.thrustStartBoostTimer = Math.max(0, this.thrustStartBoostTimer - dt);
 
     const sp = this.shipVel.length();
     if (sp > maxSpeed && sp > 0) this.shipVel.multiplyScalar(maxSpeed / sp);

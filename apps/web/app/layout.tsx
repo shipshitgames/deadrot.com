@@ -1,9 +1,11 @@
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import "./globals.css";
 
 import { Grain } from "@/components/site/atmosphere";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
+import { authEnabled } from "@/lib/access";
 import { DEFAULT_SOCIAL_IMAGE, SITE_NAME, SITE_URL } from "@/lib/social";
 
 const siteDescription =
@@ -44,7 +46,7 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
+  const page = (
     <html lang="en">
       <body className="min-h-screen bg-void font-body text-ash">
         <Grain />
@@ -53,5 +55,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SiteFooter />
       </body>
     </html>
+  );
+
+  // Keyless builds (CI, dev without secrets) render without auth entirely —
+  // proxy.ts no-ops in lockstep via the same authEnabled flag.
+  if (!authEnabled) return page;
+
+  return (
+    <ClerkProvider
+      appearance={{
+        variables: {
+          colorPrimary: "#c1121f",
+          colorBackground: "#16130f",
+          colorForeground: "#e9e3d6",
+          colorMutedForeground: "#a39e93",
+          colorInput: "#0c0a08",
+          colorInputForeground: "#e9e3d6",
+          borderRadius: "0.375rem",
+        },
+      }}
+    >
+      {page}
+    </ClerkProvider>
   );
 }

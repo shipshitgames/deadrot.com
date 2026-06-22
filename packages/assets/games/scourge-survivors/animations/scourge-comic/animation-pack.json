@@ -1,0 +1,99 @@
+{
+  "version": "2026-06-17-comic-v01",
+  "status": "generated-wired",
+  "tool": "built-in image_gen",
+  "model": "gpt-image-2",
+  "promptHistory": "apps/lore/content/Design/Bestiary/Scourge-Foe-Art-Masters.md",
+  "framesPerAction": 6,
+  "views": ["front", "side", "back"],
+  "entities": {
+    "host-grunt": {
+      "frameDimensions": [128, 128],
+      "colorLane": "comic horror melee host, blood-red silhouette, bone blade read",
+      "physicsLane": "grounded walk, slash, and collapse cycles",
+      "actions": {
+        "walk": {
+          "loop": true,
+          "fps": 8,
+          "pathTemplate": "animations/scourge-comic/host-grunt/walk/{view}/frame-{frame}.webp"
+        },
+        "slash": {
+          "loop": false,
+          "fps": 12,
+          "pathTemplate": "animations/scourge-comic/host-grunt/slash/{view}/frame-{frame}.webp"
+        },
+        "death": {
+          "loop": false,
+          "fps": 10,
+          "pathTemplate": "animations/scourge-comic/host-grunt/death/{view}/frame-{frame}.webp"
+        }
+      }
+    },
+    "spitter-host": {
+      "frameDimensions": [128, 128],
+      "colorLane": "comic ranged host with acid-sac silhouette",
+      "physicsLane": "scuttle, spit windup, and death cycles",
+      "actions": {
+        "walk": {
+          "loop": true,
+          "fps": 9,
+          "pathTemplate": "animations/scourge-comic/spitter-host/walk/{view}/frame-{frame}.webp"
+        },
+        "spit": {
+          "loop": false,
+          "fps": 12,
+          "pathTemplate": "animations/scourge-comic/spitter-host/spit/{view}/frame-{frame}.webp"
+        },
+        "death": {
+          "loop": false,
+          "fps": 10,
+          "pathTemplate": "animations/scourge-comic/spitter-host/death/{view}/frame-{frame}.webp"
+        }
+      }
+    },
+    "winged-host": {
+      "frameDimensions": [128, 128],
+      "colorLane": "comic flying host with wing membrane read",
+      "physicsLane": "fly, attack, and collapse cycles",
+      "actions": {
+        "fly": {
+          "loop": true,
+          "fps": 12,
+          "pathTemplate": "animations/scourge-comic/winged-host/fly/{view}/frame-{frame}.webp"
+        },
+        "attack": {
+          "loop": false,
+          "fps": 12,
+          "pathTemplate": "animations/scourge-comic/winged-host/attack/{view}/frame-{frame}.webp"
+        },
+        "death": {
+          "loop": false,
+          "fps": 10,
+          "pathTemplate": "animations/scourge-comic/winged-host/death/{view}/frame-{frame}.webp"
+        }
+      }
+    },
+    "breach-boss": {
+      "frameDimensions": [128, 180],
+      "colorLane": "comic breach boss, oversized bone plates and toxic core read",
+      "physicsLane": "lurch, barrage, and heavy death cycles",
+      "actions": {
+        "lurch": {
+          "loop": true,
+          "fps": 7,
+          "pathTemplate": "animations/scourge-comic/breach-boss/lurch/{view}/frame-{frame}.webp"
+        },
+        "barrage": {
+          "loop": false,
+          "fps": 10,
+          "pathTemplate": "animations/scourge-comic/breach-boss/barrage/{view}/frame-{frame}.webp"
+        },
+        "death": {
+          "loop": false,
+          "fps": 8,
+          "pathTemplate": "animations/scourge-comic/breach-boss/death/{view}/frame-{frame}.webp"
+        }
+      }
+    }
+  }
+}

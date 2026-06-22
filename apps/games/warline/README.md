@@ -46,7 +46,11 @@ bun run preview    # preview the production build
 
 ## Game → operation contract
 
-Every game reports exactly one operation kind (`@shipshitgames/warline` `GAME_OPERATIONS`):
+Every game reports exactly one operation kind (`@shipshitgames/warline` `GAME_OPERATIONS`).
+Each game wires this through `reportWarlineOperation()` from `@deadrot/game-kit/warline`,
+called once per run beside its `recordWarResult(...)`. Reporting is config-gated on
+`VITE_WARLINE_HOST`: with no host set the call is a no-op, so standalone game builds
+never reach for the front and an unreachable server never breaks a run.
 
 | game | operation | effect on the front | primary credits |
 |------|-----------|---------------------|-----------------|

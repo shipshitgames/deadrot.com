@@ -4,8 +4,8 @@
 //
 // NOT a drop-in: trim to your tunables. The load-bearing details are marked //!.
 import * as THREE from "three";
-import { ENEMY_SPRITE_TEXTURES } from "../spriteAssets";
 import { ARENA_HALF, ENEMY_RADIUS } from "../constants";
+import { ENEMY_SPRITE_TEXTURES } from "../spriteAssets";
 
 type View = "front" | "side" | "back";
 export interface DamageResult {
@@ -81,10 +81,10 @@ export class Enemy {
 
   update(
     delta: number,
-    elapsed: number,
+    _elapsed: number,
     playerPos: THREE.Vector3,
     peers: Enemy[],
-    cameraQuat: THREE.Quaternion,
+    _cameraQuat: THREE.Quaternion,
   ): EnemyTick {
     const tick: EnemyTick = { melee: 0, shots: [] };
     if (!this.alive) return tick;

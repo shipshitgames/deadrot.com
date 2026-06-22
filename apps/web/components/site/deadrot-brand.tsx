@@ -1,6 +1,6 @@
+import Image from "next/image";
+import { assetUrl } from "@/lib/assets";
 import { cn } from "@/lib/utils";
-
-const CDN_ORIGIN = "https://cdn.deadrot.com";
 
 type DeadrotBrandProps = {
   className?: string;
@@ -20,9 +20,8 @@ export function DeadrotBrand({
   if (variant === "target") {
     return (
       <span className={cn("inline-flex items-center", className)}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/branding/deadrot-target-logo-gpt-image-2.webp"
+        <Image
+          src={assetUrl("/brand/mark.webp")}
           alt="DEADROT"
           width={500}
           height={500}
@@ -35,9 +34,8 @@ export function DeadrotBrand({
   if (variant === "wordmark") {
     return (
       <span className={cn("inline-flex items-center", className)}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/branding/deadrot-wordmark-gpt-image-2.webp"
+        <Image
+          src={assetUrl("/brand/wordmark.webp")}
           alt="DEADROT"
           width={1120}
           height={450}
@@ -49,11 +47,12 @@ export function DeadrotBrand({
 
   return (
     <span className={cn("inline-flex items-center gap-2", className)}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={`${CDN_ORIGIN}/branding/deadrot-mark.svg`}
+      <Image
+        src={assetUrl("/brand/mark.webp")}
         alt=""
         aria-hidden="true"
+        width={500}
+        height={500}
         className={cn("h-8 w-8 shrink-0", markClassName)}
       />
       <span className={cn("font-display font-bold uppercase leading-none tracking-normal text-bone", textClassName)}>

@@ -17,18 +17,22 @@ colors:
   bone: "#e9e3d6"
   ash: "#9b958a"
   toxic: "#8bdc1f"
+  acidOchre: "#b9a83a"
+  hazardYellow: "#d6a21f"
+  bruisedViolet: "#5a3a6f"
+  verdigris: "#3f6b5d"
 typography:
   display:
-    fontFamily: "\"SSG Press Start\", ui-monospace, SFMono-Regular, Menlo, monospace"
-    fontWeight: 400
+    fontFamily: "\"SSG Comic Condensed\", \"Arial Black\", Impact, sans-serif"
+    fontWeight: 800
     letterSpacing: "0em"
     textTransform: "uppercase"
   body:
-    fontFamily: "\"SSG Press Start\", ui-monospace, SFMono-Regular, Menlo, monospace"
-    fontWeight: 400
-    lineHeight: 1.6
+    fontFamily: "\"SSG Comic Condensed\", \"Arial Black\", Impact, sans-serif"
+    fontWeight: 600
+    lineHeight: 1.35
   mono:
-    fontFamily: "\"SSG Press Start\", ui-monospace, SFMono-Regular, Menlo, monospace"
+    fontFamily: "\"SSG Comic Condensed\", \"Arial Black\", Impact, sans-serif"
 rounded:
   none: "0px"
   sm: "2px"
@@ -58,7 +62,7 @@ components:
   card:
     backgroundColor: "{colors.coal}"
     textColor: "{colors.bone}"
-    rounded: "{rounded.sm}"
+    rounded: "comic-bubble"
     padding: "24px"
   panel-raised:
     backgroundColor: "{colors.iron}"
@@ -103,9 +107,9 @@ components:
 
 gameArtDirection:
   shared:
-    medium: "medium-chunky high-detail pixel art"
-    renderRules: "nearest-neighbor scaling, lossless hard edges, ordered dithering, no anti-aliasing"
-    paletteRules: "void/coal/gunmetal bodies, blood/rust grime, bone highlights, hellfire rim light"
+    medium: "clean comic-book / cel-shaded ink game art"
+    renderRules: "bold ink contours, flat readable value blocks, controlled grime, transparent/cutout-ready runtime sheets"
+    paletteRules: "void/coal/gunmetal bodies, blood/rust grime, bone highlights, hellfire rim light; toxic-green only for Scourge parasite organs"
     enemyRules: "silhouette first; parasites must visibly infest or rewrite a host"
   scourge-survivors:
     title: "Scourge Survivors"
@@ -122,6 +126,11 @@ gameArtDirection:
     camera: "isometric 3/4-view champion sprites"
     assetFraming: "MOBA-scale heroes with readable ability silhouettes and faction crests"
     paletteBias: "faction identity first, then blood/hellfire combat states"
+  brawl:
+    title: "Brawl"
+    camera: "side-on / 3/4-view trench-fighter sprites"
+    assetFraming: "fighters, impacts, trench hazards, and ring-out silhouettes readable in Duel and 2-4 fighter arena distance"
+    paletteBias: "mud, gunmetal, bone-white trench marks, blood-hot impact reads, toxic only for Scourge pressure"
   starblight:
     title: "Starblight"
     camera: "side-on / top-down arcade space-shooter sprites"
@@ -144,25 +153,22 @@ gameArtDirection:
     paletteBias: "Wardens=blood, Pyre=hellfire, Scourge=toxic, neutral=gunmetal"
 
 assetgen:
-  # ── LOCKED house look (2026-06-04): MEDIUM-CHUNKY DETAILED PIXEL ART.
-  # Decided by the style bake-off (shipshitgames/shipshitgames#62). Appended after
-  # {prompt}. {kind}. {framing}. — see promptTemplate.order below. The AI only
-  # APPROXIMATES the grid; the TRUE pixel grid + palette are enforced in post
-  # (gradeParams: box-downscale to ~110px + hard palette remap + rembg cutout).
+  # ── LOCKED house look (2026-06-17): CLEAN COMIC-BOOK / CEL-SHADED INK.
+  # Supersedes the 2026-06-04 medium-chunky pixel target. Existing pixel runtime
+  # assets may remain as scaffolding, but new masters and promoted runtime sheets
+  # should move toward comic ink: bold contour, flat readable value blocks,
+  # transparent/cutout-ready framing, no halftone/stipple/dotted noise.
   styleSuffix: >-
-    high-detail PIXEL ART game sprite on a visible chunky pixel grid (medium
-    chunky, roughly a 110px-tall sprite), bold hand-placed pixels with hard crisp
-    edges and NO anti-aliasing, ordered dithered shading, a clean silhouette-first
-    readable shape with a subtle dark outline and a single hellfire rim-light from
-    one low side (hellfire {tokens.hellfire} into blood-hot {tokens.bloodHot}) so
-    it pops off a near-black background, fixed limited DOOM palette of
+    clean comic-book / cel-shaded ink game asset, bold black contour lines,
+    graphic flat shadow shapes, readable silhouette-first design, controlled
+    grime, crisp transparent-cutout-friendly edges, one hard hellfire rim-light
+    from a low side (hellfire {tokens.hellfire} into blood-hot
+    {tokens.bloodHot}), DOOM x grim graphic-novel mood, palette of
     {tokens.void}/{tokens.coal}/{tokens.gunmetal} body with
-    {tokens.blood}/{tokens.rust} grime and {tokens.bone} highlights, premium
-    modern pixel-art (Blasphemous, Dead Cells) crossed with remastered 1990s DOOM
-    sprites, detailed but not noisy, NO neon, no text, no watermark, no UI, single
-    subject only, near-black background, it MUST read as chunky pixel art made of
-    visible square pixels, NOT a smooth 3D render, NOT photorealistic, NOT
-    anti-aliased, NOT painted concept art
+    {tokens.blood}/{tokens.rust} grime and {tokens.bone} highlights, no text,
+    no watermark, single subject unless explicitly requested, it MUST read as
+    clean comic/cel ink for a game, NOT pixel art, NOT halftone, NOT stippled,
+    NOT noisy, NOT a smooth photoreal render
 
   # Always-on style exclusions. Dual-use (see negativeMode per provider).
   # Also emitted standalone as the top-level `negativePromptSet:` below.
@@ -171,12 +177,15 @@ assetgen:
     - rendered 3D model
     - photorealistic
     - photographic
-    - anti-aliased smooth edges
+    - pixel art
+    - visible square pixel grid
+    - ordered dithering
+    - halftone dots
+    - stipple
+    - dotted light artifacts
+    - noisy speckles
     - airbrushed
-    - painted concept art
     - blurry
-    - hi-fi render
-    - cel-shaded cartoon
     - anime
     - cute
     - chibi
@@ -205,6 +214,7 @@ assetgen:
     scourge-survivors: first-person game billboard sprite, front-facing, full body
     deadlane: top-down / high-angle game sprite, silhouette readable from above
     pactfall: isometric 3/4-view game sprite, champion scale
+    brawl: side-on / 3/4-view trench-fighter sprite, readable in Duel and 2-4 fighter arena distance
     starblight: side-on / top-down arcade space-shooter sprite, crisp readable silhouette
     redline: side-on Sonic-like runner sprite, profile silhouette readable at courier-lane speed
     rothulk: side-on Mario-like platformer sprite, profile silhouette, clear readable pose
@@ -225,11 +235,14 @@ assetgen:
       races: ruptured host flesh, invasive tendrils, embedded toxic-green
       ({tokens.toxic}) breach cores, black chitin over stolen bone/metal, fused
       wreckage or machinery; vary host family among flesh, chitin, mycelial,
-      machine-graft, bone-titan, or voidship; never a standalone generic demon
-      or alien; if it lacks this grammar it is only a monster, not the Scourge
+      machine-graft, bone-titan, or voidship, and use muted host color lanes
+      under the same warm grade so roles remain readable; never a standalone
+      generic demon or alien; if it lacks this grammar it is only a monster, not
+      the Scourge
 
-  # PIXEL post-pipeline — the AI only APPROXIMATES pixels; THIS enforces the real
-  # grid + palette. cutout -> box-downscale to the grid -> hard palette remap.
+  # Legacy pixel post-pipeline kept for old scaffolding assets only. New comic
+  # runtime sheets should use cutout cleanup, WebP encoding, and manifest records
+  # without forcing a pixel grid or dither pass.
   gradeParams:
     pixelGrid: 110                # target sprite HEIGHT in px (rank-and-file); boss ~180
     downscale: box                # box-filter downscale to the TRUE pixel grid
@@ -238,7 +251,7 @@ assetgen:
     antialias: false              # hard 1px edges
     hardRemap: true               # SNAP to the fixed DOOM ramp (pixel art = limited palette)
     targetPalette: doom           # the colors: map in this frontmatter
-    palettePath: lore/Art/grade/doom.gpl
+    palettePath: packages/assets/tokens/palettes/doom.gpl
     outline: subtle-dark          # 1px darker outline so sprites pop off dark backgrounds
     preserveEmissive: true        # keep hellfire/toxic emitters hot through the remap
     blackPoint: "{tokens.void}"   # #0a0a0a — true near-black floor
@@ -250,13 +263,13 @@ assetgen:
   # The missing styleRef plumbing, as data. One locked image per game; codegen
   # emits these as STYLE_REF for providers to pass via image refs (downstream).
   referenceImages:
-    scourge-survivors: lore/Art/style-refs/scourge-survivors.webp
-    deadlane: lore/Art/style-refs/deadlane.webp
-    pactfall: lore/Art/style-refs/pactfall.webp
-    starblight: lore/Art/style-refs/starblight.webp
-    redline: lore/Art/style-refs/redline.webp
-    rothulk: lore/Art/style-refs/rothulk.webp
-    shared: lore/Art/style-refs/scourge-survivors.webp
+    scourge-survivors: packages/assets/sources/generated/lore-art-style-refs/2026-06-04/scourge-survivors.webp
+    deadlane: packages/assets/sources/generated/lore-art-style-refs/2026-06-04/deadlane.webp
+    pactfall: packages/assets/sources/generated/lore-art-style-refs/2026-06-04/pactfall.webp
+    starblight: packages/assets/sources/generated/lore-art-style-refs/2026-06-04/starblight.webp
+    redline: packages/assets/sources/generated/lore-art-style-refs/2026-06-04/redline.webp
+    rothulk: packages/assets/sources/generated/lore-art-style-refs/2026-06-04/rothulk.webp
+    shared: packages/assets/sources/generated/lore-art-style-refs/2026-06-04/scourge-survivors.webp
 
   # Provider settings. Defaults + per-provider overrides codegen bakes in.
   providers:
@@ -322,12 +335,15 @@ negativePromptSet:
   - rendered 3D model
   - photorealistic
   - photographic
-  - anti-aliased smooth edges
+  - pixel art
+  - visible square pixel grid
+  - ordered dithering
+  - halftone dots
+  - stipple
+  - dotted light artifacts
+  - noisy speckles
   - airbrushed
-  - painted concept art
   - blurry
-  - hi-fi render
-  - cel-shaded cartoon
   - anime
   - cute
   - chibi
@@ -357,7 +373,7 @@ The single source of design truth for **everything** — the website, every game
 menus, and every AI-generated asset. The aesthetic is **DOOM**: brutal, metal, blood, and
 hellfire. Dark, heavy, gritty, high-contrast. This supersedes the earlier "neon-industrial"
 direction — there is **no magenta/cyan neon**. An agent that reads this file should produce
-black-void surfaces, gunmetal panels, bone headlines in uppercase pixel type, and
+black-void surfaces, gunmetal panels, bone headlines in uppercase comic display type, and
 blood-red call-to-action buttons with an ember glow. The lore [[Style-Bible]] points here.
 
 ### Game Art Direction
@@ -384,8 +400,13 @@ agents, artists, and future generators.
 | `bone` | `#e9e3d6` | headings / strong text |
 | `ash` | `#9b958a` | body / dim text |
 | `toxic` | `#8bdc1f` | **the Scourge only** — sickly bio-glow, sparingly |
+| `acidOchre` | `#b9a83a` | muted spore sacs, bile membranes, ranged hazard reads |
+| `hazardYellow` | `#d6a21f` | Warden hazard marks, worn stencils, industrial warnings |
+| `bruisedViolet` | `#5a3a6f` | muted wing membranes / voidship shadow tissue, never neon |
+| `verdigris` | `#3f6b5d` | oxidized old metal and voidship corrosion, desaturated only |
 
-Rule: **red + fire + metal + bone.** Toxic-green is reserved for the Scourge. Never neon.
+Rule: **red + fire + metal + bone** as the grade, with muted lane colors for readability.
+Toxic-green is reserved for the Scourge. Never neon.
 
 Scourge rule: the Scourge is a **parasite first**. Scourge assets should show infestation,
 host takeover, invasive growth, fused wreckage, stolen bone/metal, ruptured tissue, and
@@ -393,12 +414,16 @@ embedded breach cores. Avoid generic standalone demons, clean aliens, or monster
 not look like they are wearing, consuming, or rewriting a host. The army can include
 multiple conquered host races and ruined technologies, but all forms need the same
 parasite grammar: toxic-green nodes, black chitin, wet tissue, tendrils, and rupture seams.
+Use role lanes to keep foes identifiable at speed: blood-red heavy melee, acid-ochre /
+toxic ranged sacs, bruised-violet membranes for light flyers, rust / verdigris machine
+corrosion, and bone / ash for titans and exposed armor. All lanes pass through the same
+dirty warm DOOM grade; none become clean body paint.
 
 ## Typography
 
-- **Display** — SSG Press Start / Press Start 2P 400, UPPERCASE, zero tracking. Pixel title, menu, and HUD labels.
-- **Body** — SSG Press Start / Press Start 2P 400. All player-facing UI should stay pixelized.
-- **Mono** — SSG Press Start / Press Start 2P 400. Counters, ammo, timers, and HUD numerics.
+- **Display** — SSG Comic Condensed / heavy condensed comic display, UPPERCASE, zero tracking. Title, menu, HUD labels, pause panels, and comic impact words.
+- **Body** — SSG Comic Condensed / condensed sans. Player-facing UI should read like comic lettering, not retro pixel type.
+- **Mono** — SSG Comic Condensed with tabular numerics where possible. Counters, ammo, timers, and HUD numerics keep clear figure alignment.
 
 ## Layout
 
@@ -414,21 +439,23 @@ parasite grammar: toxic-green nodes, black chitin, wet tissue, tendrils, and rup
 
 ## Shapes
 
-- Near-square. `rounded.sm` (2px) is the default; `rounded.none` for HUD/industrial chrome.
-- Hard edges, riveted/stencilled metal, warning-stripe motifs. No pill/`rounded-2xl` softness.
+- Cards should read as comic speech bubbles, caption boxes, or torn ink panels: thick black contour,
+  slightly irregular corners, hard offset shadow, and an optional tail/notch.
+- `rounded.sm` (2px) remains the default for small controls; `rounded.none` for HUD/industrial chrome.
+- Hard edges, riveted/stencilled metal, warning-stripe motifs. No generic SaaS card softness.
 
 ## Components
 
 - **button-primary** — `primary` bg, `bone` text, `rounded.sm`. Main CTA.
 - **button-secondary** — `hellfire` bg, `void` text, `rounded.sm`. Secondary hot action.
-- **card** — `coal` bg, `bone` text, `rounded.sm`; border in implementation should use `gunmetal`.
+- **card** — comic bubble/caption panel with thick black ink border, hard offset shadow, and optional tail/notch.
 - **panel-raised / panel-metal** — `iron` or `gunmetal` surfaces for HUD and chrome.
 - **terminal** — `void` bg, `ash` mono text, `rounded.sm`.
 - **badge** — `blood`, `bloodHot`, `rust`, and `toxic` variants for status and faction tags.
 
 ## Do's and Don'ts
 
-**Do:** lead with red + fire + metal + bone; UPPERCASE pixel headers; reserve toxic-green
+**Do:** lead with red + fire + metal + bone; UPPERCASE comic headers; reserve toxic-green
 for the Scourge; make Scourge forms read as parasitic infestation; use ember glow sparingly;
 keep edges hard and high-contrast.
 

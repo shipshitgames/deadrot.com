@@ -10,6 +10,7 @@
 // in prod, so records aggregate there; dev runs each game on its own port
 // (its own origin), so dev records stay per-game.
 
+import { recordBalanceRunEnd } from "../telemetry";
 import { createLocalStore, type LocalStore } from "./storage";
 
 /** Per-game banked bests + run counters. */
@@ -120,6 +121,17 @@ export function mergeWarResult(prev: WarRecordEntry | undefined, result: WarResu
  * failures degrade silently (the merge still returns, nothing persists).
  */
 export function recordWarResult(slug: string, result: WarResult, now: number): WarRecord {
+  recordBalanceRunEnd(
+    slug,
+    {
+      outcome: result.outcome,
+      score: result.score,
+      timeMs: result.timeMs,
+      wave: result.wave,
+      bossKill: result.bossKill,
+    },
+    now,
+  );
   return warRecordStore().update((current) => ({
     ...current,
     [slug]: mergeWarResult(sanitizeEntry(current[slug]), result, now),

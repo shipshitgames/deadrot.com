@@ -43,8 +43,24 @@ First-pass shared placeholders added 2026-06-05 so
 
 ## Audio
 
-- Files: `audio/breach-collapse.ogg`, `audio/choir-whisper.ogg`,
-  `audio/hellfire-pulse.ogg`
-- Source: deterministic local synthesis with `ffmpeg` oscillators/noise filters.
-- License: project-owned placeholder output.
-- Notes: replace with studio-licensed final SFX before public release if needed.
+- Files: `audio/breach-collapse.webm`, `audio/choir-whisper.webm`,
+  `audio/hellfire-pulse.webm`, `audio/sfx/hit.webm`
+- Source: ElevenLabs Sound Effects API (`eleven_text_to_sound_v2`), generated
+  from prompts tracked in `audio/audio-catalog.json`.
+- Source archive:
+  `sources/generated/2026-06-12/shared/audio/elevenlabs-examples/`
+- License: per ElevenLabs account terms at generation time.
+- Notes: promoted over the previous deterministic local-synthesis/procedural
+  placeholders.
+
+### Victory Music
+
+- Runtime file: `audio/victory-breach-sealed.webm`
+- Title: `Verdict Thunder`
+- Source: user-provided Suno MP3 export, transcoded to WebM/Opus.
+- Source archive:
+  `sources/generated/2026-06-12/shared/audio/verdict-thunder.mp3`
+- Metadata: `created=2026-06-11T22:10:18.930345Z`,
+  `id=c01be85a-797a-4804-879b-bec79f76bae3`.
+- License note: confirm the Suno account was Pro/Premier at generation time
+  before treating this as shippable commercial in-game music.

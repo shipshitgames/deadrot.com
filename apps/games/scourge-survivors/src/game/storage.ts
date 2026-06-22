@@ -93,12 +93,25 @@ export interface ShopState {
   tiers: Record<string, number>;
 }
 
+/** Keep the persisted `tiers` map to clean, non-negative integers. Legacy or
+ *  tampered saves (NaN, floats, negatives) must not poison the escalating
+ *  shop-cost math; the `{ gold, tiers }` shape itself is preserved. */
+function sanitizeTiers(input: unknown): Record<string, number> {
+  if (!input || typeof input !== "object") return {};
+  const out: Record<string, number> = {};
+  for (const [id, value] of Object.entries(input as Record<string, unknown>)) {
+    const n = Math.floor(Number(value));
+    if (Number.isFinite(n) && n > 0) out[id] = n;
+  }
+  return out;
+}
+
 export function loadShop(): ShopState {
   try {
     const raw = localStorage.getItem(SHOP_KEY);
     if (raw) {
       const s = JSON.parse(raw);
-      return { gold: Math.max(0, Number(s.gold) || 0), tiers: s.tiers && typeof s.tiers === "object" ? s.tiers : {} };
+      return { gold: Math.max(0, Number(s.gold) || 0), tiers: sanitizeTiers(s.tiers) };
     }
   } catch {
     /* ignore */

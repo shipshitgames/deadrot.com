@@ -1,5 +1,6 @@
-import { createFixedLoop, type FixedLoop } from "@deadrot/game-kit/core";
+import { createFixedLoop, type FixedLoop, recordWarResult } from "@deadrot/game-kit/core";
 import { FlashOverlay } from "@deadrot/game-kit/juice";
+import { reportWarlineOperation } from "@deadrot/game-kit/warline";
 import * as THREE from "three";
 import { audio } from "./audio";
 import { cellToWorld, inBounds, isPathCell, playBounds, worldToCell } from "./board";
@@ -13,6 +14,36 @@ import { RenderSystem } from "./systems/render";
 import type { GameState, KillEvent } from "./types";
 import { setPauseSnapshot } from "./ui/pauseBridge";
 import { isBossWave, waveComposition } from "./waves";
+
+/**
+ * Dev/E2E-only headless sim driver, attached to window as `__deadlaneGame`
+ * (mirrors `__rothulkGame` / `__pactfallGame`). Playwright drives the
+ * deterministic fixed-step sim through this handle instead of waiting on
+ * rendered frames: on a slow/headless runner the rAF loop is wall-clock-starved
+ * (createFixedLoop clamps each frame's dt to maxDelta), so a real-time wait for
+ * the wave director / breach economy is impractically slow and viewport
+ * dependent. The handle is stripped from production bundles by the
+ * `import.meta.env.DEV` guard at its install site.
+ */
+interface DeadlaneDebug {
+  /** Synchronous run-state snapshot the e2e specs assert against (no THREE refs). */
+  snapshot(): {
+    phase: GameState["phase"];
+    wave: number;
+    totalWaves: number;
+    baseHp: number;
+    gold: number;
+    creepCount: number;
+    paused: boolean;
+  };
+  /**
+   * Advance the sim by `seconds` of fixed-step time — replays the loop's own
+   * update callback (`elapsed += fixedDt; step(fixedDt)`) at the same fixedDt,
+   * so it is byte-for-byte identical to live play but needs no rAF, pointer
+   * lock, or WebGL draw. Returns the resulting phase.
+   */
+  fastForward(seconds: number): GameState["phase"];
+}
 
 /**
  * Game — the thin owner of shared state + the systems, per studio convention.
@@ -29,6 +60,9 @@ export class Game {
   private readonly flash: FlashOverlay;
   private readonly loop: FixedLoop;
   private readonly forward = new THREE.Vector3();
+  private readonly playerMoveVel = new THREE.Vector2();
+  private wasSprinting = false;
+  private sprintStartBoostTimer = 0;
 
   // gameplay events accumulated across the fixed steps of one displayed frame
   private readonly frameKills: KillEvent[] = [];
@@ -61,6 +95,37 @@ export class Game {
       render: (_alpha, frameDt) => this.renderFrame(frameDt),
     });
     this.loop.start();
+
+    // Dev/E2E only: expose a headless sim driver so Playwright can advance the
+    // director + breach economy deterministically without depending on render
+    // FPS. step()/state/elapsed are private, so the handle must be installed
+    // from inside the class. Vite statically evaluates import.meta.env.DEV to
+    // false in production builds, dead-code-eliminating the whole block.
+    if (import.meta.env.DEV) {
+      (window as unknown as { __deadlaneGame?: DeadlaneDebug }).__deadlaneGame = {
+        snapshot: () => ({
+          phase: this.state.phase,
+          wave: this.state.wave,
+          totalWaves: CONSTANTS.waves.total,
+          baseHp: this.state.baseHp,
+          gold: this.state.gold,
+          creepCount: this.state.creeps.length,
+          paused: this.pausedForCapture,
+        }),
+        fastForward: (seconds) => {
+          const fixedDt = CONSTANTS.loop.fixedDt;
+          const steps = Math.max(0, Math.round(seconds / fixedDt));
+          for (let i = 0; i < steps; i++) {
+            this.elapsed += fixedDt;
+            this.step(fixedDt);
+          }
+          // Sync the HUD store once so DOM-reading assertions see fresh values;
+          // never render.render() — that would touch WebGL.
+          this.hud.update(this.state);
+          return this.state.phase;
+        },
+      };
+    }
   }
 
   // ---- state transitions ----------------------------------------------------
@@ -87,6 +152,9 @@ export class Game {
     this.clearPauseMenu();
     this.render.placePlayerAtStart();
     this.input.clearTransientInput();
+    this.playerMoveVel.set(0, 0);
+    this.wasSprinting = false;
+    this.sprintStartBoostTimer = 0;
     this.pausedForCapture = false;
     this.state.phase = "building";
     this.state.hintText = "CLICK THE GAME TO LOCK VIEW";
@@ -204,12 +272,40 @@ export class Game {
     const x = Number(this.input.move.right) - Number(this.input.move.left);
     const z = Number(this.input.move.forward) - Number(this.input.move.back);
     const moving = x !== 0 || z !== 0;
+    const p = CONSTANTS.player;
+    const sprinting = moving && this.input.wantsSprint;
+    if (sprinting && !this.wasSprinting) this.sprintStartBoostTimer = p.sprintStartBoostTime;
+    this.wasSprinting = sprinting;
+
+    const damping = moving ? p.damping : p.brakeDamping;
+    const damp = Math.max(0, 1 - damping * dt);
+    this.playerMoveVel.multiplyScalar(damp);
+
     if (moving) {
       const len = Math.hypot(x, z);
-      const sprint = this.input.wantsSprint ? CONSTANTS.player.sprintMultiplier : 1;
-      const speed = CONSTANTS.player.moveSpeed * sprint * runSpeedMul(this.state);
-      this.render.rig.movePlanar((x / len) * speed * dt, (z / len) * speed * dt);
+      const speed = p.moveSpeed * (sprinting ? p.sprintMultiplier : 1) * runSpeedMul(this.state);
+      const boost =
+        sprinting && this.sprintStartBoostTimer > 0
+          ? 1 + p.sprintStartBoostMultiplier * (this.sprintStartBoostTimer / p.sprintStartBoostTime)
+          : 1;
+      const desiredX = (x / len) * speed;
+      const desiredZ = (z / len) * speed;
+      const maxStep = p.accel * boost * dt;
+      const dx = desiredX - this.playerMoveVel.x;
+      const dz = desiredZ - this.playerMoveVel.y;
+      const dist = Math.hypot(dx, dz);
+      if (dist > maxStep && dist > 0) {
+        this.playerMoveVel.x += (dx / dist) * maxStep;
+        this.playerMoveVel.y += (dz / dist) * maxStep;
+      } else {
+        this.playerMoveVel.set(desiredX, desiredZ);
+      }
+    } else if (this.playerMoveVel.length() < p.stopEpsilon) {
+      this.playerMoveVel.set(0, 0);
     }
+    this.sprintStartBoostTimer = Math.max(0, this.sprintStartBoostTimer - dt);
+
+    this.render.rig.movePlanar(this.playerMoveVel.x * dt, this.playerMoveVel.y * dt);
 
     const pos = this.render.rig.body.position;
     const radius = CONSTANTS.player.radius;
@@ -379,6 +475,17 @@ export class Game {
 
   private win(): void {
     if (this.state.phase === "won") return;
+    const score = runScore(this.state);
+    recordWarResult(
+      "deadlane",
+      {
+        outcome: "victory",
+        score,
+        wave: this.state.wave,
+      },
+      Date.now(),
+    );
+    void reportWarlineOperation("deadlane", { outcome: "victory", score });
     this.state.phase = "won";
     this.input.setActive(false);
     this.render.rig.releaseCapture(true);
@@ -388,6 +495,17 @@ export class Game {
 
   private lose(): void {
     if (this.state.phase === "lost") return;
+    const score = runScore(this.state);
+    recordWarResult(
+      "deadlane",
+      {
+        outcome: "defeat",
+        score,
+        wave: this.state.wave,
+      },
+      Date.now(),
+    );
+    void reportWarlineOperation("deadlane", { outcome: "defeat", score });
     this.state.phase = "lost";
     this.input.setActive(false);
     this.render.rig.releaseCapture(true);
@@ -481,4 +599,8 @@ function freshState(): GameState {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+function runScore(state: GameState): number {
+  return Math.max(0, Math.round(state.wave * 100 + state.gold + state.baseHp * 25));
 }

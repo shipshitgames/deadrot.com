@@ -1,6 +1,6 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
 import { fileURLToPath, URL } from "node:url";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 
 // Relative base keeps the static build usable behind the monorepo hub route.
 export default defineConfig({
@@ -20,5 +20,6 @@ export default defineConfig({
     target: "es2020",
     outDir: "dist",
     emptyOutDir: true,
+    sourcemap: true,
   },
 });

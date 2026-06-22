@@ -1,0 +1,53 @@
+{
+  "generated": "2026-06-12T08:16:17.159Z",
+  "items": [
+    {
+      "name": "breach-collapse",
+      "loop": false,
+      "prompt": "A heavy non-musical sci-fi horror breach collapse: low metallic implosion, wet stone cracking, distant pressure-wave thump, toxic energy fizzling out. Designed for a dark pixel-art shooter when a monster portal seals. No melody, no vocals, one-shot, 1.5 to 2 seconds.",
+      "masterPath": "packages/assets/sources/generated/2026-06-12/shared/audio/elevenlabs-examples/breach-collapse.mp3",
+      "auditionPath": "packages/assets/sources/generated/2026-06-12/shared/audio/elevenlabs-examples/breach-collapse.webm",
+      "durationSeconds": 2.008,
+      "sizeBytes": 31540,
+      "tool": "ElevenLabs Sound Effects API",
+      "model": "eleven_text_to_sound_v2",
+      "generated": "2026-06-12T08:16:10.612Z"
+    },
+    {
+      "name": "choir-whisper-loop",
+      "loop": true,
+      "prompt": "Loopable alien hive-mind ambience for a dark pixel-art shooter: layered organic whispers with no words, sub-bass biotech hum, faint chitin clicks, toxic electrical shimmer. Seamless loop, eerie and quiet, 4 seconds.",
+      "masterPath": "packages/assets/sources/generated/2026-06-12/shared/audio/elevenlabs-examples/choir-whisper-loop.mp3",
+      "auditionPath": "packages/assets/sources/generated/2026-06-12/shared/audio/elevenlabs-examples/choir-whisper-loop.webm",
+      "durationSeconds": 4.008,
+      "sizeBytes": 68398,
+      "tool": "ElevenLabs Sound Effects API",
+      "model": "eleven_text_to_sound_v2",
+      "generated": "2026-06-12T08:16:13.814Z"
+    },
+    {
+      "name": "hellfire-pulse",
+      "loop": false,
+      "prompt": "Short Pyre hellfire power pulse for a dark pixel-art shooter: compressed flame whoomp, ember crackle, hot mechanical ignition, small bass kick. Aggressive but clean UI/gameplay cue, no vocals, no melody, under 1 second.",
+      "masterPath": "packages/assets/sources/generated/2026-06-12/shared/audio/elevenlabs-examples/hellfire-pulse.mp3",
+      "auditionPath": "packages/assets/sources/generated/2026-06-12/shared/audio/elevenlabs-examples/hellfire-pulse.webm",
+      "durationSeconds": 1.008,
+      "sizeBytes": 17170,
+      "tool": "ElevenLabs Sound Effects API",
+      "model": "eleven_text_to_sound_v2",
+      "generated": "2026-06-12T08:16:15.536Z"
+    },
+    {
+      "name": "hit-impact",
+      "loop": false,
+      "prompt": "Short meaty alien bullet impact for a dark pixel-art shooter: wet chitin slap, tiny bone crack, soft blood spurt, no tonal beep, one-shot, 0.25 seconds.",
+      "masterPath": "packages/assets/sources/generated/2026-06-12/shared/audio/elevenlabs-examples/hit-impact.mp3",
+      "auditionPath": "packages/assets/sources/generated/2026-06-12/shared/audio/elevenlabs-examples/hit-impact.webm",
+      "durationSeconds": 0.488,
+      "sizeBytes": 7289,
+      "tool": "ElevenLabs Sound Effects API",
+      "model": "eleven_text_to_sound_v2",
+      "generated": "2026-06-12T08:16:17.159Z"
+    }
+  ]
+}

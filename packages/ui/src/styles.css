@@ -615,6 +615,21 @@
   opacity: 0.78;
 }
 
+.ssg-main-menu-action--back {
+  --ssg-menu-action-blood:
+    linear-gradient(90deg, rgba(255, 106, 0, 0.08), transparent 64%),
+    linear-gradient(180deg, rgba(20, 20, 22, 0.84), rgba(7, 7, 8, 0.86));
+  --ssg-menu-action-edge: rgba(233, 227, 214, 0.36);
+  --ssg-menu-action-wound: rgba(233, 227, 214, 0.06);
+  align-self: center;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  width: min(260px, 100%);
+  padding: 10px 14px;
+}
+
 .ssg-main-menu-action__label,
 .ssg-main-menu-action__meta {
   position: relative;
@@ -663,6 +678,10 @@
   font-size: 24px;
 }
 
+.ssg-main-menu-action--back .ssg-main-menu-action__label {
+  font-size: 14px;
+}
+
 .ssg-main-menu-action__icon {
   display: inline-flex;
   flex: 0 0 auto;
@@ -681,6 +700,86 @@
   white-space: nowrap;
 }
 
+/* Quick-jump strip (GameJumpMenu): direct links into the other games. In the
+   full title menu it sits as the last item inside .ssg-main-menu-nav; on the
+   splash gate it can render as a compact centered strip under the Enter prompt. */
+.ssg-game-jump {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(233, 227, 214, 0.14);
+}
+
+.ssg-game-jump__label {
+  color: rgba(233, 227, 214, 0.55);
+  font-family: var(--ssg-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.ssg-game-jump__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ssg-game-jump__link {
+  --ssg-game-jump-accent: var(--ssg-hellfire);
+  padding: 6px 10px;
+  color: rgba(233, 227, 214, 0.78);
+  background: linear-gradient(110deg, rgba(12, 12, 13, 0.9), rgba(24, 22, 22, 0.78));
+  border: 1px solid rgba(233, 227, 214, 0.16);
+  font-family: var(--ssg-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    border-color 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.08s ease;
+}
+
+.ssg-game-jump__link:hover,
+.ssg-game-jump__link:focus-visible {
+  transform: translateY(-1px);
+  color: var(--ssg-bone);
+  border-color: color-mix(in srgb, var(--ssg-game-jump-accent) 78%, transparent);
+  box-shadow: 0 0 18px -8px var(--ssg-game-jump-accent);
+}
+
+.ssg-game-jump__link:focus-visible {
+  outline: 2px solid var(--ssg-game-jump-accent);
+  outline-offset: 2px;
+}
+
+.ssg-game-jump--splash {
+  width: min(560px, 92vw);
+  align-items: center;
+  margin-top: -12px;
+  padding-top: 12px;
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  animation: ssg-menu-rise 0.5s ease-out 0.24s forwards;
+}
+
+.ssg-game-jump--splash .ssg-game-jump__label {
+  color: rgba(233, 227, 214, 0.62);
+}
+
+.ssg-game-jump--splash .ssg-game-jump__links {
+  justify-content: center;
+}
+
+.ssg-game-jump--splash .ssg-game-jump__link {
+  background: linear-gradient(110deg, rgba(12, 12, 13, 0.72), rgba(24, 22, 22, 0.52));
+  font-size: 10px;
+}
+
 @keyframes ssg-menu-atmosphere {
   from {
     opacity: 0.28;
@@ -697,6 +796,126 @@
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Shared victory screen shell for game win states. */
+.ssg-victory-screen {
+  isolation: isolate;
+  overflow: hidden;
+  justify-content: flex-start;
+  padding: clamp(22px, 5vh, 58px) clamp(16px, 5vw, 56px);
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.4), transparent 28%, rgba(0, 0, 0, 0.72)),
+    radial-gradient(circle at 50% 22%, rgba(139, 220, 31, 0.2), transparent 26%),
+    radial-gradient(circle at 50% 48%, rgba(255, 106, 0, 0.24), transparent 42%),
+    linear-gradient(116deg, rgba(47, 3, 6, 0.86), rgba(5, 5, 5, 0.96) 46%, rgba(12, 17, 9, 0.9));
+}
+
+.ssg-victory-screen::before,
+.ssg-victory-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.ssg-victory-screen::before {
+  background:
+    repeating-linear-gradient(0deg, rgba(233, 227, 214, 0.035) 0 1px, transparent 1px 4px),
+    linear-gradient(100deg, transparent 0 32%, rgba(255, 106, 0, 0.22) 43%, transparent 56%),
+    linear-gradient(68deg, transparent 0 52%, rgba(139, 220, 31, 0.14) 64%, transparent 78%);
+  mix-blend-mode: screen;
+  opacity: 0.54;
+}
+
+.ssg-victory-screen::after {
+  background:
+    radial-gradient(ellipse at 50% 50%, transparent 34%, rgba(0, 0, 0, 0.78) 100%),
+    linear-gradient(180deg, transparent 0 58%, rgba(0, 0, 0, 0.62));
+}
+
+.ssg-victory-screen__confetti {
+  z-index: 1;
+}
+
+.ssg-victory-screen__content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: min(960px, 96vw);
+  max-height: calc(100vh - clamp(44px, 10vh, 116px));
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  overflow: auto;
+  padding: 4px 0 10px;
+  scrollbar-width: thin;
+}
+
+.ssg-victory-screen__kicker {
+  max-width: 100%;
+  color: rgba(233, 227, 214, 0.72);
+  font-family: var(--ssg-font-mono);
+  font-size: clamp(10px, 1.5vw, 13px);
+  letter-spacing: 0.32em;
+  line-height: 1.5;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.ssg-victory-screen__title {
+  max-width: 100%;
+  margin: 0;
+  color: var(--ssg-bone);
+  font-family: var(--ssg-font-display);
+  font-size: clamp(42px, 8vw, 86px);
+  font-weight: 400;
+  line-height: 1.05;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow:
+    3px 0 0 rgba(5, 5, 5, 0.96),
+    0 3px 0 rgba(5, 5, 5, 0.96),
+    5px 5px 0 rgba(56, 5, 7, 0.88),
+    0 0 26px rgba(255, 176, 46, 0.6),
+    0 0 54px rgba(139, 220, 31, 0.36);
+}
+
+.ssg-victory-screen__subtitle {
+  max-width: min(720px, 92vw);
+  color: var(--ssg-ember);
+  font-family: var(--ssg-font-mono);
+  font-size: clamp(11px, 1.8vw, 15px);
+  line-height: 1.55;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.ssg-victory-screen__body {
+  display: contents;
+}
+
+.ssg-victory-screen__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .ssg-victory-screen {
+    padding-block: 22px;
+  }
+
+  .ssg-victory-screen__content {
+    width: min(96vw, 560px);
+    max-height: calc(100vh - 44px);
+  }
+
+  .ssg-victory-screen__kicker {
+    letter-spacing: 0.18em;
   }
 }
 
@@ -823,7 +1042,8 @@
     font-size: clamp(1.72rem, 8.2vw, 3.1rem);
   }
 
-  .ssg-main-menu-nav {
+  .ssg-main-menu-nav,
+  .ssg-game-jump--splash {
     width: min(354px, 100%);
   }
 
@@ -849,6 +1069,79 @@
   }
 }
 
+@media (max-height: 560px) {
+  .ssg-main-menu-layout--splash {
+    gap: 10px;
+    padding-top: 62px;
+    padding-bottom: 18px;
+  }
+
+  .ssg-main-menu-layout--splash .ssg-menu-kicker {
+    font-size: 11px;
+  }
+
+  .ssg-main-menu-layout--splash .ssg-main-menu-title {
+    margin-top: 6px;
+    font-size: 3.35rem;
+  }
+
+  .ssg-main-menu-layout--splash .ssg-main-menu-subtitle {
+    max-width: min(620px, 92vw);
+    margin-top: 8px;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .ssg-main-menu-layout--splash .ssg-main-menu-status {
+    margin-top: 8px;
+  }
+
+  .ssg-main-menu-layout--splash .ssg-main-menu-enter {
+    padding: 7px 4px;
+  }
+
+  .ssg-game-jump--splash {
+    margin-top: -4px;
+    padding-top: 8px;
+  }
+}
+
+@media (max-height: 420px) {
+  .ssg-main-menu-layout--splash {
+    gap: 8px;
+  }
+
+  .ssg-main-menu-layout--splash .ssg-main-menu-title {
+    font-size: 3rem;
+  }
+
+  .ssg-main-menu-layout--splash .ssg-main-menu-enter {
+    order: 2;
+    padding: 4px;
+  }
+
+  .ssg-game-jump--splash {
+    order: 1;
+    gap: 5px;
+    width: min(520px, 92vw);
+    margin-top: 0;
+    padding-top: 6px;
+  }
+
+  .ssg-game-jump--splash .ssg-game-jump__label {
+    font-size: 9px;
+  }
+
+  .ssg-game-jump--splash .ssg-game-jump__links {
+    gap: 4px;
+  }
+
+  .ssg-game-jump--splash .ssg-game-jump__link {
+    padding: 4px 7px;
+    font-size: 9px;
+  }
+}
+
 @media (max-width: 420px) {
   .ssg-main-menu-action__meta {
     display: none;
@@ -859,12 +1152,14 @@
   .ssg-main-menu-screen::before,
   .ssg-main-menu-particles,
   .ssg-main-menu-copy,
-  .ssg-main-menu-nav {
+  .ssg-main-menu-nav,
+  .ssg-game-jump--splash {
     animation: none;
   }
 
   .ssg-main-menu-copy,
-  .ssg-main-menu-nav {
+  .ssg-main-menu-nav,
+  .ssg-game-jump--splash {
     opacity: 1;
     transform: none;
   }

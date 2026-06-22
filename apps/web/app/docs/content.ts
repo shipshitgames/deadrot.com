@@ -40,9 +40,9 @@ const gameState = {
   },
   starblight: {
     state:
-      "Playable orbital prototype. Lore records the current pivot: lock style first, then push toward momentum-flight pilot buildcraft.",
+      "Playable orbital prototype. Zero Day is folded into it as the first-contact prologue; the main pillar is still momentum-flight pilot buildcraft.",
     canonRole:
-      "Pilots burn Scourge spores, infected wreckage, and living carrier-ships out of orbit before they fall into the surface war.",
+      "Pilots burn Scourge spores, infected wreckage, and living carrier-ships out of orbit before they fall into the surface war. Its Zero Day mode shows the night that sky first fell.",
     warline: "Reports orbital-intercept operations: weaken active breaches from above and cut incoming infection.",
   },
   redline: {
@@ -67,13 +67,6 @@ const gameState = {
       "The war console of the Resistance era: it tracks where the Pact is holding, where the Scourge pressures the lanes, and which operations buy the world more time.",
     warline:
       "IS the front. Every other game reports its operation here; commands spend the shared resources they earn.",
-  },
-  "zero-day": {
-    state:
-      "Concept only. This is the origin title and should stay unwinnable by design until the first-contact loop is locked.",
-    canonRole: "The night humanity lost the sky: first contact in orbit and atmosphere, before the Pyre/Warden schism.",
-    warline:
-      "No normal Warline operation yet. It is the historical anchor that explains why every later game is Resistance-era.",
   },
 } satisfies Record<string, GameDocState>;
 

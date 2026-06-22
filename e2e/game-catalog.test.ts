@@ -8,7 +8,7 @@ import { DEFAULT_PORT_BASE, parsePortBase, parseSelectedGameSlugs, parseSelected
 // helpers that drive Playwright project + webServer fan-out.
 
 describe("GAME_APPS catalog", () => {
-  test("lists the seven shipped games with unique ascending ports", () => {
+  test("lists the eight shipped games with unique ascending ports", () => {
     expect(GAME_APPS.map((g) => g.slug)).toEqual([
       "deadlane",
       "pactfall",
@@ -17,6 +17,7 @@ describe("GAME_APPS catalog", () => {
       "scourge-survivors",
       "starblight",
       "warline",
+      "brawl",
     ]);
     const ports = GAME_APPS.map((g) => g.devPort);
     expect(new Set(ports).size).toBe(ports.length); // unique
@@ -113,6 +114,24 @@ describe("catalog runtime facts", () => {
     expect(new Set(urls).size).toBe(urls.length);
     for (const url of urls) {
       expect(url).toMatch(/^https:\/\//);
+    }
+  });
+
+  test("every app has a unique display title and a hex accent for cross-game UI", () => {
+    const titles = GAME_APPS.map((game) => game.title);
+    expect(new Set(titles).size).toBe(titles.length);
+    for (const game of GAME_APPS) {
+      expect(game.title).toMatch(/\S/);
+      expect(game.accent).toMatch(/^#[0-9a-f]{6}$/);
+    }
+  });
+
+  test("catalog titles mirror the lore canon titles", () => {
+    const lorePath = join(import.meta.dir, "..", "packages", "assets", "lore", "games.json");
+    const lore = JSON.parse(readFileSync(lorePath, "utf8")) as { slug: string; title: string }[];
+    const loreTitles = new Map(lore.map((game) => [game.slug, game.title]));
+    for (const game of GAME_APPS) {
+      expect(loreTitles.get(game.slug)).toBe(game.title);
     }
   });
 });

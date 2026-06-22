@@ -1,3 +1,4 @@
+// biome-ignore-all lint/correctness/noUnusedPrivateClassMembers: Reference skeletons intentionally include placeholder private members.
 // Minimal runnable skeleton for a brand-new studio game. Split into the files
 // noted in the headers; collapsed here for reference. Boots a black scene that
 // pushes a HUDState snapshot to React. Grow it with the "new system" recipe.

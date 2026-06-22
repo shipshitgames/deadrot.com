@@ -9,7 +9,7 @@ import {
   WEAPONS,
   type WeaponId,
 } from "./constants";
-import { type ArenaMap, DEFAULT_MAP_ID, getMap } from "./data/maps";
+import { DEFAULT_MAP_ID, getMap, type NormalizedArenaMap } from "./data/maps";
 import { createIdleMissionState, type MissionRunState } from "./data/missions";
 import type { MainWeaponVisualTier } from "./data/survivors";
 import { SURV_BASE_MAGNET, type SurvivorClassId } from "./data/survivors";
@@ -57,14 +57,19 @@ export class GameContext {
   // --- world collision / hit-test targets ---
   solidMeshes: THREE.Mesh[] = []; // arena solids only (used to prune raycastTargets on rebuild)
   obstacleBoxes: THREE.Box3[] = []; // collider AABBs (non-elevated obstacles)
+  // Raised WALKABLE surfaces (v2 layout: raised room floors, platforms, ramp steps).
+  // Scanned by PlayerSystem.groundUnder so the player can stand on / climb them, but
+  // deliberately NOT pushed against (no push-out/headroom) so ramps stay climbable.
+  // Flat v1 maps produce zero surface boxes, so their collision is byte-identical.
+  surfaceBoxes: THREE.Box3[] = [];
   raycastTargets: THREE.Object3D[] = []; // arena solids + enemy + remote-avatar hit meshes
   enemies: Enemy[] = []; // shared pooled enemy array (contains dead entries)
 
   // --- arena / campaign map ---
-  currentMap: ArenaMap = getMap(DEFAULT_MAP_ID);
+  currentMap: NormalizedArenaMap = getMap(DEFAULT_MAP_ID);
   /** Horizontal play-area bounds (XZ). Published by ArenaSystem; default = the square arena. */
   bounds: WorldBounds = RectBounds.square(ARENA_HALF);
-  campaignMaps: ArenaMap[] = [];
+  campaignMaps: NormalizedArenaMap[] = [];
   campaignStage = 0; // 0-based index into campaignMaps
   mission: MissionRunState = createIdleMissionState();
 
@@ -110,6 +115,8 @@ export class GameContext {
   stanceHeight = PLAYER_HEIGHT;
   wantsSprint = false;
   wantsCrouch = false;
+  wasSprinting = false;
+  sprintStartBoostTimer = 0;
   move = makeMoveIntent();
   firing = false;
   triggerQueued = false;
@@ -140,6 +147,11 @@ export class GameContext {
   // --- survivor-derived stat multipliers (1 / 0 / SURV_BASE_MAGNET = no effect,
   // so campaign + multiplayer stay unaffected). Written by SurvivorsSystem.recomputeStats. ---
   statDamageMul = 1;
+  // Shared cross-game War-Effort buff (#280): the pooled war resources every
+  // Ship Shit Game banks into the Warline front unlock a GLOBAL damage
+  // multiplier, read once at run start. 1 = neutral (offline / front
+  // unreachable / no pool), so campaign + multiplayer stay unaffected.
+  warEffortDamageMul = 1;
   statFireRateMul = 1;
   statMoveMul = 1;
   statMaxHpBonus = 0;

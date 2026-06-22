@@ -16,7 +16,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 type SpriteAssetsModule = typeof import("../../src/game/spriteAssets");
 type EnemyModule = typeof import("../../src/game/entities/Enemy");
 
-const ENEMY_SPRITE_KINDS = ["melee", "ranged", "flying", "boss"] as const;
+const ENEMY_SPRITE_KINDS = ["melee", "ranged", "flying", "hound", "boss"] as const;
 const SPRITE_VIEWS = ["front", "side", "back"] as const;
 const ANIMATION_STATES = ["move", "attack", "death"] as const;
 const EXPECTED_GIB_IDS = [

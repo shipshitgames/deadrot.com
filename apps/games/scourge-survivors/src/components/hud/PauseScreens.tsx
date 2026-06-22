@@ -1,22 +1,25 @@
-import { Button, GameSettingsScreen, PauseMenu, type PauseMenuAction } from "@shipshitgames/ui";
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { Button, GameAudioSettingsScreen, GamePauseMenu, type PauseMenuAction } from "@shipshitgames/ui";
+import { type ReactNode, useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
+import { MELEE_WEAPON_NAME } from "../../game/constants";
 import { SCOURGE_THREAT_TIERS } from "../../game/data/enemies";
 import { MENU_HERO_URL } from "../../game/spriteAssets";
-import type { HUDState } from "../../game/types";
+import type { HudState } from "../../game/types";
 import { IconText, OVERLAY } from "./shared";
+
+const GAME_SLUG = "scourge-survivors";
 
 /** Pause menu + its settings/controls sub-panels. */
 export function PauseScreens({
   state,
   suppressMenu,
-  onLock,
+  onEscapeResume,
   onRestart,
   onLeaveRoom,
   onMenu,
 }: {
-  state: HUDState;
+  state: HudState;
   suppressMenu: boolean;
-  onLock: () => void;
+  onEscapeResume: () => void;
   onRestart: () => void;
   onLeaveRoom: () => void;
   onMenu: () => void;
@@ -24,10 +27,28 @@ export function PauseScreens({
   const { status, multiplayer, room, connected, kills, score, bossActive, wave, totalWaves } = state;
 
   const [pausePanel, setPausePanel] = useState<"none" | "settings" | "controls">("none");
+  const prevStatusRef = useRef(status);
   // Always reopen the pause menu on its root screen.
+  if (status !== prevStatusRef.current) {
+    prevStatusRef.current = status;
+    if (status !== "paused" && pausePanel !== "none") setPausePanel("none");
+  }
+
+  const handleEscapeResume = useEffectEvent(() => {
+    onEscapeResume();
+  });
+
   useEffect(() => {
-    if (status !== "paused") setPausePanel("none");
-  }, [status]);
+    if (status !== "paused" || suppressMenu || pausePanel !== "none") return;
+    const resumeOnEscape = (event: KeyboardEvent) => {
+      if (event.code !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      handleEscapeResume();
+    };
+    window.addEventListener("keydown", resumeOnEscape, { capture: true });
+    return () => window.removeEventListener("keydown", resumeOnEscape, { capture: true });
+  }, [pausePanel, status, suppressMenu]);
 
   // Status row + real actions for the shared PauseMenu (mirrors the title menu;
   // no shop affordance). Multiplayer surfaces breach/connection info + Leave.
@@ -93,24 +114,28 @@ export function PauseScreens({
   return (
     <>
       {status === "paused" && !suppressMenu && pausePanel === "none" && (
-        <PauseMenu
+        <GamePauseMenu
+          slug={GAME_SLUG}
           open
           className="pause-ui"
+          backgroundImage={MENU_HERO_URL}
           kicker={multiplayer ? "Breach run" : "Pyre breach"}
-          title="Paused"
-          subtitle={
-            multiplayer
-              ? "Hold the line — the breach keeps churning while you regroup."
-              : "The breach is held in stasis. Catch your breath, operator."
-          }
+          subtitle={multiplayer ? "Hold the line — the breach keeps churning while you regroup." : undefined}
           status={pauseStatus}
-          onResume={onLock}
+          onResume={onEscapeResume}
           actions={pauseActions}
         />
       )}
 
       {status === "paused" && !suppressMenu && pausePanel === "settings" && (
-        <GameSettingsScreen open onClose={() => setPausePanel("none")} backgroundImage={MENU_HERO_URL} />
+        <GameAudioSettingsScreen
+          open
+          slug={GAME_SLUG}
+          className="pause-ui"
+          onClose={() => setPausePanel("none")}
+          backgroundImage={MENU_HERO_URL}
+          backMeta="Pause menu"
+        />
       )}
 
       {status === "paused" && !suppressMenu && pausePanel === "controls" && (
@@ -119,7 +144,7 @@ export function PauseScreens({
             type="button"
             className="absolute inset-0 cursor-default border-0 bg-transparent"
             aria-label="Resume run"
-            onClick={onLock}
+            onClick={onEscapeResume}
           />
           <h2 className="relative z-[1] m-0 mb-[18px] text-[30px] font-bold">
             <IconText icon="gamepad" size={26}>
@@ -171,7 +196,7 @@ export function PauseScreens({
                 <span>
                   <kbd>F</kbd> / <kbd>V</kbd>
                 </span>{" "}
-                Melee
+                {MELEE_WEAPON_NAME}
               </div>
               <div>
                 <span>

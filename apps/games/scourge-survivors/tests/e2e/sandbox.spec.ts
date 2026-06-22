@@ -102,6 +102,9 @@ test.describe("survivors menu", () => {
 
     await expect(page.getByText("SCOURGE", { exact: true })).toBeVisible();
     await expect(page.getByText("SURVIVORS", { exact: true })).toBeVisible();
+    // The title screen holds the menu behind a "press enter to continue" splash.
+    await expect(page.getByText("Press Enter to continue")).toBeVisible();
+    await page.keyboard.press("Enter");
     const hub = page.getByRole("navigation", { name: /survivors hub/i });
     await expect(hub).toHaveCount(0);
     await dismissTitleSplash(page);
@@ -123,9 +126,11 @@ test.describe("survivors menu", () => {
       .getByRole("button", { name: /play a run/i })
       .click();
 
-    // The hub's primary action opens the operator loadout; the run launches
-    // from the loadout's own primary button.
+    // The hub's primary action opens the operator loadout; the loadout leads
+    // into the breach-site (map) select, and the run launches from there (#276).
     await expect(page.getByText("Operator Loadout")).toBeVisible();
+    await page.getByRole("button", { name: /choose breach site/i }).click();
+    await expect(page.locator(".ssg-section-heading", { hasText: "Breach Site" })).toBeVisible();
     await page.getByRole("button", { name: /play a run/i }).click();
 
     await expect(page.getByRole("button", { name: /click to lock/i })).toBeVisible();
@@ -306,7 +311,10 @@ test.describe("dev sandbox smoke", () => {
       game.sys.survivors.level = 7;
       game.sys.survivors.xp = 9;
       game.sys.survivors.xpToNext = 30;
-      game.sys.survivors.survClock = 130;
+      // Mid-Maw on the 600s reaper timeline (chapter 2 spans 280–435s): the live
+      // frame loop recomputes the chapter from survClock, so it must agree with
+      // the staged survivorChapter or advanceChapter() stomps this setup.
+      game.sys.survivors.survClock = 300;
       game.sys.hud.emit();
     });
 

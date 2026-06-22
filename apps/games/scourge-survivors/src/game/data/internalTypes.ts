@@ -1,11 +1,10 @@
 // Shared module-level constants + transient-entity interfaces, lifted verbatim
 // from the top of the old Game.ts so the extracted systems can share them.
 import type * as THREE from "three";
-import type { Enemy } from "../entities/Enemy";
 import type { PickupKind } from "../constants";
+import type { Enemy } from "../entities/Enemy";
+import type { ProjectileView } from "../entities/ProjectileCombat";
 
-export const ENEMY_COLORS = [0xff5a3c, 0xffb02e, 0xff3b6b, 0x9b5cff, 0x2ee6a6, 0x4d9bff];
-export const RANGED_COLOR = 0x35e0ff;
 export const WEAPON_VIEW_X = 0.45;
 export const WEAPON_VIEW_Y = -0.5;
 export const WEAPON_VIEW_Z = -0.72;
@@ -51,4 +50,6 @@ export interface Projectile {
   baseScale: number;
   spin: number;
   owner: Enemy | null;
+  /** Stable per-projectile view handed to the combat resolver each frame. */
+  view: ProjectileView;
 }

@@ -38,10 +38,6 @@ export function subscribeBanner(listener: (snapshot: BannerSnapshot) => void): (
   return store.subscribe(() => listener(store.get()));
 }
 
-export function setBannerSnapshot(next: BannerSnapshot): void {
-  store.set(next);
-}
-
 export function patchBannerSnapshot(next: Partial<BannerSnapshot>): void {
   store.patch(next);
 }

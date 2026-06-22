@@ -2,15 +2,27 @@
 // plain-ESM index.js stays importable by Node (next.config.mjs) while TS
 // consumers still get full types.
 
-export type GameSlug = "deadlane" | "pactfall" | "redline" | "rothulk" | "scourge-survivors" | "starblight" | "warline";
+export type GameSlug =
+  | "brawl"
+  | "deadlane"
+  | "pactfall"
+  | "redline"
+  | "rothulk"
+  | "scourge-survivors"
+  | "starblight"
+  | "warline";
 
-// The six playable front games — every roster game except the warline lobby.
+// The playable front games — every roster game except the warline lobby.
 export type PlayableGameSlug = Exclude<GameSlug, "warline">;
 
 export type GameStatus = "PLAYABLE" | "IN DEV" | "CONCEPT";
 
 export interface GameApp {
   slug: GameSlug;
+  /** Display title for cross-game UI (Warline portals, title-menu quick links). */
+  title: string;
+  /** Hex accent for cross-game UI tinting. */
+  accent: string;
   devPort: number;
   deployUrl: string;
   status: GameStatus;

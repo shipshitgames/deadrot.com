@@ -1,0 +1,216 @@
+{
+  "main": {
+    "id": "4342ca8ae97e2104",
+    "type": "split",
+    "children": [
+      {
+        "id": "6a968d4bce849e7f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "eec3bcadc61254fa",
+            "type": "leaf",
+            "state": {
+              "type": "image",
+              "state": {
+                "file": "content/Assets/Asset-Status/previews/characters/warden-defense-pilot.webp"
+              },
+              "icon": "lucide-image",
+              "title": "warden-defense-pilot"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "5abe0859e32e3518",
+    "type": "split",
+    "children": [
+      {
+        "id": "c9db99ee4eba76c2",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "1e0002f52a7d0d13",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "b93906c0e2750a23",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "021882251ebf3512",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "1e45be5f4dbfec9b",
+    "type": "split",
+    "children": [
+      {
+        "id": "28d94c34f100de0b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "327563e08f928328",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "content/Assets/Asset-Status/previews/characters/warden-defense-pilot.webp",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for warden-defense-pilot"
+            }
+          },
+          {
+            "id": "6e055e4de0cc2d57",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "content/Assets/Asset-Status/previews/characters/warden-defense-pilot.webp",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from warden-defense-pilot"
+            }
+          },
+          {
+            "id": "44bcf59055cd54b9",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "9e7f9321abf930da",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "83c61c085c107c2c",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "content/Assets/Asset-Status/previews/characters/warden-defense-pilot.webp",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of warden-defense-pilot"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "1e0002f52a7d0d13",
+  "lastOpenFiles": [
+    "public/index-og-image.webp",
+    "public/Universe/War-for-the-Lanes-og-image.webp",
+    "public/Universe/Vault-Conventions-og-image.webp",
+    "public/Universe/Timeline-og-image.webp",
+    "public/Universe/Survivors-Loop-og-image.webp",
+    "public/Universe/Style-Bible-og-image.webp",
+    "public/Universe/Premise-og-image.webp",
+    "public/Universe/Cosmology-og-image.webp",
+    "public/Tech/Tuning-Fork-og-image.webp",
+    "public/Tech/Dead-Air-Beacon-og-image.webp",
+    "public/Tech/Blackout-Nail-og-image.webp",
+    "public/index.html",
+    "public/README.html",
+    "public/Maps.html",
+    "public/DESIGN.html",
+    "public/CANON.html",
+    "public/Universe/Cosmology.html",
+    "public/Universe/index.html",
+    "public/Universe/War-for-the-Lanes.html",
+    "public/Universe/Survivors-Loop.html",
+    "public/Universe/Vault-Conventions.html",
+    "content/Design/Bestiary/Scourge-Foe-Art-Masters.md",
+    "content/Design/Bestiary/Scourge-Fighter-DESIGN.md",
+    "content/Design/Bestiary/Orbital-Breach-Carrier-DESIGN.md",
+    "content/Design/Bestiary/Graft-Breacher-DESIGN.md",
+    "content/Art/Style-Bakeoff.md",
+    "content/Art/Generation-History.md",
+    "CODE_OF_CONDUCT.md",
+    "PATCHES.md"
+  ]
+}

@@ -10,6 +10,7 @@ YouTube channel.
 - **Universe / canon:** [apps/lore/content](../../lore/content)
 - **Built with:** Vite + TypeScript + imperative Three.js + PartyKit, on the `@shipshitgames/engine` conventions
 - **Faction:** the Pyre · **Enemy:** the Scourge · **Deepest zone:** Perdition
+- **Runtime art format:** WebP, per the shared [asset-format policy](../../../packages/assets/docs/asset-format-policy.md) — this game is its reference migration
 
 ## Dev
 
@@ -27,6 +28,9 @@ multiplayer becomes co-op, and the game expands with more maps.
 
 The first menu is the Survivors hub: Play a Run, Shop, Co-op, and Leaderboard all support
 the Pyre breach-run loop, with `Game.startSurvivors()` as the primary entrypoint.
+
+The permanent gold-shop economy (income, costs, and the one-run-can't-buy-everything
+invariant) is tuned and documented in [ECONOMY.md](./ECONOMY.md).
 
 ## License
 

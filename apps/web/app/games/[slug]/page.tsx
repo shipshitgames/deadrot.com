@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StatusBadge } from "@/components/game/game-card";
+import { PlayGateButton } from "@/components/game/game-lock";
 import { EntityCard } from "@/components/roster/entity-card";
 import { Backdrop } from "@/components/site/atmosphere";
 import { Eyebrow } from "@/components/site/eyebrow";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { accentVars, gameCharacters, gameCreatures, games, getFaction, getGame } from "@/lib/content";
-import { createSocialMetadata } from "@/lib/social";
+import { accentVars, gameCharacters, gameCoverUrl, gameCreatures, games, getFaction, getGame } from "@/lib/content";
+import { createSocialMetadata, SITE_URL } from "@/lib/social";
 
 export function generateStaticParams() {
   return games.map((g) => ({ slug: g.slug }));
@@ -18,8 +20,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const game = getGame(slug);
   if (!game) return {};
+  const socialImagePath = game.slug === "warline" ? "/images/hero.webp" : `/images/og/games/${game.slug}.png`;
   const image = {
-    url: `/images/og/games/${game.slug}.png`,
+    url: `${SITE_URL}${socialImagePath}`,
     width: 1200,
     height: 630,
     alt: `${game.title} - DEADROT`,
@@ -43,7 +46,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 
   const roster = gameCharacters(game);
   const foes = gameCreatures(game);
-  const gameImage = `/images/games/${game.slug}.webp`;
+  const gameImage = gameCoverUrl(game.slug);
 
   return (
     <main style={accentVars(game.accent)}>
@@ -51,11 +54,13 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       <section className="relative flex min-h-[560px] items-center overflow-hidden px-6 pt-32 pb-16">
         <Backdrop />
         {/* Pixel game cover, shared with the /#games cards. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={gameImage}
           alt=""
           aria-hidden
+          fill
+          priority
+          sizes="100vw"
           className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-65 saturate-125"
           style={{ imageRendering: "pixelated" }}
         />
@@ -94,11 +99,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               {game.demo ? (
-                <Button asChild size="xl" className="font-display uppercase tracking-widest shadow-ember">
-                  <a href={game.demo} target="_blank" rel="noreferrer">
-                    Play Now
-                  </a>
-                </Button>
+                <PlayGateButton slug={game.slug} demo={game.demo} />
               ) : (
                 <Badge variant="outline" className="border-gunmetal bg-iron font-display tracking-widest text-ash">
                   Concept
@@ -124,13 +125,25 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       {/* ── OVERVIEW ─────────────────────────────────────────────────────── */}
       <section className="relative border-t border-gunmetal/40 px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-7xl">
+          <div className="mb-12 max-w-3xl rounded-md border border-[var(--page-accent)]/30 bg-coal p-6">
+            <Eyebrow>Warline operation</Eyebrow>
+            <p
+              data-testid="warline-operation"
+              data-slug={game.slug}
+              className="mt-3 font-display text-2xl font-bold uppercase tracking-tight text-bone"
+            >
+              {game.warlineRole.operation}
+            </p>
+            <p className="mt-2 leading-relaxed text-ash">{game.warlineRole.line}</p>
+          </div>
+
           <Eyebrow>The Mission</Eyebrow>
           <h2 className="mt-3 font-display text-4xl font-bold uppercase tracking-tight text-bone sm:text-5xl">
             Overview
           </h2>
           <div className="mt-6 max-w-3xl space-y-4">
-            {game.overview.split("\n\n").map((p, i) => (
-              <p key={i} className="leading-relaxed text-ash">
+            {game.overview.split("\n\n").map((p) => (
+              <p key={p} className="leading-relaxed text-ash">
                 {p}
               </p>
             ))}

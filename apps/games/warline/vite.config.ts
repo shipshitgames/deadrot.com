@@ -15,4 +15,7 @@ export default defineConfig({
     host: true,
     port: 5180,
   },
+  build: {
+    sourcemap: true,
+  },
 });

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { ScoreEntry } from "../../game/storage";
-import type { HUDState } from "../../game/types";
+import type { HudState } from "../../game/types";
 import { PixelIcon, type PixelIconId } from "../PixelIcon";
 
 // ----------------------------------------------------------------- shared utility class strings
@@ -37,7 +37,7 @@ export function formatTime(seconds: number): string {
   return `${m}:${r.toString().padStart(2, "0")}`;
 }
 
-export function runModeLabel(mode?: HUDState["runMode"]): string {
+export function runModeLabel(mode?: HudState["runMode"]): string {
   switch (mode) {
     case "structured":
       return "Structured";
@@ -54,7 +54,7 @@ export function runModeLabel(mode?: HUDState["runMode"]): string {
   }
 }
 
-export function depthLabel(depth?: number, total?: number, name?: string): string {
+function depthLabel(depth?: number, total?: number, name?: string): string {
   if (!depth) return name || "-";
   const count = total && total > 0 ? `${depth}/${total}` : `${depth}`;
   return name ? `${count} · ${name}` : count;
@@ -64,16 +64,18 @@ export function Leaderboard({
   scores,
   highlight,
   onClear,
+  className = "",
 }: {
   scores: ScoreEntry[];
   highlight?: ScoreEntry | null;
   onClear?: () => void;
+  className?: string;
 }) {
   const th = "text-[10px] tracking-[0.08em] uppercase opacity-50 text-right px-[6px] py-[2px] font-semibold";
   const td = "text-[14px] text-right px-[6px] py-[3px]";
   return (
     <div
-      className="pointer-events-auto min-w-[320px] bg-white/[0.04] border border-white/10 rounded-[10px] px-[14px] py-3"
+      className={`pointer-events-auto min-w-[320px] bg-white/[0.04] border border-white/10 rounded-[10px] px-[14px] py-3 ${className}`}
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex items-center justify-between mb-2">
@@ -117,7 +119,7 @@ export function Leaderboard({
                 s.date === highlight.date;
               return (
                 <tr
-                  key={s.date + "-" + i}
+                  key={`${s.date}-${s.score}-${s.kills}-${s.time}`}
                   className={me ? "bg-[rgba(255,106,0,0.14)] outline outline-1 outline-[rgba(255,106,0,0.36)]" : ""}
                 >
                   <td className={`${td} !text-center`}>{i + 1}</td>

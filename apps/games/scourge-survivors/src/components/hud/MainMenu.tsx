@@ -3,8 +3,11 @@ import {
   Button,
   Card,
   CodexScreen,
-  GameSettingsScreen,
+  GameAudioSettingsScreen,
+  GameJumpMenu,
+  GameMenuTitle,
   GlobalMusicToggle,
+  gameMenuConfig,
   goToWarlineLobby,
   MainMenuAction,
   MainMenuCopy,
@@ -13,25 +16,28 @@ import {
   MainMenuNav,
   MainMenuScreen,
   MainMenuStatus,
-  MainMenuTitle,
-  MainMenuTitleLine,
   MainMenuTopBar,
   MenuKicker,
   useEnterToReveal,
 } from "@shipshitgames/ui";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { MAP_PICKER, normalizeMapId } from "../../game/data/maps";
+import { OPERATION_LINE, OPERATION_NAME } from "../../game/data/operation";
 import {
+  SHOP_TOTAL_TIERS,
   SHOP_UPGRADES,
   SURVIVOR_CLASS_IDS,
   SURVIVOR_CLASSES,
   SURVIVOR_RUN_GOAL_TIME,
   type SurvivorClassId,
   shopCost,
+  shopRemainingCost,
+  shopTiersOwned,
 } from "../../game/data/survivors";
 import { WEAPON_IDENTITIES } from "../../game/data/weaponIdentity";
 import { MENU_HERO_URL, PLAYER_AVATAR_PREVIEW_URLS } from "../../game/spriteAssets";
 import type { ScoreEntry, ShopState } from "../../game/storage";
-import type { HUDState } from "../../game/types";
+import type { HudState } from "../../game/types";
 import { normalizePlayerAvatar, PLAYER_AVATAR_OPTIONS, type PlayerAvatarId } from "../../net/playerAvatars";
 import { PixelIcon } from "../PixelIcon";
 import { IconText, Leaderboard, MENU_HEADING } from "./shared";
@@ -39,6 +45,8 @@ import { IconText, Leaderboard, MENU_HEADING } from "./shared";
 // Static lore mapping — hoisted so the per-frame HUD re-renders don't rebuild
 // the entry objects (and CodexScreen's internal memo keeps a stable identity).
 const CODEX_ENTRIES = codexEntriesForGame("scourge-survivors");
+const GAME_SLUG = "scourge-survivors";
+const menu = gameMenuConfig(GAME_SLUG);
 
 const AVATAR_PREVIEWS: Record<PlayerAvatarId, string> = PLAYER_AVATAR_PREVIEW_URLS;
 
@@ -47,9 +55,17 @@ function savedSurvivorClass(): SurvivorClassId {
   return SURVIVOR_CLASS_IDS.includes(saved as SurvivorClassId) ? (saved as SurvivorClassId) : "ranger";
 }
 
+function savedMapId(): string {
+  return normalizeMapId(localStorage.getItem("scourge-survivors.mapId"));
+}
+
 export function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => void }) {
+  const tiersOwned = shopTiersOwned(shop.tiers);
+  const remaining = shopRemainingCost(shop.tiers);
+  const fullyUpgraded = tiersOwned >= SHOP_TOTAL_TIERS;
   return (
     <div
+      data-testid="shop-panel"
       className="pointer-events-auto w-[min(680px,92vw)] mt-[14px] bg-[rgba(255,209,102,0.05)] border border-[rgba(255,209,102,0.35)] rounded-xl px-4 py-[14px]"
       onClick={(e) => e.stopPropagation()}
     >
@@ -59,15 +75,42 @@ export function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => 
             Survivors Upgrade Shop
           </IconText>
         </span>
-        <span className="text-[16px] font-extrabold text-[#ffd166]">
+        <span
+          data-testid="shop-gold"
+          data-gold={Math.max(0, Math.floor(shop.gold))}
+          className="text-[16px] font-extrabold text-[#ffd166]"
+        >
           <IconText icon="gold" size={19}>
             {shop.gold.toLocaleString()}
           </IconText>
         </span>
       </div>
+      {/* Multi-run progress: the armory is a long-haul goal, not a one-run buy. */}
+      <div
+        data-testid="shop-progress"
+        data-owned={tiersOwned}
+        data-total={SHOP_TOTAL_TIERS}
+        data-remaining={remaining}
+        className="mb-[10px] flex items-center justify-between gap-2 text-[11px] tracking-[0.04em] text-[#9b958a]"
+      >
+        <span className="uppercase">
+          Armory {tiersOwned}/{SHOP_TOTAL_TIERS}
+        </span>
+        <span>
+          {fullyUpgraded ? (
+            <span className="text-[#ffd166] font-semibold uppercase">Fully upgraded</span>
+          ) : (
+            <IconText icon="gold" size={12}>
+              {remaining.toLocaleString()} to fully upgrade
+            </IconText>
+          )}
+        </span>
+      </div>
       <div className="flex flex-col gap-2 max-h-[56vh] overflow-y-auto overscroll-contain pr-1.5">
         {SHOP_UPGRADES.map((u) => {
-          const tier = shop.tiers[u.id] ?? 0;
+          // Clamp the owned tier the same way the Armory progress line does, so a
+          // legacy/tampered over-max save can't render a nonsense "7/5" label.
+          const tier = Math.min(u.max, Math.max(0, Math.floor(shop.tiers[u.id] ?? 0)));
           const maxed = tier >= u.max;
           const cost = shopCost(u, tier);
           const afford = shop.gold >= cost;
@@ -83,7 +126,7 @@ export function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => 
               <div className="flex-1 min-w-0">
                 <div className="text-[15px] font-bold">
                   {u.name}{" "}
-                  <span className="text-[11px] opacity-60 font-semibold">
+                  <span data-testid={`shop-tier-${u.id}`} className="text-[11px] opacity-60 font-semibold">
                     {tier}/{u.max}
                   </span>
                 </div>
@@ -91,6 +134,9 @@ export function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => 
               </div>
               <button
                 type="button"
+                data-testid={`shop-buy-${u.id}`}
+                data-maxed={maxed}
+                data-afford={afford}
                 className="pointer-events-auto cursor-pointer text-[12px] font-extrabold whitespace-nowrap text-[#1a1206] bg-gradient-to-r from-[#ffd166] to-[#ffb02e] rounded-[7px] px-[10px] py-[7px] disabled:cursor-default disabled:bg-white/[0.12] disabled:bg-none disabled:text-[#8a93a6]"
                 disabled={maxed || !afford}
                 onClick={() => onBuy(u.id)}
@@ -108,7 +154,7 @@ export function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => 
         })}
       </div>
       <div className="mt-[10px] text-[11px] opacity-60 text-center">
-        Permanent upgrades apply to every Survivors run. Earn gold by surviving.
+        Permanent upgrades apply to every Survivors run. Earn gold by surviving — the full armory takes many runs.
       </div>
     </div>
   );
@@ -156,6 +202,7 @@ function MultiplayerPanel({
         <input
           className={input}
           placeholder="Your name"
+          aria-label="Your name"
           maxLength={16}
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -163,6 +210,7 @@ function MultiplayerPanel({
         <input
           className={input}
           placeholder="Breach code (blank = random)"
+          aria-label="Breach code"
           maxLength={20}
           value={room}
           onChange={(e) => setRoom(e.target.value)}
@@ -231,13 +279,13 @@ function MultiplayerPanel({
   );
 }
 
-function SurvivorsPanel({ onStart, onBack }: { onStart: (classId: SurvivorClassId) => void; onBack: () => void }) {
+function SurvivorsPanel({ onNext, onBack }: { onNext: (classId: SurvivorClassId) => void; onBack: () => void }) {
   const [classId, setClassId] = useState<SurvivorClassId>(() => savedSurvivorClass());
   const selected = SURVIVOR_CLASSES[classId];
   const selectedWeapon = WEAPON_IDENTITIES[selected.startingWeapon];
-  const launch = () => {
+  const next = () => {
     localStorage.setItem("scourge-survivors.survivorClass", classId);
-    onStart(classId);
+    onNext(classId);
   };
 
   return (
@@ -286,6 +334,88 @@ function SurvivorsPanel({ onStart, onBack }: { onStart: (classId: SurvivorClassI
         <div className="text-[12px] opacity-65">
           {selectedWeapon.callsign} · {Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}:
           {(SURVIVOR_RUN_GOAL_TIME % 60).toString().padStart(2, "0")} breach descent
+        </div>
+      </div>
+      <div className="mt-4 flex items-stretch gap-3">
+        <Button type="button" variant="back" onClick={onBack}>
+          ← Back
+        </Button>
+        <Button type="button" variant="primary" size="lg" className="flex-1" onClick={next}>
+          Choose Breach Site →
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/** Pre-run map select: the picked breach site holds for the entire run (#276). */
+function MapSelectPanel({
+  classId,
+  onStart,
+  onBack,
+}: {
+  classId: SurvivorClassId;
+  onStart: (classId: SurvivorClassId, mapId: string) => void;
+  onBack: () => void;
+}) {
+  const [mapId, setMapId] = useState<string>(() => savedMapId());
+  const selected = MAP_PICKER.find((m) => m.id === mapId) ?? MAP_PICKER[0];
+  const selectedClass = SURVIVOR_CLASSES[classId];
+  const launch = () => {
+    localStorage.setItem("scourge-survivors.mapId", selected.id);
+    onStart(classId, selected.id);
+  };
+
+  return (
+    <div className="pointer-events-auto w-[min(940px,92vw)]" onClick={(e) => e.stopPropagation()}>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+        {MAP_PICKER.map((m) => {
+          const active = m.id === selected.id;
+          return (
+            <button
+              key={m.id}
+              type="button"
+              title={m.subtitle}
+              className={`pointer-events-auto cursor-pointer min-h-[168px] rounded-lg border bg-black/30 px-3 py-3 text-left transition-[border-color,background,transform,box-shadow] hover:-translate-y-px ${
+                active
+                  ? "border-accent bg-accent/12 shadow-[0_0_0_1px_rgba(255,106,0,0.22),0_18px_44px_-28px_rgba(255,106,0,0.9)]"
+                  : "border-white/15 hover:bg-white/10"
+              }`}
+              onClick={() => setMapId(m.id)}
+              aria-pressed={active}
+            >
+              <span
+                className={`relative mb-3 flex h-[96px] items-center justify-center overflow-hidden rounded-md border bg-black/35 ${
+                  active ? "border-accent/60" : "border-white/10"
+                }`}
+              >
+                <span
+                  className="absolute inset-0 opacity-25"
+                  style={{ background: `radial-gradient(circle at 50% 70%, ${m.accent}, transparent 72%)` }}
+                />
+                <PixelIcon id={m.icon} size={56} label={m.name} />
+              </span>
+              <span className="mb-1 block">
+                <b className="text-[16px] leading-tight">{m.name}</b>
+              </span>
+              <span className="block text-[11px] leading-snug opacity-65 normal-case">{m.subtitle}</span>
+            </button>
+          );
+        })}
+      </div>
+      <div className="mt-4 rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-left">
+        <div className="flex items-baseline justify-between gap-2">
+          <div className="text-[12px] uppercase tracking-[0.12em] text-[#ffb56b]">Breach Site</div>
+          <div className="text-[11px] uppercase tracking-[0.12em] text-[#9fd0ff]" data-testid="operation-tag">
+            Operation · {OPERATION_NAME}
+          </div>
+        </div>
+        <div className="text-[22px] font-black tracking-[0.03em]">{selected.name}</div>
+        <div className="text-[12px] opacity-65">
+          {selectedClass.name} · the site holds for the whole descent — no mid-run map swaps
+        </div>
+        <div className="mt-2 text-[11px] leading-snug opacity-55 normal-case" data-testid="operation-brief">
+          {OPERATION_LINE}
         </div>
       </div>
       <div className="mt-4 flex items-stretch gap-3">
@@ -407,10 +537,11 @@ function SurvivorsHub({
       <MainMenuAction
         type="button"
         variant="default"
-        label="← Back to Warline"
-        meta="Lobby"
+        label={menu.backToWarlineLabel}
+        meta={menu.backToWarlineMeta}
         onClick={() => goToWarlineLobby()}
       />
+      <GameJumpMenu currentSlug={GAME_SLUG} label={menu.fastTravelLabel} />
     </MainMenuNav>
   );
 }
@@ -428,12 +559,12 @@ export function MainMenu({
   onClearScores,
   onBuyShop,
 }: {
-  state: HUDState;
+  state: HudState;
   scores: ScoreEntry[];
   shop: ShopState;
   suppressMenu: boolean;
   initialRoom: string;
-  onStartSurvivors: (classId?: SurvivorClassId) => void;
+  onStartSurvivors: (classId?: SurvivorClassId, mapId?: string) => void;
   onStartSandbox?: () => void;
   onStartMultiplayer: (name: string, room: string, avatar: PlayerAvatarId) => void;
   onClearScores: () => void;
@@ -441,17 +572,18 @@ export function MainMenu({
 }) {
   const { status, campaign, survivors, multiplayer } = state;
 
-  type MenuScreen = "home" | "operator" | "multiplayer" | "shop" | "settings" | "leaderboard" | "codex";
+  type MenuScreen = "home" | "operator" | "mapselect" | "multiplayer" | "shop" | "settings" | "leaderboard" | "codex";
   const [menuScreen, setMenuScreen] = useState<MenuScreen>(initialRoom ? "multiplayer" : "home");
-  const firstMenuShow = useRef(true);
-  // Reset to the root menu whenever the menu is (re)shown — but a shared
-  // `?room=` link drops you straight on the join screen the first time.
-  useEffect(() => {
-    if (status === "pointerlock-needed") {
-      setMenuScreen(firstMenuShow.current && initialRoom ? "multiplayer" : "home");
-      firstMenuShow.current = false;
-    }
-  }, [status, initialRoom]);
+  // Class confirmed on the operator screen, carried into the map select step.
+  const [pendingClassId, setPendingClassId] = useState<SurvivorClassId>(() => savedSurvivorClass());
+  // Reset to the root menu whenever the menu is re-shown, adjusted inline
+  // during render so the old screen never paints. The `?room=` deep link only
+  // applies to the initial mount, which the useState initializer handles.
+  const prevStatusRef = useRef(status);
+  if (status !== prevStatusRef.current) {
+    prevStatusRef.current = status;
+    if (status === "pointerlock-needed") setMenuScreen("home");
+  }
 
   const showMainMenu = status === "pointerlock-needed" && !suppressMenu && !campaign && !survivors && !multiplayer;
   // Title splash: hold the menu behind a "press enter to continue" prompt.
@@ -464,20 +596,19 @@ export function MainMenu({
   return (
     <MainMenuScreen className="cursor-default overflow-y-auto" backgroundImage={MENU_HERO_URL}>
       <MainMenuTopBar mark="SSG" meta={`${shop.gold.toLocaleString()} gold`} aria-hidden>
-        Ashgate breach
+        {menu.topBar}
       </MainMenuTopBar>
 
       {menuScreen === "home" ? (
         <MainMenuLayout className={menuRevealed ? "ssg-main-menu-layout--menu" : "ssg-main-menu-layout--splash"}>
           <MainMenuCopy hidden={menuRevealed}>
-            <MenuKicker>Pyre breach hub</MenuKicker>
-            <MainMenuTitle>
-              <MainMenuTitleLine>SCOURGE</MainMenuTitleLine>
-              <MainMenuTitleLine tone="hot">SURVIVORS</MainMenuTitleLine>
-            </MainMenuTitle>
-            <p className="ssg-main-menu-subtitle">Descend the breach. Burn the source nodes. Hold Ashgate.</p>
+            <MenuKicker>{menu.titleKicker}</MenuKicker>
+            <GameMenuTitle config={menu} />
+            <p className="ssg-main-menu-subtitle">{menu.titleSubtitle}</p>
             <MainMenuStatus>
-              <span>Survivors core online</span>
+              {menu.titleStatus.map((item) => (
+                <span key={item}>{item}</span>
+              ))}
               <span>{scores.length === 0 ? "No records" : `${scores.length} local records`}</span>
             </MainMenuStatus>
           </MainMenuCopy>
@@ -495,7 +626,10 @@ export function MainMenu({
               onStartSandbox={onStartSandbox}
             />
           ) : (
-            <MainMenuEnterPrompt />
+            <>
+              <MainMenuEnterPrompt />
+              <GameJumpMenu currentSlug={GAME_SLUG} label={menu.fastTravelLabel} className="ssg-game-jump--splash" />
+            </>
           )}
         </MainMenuLayout>
       ) : (
@@ -503,7 +637,24 @@ export function MainMenu({
           {menuScreen === "operator" && (
             <div className={menuScreenWrap}>
               <div className={MENU_HEADING}>Operator Loadout</div>
-              <SurvivorsPanel onStart={onStartSurvivors} onBack={() => setMenuScreen("home")} />
+              <SurvivorsPanel
+                onNext={(classId) => {
+                  setPendingClassId(classId);
+                  setMenuScreen("mapselect");
+                }}
+                onBack={() => setMenuScreen("home")}
+              />
+            </div>
+          )}
+
+          {menuScreen === "mapselect" && (
+            <div className={menuScreenWrap}>
+              <div className={MENU_HEADING}>Breach Site</div>
+              <MapSelectPanel
+                classId={pendingClassId}
+                onStart={onStartSurvivors}
+                onBack={() => setMenuScreen("operator")}
+              />
             </div>
           )}
 
@@ -546,14 +697,19 @@ export function MainMenu({
           )}
 
           {menuScreen === "settings" && (
-            <GameSettingsScreen open onClose={() => setMenuScreen("home")} backgroundImage={MENU_HERO_URL} />
+            <GameAudioSettingsScreen
+              open
+              slug={GAME_SLUG}
+              onClose={() => setMenuScreen("home")}
+              backgroundImage={MENU_HERO_URL}
+            />
           )}
 
           {menuScreen === "codex" && (
             <CodexScreen
               open
               onClose={() => setMenuScreen("home")}
-              kicker="Pyre Breach Hub"
+              kicker={menu.codexKicker}
               backgroundImage={MENU_HERO_URL}
               entries={CODEX_ENTRIES}
             />

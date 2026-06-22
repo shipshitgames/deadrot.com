@@ -1,3 +1,4 @@
+// biome-ignore-all lint/correctness/noUnusedPrivateClassMembers: Reference templates intentionally include placeholder private members.
 // Template for a new studio system. Copy into game/<group>/FooSystem.ts.
 //
 // Then, in game/systems.ts:

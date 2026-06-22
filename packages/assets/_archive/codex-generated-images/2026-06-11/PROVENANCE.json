@@ -1,0 +1,616 @@
+{
+  "batch": "codex-generated-images/2026-06-11",
+  "source": "~/.codex/generated_images/",
+  "status": "flattened-for-human-review",
+  "files": [
+    {
+      "flatName": "deadrot-codex-review-candidate-001.png",
+      "sha256": "800f65df6a2d231db2afce547f150264287c592b6029ae3fe8d967fd256d000a",
+      "originalRelativePath": "raw/019e9839-ea59-7811-b30e-fe7b8df900d9/ig_04f3fea6b55fb7dd016a22e013eba48194ad44547db64af21e.png",
+      "originalGenerationId": "019e9839-ea59-7811-b30e-fe7b8df900d9",
+      "originalFileName": "ig_04f3fea6b55fb7dd016a22e013eba48194ad44547db64af21e.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-002.png",
+      "sha256": "442b451dd99c13eedccc638fc248d884abc6f1654e232c69dea06c9e9322aec5",
+      "originalRelativePath": "raw/019e9839-ea59-7811-b30e-fe7b8df900d9/ig_04f3fea6b55fb7dd016a23cf34d0488194b1539408f6e70256.png",
+      "originalGenerationId": "019e9839-ea59-7811-b30e-fe7b8df900d9",
+      "originalFileName": "ig_04f3fea6b55fb7dd016a23cf34d0488194b1539408f6e70256.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-003.png",
+      "sha256": "830aac04303c11f6611b1aef5f59ee0c26c1023f70fe787b168cf129ed2d5179",
+      "originalRelativePath": "raw/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_0470aa91021088af016a22ed9b2b6c819197f8d4b4b0ac3443.png",
+      "originalGenerationId": "019e9847-b3ba-7de1-996b-bc342ffdd61a",
+      "originalFileName": "ig_0470aa91021088af016a22ed9b2b6c819197f8d4b4b0ac3443.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-004.png",
+      "sha256": "546fab1266598312fd75831bf975c65d9238361f6f3f3e96455011cca1355b83",
+      "originalRelativePath": "raw/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_0470aa91021088af016a22ee1ffd2c8191bc6029fcddaa27ad.png",
+      "originalGenerationId": "019e9847-b3ba-7de1-996b-bc342ffdd61a",
+      "originalFileName": "ig_0470aa91021088af016a22ee1ffd2c8191bc6029fcddaa27ad.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-005.png",
+      "sha256": "036ec1ecefdc1a23a75b780b1bb9af5e3ef8564d32b485af7d6d5361e065e146",
+      "originalRelativePath": "raw/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_089504bbc970ccd5016a230bc2086c8191a8bfe0f20975e3fb.png",
+      "originalGenerationId": "019e9847-b3ba-7de1-996b-bc342ffdd61a",
+      "originalFileName": "ig_089504bbc970ccd5016a230bc2086c8191a8bfe0f20975e3fb.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-006.png",
+      "sha256": "385a049e12c8b7251380d73d4100c8cf84dcfc41a60e742c9f0a19928d7edb4b",
+      "originalRelativePath": "raw/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_089504bbc970ccd5016a230c06abf08191a5ee71bf57ff740b.png",
+      "originalGenerationId": "019e9847-b3ba-7de1-996b-bc342ffdd61a",
+      "originalFileName": "ig_089504bbc970ccd5016a230c06abf08191a5ee71bf57ff740b.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-007.png",
+      "sha256": "b0673359a40eb4ac475fea6617556c751ae56571b9e1c1dc2cab6e6885e344f7",
+      "originalRelativePath": "raw/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_089504bbc970ccd5016a230c6cfb0c81918026c31c5a295d9c.png",
+      "originalGenerationId": "019e9847-b3ba-7de1-996b-bc342ffdd61a",
+      "originalFileName": "ig_089504bbc970ccd5016a230c6cfb0c81918026c31c5a295d9c.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-008.png",
+      "sha256": "c9114c9a981ddc5ce7e362832f31739e13ad2675c73e8fecfb7782a423995980",
+      "originalRelativePath": "raw/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_089504bbc970ccd5016a230e70014881918f21a6af7455024b.png",
+      "originalGenerationId": "019e9847-b3ba-7de1-996b-bc342ffdd61a",
+      "originalFileName": "ig_089504bbc970ccd5016a230e70014881918f21a6af7455024b.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-009.png",
+      "sha256": "c421f737c12e5c0f0b2bf0c01bdf6ed0961020e1650a1b88f39b1f82e579a59a",
+      "originalRelativePath": "raw/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_089504bbc970ccd5016a230efbf83c8191ba377412b0ea0562.png",
+      "originalGenerationId": "019e9847-b3ba-7de1-996b-bc342ffdd61a",
+      "originalFileName": "ig_089504bbc970ccd5016a230efbf83c8191ba377412b0ea0562.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-010.png",
+      "sha256": "fca4ea4bcf8e0709c21597dc3786ab81da23578f066b9c86e136f723ff14ed99",
+      "originalRelativePath": "raw/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_089504bbc970ccd5016a230f8143f48191adfcf3f180a5e243.png",
+      "originalGenerationId": "019e9847-b3ba-7de1-996b-bc342ffdd61a",
+      "originalFileName": "ig_089504bbc970ccd5016a230f8143f48191adfcf3f180a5e243.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-011.png",
+      "sha256": "0104a8b37d065b1b87beb31ddb32e07af6f87dff821788bfb73559c294065d3f",
+      "originalRelativePath": "raw/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_089504bbc970ccd5016a23118bc4608191a2d5ee8dd69b067a.png",
+      "originalGenerationId": "019e9847-b3ba-7de1-996b-bc342ffdd61a",
+      "originalFileName": "ig_089504bbc970ccd5016a23118bc4608191a2d5ee8dd69b067a.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-012.png",
+      "sha256": "0c4f5780ad782d1d14d7f4d815f7ee1c1910eb7bc0bd27d089c8e2b4a28e7d66",
+      "originalRelativePath": "raw/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_089504bbc970ccd5016a2312c4f808819184a4746989361af7.png",
+      "originalGenerationId": "019e9847-b3ba-7de1-996b-bc342ffdd61a",
+      "originalFileName": "ig_089504bbc970ccd5016a2312c4f808819184a4746989361af7.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-013.png",
+      "sha256": "dc36bef9122f7059e4f92ff9e31137e22a58c960b22dc96f06df38415562aab3",
+      "originalRelativePath": "raw/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_089504bbc970ccd5016a23139a1c708191a1d8ecf574899165.png",
+      "originalGenerationId": "019e9847-b3ba-7de1-996b-bc342ffdd61a",
+      "originalFileName": "ig_089504bbc970ccd5016a23139a1c708191a1d8ecf574899165.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-014.png",
+      "sha256": "4745f383aa4dc0fe705685a2de236f3adb083a883883fdd59c56fe0c9f1c92f0",
+      "originalRelativePath": "raw/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_089504bbc970ccd5016a2315927d148191b3d18d504a474204.png",
+      "originalGenerationId": "019e9847-b3ba-7de1-996b-bc342ffdd61a",
+      "originalFileName": "ig_089504bbc970ccd5016a2315927d148191b3d18d504a474204.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-015.png",
+      "sha256": "b7d2ab877f3a1d906813fff87d30e3da7ef7a4ee405fe5c9a689cf9676041002",
+      "originalRelativePath": "raw/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_089504bbc970ccd5016a231658243c819197c06b6bea461509.png",
+      "originalGenerationId": "019e9847-b3ba-7de1-996b-bc342ffdd61a",
+      "originalFileName": "ig_089504bbc970ccd5016a231658243c819197c06b6bea461509.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-016.png",
+      "sha256": "1315d51cc7cc8eb1ab2af2c5eb6a55d00c278c3e73a959b0481fb9229f7db80c",
+      "originalRelativePath": "raw/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_089504bbc970ccd5016a2316dc3da48191ae1c46af7e639c4d.png",
+      "originalGenerationId": "019e9847-b3ba-7de1-996b-bc342ffdd61a",
+      "originalFileName": "ig_089504bbc970ccd5016a2316dc3da48191ae1c46af7e639c4d.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-017.png",
+      "sha256": "ecf83320467b28fa4e993c24dea4ad13b2e8fc7b9babffa1cd87953cbe0c34f2",
+      "originalRelativePath": "raw/019e9c96-23f7-7883-a5d9-fa73fe4ca167/ig_0b32ccf368593783016a240766fb0481919ac31fab9494d732.png",
+      "originalGenerationId": "019e9c96-23f7-7883-a5d9-fa73fe4ca167",
+      "originalFileName": "ig_0b32ccf368593783016a240766fb0481919ac31fab9494d732.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-018.png",
+      "sha256": "35fa19bb506ff3dcb990d6d39fb454ddfd1d516cf4512c54f25ea1326d184b95",
+      "originalRelativePath": "raw/019e9c96-23f7-7883-a5d9-fa73fe4ca167/ig_0b32ccf368593783016a2408866ae08191b69a47a9f1b4a2b3.png",
+      "originalGenerationId": "019e9c96-23f7-7883-a5d9-fa73fe4ca167",
+      "originalFileName": "ig_0b32ccf368593783016a2408866ae08191b69a47a9f1b4a2b3.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-019.png",
+      "sha256": "2131055d4a618d3bddfc0a3efbe549bca7299dc94cb2d6e0f7ea9245132d1476",
+      "originalRelativePath": "raw/019e9c96-23f7-7883-a5d9-fa73fe4ca167/ig_0b32ccf368593783016a2409e1f880819180319ad68be9d57a.png",
+      "originalGenerationId": "019e9c96-23f7-7883-a5d9-fa73fe4ca167",
+      "originalFileName": "ig_0b32ccf368593783016a2409e1f880819180319ad68be9d57a.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-020.png",
+      "sha256": "1fcc147d1ba47c47c890d6b51e1acd52d8e81908dc75d0da8988c7d588511154",
+      "originalRelativePath": "raw/019e9c96-23f7-7883-a5d9-fa73fe4ca167/ig_0b32ccf368593783016a240a39531881919a7bca0fb13e96ec.png",
+      "originalGenerationId": "019e9c96-23f7-7883-a5d9-fa73fe4ca167",
+      "originalFileName": "ig_0b32ccf368593783016a240a39531881919a7bca0fb13e96ec.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-021.png",
+      "sha256": "0c3753e0b3e7c0e9f273d44aaaca3737b372069d1e7972f4e503abc9fa7f0aab",
+      "originalRelativePath": "raw/019ea16f-714e-7f51-bf8a-88fa248e5e59/ig_078ae5811ac76ef8016a253ca449848191b289fea96b0319c4.png",
+      "originalGenerationId": "019ea16f-714e-7f51-bf8a-88fa248e5e59",
+      "originalFileName": "ig_078ae5811ac76ef8016a253ca449848191b289fea96b0319c4.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-022.png",
+      "sha256": "9bd07b2c8a52e0219abb1d7284545469a541006770e9cdf7a1f3a169c79b502d",
+      "originalRelativePath": "raw/019ea16f-714e-7f51-bf8a-88fa248e5e59/ig_078ae5811ac76ef8016a253d351f5081919e992e77121239ba.png",
+      "originalGenerationId": "019ea16f-714e-7f51-bf8a-88fa248e5e59",
+      "originalFileName": "ig_078ae5811ac76ef8016a253d351f5081919e992e77121239ba.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-023.png",
+      "sha256": "2996d4a0c8f3e3f68e4ba1117bd1e525f4c957b5c8a4c7ac6bca60c1f9e5188d",
+      "originalRelativePath": "raw/019ea16f-714e-7f51-bf8a-88fa248e5e59/ig_078ae5811ac76ef8016a253d7af3f881918d875a4763cf645d.png",
+      "originalGenerationId": "019ea16f-714e-7f51-bf8a-88fa248e5e59",
+      "originalFileName": "ig_078ae5811ac76ef8016a253d7af3f881918d875a4763cf645d.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-024.png",
+      "sha256": "3cf36762b4ffe1569fe814b16b230d5a234229f93f9738f6bd5cf8fe1a16c4c4",
+      "originalRelativePath": "raw/019ea16f-714e-7f51-bf8a-88fa248e5e59/ig_078ae5811ac76ef8016a253dee17b88191afb31a4ff7966311.png",
+      "originalGenerationId": "019ea16f-714e-7f51-bf8a-88fa248e5e59",
+      "originalFileName": "ig_078ae5811ac76ef8016a253dee17b88191afb31a4ff7966311.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-025.png",
+      "sha256": "7bde6b34ee070cb6937fb2932aefcab19b9e742c35eaaf258cf16953e75260b7",
+      "originalRelativePath": "raw/019ea16f-714e-7f51-bf8a-88fa248e5e59/ig_078ae5811ac76ef8016a253e5414b48191b5c2b4a88f41a6e3.png",
+      "originalGenerationId": "019ea16f-714e-7f51-bf8a-88fa248e5e59",
+      "originalFileName": "ig_078ae5811ac76ef8016a253e5414b48191b5c2b4a88f41a6e3.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-026.png",
+      "sha256": "f4f76b0c445c8f92678071ab6ae3b24bc53b1eea35028fb2abec02492ab2164d",
+      "originalRelativePath": "raw/019ea16f-714e-7f51-bf8a-88fa248e5e59/ig_078ae5811ac76ef8016a253ec646948191935be2310bd39393.png",
+      "originalGenerationId": "019ea16f-714e-7f51-bf8a-88fa248e5e59",
+      "originalFileName": "ig_078ae5811ac76ef8016a253ec646948191935be2310bd39393.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-027.png",
+      "sha256": "00ed1ab04592a14344f0b7ca3400fdfb478a17cc985bcd6f800b8d8837144f93",
+      "originalRelativePath": "raw/019ea16f-714e-7f51-bf8a-88fa248e5e59/ig_078ae5811ac76ef8016a253f1edbc48191ae558fe259b91fed.png",
+      "originalGenerationId": "019ea16f-714e-7f51-bf8a-88fa248e5e59",
+      "originalFileName": "ig_078ae5811ac76ef8016a253f1edbc48191ae558fe259b91fed.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-028.png",
+      "sha256": "575ee6e464af6495aa8ea9156c73f2d3099bcb5e5a4e7a1bdba8d38cf90739df",
+      "originalRelativePath": "raw/019ea16f-714e-7f51-bf8a-88fa248e5e59/ig_078ae5811ac76ef8016a254016e4a481919d453594a24ea6a7.png",
+      "originalGenerationId": "019ea16f-714e-7f51-bf8a-88fa248e5e59",
+      "originalFileName": "ig_078ae5811ac76ef8016a254016e4a481919d453594a24ea6a7.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-029.png",
+      "sha256": "e63952af1e36e74335b4d93bce9382d3b64febf23bacd0c98aa0e822ef945116",
+      "originalRelativePath": "raw/019ea16f-714e-7f51-bf8a-88fa248e5e59/ig_078ae5811ac76ef8016a25408e0d4c81919d11ba362347ff03.png",
+      "originalGenerationId": "019ea16f-714e-7f51-bf8a-88fa248e5e59",
+      "originalFileName": "ig_078ae5811ac76ef8016a25408e0d4c81919d11ba362347ff03.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-030.png",
+      "sha256": "2ca76de6312a581185bf4598eb2eff0cf69bf7bfbb91447948148885427570e5",
+      "originalRelativePath": "raw/019ea16f-714e-7f51-bf8a-88fa248e5e59/ig_078ae5811ac76ef8016a2540e054208191bb21d536d75354de.png",
+      "originalGenerationId": "019ea16f-714e-7f51-bf8a-88fa248e5e59",
+      "originalFileName": "ig_078ae5811ac76ef8016a2540e054208191bb21d536d75354de.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-031.png",
+      "sha256": "254584dc7e5142d6d81e5ce704b1bc9f0224c9395ea7d959ac48d5ae548bd62c",
+      "originalRelativePath": "raw/019ea16f-714e-7f51-bf8a-88fa248e5e59/ig_078ae5811ac76ef8016a25413500bc819189aebac7886fb7a0.png",
+      "originalGenerationId": "019ea16f-714e-7f51-bf8a-88fa248e5e59",
+      "originalFileName": "ig_078ae5811ac76ef8016a25413500bc819189aebac7886fb7a0.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-032.png",
+      "sha256": "03a5f71bc5f6dee91b8a4702d9eb588fa69f34ba83503e8f32ff32196cb4ab75",
+      "originalRelativePath": "raw/019ea16f-714e-7f51-bf8a-88fa248e5e59/ig_078ae5811ac76ef8016a25418928688191a96fed36fad51b71.png",
+      "originalGenerationId": "019ea16f-714e-7f51-bf8a-88fa248e5e59",
+      "originalFileName": "ig_078ae5811ac76ef8016a25418928688191a96fed36fad51b71.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-033.png",
+      "sha256": "aff4e49f0817ae372f07c007b01269ab40bf0140d45c904a008aa7e6fab97c8c",
+      "originalRelativePath": "raw/019ea16f-714e-7f51-bf8a-88fa248e5e59/ig_078ae5811ac76ef8016a2541f3b1208191a89245c738268b6a.png",
+      "originalGenerationId": "019ea16f-714e-7f51-bf8a-88fa248e5e59",
+      "originalFileName": "ig_078ae5811ac76ef8016a2541f3b1208191a89245c738268b6a.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-034.png",
+      "sha256": "4516fc2a95a12f9d1770196867815054830ed71d27c772d741b624d7d506530d",
+      "originalRelativePath": "raw/019ea16f-714e-7f51-bf8a-88fa248e5e59/ig_078ae5811ac76ef8016a254281a788819181108ad515cf0c27.png",
+      "originalGenerationId": "019ea16f-714e-7f51-bf8a-88fa248e5e59",
+      "originalFileName": "ig_078ae5811ac76ef8016a254281a788819181108ad515cf0c27.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-035.png",
+      "sha256": "284c1ad07086b16c08bb7121be299be6bab43b4f7f87ca89c49344298fefab7e",
+      "originalRelativePath": "raw/019ea173-e6c1-7a02-81f6-760d2db6ef5a/ig_0482a3ca5c05cb29016a2562aafd2c819188f1085035c39800.png",
+      "originalGenerationId": "019ea173-e6c1-7a02-81f6-760d2db6ef5a",
+      "originalFileName": "ig_0482a3ca5c05cb29016a2562aafd2c819188f1085035c39800.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-036.png",
+      "sha256": "a607cd14ea422f8c82f8ee152ad7e46cd285515e0022b138a2540932714e27ba",
+      "originalRelativePath": "raw/019ea173-e6c1-7a02-81f6-760d2db6ef5a/ig_0482a3ca5c05cb29016a256329654481918afe574b01880e28.png",
+      "originalGenerationId": "019ea173-e6c1-7a02-81f6-760d2db6ef5a",
+      "originalFileName": "ig_0482a3ca5c05cb29016a256329654481918afe574b01880e28.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-037.png",
+      "sha256": "175d3fb3987f658f849596e725ea3a9b7dc97a85f8114af92642c33b2499c20e",
+      "originalRelativePath": "raw/019ea173-e6c1-7a02-81f6-760d2db6ef5a/ig_092f991f5bb5bdaf016a25612424e88191b856a0cd8a6915ab.png",
+      "originalGenerationId": "019ea173-e6c1-7a02-81f6-760d2db6ef5a",
+      "originalFileName": "ig_092f991f5bb5bdaf016a25612424e88191b856a0cd8a6915ab.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-038.png",
+      "sha256": "904baa47996e5ab62bf1df69f760e338e7f774ff05787282ee13f175d98049f2",
+      "originalRelativePath": "raw/019ea18a-f008-73e0-9699-b9fac6df8a02/ig_09990de82db855f6016a25638f2a048191bc392f8b75be3719.png",
+      "originalGenerationId": "019ea18a-f008-73e0-9699-b9fac6df8a02",
+      "originalFileName": "ig_09990de82db855f6016a25638f2a048191bc392f8b75be3719.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-039.png",
+      "sha256": "131f3401f0ad19eb6cd5ac0e595f90c70a3c7e495d980f023f74951ba2e849c6",
+      "originalRelativePath": "raw/019ea18a-f008-73e0-9699-b9fac6df8a02/ig_09990de82db855f6016a2564177700819197e142bed318fd08.png",
+      "originalGenerationId": "019ea18a-f008-73e0-9699-b9fac6df8a02",
+      "originalFileName": "ig_09990de82db855f6016a2564177700819197e142bed318fd08.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-040.png",
+      "sha256": "b8300082da71adabe9fec3769b4d127a76fc0d12e23c32469f19924265d77cc6",
+      "originalRelativePath": "raw/019ea18a-f008-73e0-9699-b9fac6df8a02/ig_09990de82db855f6016a256486add08191bf851f73c2ac2f7f.png",
+      "originalGenerationId": "019ea18a-f008-73e0-9699-b9fac6df8a02",
+      "originalFileName": "ig_09990de82db855f6016a256486add08191bf851f73c2ac2f7f.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-041.png",
+      "sha256": "40106e738c20397d8a2f0bbd9c8f55de862d72fa8fecdb3b75bc77c0c8930343",
+      "originalRelativePath": "raw/019ea18a-f008-73e0-9699-b9fac6df8a02/ig_09990de82db855f6016a2564d61958819199a8e1e0a66d9579.png",
+      "originalGenerationId": "019ea18a-f008-73e0-9699-b9fac6df8a02",
+      "originalFileName": "ig_09990de82db855f6016a2564d61958819199a8e1e0a66d9579.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-042.png",
+      "sha256": "4191312f4ef6edf54a8c1b754b4e538ef48fb75f69bd3f937a572f5e3f8e6571",
+      "originalRelativePath": "raw/019ea18a-f008-73e0-9699-b9fac6df8a02/ig_09990de82db855f6016a2568cfc3dc8191aae966b75992b14f.png",
+      "originalGenerationId": "019ea18a-f008-73e0-9699-b9fac6df8a02",
+      "originalFileName": "ig_09990de82db855f6016a2568cfc3dc8191aae966b75992b14f.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-043.png",
+      "sha256": "49b5c3af7563f6ab1f18470fbafb581b71545011d8d7d777b11160bbdfd2e15f",
+      "originalRelativePath": "raw/019ea18a-f008-73e0-9699-b9fac6df8a02/ig_09990de82db855f6016a256915b8608191b94d554637b7b5d9.png",
+      "originalGenerationId": "019ea18a-f008-73e0-9699-b9fac6df8a02",
+      "originalFileName": "ig_09990de82db855f6016a256915b8608191b94d554637b7b5d9.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-044.png",
+      "sha256": "64301cec3726e41da6782d6fe8e9abbe5cacb6aa5af40f7de12b6077c919208b",
+      "originalRelativePath": "raw/019ea18a-f008-73e0-9699-b9fac6df8a02/ig_09990de82db855f6016a25697ebad8819183c561f2af59209e.png",
+      "originalGenerationId": "019ea18a-f008-73e0-9699-b9fac6df8a02",
+      "originalFileName": "ig_09990de82db855f6016a25697ebad8819183c561f2af59209e.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-045.png",
+      "sha256": "27b8957ca28f677bc98a1726a50a8e49c2310a4d949cd32d29f975531b6cb24f",
+      "originalRelativePath": "raw/019ea18a-f008-73e0-9699-b9fac6df8a02/ig_09990de82db855f6016a2569cfe7b08191adf676d3a79ddc12.png",
+      "originalGenerationId": "019ea18a-f008-73e0-9699-b9fac6df8a02",
+      "originalFileName": "ig_09990de82db855f6016a2569cfe7b08191adf676d3a79ddc12.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-046.png",
+      "sha256": "e0e034d9bd710c0ed4b3f5fcb507f1dd3ce22dca3fed589e00d553add6a43269",
+      "originalRelativePath": "raw/019ea18a-f008-73e0-9699-b9fac6df8a02/ig_09990de82db855f6016a256a1333d08191b0378c8c56de8ff5.png",
+      "originalGenerationId": "019ea18a-f008-73e0-9699-b9fac6df8a02",
+      "originalFileName": "ig_09990de82db855f6016a256a1333d08191b0378c8c56de8ff5.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-047.png",
+      "sha256": "d92e4c7ccc5301dccd4d8cb013c05c2313498668ee58d2fe10aea8b0e1be9d19",
+      "originalRelativePath": "raw/019ea1f0-1ea2-7cf3-b0b6-453bfa0ba6cb/ig_080f82b0f8c0b304016a256fcf02e081919b431d468e6996b8.png",
+      "originalGenerationId": "019ea1f0-1ea2-7cf3-b0b6-453bfa0ba6cb",
+      "originalFileName": "ig_080f82b0f8c0b304016a256fcf02e081919b431d468e6996b8.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-048.png",
+      "sha256": "76c8b267b73855af2ad2ede57e77cc6afee74eeba6cc27c1a0565f5d2d67111e",
+      "originalRelativePath": "raw/019ea531-3224-7cc1-936b-b522c4712745/ig_015db162122d6d00016a2632a9cd4081918bd92878ac3926ee.png",
+      "originalGenerationId": "019ea531-3224-7cc1-936b-b522c4712745",
+      "originalFileName": "ig_015db162122d6d00016a2632a9cd4081918bd92878ac3926ee.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-049.png",
+      "sha256": "69227da0089e4100a45f12d7c5ecdabece476f1aa67cdce6e348785f7a547f6c",
+      "originalRelativePath": "raw/019ea531-3224-7cc1-936b-b522c4712745/ig_015db162122d6d00016a26334b71bc8191abaceb12b7acb41a.png",
+      "originalGenerationId": "019ea531-3224-7cc1-936b-b522c4712745",
+      "originalFileName": "ig_015db162122d6d00016a26334b71bc8191abaceb12b7acb41a.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-050.png",
+      "sha256": "1baf3836068441b2e0f4109c1bab29932f92571d4bd41fdbb1b56e4f6381b454",
+      "originalRelativePath": "raw/019ea531-3224-7cc1-936b-b522c4712745/ig_015db162122d6d00016a2633eaa9bc819190f03b2fd48b3735.png",
+      "originalGenerationId": "019ea531-3224-7cc1-936b-b522c4712745",
+      "originalFileName": "ig_015db162122d6d00016a2633eaa9bc819190f03b2fd48b3735.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-051.png",
+      "sha256": "18bf7ec6ba39c0d3c223bd4928b87b98088f618dd1cbce10e0d97e767abcfa3d",
+      "originalRelativePath": "raw/019ea531-3224-7cc1-936b-b522c4712745/ig_015db162122d6d00016a263481081c81919455f0c0a6966fb0.png",
+      "originalGenerationId": "019ea531-3224-7cc1-936b-b522c4712745",
+      "originalFileName": "ig_015db162122d6d00016a263481081c81919455f0c0a6966fb0.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-052.png",
+      "sha256": "bf3b7403a2857dc28f039383db345600e90ba1ff3fee251865bc05e1d7818e75",
+      "originalRelativePath": "raw/019ea79b-78af-7fe1-857e-e944f7600cb4/ig_0ff6df3622ac9f26016a26cfcaecf8819597be2b137fb78caf.png",
+      "originalGenerationId": "019ea79b-78af-7fe1-857e-e944f7600cb4",
+      "originalFileName": "ig_0ff6df3622ac9f26016a26cfcaecf8819597be2b137fb78caf.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-053.png",
+      "sha256": "fa061b9e5638726dbd2e7ae0e80628af7c57a78275ab8357b559a02092c3f8e9",
+      "originalRelativePath": "raw/019ea7b2-aac8-70a0-b96e-ba4d5d72aabc/ig_04b2c73c993a1276016a26d5b262088191a0f3e7a01498ad71.png",
+      "originalGenerationId": "019ea7b2-aac8-70a0-b96e-ba4d5d72aabc",
+      "originalFileName": "ig_04b2c73c993a1276016a26d5b262088191a0f3e7a01498ad71.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-054.png",
+      "sha256": "620a68066766caee052c797c19a4549c6cfafb30f08f952a7a3b62d759cb4123",
+      "originalRelativePath": "raw/019ea7ca-9d75-7690-9aa1-573d097814ea/ig_0365c2f0db073a51016a26dbd28c24819b981693fb0ea18ac8.png",
+      "originalGenerationId": "019ea7ca-9d75-7690-9aa1-573d097814ea",
+      "originalFileName": "ig_0365c2f0db073a51016a26dbd28c24819b981693fb0ea18ac8.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-055.png",
+      "sha256": "6ebe9dec9153ebc7e819e1a478e891b0faf3ef05417182ae2d1a412f8a1e966b",
+      "originalRelativePath": "raw/019ea7d5-83d7-7b81-b8bb-c77b27715fe4/ig_02a8a0fefda4732e016a26de9cbf8881918772817d85943ae8.png",
+      "originalGenerationId": "019ea7d5-83d7-7b81-b8bb-c77b27715fe4",
+      "originalFileName": "ig_02a8a0fefda4732e016a26de9cbf8881918772817d85943ae8.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-056.png",
+      "sha256": "3e292fa6333d1831882c912e88f9254c65e3544e50c0a1a40a154bbeb9362b64",
+      "originalRelativePath": "raw/019ea817-54e2-7f00-8d81-ed68addae9e8/ig_0ac7eb690f75ad8a016a26ef7f2e648199855ccad7205ae9b1.png",
+      "originalGenerationId": "019ea817-54e2-7f00-8d81-ed68addae9e8",
+      "originalFileName": "ig_0ac7eb690f75ad8a016a26ef7f2e648199855ccad7205ae9b1.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-057.png",
+      "sha256": "5f780e8a1d71ec1ccd634810ce263f4aac4aa5f31d3a9e42a97df082e1e8ad1f",
+      "originalRelativePath": "raw/019ea817-57d3-7993-816f-c7b754a54cd0/ig_09368ee1700b82fe016a26ef829d908199a0a11c9228389154.png",
+      "originalGenerationId": "019ea817-57d3-7993-816f-c7b754a54cd0",
+      "originalFileName": "ig_09368ee1700b82fe016a26ef829d908199a0a11c9228389154.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-058.png",
+      "sha256": "2c14021efc9cd516f9c113dc7665b8aaeb8aa7457a6583a0f5934786d537a188",
+      "originalRelativePath": "raw/019ea817-5b23-7191-9831-342103b794b8/ig_0bb3da31d01053e4016a26ef7dcdb48191b388154bca317cca.png",
+      "originalGenerationId": "019ea817-5b23-7191-9831-342103b794b8",
+      "originalFileName": "ig_0bb3da31d01053e4016a26ef7dcdb48191b388154bca317cca.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-059.png",
+      "sha256": "6a1dcc9664fb689376c140784a637a9ec9b27f145849e68219a2bdd7a0424034",
+      "originalRelativePath": "raw/019ea817-5c8a-7f52-8089-19c3b08c609d/ig_0bc9dfde52c6f49a016a26ef7e3568819ab4aeeab3ab5d273f.png",
+      "originalGenerationId": "019ea817-5c8a-7f52-8089-19c3b08c609d",
+      "originalFileName": "ig_0bc9dfde52c6f49a016a26ef7e3568819ab4aeeab3ab5d273f.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-060.png",
+      "sha256": "d0d830939a83074b93f4cb2771ea5e00bb737d701a0ce9537f8560c3f0a0cd41",
+      "originalRelativePath": "raw/019ea817-5e15-74a2-bf2c-ca1c588eda91/ig_0d7e553f2ef1fdd5016a26ef7e43d88191b2be19b649fe091e.png",
+      "originalGenerationId": "019ea817-5e15-74a2-bf2c-ca1c588eda91",
+      "originalFileName": "ig_0d7e553f2ef1fdd5016a26ef7e43d88191b2be19b649fe091e.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-061.png",
+      "sha256": "f716dc46757eea8c95ae9e15233b893b0ac4643ab5f3f021bb35cc11e334f303",
+      "originalRelativePath": "raw/019ea843-b9e7-7ec0-aee4-cffdf937cd12/ig_0bb1bf158f86d661016a26fad866bc8191a43561875ac684df.png",
+      "originalGenerationId": "019ea843-b9e7-7ec0-aee4-cffdf937cd12",
+      "originalFileName": "ig_0bb1bf158f86d661016a26fad866bc8191a43561875ac684df.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-062.png",
+      "sha256": "14f57ee726cccb94dff0c5e184ea499a9649a768f049941acf2b562b8c067f37",
+      "originalRelativePath": "raw/019ea843-ba14-75e1-ae10-25618b37d809/ig_081eec3d27d4b074016a26fad8c43081988de6c78863d5654f.png",
+      "originalGenerationId": "019ea843-ba14-75e1-ae10-25618b37d809",
+      "originalFileName": "ig_081eec3d27d4b074016a26fad8c43081988de6c78863d5654f.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-063.png",
+      "sha256": "d067b09002b7a1dfea7a7bbc9050b79b31e5d475a8aeb2ec66180d3cad1e27c7",
+      "originalRelativePath": "raw/019ea843-bba1-7fe3-a8c9-ff7878d70ef1/ig_0055adee60688ca9016a26fada58dc81918a9b5288b4f2f8dd.png",
+      "originalGenerationId": "019ea843-bba1-7fe3-a8c9-ff7878d70ef1",
+      "originalFileName": "ig_0055adee60688ca9016a26fada58dc81918a9b5288b4f2f8dd.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-064.png",
+      "sha256": "ad088313ef7a5527eedac8f26a3bc2687d2ae0f3b027a87de59f984c76350b1e",
+      "originalRelativePath": "raw/019ea843-bc60-7b72-bb0f-efceddc37682/ig_01e3122f148bda9a016a26fad84dd48198925f8486b8cbcbc8.png",
+      "originalGenerationId": "019ea843-bc60-7b72-bb0f-efceddc37682",
+      "originalFileName": "ig_01e3122f148bda9a016a26fad84dd48198925f8486b8cbcbc8.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-065.png",
+      "sha256": "5e20926f98b91e74ecd36b0adf5f1adfaf159be25ef3b8e45d3f91f1e31af109",
+      "originalRelativePath": "raw/019ea843-be95-7302-9a84-8de10e68d8fe/ig_08a6e1e829165285016a26fad7f6fc8191af680856380047f2.png",
+      "originalGenerationId": "019ea843-be95-7302-9a84-8de10e68d8fe",
+      "originalFileName": "ig_08a6e1e829165285016a26fad7f6fc8191af680856380047f2.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-066.png",
+      "sha256": "bdb91e37a069b9019698fa46e495976d67cbbfef06e938e4a01e6e92e26d9af7",
+      "originalRelativePath": "raw/019ea843-bee3-7ee0-8089-f07f3403aaf4/ig_06da3afc7dcc2497016a26fad80c1881918f283814cdb6446d.png",
+      "originalGenerationId": "019ea843-bee3-7ee0-8089-f07f3403aaf4",
+      "originalFileName": "ig_06da3afc7dcc2497016a26fad80c1881918f283814cdb6446d.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-067.png",
+      "sha256": "24ba4ba0ff1a3751834501de3715e2d7759d4e05f66ae56cf9f84e8b4d61529e",
+      "originalRelativePath": "raw/019ea847-0412-7d00-a656-b00aaa8dd85c/ig_02cad1608ef25ac5016a26fbabc5688194af64158a13cb5359.png",
+      "originalGenerationId": "019ea847-0412-7d00-a656-b00aaa8dd85c",
+      "originalFileName": "ig_02cad1608ef25ac5016a26fbabc5688194af64158a13cb5359.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-068.png",
+      "sha256": "958537a19d9a14bb13a69034b80ed19a423f17f0d590a5b821333bd4b6e22d28",
+      "originalRelativePath": "raw/019ea848-705f-7353-a255-d7c132acdc65/ig_0e2af49321152cca016a26fc0fc7548191ac8ec3798e863861.png",
+      "originalGenerationId": "019ea848-705f-7353-a255-d7c132acdc65",
+      "originalFileName": "ig_0e2af49321152cca016a26fc0fc7548191ac8ec3798e863861.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-069.png",
+      "sha256": "5783ed00c145e4f5920ff817014af49e658e110906399b8d51fb436fc1fb5e07",
+      "originalRelativePath": "raw/019ea89a-eb52-7470-8c41-9ba03f1671b5/ig_01d73488fefd8e3b016a271126f7808191a02b3c6036c80f2d.png",
+      "originalGenerationId": "019ea89a-eb52-7470-8c41-9ba03f1671b5",
+      "originalFileName": "ig_01d73488fefd8e3b016a271126f7808191a02b3c6036c80f2d.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-070.png",
+      "sha256": "92a831948cd481f0fb7568452cc670a3f2aecf27e41d3cb4bf6b8d7f55bd6d02",
+      "originalRelativePath": "raw/019ea89e-4998-7260-b95d-77bc38d3679c/ig_09e66a626e4e76df016a271203fb0881929a921f04f534ae8b.png",
+      "originalGenerationId": "019ea89e-4998-7260-b95d-77bc38d3679c",
+      "originalFileName": "ig_09e66a626e4e76df016a271203fb0881929a921f04f534ae8b.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-071.png",
+      "sha256": "815d143a6061c7e39d2e41cbb7ecc75de3d6c5824356cc7409307c7cff781488",
+      "originalRelativePath": "raw/019ea8a3-e937-70f1-b098-6f7dcac28e0f/ig_0027d496dcd74a7a016a27137914788191a9cae30f7dbeaaa7.png",
+      "originalGenerationId": "019ea8a3-e937-70f1-b098-6f7dcac28e0f",
+      "originalFileName": "ig_0027d496dcd74a7a016a27137914788191a9cae30f7dbeaaa7.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-072.png",
+      "sha256": "460798c8e07c572911a339cf220195cfdd36bd626039add739159e5e2e311a5f",
+      "originalRelativePath": "raw/019ea8a3-ecc7-70e0-8bcc-69abae9faf5c/ig_0862f0c9ad766bb0016a27137a130c8191808ac391510a3752.png",
+      "originalGenerationId": "019ea8a3-ecc7-70e0-8bcc-69abae9faf5c",
+      "originalFileName": "ig_0862f0c9ad766bb0016a27137a130c8191808ac391510a3752.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-073.png",
+      "sha256": "95b0141d2722e1d1467879efc1f7d5deab29d3bdeb81f3bb24a6b90d09c5c87a",
+      "originalRelativePath": "raw/019ea8b9-9568-7be3-b69a-2911820d2b06/ig_0e6e700bcf53cacb016a27190a1c4081918a70fe4aa1df0f27.png",
+      "originalGenerationId": "019ea8b9-9568-7be3-b69a-2911820d2b06",
+      "originalFileName": "ig_0e6e700bcf53cacb016a27190a1c4081918a70fe4aa1df0f27.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-074.png",
+      "sha256": "18caf5f0c0e2bccd1bdc34d03fc45681056b23ca7bd8140c5e483c8154fa6f73",
+      "originalRelativePath": "raw/019ea8b9-a41b-79d0-a9a2-828d68ca9c21/ig_0406dcd4e91dd62e016a271929361081919126a9cd84d6989a.png",
+      "originalGenerationId": "019ea8b9-a41b-79d0-a9a2-828d68ca9c21",
+      "originalFileName": "ig_0406dcd4e91dd62e016a271929361081919126a9cd84d6989a.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-075.png",
+      "sha256": "3065dd17dd6cb0454ee55735b75b1edbf74d4daafd8557ced4e4fd107323206e",
+      "originalRelativePath": "raw/019ea8b9-a99b-7912-85aa-0566f6ee4c8b/ig_0a580aa6db203a2a016a27190a31948191901cab4ff559e243.png",
+      "originalGenerationId": "019ea8b9-a99b-7912-85aa-0566f6ee4c8b",
+      "originalFileName": "ig_0a580aa6db203a2a016a27190a31948191901cab4ff559e243.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-076.png",
+      "sha256": "9e5b964b5854c96222bd0770f3b7a86812634c8fde70f9ad57f1287b13b550ab",
+      "originalRelativePath": "raw/019ea8b9-e304-79e2-90e4-d8c62f241755/ig_0e260a87a989334c016a27191adfc8819392a0b520e49706b6.png",
+      "originalGenerationId": "019ea8b9-e304-79e2-90e4-d8c62f241755",
+      "originalFileName": "ig_0e260a87a989334c016a27191adfc8819392a0b520e49706b6.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-077.png",
+      "sha256": "a27a8d6d7b68d38766bca108827f22683c75cd3ca6a022f20f809cb9fac1cb8e",
+      "originalRelativePath": "raw/019ea8b9-ed38-7021-be45-15964530ecd0/ig_0ce34567ec5be336016a271920b2f88191a25d0a9a1dc89289.png",
+      "originalGenerationId": "019ea8b9-ed38-7021-be45-15964530ecd0",
+      "originalFileName": "ig_0ce34567ec5be336016a271920b2f88191a25d0a9a1dc89289.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-078.png",
+      "sha256": "98ce9e128df8ffce997b9955ab8bbd01f1e34219ed41faaef13970c6a3061d38",
+      "originalRelativePath": "raw/019eb556-7f74-7a01-9cbb-826f77dd1747/ig_0f0f09558aed05ec016a2a6bcc423881918724450e07ef50cb.png",
+      "originalGenerationId": "019eb556-7f74-7a01-9cbb-826f77dd1747",
+      "originalFileName": "ig_0f0f09558aed05ec016a2a6bcc423881918724450e07ef50cb.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-079.png",
+      "sha256": "e48c0880bec43732bc43744e58d040e6d23bccf0a0f88c914518e067c0d2e481",
+      "originalRelativePath": "raw/019eb556-7f74-7a01-9cbb-826f77dd1747/ig_0f0f09558aed05ec016a2a6ca97bec819180b8633c216e5c69.png",
+      "originalGenerationId": "019eb556-7f74-7a01-9cbb-826f77dd1747",
+      "originalFileName": "ig_0f0f09558aed05ec016a2a6ca97bec819180b8633c216e5c69.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-080.png",
+      "sha256": "f39c435f5b0e44cd99e8468e67a42c9362337478be7f5f118905413f53f3397a",
+      "originalRelativePath": "raw/019eb556-7f74-7a01-9cbb-826f77dd1747/ig_0f0f09558aed05ec016a2a6d3f4a84819195e54571d2e4f2d9.png",
+      "originalGenerationId": "019eb556-7f74-7a01-9cbb-826f77dd1747",
+      "originalFileName": "ig_0f0f09558aed05ec016a2a6d3f4a84819195e54571d2e4f2d9.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-081.png",
+      "sha256": "fa3fbd7182d52c573c903ede4c8cfd55ff1d9a4d80f39d698304f9e908cb119d",
+      "originalRelativePath": "raw/019eb556-7f74-7a01-9cbb-826f77dd1747/ig_0f0f09558aed05ec016a2a6df260308191948f23527205d297.png",
+      "originalGenerationId": "019eb556-7f74-7a01-9cbb-826f77dd1747",
+      "originalFileName": "ig_0f0f09558aed05ec016a2a6df260308191948f23527205d297.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-082.png",
+      "sha256": "55bf1c90b533ce2e1dc86b1b1fb4a909c977e8f44130b7617d8aff1906533056",
+      "originalRelativePath": "raw/019eb556-7f74-7a01-9cbb-826f77dd1747/ig_0f0f09558aed05ec016a2a6eae250c8191b17cb975cd731adc.png",
+      "originalGenerationId": "019eb556-7f74-7a01-9cbb-826f77dd1747",
+      "originalFileName": "ig_0f0f09558aed05ec016a2a6eae250c8191b17cb975cd731adc.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-083.png",
+      "sha256": "8e11ff96a51d12ae07d12bc29a68a21aad5e01d33b35c2934c5a3e05991e6e90",
+      "originalRelativePath": "raw/019eb556-7f74-7a01-9cbb-826f77dd1747/ig_0f0f09558aed05ec016a2a6f3e0a788191973995365457e998.png",
+      "originalGenerationId": "019eb556-7f74-7a01-9cbb-826f77dd1747",
+      "originalFileName": "ig_0f0f09558aed05ec016a2a6f3e0a788191973995365457e998.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-084.png",
+      "sha256": "caf0bc5e4e65335e08ec28844dc52cc6a470bca7384e400b0bf45a6e15e3e862",
+      "originalRelativePath": "raw/019eb556-7f74-7a01-9cbb-826f77dd1747/ig_0f0f09558aed05ec016a2a6fe24ec0819182088ed8b6a65c3f.png",
+      "originalGenerationId": "019eb556-7f74-7a01-9cbb-826f77dd1747",
+      "originalFileName": "ig_0f0f09558aed05ec016a2a6fe24ec0819182088ed8b6a65c3f.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-085.png",
+      "sha256": "e9086fb27edc7c5b5b136ae98ed9fcdfa7f68e43fde7c04d3c43e611b5fccdd9",
+      "originalRelativePath": "raw/019eb556-7f74-7a01-9cbb-826f77dd1747/ig_0f0f09558aed05ec016a2a70dc6f508191bd1de06ee9c8f6e6.png",
+      "originalGenerationId": "019eb556-7f74-7a01-9cbb-826f77dd1747",
+      "originalFileName": "ig_0f0f09558aed05ec016a2a70dc6f508191bd1de06ee9c8f6e6.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-086.png",
+      "sha256": "f74442a8580df5ccfd727696faa38f6849f06791fa9afb2f0d48ec6c715bdd16",
+      "originalRelativePath": "raw/019eb6d2-0ed1-7420-8e52-7a61e46bc359/ig_08078d19fb2b25f2016a2ae4a7d20081999c327225a342780e.png",
+      "originalGenerationId": "019eb6d2-0ed1-7420-8e52-7a61e46bc359",
+      "originalFileName": "ig_08078d19fb2b25f2016a2ae4a7d20081999c327225a342780e.png"
+    },
+    {
+      "flatName": "deadrot-codex-review-candidate-087.png",
+      "sha256": "b08d243e48f300c1cfd0bfe0acf1f56099830e2172ae6f7ac133d2522744cdd1",
+      "originalRelativePath": "raw/019eb6d2-0ed1-7420-8e52-7a61e46bc359/ig_08078d19fb2b25f2016a2ae622a0888199af0dee7cc8ef9192.png",
+      "originalGenerationId": "019eb6d2-0ed1-7420-8e52-7a61e46bc359",
+      "originalFileName": "ig_08078d19fb2b25f2016a2ae622a0888199af0dee7cc8ef9192.png"
+    }
+  ]
+}

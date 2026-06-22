@@ -16,12 +16,14 @@
       "!**/coverage",
       "!**/playwright-report",
       "!**/test-results",
+      "!**/.claude/worktrees",
       "!**/.claude/settings.local.json",
       "!apps/lore/quartz",
       "!apps/lore/content",
       "!apps/lore/docs",
       "!packages/assets/games",
-      "!packages/assets/sources"
+      "!packages/assets/sources",
+      "!packages/assets/lore/art-map.json"
     ]
   },
   "assist": {
@@ -31,6 +33,18 @@
       }
     }
   },
+  "overrides": [
+    {
+      "includes": ["**/packages/*/src/index.ts"],
+      "assist": {
+        "actions": {
+          "source": {
+            "organizeImports": "off"
+          }
+        }
+      }
+    }
+  ],
   "formatter": {
     "enabled": true,
     "indentStyle": "space",

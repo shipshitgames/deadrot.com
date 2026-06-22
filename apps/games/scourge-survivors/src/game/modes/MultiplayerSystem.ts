@@ -1,6 +1,13 @@
+import type { NetTransport } from "@deadrot/game-kit/net";
 import * as THREE from "three";
 import { audio } from "../../audio/AudioEngine";
-import { type HitMessage, NetClient, type RemotePlayerInfo } from "../../net/NetClient";
+import {
+  createFpsPresence,
+  createFpsTransport,
+  type FpsPresence,
+  type HitMessage,
+  type RemotePlayerInfo,
+} from "../../net/fpsNet";
 import type { PlayerAvatarId } from "../../net/playerAvatars";
 import { RemoteAvatar } from "../../net/RemoteAvatar";
 import { PLAYER_HEIGHT, WEAPONS } from "../constants";
@@ -8,20 +15,45 @@ import type { GameContext } from "../context";
 import { DEFAULT_MAP_ID, getMap } from "../data/maps";
 import type { GameSystems } from "../systems";
 
+/** Snapshot of co-op room state for tests/debug harnesses. */
+export interface MultiplayerDebugSnapshot {
+  active: boolean;
+  connected: boolean;
+  selfId: string;
+  room: string;
+  peers: Array<{ id: string; name: string; kills: number; health: number; x: number; z: number }>;
+}
+
 export class MultiplayerSystem {
-  // Co-op breach room state.
-  net: NetClient | null = null;
+  // Co-op breach room state. The generic transport owns the wire; the presence
+  // registry owns the set of remote avatars. Both are null outside a session.
+  transport: NetTransport | null = null;
+  presence: FpsPresence<RemoteAvatar> | null = null;
   connected = false;
   roomName = "";
   playerName = "Player";
   playerAvatar: PlayerAvatarId = "ranger";
-  remotePlayers = new Map<string, RemoteAvatar>();
   _euler = new THREE.Euler(0, 0, 0, "YXZ");
 
   constructor(
     private ctx: GameContext,
     private sys: GameSystems,
   ) {}
+
+  /** True while a co-op session is live (a transport exists). */
+  get active(): boolean {
+    return this.transport !== null;
+  }
+
+  /** Live remote avatars; safe to call outside a session (yields nothing). */
+  peers(): RemoteAvatar[] {
+    return this.presence ? [...this.presence.values()] : [];
+  }
+
+  /** Report a melee/projectile hit on a remote peer; the server owns the outcome. */
+  sendHit(target: string, dmg: number): void {
+    this.transport?.emit("hit", { target, dmg });
+  }
 
   startMultiplayer(room: string, name: string, avatar: PlayerAvatarId = "ranger") {
     this.leaveMultiplayer(false); // tear down any prior session/avatars first
@@ -38,50 +70,68 @@ export class MultiplayerSystem {
 
     // Disable solo run progression while the co-op room owns pacing.
     for (const e of this.ctx.enemies) e.kill();
-    this.sys.pve.waveActive = false;
+    this.sys.pve.suspendWaves();
     this.sys.pve.bossActive = false;
     this.sys.pve.bossEnemy = null;
-    this.sys.pve.waveBreakTimer = 1e9;
     this.sys.projectiles.clearProjectiles();
     while (this.sys.pickups.pickups.length) this.sys.pickups.removePickup(this.sys.pickups.pickups.length - 1);
 
-    this.net = new NetClient({
-      onStatus: (c) => {
-        this.connected = c;
-        this.sys.hud.emit();
+    const presence = createFpsPresence<RemoteAvatar>((info) => new RemoteAvatar(info), {
+      onAdd: (avatarObj) => {
+        this.ctx.scene.add(avatarObj.group);
+        this.ctx.raycastTargets.push(...avatarObj.hitMeshes);
       },
-      onWelcome: (selfId, players) => {
-        for (const p of players) {
-          if (p.id === selfId) this.ctx.rig.placeAt(p.x, PLAYER_HEIGHT, p.z, 0, -1);
-          else this.addRemote(p);
-        }
-        this.sys.hud.emit();
+      onRemove: (avatarObj) => {
+        this.ctx.scene.remove(avatarObj.group);
+        this.ctx.raycastTargets = this.ctx.raycastTargets.filter((o) => !avatarObj.hitMeshes.includes(o as THREE.Mesh));
       },
-      onJoin: (p) => {
-        this.addRemote(p);
-        this.sys.hud.emit();
-      },
-      onLeave: (id) => {
-        this.removeRemote(id);
-        this.sys.hud.emit();
-      },
-      onState: (id, x, y, z, yaw, _weapon, health) => {
-        const r = this.remotePlayers.get(id);
-        if (r) {
-          r.setTarget(x, y, z, yaw);
-          if (typeof health === "number") r.setHealth(health);
-        }
-      },
-      onName: (id, nm, remoteAvatar, slot) => {
-        const r = this.remotePlayers.get(id);
-        if (r) {
-          r.setMeta(nm, r.kills, remoteAvatar, slot);
-          this.sys.hud.emit();
-        }
-      },
-      onHit: (msg) => this.onNetHit(msg),
     });
-    this.net.connect(room, this.playerName, this.playerAvatar);
+    this.presence = presence;
+
+    const transport = createFpsTransport();
+    this.transport = transport;
+
+    transport.onStatus((c) => {
+      this.connected = c;
+      if (c) transport.emit("join", { name: this.playerName, avatar: this.playerAvatar });
+      this.sys.hud.emit();
+    });
+    transport.on("welcome", (m) => {
+      const selfId = String(m.id);
+      presence.selfId = selfId;
+      const players = (m.players as RemotePlayerInfo[] | undefined) ?? [];
+      for (const p of players) {
+        if (p.id === selfId) this.ctx.rig.placeAt(p.x, PLAYER_HEIGHT, p.z, 0, -1);
+        else presence.add(p);
+      }
+      this.sys.hud.emit();
+    });
+    transport.on("join", (m) => {
+      const player = m.player as RemotePlayerInfo | undefined;
+      if (player) presence.add(player);
+      this.sys.hud.emit();
+    });
+    transport.on("leave", (m) => {
+      presence.remove(String(m.id));
+      this.sys.hud.emit();
+    });
+    transport.on("state", (m) => {
+      const r = presence.get(String(m.id));
+      if (!r) return;
+      r.setTarget(Number(m.x), Number(m.y), Number(m.z), Number(m.yaw));
+      const health = Number(m.health);
+      if (Number.isFinite(health)) r.setHealth(health);
+    });
+    transport.on("name", (m) => {
+      const r = presence.get(String(m.id));
+      if (r) {
+        r.setMeta(String(m.name), r.kills, String(m.avatar ?? "ranger"), Number(m.slot ?? 0));
+        this.sys.hud.emit();
+      }
+    });
+    transport.on("hit", (m) => this.onNetHit(m as unknown as HitMessage));
+
+    transport.connect(room);
 
     this.ctx.status = "pointerlock-needed";
     this.sys.hud.emit();
@@ -90,16 +140,14 @@ export class MultiplayerSystem {
 
   /** Leave the room. If toMenu, return to the solo start menu. */
   leaveMultiplayer(toMenu = true) {
-    if (this.net) {
-      this.net.disconnect();
-      this.net = null;
+    if (this.transport) {
+      this.transport.disconnect();
+      this.transport = null;
     }
-    for (const r of this.remotePlayers.values()) {
-      this.ctx.scene.remove(r.group);
-      this.ctx.raycastTargets = this.ctx.raycastTargets.filter((o) => !r.hitMeshes.includes(o as THREE.Mesh));
-      r.dispose();
+    if (this.presence) {
+      this.presence.clear(); // disposes every avatar + unwires it from the scene
+      this.presence = null;
     }
-    this.remotePlayers.clear();
     this.ctx.multiplayer = false;
     this.connected = false;
     this.roomName = "";
@@ -111,25 +159,8 @@ export class MultiplayerSystem {
     }
   }
 
-  addRemote(info: RemotePlayerInfo) {
-    if (!this.net || info.id === this.net.selfId || this.remotePlayers.has(info.id)) return;
-    const avatar = new RemoteAvatar(info);
-    this.ctx.scene.add(avatar.group);
-    this.ctx.raycastTargets.push(...avatar.hitMeshes);
-    this.remotePlayers.set(info.id, avatar);
-  }
-
-  removeRemote(id: string) {
-    const r = this.remotePlayers.get(id);
-    if (!r) return;
-    this.ctx.scene.remove(r.group);
-    this.ctx.raycastTargets = this.ctx.raycastTargets.filter((o) => !r.hitMeshes.includes(o as THREE.Mesh));
-    r.dispose();
-    this.remotePlayers.delete(id);
-  }
-
   onNetHit(msg: HitMessage) {
-    const selfId = this.net?.selfId;
+    const selfId = this.presence?.selfId;
     if (msg.target === selfId) {
       this.ctx.health = msg.health;
       this.sys.hud.damageSeq++;
@@ -139,12 +170,14 @@ export class MultiplayerSystem {
         this.ctx.stanceHeight = PLAYER_HEIGHT;
         this.ctx.wantsSprint = false;
         this.ctx.wantsCrouch = false;
+        this.ctx.wasSprinting = false;
+        this.ctx.sprintStartBoostTimer = 0;
         this.ctx.rig.placeAt(msg.respawn.x, PLAYER_HEIGHT, msg.respawn.z, 0, -1);
         this.ctx.velocity.set(0, 0, 0);
         this.sys.hud.showToast(`DROPPED BY ${msg.byName}`);
       }
     } else {
-      const r = this.remotePlayers.get(msg.target);
+      const r = this.presence?.get(msg.target);
       if (r) {
         r.setHealth(msg.health);
         if (msg.killed && msg.respawn) {
@@ -161,7 +194,7 @@ export class MultiplayerSystem {
         audio.sfx("kill");
       }
     } else {
-      const rk = this.remotePlayers.get(msg.by);
+      const rk = this.presence?.get(msg.by);
       if (rk) rk.setMeta(rk.name, msg.killerKills);
     }
     this.sys.hud.emit();
@@ -170,17 +203,23 @@ export class MultiplayerSystem {
   updateMultiplayer(delta: number) {
     const facing = this.ctx.rig.facing;
     const player = this.ctx.body.position;
-    for (const r of this.remotePlayers.values()) r.update(delta, this.ctx.camera.quaternion, this.ctx.camera.position);
-    if (this.net) {
+    if (this.presence) {
+      for (const r of this.presence.values()) r.update(delta, this.ctx.camera.quaternion, this.ctx.camera.position);
+    }
+    if (this.transport) {
       this._euler.setFromQuaternion(facing, "YXZ");
       const netY = player.y - this.ctx.stanceHeight + PLAYER_HEIGHT;
-      this.net.sendState(
-        player.x,
-        netY,
-        player.z,
-        this._euler.y,
-        WEAPONS[this.ctx.activeWeapon].name,
-        Math.round(this.ctx.health),
+      this.transport.emitThrottled(
+        "state",
+        {
+          x: player.x,
+          y: netY,
+          z: player.z,
+          yaw: this._euler.y,
+          weapon: WEAPONS[this.ctx.activeWeapon].name,
+          health: Math.round(this.ctx.health),
+        },
+        45, // ~22 Hz; safe to call every frame
       );
     }
   }
@@ -188,7 +227,7 @@ export class MultiplayerSystem {
   buildScoreboard() {
     const board = [
       { id: "self", name: this.playerName, kills: this.ctx.kills, health: Math.round(this.ctx.health), you: true },
-      ...[...this.remotePlayers.values()].map((r) => ({
+      ...this.peers().map((r) => ({
         id: r.id,
         name: r.name,
         kills: r.kills,
@@ -198,5 +237,23 @@ export class MultiplayerSystem {
     ];
     board.sort((a, b) => b.kills - a.kills);
     return board;
+  }
+
+  /** Inspect live room state — used by the e2e harness and debugging. */
+  debugSnapshot(): MultiplayerDebugSnapshot {
+    return {
+      active: this.active,
+      connected: this.connected,
+      selfId: this.presence?.selfId ?? "",
+      room: this.roomName,
+      peers: this.peers().map((r) => ({
+        id: r.id,
+        name: r.name,
+        kills: r.kills,
+        health: Math.round(r.health),
+        x: r.group.position.x,
+        z: r.group.position.z,
+      })),
+    };
   }
 }

@@ -78,11 +78,6 @@ export function pushDrydockTiers(tiers: ShopTiers) {
   for (const listener of tierListeners) listener(drydockTiers);
 }
 
-/** React side: current tiers for an initial read. */
-export function getDrydockTiers(): ShopTiers {
-  return drydockTiers;
-}
-
 /**
  * Game side: subscribe to tier changes; replays the current tiers immediately so
  * ordering between Game construction and the React mount-effect doesn't matter.

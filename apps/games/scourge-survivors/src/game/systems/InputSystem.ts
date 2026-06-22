@@ -75,8 +75,7 @@ export class PointerLockRig implements CaptureRig {
   unbind(): void {
     this.ctx.rig.off("capture", this.onCapture);
     this.ctx.rig.off("release", this.onRelease);
-    window.clearTimeout(this.lockRetry);
-    this.lockRetry = 0;
+    this.cancelLockRetry();
     this.clearLocomotionModifiers();
   }
 
@@ -95,6 +94,11 @@ export class PointerLockRig implements CaptureRig {
   clearLocomotionModifiers(): void {
     this.ctx.wantsSprint = false;
     this.ctx.wantsCrouch = false;
+  }
+
+  cancelLockRetry(): void {
+    window.clearTimeout(this.lockRetry);
+    this.lockRetry = 0;
   }
 
   private lockPointer(allowRetry = true): void {
@@ -190,12 +194,22 @@ export class InputSystem {
         }
       },
 
-      // While paused, Esc re-acquires pointer lock (resumes the game).
       onResumeKey: () => {
-        if (this.ctx.status === "paused") this.requestLock();
+        if (this.ctx.status === "paused") this.resumeFromPauseWithoutCapture();
       },
 
-      onPointerDown: (button) => {
+      onActionKey: (code, e) => {
+        if (code === "Escape" && this.ctx.status === "playing") {
+          e.preventDefault();
+          this.pauseFromEscape();
+        }
+      },
+
+      onPointerDown: (button, event) => {
+        if (this.ctx.status === "playing" && !this.ctx.rig.captured) {
+          if (event.target === this.ctx.renderer.domElement) this.requestLock();
+          return;
+        }
         if (!this.ctx.rig.captured || this.ctx.status !== "playing") return;
         if (button === 2) {
           this.sys.weapon.startAds();
@@ -226,6 +240,12 @@ export class InputSystem {
   // --------------------------------------------------- pointer-lock capture (FPS)
 
   private onLocomotionKeyDown = (e: KeyboardEvent) => {
+    if (e.defaultPrevented) return;
+    if (e.code === "Escape" && this.ctx.status === "paused") {
+      e.preventDefault();
+      this.resumeFromPauseWithoutCapture();
+      return;
+    }
     if (this.ctx.status !== "playing") return;
     if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
       this.ctx.wantsSprint = true;
@@ -263,5 +283,32 @@ export class InputSystem {
 
   requestLock() {
     this.captureRig?.requestCapture();
+  }
+
+  resumeFromPauseWithoutCapture(): void {
+    if (this.ctx.status !== "paused") return;
+    this.ctx.status = "playing";
+    this.ctx.firing = false;
+    this.sys.weapon.stopAds();
+    clearMoveIntent(this.ctx.move);
+    this.clearLocomotionModifiers();
+    this.captureRig?.cancelLockRetry();
+    this.sys.hud.emit();
+  }
+
+  private pauseFromEscape(): void {
+    if (this.ctx.status !== "playing") return;
+    this.ctx.status = "paused";
+    this.ctx.firing = false;
+    this.sys.weapon.stopAds();
+    clearMoveIntent(this.ctx.move);
+    this.clearLocomotionModifiers();
+    this.captureRig?.releaseCapture(true);
+    this.sys.hud.emit();
+  }
+
+  private clearLocomotionModifiers(): void {
+    this.ctx.wantsSprint = false;
+    this.ctx.wantsCrouch = false;
   }
 }

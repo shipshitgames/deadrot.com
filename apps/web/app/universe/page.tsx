@@ -25,8 +25,8 @@ export default function UniversePage() {
             The Scourge Universe
           </h1>
           <div className="mt-7 max-w-3xl space-y-5">
-            {universe.premise.split("\n\n").map((p, i) => (
-              <p key={i} className="text-lg leading-relaxed text-ash">
+            {universe.premise.split("\n\n").map((p) => (
+              <p key={p} className="text-lg leading-relaxed text-ash">
                 {p}
               </p>
             ))}
