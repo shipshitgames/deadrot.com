@@ -7,7 +7,7 @@ status: canon
 ---
 # Wound-Hound
 
-**At a glance:** low [[Scourge-Host-Families|Chitin Warhost]] tracker - finds heat, blood, breath, and vibration for nearby packs - not a [[CANON|Choir]] repeater; it guides feral bodies by scent and sound, not shared sight - kill it and the pack loses the trail, not the signal - appears in [[Redline]] / [[Scourge-Survivors]] / [[Deadlane]].
+**At a glance:** low [[Scourge-Host-Families|Chitin Warhost]] tracker · finds heat, blood, breath, and vibration for nearby packs · not a [[CANON|Choir]] repeater; it guides feral bodies by scent and sound, not shared sight · kill it and the pack loses the trail, not the signal · appears in [[Redline]] / [[Scourge-Survivors]] / [[Deadlane]].
 
 The first thing a severed pack does after the [[CANON|Choir]] goes quiet is stop looking clever.
 

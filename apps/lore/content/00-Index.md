@@ -62,6 +62,7 @@ Start here, follow the links, open the graph view.
 - [[The-Wardens]] — defense; hold the line → Deadlane
 - [[The-Listeners]] — heresy; understand the Choir _(concept)_
 - [[The-Quiet-Rooms]] — Listener black-room practice; keep severed Choir nodes alive to study
+- [[Kel-Maren]] — Listener founder; named the Wake, held the first Quiet Room, field alias only _(concept)_
 - [[The-Dead-Air-Liturgy]] — Pact dead-air drill; clear carriers after the cut
 - [[The-Brace-Ledger]] — Warden wall sheet; hold target, reserve threshold, and Pact gate promise
 - [[The-Pact]] — field compact; Pyre/Warden rivalry stops the instant a breach opens
@@ -93,6 +94,7 @@ Start here, follow the links, open the graph view.
 - Rothulk: [[Pyre-Saboteur]]
 - Core Scourge: [[Swarm-Ripper]], [[Swarm-Spitter]], [[Wound-Hound]], [[Spore-Lung]], [[Render]], [[Rot-Engine]], [[Graft-Breacher]], [[Cairn]], [[Sower]], [[Gristle-Vat]], [[Chorister]], [[Cantor]], [[Descant]], [[Bourdon]], [[Aeolian]], [[Carillon]], [[Quaver]], [[Breach-Boss]]
 - Scourge support: [[Braid-Worm]]
+- Listeners: [[Toll]]
 
 ## Tech
 
@@ -103,7 +105,7 @@ Start here, follow the links, open the graph view.
 
 ## Compendium
 
-[[Characters/index|Characters]] · Locations ([[Ashgate]], [[The-Cinder-Wells]], [[The-Hush]], [[The-Spire]], [[The-Spire-Causeway]], [[The-Pyre-Gate]], [[Ash-Reach]], [[Rustmarch]], [[The-Hollow-Lanes]], [[The-Switchback]], [[Holdout-Nine|Holdout Nine]], [[The-Skyhook]], [[The-Maw]], [[Cinder-Flats]] (incl. [[The-Rothulk]]), [[Perdition]]) · [[Bestiary/index|Bestiary]] · Tech — scaffold new entries from `Templates/`.
+[[Characters/index|Characters]] · Locations ([[Ashgate]], [[The-Cinder-Wells]], [[The-Hush]], [[The-Spire]], [[The-Spire-Causeway]], [[The-Pyre-Gate]], [[Ash-Reach]], [[Rustmarch]], [[The-Hollow-Lanes]], [[The-Switchback]], [[Holdout-Nine|Holdout Nine]], [[The-Skyhook]], [[The-Lantern]], [[Cradle-Field]], [[The-Maw]], [[Cinder-Flats]] (incl. [[The-Rothulk]]), [[Perdition]]) · [[Bestiary/index|Bestiary]] · Tech — scaffold new entries from `Templates/`.
 
 ## Audits
 

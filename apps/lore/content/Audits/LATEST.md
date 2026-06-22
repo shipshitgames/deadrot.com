@@ -153,4 +153,4 @@ their original file references and recommended resolutions so they are not lost.
 |---|---|---|
 | `Universe/Cosmology.md` | What powers towers and Purgers' gear. | Decide the shared power-source rule, then update Tech pages together. |
 | `Games/Deadlane.md` | Named lanes as Locations plus hold/fall outcomes on `Timeline.md`. | Name only after the lane map is settled. |
-| `Games/Zero-Day.md` | Name holdout/evac sites and fleet; lock fixed last-stand vs roguelike loop. | Decide game loop first so the canon event framing and sites support it. |
+| `Games/Zero-Day.md` | ~~Name holdout/evac sites and fleet; lock fixed last-stand vs roguelike loop.~~ **Resolved (#141):** fleet = the Skywatch; sites = [[The-Lantern]] (orbital) + [[Cradle-Field]] (ground evac); format locked as a fixed, doomed memory run inside [[Starblight]]. | Done — see [[Zero-Day]] § *The fall, named* / § *Format (locked)*. |

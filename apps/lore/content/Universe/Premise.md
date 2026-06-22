@@ -3,6 +3,8 @@ status: draft
 ---
 # Premise
 
+**At a glance:** the one-paragraph pitch for the shared universe · one war against [[Scourge|the Scourge]] — a host-dependent parasite from the void — fought from every angle by the [[The-Pyre|Pyre]] (offense) and [[The-Wardens|Wardens]] (defense) under [[The-Pact|the Pact]] · maps each shipped game to a different scale of that one war · keystones are locked in [[CANON]].
+
 > DRAFT — Vincent owns the canon; rewrite freely. The frame: **one bloody universe** —
 > DOOM's gore with Blizzard's cohesion. Every game is an entry, not a one-off.
 

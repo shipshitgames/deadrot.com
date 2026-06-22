@@ -240,18 +240,98 @@ jobs:
           oauth-client-id: ${{ secrets.TAILSCALE_CLIENT_ID }}
           oauth-secret: ${{ secrets.TAILSCALE_CLIENT_SECRET }}
           tags: tag:ci
-      # Co-located deploy: ship ONLY deadrot's compose + deploy script (never the
-      # api.shipshit.games toolkit), then bring up the deadrot-api container.
-      - name: Deploy deadrot-api (co-located on shipshit-api)
+      # The deploy target is the us-west-1 EC2 host that serves api.deadrot.com
+      # (52.8.153.188 / i-00e74422e719396c3), co-located with api.shipshit.dev.
+      # It is addressed by its Tailscale IP via the repo variable
+      # TAILSCALE_INSTANCE_API_IP (same pattern as shipshit.games) so changing the
+      # host is an ops action, not a code change.
+      #
+      # PREREQUISITES (until these are met the reachability + identity gates below
+      # FAIL the release rather than silently deploying to the wrong/old box):
+      #   1. The us-west-1 box is joined to the tailnet with Tailscale SSH enabled
+      #      and the ACL grants `tag:ci -> ssh ec2-user@<that node>`.
+      #   2. The repo variable TAILSCALE_INSTANCE_API_IP is set to its 100.x IP.
+      # (Do NOT point this at the old `shipshit-api` node 100.73.69.120 — that is
+      # the stale us-east-1 box with no deadrot DB access.)
+      - name: Verify host reachability
+        env:
+          HOST_IP: ${{ vars.TAILSCALE_INSTANCE_API_IP }}
         run: |
+          set -euo pipefail
+          if [ -z "${HOST_IP:-}" ]; then
+            echo "::error::TAILSCALE_INSTANCE_API_IP is not set. Join the us-west-1 api.deadrot.com host (52.8.153.188) to the tailnet and set this variable to its 100.x Tailscale IP."
+            exit 1
+          fi
+          timeout 30 bash -c 'until tailscale status >/dev/null 2>&1; do sleep 1; done'
+          # ssh/scp ride the DERP relay fine, so accept a relayed reply
+          # (--until-direct=false) and retry briefly to absorb the cold-NAT window
+          # right after tailscaled starts.
+          for attempt in $(seq 1 6); do
+            if tailscale ping --until-direct=false -c 1 --timeout 5s "$HOST_IP" >/dev/null 2>&1; then
+              echo "Host $HOST_IP reachable (attempt ${attempt})."
+              exit 0
+            fi
+            echo "Attempt ${attempt}: $HOST_IP not reachable yet; retrying in 5s..."
+            sleep 5
+          done
+          echo "::error::Cannot reach EC2 host at $HOST_IP via Tailscale after 6 attempts"
+          tailscale status
+          exit 1
+      # A ping proves liveness, NOT identity — and the stale node (shipshit-api ->
+      # us-east-1) is the one currently answering on the tailnet. So before shipping
+      # anything, SSH in and assert the box is in us-west-1 (the stale box is
+      # us-east-1). This closes the "operator set TAILSCALE_INSTANCE_API_IP to the
+      # old node" hole that the reachability gate alone cannot catch. Expected box:
+      # i-00e74422e719396c3 / 52.8.153.188 (printed below for the record).
+      - name: Verify host identity (us-west-1)
+        env:
+          HOST_IP: ${{ vars.TAILSCALE_INSTANCE_API_IP }}
+        run: |
+          set -euo pipefail
+          ident="$(ssh -o StrictHostKeyChecking=accept-new "ec2-user@${HOST_IP}" '
+            set -euo pipefail
+            tok=$(curl -fsS -X PUT "http://169.254.169.254/latest/api/token" \
+              -H "X-aws-ec2-metadata-token-ttl-seconds: 60")
+            reg=$(curl -fsS -H "X-aws-ec2-metadata-token: $tok" \
+              "http://169.254.169.254/latest/meta-data/placement/region")
+            iid=$(curl -fsS -H "X-aws-ec2-metadata-token: $tok" \
+              "http://169.254.169.254/latest/meta-data/instance-id")
+            printf "%s %s" "$reg" "$iid"
+          ')"
+          echo "Deploy target identity: ${ident}"
+          case "${ident}" in
+            "us-west-1 "*) echo "Host is in us-west-1 — OK." ;;
+            *)
+              echo "::error::Deploy target is NOT in us-west-1 (got: '${ident}'). Refusing to deploy — this is likely the stale us-east-1 box. Point TAILSCALE_INSTANCE_API_IP at the us-west-1 api.deadrot.com host (52.8.153.188 / i-00e74422e719396c3)."
+              exit 1
+              ;;
+          esac
+      # Co-located deploy: ship ONLY deadrot's compose + deploy script (never the
+      # api.shipshit.dev toolkit), then bring up the `deadrot-api` container on the
+      # shared `shipshit` docker network — the host's Caddy proxies api.deadrot.com
+      # -> deadrot-api:3004 by name. deploy-deadrot.sh hydrates deadrot's OWN env
+      # from the /shipshit/production/deadrot SSM subtree (in AWS_REGION, default
+      # us-east-1) -> the deadrot-api RDS; it does NOT reuse the host's shared
+      # .env.production.
+      - name: Deploy deadrot-api (co-located on api.shipshit.dev, us-west-1)
+        env:
+          HOST_IP: ${{ vars.TAILSCALE_INSTANCE_API_IP }}
+          AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+        run: |
+          set -euo pipefail
           ssh_opts="-o StrictHostKeyChecking=accept-new"
+          # shellcheck disable=SC2086
+          ssh $ssh_opts "ec2-user@${HOST_IP}" "mkdir -p ~/cloud/docker"
           # shellcheck disable=SC2086
           scp $ssh_opts \
             apps/api/deploy/docker-compose.deadrot.yml \
             apps/api/deploy/deploy-deadrot.sh \
-            ec2-user@shipshit-api:~/cloud/docker/
+            "ec2-user@${HOST_IP}:~/cloud/docker/"
+          # The ghcr token arrives over stdin (\$(cat) runs on the host), never on
+          # the remote command line — argv is world-readable via ps/proc on this
+          # co-tenant box; an env-assignment fed from stdin is not.
           # shellcheck disable=SC2086
-          ssh $ssh_opts ec2-user@shipshit-api \
+          ssh $ssh_opts "ec2-user@${HOST_IP}" \
             "chmod +x ~/cloud/docker/deploy-deadrot.sh && \
-             IMAGE_TAG='${GITHUB_SHA}' GHCR_USER='${{ github.actor }}' GHCR_TOKEN='${{ secrets.GITHUB_TOKEN }}' \
-             ~/cloud/docker/deploy-deadrot.sh"
+             IMAGE_TAG='${GITHUB_SHA}' GHCR_USER='${{ github.actor }}' AWS_REGION='${AWS_REGION}' \
+             GHCR_TOKEN=\$(cat) ~/cloud/docker/deploy-deadrot.sh" <<< "${{ secrets.GITHUB_TOKEN }}"

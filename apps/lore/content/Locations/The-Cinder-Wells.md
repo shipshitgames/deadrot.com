@@ -7,7 +7,7 @@ faction: neutral
 ---
 # The Cinder Wells
 
-**At a glance:** Pact-shared furnace district below [[Ashgate]]'s Foundry Wards - old thermal wells and induction stacks that charge [[The-Wardens|Warden]] towers, [[Dead-Air-Beacon|Beacon]] cells, [[Blackout-Nail|Nail]] cautery cores, and [[The-Pyre|Pyre]] breach tanks - answers what powers the line without making the Choir a battery ([[CANON]]) - appears in [[Deadlane]] / [[Scourge-Survivors]] / [[Pactfall]].
+**At a glance:** Pact-shared furnace district below [[Ashgate]]'s Foundry Wards · old thermal wells and induction stacks that charge [[The-Wardens|Warden]] towers, [[Dead-Air-Beacon|Beacon]] cells, [[Blackout-Nail|Nail]] cautery cores, and [[The-Pyre|Pyre]] breach tanks · answers what powers the line without making the Choir a battery ([[CANON]]) · appears in [[Deadlane]] / [[Scourge-Survivors]] / [[Pactfall]].
 
 Every wall wants current. Every Purger wants flame. The Cinder Wells are where both sides come to kneel and pretend they are only filling tanks.
 

@@ -1,5 +1,6 @@
 import { Button, VictoryScreen } from "@shipshitgames/ui";
 import { type ReactNode, useRef, useState } from "react";
+import { frontContribution, OPERATION_NAME } from "../../game/data/operation";
 import type { ScoreEntry, ShopState } from "../../game/storage";
 import type { HudState } from "../../game/types";
 import { PixelIcon } from "../PixelIcon";
@@ -75,6 +76,12 @@ export function GameOverScreen({
 
   if (status !== "gameover") return null;
 
+  // What this run banked into the shared Warline front (#280 / #361): the same
+  // biomass App.tsx reports to the cross-game war-effort pool, credited win or
+  // loss. Surfaced so the summary tells the player what operation they ran and
+  // what it bought the front.
+  const frontBiomass = frontContribution(kills, state.level, time);
+
   const summaryKicker = survivors
     ? outcome === "win"
       ? `${runModeLabel(state.runMode)} run — breach sealed`
@@ -90,6 +97,12 @@ export function GameOverScreen({
       {survivors && (
         <section className="scourge-run-summary-card" data-testid="run-detail-summary">
           <div className="scourge-run-summary-grid">
+            <SummaryFact
+              label="Operation"
+              value={OPERATION_NAME}
+              sub={`+${frontBiomass.toLocaleString()} biomass to the front`}
+              testId="summary-operation"
+            />
             <SummaryFact
               label="Mode"
               value={runModeLabel(state.runMode)}
@@ -172,6 +185,12 @@ export function GameOverScreen({
           <div className={`${STAT_VALUE} scourge-end-metric-value`}>{formatTime(time)}</div>
         </div>
       </div>
+      {survivors && (
+        <div className="scourge-gold-callout" data-testid="front-report">
+          <span aria-hidden>⚔</span> Warline · {OPERATION_NAME} — banked +{frontBiomass.toLocaleString()} biomass to the
+          front
+        </div>
+      )}
       {survivors && lastRunGold > 0 && (
         <div className="scourge-gold-callout">
           <IconText icon="gold" size={18}>
