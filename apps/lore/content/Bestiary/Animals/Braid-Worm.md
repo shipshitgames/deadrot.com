@@ -7,7 +7,7 @@ status: canon
 ---
 # Braid-Worm
 
-**At a glance:** [[Scourge-Host-Families|Mycelial Spore Host]] carrier-weaver - lays wet bridge-tissue across broken roots, cables, corpses, and dead-air scars so nearby repeaters can route the [[CANON|Choir]] again - not a repeater and not intelligent by itself - counter is fire, severance, and clean ground - appears in [[Deadlane]] / [[Redline]] / [[Scourge-Survivors]].
+**At a glance:** [[Scourge-Host-Families|Mycelial Spore Host]] carrier-weaver · lays wet bridge-tissue across broken roots, cables, corpses, and dead-air scars so nearby repeaters can route the [[CANON|Choir]] again · not a repeater and not intelligent by itself · counter is fire, severance, and clean ground · appears in [[Deadlane]] / [[Redline]] / [[Scourge-Survivors]].
 
 A [[Dead-Air-Beacon]] buys silence by burning the path.
 

@@ -26,6 +26,9 @@ export type { GameOperationMeta } from "./operations";
 export { GAME_OPERATIONS, GAME_SLUGS, operationKindFor, WAR_RESOURCE, warResourceFor } from "./operations";
 // palette
 export { FACTION_COLOR } from "./palette";
+// community-build story frame (#362)
+export type { CadenceFaction, CadenceLine, StoryFramePillar } from "./storyFrame";
+export { STORY_FRAME, STORY_FRAME_OPERATIONS } from "./storyFrame";
 // reducer (spec §5)
 export type { ApplyResult } from "./reducer";
 export {

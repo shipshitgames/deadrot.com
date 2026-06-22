@@ -44,6 +44,7 @@ Redline runners carrying orders through broken lanes.
 
 ## Listeners
 
-Heretic signals scholars, studying the shape of a mind they cannot kill.
+Heretics and Fork practitioners. Hunted by both factions; protected by neither.
 
 - [[Vess]]
+- [[Toll]]

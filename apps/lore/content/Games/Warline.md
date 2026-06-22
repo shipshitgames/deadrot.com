@@ -10,7 +10,7 @@ status: playable prototype
 
 Warline is not another isolated arcade pillar. It is the strategic layer that makes the other
 games matter to the same war: [[Scourge-Survivors]] purges breaches, [[Deadlane]] holds lanes,
-[[Pactfall]] contests territory, [[Brawl]] resolves no-man's-land pockets, [[Starblight]]
+[[Pactfall]] contests territory, [[Brawl]] settles grudges in sanctioned arenas, [[Starblight]]
 intercepts orbit, [[Redline]] runs logistics, and [[Rothulk]] sabotages breach-hearts from
 inside the nest.
 
@@ -40,10 +40,34 @@ prototype front without automatically rewriting [[Timeline]] or a Location page.
 - [[Scourge-Survivors]] → Purge a Breach.
 - [[Deadlane]] → Hold the Lane.
 - [[Pactfall]] → Contest Territory.
-- [[Brawl]] → Break a Pocket.
+- [[Brawl]] → Settle a Grudge.
 - [[Starblight]] → Orbital Intercept.
 - [[Redline]] → Run Logistics.
 - [[Rothulk]] → Sabotage a Breach.
+
+## Community Builds → The Front
+
+Warline is how every other preview earns its place in the war. The frame the front presents to
+players:
+
+- **Every preview is an operation.** Playing any Deadrot build is one sortie on the shared front —
+  a purge, hold, contest, duel, intercept, run, or sabotage. The run reports into Warline and
+  spends the same four-resource war pool every game shares.
+- **Playtests become field reports, not promises.** Community results — wins, losses, feedback —
+  read into the front as **provisional dispatches** that move the prototype line and the war record.
+  They are never auto-promoted into locked canon; authored lore decides what holds. This keeps the
+  loop honest: the front can shift without [[Timeline]] or a Location page making a claim it can't keep.
+- **The line keeps the weekly release cadence.** Each release ships a fresh operation slate and a
+  re-seeded front. What the community holds this week is where the next build's war opens:
+  - **The Pyre** — purge and sabotage runs burn breaches down from the inside; a strong Pyre week
+    thins the nests before the next drop.
+  - **The Wardens** — lane holds and logistics keep holdouts connected; Warden wins bank ground the
+    Choir has to retake.
+  - **The Scourge** — the Choir escalates every week it runs; a quiet community week lets breaches
+    root and the next front opens harder.
+
+This frame ships as the in-game **"Why Builds Matter"** briefing on the Command Table, kept in sync
+with the `STORY_FRAME` data in `@shipshitgames/warline`.
 
 ## Status
 
