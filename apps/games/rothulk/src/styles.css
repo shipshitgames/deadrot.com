@@ -236,6 +236,113 @@ body {
   letter-spacing: 0.1em;
 }
 
+/* ------------------------------------------------- OPERATION BRIEFING --- */
+/* Fixed corner panel surfaced with the main-menu nav. pointer-events:none so
+   it never intercepts the menu buttons it sits beside. */
+.op-briefing {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 11;
+  width: min(340px, 42vw);
+  max-height: 60vh;
+  overflow: hidden;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  background: rgba(10, 10, 10, 0.82);
+  border: 1px solid var(--gunmetal);
+  border-left: 3px solid var(--hellfire);
+  text-transform: none;
+}
+
+.op-briefing[hidden] {
+  display: none;
+}
+
+.op-briefing-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.op-briefing-op {
+  font-family: var(--display);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--bone);
+  text-transform: uppercase;
+}
+
+.op-briefing-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--hellfire);
+}
+
+.op-briefing-line {
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--ash);
+}
+
+.op-briefing-beats {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.op-briefing-beat {
+  display: flex;
+  gap: 8px;
+}
+
+.op-briefing-step {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--void);
+  background: var(--hellfire);
+}
+
+.op-briefing-beat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.op-briefing-beat-title {
+  font-family: var(--display);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--bone);
+  text-transform: uppercase;
+}
+
+.op-briefing-beat-detail {
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--ash);
+}
+
+.op-briefing-beat-report {
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.35;
+  color: var(--toxic);
+}
+
 @media (max-width: 720px) {
   .hud-right,
   .hud-grow {
@@ -243,5 +350,16 @@ body {
   }
   .toast .big {
     font-size: 44px;
+  }
+  .op-briefing {
+    width: min(280px, 64vw);
+    max-height: 52vh;
+    left: 10px;
+    bottom: 10px;
+    padding: 9px 10px;
+    gap: 6px;
+  }
+  .op-briefing-beat-detail {
+    display: none;
   }
 }

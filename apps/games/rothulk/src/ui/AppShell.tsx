@@ -21,6 +21,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { objectiveForPhase } from "../game/coreLoop";
 import type { Game } from "../game/Game";
+import { OperationBriefing } from "./OperationBriefing";
 
 interface AppShellProps {
   createGame: (canvas: HTMLCanvasElement) => Game;
@@ -194,6 +195,9 @@ export function AppShell({ createGame }: AppShellProps) {
               </>
             )}
           </MainMenuLayout>
+          {/* Mission briefing for the Breach Sabotage op — revealed with the menu
+              nav. Fixed + pointer-events:none, so it never blocks the buttons. */}
+          <OperationBriefing hidden={!revealed} />
           <GlobalMusicToggle className="ssg-music-toggle--corner" />
         </MainMenuScreen>
       )}

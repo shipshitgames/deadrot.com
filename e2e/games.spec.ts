@@ -108,7 +108,7 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
       await page.getByRole("button", { name: /^Breach\b/i }).click();
       // The title screen unmounts once the run begins (it is gated on !started).
       await expect(page.locator("#banner")).toHaveCount(0);
-      await expect(page.locator("#hud-obj")).toContainText("REACH");
+      await expect(page.locator("#hud-obj")).toContainText("IGNITE THE CORE");
       await page.waitForFunction(() => Boolean((window as unknown as { __rothulkGame?: unknown }).__rothulkGame));
 
       await page.evaluate(() => {

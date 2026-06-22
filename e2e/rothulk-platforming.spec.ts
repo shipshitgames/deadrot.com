@@ -32,7 +32,7 @@ test("Rothulk opening platform route is playable with normal held inputs", async
   expect(state.lives).toBe(3);
   expect(state.hero.x).toBeGreaterThan(28.5);
   expect(state.hero.y).toBeGreaterThan(2.7);
-  await expect(page.locator("#hud-obj")).toContainText("REACH");
+  await expect(page.locator("#hud-obj")).toContainText("IGNITE THE CORE");
 });
 
 test("Rothulk fatal falls show recovery feedback", async ({ page }, testInfo) => {
