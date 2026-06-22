@@ -41,3 +41,9 @@ Redline runners carrying orders through broken lanes.
 
 - [[Pyre-Courier]]
 - [[Warden-Courier]]
+
+## Listeners
+
+Heretic signals scholars, studying the shape of a mind they cannot kill.
+
+- [[Vess]]
