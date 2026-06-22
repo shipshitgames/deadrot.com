@@ -37,7 +37,7 @@ Every Purger carries a blade because ammo is a promise the breach likes to break
 
 ## Prompt Seed
 
-DOOM-grim Pyre cautery cleaver, oversized industrial breach blade with short grip and forward-heavy rectangular silhouette, black gunmetal spine, cracked bone-white ceramic cutting edge, blood-hot hellfire cautery seam glowing along one side, scorch tape and dried blood and ash tally marks, one small heat canister at the hilt, brutal post-fall field tool, single object on near-black background, medium-chunky detailed pixel art, no medieval sword, no fantasy runes, no clean chrome, no neon.
+DOOM-grim Pyre cautery cleaver, oversized industrial breach blade with short grip and forward-heavy rectangular silhouette, black gunmetal spine, cracked bone-white ceramic cutting edge, blood-hot hellfire cautery seam glowing along one side, scorch tape and dried blood and ash tally marks, one small heat canister at the hilt, brutal post-fall field tool, single object on near-black background, comic-book ink, cel-shaded, bold outlines, no medieval sword, no fantasy runes, no clean chrome, no neon, no pixel art.
 
 ## Appears in
 

@@ -56,7 +56,7 @@ Attach or link approved source images here before generating game assets.
 
 ## Validation Checklist
 
-- [ ] Matches [[Style-Bible]] clean comic-book / cel-shaded ink.
+- [ ] Matches [[Style-Bible]] comic-book / cel-shaded ink (house look locked 2026-06-17).
 - [ ] Silhouette reads at game scale.
 - [ ] Palette follows [[DESIGN]] tokens.
 - [ ] No magenta/green chroma residue in approved runtime exports.
