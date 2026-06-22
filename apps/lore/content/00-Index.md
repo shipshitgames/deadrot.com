@@ -24,6 +24,9 @@ Start here, follow the links, open the graph view.
 - [[Design/Characters/Character-Art-Masters|Character Art Masters]] — attached master/reference images and lock status for playable/faction characters _(active)_
 - [[Art/Comic-Style-Exploration-v01|Comic Style Exploration v01]] — XIII-informed comic/cel-shaded game art and UI exploration _(active)_
 - [[Art/Combat-Wallpapers-v05|Combat Wallpapers v05]] — gritty realistic combat wallpaper rule; keep warzone grit, reject speckled Scourge glow _(active)_
+- [[Art/Combat-Wallpapers-v04|Combat Wallpapers v04]] — previous active pass; superseded by v05 _(superseded)_
+- [[Art/Combat-Wallpapers-v03|Combat Wallpapers v03]] — earlier pass; superseded by v04 _(superseded)_
+- [[Art/Combat-Wallpapers-v02|Combat Wallpapers v02]] — initial pass; superseded by v03 _(superseded)_
 - [[Character-Sprite-Direction]] — faction language + sprite production rules _(superseded — see [[Style-Bible]])_
 - [[Character-Prompt-Library]] — reusable generation prompts _(superseded — see [[Style-Bible]])_
 - [[Variation-Matrix]] — batch planning + selection criteria _(draft)_
@@ -104,6 +107,10 @@ Start here, follow the links, open the graph view.
 - [[Dead-Air-Beacon]] — temporary isolation field kit; holds a severed Choir path in dead air after a Fork finds it and a Nail cuts it
 - [[Blackout-Nail]] — sacrificial severance spike; physically cuts a repeater path after a Fork finds it
 - [[Tuning-Fork]] — passive Choir-listening rig; ranges repeaters so a node can be severed _(draft)_
+
+## Audits
+
+- [[Audits/LATEST|Latest Canon Consistency Audit]] — most recent automated canon audit report
 
 ## Compendium
 
