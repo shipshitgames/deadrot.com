@@ -1,5 +1,7 @@
 # Timeline
 
+**At a glance:** the anchor events of the shared universe, in locked order · from [[Zero-Day]] (first contact, lost) through the Long Fall, the Schism that split the [[The-Wardens|Wardens]] and [[The-Pyre|Pyre]], the [[The-Pact|Pact]], and the Resistance-era Lane Wars and Descent · order is locked, exact dates stay [[CANON|open]].
+
 > Anchor events of the shared universe. Order is locked; exact dates are [[CANON|open]].
 
 - **Zero Day — the Invasion.** First contact with [[Scourge|the Scourge]] from the void.

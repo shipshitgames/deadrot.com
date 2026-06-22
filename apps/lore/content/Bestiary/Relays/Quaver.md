@@ -7,6 +7,8 @@ status: canon
 ---
 # Quaver
 
+**At a glance:** Flesh-host **Choir-repeater**, the airborne/mobile relay class · fast, fragile, hovers out of melee reach and spits at range · keeps a local pocket of swarm coordinated where no rooted node stands — kill it and that pocket drops feral · the Choir's cheap, expendable sky-ear, spent like ammunition · appears in [[Scourge-Survivors]] / [[Deadlane]].
+
 The first repeater a Pyre Purger ever kills is usually the wrong one. You go in low through a
 breach, you find the rooted thing singing in the dark, you put it down — and the swarm doesn't
 break. It keeps flanking. Keeps pre-empting. Keeps one set of eyes on you. Then you look up.
@@ -21,11 +23,6 @@ bobs on its own updraft, trembling at the top of every wingbeat, the motion the 
 musicians named it for. It keeps a careful gap and spits green from above while the horde
 screens its body. Hit it once and it folds like wet paper. The whole trick is having a barrel
 free when you finally notice it.
-
-**At a glance:** Flesh-host **Choir-repeater**, the airborne/mobile relay class · fast, fragile,
-hovers out of melee reach and spits at range · keeps a local pocket of swarm coordinated where
-no rooted node stands — kill it and that pocket drops feral · the Choir's cheap, expendable
-sky-ear, spent like ammunition · appears in [[Scourge-Survivors]] / [[Deadlane]].
 
 ## Behaviour
 

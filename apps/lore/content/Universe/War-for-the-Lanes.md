@@ -1,5 +1,7 @@
 # War for the Lanes — the persistent layer
 
+**At a glance:** the persistent-front vision where playing the small games *shifts* a shared war map of lanes, holdouts, orbit, and breaches · its current playable expression is [[Warline]], a strategy-lite layer over the operation games · the far horizon is a Dofus-like persistent server · a prototype, not a locked grand-strategy rulebook.
+
 The practical vision: a **persistent shared front** where the Pact
 ([[The-Pyre]] and [[The-Wardens]]) fights [[Scourge|the Scourge]] over a live map of lanes,
 holdouts, orbit, and breaches — and where playing the small games *shifts the front*.

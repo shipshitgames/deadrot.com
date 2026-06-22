@@ -6,7 +6,7 @@ status: canon
 ---
 # The Last Manifest
 
-**At a glance:** [[The-Pyre|Pyre]] field practice - a Purger's final run sheet, oath, fuel ledger, and [[The-Pact|Pact]] handoff in one document - turns "expendable by choice" into a targetable cut against the [[CANON|Choir]], not blind martyrdom - appears in [[Scourge-Survivors]] / [[Pactfall]] / [[War-for-the-Lanes]].
+**At a glance:** [[The-Pyre|Pyre]] field practice · a Purger's final run sheet, oath, fuel ledger, and [[The-Pact|Pact]] handoff in one document · turns "expendable by choice" into a targetable cut against the [[CANON|Choir]], not blind martyrdom · appears in [[Scourge-Survivors]] / [[Pactfall]] / [[War-for-the-Lanes]].
 
 The Pyre do not ask if you are willing to die.
 
