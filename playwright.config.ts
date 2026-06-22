@@ -56,6 +56,7 @@ export default defineConfig({
       testMatch: [
         /games\.spec\.ts/,
         /rothulk-platforming\.spec\.ts/,
+        /rothulk-briefing\.spec\.ts/,
         /warline-reporting\.spec\.ts/,
         /warline-war-effort\.spec\.ts/,
         /pactfall-moba\.spec\.ts/,
