@@ -28,6 +28,8 @@ interface BrawlSnapshot {
   arena: { slots: number; alive: number; winnerName: string | null; fighters: ArenaHudFighter[] } | null;
   arenaFighters: ArenaFighterDebug[];
   result: { outcome: "victory" | "defeat"; reason: "ko" | "time" | "last-standing"; winnerName: string } | null;
+  // Canon map identity that joins the lore registry (apps/lore/content/Maps.md).
+  map: { name: string; loreId: string; front: string };
 }
 
 interface BrawlWindow {
@@ -191,6 +193,20 @@ test("Duel mode remains playable alongside Arena", async ({ page }, testInfo) =>
   const state = await snapshot(page);
   expect(state.mode).toBe("duel");
   expect(state.arena).toBeNull();
+});
+
+test("Brawl declares its canon arena and joins the lore map registry (#140)", async ({ page }, testInfo) => {
+  test.skip(!testInfo.project.name.startsWith("brawl:"), "Brawl-only canon-map check.");
+
+  await boot(page);
+
+  // The select screen surfaces the canon place this fight happens in.
+  await expect(page.getByText("No-Man's-Land Pocket")).toBeVisible();
+
+  // The runtime exposes the canon map metadata (loreId + front + name) that ties
+  // Brawl to The Hollow Lanes in apps/lore/content/Maps.md.
+  const map = await page.evaluate(() => (window as unknown as BrawlWindow).__brawlSnapshot().map);
+  expect(map).toEqual({ name: "No-Man's-Land Pocket", loreId: "hollowlanes", front: "lane" });
 });
 
 async function boot(page: Page) {

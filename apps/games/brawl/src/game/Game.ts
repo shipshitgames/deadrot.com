@@ -20,7 +20,7 @@ import {
   wouldStepOffEdge,
 } from "./arena";
 import { ATTACKS, attackDamage, guardedDamage } from "./combat";
-import { ARENA } from "./constants";
+import { ARENA, MAP } from "./constants";
 import { DEFAULT_PLAYER_ID, type FighterId, type FighterSpec, fighterById, pickOpponent } from "./roster";
 import type {
   ArenaHud,
@@ -265,9 +265,13 @@ export class Game {
     playerX: number | null;
     opponentX: number | null;
     arenaFighters: FighterDebug[];
+    map: typeof MAP;
   } {
     return {
       ...this.hudState(),
+      // Canon map identity (apps/lore/content/Maps.md) — the join key the
+      // War-for-the-Lanes registry uses to tie Brawl to its place.
+      map: MAP,
       playerX: this.mode === "arena" ? (this.arenaFighters[0]?.x ?? null) : (this.player?.x ?? null),
       opponentX: this.opponent?.x ?? null,
       arenaFighters: this.arenaFighters.map((fighter) => ({

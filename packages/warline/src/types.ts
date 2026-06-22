@@ -10,6 +10,13 @@ import type { PlayableGameSlug } from "@deadrot/catalog";
 export type HumanFaction = "pyre" | "wardens";
 export type Faction = HumanFaction | "scourge" | "neutral";
 
+// ---- canon map join ----
+// Front-taxonomy class for a place on the War-for-the-Lanes map. These are the
+// canon classes declared in the `front-taxonomy` frontmatter of
+// apps/lore/content/Maps.md; every region carries one so the meta-map joins the
+// lore registry on `id` (= canon loreId) + `front`.
+export type Front = "holdout" | "lane" | "breach" | "orbital";
+
 // ---- resources ----
 export type ResourceKind = "scrap" | "biomass" | "fuel" | "intel";
 export type ResourceBag = Record<ResourceKind, number>;
@@ -27,8 +34,9 @@ export type OperationKind =
 
 // ---- world primitives ----
 export interface Region {
-  id: string;
+  id: string; // canon loreId — joins apps/lore/content/Maps.md
   name: string;
+  front: Front; // canon front-taxonomy class (see Maps.md)
   faction: Faction; // current controller
   pressure: number; // 0..100 Scourge corruption
   defense: number; // 0..100 fortification (mitigates pressure gain)
