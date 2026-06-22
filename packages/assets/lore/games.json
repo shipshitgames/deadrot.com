@@ -27,7 +27,7 @@
       "line": "A lone Pyre operator drops into a live breach to grind the Scourge down from the inside — every run thins a nest the front is bleeding to contain."
     },
     "characterSlugs": ["ranger", "bulwark", "vector", "patch"],
-    "enemySlugs": ["swarm-ripper", "swarm-spitter", "breach-boss"]
+    "enemySlugs": ["swarm-ripper", "swarm-spitter", "wound-hound", "quaver", "breach-boss"]
   },
   {
     "slug": "deadlane",

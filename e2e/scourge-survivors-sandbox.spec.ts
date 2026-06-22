@@ -140,6 +140,100 @@ test("swapping weapons in the panel updates the live HUD weapon", async ({ page 
   await expect.poll(() => field(page, "toastSeq")).toBeGreaterThan(beforeSeq);
 });
 
+test("the weapon view-model dials the evolved size back and mirrors the live akimbo cell", async ({
+  page,
+}, testInfo) => {
+  test.skip(!testInfo.project.name.startsWith("scourge-survivors:"), "Scourge-survivors-only sandbox deep slice.");
+
+  await boot(page);
+
+  // Drive the REAL WeaponSystem through the sandbox tier preview and read the live three.js
+  // sprite + texture state straight back — proving the #265 polish reaches rendered output,
+  // not just the pure helpers. Weapon-agnostic: we assert the ratio/relationships, not a
+  // specific weapon's cell, so it holds for whatever STARTING_WEAPON the sandbox arms.
+  const read = await page.evaluate(() => {
+    type WeaponDevGame = {
+      setSandboxWeaponTier: (tier: string) => void;
+      sys: {
+        weapon: {
+          weaponSprite: { scale: { x: number } };
+          weaponSpriteMat: { map: { repeat: { x: number }; offset: { x: number } } };
+          weaponSpriteDualMat: { map: { repeat: { x: number }; offset: { x: number } } };
+        };
+      };
+    };
+    const game = (window as unknown as { __fpsGame: WeaponDevGame }).__fpsGame;
+    game.setSandboxWeaponTier("base");
+    const baseScaleX = game.sys.weapon.weaponSprite.scale.x;
+    game.setSandboxWeaponTier("evolved");
+    const w = game.sys.weapon;
+    return {
+      baseScaleX,
+      evolvedScaleX: w.weaponSprite.scale.x,
+      mainRepeat: w.weaponSpriteMat.map.repeat.x,
+      mainOffset: w.weaponSpriteMat.map.offset.x,
+      dualRepeat: w.weaponSpriteDualMat.map.repeat.x,
+      dualOffset: w.weaponSpriteDualMat.map.offset.x,
+    };
+  });
+
+  // The evolved view-model renders at the dialed-back 1.16× of base — not the old, oversized
+  // 1.24× that crowded the viewport (#265).
+  expect(read.baseScaleX).toBeGreaterThan(0);
+  expect(read.evolvedScaleX / read.baseScaleX).toBeCloseTo(1.16, 4);
+
+  // The live akimbo texture mirrors the SAME tier cell: a flipped (negated) repeat and an
+  // offset shifted to the cell's right edge (offset + width) — never a neighbouring cell.
+  expect(read.dualRepeat).toBeCloseTo(-read.mainRepeat, 6);
+  expect(read.dualOffset).toBeCloseTo(read.mainOffset + read.mainRepeat, 6);
+});
+
+test("the dual-weapon pickup reveals the mirrored akimbo gun only for dual-compatible weapons", async ({
+  page,
+}, testInfo) => {
+  test.skip(!testInfo.project.name.startsWith("scourge-survivors:"), "Scourge-survivors-only sandbox deep slice.");
+
+  await boot(page);
+
+  // Drive the live akimbo VISIBILITY gating (#265 item 3: "once a dual-weapon pickup is
+  // active"). updateWeapon() is poked directly with a fixed delta so the toggle is read
+  // deterministically — no real-time pickup, no frame-throttle dependency (mobile-safe).
+  const read = await page.evaluate(() => {
+    type DualDevGame = {
+      setSandboxWeapon: (id: string) => void;
+      ctx: { status: string; reloading: boolean; dualWeaponTimer: number };
+      sys: {
+        weapon: { updateWeapon: (delta: number) => void; meleeAnim: number; weaponSpriteDual: { visible: boolean } };
+      };
+    };
+    const game = (window as unknown as { __fpsGame: DualDevGame }).__fpsGame;
+    const w = game.sys.weapon;
+    // Tick once with the given weapon + dual timer, clearing the melee/reload poses that
+    // would early-return before the akimbo block, and read the resulting visibility.
+    const tick = (weapon: string, dualTimer: number): boolean => {
+      game.setSandboxWeapon(weapon);
+      game.ctx.status = "playing";
+      game.ctx.reloading = false;
+      w.meleeAnim = 0;
+      game.ctx.dualWeaponTimer = dualTimer;
+      w.updateWeapon(0.016);
+      return w.weaponSpriteDual.visible;
+    };
+    return {
+      pistolNoPickup: tick("pistol", 0), // dual-compatible, no bonus -> hidden
+      pistolPickup: tick("pistol", 5), // dual-compatible, bonus live -> shown
+      cannonPickup: tick("cannon", 5), // NOT dual-compatible, bonus live -> stays hidden
+      pistolLapsed: tick("pistol", 0), // bonus expired -> hidden again
+    };
+  });
+
+  // The mirrored second gun appears only while the pickup is live AND the weapon can akimbo.
+  expect(read.pistolNoPickup).toBe(false);
+  expect(read.pistolPickup).toBe(true);
+  expect(read.cannonPickup).toBe(false);
+  expect(read.pistolLapsed).toBe(false);
+});
+
 // ---- helpers ----------------------------------------------------------------
 
 async function boot(page: Page) {

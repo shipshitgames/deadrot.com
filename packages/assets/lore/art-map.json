@@ -2,14 +2,14 @@
   "version": 1,
   "generatedBy": "packages/assets/scripts/generate-lore-art-map.mjs",
   "summary": {
-    "entries": 27,
+    "entries": 29,
     "locked": 2,
     "runtimeLinked": 5,
-    "inProgress": 19,
+    "inProgress": 21,
     "drafted": 0,
     "missing": 1,
     "catalogLinked": 22,
-    "runtimeManifestLinked": 7,
+    "runtimeManifestLinked": 9,
     "packageLinked": 26,
     "hasMasters": 15,
     "hasSources": 15
@@ -356,6 +356,144 @@
         "source": "`packages/assets/entities/orbital-breach-carrier/starblight.webp`",
         "nextAction": "Replace with final Starblight boss render."
       },
+      "status": "in-progress"
+    },
+    {
+      "type": "bestiary",
+      "slug": "quaver",
+      "name": "Quaver",
+      "notePath": "Bestiary/Relays/Quaver.md",
+      "appearsIn": [
+        "scourge-survivors",
+        "deadlane"
+      ],
+      "spriteBase": "enemy-flying",
+      "catalogEntities": [],
+      "catalog": {
+        "expected": 0,
+        "existing": 0,
+        "missing": 0,
+        "variants": []
+      },
+      "runtime": {
+        "existing": 6,
+        "generated": 6,
+        "records": [
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "comic-enemy-flying",
+            "keyPath": "comic-enemy-flying.views.back",
+            "path": "games/scourge-survivors/enemies/scourge-comic/winged-host/back.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "Codex built-in image_gen comic asset pass",
+              "date": "2026-06-17",
+              "kind": "runtime comic-style Scourge Survivors exploratory asset",
+              "scope": "Scourge Survivors runtime opt-in comic pack"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "comic-enemy-flying",
+            "keyPath": "comic-enemy-flying.views.front",
+            "path": "games/scourge-survivors/enemies/scourge-comic/winged-host/front.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "Codex built-in image_gen comic asset pass",
+              "date": "2026-06-17",
+              "kind": "runtime comic-style Scourge Survivors exploratory asset",
+              "scope": "Scourge Survivors runtime opt-in comic pack"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "comic-enemy-flying",
+            "keyPath": "comic-enemy-flying.views.side",
+            "path": "games/scourge-survivors/enemies/scourge-comic/winged-host/side.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "Codex built-in image_gen comic asset pass",
+              "date": "2026-06-17",
+              "kind": "runtime comic-style Scourge Survivors exploratory asset",
+              "scope": "Scourge Survivors runtime opt-in comic pack"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "enemy-flying",
+            "keyPath": "enemy-flying.views.back",
+            "path": "games/scourge-survivors/enemies/scourge/winged-host/back.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-06-05",
+              "kind": "AI generated 2D flying Scourge sprite sheet, purple wing readability lane",
+              "scope": "Scourge Survivors runtime"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "enemy-flying",
+            "keyPath": "enemy-flying.views.front",
+            "path": "games/scourge-survivors/enemies/scourge/winged-host/front.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-06-05",
+              "kind": "AI generated 2D flying Scourge sprite sheet, purple wing readability lane",
+              "scope": "Scourge Survivors runtime"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "enemy-flying",
+            "keyPath": "enemy-flying.views.side",
+            "path": "games/scourge-survivors/enemies/scourge/winged-host/side.webp",
+            "license": {
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-06-05",
+              "kind": "AI generated 2D flying Scourge sprite sheet, purple wing readability lane",
+              "scope": "Scourge Survivors runtime"
+            },
+            "exists": true,
+            "generated": true
+          }
+        ]
+      },
+      "packageAssets": {
+        "count": 0,
+        "paths": []
+      },
+      "previews": {
+        "count": 0,
+        "paths": []
+      },
+      "masters": {
+        "count": 0,
+        "paths": []
+      },
+      "sources": {
+        "count": 0,
+        "paths": []
+      },
+      "manual": null,
       "status": "in-progress"
     },
     {
@@ -1118,6 +1256,97 @@
         "source": "`packages/assets/entities/trucebreaker/pactfall.webp`",
         "nextAction": "Replace with final Pactfall boss render."
       },
+      "status": "in-progress"
+    },
+    {
+      "type": "bestiary",
+      "slug": "wound-hound",
+      "name": "Wound-Hound",
+      "notePath": "Bestiary/Animals/Wound-Hound.md",
+      "appearsIn": [
+        "scourge-survivors",
+        "deadlane",
+        "redline"
+      ],
+      "spriteBase": "enemy-hound",
+      "catalogEntities": [],
+      "catalog": {
+        "expected": 0,
+        "existing": 0,
+        "missing": 0,
+        "variants": []
+      },
+      "runtime": {
+        "existing": 3,
+        "generated": 3,
+        "records": [
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "enemy-hound",
+            "keyPath": "enemy-hound.views.back",
+            "path": "games/scourge-survivors/enemies/scourge/wound-hound/back.webp",
+            "license": {
+              "tool": "built-in image_gen + ffmpeg crop + cwebp",
+              "plan": "built-in image_gen",
+              "date": "2026-06-17",
+              "kind": "AI generated comic Scourge Wound-Hound runtime crop derived from lore comic master sheet",
+              "scope": "Scourge Survivors runtime exploratory fast animal foe"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "enemy-hound",
+            "keyPath": "enemy-hound.views.front",
+            "path": "games/scourge-survivors/enemies/scourge/wound-hound/front.webp",
+            "license": {
+              "tool": "built-in image_gen + ffmpeg crop + cwebp",
+              "plan": "built-in image_gen",
+              "date": "2026-06-17",
+              "kind": "AI generated comic Scourge Wound-Hound runtime crop derived from lore comic master sheet",
+              "scope": "Scourge Survivors runtime exploratory fast animal foe"
+            },
+            "exists": true,
+            "generated": true
+          },
+          {
+            "game": "scourge-survivors",
+            "bucket": "sprites",
+            "key": "enemy-hound",
+            "keyPath": "enemy-hound.views.side",
+            "path": "games/scourge-survivors/enemies/scourge/wound-hound/side.webp",
+            "license": {
+              "tool": "built-in image_gen + ffmpeg crop + cwebp",
+              "plan": "built-in image_gen",
+              "date": "2026-06-17",
+              "kind": "AI generated comic Scourge Wound-Hound runtime crop derived from lore comic master sheet",
+              "scope": "Scourge Survivors runtime exploratory fast animal foe"
+            },
+            "exists": true,
+            "generated": true
+          }
+        ]
+      },
+      "packageAssets": {
+        "count": 0,
+        "paths": []
+      },
+      "previews": {
+        "count": 0,
+        "paths": []
+      },
+      "masters": {
+        "count": 0,
+        "paths": []
+      },
+      "sources": {
+        "count": 0,
+        "paths": []
+      },
+      "manual": null,
       "status": "in-progress"
     },
     {

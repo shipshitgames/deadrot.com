@@ -405,8 +405,9 @@ export class SurvivorsSystem {
         audio.sfx("pickup");
       }
     }
-    // Every weapon re-applies its model on a tier change so the TIER_SCALE growth (and any
-    // future per-tier art) lands; the per-frame TIER_GLOW tint tracks the tier on its own.
+    // Every weapon re-applies its model on a tier change so the MAIN_WEAPON_TIER_VIEW_SCALE
+    // growth (and any future per-tier art) lands; the per-frame TIER_GLOW tint tracks the
+    // tier on its own.
     const nextMainWeaponTier = this.mainWeaponVisualTier();
     if (nextMainWeaponTier !== previousMainWeaponTier) {
       this.sys.weapon.applyWeaponModel(this.ctx.activeWeapon);
