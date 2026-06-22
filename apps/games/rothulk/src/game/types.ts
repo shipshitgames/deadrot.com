@@ -121,10 +121,14 @@ export interface ExitGoal {
   radius: number;
 }
 
+// Canon front-taxonomy class — see the `front-taxonomy` frontmatter in
+// apps/lore/content/Maps.md (the cross-game map registry).
+export type Front = "holdout" | "lane" | "breach" | "orbital";
+
 export interface LevelData {
   name: string; // canon location name (e.g. 'The Rothulk')
   loreId: string; // cross-game map registry id (e.g. 'cinder')
-  front: "hulk"; // which war-front this level belongs to
+  front: Front; // canon war-front class this level belongs to (Maps.md)
   width: number; // total level length in world-units
   spawn: { x: number; y: number }; // hero entry point (also the escape exit)
   platforms: Platform[];

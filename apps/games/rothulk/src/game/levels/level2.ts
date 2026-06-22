@@ -182,7 +182,7 @@ export function buildLevel2(): LevelData {
   return {
     name: "The Maw Spire",
     loreId: "cinder",
-    front: "hulk",
+    front: "breach", // Cinder Flats is a breach front (apps/lore/content/Maps.md)
     width: 126,
     spawn: { x: CONSTANTS.HERO_SPAWN_X, y: CONSTANTS.HERO_SPAWN_Y },
     platforms,

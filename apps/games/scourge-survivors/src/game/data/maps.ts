@@ -138,7 +138,7 @@ export interface ArenaEnvironment {
 export interface ArenaMap {
   id: string;
   loreId: string; // canonical lore note id (see apps/lore/content/Locations + apps/lore/content/Maps.md)
-  front: "holdout" | "lane" | "breach" | "orbital" | "hulk"; // war-front classification
+  front: "holdout" | "lane" | "breach" | "orbital"; // canon war-front class (apps/lore/content/Maps.md)
   name: string;
   subtitle: string;
   icon: PixelIconId;

@@ -1,4 +1,5 @@
 import { ARENA_RULES } from "../game/arena";
+import { MAP } from "../game/constants";
 import { FIGHTERS, type FighterId } from "../game/roster";
 import type { GameMode } from "../game/types";
 
@@ -39,6 +40,10 @@ export function SelectPanel({
           {arena
             ? `${selectedFaction} leads a ${arenaSlots}-fighter free-for-all. Last one standing — or most stocks when the clock runs out — wins.`
             : `${selectedFaction} selected. Rival assignment locks when the bell hits.`}
+        </p>
+        {/* Canon place this fight happens in — see apps/lore/content/Maps.md. */}
+        <p className="arena-canon">
+          <span className="arena-canon__label">Arena</span> {MAP.name} · The Hollow Lanes
         </p>
       </div>
 

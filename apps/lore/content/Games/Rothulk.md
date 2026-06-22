@@ -25,11 +25,13 @@ cure is fire.* (See [[Premise]], [[Timeline|The Descent]].)
 **Warline operation — Breach Sabotage:** A Pyre saboteur climbs a beached breach-hulk to ignite its core and sever the local node — one sabotaged nest goes feral and blind on the board.
 
 ## The hook — platform up a living nest
-The bio-hulk is the level *and* the enemy. You ascend chambers of pulsing host-flesh, ride
-spore-geysers, ride and crush living platforms, and route around the Choir's sight by staying
-**outside its massed clusters** — because while the breach-core is lit and connected, the
-whole hulk knows where you are ([[CANON]] §5). Reach the core, **ignite it**, then platform
-back out ahead of the collapse as the severed node turns feral around you.
+The bio-hulk is the level *and* the enemy: a beached [[Cosmology|breach-ship]] grown into the
+ground, all grafted host-flesh and dead-world machinery laid out as a vertical platforming
+course. You ascend chambers of pulsing flesh, ride spore-geysers, ride and crush living
+platforms, and route around the Choir's sight by staying **outside its massed clusters** —
+because while the **breach-core** is lit and connected, the whole hulk knows where you are
+([[CANON]] §5). Reach the core, **ignite it**, then platform back out ahead of the collapse as
+the severed node turns feral around you.
 
 ## Core Loop
 Tight, readable single-saboteur platforming on the shared [[Survivors-Loop]] frame:
@@ -38,6 +40,22 @@ collect salvage/XP → draft movement and sabotage-charge upgrades → reach and
 **breach-core** → escape the collapsing, now-severed hulk (or get caught in the spawn). Each
 hulk is a self-contained nest-vertical; lighting the core **fragments the Choir locally** and
 hands the cleared lane back to the war.
+
+## The sabotage — ignite, collapse, escape
+The level objective is the [[CANON]] §6 win condition broken into three beats, and the game's
+HUD, briefing, and the [[Warline]] front all read them the same way:
+
+1. **Ignite** — climb to the breach-core (the repeater-heart wiring this nest into the Choir)
+   and set it alight. While it burns *and* stays connected, the hulk still sees you ([[CANON]] §5).
+2. **Collapse** — the lit core eats the hulk and burns out its link to the Choir, **severing
+   the local node** so it can no longer call the swarm ([[CANON]] §6).
+3. **Escape** — outrun the collapse. The severed nest goes **feral — blind, dumb, instinct-only**,
+   and the lane is handed back to the war.
+
+On the shared front, one playable climb is one **Breach Sabotage** operation: a completed run
+files its dispatch to [[Warline]] — *one sabotaged nest goes feral and blind on the board* —
+the same Choir isolation the [[The-Wardens|Wardens]] win by holding the line ([[Deadlane]]),
+reached here from the inside.
 
 ## Enemy shape
 A breach turned into a tower: walls of grafted host-flesh, [[Graft-Breacher]] growths that
