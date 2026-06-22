@@ -26,6 +26,12 @@ One war, one map, many games shooting at it from different angles. A place is th
 | [[Cinder-Flats]] | `cinder` | breach | Scourge | Cinder Lane (The Cinder Breach) | `cinder` | [[Rothulk]] 'The Rothulk' (bio-hulk climb level) |
 | [[Perdition]] | `perdition` | breach | Scourge | Choir Lane (The Choir Node) | `perdition` | [[Scourge-Survivors]] 'Perdition' stage 4 (final descent) |
 
+> [!note] Not every Location is a registry row. This table lists the **live** cross-game
+> fronts the [[War-for-the-Lanes]] meta-map moves. Fallen, pre-schism sites that exist only in
+> memory — [[The-Lantern]] and [[Cradle-Field]], the orbital and ground losses of [[Zero-Day]] —
+> are **dead, held by no one, and carry no warline region**, so they stay authored Location
+> notes rather than registry rows. They appear only inside [[Starblight]]'s Zero Day memory run.
+
 ## How games wire to canon
 
 Each game's map data carries **`loreId`** (the canon `id` above) plus **`front`**, and opens with a header comment pointing back here. That's the whole contract: an in-game map says *which canon place it is*, and everything else — the [[War-for-the-Lanes]] front it moves, the authored note that voices it — hangs off the id.

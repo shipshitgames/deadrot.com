@@ -6,7 +6,7 @@ status: canon
 ---
 # The Dead-Air Liturgy
 
-**At a glance:** [[The-Pact|Pact]] field drill - the call-and-response checklist crews run after a [[Tuning-Fork]] finds the Choir, a [[Blackout-Nail]] cuts it, and a [[Dead-Air-Beacon]] holds the wound - keeps humans from gifting the [[CANON|Choir]] a fresh physical carrier - not a prayer, jammer, or Listener rite - appears in [[Deadlane]] / [[Redline]] / [[Scourge-Survivors]].
+**At a glance:** [[The-Pact|Pact]] field drill · the call-and-response checklist crews run after a [[Tuning-Fork]] finds the Choir, a [[Blackout-Nail]] cuts it, and a [[Dead-Air-Beacon]] holds the wound · keeps humans from gifting the [[CANON|Choir]] a fresh physical carrier · not a prayer, jammer, or Listener rite · appears in [[Deadlane]] / [[Redline]] / [[Scourge-Survivors]].
 
 The Dead-Air Liturgy is the only prayer the [[The-Wardens|Wardens]] allow on the wall.
 

@@ -6,7 +6,7 @@ status: canon
 ---
 # The Brace Ledger
 
-**At a glance:** [[The-Wardens|Warden]] field practice - a wall crew's live hold sheet, reserve count, break threshold, and [[The-Pact|Pact]] gate promise in one object - turns "hold the line" into measured [[CANON|Choir]] isolation instead of stubborn last stands - appears in [[Deadlane]] / [[War-for-the-Lanes]] / [[Scourge-Survivors]].
+**At a glance:** [[The-Wardens|Warden]] field practice · a wall crew's live hold sheet, reserve count, break threshold, and [[The-Pact|Pact]] gate promise in one object · turns "hold the line" into measured [[CANON|Choir]] isolation instead of stubborn last stands · appears in [[Deadlane]] / [[War-for-the-Lanes]] / [[Scourge-Survivors]].
 
 The Wardens do not ask whether a wall can hold.
 
