@@ -307,10 +307,12 @@ jobs:
               ;;
           esac
       # Co-located deploy: ship ONLY deadrot's compose + deploy script (never the
-      # api.shipshit.dev toolkit), then bring up the deadrot-api container.
-      # deploy-deadrot.sh hydrates deadrot's OWN env from the
-      # /shipshit/production/deadrot SSM subtree (in AWS_REGION, default us-east-1)
-      # -> the deadrot-api RDS; it does NOT reuse the host's shared .env.production.
+      # api.shipshit.dev toolkit), then bring up the `deadrot-api` container on the
+      # shared `shipshit` docker network — the host's Caddy proxies api.deadrot.com
+      # -> deadrot-api:3004 by name. deploy-deadrot.sh hydrates deadrot's OWN env
+      # from the /shipshit/production/deadrot SSM subtree (in AWS_REGION, default
+      # us-east-1) -> the deadrot-api RDS; it does NOT reuse the host's shared
+      # .env.production.
       - name: Deploy deadrot-api (co-located on api.shipshit.dev, us-west-1)
         env:
           HOST_IP: ${{ vars.TAILSCALE_INSTANCE_API_IP }}
@@ -318,6 +320,8 @@ jobs:
         run: |
           set -euo pipefail
           ssh_opts="-o StrictHostKeyChecking=accept-new"
+          # shellcheck disable=SC2086
+          ssh $ssh_opts "ec2-user@${HOST_IP}" "mkdir -p ~/cloud/docker"
           # shellcheck disable=SC2086
           scp $ssh_opts \
             apps/api/deploy/docker-compose.deadrot.yml \

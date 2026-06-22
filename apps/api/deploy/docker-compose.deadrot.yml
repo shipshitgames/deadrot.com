@@ -1,17 +1,25 @@
 # deadrot-api, co-located on the us-west-1 EC2 host that serves api.deadrot.com
-# (52.8.153.188 / i-00e74422e719396c3) ALONGSIDE api.shipshit.dev. This is a
-# SEPARATE compose project (name: api-deadrot-com) and container so it never
-# touches the api.shipshit.dev service. Image is built+pushed from the deadrot.com
-# repo to ghcr; the host pulls it. DATABASE_URL (deadrot-api RDS) comes from
-# deadrot's OWN env file, rendered by deploy-deadrot.sh from the
+# (52.8.153.188 / i-00e74422e719396c3) ALONGSIDE api.shipshit.dev. Separate compose
+# project + container so it never touches the api.shipshit.dev service.
+#
+# Topology (mirrors api.shipshit.dev's docker-compose.production.yml): the
+# container joins the host's shared external `shipshit` docker network, and the
+# host's Caddy reverse proxy routes `api.deadrot.com -> deadrot-api:3004` BY
+# CONTAINER NAME over that network — so `container_name: deadrot-api` is
+# load-bearing and must not change. A localhost port is also published purely so
+# the host-side deploy health check can curl 127.0.0.1:3004.
+#
+# Image is built+pushed from the deadrot.com repo to ghcr (cutting over from the
+# legacy ECR bootstrap image the box ran before). DATABASE_URL (deadrot-api RDS)
+# comes from deadrot's OWN env file, rendered by deploy-deadrot.sh from the
 # /shipshit/production/deadrot SSM subtree (us-east-1) — NOT the host's shared
-# ../.env.production (whose DATABASE_URL is the api-shipshit-dev RDS). Everything
-# else is deadrot-specific and set here.
-name: api-deadrot-com
+# ../.env.production (whose DATABASE_URL is the api-shipshit-dev RDS).
+name: deadrot-api
 
 services:
-  api-deadrot-com:
-    image: ghcr.io/shipshitgames/deadrot.com/api:${IMAGE_TAG:-latest}
+  deadrot-api:
+    # Overridable so deploy-deadrot.sh can pin a previous tag for rollback.
+    image: ${DEADROT_IMAGE:-ghcr.io/shipshitgames/deadrot.com/api:${IMAGE_TAG:-latest}}
     container_name: deadrot-api
     restart: unless-stopped
     security_opt:
@@ -19,12 +27,14 @@ services:
     cap_drop:
       - ALL
     networks:
-      # Caddy proxies api.deadrot.com -> deadrot-api:3004 by container name over
-      # this shared host network, so container_name above is load-bearing.
+      # Shared external bridge (carries api.shipshit.dev + Caddy too). Created on
+      # the host by deploy-deadrot.sh if missing. Caddy reaches deadrot-api:3004
+      # over this network by name.
       - shipshit
     ports:
-      # Localhost publish kept for the deploy health check (curls localhost:3004).
-      # Caddy reaches this container over the `shipshit` network, not this port.
+      # localhost-only: lets the host-side deploy health check curl localhost:3004.
+      # Public traffic arrives via Caddy over the `shipshit` network, not this port.
+      # 3004 so it never collides with api.shipshit.dev on 3003.
       - "127.0.0.1:3004:3004"
     env_file:
       # Deadrot's OWN env, rendered by deploy-deadrot.sh from the
@@ -37,7 +47,7 @@ services:
       - .env.deadrot.production
     environment:
       # Pinned operational config; overrides any same-named env_file key above.
-      # HOST/PORT MUST stay 0.0.0.0/3004 to match the published port + healthcheck.
+      # HOST/PORT MUST stay 0.0.0.0/3004 to match the Caddy upstream + healthcheck.
       - NODE_ENV=production
       - HOST=0.0.0.0
       - PORT=3004
@@ -55,7 +65,9 @@ services:
       start_period: 10s
       retries: 3
 
-# Shared external bridge created on the host (carries api.shipshit.dev + Caddy).
+# Shared external bridge created on the host (carries api.shipshit.dev + Caddy
+# too). deploy-deadrot.sh creates it if missing; declared external so this compose
+# never owns/destroys it.
 networks:
   shipshit:
     external: true
