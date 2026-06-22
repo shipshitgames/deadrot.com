@@ -41,6 +41,18 @@
     "boss": null
   },
   {
+    "slug": "cradle-field",
+    "name": "Cradle Field",
+    "kind": "landmark",
+    "control": "dead",
+    "accent": "bone",
+    "tagline": "A cradle is for lifting something clear of the ground. Most of it never left.",
+    "overview": "The great civilian launch field of the old world, and the evacuation that was supposed to happen there: every lift-cradle and boost-rail humanity owned, pointed at a sky that was already coming down. When the Skywatch broke, Cradle Field ran its launches into a ceiling of descending breach-matter — a few cleared it, most burned back, and the rest never lit at all. The apron is a graveyard of cold boosters and boarding lines that never moved, rooted now with the first nests that fell on top of them. The night humanity lost the sky, this is the ground it was lost from.",
+    "warRole": "The evacuation that mostly didn't — a dead launch apron held by no one, the first ground the breaches rooted, and the wound every Resistance holdout is built never to repeat.",
+    "appearsIn": ["starblight"],
+    "boss": null
+  },
+  {
     "slug": "holdout-nine",
     "name": "Holdout Nine",
     "kind": "holdout",
@@ -120,6 +132,18 @@
     "overview": "A drowned river-delta holdout across the Hollow Lanes from Ashgate — a thousand stilt-shacks and boat-runs scattered over flooded fen, no two lights ever lit close enough together to read as one place. There is no wall; the discipline is the wall: no broadcasts, no massed signal, nothing dense enough for a Choir repeater to root in, so the Scourge that crosses the water arrives severed and feral. Both factions shelter their dependents here under the Pact — it is the thing the wall at Ashgate is for.",
     "warRole": "Isolation chosen and kept — the civilian reservoir that survives by giving the Choir nothing to hear and nowhere to stand.",
     "appearsIn": ["redline"],
+    "boss": null
+  },
+  {
+    "slug": "the-lantern",
+    "name": "The Lantern",
+    "kind": "orbital",
+    "control": "dead",
+    "accent": "bone",
+    "tagline": "We named it for the light. We keep it for the dark.",
+    "overview": "The old world's orbital defense crown — the command ring of the Skywatch, humanity's one fleet to meet the Scourge in the open sky. On Zero-Day it was the brightest thing above the world and then the first thing to go out; the void-fall came down through the gap its dark left. No one ever retook it whole. The survivors cut one battered segment loose, re-crewed it, and strung the Skyhook from its bones — so the line humanity still holds in orbit is a splice of the ring it lost first.",
+    "warRole": "The sky humanity actually lost — a dead ring held by no one since the night it went dark, the wreck the Skyhook was salvaged from, and the reason the orbital line is fought at all.",
+    "appearsIn": ["starblight"],
     "boss": null
   },
   {
