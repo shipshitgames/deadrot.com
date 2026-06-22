@@ -101,6 +101,8 @@ export const creatureGames = (b: Creature) => resolve(b.appearsIn, getGame);
 
 const SPRITE_BASE_PATHS: Record<string, string> = {
   boss: "/games/scourge-survivors/enemies/scourge/breach-boss/front.webp",
+  "enemy-flying": "/games/scourge-survivors/enemies/scourge/winged-host/front.webp",
+  "enemy-hound": "/games/scourge-survivors/enemies/scourge/wound-hound/front.webp",
   "enemy-melee": "/games/scourge-survivors/enemies/scourge/host-grunt/front.webp",
   "enemy-ranged": "/games/scourge-survivors/enemies/scourge/spitter-host/front.webp",
   "player-heavy-front": "/games/scourge-survivors/players/pyre/bulwark/front.webp",
