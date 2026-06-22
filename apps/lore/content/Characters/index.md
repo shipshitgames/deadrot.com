@@ -44,6 +44,7 @@ Redline runners carrying orders through broken lanes.
 
 ## Listeners
 
-Founding practitioner of the heresy; keeper of the Quiet Room protocol.
+Heretics and Fork practitioners. Hunted by both factions; protected by neither.
 
 - [[Tell]]
+- [[Toll]]

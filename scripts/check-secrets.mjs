@@ -4,6 +4,7 @@ import { readFileSync, realpathSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const scanHistory = process.argv.includes("--history");
+const scanStaged = process.argv.includes("--staged");
 const maxBytes = 5 * 1024 * 1024;
 
 export const patterns = [
@@ -98,6 +99,31 @@ function scanWorkingTree() {
   return [...files].flatMap(scanFile);
 }
 
+// Pre-commit mode: scan only the content staged for commit (the `:<file>` index
+// blob), so the hook is fast and blocks exactly what is about to be committed.
+function scanStagedFiles() {
+  const files = nulList(["diff", "--cached", "--name-only", "--diff-filter=ACM", "-z"]);
+  const findings = [];
+
+  for (const file of files) {
+    let buffer;
+    try {
+      buffer = gitBuffer(["show", `:${file}`]);
+    } catch {
+      continue;
+    }
+    if (buffer.length > maxBytes || buffer.includes(0)) continue;
+
+    const lines = buffer.toString("utf8").split(/\r?\n/);
+    for (let index = 0; index < lines.length; index += 1) {
+      const match = matchingPattern(lines[index]);
+      if (match) findings.push({ file, line: index + 1, match });
+    }
+  }
+
+  return findings;
+}
+
 function scanGitHistory() {
   const commits = git(["rev-list", "--all"]).trim().split("\n").filter(Boolean);
   const findings = [];
@@ -161,7 +187,7 @@ function isDirectRun() {
 }
 
 if (isDirectRun()) {
-  const findings = [...scanWorkingTree(), ...(scanHistory ? scanGitHistory() : [])];
+  const findings = scanStaged ? scanStagedFiles() : [...scanWorkingTree(), ...(scanHistory ? scanGitHistory() : [])];
 
   if (findings.length > 0) {
     console.error("Potential secrets found. Values are intentionally not printed.");
@@ -172,5 +198,6 @@ if (isDirectRun()) {
     process.exit(1);
   }
 
-  console.log(`Secret scan passed (${scanHistory ? "working tree + history" : "working tree"}).`);
+  const mode = scanStaged ? "staged changes" : scanHistory ? "working tree + history" : "working tree";
+  console.log(`Secret scan passed (${mode}).`);
 }
