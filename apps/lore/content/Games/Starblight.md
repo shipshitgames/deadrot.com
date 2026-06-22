@@ -58,6 +58,13 @@ the later comfort of Pyre/Warden doctrine. The player is pre-schism humanity on 
 The mode can pay out lore, unlocks, or training value, but canonically the battle always ends in
 loss. That loss is the reason the Skyhook exists.
 
+**Locked (#141):** the format is a fixed, doomed **memory run** — replayable as a challenge /
+flashback modifier, scored by minutes bought and evac lifted, never won. You fly the
+**Skywatch**'s last stand over **[[The-Lantern|the Lantern]]**, the command ring that goes dark
+on cue, covering the evacuation off **[[Cradle-Field]]** below. The [[The-Skyhook|Skyhook]] this
+game otherwise defends is a splice of the Lantern's wreck — Zero Day is the night it was lost.
+See [[Zero-Day]] for the canon lock.
+
 ## Factions
 
 Both [[The-Pyre]] and [[The-Wardens]] can appear here:
