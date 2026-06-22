@@ -53,6 +53,7 @@ Start here, follow the links, open the graph view.
 - [[Design/Bestiary/Graft-Breacher-DESIGN|Graft Breacher Design Lock]]
 - [[Design/Bestiary/Orbital-Breach-Carrier-DESIGN|Orbital Breach Carrier Design Lock]]
 - [[Design/Bestiary/Scourge-Fighter-DESIGN|Scourge Fighter Design Lock]]
+- [[Design/Bestiary/Trucebreaker-DESIGN|Trucebreaker Design Lock]] _(candidate-review)_
 - [[Design/Locations/Ashgate-DESIGN|Ashgate Design Lock]]
 - [[Design/Locations/The-Hollow-Lanes-DESIGN|The Hollow Lanes Design Lock]]
 
