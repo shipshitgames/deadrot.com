@@ -61,6 +61,50 @@
     "spriteBase": "enemy-ranged"
   },
   {
+    "slug": "wound-hound",
+    "name": "Wound-Hound",
+    "tier": "swarm",
+    "tagline": "It doesn't make the Scourge smarter. It makes dumb hunger point your way.",
+    "accent": "toxic",
+    "overview": "A low Chitin Warhost tracker grown around every crude animal answer to \"where is the food\" — heat pits, blood taste, breath pressure, footfall, the salt stink of panic. It carries no Choir node, so killing it never severs a pack; it just finds you by scent and sound and barks the blind, feral bodies your way. A nose doesn't need a general.",
+    "gameplayRead": [
+      "Low-priority tracker — not the thing killing you first, the thing that makes the swarm behind it find you again.",
+      "Stays low behind Rippers, darts in to spit a toxic-green musk mark, then backs out; fragile alone.",
+      "Counter is denial, not burst: break the trail with fire, steam, ash, or a quick kill on the snout-crown before the bark lands.",
+      "Telegraph: head low, rib-snout fanning open, throat sacs fluttering before a tearing bark."
+    ],
+    "visualMotifs": [
+      "Long split rib-snout instead of a face — no eyes, only a sensory organ in the skull",
+      "Heat pits and wet scent membranes flaring toxic-green when it marks",
+      "Black chitin over stolen bone with rupture seams around the nose",
+      "Trailing whisker-tendrils dragging through ash to taste a route"
+    ],
+    "appearsIn": ["scourge-survivors", "deadlane", "redline"],
+    "spriteBase": "enemy-hound"
+  },
+  {
+    "slug": "quaver",
+    "name": "Quaver",
+    "tier": "swarm",
+    "tagline": "A grunt the Choir grew wings and a resonator onto, and spends like ammunition.",
+    "accent": "toxic",
+    "overview": "The airborne, mobile relay class: a gaunt Rot-Infested Flesh host given grown flight membranes and a hollowed ribcage re-strung into a sounding-box. It isn't an elite — it hovers out of melee reach, spits toxic-green signal-bolts, and keeps a local pocket of swarm coordinated where no rooted node stands. Kill it and that pocket drops feral; the Scourge simply lofts another.",
+    "gameplayRead": [
+      "Soft-priority target — drop it and the nearby swarm goes briefly feral: tracking loosens, flanking sags.",
+      "Lofted once a front matures; you won't see it in the opening push.",
+      "Hovers out of melee reach, screened by the horde below — it taxes your ranged answer and aim-up.",
+      "Telegraph: a green throat-flare before each spit, and the bob steadies for half a beat as it sounds."
+    ],
+    "visualMotifs": [
+      "Gaunt blood-and-rust flesh-host grammar, same as the swarm below",
+      "Broad, ribbed, leathery flight membranes over parasite cartilage",
+      "Own ribcage hollowed and re-strung into an open sounding-box",
+      "Toxic-green signal-bolts spat from the throat"
+    ],
+    "appearsIn": ["scourge-survivors", "deadlane"],
+    "spriteBase": "enemy-flying"
+  },
+  {
     "slug": "render",
     "name": "Render",
     "tier": "elite",

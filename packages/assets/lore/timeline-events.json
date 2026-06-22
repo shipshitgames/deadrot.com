@@ -4,9 +4,9 @@
     "era": "Zero Day — the Invasion",
     "order": 1,
     "title": "The Night We Lost the Sky",
-    "blurb": "First contact with the Scourge out of the void is a space battle, and humanity loses it — not ready, too many. The orbital and sky defense collapses over a world that does not yet know it is already falling. The orbital relays the Skyhook still hunts were seeded in this sky.",
+    "blurb": "First contact with the Scourge out of the void is a space battle, and humanity loses it — not ready, too many. The Skywatch, the old world's one orbital fleet, burns over the Lantern, its command ring, until the ring goes dark and the void-fall comes down through the gap its dark leaves. The orbital relays the Skyhook still hunts were seeded in this sky; the Skyhook itself is the one battered segment of the Lantern anyone ever got back.",
     "tags": ["origin", "battle"],
-    "locationSlugs": ["the-skyhook"],
+    "locationSlugs": ["the-lantern", "the-skyhook"],
     "factionSlugs": ["scourge"]
   },
   {
@@ -14,9 +14,9 @@
     "era": "Zero Day — the Invasion",
     "order": 2,
     "title": "Landfall",
-    "blurb": "The Scourge makes landfall and the world falls. The first breaches root groundside — physical, entrenched nests punched in from the void that never stop vomiting horde.",
+    "blurb": "The Scourge makes landfall and the world falls. At Cradle Field the evacuation runs its launches straight up into descending breach-matter — a few lift clear, most burn back — while the first breaches root groundside among the cold boosters: physical, entrenched nests punched in from the void that never stop vomiting horde.",
     "tags": ["origin", "battle"],
-    "locationSlugs": [],
+    "locationSlugs": ["cradle-field"],
     "factionSlugs": ["scourge"]
   },
   {
