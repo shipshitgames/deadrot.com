@@ -11,15 +11,69 @@ export function clamp(n: number, lo: number, hi: number): number {
 }
 
 // Source-of-truth map tables (spec §3). Cloned fresh by createInitialWorld.
+// Region `id`s are the canon loreIds and `front`s the canon front-taxonomy class
+// from apps/lore/content/Maps.md (the cross-game map registry) — this meta-map is
+// the live join: edit a place in Maps.md first, the games inherit it.
 const REGION_SEED: Region[] = [
-  { id: "spire", name: "The Spire", faction: "wardens", pressure: 8, defense: 60, x: 14, y: 20, revealed: true },
-  { id: "ashgate", name: "Ashgate", faction: "wardens", pressure: 14, defense: 50, x: 22, y: 48, revealed: true },
-  { id: "pyregate", name: "The Pyre Gate", faction: "pyre", pressure: 10, defense: 45, x: 12, y: 76, revealed: true },
-  { id: "ashreach", name: "Ash Reach", faction: "pyre", pressure: 18, defense: 35, x: 30, y: 78, revealed: true },
-  { id: "rustmarch", name: "Rustmarch", faction: "neutral", pressure: 38, defense: 18, x: 44, y: 32, revealed: true },
+  {
+    id: "spire",
+    name: "The Spire",
+    front: "holdout",
+    faction: "wardens",
+    pressure: 8,
+    defense: 60,
+    x: 14,
+    y: 20,
+    revealed: true,
+  },
+  {
+    id: "ashgate",
+    name: "Ashgate",
+    front: "holdout",
+    faction: "wardens",
+    pressure: 14,
+    defense: 50,
+    x: 22,
+    y: 48,
+    revealed: true,
+  },
+  {
+    id: "pyregate",
+    name: "The Pyre Gate",
+    front: "holdout",
+    faction: "pyre",
+    pressure: 10,
+    defense: 45,
+    x: 12,
+    y: 76,
+    revealed: true,
+  },
+  {
+    id: "ashreach",
+    name: "Ash Reach",
+    front: "holdout",
+    faction: "pyre",
+    pressure: 18,
+    defense: 35,
+    x: 30,
+    y: 78,
+    revealed: true,
+  },
+  {
+    id: "rustmarch",
+    name: "Rustmarch",
+    front: "lane",
+    faction: "neutral",
+    pressure: 38,
+    defense: 18,
+    x: 44,
+    y: 32,
+    revealed: true,
+  },
   {
     id: "hollowlanes",
     name: "The Hollow Lanes",
+    front: "lane",
     faction: "neutral",
     pressure: 46,
     defense: 14,
@@ -30,6 +84,7 @@ const REGION_SEED: Region[] = [
   {
     id: "skyhook",
     name: "The Skyhook (Orbital Ring)",
+    front: "orbital",
     faction: "neutral",
     pressure: 30,
     defense: 20,
@@ -40,6 +95,7 @@ const REGION_SEED: Region[] = [
   {
     id: "maw",
     name: "The Maw",
+    front: "breach",
     faction: "scourge",
     pressure: 92,
     defense: 0,
@@ -51,6 +107,7 @@ const REGION_SEED: Region[] = [
   {
     id: "cinder",
     name: "Cinder Flats",
+    front: "breach",
     faction: "scourge",
     pressure: 84,
     defense: 0,
@@ -62,6 +119,7 @@ const REGION_SEED: Region[] = [
   {
     id: "perdition",
     name: "Perdition",
+    front: "breach",
     faction: "scourge",
     pressure: 96,
     defense: 0,

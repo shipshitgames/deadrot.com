@@ -6,7 +6,7 @@ status: draft
 ---
 # Trucebreaker
 
-**At a glance:** [[Scourge]] neutral objective boss · spawns center and pressures both teams equally · toxic-green core monster big enough to force a human truce · appears in [[Pactfall]].
+**At a glance:** [[Scourge]] neutral objective boss · spawns center and pressures both teams equally · toxic-green core monster big enough to force a human truce · appears in [[Pactfall]], [[Brawl]].
 
 Neutral Scourge arena threat in [[Pactfall]] that can force Pyre and Wardens to stop fighting each other.
 
@@ -47,3 +47,4 @@ chitin and raw tissue, objective monster, gritty blood-arena, no neon.
 
 ## Appears In
 - [[Pactfall]]
+- [[Brawl]]

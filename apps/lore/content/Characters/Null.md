@@ -5,11 +5,11 @@ status: canon
 ---
 # Null
 
+**At a glance:** former [[The-Wardens|Warden]] Fork operator · heard the [[CANON|Choir]] too clearly and did not burn out but turned inward · built the first [[The-Quiet-Rooms|Quiet Room]] and established the pulse-timing discipline that became the [[The-Listeners]] heresy · hunted by both factions, the name given to them by people who had never seen them · appears in [[War-for-the-Lanes]] as a story hook and absent force.
+
 The Fork went loud on the fourth night of the [[The-Hollow-Lanes|lane]] siege, and it stayed loud. Not loud the way a [[Chorister]] spikes the tines when you're close enough to count its throat-sacs. Loud the way a name sounds when someone says it right at the edge of hearing and you can't tell if they spoke or if you just thought it. The Warden rotation schedule said the operator on that Fork was relieved at midnight. Nobody wrote down whether that operator left.
 
 What the crew found in the morning was an empty position and a Fork still running, tines vibrating against no hand. Scratched into the plating beside the seat was a series of pulse timings so precise the [[The-Wardens|Wardens]] used them for three months before anyone asked where they came from.
-
-**At a glance:** former [[The-Wardens|Warden]] Fork operator · heard the [[CANON|Choir]] too clearly and did not burn out but turned inward · built the first [[The-Quiet-Rooms|Quiet Room]] and established the pulse-timing discipline that became the [[The-Listeners]] heresy · hunted by both factions, the name given to them by people who had never seen them · appears in [[War-for-the-Lanes]] as a story hook and absent force.
 
 The name is not a name. The [[The-Pyre|Pyre]] started using "Null" the way they mark a run with no verified outcome: something went in, nothing confirmed came out. The [[The-Wardens|Wardens]] wrote the notation in deployment logs for the Fork position that kept producing data from no authorized operator. Eventually the data had to be named, and the name was already there. Nobody who calls them Null has ever met them in person. The ones who claim otherwise are lying or wrong or have confused want with fact.
 

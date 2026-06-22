@@ -31,7 +31,8 @@ describe("Rothulk level list", () => {
       const level = buildLevelAt(i);
 
       expect(level.width).toBeGreaterThan(0);
-      expect(level.front).toBe("hulk");
+      // Cinder Flats is a breach front (apps/lore/content/Maps.md) — #140 cohesion.
+      expect(level.front).toBe("breach");
       expect(level.name.length).toBeGreaterThan(0);
       expect(level.platforms.some((p) => p.kind === "slab")).toBe(true);
 

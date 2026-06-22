@@ -24,6 +24,9 @@ Start here, follow the links, open the graph view.
 - [[Design/Characters/Character-Art-Masters|Character Art Masters]] — attached master/reference images and lock status for playable/faction characters _(active)_
 - [[Art/Comic-Style-Exploration-v01|Comic Style Exploration v01]] — XIII-informed comic/cel-shaded game art and UI exploration _(active)_
 - [[Art/Combat-Wallpapers-v05|Combat Wallpapers v05]] — gritty realistic combat wallpaper rule; keep warzone grit, reject speckled Scourge glow _(active)_
+- [[Art/Combat-Wallpapers-v04|Combat Wallpapers v04]] — previous active pass; superseded by v05 _(superseded)_
+- [[Art/Combat-Wallpapers-v03|Combat Wallpapers v03]] — earlier pass; superseded by v04 _(superseded)_
+- [[Art/Combat-Wallpapers-v02|Combat Wallpapers v02]] — initial pass; superseded by v03 _(superseded)_
 - [[Character-Sprite-Direction]] — faction language + sprite production rules _(superseded — see [[Style-Bible]])_
 - [[Character-Prompt-Library]] — reusable generation prompts _(superseded — see [[Style-Bible]])_
 - [[Variation-Matrix]] — batch planning + selection criteria _(draft)_
@@ -61,7 +64,9 @@ Start here, follow the links, open the graph view.
 - [[The-Wardens]] — defense; hold the line → Deadlane
 - [[The-Listeners]] — heresy; understand the Choir _(concept)_
 - [[Null]] — the first Listener; Warden Fork operator who heard the Choir too clearly and started the heresy _(character)_
+- [[Tell]] — founding Listener; named the Interval; made the eleven-day record the [[The-Quiet-Rooms|Quiet Rooms]] still run on
 - [[The-Quiet-Rooms]] — Listener black-room practice; keep severed Choir nodes alive to study
+- [[Tine]] — Listener founding practitioner; former Warden signals officer; named the practice _the Audit_
 - [[Kel-Maren]] — Listener founder; named the Wake, held the first Quiet Room, field alias only _(concept)_
 - [[The-Dead-Air-Liturgy]] — Pact dead-air drill; clear carriers after the cut
 - [[The-Brace-Ledger]] — Warden wall sheet; hold target, reserve threshold, and Pact gate promise
@@ -71,6 +76,7 @@ Start here, follow the links, open the graph view.
 ## Canon Anchors
 
 - [[Zero-Day]] — _the night we lost the sky_ (first-contact last stand; now the [[Starblight]] prologue / memory mode)
+- [[The-Kerath]] — _the civilization the Chitin Warhost was_ (conquered world; first intelligible memory in the Choir; grounds [[CANON]] §2) _(draft)_
 
 ## Games (entries in the canon)
 
@@ -103,6 +109,10 @@ Start here, follow the links, open the graph view.
 - [[Blackout-Nail]] — sacrificial severance spike; physically cuts a repeater path after a Fork finds it
 - [[Tuning-Fork]] — passive Choir-listening rig; ranges repeaters so a node can be severed _(draft)_
 
+## Audits
+
+- [[Audits/LATEST|Latest Canon Consistency Audit]] — most recent automated canon audit report
+
 ## Compendium
 
-Characters · Locations ([[Ashgate]], [[The-Cinder-Wells]], [[The-Hush]], [[The-Spire]], [[The-Spire-Causeway]], [[The-Pyre-Gate]], [[Ash-Reach]], [[Rustmarch]], [[The-Hollow-Lanes]], [[The-Switchback]], [[Holdout-Nine|Holdout Nine]], [[The-Skyhook]], [[The-Lantern]], [[Cradle-Field]], [[The-Maw]], [[Cinder-Flats]] (incl. [[The-Rothulk]]), [[Perdition]]) · Bestiary · Tech — scaffold new entries from `Templates/`.
+Characters · Locations ([[Ashgate]], [[The-Cinder-Wells]], [[The-Hush]], [[The-Spire]], [[The-Spire-Causeway]], [[The-Pyre-Gate]], [[Ash-Reach]], [[Rustmarch]], [[The-Hollow-Lanes]], [[The-Switchback]], [[Holdout-Nine|Holdout Nine]], [[The-Skyhook]], [[The-Lantern]], [[Cradle-Field]], [[The-Maw]], [[Cinder-Flats]] (incl. [[The-Rothulk]]), [[Perdition]], [[The-Sunder]]) · Bestiary · Tech — scaffold new entries from `Templates/`.
