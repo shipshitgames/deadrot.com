@@ -80,7 +80,8 @@ groups and link back here.
 - **Breach-bosses & objective monsters:** [[Breach-Boss]], [[Trucebreaker]],
   [[Orbital-Breach-Carrier]].
 - **Orbital craft:** [[Scourge-Fighter]].
-- **Taxonomy & host families:** [[Scourge-Host-Families]].
+- **Taxonomy & host families:** [[Scourge-Host-Families]]; [[The-Kerath]] — the conquered
+  warrior-world worn forward as the Chitin Warhost.
 
 ## Across the games
 - [[Deadlane]] — the Scourge as **waves** the [[The-Wardens|Wardens]] funnel and grind down.
