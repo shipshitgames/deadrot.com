@@ -1,5 +1,25 @@
 // Shared Scourge enemy archetypes. These are deliberately data-first so both
 // structured runs and Survivors swarms can mix the same readable host variants.
+//
+// Canon lineage. The vault (apps/lore/content/Bestiary) is the source of truth;
+// `@shipshitgames/assets/lore` is its typed derivative. Every archetype here is
+// a SWARM-tier host (`loreTier: "swarm"`). The bestiary's canon ELITES (Render
+// in the typed lore; Cairn, Sower in the vault) are a separate pressure tier
+// (SCOURGE_THREAT_TIERS.elite), and the named 10:00 reaper is the breach-boss —
+// so swarm archetypes are NOT renamed onto elite faces. Names map to canon as:
+//   grunt     → Swarm Ripper   (bestiary "swarm-ripper", melee fodder)
+//   shooter   → Swarm Spitter  (bestiary "swarm-spitter", ranged form)
+//   hound     → Wound-Hound    (bestiary "wound-hound", Chitin Warhost tracker)
+//   flier     → Quaver         (bestiary "quaver", airborne Rot-flesh relay)
+//   charger   → Chitin Charger (Chitin Warhost family, like the elite Render;
+//                               kept swarm-tier — a descriptive name, no slug)
+//   tank      → Bone-Hulk Swarm(Bone Titan Host bulk, like the miniboss Cairn;
+//                               kept swarm-tier — a descriptive name, no slug)
+//   swarmling → Feral Swarmling(severed/feral fodder, CANON §6 — descriptive)
+//   splitter  → Brood Splitter (buds smaller broods on death — descriptive)
+// The four bestiary-exact names (Swarm Ripper, Swarm Spitter, Wound-Hound,
+// Quaver) plus the Breach-Boss label are pinned to the typed lore by
+// tests/unit/enemy-bestiary-canon.test.ts — keep them in sync with the vault.
 
 export type EnemyArchetypeId = "grunt" | "swarmling" | "hound" | "charger" | "shooter" | "flier" | "tank" | "splitter";
 export type ScourgeThreatTier = "swarm" | "elite" | "breachBoss";
@@ -136,7 +156,7 @@ export const ENEMY_ARCHETYPES: Record<EnemyArchetypeId, EnemyArchetypeDef> = {
   },
   flier: {
     id: "flier",
-    name: "Quaver Host",
+    name: "Quaver",
     loreTier: "swarm",
     speedMul: 1.18,
     hpMul: 0.82,

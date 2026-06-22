@@ -56,3 +56,26 @@ describe("publicCodexSections", () => {
     }
   });
 });
+
+describe("Zero Day fall sites in the public codex (#141)", () => {
+  const locationEntries = publicCodexSections.find((section) => section.kind === "location")?.entries ?? [];
+  const timelineEntries = publicCodexSections.find((section) => section.kind === "timeline")?.entries ?? [];
+
+  test("surfaces the named fall sites as location entries", () => {
+    const expectedTitles: Record<string, string> = {
+      "the-lantern": "The Lantern",
+      "cradle-field": "Cradle Field",
+    };
+    for (const [slug, title] of Object.entries(expectedTitles)) {
+      const found = locationEntries.find((entry) => entry.slug === slug);
+      expect(found, `codex is missing the Zero Day location "${slug}"`).toBeDefined();
+      expect(found?.title).toBe(title);
+      expect(found?.summary.trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  test("surfaces the Skywatch fleet in the Zero Day timeline copy", () => {
+    const skywatch = timelineEntries.filter((entry) => /Skywatch/.test(entry.summary));
+    expect(skywatch.length).toBeGreaterThan(0);
+  });
+});

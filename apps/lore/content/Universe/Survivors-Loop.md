@@ -4,6 +4,8 @@ type: design-principle
 ---
 # Survivors Loop
 
+**At a glance:** a design principle, not canon lore · the reusable Vampire-Survivors run loop — escalating pressure, forward-pulling drops, 1-of-3 upgrade drafts, stacking build synergies, and persistent meta-progression — shared as DNA across [[Scourge-Survivors]] / [[Deadlane]] / [[Pactfall]] / [[Starblight]] · the shape is shared; controls, camera, fantasy, and pacing stay per-game.
+
 The studio can reuse a Vampire-Survivors-style run structure across very different games
 without making the games feel identical.
 

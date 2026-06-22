@@ -1,5 +1,7 @@
 # Cosmology — the Rules of the World
 
+**At a glance:** the in-world rulebook for how the world works · the [[Scourge]] is a host-dependent parasite that punches in through physical **breach** nests and spreads along the **lanes** · its hive mind ([[CANON|the Choir]]) has a limited radius, so **isolation** — backed by **starvation**, denying it hosts — is how humanity fights at all · all load-bearing facts are locked in [[CANON]].
+
 > The load-bearing rules are **locked** in [[CANON]]. This page is the in-world telling.
 
 ## The Scourge's nature
