@@ -23,6 +23,7 @@ Start here, follow the links, open the graph view.
 - [[Art/Comic-Book-Master-Atlas-v01|Comic Book Master Atlas v01]] — exploratory comic-book master boards for missing lore illustration families _(exploratory)_
 - [[Design/Characters/Character-Art-Masters|Character Art Masters]] — attached master/reference images and lock status for playable/faction characters _(active)_
 - [[Art/Comic-Style-Exploration-v01|Comic Style Exploration v01]] — XIII-informed comic/cel-shaded game art and UI exploration _(active)_
+- [[Art/Combat-Wallpapers-v02|Combat Wallpapers v02]] — earlier iteration; see v05 for current direction _(archived)_
 - [[Art/Combat-Wallpapers-v05|Combat Wallpapers v05]] — gritty realistic combat wallpaper rule; keep warzone grit, reject speckled Scourge glow _(active)_
 - [[Character-Sprite-Direction]] — faction language + sprite production rules _(superseded — see [[Style-Bible]])_
 - [[Character-Prompt-Library]] — reusable generation prompts _(superseded — see [[Style-Bible]])_
@@ -102,4 +103,8 @@ Start here, follow the links, open the graph view.
 
 ## Compendium
 
-Characters · Locations ([[Ashgate]], [[The-Cinder-Wells]], [[The-Hush]], [[The-Spire]], [[The-Spire-Causeway]], [[The-Pyre-Gate]], [[Ash-Reach]], [[Rustmarch]], [[The-Hollow-Lanes]], [[The-Switchback]], [[Holdout-Nine|Holdout Nine]], [[The-Skyhook]], [[The-Maw]], [[Cinder-Flats]] (incl. [[The-Rothulk]]), [[Perdition]]) · Bestiary · Tech — scaffold new entries from `Templates/`.
+[[Characters/index|Characters]] · Locations ([[Ashgate]], [[The-Cinder-Wells]], [[The-Hush]], [[The-Spire]], [[The-Spire-Causeway]], [[The-Pyre-Gate]], [[Ash-Reach]], [[Rustmarch]], [[The-Hollow-Lanes]], [[The-Switchback]], [[Holdout-Nine|Holdout Nine]], [[The-Skyhook]], [[The-Maw]], [[Cinder-Flats]] (incl. [[The-Rothulk]]), [[Perdition]]) · [[Bestiary/index|Bestiary]] · Tech — scaffold new entries from `Templates/`.
+
+## Audits
+
+- [[Audits/LATEST|Latest Canon Audit]] — most recent consistency check and human-decision log
