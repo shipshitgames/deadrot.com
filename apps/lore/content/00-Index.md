@@ -54,6 +54,7 @@ Start here, follow the links, open the graph view.
 - [[Design/Bestiary/Graft-Breacher-DESIGN|Graft Breacher Design Lock]]
 - [[Design/Bestiary/Orbital-Breach-Carrier-DESIGN|Orbital Breach Carrier Design Lock]]
 - [[Design/Bestiary/Scourge-Fighter-DESIGN|Scourge Fighter Design Lock]]
+- [[Design/Bestiary/Trucebreaker-DESIGN|Trucebreaker Design Lock]] _(candidate-review)_
 - [[Design/Locations/Ashgate-DESIGN|Ashgate Design Lock]]
 - [[Design/Locations/The-Hollow-Lanes-DESIGN|The Hollow Lanes Design Lock]]
 
@@ -64,6 +65,7 @@ Start here, follow the links, open the graph view.
 - [[The-Pyre]] — offense; burn the source → Scourge Survivors
 - [[The-Wardens]] — defense; hold the line → Deadlane
 - [[The-Listeners]] — heresy; understand the Choir _(concept)_
+- [[Null]] — the first Listener; Warden Fork operator who heard the Choir too clearly and started the heresy _(character)_
 - [[Tell]] — founding Listener; named the Interval; made the eleven-day record the [[The-Quiet-Rooms|Quiet Rooms]] still run on
 - [[The-Quiet-Rooms]] — Listener black-room practice; keep severed Choir nodes alive to study
 - [[Tine]] — Listener founding practitioner; former Warden signals officer; named the practice _the Audit_
@@ -100,7 +102,7 @@ Start here, follow the links, open the graph view.
 - Rothulk: [[Pyre-Saboteur]]
 - Core Scourge: [[Swarm-Ripper]], [[Swarm-Spitter]], [[Wound-Hound]], [[Spore-Lung]], [[Render]], [[Rot-Engine]], [[Graft-Breacher]], [[Cairn]], [[Sower]], [[Gristle-Vat]], [[Chorister]], [[Cantor]], [[Descant]], [[Bourdon]], [[Aeolian]], [[Carillon]], [[Quaver]], [[Breach-Boss]]
 - Scourge support: [[Braid-Worm]]
-- Listeners: [[Toll]]
+- Listeners: [[Null]], [[Toll]]
 
 ## Tech
 
