@@ -56,7 +56,7 @@ Attach or link approved source images here before generating game assets.
 
 ## Validation Checklist
 
-- [ ] Matches [[Style-Bible]] medium-chunky pixel art.
+- [ ] Matches [[Style-Bible]] clean comic-book / cel-shaded ink.
 - [ ] Silhouette reads at game scale.
 - [ ] Palette follows [[DESIGN]] tokens.
 - [ ] No magenta/green chroma residue in approved runtime exports.
