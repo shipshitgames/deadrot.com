@@ -7,7 +7,7 @@ status: canon
 ---
 # Spore-Casket
 
-**At a glance:** [[Scourge-Host-Families|Voidship Host]] living spore mine - a coffin of infected hull, mycelial slurry, and stolen corpse-seed that drifts through [[The-Skyhook|Skyhook]] debris fields - not a [[CANON|Choir]] repeater or a breach; it is physical host payload waiting to burst - counter is distance, flak, fire, and clean burn vectors - appears in [[Starblight]] / [[Warline]], with its first sighting in [[Zero-Day]].
+**At a glance:** [[Scourge-Host-Families|Voidship Host]] living spore mine · a coffin of infected hull, mycelial slurry, and stolen corpse-seed that drifts through [[The-Skyhook|Skyhook]] debris fields · not a [[CANON|Choir]] repeater or a breach; it is physical host payload waiting to burst · counter is distance, flak, fire, and clean burn vectors · appears in [[Starblight]] / [[Warline]], with its first sighting in [[Zero-Day]].
 
 The first rule in orbit is never chase the quiet ones.
 
