@@ -23,7 +23,7 @@ describe("Rothulk core loop", () => {
       radius: CONSTANTS.EXIT_RADIUS,
     });
     expect(level.scourge.every((scourge) => !scourge.feral)).toBe(true);
-    expect(objectiveForPhase(state.phase, false)).toBe("REACH + IGNITE THE CORE");
+    expect(objectiveForPhase(state.phase, false)).toBe("CLIMB THE NEST // IGNITE THE CORE");
     expect(objectiveForPhase(state.phase, true)).toBe("PUSH DEEPER // IGNITE THE CORE");
   });
 
@@ -38,7 +38,7 @@ describe("Rothulk core loop", () => {
     expect(escaping).toEqual({ phase: "escape" });
     expect(shouldIgniteCore(level.core.x, level.core.y, level.core, escaping.phase)).toBe(false);
     expect(igniteBreachCore(escaping)).toBe(escaping);
-    expect(objectiveForPhase(escaping.phase, true)).toBe("ESCAPE THE SEVERED HULK");
+    expect(objectiveForPhase(escaping.phase, true)).toBe("CORE LIT // ESCAPE THE COLLAPSE");
   });
 
   test("finishes only at the extraction point after ignition", () => {
@@ -52,7 +52,7 @@ describe("Rothulk core loop", () => {
 
     expect(won).toEqual({ phase: "won" });
     expect(shouldCompleteEscape(level.exit.x, level.exit.y, level.exit, won.phase)).toBe(false);
-    expect(objectiveForPhase(won.phase, true)).toBe("HULK SEVERED // LANE CLEARED");
+    expect(objectiveForPhase(won.phase, true)).toBe("NODE SEVERED // LANE GOES FERAL");
   });
 
   test("progress reverses during the escape runback", () => {

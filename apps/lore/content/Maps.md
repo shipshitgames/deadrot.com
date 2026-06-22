@@ -9,7 +9,7 @@ front-taxonomy:
 ---
 # Maps — the cross-game map registry
 
-**At a glance:** the single source of truth tying the [[War-for-the-Lanes]] meta-map, the lore [[00-Index|Locations]], and every game's in-code maps together · one canon `id` per place · `loreId` + `front` are the join keys · `warline/src/map.ts` is the live meta-map.
+**At a glance:** the single source of truth tying the [[War-for-the-Lanes]] meta-map, the lore [[00-Index|Locations]], and every game's in-code maps together · one canon `id` per place · `loreId` + `front` are the join keys · `packages/warline/src/map.ts` is the live meta-map.
 
 One war, one map, many games shooting at it from different angles. A place is the same place whether a Purger is dying in it, a Warden is walling it, a champion is settling a grudge over it, or a lost fighter is clawing out of a trench pocket — so it gets **one canon id**, and every game that touches it carries that id home. This file is where the [[War-for-the-Lanes]] front, the authored [[00-Index|Location]] notes, and the in-code map data agree on what's real. Edit a place here first; the games inherit it. Nothing on this list contradicts [[CANON]] — the breaches are physical nests, [[Perdition]] is the deepest of them where the source pulses, [[Ashgate]] is the Warden capital where three lanes converge.
 
@@ -36,6 +36,6 @@ One war, one map, many games shooting at it from different angles. A place is th
 
 Each game's map data carries **`loreId`** (the canon `id` above) plus **`front`**, and opens with a header comment pointing back here. That's the whole contract: an in-game map says *which canon place it is*, and everything else — the [[War-for-the-Lanes]] front it moves, the authored note that voices it — hangs off the id.
 
-- **`warline/src/map.ts`** is the live meta-map. Its regions/lanes/breaches use these same ids; results from the small games shift the front through them.
+- **`packages/warline/src/map.ts`** is the live meta-map. Its regions/lanes/breaches use these same ids; results from the small games shift the front through them.
 - **`lore/Locations/*.md`** are the authored notes — the voiced, witnessed account of each place. The registry row points at the note; the note points back at its games.
-- `warline/src/map.ts` region/lane/breach ids match the canon ids in this table. *(The early-draft `foundry`/`choir` region slugs were renamed to `ashgate`/`perdition` when the meta-map was reconciled to canon geography — no legacy ids remain in the games code.)*
+- `packages/warline/src/map.ts` region/lane/breach ids match the canon ids in this table. *(The early-draft `foundry`/`choir` region slugs were renamed to `ashgate`/`perdition` when the meta-map was reconciled to canon geography — no legacy ids remain in the games code.)*

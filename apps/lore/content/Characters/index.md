@@ -46,4 +46,5 @@ Redline runners carrying orders through broken lanes.
 
 Heretics and Fork practitioners. Hunted by both factions; protected by neither.
 
+- [[Tell]]
 - [[Toll]]
