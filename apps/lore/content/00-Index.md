@@ -68,6 +68,7 @@ Start here, follow the links, open the graph view.
 - [[Null]] — the first Listener; Warden Fork operator who heard the Choir too clearly and started the heresy _(character)_
 - [[Tell]] — founding Listener; named the Interval; made the eleven-day record the [[The-Quiet-Rooms|Quiet Rooms]] still run on
 - [[The-Quiet-Rooms]] — Listener black-room practice; keep severed Choir nodes alive to study
+- [[Vess]] — Listeners' founding voice; named the Interval; author of the sealed Choir ledger; hunted by both factions _(canon)_
 - [[Tine]] — Listener founding practitioner; former Warden signals officer; named the practice _the Audit_
 - [[Kel-Maren]] — Listener founder; named the Wake, held the first Quiet Room, field alias only _(concept)_
 - [[The-Dead-Air-Liturgy]] — Pact dead-air drill; clear carriers after the cut
@@ -102,7 +103,7 @@ Start here, follow the links, open the graph view.
 - Rothulk: [[Pyre-Saboteur]]
 - Core Scourge: [[Swarm-Ripper]], [[Swarm-Spitter]], [[Wound-Hound]], [[Spore-Lung]], [[Render]], [[Rot-Engine]], [[Graft-Breacher]], [[Cairn]], [[Sower]], [[Gristle-Vat]], [[Chorister]], [[Cantor]], [[Descant]], [[Bourdon]], [[Aeolian]], [[Carillon]], [[Quaver]], [[Breach-Boss]]
 - Scourge support: [[Braid-Worm]]
-- Listeners: [[Null]], [[Toll]]
+- Listeners: [[Null]], [[Vess]], [[Tine]], [[Tell]], [[Toll]], [[Kel-Maren]]
 
 ## Tech
 
