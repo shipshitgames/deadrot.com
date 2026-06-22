@@ -23,6 +23,7 @@ import { Header } from "./components/Header";
 import { Legend } from "./components/Legend";
 import { OpsPanel } from "./components/OpsPanel";
 import { ResourceBar } from "./components/ResourceBar";
+import { StoryFrame } from "./components/StoryFrame";
 import { WarFeed } from "./components/WarFeed";
 import { WarMap } from "./components/WarMap";
 import { WarRecord } from "./components/WarRecord";
@@ -161,6 +162,7 @@ export default function App() {
                 command={command}
               />
               <OpsPanel simulate={simulate} />
+              <StoryFrame />
               <WarRecord />
               <Legend />
               <div className="h-64 shrink-0">

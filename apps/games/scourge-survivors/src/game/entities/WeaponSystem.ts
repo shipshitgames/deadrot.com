@@ -22,6 +22,7 @@ import {
 import type { GameContext } from "../context";
 import { WEAPON_VIEW_X, WEAPON_VIEW_Y, WEAPON_VIEW_Z } from "../data/internalTypes";
 import { type MainWeaponVisualTier, mainWeaponTierDamageMul } from "../data/survivors";
+import { mainWeaponTierViewScale, weaponTierCellUv, weaponTierCellUvMirrored } from "../data/weaponView";
 import {
   MUZZLE_FLASH_TEXTURE,
   WEAPON_SPRITE_TEXTURES,
@@ -47,21 +48,14 @@ const SHOOT_SFX: Record<WeaponId, "shoot" | "shootSmg" | "shootSniper" | "shootS
 
 /** Every weapon ships ONE view-model image and visibly "powers up" as the run's damage
  *  build climbs, via FX rather than per-tier art: a hellfire tint ramp (TIER_GLOW) plus
- *  a slight size growth (TIER_SCALE) so each tier reads as a bigger, hotter gun. */
+ *  a slight size growth (MAIN_WEAPON_TIER_VIEW_SCALE, in ../data/weaponView) so each tier
+ *  reads as a bigger, hotter gun. */
 const TIER_GLOW: Record<MainWeaponVisualTier, number> = {
   base: 0xffffff,
   "tier-2": 0xffe0b0,
   "tier-3": 0xffbb6e,
   "tier-4": 0xff8f3a,
   evolved: 0xffd24d,
-};
-/** View-model size multiplier per tier — the gun grows as it ascends. */
-const TIER_SCALE: Record<MainWeaponVisualTier, number> = {
-  base: 1,
-  "tier-2": 1.05,
-  "tier-3": 1.1,
-  "tier-4": 1.16,
-  evolved: 1.24,
 };
 
 export class WeaponSystem {
@@ -185,15 +179,16 @@ export class WeaponSystem {
     const useAdsSprite = adsSprite && weaponHasAdsSprite(id);
     this.weaponAdsSpriteActive = useAdsSprite;
     const sprite = useAdsSprite ? weaponAdsSpriteConfig(id) : weaponSpriteConfig(id);
-    const tierScale = TIER_SCALE[tier];
+    const tierScale = mainWeaponTierViewScale(tier);
     // The view-model texture is a horizontal tier SHEET; select this tier's cell by UV
     // offset (columns=1 for a single-image weapon, so this is a no-op there).
     const cols = weaponSheetColumns(id);
     const cell = weaponTierCellIndex(id, tier);
+    const cellUv = weaponTierCellUv(cell, cols);
     const tex = useAdsSprite ? weaponAdsSpriteTexture(id) : weaponSpriteTexture(id);
     tex.wrapS = THREE.RepeatWrapping;
-    tex.repeat.x = 1 / cols;
-    tex.offset.x = cell / cols;
+    tex.repeat.x = cellUv.repeat;
+    tex.offset.x = cellUv.offset;
     this.weaponSpriteMat.map = tex;
     this.weaponSpriteMat.needsUpdate = true;
     this.weaponSprite.scale.set(sprite.scale[0] * tierScale, sprite.scale[1] * tierScale, 1);
@@ -201,10 +196,11 @@ export class WeaponSystem {
     // Mirror the same cell to the opposite side for the dual-weapon bonus (akimbo read).
     // Sprite scale can't flip UVs, so use a horizontally-flipped clone of the same cell.
     this.dualMapClone?.dispose();
+    const mirrorUv = weaponTierCellUvMirrored(cell, cols);
     const flipped = tex.clone();
     flipped.wrapS = THREE.RepeatWrapping;
-    flipped.repeat.x = -1 / cols;
-    flipped.offset.x = (cell + 1) / cols;
+    flipped.repeat.x = mirrorUv.repeat;
+    flipped.offset.x = mirrorUv.offset;
     flipped.needsUpdate = true;
     this.dualMapClone = flipped;
     this.weaponSpriteDualMat.map = flipped;

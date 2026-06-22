@@ -123,6 +123,42 @@ test("boots into the Command Table on the LOCAL fallback with a clean front", as
   assertNoUnexpectedErrors(consoleErrors, pageErrors);
 });
 
+test('the "Why Builds Matter" briefing frames previews as operations on the shared front', async ({
+  page,
+}, testInfo) => {
+  test.skip(!testInfo.project.name.startsWith(WARLINE_PROJECT), "Warline deep front slice.");
+
+  // The community-build story frame (#362) renders STORY_FRAME from
+  // @shipshitgames/warline as a static, render-pure briefing card on the rail.
+  // Hardcode the expected copy (matching this spec's existing pattern) so the
+  // e2e also guards the briefing prose, not just its presence.
+  const { consoleErrors, pageErrors } = await bootIntoCommandTable(page);
+
+  // The card mounts with the rest of the rail. It exposes an accessible name
+  // (aria-label) so this scopes cleanly to the briefing region.
+  const briefing = page.getByRole("region", { name: "Why Builds Matter briefing" });
+  await expect(briefing.getByRole("heading", { name: "Why Builds Matter" })).toBeVisible();
+
+  // Thesis: every preview is an operation feeding one shared war.
+  await expect(briefing.getByText("Every preview is an operation.")).toBeVisible();
+  // Scope axis 1 — builds report as operations (the operations pillar), with a
+  // contract-derived slate naming the real operations the Ops panel fires.
+  await expect(briefing.getByText("Builds report as operations")).toBeVisible();
+  await expect(briefing.getByText("Every build fields one operation on the front:")).toBeVisible();
+  await expect(briefing.getByText("Purge a Breach")).toBeVisible();
+
+  // Scope axis 2 — playtests become provisional field reports, not locked canon.
+  await expect(briefing.getByText("Playtests become field reports, not promises.")).toBeVisible();
+  await expect(briefing.getByText("provisional", { exact: true })).toBeVisible();
+
+  // Scope axis 3 — Pyre/Warden/Scourge outcomes tied to the weekly release cadence.
+  await expect(briefing.getByText("The front keeps the weekly release cadence.")).toBeVisible();
+  await expect(briefing.getByText(/thins the nests before the next drop/)).toBeVisible();
+  await expect(briefing.getByText(/The Choir escalates every week it runs/)).toBeVisible();
+
+  assertNoUnexpectedErrors(consoleErrors, pageErrors);
+});
+
 test("Muster banks exactly +25 army per click and logs faction-credited events", async ({ page }, testInfo) => {
   test.skip(!testInfo.project.name.startsWith(WARLINE_PROJECT), "Warline deep front slice.");
 

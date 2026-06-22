@@ -63,6 +63,7 @@ export default defineConfig({
         /brawl-arena\.spec\.ts/,
         /scourge-arena-environments\.spec\.ts/,
         /scourge-arena-readability\.spec\.ts/,
+        /scourge-survivors-operation-summary\.spec\.ts/,
         // Dedicated deep-gameplay specs for the games that previously only had
         // the shared boot smoke (the per-game coverage invariant is enforced by
         // e2e/coverage.test.ts).

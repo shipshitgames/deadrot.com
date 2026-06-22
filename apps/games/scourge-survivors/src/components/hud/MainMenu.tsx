@@ -22,6 +22,7 @@ import {
 } from "@shipshitgames/ui";
 import { useRef, useState } from "react";
 import { MAP_PICKER, normalizeMapId } from "../../game/data/maps";
+import { OPERATION_LINE, OPERATION_NAME } from "../../game/data/operation";
 import {
   SHOP_TOTAL_TIERS,
   SHOP_UPGRADES,
@@ -403,10 +404,18 @@ function MapSelectPanel({
         })}
       </div>
       <div className="mt-4 rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-left">
-        <div className="text-[12px] uppercase tracking-[0.12em] text-[#ffb56b]">Breach Site</div>
+        <div className="flex items-baseline justify-between gap-2">
+          <div className="text-[12px] uppercase tracking-[0.12em] text-[#ffb56b]">Breach Site</div>
+          <div className="text-[11px] uppercase tracking-[0.12em] text-[#9fd0ff]" data-testid="operation-tag">
+            Operation · {OPERATION_NAME}
+          </div>
+        </div>
         <div className="text-[22px] font-black tracking-[0.03em]">{selected.name}</div>
         <div className="text-[12px] opacity-65">
           {selectedClass.name} · the site holds for the whole descent — no mid-run map swaps
+        </div>
+        <div className="mt-2 text-[11px] leading-snug opacity-55 normal-case" data-testid="operation-brief">
+          {OPERATION_LINE}
         </div>
       </div>
       <div className="mt-4 flex items-stretch gap-3">
