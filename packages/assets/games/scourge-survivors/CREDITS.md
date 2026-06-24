@@ -1,5 +1,30 @@
 # Asset Credits
 
+## 2026-06-24 - edge-quality rematte and weapon sheet padding
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Role: Pyre player side sprites, Pyre muzzle flash, Scourge projectile, and
+  Pyre weapon tier sheets.
+- Tool: local deterministic cleanup with `dwebp`, a Node RGBA edge-quality pass,
+  and `cwebp`.
+- Plan: Codex local cleanup for deadrot.com#287.
+- Kind: alpha-edge RGB rematte plus transparent per-tier-cell padding.
+- Source assets: existing committed runtime WebPs:
+  - `players/pyre/vector/side.webp`
+  - `players/pyre/ranger/side.webp`
+  - `fx/pyre/muzzle-flash.webp`
+  - `projectiles/scourge/enemy-spit.webp`
+  - `weapons/pyre/smg-tiers.webp`
+  - `weapons/pyre/cannon-tiers.webp`
+- Final assets: same runtime paths above.
+- Post-processing: rematted dark edge RGB from nearby foreground pixels while
+  preserving alpha/silhouette; padded `smg-tiers.webp` and `cannon-tiers.webp`
+  as equal-width 5-column sheets with transparent margin and updated manifest
+  dimensions.
+- Notes: No new raster art was generated. This removes baked-in dark matte/halo
+  reads and border clipping reported by the asset QA scan.
+
 ## 2026-06-17 - comic menu wallpaper exploration
 
 - Status: promoted into runtime menu UI.
