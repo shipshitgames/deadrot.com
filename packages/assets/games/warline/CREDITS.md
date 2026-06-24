@@ -13,6 +13,7 @@
 - Date: 2026-06-07
 - Source: generated with the built-in Codex `image_gen` tool, keyed from flat chroma backgrounds with `ffmpeg colorkey`, cropped where needed, encoded with `cwebp -lossless -exact`
 - Scope: Warline runtime lobby/front map
+- QA recrop: `command-table.webp`, `green-lift.webp`, and `red-pit.webp` were deterministically recropped on 2026-06-24 from `portal-deck-atlas.webp` with 32 px transparent padding via `packages/assets/scripts/fix-warline-portal-prop-margins.mjs` for deadrot.com#288.
 
 ## Lobby Music
 
