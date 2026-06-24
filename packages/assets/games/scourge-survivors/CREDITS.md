@@ -237,6 +237,17 @@
 - Post-processing: generated on magenta chroma-key background, split into five item cells, chroma-keyed, downscaled into 64x64 runtime pixel sprites, hard-alpha padded, and encoded lossless with `cwebp -lossless -exact`.
 - Notes: Replaces generic pickup art/mesh gems with blood vial, bone ammo, blood-rage bonus, dual blood-energy core, and Scourge ichor XP shard pickups.
 
+### 2026-06-24 - issue #289 pickup lossless re-encode
+
+- Files: `pickups/health/blood-vial.webp`,
+  `pickups/ammo/bone-cache.webp`, and
+  `pickups/bonus/damage-boost.webp`.
+- Tooling: deterministic local re-encode with `dwebp` and
+  `cwebp -lossless -exact` through
+  `packages/assets/scripts/fix-brand-alpha-fringe.mjs`.
+- Notes: no new raster art was generated. This keeps the three issue-mentioned
+  pickup sprites on explicit lossless WebP alongside the brand alpha cleanup.
+
 ## 2026-06-04 - weapon-smg-pyre-firstperson-v04
 
 - Status: promoted into runtime.
