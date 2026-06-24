@@ -6,6 +6,7 @@ import {
   type RuntimeEnemyRef,
   type RuntimeSpriteRef,
   type RuntimeUiRef,
+  type RuntimeWeaponRef,
   SCOURGE_SURVIVORS_ANIMATION_MANIFEST,
   SCOURGE_SURVIVORS_ASSET_MANIFEST,
   type ScourgeSurvivorsAnimationManifest,
@@ -39,6 +40,7 @@ export type {
   RuntimeEnemyRef,
   RuntimeSpriteRef,
   RuntimeUiRef,
+  RuntimeWeaponRef,
   ScourgeSurvivorsAnimationManifest as AnimationManifest,
   ScourgeSurvivorsAssetManifest as AssetManifest,
   SpriteEntry,
@@ -55,7 +57,7 @@ export const ASSET_MANIFEST = SCOURGE_SURVIVORS_ASSET_MANIFEST;
 export const ANIMATION_MANIFEST = SCOURGE_SURVIVORS_ANIMATION_MANIFEST;
 
 type RuntimeDomain = keyof ScourgeSurvivorsAssetManifest["runtime"];
-type RuntimeSpriteDomain = Exclude<RuntimeDomain, "ui" | "enemies">;
+type RuntimeSpriteDomain = Exclude<RuntimeDomain, "ui" | "enemies" | "weapons">;
 
 export class AssetCatalog {
   constructor(
@@ -121,8 +123,12 @@ export class AssetCatalog {
     return this.spriteRef("players", id);
   }
 
-  weapon(id: string): RuntimeSpriteRef {
-    return this.spriteRef("weapons", id);
+  weapon(id: string): RuntimeWeaponRef {
+    const ref = this.manifest.runtime.weapons[id];
+    if (!ref) throw new Error(`Unknown Scourge Survivors runtime weapons id: ${id}`);
+    this.spriteEntry(ref.sprite);
+    this.spriteEntry(ref.lootSprite);
+    return ref;
   }
 
   pickup(id: string): RuntimeSpriteRef {

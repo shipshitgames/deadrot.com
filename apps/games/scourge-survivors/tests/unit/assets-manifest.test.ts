@@ -118,6 +118,14 @@ describe("asset manifest", () => {
       }
     }
 
+    for (const [id, ref] of Object.entries(manifest.runtime.weapons)) {
+      expect(ref.lootSprite, `weapons.${id} loot sprite alias`).toBeTruthy();
+      const lootSprite = manifest.sprites[ref.lootSprite as keyof typeof manifest.sprites];
+      expect(lootSprite, `weapons.${id} loot sprite`).toBeTruthy();
+      expect(lootSprite.path, `weapons.${id} loot path`).toMatch(/-loot\.webp$/);
+      expect(lootSprite.scale, `weapons.${id} loot pickup scale`).toEqual([1.4, 1.4]);
+    }
+
     for (const [id, ref] of Object.entries(manifest.runtime.ui)) {
       expect(manifest.ui[ref.asset as keyof typeof manifest.ui], `ui.${id}`).toBeTruthy();
       // Runtime UI raster ships as WebP (deadrot.com#118). The OG social card is
