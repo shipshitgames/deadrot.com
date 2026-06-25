@@ -1,5 +1,6 @@
 import type * as THREE from "three";
 import type { Team } from "./constants";
+import type { ChampionAbilityKit, ChampionFaction, ChampionId } from "./data/champions";
 
 export type EntityKind = "champion" | "minion" | "scourge" | "base" | "tower";
 
@@ -14,17 +15,30 @@ export interface Entity {
   hp: number;
   maxHp: number;
   radius: number;
+  height: number;
   alive: boolean;
+  // champion identity (null/empty for creeps, structures, and Scourge)
+  championId: ChampionId | null;
+  championName: string;
+  championFaction: ChampionFaction | "";
+  championRole: string;
+  championSilhouette: string;
+  abilities: ChampionAbilityKit | null;
   // combat
   attackRange: number;
   attackDamage: number;
   attackCooldown: number;
   cooldown: number; // current time left until next attack
+  moveSpeed: number;
+  respawnDelay: number;
   // resources (champions only — everyone else stays at 0)
   mana: number;
   maxMana: number;
+  manaRegen: number;
+  lowHpFraction: number;
   // status: seconds of Pact Brand slow remaining (0 = full speed)
   slowTimer: number;
+  slowFactor: number;
 }
 
 export type Phase = "title" | "playing" | "won" | "lost";
@@ -81,7 +95,27 @@ export interface GameSnapshot {
   elapsed: number;
   buffed: boolean;
   map: { id: string; name: string; lanes: number; activeLanes: number; primaryLane: string };
-  champion: { hp: number; maxHp: number; mana: number; alive: boolean; x: number; z: number };
+  champion: {
+    id: ChampionId | null;
+    name: string;
+    faction: ChampionFaction | "";
+    role: string;
+    hp: number;
+    maxHp: number;
+    mana: number;
+    alive: boolean;
+    x: number;
+    z: number;
+  };
+  enemyChampion: {
+    id: ChampionId | null;
+    name: string;
+    faction: ChampionFaction | "";
+    role: string;
+    hp: number;
+    maxHp: number;
+    alive: boolean;
+  };
   minions: Record<Team, number>;
   structures: Record<Team, TeamStructureSnapshot>;
 }

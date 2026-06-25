@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { COLORS, CONSTANTS, MARCH_DIR, type Team } from "../../src/game/constants";
+import { CHAMPIONS, DEFAULT_ENEMY_CHAMPION_ID, DEFAULT_PLAYER_CHAMPION_ID } from "../../src/game/data/champions";
 import { makeBase, makeChampion, makeMinion, makeScourge } from "../../src/game/factory";
 import { ASHGATE_MAP, totalActiveTowers } from "../../src/game/map";
 import { EntitySystem } from "../../src/game/systems/EntitySystem";
@@ -193,8 +194,10 @@ describe("pactfall EntitySystem — reset & lane layout", () => {
 
     expect(game.entities.champion.team).toBe("pyre");
     expect(game.entities.enemyChampion.team).toBe("warden");
-    expect(game.entities.champion.hp).toBe(CONSTANTS.champion.maxHp);
-    expect(game.entities.enemyChampion.hp).toBe(CONSTANTS.champion.maxHp);
+    expect(game.entities.champion.championId).toBe(DEFAULT_PLAYER_CHAMPION_ID);
+    expect(game.entities.enemyChampion.championId).toBe(DEFAULT_ENEMY_CHAMPION_ID);
+    expect(game.entities.champion.hp).toBe(CHAMPIONS[DEFAULT_PLAYER_CHAMPION_ID].stats.maxHp);
+    expect(game.entities.enemyChampion.hp).toBe(CHAMPIONS[DEFAULT_ENEMY_CHAMPION_ID].stats.maxHp);
     expect(game.entities.friendlyBase.hp).toBe(CONSTANTS.base.maxHp);
     expect(game.entities.enemyBase.hp).toBe(CONSTANTS.base.maxHp);
     expect(game.entities.scourge.alive).toBe(true);
@@ -383,7 +386,7 @@ describe("pactfall EntitySystem — combat, scourge buff & death", () => {
 
     advance(game, CONSTANTS.champion.respawnDelay * 0.6);
     expect(game.entities.champion.alive).toBe(true);
-    expect(game.entities.champion.hp).toBe(CONSTANTS.champion.maxHp);
+    expect(game.entities.champion.hp).toBe(game.entities.champion.maxHp);
   });
 });
 

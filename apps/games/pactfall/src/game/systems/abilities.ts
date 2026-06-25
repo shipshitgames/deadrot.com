@@ -1,19 +1,31 @@
 import * as THREE from "three";
 import { COLORS, CONSTANTS, type Team } from "../constants";
+import {
+  ABILITY_KEYS,
+  type AbilityKey,
+  CHAMPIONS,
+  type ChampionAbilityKit,
+  type DashAbilityDef,
+  DEFAULT_ENEMY_CHAMPION_ID,
+  DEFAULT_PLAYER_CHAMPION_ID,
+  defaultChampionForTeam,
+  type LineAbilityDef,
+  type ZoneAbilityDef,
+} from "../data/champions";
 import type { Game } from "../Game";
 import type { Entity } from "../types";
 
-// Q/W/E ability system. All costs/cooldowns/damage live in CONSTANTS.abilities;
-// the pure math (cooldown/mana gates, line-skillshot hits, slow application) is
+export type { AbilityKey };
+export { ABILITY_KEYS };
+
+// Q/W/E ability system. Slot gates are pure, while live damage/cast shapes come
+// from each champion's ChampionAbilityKit.
+// The pure math (cooldown/mana gates, line-skillshot hits, slow application) is
 // exported for unit tests, and AbilitySystem wires it into the live sim:
 //   Q "Cinder Lance" — line nuke that strikes the first enemy along the aim.
 //   W "Pact Brand"   — ground zone that slows ~40% and ticks light damage.
 //   E "Vault"        — short repositioning dash.
 // The Warden AI casts a telegraphed Q on cooldown so duels stay dodge-able.
-
-export type AbilityKey = "q" | "w" | "e";
-
-export const ABILITY_KEYS: readonly AbilityKey[] = ["q", "w", "e"] as const;
 
 export interface AbilitySpec {
   cooldown: number;
@@ -22,20 +34,28 @@ export interface AbilitySpec {
 
 export type AbilitySpecs = Record<AbilityKey, AbilitySpec>;
 
-export function specsFromConstants(): AbilitySpecs {
-  const a = CONSTANTS.abilities;
+export function abilitySpecsFor(kit: ChampionAbilityKit): AbilitySpecs {
   return {
-    q: { cooldown: a.q.cooldown, manaCost: a.q.manaCost },
-    w: { cooldown: a.w.cooldown, manaCost: a.w.manaCost },
-    e: { cooldown: a.e.cooldown, manaCost: a.e.manaCost },
+    q: { cooldown: kit.q.cooldown, manaCost: kit.q.manaCost },
+    w: { cooldown: kit.w.cooldown, manaCost: kit.w.manaCost },
+    e: { cooldown: kit.e.cooldown, manaCost: kit.e.manaCost },
   };
+}
+
+export function specsFromConstants(): AbilitySpecs {
+  return abilitySpecsFor(CHAMPIONS[DEFAULT_PLAYER_CHAMPION_ID].abilities);
 }
 
 /** Cooldown + mana gate for one champion's three ability slots. Pure logic. */
 export class AbilityCaster {
   readonly cooldowns: Record<AbilityKey, number> = { q: 0, w: 0, e: 0 };
 
-  constructor(private readonly specs: AbilitySpecs) {}
+  constructor(private specs: AbilitySpecs) {}
+
+  setSpecs(specs: AbilitySpecs): void {
+    this.specs = specs;
+    this.reset();
+  }
 
   tick(dt: number): void {
     for (const key of ABILITY_KEYS) {
@@ -143,6 +163,7 @@ interface BrandZone {
   tickIn: number;
   team: Team;
   dealer: Entity;
+  spec: ZoneAbilityDef;
   mesh: THREE.Mesh;
 }
 
@@ -154,6 +175,7 @@ interface PendingShot {
   windup: number;
   team: Team;
   dealer: Entity;
+  spec: LineAbilityDef;
   mesh: THREE.Mesh;
 }
 
@@ -172,9 +194,17 @@ export class AbilitySystem {
     for (const shot of this.shots) this.disposeMesh(shot.mesh);
     this.zones = [];
     this.shots = [];
-    this.player.reset();
-    this.enemy.reset();
+    const ent = this.game.entities;
+    this.player.setSpecs(abilitySpecsFor(ent.champion.abilities ?? CHAMPIONS[DEFAULT_PLAYER_CHAMPION_ID].abilities));
+    this.enemy.setSpecs(abilitySpecsFor(ent.enemyChampion.abilities ?? CHAMPIONS[DEFAULT_ENEMY_CHAMPION_ID].abilities));
     this.clearEvents();
+  }
+
+  resetCaster(team: Team): void {
+    const ent = this.game.entities;
+    const caster = team === "pyre" ? this.player : this.enemy;
+    const champion = team === "pyre" ? ent.champion : ent.enemyChampion;
+    caster.setSpecs(abilitySpecsFor(champion.abilities ?? defaultChampionForTeam(team).abilities));
   }
 
   clearEvents(): void {
@@ -189,7 +219,7 @@ export class AbilitySystem {
 
     const ent = this.game.entities;
     for (const c of [ent.champion, ent.enemyChampion]) {
-      if (c.alive) c.mana = regenMana(c.mana, c.maxMana, CONSTANTS.champion.manaRegen, dt);
+      if (c.alive) c.mana = regenMana(c.mana, c.maxMana, c.manaRegen, dt);
     }
 
     this.handlePlayerCasts();
@@ -240,7 +270,7 @@ export class AbilitySystem {
     const dx = aim.x - c.pos.x;
     const dz = aim.z - c.pos.z;
     const dist = Math.hypot(dx, dz);
-    const max = CONSTANTS.abilities.w.castRange;
+    const max = this.zoneSpec(c).castRange;
     if (dist <= max || dist < 0.001) return { x: aim.x, z: aim.z };
     return { x: c.pos.x + (dx / dist) * max, z: c.pos.z + (dz / dist) * max };
   }
@@ -256,7 +286,7 @@ export class AbilitySystem {
 
   /** Cinder Lance: instant ray, strikes the first enemy body along the line. */
   castQ(caster: Entity, dir: FlatPoint, byPlayer: boolean): void {
-    const spec = CONSTANTS.abilities.q;
+    const spec = this.lineSpec(caster);
     const ent = this.game.entities;
     const targets: Entity[] = ent.unitsHostileTo(caster.team as Team);
     // The player's lance can also spear the neutral Scourge — a buff steal tool.
@@ -272,7 +302,7 @@ export class AbilitySystem {
 
   /** Pact Brand: drop a slowing, ticking ground zone. */
   castW(caster: Entity, point: FlatPoint): void {
-    const spec = CONSTANTS.abilities.w;
+    const spec = this.zoneSpec(caster);
     const team = caster.team as Team;
     const mesh = new THREE.Mesh(
       new THREE.CircleGeometry(spec.radius, 28),
@@ -293,13 +323,14 @@ export class AbilitySystem {
       tickIn: spec.tickInterval * 0.4, // first tick lands fast so the cast reads
       team,
       dealer: caster,
+      spec,
       mesh,
     });
   }
 
   /** Vault: instant dash, clamped to the legal lane area. */
   castE(caster: Entity, dir: FlatPoint): void {
-    const spec = CONSTANTS.abilities.e;
+    const spec = this.dashSpec(caster);
     const len = Math.hypot(dir.x, dir.z) || 1;
     caster.pos.x += (dir.x / len) * spec.distance;
     caster.pos.z += (dir.z / len) * spec.distance;
@@ -318,7 +349,7 @@ export class AbilitySystem {
     if (!ai.alive || !player.alive) return;
     if (this.shots.some((s) => s.team === "warden")) return; // one telegraph at a time
 
-    const spec = CONSTANTS.abilities.q;
+    const spec = this.lineSpec(ai);
     const dist = Math.hypot(player.pos.x - ai.pos.x, player.pos.z - ai.pos.z);
     if (dist > spec.range * CONSTANTS.ai.qRangeFactor || dist < 0.001) return;
 
@@ -335,6 +366,7 @@ export class AbilitySystem {
       windup: CONSTANTS.ai.qWindup,
       team: "warden",
       dealer: ai,
+      spec,
       mesh: this.makeTelegraph(ai.pos, dir, spec.range),
     });
     this.events.enemyCasts.push("q");
@@ -354,8 +386,8 @@ export class AbilitySystem {
   /** Locked, telegraphed shots: the player dodges by leaving the line. */
   private tickShots(dt: number): void {
     const ent = this.game.entities;
-    const spec = CONSTANTS.abilities.q;
     for (const shot of this.shots) {
+      const spec = shot.spec;
       shot.timer -= dt;
       // The aim line burns brighter as the shot is about to fire.
       const mat = shot.mesh.material as THREE.MeshBasicMaterial;
@@ -378,8 +410,8 @@ export class AbilitySystem {
 
   private tickZones(dt: number): void {
     const ent = this.game.entities;
-    const spec = CONSTANTS.abilities.w;
     for (const zone of this.zones) {
+      const spec = zone.spec;
       zone.timeLeft -= dt;
       if (zone.timeLeft <= 0) {
         this.disposeMesh(zone.mesh);
@@ -399,6 +431,7 @@ export class AbilitySystem {
         const inside = Math.hypot(foe.pos.x - zone.x, foe.pos.z - zone.z) <= spec.radius + foe.radius;
         if (!inside) continue;
         foe.slowTimer = Math.max(foe.slowTimer, spec.slowLinger);
+        foe.slowFactor = Math.min(foe.slowFactor, spec.slowFactor);
         if (ticking) ent.damage(foe, spec.tickDamage, { dealer: zone.dealer, ability: true });
       }
     }
@@ -409,5 +442,24 @@ export class AbilitySystem {
     this.game.render.remove(mesh);
     mesh.geometry.dispose();
     (mesh.material as THREE.Material).dispose();
+  }
+
+  private kitFor(caster: Entity): ChampionAbilityKit {
+    if (caster.abilities) return caster.abilities;
+    return caster.team === "warden"
+      ? CHAMPIONS[DEFAULT_ENEMY_CHAMPION_ID].abilities
+      : CHAMPIONS[DEFAULT_PLAYER_CHAMPION_ID].abilities;
+  }
+
+  private lineSpec(caster: Entity): LineAbilityDef {
+    return this.kitFor(caster).q;
+  }
+
+  private zoneSpec(caster: Entity): ZoneAbilityDef {
+    return this.kitFor(caster).w;
+  }
+
+  private dashSpec(caster: Entity): DashAbilityDef {
+    return this.kitFor(caster).e;
   }
 }

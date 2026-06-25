@@ -3,6 +3,7 @@ import { DamageNumbers, FlashOverlay, ParticleBursts, ScreenShake } from "@deadr
 import { reportWarlineOperation } from "@deadrot/game-kit/warline";
 import { audio } from "../audio";
 import { COLORS, CONSTANTS, type Team } from "./constants";
+import type { ChampionId } from "./data/champions";
 import { ASHGATE_MAP, activeLanes, activeTowersFor, primaryLane } from "./map";
 import { type AbilityKey, AbilitySystem } from "./systems/abilities";
 import { EntitySystem } from "./systems/EntitySystem";
@@ -80,6 +81,7 @@ export class Game {
     };
 
     this.entities.reset();
+    this.abilities.reset();
   }
 
   subscribePhaseChange(listener: (phase: Phase) => void): () => void {
@@ -152,6 +154,24 @@ export class Game {
     this.buffTime = CONSTANTS.scourge.buffDuration;
   }
 
+  setChampion(id: ChampionId): void {
+    this.entities.setChampion(id);
+    if (this.phase === "title") {
+      this.entities.reset();
+      this.abilities.reset();
+      this.hud.update(this);
+    }
+  }
+
+  setEnemyChampion(id: ChampionId): void {
+    this.entities.setEnemyChampion(id);
+    if (this.phase === "title") {
+      this.entities.reset();
+      this.abilities.reset();
+      this.hud.update(this);
+    }
+  }
+
   // A flat, read-only view of the run for the e2e harness (mirrors the
   // __brawlSnapshot / __rothulkGame.debugSnapshot patterns). Never mutates state.
   snapshot(): GameSnapshot {
@@ -166,6 +186,7 @@ export class Game {
       };
     };
     const c = ent.champion;
+    const enemy = ent.enemyChampion;
     return {
       phase: this.phase,
       paused: this.paused,
@@ -178,7 +199,27 @@ export class Game {
         activeLanes: activeLanes(ASHGATE_MAP).length,
         primaryLane: primaryLane(ASHGATE_MAP).id,
       },
-      champion: { hp: Math.max(0, c.hp), maxHp: c.maxHp, mana: c.mana, alive: c.alive, x: c.pos.x, z: c.pos.z },
+      champion: {
+        id: c.championId,
+        name: c.championName,
+        faction: c.championFaction,
+        role: c.championRole,
+        hp: Math.max(0, c.hp),
+        maxHp: c.maxHp,
+        mana: c.mana,
+        alive: c.alive,
+        x: c.pos.x,
+        z: c.pos.z,
+      },
+      enemyChampion: {
+        id: enemy.championId,
+        name: enemy.championName,
+        faction: enemy.championFaction,
+        role: enemy.championRole,
+        hp: Math.max(0, enemy.hp),
+        maxHp: enemy.maxHp,
+        alive: enemy.alive,
+      },
       minions: { pyre: ent.minionCount("pyre"), warden: ent.minionCount("warden") },
       structures: { pyre: structureFor("pyre"), warden: structureFor("warden") },
     };
@@ -364,8 +405,7 @@ export class Game {
     // Low-health heartbeat + vignette (throttled, state-edge driven). Gated on
     // !paused too so the heartbeat can never thump over the pause menu.
     const c = this.entities.champion;
-    const low =
-      this.phase === "playing" && !this.paused && c.alive && c.hp <= c.maxHp * CONSTANTS.champion.lowHpFraction;
+    const low = this.phase === "playing" && !this.paused && c.alive && c.hp <= c.maxHp * c.lowHpFraction;
     if (low !== this.lowHpActive) {
       this.lowHpActive = low;
       this.flash.setVignette(low ? 0.5 : 0);
