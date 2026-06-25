@@ -1,6 +1,6 @@
 ---
 name: worktree
-description: Create a git worktree for a GitHub issue or PR, branched off develop (falling back to master, then main). Use when picking up a ticket — e.g. "/worktree https://github.com/owner/repo/issues/65" creates branch feat/65-<slug> in .worktrees/ and switches into it.
+description: Create a git worktree for a GitHub issue or PR, branched off master (falling back to main, then develop). Use when picking up a ticket — e.g. "/worktree https://github.com/owner/repo/issues/65" creates branch feat/65-<slug> in .worktrees/ and switches into it.
 license: MIT
 compatibility: Requires git and an authenticated gh CLI.
 metadata:
@@ -14,9 +14,9 @@ disable-model-invocation: true
 
 # Worktree
 
-Spin up an isolated git worktree for a GitHub issue or PR so a feature can be built
-without disturbing the current checkout. The branch name and base branch are derived
-automatically; the session then moves into the new worktree.
+Spin up an isolated git worktree for a GitHub issue or PR so a feature can be
+built without disturbing the current checkout. The branch name and base branch
+are derived automatically; the session then moves into the new worktree.
 
 ## Contract
 
@@ -54,9 +54,9 @@ Delegates To:
   lowercased, non-alphanumerics collapsed to `-`, capped at 50 chars.
   Example: issue #65 "Add login screen" → `feat/65-add-login-screen`.
 - **Type**: defaults to `feat`. Pass a second argument to override (e.g. `fix`, `chore`).
-- **Base branch**: the first of `develop`, `master`, `main` that exists wins
-  (remote-tracking preferred over local). `develop` → `master` is the primary intent;
-  `main` is a fallback for repos that use it.
+- **Base branch**: the first of `master`, `main`, `develop` that exists wins
+  (remote-tracking preferred over local). Deadrot is trunk-based on `master`;
+  `main`/`develop` are fallbacks for older or adjacent repos.
 - **Location**: `.worktrees/` under the repo root, kept out of version control. This
   sits outside the `apps/*` / `packages/*` workspace globs, so Bun and Turbo ignore it.
 
@@ -94,6 +94,11 @@ install dependencies in the new worktree:
 ```bash
 bun install
 ```
+
+Codex app managed worktrees copy ignored local setup files listed in the repo
+root `.worktreeinclude` (for this repo, `.env.local` and
+`apps/web/.env.local`). That is a Codex app feature; command-line worktrees
+created by this helper do not automatically copy ignored env files.
 
 ### 4. Load context
 

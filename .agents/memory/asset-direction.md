@@ -1,39 +1,48 @@
 ---
 status: active
-last_verified: 2026-06-12
+last_verified: 2026-06-25
 ---
 
 # Asset Direction & Generation Pipeline
 
 The locked direction for taking all 7 games to finished-product v1, and how
-assets are generated. Decided 2026-06-09 (Session 4).
+assets are generated. Supersedes the 2026-06-09 HD-2D/pixel target after the
+comic/cel lock pass landed on 2026-06-17.
 
-## Art direction = 3D pixel art (HD-2D)
-The house style in `DESIGN.md` is **medium-chunky high-detail pixel art**
-("visible square pixels, hard crisp edges, no anti-aliasing… ABSOLUTELY NOT a
-smooth 3D render"). "3D pixel art" does NOT move off pixel art — it means
-**pose/render 3D forms, then pixelize them to the locked 26-colour DOOM palette**.
-Per-game camera is genre-appropriate (`DESIGN.md` `gameArtDirection`): only
-**pactfall** is isometric; scourge-survivors + **deadlane** are first-person
-billboard (deadlane locked to first-person walk-the-lane 2026-06-09, was
-top-down); starblight/redline/rothulk side-on; warline map view. Tool mapping:
-**Imagen** = visuals, **ElevenLabs** = SFX + voice, **Suno** = music.
+## Art direction = clean comic-book / cel-shaded ink
+As of 2026-06-17, Deadrot targets a violent playable comic page: bold black
+contours, flat readable value blocks, graphic shadows, controlled grime, sharp
+silhouettes, and disciplined faction color. Pixel-art assets may remain as
+temporary runtime scaffolding while production comic sheets are generated and
+promoted, but new masters must not reinforce the old pixel target.
+
+Avoid halftone dots, stipple fields, noisy speckles, dithered pixel grids, fake
+bokeh, and painterly sparkle. The Scourge must read as parasite takeover in
+every design: host flesh/armor/machine being worn, ruptured seams, tendrils
+through joints, black chitin over stolen bone/metal, and toxic-green breach
+cores only as parasite organs.
+
+Per-game camera remains genre-appropriate: scourge-survivors and deadlane use
+first-person billboard readability; pactfall is lane/MOBA-isometric; starblight,
+redline, and rothulk keep their genre cameras; warline is map/card focused.
+Tool mapping remains **Imagen/Codex image generation** for visuals,
+**ElevenLabs** for SFX + voice, and **Suno** for music when needed.
 
 ## Pipeline (the assetgen art flow)
-`assetgen` (sibling `../shipshitgames`, repo `shipshitgames/shipshit.games`) does
-**2D text-to-image (Codex/Imagen) → `assetgen/src/pixelize.ts`** (flood-fill
-cutout → downscale ~110px → quantize to the fixed DOOM palette → hard 1px alpha).
-There is **no 3D step today** (Replicate provider is stubbed for `model`/`3d`
-kinds but unused). Animation frames are each generated independently, so they
-wobble — which is why no game has a real animation pack yet.
+`assetgen` (sibling `../shipshitgames`, repo `shipshitgames/shipshit.games`) is
+still the studio-side generation product. It should produce or promote
+comic/cel masters, cutout sheets, runtime WebP assets, and manifest metadata into
+`deadrotcom/packages/assets`. Product repos store curated outputs; generator
+tooling belongs in the studio repo.
 
 ## Hybrid generation policy
-- **Route A** (prompt → pixelize, exists): static one-offs — key art, OG, props,
-  icons, single-pose enemies.
-- **Route B** (3D model → offscreen Three.js turntable → pixelize): anything
-  **animated or multi-view** — players, named enemies, bosses. Fixes frame
-  coherence + front/side/back consistency. The "bake stage" is the missing tooling
-  → tracked in **shipshit.games#164** (lives in assetgen per [[repo-boundary]]).
+- **Route A** (image prompt → curated comic/cel master): static one-offs such as
+  key art, OG/social, props, icons, and reference boards.
+- **Route B** (production sheet → cutout/runtime pack): players, named enemies,
+  bosses, weapons, and UI surfaces that need front/side/back/action/death reads.
+- **Route C** (future model/turntable support): still useful for multi-view
+  coherence, but the output target is comic/cel runtime readability, not the old
+  pixelized DOOM-palette look.
 
 ## Masters + sprite packaging
 New non-runtime masters use
@@ -44,7 +53,7 @@ older `apps/lore/content/Assets/Art-Masters` path is legacy/migration debt; use
 the package-owned `masters` layout for new work so runtime assets, generated
 sources, and approved masters stay in one asset package.
 
-Pixel animation follows the usual metadata-first game-art practice:
+Animation follows the usual metadata-first game-art practice:
 
 - `1xN` source strips for single-view/single-action runs such as weapon tiers,
   one-direction effects, and simple UI/VFX sheets.
@@ -73,6 +82,8 @@ debug packs until assetgen and the loader support packed atlases.
   map/icon game.)
 - **#278** finale boss = the Perdition Bourdon + "The Collapse" feral-minute
   (canon-grounded; meta-progression-gated win).
+- **#427** tracks productionizing the comic/cel pass across Scourge Survivors
+  enemies, weapons, UI, arenas, prompts, and asset custody.
 
 See [[workflow]] for branch/CI gates and [[repo-boundary]] for the
 deadrot/assetgen split.

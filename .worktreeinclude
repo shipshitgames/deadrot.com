@@ -1,0 +1,4 @@
+# Copy ignored local env needed by Codex-managed worktrees.
+# This lists paths only; the secret values stay in the ignored files.
+.env.local
+apps/web/.env.local

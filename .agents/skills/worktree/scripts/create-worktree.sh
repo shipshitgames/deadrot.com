@@ -16,7 +16,7 @@
 # Behaviour:
 #   - Resolves the issue/PR title via the GitHub API and slugifies it.
 #   - Branch name:  <type>/<number>-<slug>     e.g. feat/65-add-login-screen
-#   - Base branch:  develop -> master -> main  (first that exists wins)
+#   - Base branch:  master -> main -> develop  (first that exists wins)
 #   - Worktree dir: <repo-root>/.worktrees/<branch-with-slashes-as-dashes>
 #   - Prints WORKTREE_PATH=<abs-path> and BRANCH=<name> on the last lines.
 #
@@ -70,13 +70,13 @@ SLUG="$(printf '%s' "$TITLE" \
 BRANCH="$TYPE/$NUMBER-$SLUG"
 WTDIR="$TOPLEVEL/.worktrees/${BRANCH//\//-}"
 
-# --- Determine the base branch (develop -> master -> main) ----------------
+# --- Determine the base branch (master -> main -> develop) ----------------
 if git remote get-url origin >/dev/null 2>&1; then
   git fetch origin --quiet --prune 2>/dev/null || true
 fi
 
 BASE_REF=""
-for cand in develop master main; do
+for cand in master main develop; do
   if   git show-ref --verify --quiet "refs/remotes/origin/$cand"; then BASE_REF="origin/$cand"; break
   elif git show-ref --verify --quiet "refs/heads/$cand";          then BASE_REF="$cand";        break
   fi

@@ -1,6 +1,6 @@
 # Repo Boundary
 
-last_verified: 2026-06-12
+last_verified: 2026-06-25
 
 `deadrotcom` is the shipped Deadrot monorepo.
 
@@ -16,6 +16,8 @@ last_verified: 2026-06-12
   generated source history.
 - Approved art/sprite/model/audio/UI masters and reference locks under
   `packages/assets/masters`.
+- Deadrot player identity, game gating, and game purchases: deadrot.com is the
+  playable franchise hub and keeps its own Clerk + Stripe.
 
 ## Does Not Own
 
@@ -23,6 +25,7 @@ last_verified: 2026-06-12
 - Generator CLI, desktop, or app tooling.
 - Provider/keychain integrations for asset generation.
 - Studio-site product tooling.
+- Tools/courses commerce and Studio Pass billing for the dev/learner audience.
 - The canonical org-level engine package `@shipshitgames/engine`; it belongs in
   the sibling `../shipshitgames` repo and may be consumed by Deadrot games.
 
@@ -48,6 +51,13 @@ it is imported by shipped games.
 packages. Keep it canonical in `../shipshitgames/packages/engine`, do not rename
 it to `@deadrot/engine`, and do not create a separate engine repo/board until
 the release cadence or external consumers justify that overhead.
+
+Status (2026-06-19): Deadrot is the first franchise under the Ship Shit Games
+umbrella; see `../shipshitgames/STUDIO-ARCHITECTURE.md`. Deadrot keeps its own
+Clerk + Stripe + game gates. Studio Pass is being decoupled to
+tools/courses-only; the cross-property bridge in
+`apps/web/lib/shipshit-entitlement*.ts` is being removed after grandfathering
+existing game-access subscribers. No Clerk consolidation or user migration.
 
 Status (2026-06-09): the temporary Deadrot fork at `packages/engine` has been
 RETIRED. Its camera + input extraction (#87/#88) was upstreamed into the

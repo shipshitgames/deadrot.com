@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
 const DEFAULT_TARGET_PROJECTS = [1, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+const DEFAULT_OPEN_STATUS = "Backlog";
+const STATUS_OPTIONS = [DEFAULT_OPEN_STATUS, "In Progress", "Done", "Deferred"];
 
-// Agent-routing lane labels. An open issue is expected to carry one of these
-// (Codex/Claude lanes) or have a human assignee (Vincent's manual lane). See
-// .agents/memory and the agent-routing convention for context.
+// Agent-routing lane labels. These are execution metadata for picked-up work;
+// unassigned/unlabeled open issues can legitimately sit in Backlog.
 const LANE_LABELS = ["codex:automation", "claude:routine"];
 
 const config = {
@@ -17,7 +18,7 @@ const config = {
   chunkSize: numberFromEnv("BOARD_HYGIENE_CHUNK_SIZE", 8),
   rateFloor: numberFromEnv("BOARD_HYGIENE_GRAPHQL_RATE_FLOOR", 1500),
   sleepMs: numberFromEnv("BOARD_HYGIENE_SLEEP_MS", 1500),
-  laneCheck: boolFromEnv("BOARD_HYGIENE_LANE_CHECK", true),
+  laneCheck: boolFromEnv("BOARD_HYGIENE_LANE_CHECK", false),
 };
 
 const token = process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN;
@@ -299,7 +300,7 @@ function validateProjectShape(project) {
   const status = singleSelectField(project, "Status");
   const priority = singleSelectField(project, "Priority");
 
-  for (const option of ["Todo", "In Progress", "Done", "Deferred"]) {
+  for (const option of STATUS_OPTIONS) {
     if (!optionId(status, option)) {
       throw new Error(`Project #${project.number} ${project.title} is missing Status option ${option}.`);
     }
@@ -363,8 +364,8 @@ function collectProjectUpdates(project) {
         projectId: project.id,
         itemId: item.id,
         fieldId: status.id,
-        optionId: statusOptions.get("Todo"),
-        summary: `#${issue.number} ${project.title} Status -> Todo`,
+        optionId: statusOptions.get(DEFAULT_OPEN_STATUS),
+        summary: `#${issue.number} ${project.title} Status -> ${DEFAULT_OPEN_STATUS}`,
       });
     }
 
@@ -565,8 +566,8 @@ async function addIssueToHub(issue, hubProject) {
     {
       projectId: hubProject.id,
       fieldId: status.id,
-      optionId: optionId(status, "Todo"),
-      summary: `#${issue.number} ${hubProject.title} Status -> Todo`,
+      optionId: optionId(status, DEFAULT_OPEN_STATUS),
+      summary: `#${issue.number} ${hubProject.title} Status -> ${DEFAULT_OPEN_STATUS}`,
     },
     {
       projectId: hubProject.id,
