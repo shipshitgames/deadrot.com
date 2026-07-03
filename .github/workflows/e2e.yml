@@ -169,3 +169,36 @@ jobs:
           path: .artifacts/e2e
           if-no-files-found: ignore
           retention-days: 14
+
+  # Stable, always-reporting aggregate check. The `games` matrix job name is
+  # dynamic (Playwright (<game>:<view>)) and skips entirely when nothing is
+  # affected, so it can't be a required status check. This gate rolls up the
+  # real jobs under one fixed context and is what the master ruleset requires.
+  # docker-game-e2e is intentionally excluded — it is push/cron-only and always
+  # skipped on PRs.
+  game-e2e-gate:
+    name: game-e2e-gate
+    needs: [affected-games, games]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Aggregate game E2E result
+        shell: bash
+        env:
+          AFFECTED_RESULT: ${{ needs.affected-games.result }}
+          GAMES_RESULT: ${{ needs.games.result }}
+        run: |
+          echo "affected-games: $AFFECTED_RESULT"
+          echo "games:          $GAMES_RESULT"
+          # Detector must have completed cleanly, else we don't know what to test.
+          if [[ "$AFFECTED_RESULT" != "success" ]]; then
+            echo "::error::affected-games did not succeed ($AFFECTED_RESULT)"
+            exit 1
+          fi
+          # `games` is skipped when no games were affected (count == 0) — a
+          # legitimate pass. Only real failure/cancellation should gate.
+          case "$GAMES_RESULT" in
+            success|skipped) echo "Game E2E gate passed." ;;
+            *) echo "::error::game E2E matrix result: $GAMES_RESULT"; exit 1 ;;
+          esac

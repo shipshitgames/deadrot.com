@@ -4,22 +4,31 @@ name: Web E2E
 # access states (#355). Kept separate from the game E2E (e2e.yml), which shards
 # per game and never picks up apps/web changes. Playwright boots `next dev` itself
 # (apps/web/playwright.config.ts), so no game dev servers are needed here.
+#
+# Triggers on every non-docs PR (paths-ignore parity with e2e.yml) so the
+# always-reporting `web-e2e-gate` can be a required status check. A cheap
+# in-workflow `detect` job then decides whether the heavy Playwright matrix
+# actually runs, so game-only PRs don't pay for a full web run.
 
 on:
   pull_request:
-    paths:
-      - "apps/web/**"
-      - "packages/**"
-      - "bun.lock"
-      - ".github/workflows/web-e2e.yml"
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.mdx"
+      - "docs/**"
+      - ".agents/**"
+      - ".claude/**"
+      - "skills/**"
   push:
     branches:
       - master
-    paths:
-      - "apps/web/**"
-      - "packages/**"
-      - "bun.lock"
-      - ".github/workflows/web-e2e.yml"
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.mdx"
+      - "docs/**"
+      - ".agents/**"
+      - ".claude/**"
+      - "skills/**"
   workflow_dispatch:
 
 concurrency:
@@ -35,8 +44,58 @@ permissions:
   contents: read
 
 jobs:
+  # Reproduce the old `paths:` allowlist as an in-workflow diff so the workflow
+  # can trigger on every PR (for the gate) while the expensive matrix stays
+  # scoped to PRs that actually touch web-relevant files.
+  detect:
+    name: Detect web changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      run_web: ${{ steps.detect.outputs.run_web }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Detect apps/web changes
+        id: detect
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+            head="${{ github.event.pull_request.head.sha }}"
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            base="${{ github.event.before }}"
+            head="${{ github.sha }}"
+          else
+            base=""; head=""
+          fi
+          # Manual dispatch, or first push to a new branch (all-zero before SHA):
+          # no usable base to diff — run the suite to be safe.
+          if [[ -z "$base" || "$base" =~ ^0+$ ]]; then
+            echo "run_web=true" >> "$GITHUB_OUTPUT"
+            echo "No base to diff against; running web E2E."
+            exit 0
+          fi
+          # Three-dot diff = the PR's own changes (merge-base..head), matching
+          # GitHub's `paths` filter semantics.
+          changed="$(git diff --name-only "$base...$head")"
+          echo "Changed files:"
+          echo "$changed"
+          if echo "$changed" | grep -qE '^(apps/web/|packages/|bun\.lock$|\.github/workflows/web-e2e\.yml$)'; then
+            echo "run_web=true" >> "$GITHUB_OUTPUT"
+            echo "Web-relevant changes detected; running web E2E matrix."
+          else
+            echo "run_web=false" >> "$GITHUB_OUTPUT"
+            echo "No web-relevant changes; skipping web E2E matrix."
+          fi
+
   web-e2e:
     name: Playwright (web:${{ matrix.view }})
+    needs: detect
+    if: needs.detect.outputs.run_web == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -89,3 +148,32 @@ jobs:
             apps/web/playwright-report/
             apps/web/test-results/
           retention-days: 7
+
+  # Stable, always-reporting aggregate check. `web-e2e` has a dynamic matrix name
+  # and is skipped when no web-relevant files change, so it can't be required
+  # directly. This gate rolls it up under one fixed context for the ruleset.
+  web-e2e-gate:
+    name: web-e2e-gate
+    needs: [detect, web-e2e]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Aggregate web E2E result
+        shell: bash
+        env:
+          DETECT_RESULT: ${{ needs.detect.result }}
+          WEB_RESULT: ${{ needs.web-e2e.result }}
+        run: |
+          echo "detect:  $DETECT_RESULT"
+          echo "web-e2e: $WEB_RESULT"
+          if [[ "$DETECT_RESULT" != "success" ]]; then
+            echo "::error::detect did not succeed ($DETECT_RESULT)"
+            exit 1
+          fi
+          # `web-e2e` is skipped when no web-relevant files changed — a legitimate
+          # pass. Only real failure/cancellation should gate.
+          case "$WEB_RESULT" in
+            success|skipped) echo "Web E2E gate passed." ;;
+            *) echo "::error::web E2E matrix result: $WEB_RESULT"; exit 1 ;;
+          esac
