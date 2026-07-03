@@ -8491,10 +8491,10 @@
       "path": "games/warline/props/portal-deck/command-table.webp",
       "cdnPath": "games/warline/props/portal-deck/command-table.webp",
       "mediaType": "image/webp",
-      "bytes": 255550,
-      "sha256": "16b823c47ce9aa631932353b99d9e8a1a03ccb2a25702caa87de98c18d1f13dc",
-      "width": 560,
-      "height": 360
+      "bytes": 312518,
+      "sha256": "00a37569b9ff83bc2b35e5c6695ea643a7ed555cb7367ecc4b32638c899e22c6",
+      "width": 627,
+      "height": 434
     },
     {
       "id": "games/warline/props/portal-deck/green-gate",
@@ -8515,10 +8515,10 @@
       "path": "games/warline/props/portal-deck/green-lift.webp",
       "cdnPath": "games/warline/props/portal-deck/green-lift.webp",
       "mediaType": "image/webp",
-      "bytes": 183450,
-      "sha256": "9254f542ad694afea91d020947c54099dfef4030624ba6cad5bfbcef8277198d",
-      "width": 320,
-      "height": 440
+      "bytes": 203350,
+      "sha256": "ce3cab0cfee56b4c5f7d6cc63e70f25926cf63d028e259a2c9f36f11452917c4",
+      "width": 337,
+      "height": 500
     },
     {
       "id": "games/warline/props/portal-deck/maw-spire",
@@ -8575,10 +8575,10 @@
       "path": "games/warline/props/portal-deck/red-pit.webp",
       "cdnPath": "games/warline/props/portal-deck/red-pit.webp",
       "mediaType": "image/webp",
-      "bytes": 233662,
-      "sha256": "09e9da8dc471a31cff5cf76f81d8edc418012f70c1e3729a68358b227d2cf71a",
-      "width": 390,
-      "height": 445
+      "bytes": 274548,
+      "sha256": "12592985e2916e3b141d518c27942ad19e2d5c5125835513fc5fab48996824a8",
+      "width": 478,
+      "height": 469
     },
     {
       "id": "games/warline/props/portal-deck/wall-gate",
