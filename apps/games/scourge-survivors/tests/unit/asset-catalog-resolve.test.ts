@@ -54,9 +54,13 @@ describe("asset catalog resolution (#76)", () => {
     it("resolves a weapon id and the weapon sprite carries placement metadata", () => {
       const ref = ASSET_CATALOG.weapon("pistol");
       expect(ref.sprite).toBe("weapon-pistol");
+      expect(ref.lootSprite).toBe("weapon-pistol-loot");
       const sprite = ASSET_CATALOG.spriteEntry(ref.sprite);
       expect(sprite.path).toMatch(/\.webp$/);
       expect(sprite.weapon?.muzzle).toHaveLength(3);
+      const lootSprite = ASSET_CATALOG.spriteEntry(ref.lootSprite);
+      expect(lootSprite.path).toMatch(/pistol-loot\.webp$/);
+      expect(lootSprite.scale).toEqual([1.4, 1.4]);
     });
 
     it("resolves pickup and fx ids", () => {

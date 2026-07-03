@@ -101,6 +101,10 @@ export interface RuntimeSpriteRef {
   sprite: string;
 }
 
+export interface RuntimeWeaponRef extends RuntimeSpriteRef {
+  lootSprite: string;
+}
+
 export interface RuntimeEnemyRef extends RuntimeSpriteRef {
   animation: RuntimeAnimationRef;
 }
@@ -112,7 +116,7 @@ export interface RuntimeUiRef {
 export interface ScourgeSurvivorsRuntimeManifest {
   enemies: Record<string, RuntimeEnemyRef>;
   players: Record<string, RuntimeSpriteRef>;
-  weapons: Record<string, RuntimeSpriteRef>;
+  weapons: Record<string, RuntimeWeaponRef>;
   pickups: Record<string, RuntimeSpriteRef>;
   projectiles: Record<string, RuntimeSpriteRef>;
   fx: Record<string, RuntimeSpriteRef>;

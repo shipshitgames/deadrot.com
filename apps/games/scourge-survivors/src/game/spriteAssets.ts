@@ -34,6 +34,10 @@ export function weaponSpriteAssetId(id: WeaponId): string {
   return ASSET_CATALOG.weapon(id).sprite;
 }
 
+function weaponLootSpriteAssetId(id: WeaponId): string {
+  return ASSET_CATALOG.weapon(id).lootSprite;
+}
+
 function pickupSpriteAssetId(id: "health" | "ammo" | "damage" | "dual" | "xpBlood"): string {
   return ASSET_CATALOG.pickup(id).sprite;
 }
@@ -218,12 +222,21 @@ for (const tex of [...Object.values(WEAPON_SPRITE_TEXTURES), ...Object.values(WE
   tex.wrapS = THREE.RepeatWrapping;
 }
 
-/** Weapon-only floor-loot sprites (no hands). Absent weapons fall back to the view-model. */
-export const WEAPON_LOOT_SPRITE_TEXTURES: Partial<Record<WeaponId, THREE.Texture>> = {
-  pistol: loadSpriteTexture("weapon-pistol-loot"),
-  smg: loadSpriteTexture("weapon-smg-loot"),
-  shotgun: loadSpriteTexture("weapon-shotgun-loot"),
-  cannon: loadSpriteTexture("weapon-cannon-loot"),
+/** Weapon-only floor-loot sprites (no hands), resolved from runtime weapon manifest refs. */
+export const WEAPON_LOOT_SPRITE_TEXTURES: Record<WeaponId, THREE.Texture> = {
+  pistol: loadSpriteTexture(weaponLootSpriteAssetId("pistol")),
+  smg: loadSpriteTexture(weaponLootSpriteAssetId("smg")),
+  shotgun: loadSpriteTexture(weaponLootSpriteAssetId("shotgun")),
+  cannon: loadSpriteTexture(weaponLootSpriteAssetId("cannon")),
+  sniper: loadSpriteTexture(weaponLootSpriteAssetId("sniper")),
+};
+
+export const WEAPON_LOOT_SPRITE_SCALES: Record<WeaponId, [number, number]> = {
+  pistol: spriteScale(weaponLootSpriteAssetId("pistol")),
+  smg: spriteScale(weaponLootSpriteAssetId("smg")),
+  shotgun: spriteScale(weaponLootSpriteAssetId("shotgun")),
+  cannon: spriteScale(weaponLootSpriteAssetId("cannon")),
+  sniper: spriteScale(weaponLootSpriteAssetId("sniper")),
 };
 
 export const WEAPON_SPRITE_CONFIG: Record<

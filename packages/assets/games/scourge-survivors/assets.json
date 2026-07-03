@@ -1014,8 +1014,8 @@
       ],
       "filter": "nearest",
       "scale": [
-        1,
-        1
+        1.4,
+        1.4
       ],
       "license": {
         "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
@@ -1038,8 +1038,8 @@
       ],
       "filter": "nearest",
       "scale": [
-        1,
-        1
+        1.4,
+        1.4
       ],
       "license": {
         "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
@@ -1062,8 +1062,8 @@
       ],
       "filter": "nearest",
       "scale": [
-        1,
-        1
+        1.4,
+        1.4
       ],
       "license": {
         "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
@@ -1086,8 +1086,8 @@
       ],
       "filter": "nearest",
       "scale": [
-        1,
-        1
+        1.4,
+        1.4
       ],
       "license": {
         "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
@@ -1110,8 +1110,8 @@
       ],
       "filter": "nearest",
       "scale": [
-        1,
-        1
+        1.4,
+        1.4
       ],
       "license": {
         "tool": "gpt-image-2 via Codex built-in image_gen; white chroma-key alpha; lossless WebP",
@@ -2330,19 +2330,24 @@
     },
     "weapons": {
       "pistol": {
-        "sprite": "weapon-pistol"
+        "sprite": "weapon-pistol",
+        "lootSprite": "weapon-pistol-loot"
       },
       "smg": {
-        "sprite": "weapon-smg"
+        "sprite": "weapon-smg",
+        "lootSprite": "weapon-smg-loot"
       },
       "shotgun": {
-        "sprite": "weapon-shotgun"
+        "sprite": "weapon-shotgun",
+        "lootSprite": "weapon-shotgun-loot"
       },
       "cannon": {
-        "sprite": "weapon-cannon"
+        "sprite": "weapon-cannon",
+        "lootSprite": "weapon-cannon-loot"
       },
       "sniper": {
-        "sprite": "weapon-sniper"
+        "sprite": "weapon-sniper",
+        "lootSprite": "weapon-sniper-loot"
       }
     },
     "pickups": {

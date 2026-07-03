@@ -18,8 +18,8 @@ import { PICKUP_COLORS, type Pickup } from "../data/internalTypes";
 import {
   PICKUP_SPRITE_SCALES,
   PICKUP_SPRITE_TEXTURES,
+  WEAPON_LOOT_SPRITE_SCALES,
   WEAPON_LOOT_SPRITE_TEXTURES,
-  WEAPON_SPRITE_TEXTURES,
 } from "../spriteAssets";
 import type { GameSystems } from "../systems";
 
@@ -56,12 +56,11 @@ export class PickupsSystem {
     // The "icon" is child[0]: a billboarded sprite for pickups and weapon drops.
     let icon: THREE.Object3D;
     if (isWeapon) {
-      // Floor loot = the weapon ALONE (no hands). Fall back to the view-model if a
-      // weapon-only sprite hasn't been generated yet.
+      // Floor loot = the weapon alone (no hands), resolved through the asset catalog.
       const lootTex = WEAPON_LOOT_SPRITE_TEXTURES[kind];
-      const s: [number, number] = lootTex ? [1.4, 1.4] : [1.5, 1.1];
+      const s = WEAPON_LOOT_SPRITE_SCALES[kind];
       const mat = new THREE.SpriteMaterial({
-        map: lootTex ?? WEAPON_SPRITE_TEXTURES[kind],
+        map: lootTex,
         transparent: true,
         depthWrite: false,
         toneMapped: false,
