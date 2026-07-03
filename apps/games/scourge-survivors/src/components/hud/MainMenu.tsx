@@ -463,7 +463,7 @@ function SurvivorsHub({
             Play a Run
           </IconText>
         }
-        meta={`${selected.name} · ${Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}m breach`}
+        meta={`Structured run · ${selected.name} · ${Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}m breach`}
         onClick={onOperator}
       />
       <MainMenuAction
@@ -485,7 +485,7 @@ function SurvivorsHub({
             Co-op
           </IconText>
         }
-        meta="Breach rooms"
+        meta="Co-op breach variant"
         onClick={onCoop}
       />
       <MainMenuAction

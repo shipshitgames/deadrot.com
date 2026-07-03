@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { survivorChapterStart } from "../../src/game/data/survivors";
 
 type SurvivorClassId = "ranger" | "heavy" | "scout" | "medic";
 
@@ -53,14 +54,15 @@ test.describe("survivor map select (#276)", () => {
         survivorChapter: 1,
       });
 
-    // Jump the run clock past the first chapter boundary (60s) and tick the
+    // Jump the run clock past the real first chapter boundary and tick the
     // structured run: the chapter must advance while the arena stays put.
-    await page.evaluate(() => {
+    const secondChapterClock = survivorChapterStart(1) + 5;
+    await page.evaluate((clock) => {
       const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
-      game.sys.survivors.survClock = 65;
+      game.sys.survivors.survClock = clock;
       game.sys.survivors.updateSurvivors(0.016);
       game.sys.hud.emit();
-    });
+    }, secondChapterClock);
 
     await expect
       .poll(() => snapshot(page))
@@ -86,6 +88,27 @@ test.describe("survivor map select (#276)", () => {
         survivors: true,
         mapName: "Ashgate",
       });
+  });
+
+  test("title menu reveals the Survivors hub as the default mode", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
+
+    await expect(page.getByText("Pyre breach hub")).toBeVisible();
+    await expect(page.getByText("Drop as a Pyre-operator")).toBeVisible();
+    await expect(page.getByText("Pyre operator ready")).toBeVisible();
+    await expect(page.getByText(/FPS ARENA/i)).toHaveCount(0);
+
+    await page.keyboard.press("Enter");
+
+    const hub = page.getByRole("navigation", { name: /Survivors hub/i });
+    await expect(hub).toBeVisible();
+    await expect(hub.getByRole("button", { name: /Play a Run/i })).toContainText(/Structured run/i);
+    await expect(hub.getByRole("button", { name: /Shop/i })).toBeVisible();
+    await expect(hub.getByRole("button", { name: /Co-op/i })).toContainText(/Co-op breach variant/i);
+    await expect(hub.getByRole("button", { name: /Leaderboard/i })).toBeVisible();
+    await expect(hub.getByRole("button", { name: /Campaign/i })).toHaveCount(0);
+    await expect(hub.getByRole("button", { name: /Multiplayer/i })).toHaveCount(0);
   });
 
   test("menu flow runs Character Select → Map Select → Run", async ({ page }) => {
