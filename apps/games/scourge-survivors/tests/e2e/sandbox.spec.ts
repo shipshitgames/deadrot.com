@@ -337,7 +337,7 @@ test.describe("dev sandbox smoke", () => {
 
     await expect(page.getByText("RUN SUMMARY")).toBeVisible();
     await expect(page.getByText("Structured run — operator signal gone")).toBeVisible();
-    await expect(page.locator(".ssg-stat-value", { hasText: "3/4" })).toBeVisible();
+    await expect(page.getByTestId("summary-depth")).toContainText("3/4");
     await expect(page.getByText("saved to shop")).toBeVisible();
 
     await expect
@@ -361,7 +361,64 @@ test.describe("dev sandbox smoke", () => {
       headshots: 5,
     });
     expect(saved.goldEarned).toBeGreaterThan(0);
-    await expect(page.locator(".ssg-stat-value", { hasText: `+${saved.goldEarned.toLocaleString()}` })).toBeVisible();
+    await expect(page.getByTestId("summary-gold")).toContainText(`+${saved.goldEarned.toLocaleString()}`);
+  });
+
+  test("shows run-summary mode and depth for co-op game over", async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.clear();
+    });
+    await page.goto("/");
+    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
+
+    await page.evaluate(() => {
+      type DevGame = {
+        ctx: {
+          campaign: boolean;
+          headshots: number;
+          kills: number;
+          multiplayer: boolean;
+          sandbox: boolean;
+          score: number;
+          status: string;
+          survivors: boolean;
+          time: number;
+        };
+        sys: {
+          gameOver: { gameOver: (outcome: "dead") => void };
+          hud: { emit: () => void };
+        };
+      };
+
+      const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
+      game.ctx.survivors = false;
+      game.ctx.campaign = false;
+      game.ctx.sandbox = false;
+      game.ctx.multiplayer = true;
+      game.ctx.status = "playing";
+      game.ctx.score = 7_777;
+      game.ctx.kills = 11;
+      game.ctx.headshots = 3;
+      game.ctx.time = 142;
+      game.sys.hud.emit();
+      game.sys.gameOver.gameOver("dead");
+    });
+
+    await expect(page.getByText("RUN SUMMARY")).toBeVisible();
+    await expect(page.getByText("Co-op run — squad down")).toBeVisible();
+    await expect(page.getByTestId("summary-mode")).toContainText("Co-op");
+    await expect(page.getByTestId("summary-depth")).toContainText("1/3");
+    await expect(page.getByTestId("summary-kills")).toContainText("11");
+    await expect(page.getByTestId("summary-gold")).toHaveCount(0);
+
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const [entry] = JSON.parse(localStorage.getItem("scourge-survivors.scores.v1") || "[]");
+          return entry?.mode;
+        }),
+      )
+      .toBe("coop");
   });
 
   test("loads runtime visual/audio assets and fires each gun", async ({ page }) => {

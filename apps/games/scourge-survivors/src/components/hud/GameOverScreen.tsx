@@ -27,6 +27,111 @@ function SummaryFact({
   );
 }
 
+function RunSummaryDetails({
+  state,
+  outcome,
+  survivors,
+  kills,
+  headshots,
+  lastRunGold,
+  frontBiomass,
+  depthValue,
+}: {
+  state: HudState;
+  outcome: HudState["outcome"];
+  survivors: boolean;
+  kills: number;
+  headshots: number;
+  lastRunGold: number;
+  frontBiomass: number;
+  depthValue: string;
+}) {
+  return (
+    <section className="scourge-run-summary-card" data-testid="run-detail-summary">
+      <div className="scourge-run-summary-grid">
+        {survivors && (
+          <SummaryFact
+            label="Operation"
+            value={OPERATION_NAME}
+            sub={`+${frontBiomass.toLocaleString()} biomass to the front`}
+            testId="summary-operation"
+          />
+        )}
+        <SummaryFact
+          label="Mode"
+          value={runModeLabel(state.runMode)}
+          sub={outcome === "win" ? "sealed" : "overrun"}
+          testId="summary-mode"
+        />
+        <SummaryFact label="Depth" value={depthValue} sub={state.runDepthName} testId="summary-depth" />
+        {!survivors && (
+          <SummaryFact
+            label="Result"
+            value={outcome === "win" ? "Sealed" : "Overrun"}
+            sub={state.runDepthName}
+            testId="summary-result"
+          />
+        )}
+        {survivors && (
+          <SummaryFact
+            label="Operator"
+            value={
+              <IconText icon={state.survivorClassIcon} size={20} className="scourge-run-summary-icon-value">
+                {state.survivorClassName}
+              </IconText>
+            }
+            sub={state.survivorClassRole}
+            testId="summary-operator"
+          />
+        )}
+        {survivors && (
+          <SummaryFact
+            label="Level"
+            value={state.level}
+            sub={state.survivorEvolved.length ? `${state.survivorEvolved.length} evolved` : "no evolutions"}
+            testId="summary-level"
+          />
+        )}
+        <SummaryFact label="Kills" value={kills} sub={`${headshots} headshots`} testId="summary-kills" />
+        {survivors && (
+          <SummaryFact
+            label="Gold"
+            value={
+              <IconText icon="gold" size={18} className="scourge-run-summary-icon-value">
+                +{lastRunGold.toLocaleString()}
+              </IconText>
+            }
+            sub="saved to shop"
+            testId="summary-gold"
+          />
+        )}
+      </div>
+      {survivors && state.survivorEvolved.length > 0 && (
+        <div className="scourge-run-chip-row scourge-run-chip-row--evolutions">
+          {state.survivorEvolved.map((name) => (
+            <span key={name} className="scourge-run-chip scourge-run-chip--evolved">
+              {name}
+            </span>
+          ))}
+        </div>
+      )}
+      {survivors && state.build.length > 0 && (
+        <div className="scourge-run-chip-row">
+          {state.build.slice(0, 18).map((b) => (
+            <span
+              key={b.id}
+              className={`scourge-run-chip ${b.evolved ? "scourge-run-chip--evolved" : ""}`}
+              title={b.name}
+            >
+              <PixelIcon id={b.icon} size={15} label={b.name} /> {b.level}
+            </span>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 /** Run summary / shop panels shown when a run ends. */
 export function GameOverScreen({
   state,
@@ -87,86 +192,25 @@ export function GameOverScreen({
       ? `${runModeLabel(state.runMode)} run — breach sealed`
       : `${runModeLabel(state.runMode)} run — operator signal gone`
     : outcome === "win"
-      ? "Breach-boss down — run cleared"
-      : "You were overrun";
+      ? `${runModeLabel(state.runMode)} run — run cleared`
+      : `${runModeLabel(state.runMode)} run — ${state.multiplayer ? "squad down" : "operator down"}`;
 
-  const summaryTitle = survivors ? "RUN SUMMARY" : outcome === "win" ? "VICTORY" : "GAME OVER";
+  const summaryTitle = outcome === "win" && !survivors ? "VICTORY" : "RUN SUMMARY";
+  const depthValue =
+    state.runDepthTotal > 0 ? `${state.runDepth}/${state.runDepthTotal}` : state.runDepth.toLocaleString();
 
   const summaryBody = (
     <div className="scourge-gameover-summary" data-testid="gameover-summary">
-      {survivors && (
-        <section className="scourge-run-summary-card" data-testid="run-detail-summary">
-          <div className="scourge-run-summary-grid">
-            <SummaryFact
-              label="Operation"
-              value={OPERATION_NAME}
-              sub={`+${frontBiomass.toLocaleString()} biomass to the front`}
-              testId="summary-operation"
-            />
-            <SummaryFact
-              label="Mode"
-              value={runModeLabel(state.runMode)}
-              sub={outcome === "win" ? "sealed" : "lost"}
-              testId="summary-mode"
-            />
-            <SummaryFact
-              label="Depth"
-              value={`${state.runDepth}/${state.runDepthTotal}`}
-              sub={state.runDepthName}
-              testId="summary-depth"
-            />
-            <SummaryFact
-              label="Operator"
-              value={
-                <IconText icon={state.survivorClassIcon} size={20} className="scourge-run-summary-icon-value">
-                  {state.survivorClassName}
-                </IconText>
-              }
-              sub={state.survivorClassRole}
-              testId="summary-operator"
-            />
-            <SummaryFact
-              label="Level"
-              value={state.level}
-              sub={state.survivorEvolved.length ? `${state.survivorEvolved.length} evolved` : "no evolutions"}
-              testId="summary-level"
-            />
-            <SummaryFact label="Kills" value={kills} sub={`${headshots} headshots`} testId="summary-kills" />
-            <SummaryFact
-              label="Gold"
-              value={
-                <IconText icon="gold" size={18} className="scourge-run-summary-icon-value">
-                  +{lastRunGold.toLocaleString()}
-                </IconText>
-              }
-              sub="saved to shop"
-              testId="summary-gold"
-            />
-          </div>
-          {state.survivorEvolved.length > 0 && (
-            <div className="scourge-run-chip-row scourge-run-chip-row--evolutions">
-              {state.survivorEvolved.map((name) => (
-                <span key={name} className="scourge-run-chip scourge-run-chip--evolved">
-                  {name}
-                </span>
-              ))}
-            </div>
-          )}
-          {state.build.length > 0 && (
-            <div className="scourge-run-chip-row">
-              {state.build.slice(0, 18).map((b) => (
-                <span
-                  key={b.id}
-                  className={`scourge-run-chip ${b.evolved ? "scourge-run-chip--evolved" : ""}`}
-                  title={b.name}
-                >
-                  <PixelIcon id={b.icon} size={15} label={b.name} /> {b.level}
-                </span>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
+      <RunSummaryDetails
+        state={state}
+        outcome={outcome}
+        survivors={survivors}
+        kills={kills}
+        headshots={headshots}
+        lastRunGold={lastRunGold}
+        frontBiomass={frontBiomass}
+        depthValue={depthValue}
+      />
       <div className="scourge-end-metrics" data-testid="run-metrics">
         <div>
           <div className={STAT_LABEL}>Score</div>
