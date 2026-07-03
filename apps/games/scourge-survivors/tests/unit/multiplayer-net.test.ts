@@ -4,7 +4,7 @@
 // `createPresenceRegistry` clients (from `@deadrot/game-kit/net`) talk through an
 // in-memory hub that mirrors the wire protocol of `party/arena.ts` (the real
 // PartyKit server, intentionally left untouched). This is the headless stand-in
-// for "playtest a 2-client PvP session": join, presence, state sync, server-owned
+// for "playtest a 2-client co-op session": join, presence, state sync, server-owned
 // hit/kill resolution, and leave — all without a browser or a live PartyKit dev
 // server.
 import {
@@ -301,7 +301,7 @@ function makeClient(hub: ArenaHub, name: string, avatar = "ranger"): Client {
   return { transport, presence, self };
 }
 
-describe("multiplayer transport + presence (2-client PvP)", () => {
+describe("multiplayer transport + presence (2-client co-op)", () => {
   it("two clients join and see each other as peers", () => {
     const hub = new ArenaHub();
     const a = makeClient(hub, "Ana");

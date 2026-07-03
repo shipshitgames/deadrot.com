@@ -1,7 +1,16 @@
 import { SCOURGE_THREAT_TIERS } from "../../game/data/enemies";
 import type { HudState } from "../../game/types";
 import { PixelIcon } from "../PixelIcon";
-import { formatTime, HUD_CORNER, IconText, runModeLabel, STAT_LABEL, STAT_SUB, STAT_VALUE } from "./shared";
+import {
+  formatTime,
+  HUD_CORNER,
+  IconText,
+  killStatLabel,
+  runModeLabel,
+  STAT_LABEL,
+  STAT_SUB,
+  STAT_VALUE,
+} from "./shared";
 
 function healthColor(frac: number): string {
   if (frac <= 0.28) return "#c1121f";
@@ -391,7 +400,7 @@ export function CombatOverlays({ state }: { state: HudState }) {
             </div>
           )}
           <div>
-            <div className={STAT_LABEL}>{multiplayer ? "Frags" : "Kills"}</div>
+            <div className={STAT_LABEL}>{killStatLabel()}</div>
             <div className={STAT_VALUE}>{kills}</div>
           </div>
           <div>

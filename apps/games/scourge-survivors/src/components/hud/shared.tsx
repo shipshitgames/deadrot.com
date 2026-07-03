@@ -48,10 +48,14 @@ export function runModeLabel(mode?: HudState["runMode"]): string {
     case "sandbox":
       return "Sandbox";
     case "campaign":
-      return "Campaign";
+      return "Breach";
     default:
       return "Run";
   }
+}
+
+export function killStatLabel(): string {
+  return "Kills";
 }
 
 function depthLabel(depth?: number, total?: number, name?: string): string {
