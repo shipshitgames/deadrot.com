@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { COLORS, CONSTANTS, MARCH_DIR, type Team } from "../constants";
+import { CHAMPIONS, type ChampionId, DEFAULT_ENEMY_CHAMPION_ID, DEFAULT_PLAYER_CHAMPION_ID } from "../data/champions";
 import { makeBase, makeChampion, makeMinion, makeScourge, makeTower } from "../factory";
 import type { Game } from "../Game";
 import { ASHGATE_MAP, activeLanes, type LaneDef, type MapDef, towerZ } from "../map";
@@ -50,7 +51,20 @@ export class EntitySystem {
   // Pooled transient beams (champion + minion attack flashes).
   private beams: { mesh: THREE.Mesh; life: number; max: number }[] = [];
 
+  playerChampionId: ChampionId = DEFAULT_PLAYER_CHAMPION_ID;
+  enemyChampionId: ChampionId = DEFAULT_ENEMY_CHAMPION_ID;
+
   constructor(private readonly game: Game) {}
+
+  setChampion(id: ChampionId): void {
+    if (CHAMPIONS[id].team !== "pyre") throw new Error(`PACTFALL: ${id} is not a Pyre champion`);
+    this.playerChampionId = id;
+  }
+
+  setEnemyChampion(id: ChampionId): void {
+    if (CHAMPIONS[id].team !== "warden") throw new Error(`PACTFALL: ${id} is not a Warden champion`);
+    this.enemyChampionId = id;
+  }
 
   clearEvents(): void {
     this.events.hits.length = 0;
@@ -79,11 +93,11 @@ export class EntitySystem {
     this.playerMoveStartBoostTimer = 0;
     this.clearEvents();
 
-    this.champion = this.spawn(makeChampion("pyre"));
-    this.champion.pos.copy(this.championSpawnPos("pyre"));
+    this.champion = this.spawn(makeChampion(this.playerChampionId));
+    this.champion.pos.copy(this.championSpawnPos("pyre", this.champion));
 
-    this.enemyChampion = this.spawn(makeChampion("warden"));
-    this.enemyChampion.pos.copy(this.championSpawnPos("warden"));
+    this.enemyChampion = this.spawn(makeChampion(this.enemyChampionId));
+    this.enemyChampion.pos.copy(this.championSpawnPos("warden", this.enemyChampion));
 
     this.friendlyBase = this.spawn(makeBase("pyre"));
     this.friendlyBase.pos.set(this.map.bases.pyre.x, CONSTANTS.base.height / 2, this.map.bases.pyre.z);
@@ -118,8 +132,8 @@ export class EntitySystem {
   }
 
   // Where each champion (re)deploys: just out in front of its own base.
-  private championSpawnPos(team: Team): THREE.Vector3 {
-    const y = CONSTANTS.champion.height / 2;
+  private championSpawnPos(team: Team, champion: Entity): THREE.Vector3 {
+    const y = champion.height / 2;
     const z = team === "pyre" ? CONSTANTS.champion.respawnZ : -CONSTANTS.champion.respawnZ;
     return new THREE.Vector3(0, y, z);
   }
@@ -127,7 +141,10 @@ export class EntitySystem {
   update(dt: number): void {
     // Pact Brand slow decays everywhere in one pass.
     for (const e of this.all) {
-      if (e.slowTimer > 0) e.slowTimer = Math.max(0, e.slowTimer - dt);
+      if (e.slowTimer > 0) {
+        e.slowTimer = Math.max(0, e.slowTimer - dt);
+        if (e.slowTimer === 0) e.slowFactor = 1;
+      }
     }
 
     this.tickSpawns(dt);
@@ -191,8 +208,10 @@ export class EntitySystem {
         c.mana = c.maxMana;
         c.cooldown = 0;
         c.slowTimer = 0;
+        c.slowFactor = 1;
         c.mesh.visible = true;
-        c.pos.copy(this.championSpawnPos(team));
+        c.pos.copy(this.championSpawnPos(team, c));
+        this.game.abilities?.resetCaster(team);
         if (team === "pyre") {
           this.playerMoveVel.set(0, 0);
           this.wasPlayerMoving = false;
@@ -208,7 +227,7 @@ export class EntitySystem {
     const c = this.champion;
     if (!c.alive) return;
     const input = this.game.input;
-    const speed = slowedSpeed(CONSTANTS.champion.moveSpeed, c.slowTimer, CONSTANTS.abilities.w.slowFactor);
+    const speed = slowedSpeed(c.moveSpeed, c.slowTimer, c.slowFactor);
     const desired = new THREE.Vector2(0, 0);
     let clickTarget: THREE.Vector3 | null = null;
 
@@ -287,7 +306,7 @@ export class EntitySystem {
   private moveEnemyChampion(dt: number): void {
     const c = this.enemyChampion;
     if (!c.alive) return;
-    const speed = slowedSpeed(CONSTANTS.champion.moveSpeed, c.slowTimer, CONSTANTS.abilities.w.slowFactor);
+    const speed = slowedSpeed(c.moveSpeed, c.slowTimer, c.slowFactor);
 
     let tx: number;
     let tz: number;
@@ -327,7 +346,7 @@ export class EntitySystem {
       const base = this.opposingBase(team);
       if (base.alive && this.flatDist(m.pos, base.pos) <= m.attackRange + base.radius) continue;
 
-      const speed = slowedSpeed(CONSTANTS.minion.moveSpeed, m.slowTimer, CONSTANTS.abilities.w.slowFactor);
+      const speed = slowedSpeed(CONSTANTS.minion.moveSpeed, m.slowTimer, m.slowFactor);
       m.pos.z += MARCH_DIR[team] * speed * dt;
     }
   }
@@ -537,7 +556,7 @@ export class EntitySystem {
       // Champions go down and redeploy after a delay — death now has a cost.
       e.alive = false;
       e.mesh.visible = false;
-      this.championDown[e.team as Team] = CONSTANTS.champion.respawnDelay;
+      this.championDown[e.team as Team] = e.respawnDelay;
       if (e === this.champion) {
         this.game.input.clickTarget = null; // drop any stale move order
         this.events.playerDied = true;

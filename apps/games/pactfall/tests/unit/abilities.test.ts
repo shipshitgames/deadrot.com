@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { CONSTANTS } from "../../src/game/constants";
+import { CHAMPIONS, DEFAULT_ENEMY_CHAMPION_ID, DEFAULT_PLAYER_CHAMPION_ID } from "../../src/game/data/champions";
 import { makeChampion } from "../../src/game/factory";
 import {
   ABILITY_KEYS,
@@ -220,10 +221,11 @@ describe("pure helpers — mana regen, slow, line skillshot math", () => {
 });
 
 describe("AbilitySystem — casts through the live sim", () => {
-  test("champions deploy with a full mana pool wired from constants", () => {
+  test("champions deploy with a full mana pool wired from their roster stats", () => {
     const c = makeChampion("pyre");
-    expect(c.mana).toBe(CONSTANTS.champion.maxMana);
-    expect(c.maxMana).toBe(CONSTANTS.champion.maxMana);
+    const def = CHAMPIONS[DEFAULT_PLAYER_CHAMPION_ID];
+    expect(c.mana).toBe(def.stats.maxMana);
+    expect(c.maxMana).toBe(def.stats.maxMana);
     expect(c.slowTimer).toBe(0);
   });
 
@@ -232,9 +234,9 @@ describe("AbilitySystem — casts through the live sim", () => {
     game.abilities.enemy.cooldowns.q = 999; // keep the AI quiet
     game.entities.champion.mana = 0;
     advanceAbilities(game, 1);
-    expect(game.entities.champion.mana).toBeCloseTo(CONSTANTS.champion.manaRegen, 1);
+    expect(game.entities.champion.mana).toBeCloseTo(game.entities.champion.manaRegen, 1);
     advanceAbilities(game, 60);
-    expect(game.entities.champion.mana).toBe(CONSTANTS.champion.maxMana);
+    expect(game.entities.champion.mana).toBe(game.entities.champion.maxMana);
   });
 
   test("Q strikes the first enemy down the lane, pays mana, starts the cooldown", () => {
@@ -242,14 +244,15 @@ describe("AbilitySystem — casts through the live sim", () => {
     game.abilities.enemy.cooldowns.q = 999;
     const player = game.entities.champion;
     const foe = game.entities.enemyChampion;
+    const q = player.abilities!.q;
     foe.pos.set(0, foe.pos.y, player.pos.z + 8); // 8 units dead ahead (+Z facing)
 
     game.input.queue.push("q");
     game.abilities.update(1 / 60);
 
-    expect(foe.hp).toBe(foe.maxHp - CONSTANTS.abilities.q.damage);
-    expect(player.mana).toBe(CONSTANTS.champion.maxMana - CONSTANTS.abilities.q.manaCost);
-    expect(game.abilities.player.cooldowns.q).toBeCloseTo(CONSTANTS.abilities.q.cooldown, 5);
+    expect(foe.hp).toBe(foe.maxHp - q.damage);
+    expect(player.mana).toBe(player.maxMana - q.manaCost);
+    expect(game.abilities.player.cooldowns.q).toBeCloseTo(q.cooldown, 5);
     expect(game.abilities.events.playerCasts).toEqual(["q"]);
   });
 
@@ -258,6 +261,7 @@ describe("AbilitySystem — casts through the live sim", () => {
     game.abilities.enemy.cooldowns.q = 999;
     const player = game.entities.champion;
     const foe = game.entities.enemyChampion;
+    const q = player.abilities!.q;
     foe.pos.set(5, foe.pos.y, player.pos.z + 8); // well off the +Z line
 
     game.input.queue.push("q");
@@ -265,7 +269,7 @@ describe("AbilitySystem — casts through the live sim", () => {
 
     expect(foe.hp).toBe(foe.maxHp);
     // The cast still costs mana — whiffing is the punishment.
-    expect(player.mana).toBe(CONSTANTS.champion.maxMana - CONSTANTS.abilities.q.manaCost);
+    expect(player.mana).toBe(player.maxMana - q.manaCost);
   });
 
   test("casting without mana dryfires: no damage, no cooldown burned", () => {
@@ -290,13 +294,13 @@ describe("AbilitySystem — casts through the live sim", () => {
     game.abilities.enemy.cooldowns.q = 999;
     const player = game.entities.champion;
     const foe = game.entities.enemyChampion;
+    const w = player.abilities!.w;
     foe.pos.set(2, foe.pos.y, player.pos.z + 2);
 
     game.abilities.castW(player, { x: foe.pos.x, z: foe.pos.z });
     advanceAbilities(game, 1);
 
     expect(foe.slowTimer).toBeGreaterThan(0);
-    const w = CONSTANTS.abilities.w;
     const lost = foe.maxHp - foe.hp;
     expect(lost).toBeGreaterThanOrEqual(w.tickDamage); // at least one tick landed
     expect(lost).toBeLessThanOrEqual(w.tickDamage * 3); // but it's chip, not a nuke
@@ -326,10 +330,11 @@ describe("AbilitySystem — casts through the live sim", () => {
     game.abilities.enemy.cooldowns.q = 999;
     const player = game.entities.champion;
     const foe = game.entities.enemyChampion;
+    const w = player.abilities!.w;
     foe.pos.set(2, foe.pos.y, player.pos.z + 2);
 
     game.abilities.castW(player, { x: foe.pos.x, z: foe.pos.z });
-    advanceAbilities(game, CONSTANTS.abilities.w.duration + 0.2);
+    advanceAbilities(game, w.duration + 0.2);
     const afterExpiry = foe.hp;
     advanceAbilities(game, 1);
     expect(foe.hp).toBe(afterExpiry);
@@ -339,14 +344,15 @@ describe("AbilitySystem — casts through the live sim", () => {
     const game = makeStubGame();
     game.abilities.enemy.cooldowns.q = 999;
     const player = game.entities.champion;
+    const e = player.abilities!.e;
     const z0 = player.pos.z;
 
     game.input.queue.push("e");
     game.abilities.update(1 / 60);
 
-    expect(player.pos.z).toBeCloseTo(z0 + CONSTANTS.abilities.e.distance, 5);
-    expect(player.mana).toBe(CONSTANTS.champion.maxMana - CONSTANTS.abilities.e.manaCost);
-    expect(game.abilities.player.cooldowns.e).toBeCloseTo(CONSTANTS.abilities.e.cooldown, 5);
+    expect(player.pos.z).toBeCloseTo(z0 + e.distance, 5);
+    expect(player.mana).toBe(player.maxMana - e.manaCost);
+    expect(game.abilities.player.cooldowns.e).toBeCloseTo(e.cooldown, 5);
   });
 
   test("E respects the lane clamps — no vaulting out of the arena", () => {
@@ -368,6 +374,8 @@ describe("AbilitySystem — Warden AI lance is telegraphed and dodge-able", () =
   test("the AI casts Q on cooldown when the player is in range, after a windup", () => {
     const game = makeStubGame();
     const player = game.entities.champion;
+    const enemyQ = game.entities.enemyChampion.abilities!.q;
+    expect(game.entities.enemyChampion.championId).toBe(DEFAULT_ENEMY_CHAMPION_ID);
     player.pos.set(0, player.pos.y, game.entities.enemyChampion.pos.z - 10); // inside Q range
 
     game.abilities.update(1 / 60); // AI locks in the telegraph
@@ -376,7 +384,7 @@ describe("AbilitySystem — Warden AI lance is telegraphed and dodge-able", () =
     expect(player.hp).toBe(player.maxHp); // nothing lands during the windup
 
     advanceAbilities(game, CONSTANTS.ai.qWindup + 0.1);
-    expect(player.hp).toBe(player.maxHp - CONSTANTS.abilities.q.damage);
+    expect(player.hp).toBe(player.maxHp - enemyQ.damage);
   });
 
   test("side-stepping the telegraph dodges the whole nuke", () => {

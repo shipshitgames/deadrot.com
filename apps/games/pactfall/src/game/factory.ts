@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { COLORS, CONSTANTS, type Team } from "./constants";
+import { type ChampionDef, type ChampionId, championById, defaultChampionForTeam } from "./data/champions";
 import type { Entity } from "./types";
 
 // Pure constructors for the visual + data twin of each entity. All art is
@@ -8,7 +9,27 @@ import type { Entity } from "./types";
 let meshSeed = 0;
 function baseEntity(
   req: Pick<Entity, "kind" | "team" | "mesh" | "maxHp" | "radius"> &
-    Partial<Pick<Entity, "attackRange" | "attackDamage" | "attackCooldown" | "mana" | "maxMana">>,
+    Partial<
+      Pick<
+        Entity,
+        | "height"
+        | "championId"
+        | "championName"
+        | "championFaction"
+        | "championRole"
+        | "championSilhouette"
+        | "abilities"
+        | "attackRange"
+        | "attackDamage"
+        | "attackCooldown"
+        | "moveSpeed"
+        | "respawnDelay"
+        | "mana"
+        | "maxMana"
+        | "manaRegen"
+        | "lowHpFraction"
+      >
+    >,
 ): Entity {
   return {
     id: meshSeed++,
@@ -16,12 +37,24 @@ function baseEntity(
     hp: req.maxHp,
     alive: true,
     cooldown: 0,
+    height: req.height ?? req.radius * 2,
+    championId: req.championId ?? null,
+    championName: req.championName ?? "",
+    championFaction: req.championFaction ?? "",
+    championRole: req.championRole ?? "",
+    championSilhouette: req.championSilhouette ?? "",
+    abilities: req.abilities ?? null,
     attackRange: req.attackRange ?? 0,
     attackDamage: req.attackDamage ?? 0,
     attackCooldown: req.attackCooldown ?? 0,
+    moveSpeed: req.moveSpeed ?? 0,
+    respawnDelay: req.respawnDelay ?? 0,
     mana: req.mana ?? 0,
     maxMana: req.maxMana ?? 0,
+    manaRegen: req.manaRegen ?? 0,
+    lowHpFraction: req.lowHpFraction ?? 0,
     slowTimer: 0,
+    slowFactor: 1,
     kind: req.kind,
     team: req.team,
     mesh: req.mesh,
@@ -30,51 +63,63 @@ function baseEntity(
   };
 }
 
-export function makeChampion(team: Team = "pyre"): Entity {
-  const pyre = team === "pyre";
+function resolveChampion(idOrTeam: ChampionId | Team = "pyre"): ChampionDef {
+  if (idOrTeam === "pyre" || idOrTeam === "warden") return defaultChampionForTeam(idOrTeam);
+  return championById(idOrTeam);
+}
+
+export function makeChampion(idOrTeam: ChampionId | Team = "pyre"): Entity {
+  const champion = resolveChampion(idOrTeam);
+  const pyre = champion.team === "pyre";
   const g = new THREE.Group();
+  g.scale.setScalar(champion.visual.scale);
 
   const body = new THREE.Mesh(
-    new THREE.CapsuleGeometry(
-      CONSTANTS.champion.radius,
-      CONSTANTS.champion.height - CONSTANTS.champion.radius * 2,
-      6,
-      12,
-    ),
+    new THREE.CapsuleGeometry(champion.stats.radius, champion.stats.height - champion.stats.radius * 2, 6, 12),
     new THREE.MeshStandardMaterial({
-      // Player reads as bone/hellfire; the Warden champion reads cold gunmetal/blood-hot.
-      color: pyre ? COLORS.bone : COLORS.gunmetal,
-      emissive: pyre ? COLORS.blood : COLORS.bloodHot,
-      emissiveIntensity: pyre ? 0.35 : 0.5,
+      color: champion.visual.bodyColor,
+      emissive: champion.visual.bodyEmissive,
+      emissiveIntensity: champion.visual.emissiveIntensity,
       roughness: 0.5,
-      metalness: pyre ? 0.2 : 0.55,
+      metalness: champion.visual.metalness,
     }),
   );
   g.add(body);
 
-  // A crest so each champion reads at a glance: hellfire for Pyre, blood-hot for the Warden.
+  // A crest so each champion reads at a glance: triangular Pyre pressure, square Warden stability.
   const crest = new THREE.Mesh(
-    new THREE.ConeGeometry(0.5, 0.9, 6),
+    pyre ? new THREE.ConeGeometry(0.5, 0.9, 6) : new THREE.BoxGeometry(0.85, 0.5, 0.85),
     new THREE.MeshStandardMaterial({
-      color: pyre ? COLORS.hellfire : COLORS.bloodHot,
-      emissive: pyre ? COLORS.hellfire : COLORS.bloodHot,
+      color: champion.visual.crestColor,
+      emissive: champion.visual.crestColor,
       emissiveIntensity: 1.1,
     }),
   );
-  crest.position.y = CONSTANTS.champion.height / 2 + 0.4;
+  crest.position.y = champion.stats.height / 2 + 0.4;
   g.add(crest);
 
   return baseEntity({
     kind: "champion",
-    team,
+    team: champion.team,
     mesh: g,
-    maxHp: CONSTANTS.champion.maxHp,
-    radius: CONSTANTS.champion.radius,
-    attackRange: CONSTANTS.champion.attackRange,
-    attackDamage: CONSTANTS.champion.attackDamage,
-    attackCooldown: CONSTANTS.champion.attackCooldown,
-    mana: CONSTANTS.champion.maxMana,
-    maxMana: CONSTANTS.champion.maxMana,
+    maxHp: champion.stats.maxHp,
+    radius: champion.stats.radius,
+    height: champion.stats.height,
+    championId: champion.id,
+    championName: champion.name,
+    championFaction: champion.faction,
+    championRole: champion.role,
+    championSilhouette: champion.silhouette,
+    abilities: champion.abilities,
+    attackRange: champion.stats.attackRange,
+    attackDamage: champion.stats.attackDamage,
+    attackCooldown: champion.stats.attackCooldown,
+    moveSpeed: champion.stats.moveSpeed,
+    respawnDelay: champion.stats.respawnDelay,
+    mana: champion.stats.maxMana,
+    maxMana: champion.stats.maxMana,
+    manaRegen: champion.stats.manaRegen,
+    lowHpFraction: champion.stats.lowHpFraction,
   });
 }
 

@@ -90,6 +90,36 @@ body {
   justify-content: center;
 }
 
+#champion-readout {
+  flex: 0 1 220px;
+  min-width: 168px;
+  border: 1px solid var(--gunmetal);
+  background: var(--coal);
+  padding: 7px 12px;
+}
+
+#champion-name,
+#champion-role {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#champion-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bone);
+  letter-spacing: 0.08em;
+}
+
+#champion-role {
+  margin-top: 4px;
+  font-size: 9px;
+  color: var(--ash);
+  letter-spacing: 0.08em;
+}
+
 .meter {
   flex: 1 1 0;
   min-width: 0;
@@ -336,6 +366,67 @@ body {
   letter-spacing: 0.16em;
 }
 
+.champion-select {
+  display: grid;
+  gap: 8px;
+  width: min(520px, 86vw);
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.champion-select__label {
+  padding: 0;
+  font-size: 10px;
+  color: var(--ash);
+  letter-spacing: 0.16em;
+  text-align: left;
+}
+
+.champion-select__buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.champion-select__button {
+  appearance: none;
+  font: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ash);
+  border: 1px solid var(--gunmetal);
+  background: rgba(18, 18, 20, 0.82);
+  padding: 9px 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.champion-select__button span,
+.champion-select__button small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.champion-select__button span {
+  font-size: 11px;
+  color: var(--bone);
+}
+
+.champion-select__button small {
+  margin-top: 5px;
+  font-size: 8px;
+  color: var(--ash);
+}
+
+.champion-select__button--active {
+  border-color: var(--hellfire);
+  color: var(--bone);
+  box-shadow:
+    0 0 0 1px rgba(255, 106, 0, 0.38),
+    0 0 18px -8px rgba(255, 106, 0, 0.9);
+}
+
 /* Brand stamp */
 #hud::after {
   content: "PACTFALL \2014 SHIP SHIT GAMES";
@@ -371,5 +462,18 @@ body {
 
   .mana-block {
     min-width: 84px;
+  }
+
+  #hud-bottom {
+    bottom: 58px;
+    gap: 8px;
+  }
+
+  #champion-readout {
+    display: none;
+  }
+
+  .champion-select__buttons {
+    grid-template-columns: 1fr;
   }
 }

@@ -27,6 +27,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+import { type ChampionId, championsForTeam, DEFAULT_PLAYER_CHAMPION_ID } from "../game/data/champions";
 import type { Game } from "../game/Game";
 import { ABILITY_KEYS, type AbilityKey } from "../game/systems/abilities";
 import type { Phase } from "../game/types";
@@ -40,6 +41,8 @@ export function AppShell() {
   // once main.ts has spun it up. We only need it to drive pause/resume.
   const [game, setGame] = useState<Game | null>(() => getBridgeGame());
   const [showSettings, setShowSettings] = useState(false);
+  const [selectedChampionId, setSelectedChampionId] = useState<ChampionId>(DEFAULT_PLAYER_CHAMPION_ID);
+  const playerChampions = useMemo(() => championsForTeam("pyre"), []);
   const subscribePhase = useCallback(
     (notify: () => void) => {
       if (!game) return () => {};
@@ -66,6 +69,10 @@ export function AppShell() {
   const revealed = useEnterToReveal(phase === "title");
 
   useEffect(() => subscribeBridgeGame(setGame), []);
+
+  useEffect(() => {
+    game?.setChampion(selectedChampionId);
+  }, [game, selectedChampionId]);
 
   // Esc toggles pause, but only while a match is actually in play.
   useEffect(() => {
@@ -107,6 +114,10 @@ export function AppShell() {
     },
     [game],
   );
+
+  const selectChampion = useCallback((id: ChampionId) => {
+    setSelectedChampionId(id);
+  }, []);
 
   const pauseStatus = useMemo(
     () => (
@@ -184,6 +195,10 @@ export function AppShell() {
         </div>
 
         <div id="hud-bottom">
+          <div id="champion-readout">
+            <span id="champion-name" />
+            <span id="champion-role" />
+          </div>
           <div className="meter meter--wide" id="meter-hp">
             <span className="meter-label">CHAMPION HP</span>
             <div className="bar bar--hp">
@@ -219,6 +234,27 @@ export function AppShell() {
             </MainMenuCopy>
             {revealed ? (
               <MainMenuNav aria-label="Main menu">
+                <fieldset className="champion-select">
+                  <legend className="champion-select__label">Champion</legend>
+                  <div className="champion-select__buttons">
+                    {playerChampions.map((champion) => (
+                      <button
+                        key={champion.id}
+                        type="button"
+                        className={
+                          champion.id === selectedChampionId
+                            ? "champion-select__button champion-select__button--active"
+                            : "champion-select__button"
+                        }
+                        aria-pressed={champion.id === selectedChampionId}
+                        onClick={() => selectChampion(champion.id)}
+                      >
+                        <span>{champion.name}</span>
+                        <small>{champion.role}</small>
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
                 <MainMenuAction
                   type="button"
                   id="title-start-btn"
