@@ -7005,8 +7005,8 @@
       "path": "games/scourge-survivors/fx/pyre/muzzle-flash.webp",
       "cdnPath": "games/scourge-survivors/fx/pyre/muzzle-flash.webp",
       "mediaType": "image/webp",
-      "bytes": 31690,
-      "sha256": "42c96c7e3daba83218d3ded3136f43b24afe7489196a4087fd8e3e4a363555de",
+      "bytes": 32494,
+      "sha256": "d35a34e70540462c07eeda479e33bd19140f1c729b6f6296b1032c4b8adbe558",
       "width": 256,
       "height": 256
     },
@@ -7173,8 +7173,8 @@
       "path": "games/scourge-survivors/players/pyre/ranger/side.webp",
       "cdnPath": "games/scourge-survivors/players/pyre/ranger/side.webp",
       "mediaType": "image/webp",
-      "bytes": 43938,
-      "sha256": "86d4bdd2ae34b9f240ec547a30e3416d56ff49a5e1c28df645fa8f59caef5000",
+      "bytes": 156208,
+      "sha256": "1e57cf7c46d50ff20bc58fe4ba76b5ef8bbdd284805e560130595a217103c064",
       "width": 420,
       "height": 640
     },
@@ -7209,8 +7209,8 @@
       "path": "games/scourge-survivors/players/pyre/vector/side.webp",
       "cdnPath": "games/scourge-survivors/players/pyre/vector/side.webp",
       "mediaType": "image/webp",
-      "bytes": 43274,
-      "sha256": "6a4a77cf32e80d0d87e205a16198c99a3a3f33fe1cf78393cefbe29da43639e4",
+      "bytes": 160054,
+      "sha256": "8994f8af8d67b5a546f4450d1d38fa949911673742a98588d5c6032efe211c7d",
       "width": 511,
       "height": 640
     },
@@ -7233,8 +7233,8 @@
       "path": "games/scourge-survivors/projectiles/scourge/enemy-spit.webp",
       "cdnPath": "games/scourge-survivors/projectiles/scourge/enemy-spit.webp",
       "mediaType": "image/webp",
-      "bytes": 20394,
-      "sha256": "2e7caac75df97194b61c383e7ce7e1d3a0c07b4675bc7ba3b80b7c3e5d8e172e",
+      "bytes": 90740,
+      "sha256": "d071dd139f6d86bcf270f2ebcdf5c536047bf6ed7a51430924715c381e1967e3",
       "width": 253,
       "height": 256
     },
@@ -8325,10 +8325,10 @@
       "path": "games/scourge-survivors/weapons/pyre/cannon-tiers.webp",
       "cdnPath": "games/scourge-survivors/weapons/pyre/cannon-tiers.webp",
       "mediaType": "image/webp",
-      "bytes": 1498364,
-      "sha256": "62eeaa8c9821a03c41e6c28c44a199d5c9933f8935fc11e4b4df5aa61a94db4e",
-      "width": 2172,
-      "height": 724
+      "bytes": 1514374,
+      "sha256": "699108ef11267c994e4b833dc850f15296a5341b49bfe587caee9ac5345522be",
+      "width": 2415,
+      "height": 772
     },
     {
       "id": "games/scourge-survivors/weapons/pyre/pistol-loot",
@@ -8397,10 +8397,10 @@
       "path": "games/scourge-survivors/weapons/pyre/smg-tiers.webp",
       "cdnPath": "games/scourge-survivors/weapons/pyre/smg-tiers.webp",
       "mediaType": "image/webp",
-      "bytes": 1439506,
-      "sha256": "d06b211bac6a78d9908ee9f71f641346c98fb3cc9e5a15f4b0291253dcbcd078",
-      "width": 2175,
-      "height": 724
+      "bytes": 1455968,
+      "sha256": "68c6d481777af3a1fba481d99d7d352df2ab2ad2efdaaa89450b6394122d4d01",
+      "width": 2415,
+      "height": 772
     },
     {
       "id": "games/scourge-survivors/weapons/pyre/sniper-ads-tiers",
