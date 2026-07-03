@@ -37,13 +37,17 @@ describe("Bloodlane lore design doc", () => {
     const content = readContent(bloodlanePath);
     const requiredSections = [
       "# Bloodlane",
+      "status: active",
+      "## TinyPRD",
       "## Problem",
       "## Goal",
       "## V1 Format",
+      "## Arena & Locations",
       "## Win Condition",
       "## Scourge Jungle",
       "## Forced-Truce Loop",
       "## Deferred",
+      "## V1 Acceptance",
       "## Canon Guardrails",
     ];
 
@@ -55,6 +59,10 @@ describe("Bloodlane lore design doc", () => {
     assert.match(content, /base seal|base-seal/i);
     assert.match(content, /forced truce|forced-truce/i);
     assert.match(content, /Scourge/i);
+    assert.match(content, /\[\[Ashgate\]\]/);
+    assert.match(content, /\[\[The-Hollow-Lanes\|the Hollow Lanes\]\]/);
+    assert.match(content, /Choir-pressure|Choir pressure/i);
+    assert.match(content, /UI copy never frames the Scourge as allied/i);
   });
 
   test("is discoverable from Pactfall and the canon index", () => {

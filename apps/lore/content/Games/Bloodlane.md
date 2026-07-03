@@ -2,7 +2,7 @@
 type: game-design-doc
 game: Pactfall
 mode: bloodlane
-status: draft
+status: active
 genre: one-lane MOBA
 ---
 
@@ -15,6 +15,20 @@ sanctioned arena where [[The-Pyre]] and [[The-Wardens]] spend the feud that [[Th
 forbids them from spending in the field. The match is violent, personal, and political, but
 it is still bounded by one law: if the [[Scourge]] surge becomes the live threat, the human
 argument stops until the local Choir pressure is cut back.
+
+## TinyPRD
+
+- **Player promise:** a short, brutal lane duel where faction rivalry creates tempo and the
+  Scourge center threat proves whether the players still remember the Pact.
+- **Prototype question:** can [[Pactfall]] feel like a MOBA with one lane, two bases, one
+  readable neutral objective, and an enforced truce beat before any full-roster or multiplayer
+  complexity lands?
+- **Target audience:** players who understand lane pressure quickly and want a canon-forward
+  arena bout instead of a generic hero battler.
+- **V1 slice:** one Pyre champion, one Warden champion, one minion wave cadence, one center
+  Scourge objective, base-seal destruction, and instant rematch.
+- **Not V1:** full three-lane macro, deep jungle routing, permanent Warline consequences,
+  ranked PvP, or a large hero/item economy.
 
 ## Problem
 
@@ -41,6 +55,25 @@ or be overrun together.
   MOBA scale.
 - **Session length:** short arcade matches, tuned for a decisive win or loss before the
   Scourge pressure loop becomes repetitive.
+
+## Arena & Locations
+
+Bloodlane is staged in [[Ashgate]]'s arena district: close enough to the foundries, gates,
+and shared supply pressure that a sanctioned bout feels politically useful instead of theatrical.
+The arena is not a front-line civil war. It is where Ashgate lets the feud vent without risking
+a gate, convoy, or extraction clock.
+
+The lane borrows the doctrine of [[The-Hollow-Lanes|the Hollow Lanes]] without claiming every
+match is literally fought on that road. The playable middle should read like a controlled
+Hollow-Lanes problem: a corridor that can be choked, jammed, and reconnected by Scourge
+repeater growth if the human teams spend too long staring at each other. That gives the map
+three clear bands:
+
+- **Pyre end:** aggressive launch platform, burn marks, triangular sigils, and direct routes
+  into lane pressure.
+- **Center trench:** Scourge-contaminated neutral ground with the visible Choir-pressure node.
+- **Warden end:** buttressed seal, repair gantries, square tower language, and defensive
+  conversion of lane advantage into base damage.
 
 ## Win Condition
 
@@ -114,6 +147,21 @@ clear enough to teach the matchup.
 - [[War-for-the-Lanes]] map consequences beyond prototype hooks.
 - Listener faction play. [[The-Listeners]] can complicate future stories, but v1 stays Pyre,
   Warden, and Scourge.
+
+## V1 Acceptance
+
+Bloodlane is ready to hand to implementation when the prototype can answer these checks in one
+match:
+
+- A new player can identify the Pyre side, Warden side, center Scourge threat, and base-seal
+  target without reading external lore.
+- The center objective has a visible Choir-pressure state, a surge threshold, and a clear
+  post-surge reward for the team that pivots better.
+- Ignoring the Scourge hurts both sides enough to make the forced-truce beat the correct play.
+- Winning requires lane pressure plus base-seal damage, not only champion kills.
+- The first match ends quickly enough that rematch is the natural next action.
+- The UI copy never frames the Scourge as allied, malicious, or choosing a side; it is pressure,
+  hunger, and signal reconnection.
 
 ## Implementation Read
 
