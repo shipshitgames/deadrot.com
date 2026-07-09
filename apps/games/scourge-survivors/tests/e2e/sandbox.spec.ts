@@ -102,12 +102,9 @@ test.describe("survivors menu", () => {
 
     await expect(page.getByText("SCOURGE", { exact: true })).toBeVisible();
     await expect(page.getByText("SURVIVORS", { exact: true })).toBeVisible();
-    // The title screen holds the menu behind a "press enter to continue" splash.
-    await expect(page.getByText("Press Enter to continue")).toBeVisible();
-    await page.keyboard.press("Enter");
-    const hub = page.getByRole("navigation", { name: /survivors hub/i });
-    await expect(hub).toHaveCount(0);
+    // Enter reveals the hub from the title splash in one keypress.
     await dismissTitleSplash(page);
+    const hub = page.getByRole("navigation", { name: /survivors hub/i });
     await expect(hub).toBeVisible();
     await expect(hub.getByRole("button", { name: /play a run/i })).toBeVisible();
     await expect(hub.getByRole("button", { name: /shop/i })).toBeVisible();
@@ -133,7 +130,7 @@ test.describe("survivors menu", () => {
     await expect(page.locator(".ssg-section-heading", { hasText: "Breach Site" })).toBeVisible();
     await page.getByRole("button", { name: /play a run/i }).click();
 
-    await expect(page.getByRole("button", { name: /click to lock/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /click to play/i })).toBeVisible();
     await expect.poll(() => snapshot(page).then((state) => state.status)).toBe("pointerlock-needed");
     await expect.poll(() => snapshot(page).then((state) => state.survivors)).toBe(true);
     await expect.poll(() => snapshot(page).then((state) => state.multiplayer)).toBe(false);
@@ -790,7 +787,7 @@ test.describe("dev sandbox smoke", () => {
       missionExtractionReady: false,
       missionComplete: false,
     });
-    await expect(page.getByRole("button", { name: /click to lock/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /click to play/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /start run/i })).toHaveCount(0);
   });
 

@@ -14,6 +14,7 @@ type HudSnapshot = {
   runDepth: number;
   runDepthTotal: number;
   runDepthName: string;
+  mapName: string;
   bossActive: boolean;
   bossName: string | null;
 };
@@ -24,7 +25,7 @@ type DevEnemy = {
 };
 
 type DevGame = {
-  startSurvivors: (classId: "ranger") => void;
+  startSurvivors: (classId: "ranger", mapId: "ashgate") => void;
   ctx: {
     status: string;
     survivorGoalTime: number;
@@ -70,7 +71,7 @@ async function boot(page: Page) {
 async function startStructuredRun(page: Page) {
   await page.evaluate(() => {
     const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
-    game.startSurvivors("ranger");
+    game.startSurvivors("ranger", "ashgate");
     // Bypass the pointer-lock gate so the rAF loop actually ticks gameplay.
     game.ctx.status = "playing";
     game.sys.hud.emit();
@@ -81,7 +82,8 @@ async function startStructuredRun(page: Page) {
 
 /** Jump the run clock to one second before SURVIVOR_RUN_GOAL_TIME (600s — read
  *  live from ctx.survivorGoalTime), then let real frames cross the threshold:
- *  chapter advance to Perdition first, the warning toast, then the arrival. */
+ *  advance to the final pacing chapter, show the warning, then spawn the
+ *  selected arena's lore-backed reaper without changing maps. */
 async function fastForwardToFinalSecond(page: Page) {
   await page.evaluate(() => {
     const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
@@ -111,18 +113,20 @@ test.describe("the 10:00 reaper (The Toll)", () => {
     await startStructuredRun(page);
     await fastForwardToFinalSecond(page);
 
-    // The arrival lands on the final chapter (Perdition) and carries the
-    // lore-sourced name — never a hardcoded generic boss banner.
+    // The run stays in the explicitly selected Ashgate arena. Its final pacing
+    // chapter is Source Frenzy, while the reaper identity comes from Ashgate's
+    // lore entry rather than a hardcoded generic or Perdition boss banner.
     const arrival = await snapshot(page);
     expect(arrival).toMatchObject({
       bossActive: true,
-      bossName: "The Choir Node",
+      bossName: "Lane Tyrant",
       runMode: "structured",
       runDepth: 4,
       runDepthTotal: 4,
-      runDepthName: "Perdition",
+      runDepthName: "Source Frenzy",
+      mapName: "Ashgate",
     });
-    await expect(page.locator(".scourge-boss-label")).toContainText("The Choir Node");
+    await expect(page.locator(".scourge-boss-label")).toContainText("Lane Tyrant");
 
     // Make the one-shot deterministic: stand the reaper next to the player and
     // let its touch attack land on real frames (house style allows mutation).
@@ -147,8 +151,9 @@ test.describe("the 10:00 reaper (The Toll)", () => {
     // shows the earned amount.
     await expect.poll(() => shopGold(page)).toBeGreaterThan(goldBefore);
     const earned = (await shopGold(page)) - goldBefore;
-    await expect(page.locator(".ssg-stat-value", { hasText: `+${earned.toLocaleString()}` })).toBeVisible();
-    await expect(page.getByText("saved to shop")).toBeVisible();
+    const goldSummary = page.getByTestId("summary-gold");
+    await expect(goldSummary).toContainText(`+${earned.toLocaleString()}`);
+    await expect(goldSummary).toContainText("saved to shop");
   });
 
   test("felling the toll seals the breach", async ({ page }) => {

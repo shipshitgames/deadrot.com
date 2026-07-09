@@ -26,6 +26,9 @@ const selectedViewports = parseSelectedViewports(process.env.E2E_VIEWPORT);
 const activeViewports = selectedViewports.length
   ? viewports.filter((viewport) => selectedViewports.includes(viewport.name))
   : viewports;
+const scourgeGame = games.find((game) => game.slug === "scourge-survivors");
+const runScourgeWorkspaceSuite =
+  scourgeGame !== undefined && activeViewports.some((viewport) => viewport.name === "desktop");
 
 export default defineConfig({
   testDir: "./e2e",
@@ -50,33 +53,51 @@ export default defineConfig({
     reuseExistingServer,
     timeout: 120_000,
   })),
-  projects: games.flatMap((game) =>
-    activeViewports.map((viewport) => ({
-      name: `${game.slug}:${viewport.name}`,
-      testMatch: [
-        /games\.spec\.ts/,
-        /rothulk-platforming\.spec\.ts/,
-        /rothulk-briefing\.spec\.ts/,
-        /warline-reporting\.spec\.ts/,
-        /warline-war-effort\.spec\.ts/,
-        /pactfall-moba\.spec\.ts/,
-        /brawl-arena\.spec\.ts/,
-        /scourge-arena-environments\.spec\.ts/,
-        /scourge-arena-readability\.spec\.ts/,
-        /scourge-survivors-operation-summary\.spec\.ts/,
-        // Dedicated deep-gameplay specs for the games that previously only had
-        // the shared boot smoke (the per-game coverage invariant is enforced by
-        // e2e/coverage.test.ts).
-        /scourge-survivors-sandbox\.spec\.ts/,
-        /redline-courier\.spec\.ts/,
-        /starblight-drydock\.spec\.ts/,
-        /deadlane-defense\.spec\.ts/,
-        /warline-front\.spec\.ts/,
-      ],
-      use: {
-        ...viewport.device,
-        baseURL: `http://127.0.0.1:${game.port}`,
-      },
-    })),
-  ),
+  projects: [
+    ...games.flatMap((game) =>
+      activeViewports.map((viewport) => ({
+        name: `${game.slug}:${viewport.name}`,
+        testMatch: [
+          /games\.spec\.ts/,
+          /rothulk-platforming\.spec\.ts/,
+          /rothulk-briefing\.spec\.ts/,
+          /warline-reporting\.spec\.ts/,
+          /warline-war-effort\.spec\.ts/,
+          /pactfall-moba\.spec\.ts/,
+          /brawl-arena\.spec\.ts/,
+          /scourge-arena-environments\.spec\.ts/,
+          /scourge-arena-readability\.spec\.ts/,
+          /scourge-survivors-operation-summary\.spec\.ts/,
+          // Dedicated deep-gameplay specs for the games that previously only had
+          // the shared boot smoke (the per-game coverage invariant is enforced by
+          // e2e/coverage.test.ts).
+          /scourge-survivors-sandbox\.spec\.ts/,
+          /redline-courier\.spec\.ts/,
+          /starblight-drydock\.spec\.ts/,
+          /deadlane-defense\.spec\.ts/,
+          /warline-front\.spec\.ts/,
+        ],
+        use: {
+          ...viewport.device,
+          baseURL: `http://127.0.0.1:${game.port}`,
+        },
+      })),
+    ),
+    // Scourge owns a deeper Playwright suite in its workspace. Run it once in
+    // the desktop shard so the required PR/release gate cannot pass while the
+    // workspace suite is red, without duplicating it in the mobile shard.
+    ...(runScourgeWorkspaceSuite
+      ? [
+          {
+            name: "scourge-survivors:workspace",
+            testDir: "./apps/games/scourge-survivors/tests/e2e",
+            testMatch: /.*\.spec\.ts/,
+            use: {
+              ...devices["Desktop Chrome"],
+              baseURL: `http://127.0.0.1:${scourgeGame.port}`,
+            },
+          },
+        ]
+      : []),
+  ],
 });

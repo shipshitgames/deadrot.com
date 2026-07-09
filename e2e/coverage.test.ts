@@ -11,6 +11,7 @@ import { GAME_APPS } from "@deadrot/catalog";
 const appsGamesDir = join(import.meta.dir, "..", "apps", "games");
 const e2eDir = import.meta.dir;
 const VIEWPORTS = ["desktop", "mobile"] as const;
+const SCOURGE_WORKSPACE_PROJECT = "scourge-survivors:workspace";
 const slugs = GAME_APPS.map((game) => game.slug);
 
 const originalGameSlugFilter = process.env.E2E_GAME_SLUGS;
@@ -96,9 +97,12 @@ describe("deep-spec-per-game", () => {
 });
 
 describe("project-matrix completeness", () => {
-  test("matrix is GAME_APPS.length × [desktop, mobile] with both viewports per slug", () => {
+  test("matrix covers both viewports per game plus the Scourge-owned workspace suite", () => {
     const projectNames = (playwrightConfig.projects ?? []).map((project) => project.name);
-    const expectedProjectNames = slugs.flatMap((slug) => VIEWPORTS.map((viewport) => `${slug}:${viewport}`));
+    const expectedProjectNames = [
+      ...slugs.flatMap((slug) => VIEWPORTS.map((viewport) => `${slug}:${viewport}`)),
+      SCOURGE_WORKSPACE_PROJECT,
+    ];
 
     expect(projectNames.toSorted()).toEqual(expectedProjectNames.toSorted());
     expect(new Set(projectNames).size).toBe(projectNames.length);
@@ -107,5 +111,6 @@ describe("project-matrix completeness", () => {
       expect(projectNames).toContain(`${slug}:desktop`);
       expect(projectNames).toContain(`${slug}:mobile`);
     }
+    expect(projectNames.filter((name) => name === SCOURGE_WORKSPACE_PROJECT)).toHaveLength(1);
   });
 });
