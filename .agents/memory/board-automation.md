@@ -12,15 +12,17 @@ GitHub Projects (v2) reconciler for the org `shipshitgames`.
 - Cron `17 6 * * 1` (Mondays 06:17 UTC) + `workflow_dispatch` (inputs:
   `dry_run` default true, `rate_floor` default 1500). Scheduled runs WRITE for
   real; manual runs default to dry-run.
-- Targets org ProjectV2 boards `1,3,4,5,6,7,8,9,10,11` (project `#2` excluded).
-  Hub board = `#10` (must be in the list or the script throws).
+- Targets org ProjectV2 boards `3,10` only. Hub board = `#10` (must be in the
+  list or the script throws); Lore `#3` is retained only as an intentional
+  secondary board for lore-specific field normalization.
 - Validates each open target has a single-select `Status` (Backlog, In Progress,
   Done, Deferred) and `Priority` (P0..P3) field, else fails the run.
 - Reconciles `deadrot.com` issues only: closed issue -> Status Done (unless
   already Done/Deferred); open issue with no Status -> Backlog; any issue with no
-  Priority -> P3. Boardless open repo issues get added to hub `#10`.
-- It does NOT touch studio (`shipshit.games`) issues, so it cannot fix drift on
-  board `#4`.
+  Priority -> the issue's `p0`/`p1`/`p2`/`p3` label when present, otherwise P3.
+  Open repo issues missing explicit hub `#10` membership get added to hub `#10`;
+  membership on any other board does not count.
+- It does NOT target archived game boards or the studio (`shipshit.games`) board.
 
 ## BOARD_BOT — what it is
 A dedicated **GitHub App identity** the workflow authenticates as. The default
@@ -43,15 +45,13 @@ Status convention:
 - `Done`: complete/closed work.
 - `Deferred`: explicitly parked.
 
-Live reconciliation on 2026-06-25:
+Live reconciliation on 2026-07-09:
 
-- Renamed the `Todo` Status option to `Backlog` across target projects
-  #1, #3, #4, #5, #6, #7, #8, #9, #10, and #11, preserving option ids so
-  existing cards stayed in lane.
-- Moved closed Lore items #140, #141, #361, #362, #364 to Status `Done`.
-- Moved #427 to Status `In Progress`.
-- Verification dry-run prepared 0 field updates and 0 boardless issue adds
-  across all target projects.
+- Archived game boards #1, #5, #6, #7, #8, #9, #11, and #12 are no longer
+  automation targets. Project #4 (`shipshit.games`) is also out of scope for
+  this repo automation.
+- Verification should report hubless issue adds, not generic boardless adds,
+  because Project #10 is the canonical roadmap hub.
 
 Run the script in write mode only when deliberately reconciling project fields.
 See [[workflow]] for the branch/CI gates.

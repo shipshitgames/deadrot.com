@@ -34,7 +34,9 @@ claude/<slug> | codex/<slug> task branch -> squash PR -> master -> tag vX.Y.Z ->
 4. Run focused checks first, then the relevant repo gate (`bun run ci`).
 5. Commit on the task branch with a concise conventional message.
 6. Push with `git push -u origin <branch>`.
-7. Open or share the PR URL for the task branch into `master`.
+7. Open or share the PR URL for the task branch into `master`; when the PR
+   completes an issue, the PR body must use GitHub auto-close syntax such as
+   `Closes #123`, `Fixes #123`, or `Resolves #123`.
 8. Report the final branch and whether the worktree is clean.
 
 The PR gate (runs on pull requests into `master`) is the **fast** gate:
