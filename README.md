@@ -43,8 +43,9 @@ Generated game assets and runtime packs ship from this repo.
 - `packages/engine` / `@shipshitgames/engine` - shared Three.js runtime
   primitives: game/context/systems spine, movement, camera, bounds, spawning,
   HUD shell, and presence hooks.
-- `packages/ui` / `@shipshitgames/ui` - shared React game UI primitives and
-  DEADROT-flavored styles.
+- `packages/ui` / `@shipshitgames/ui` - private, workspace-only Deadrot game UI,
+  settings, music, menu configuration, and lobby navigation. The package name is
+  retained for stable imports; it is not a public npm boundary.
 - `packages/warline` / `@shipshitgames/warline` - pure Warline world model,
   reducers, operation contract, and client SDK.
 

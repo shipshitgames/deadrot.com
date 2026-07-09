@@ -138,7 +138,7 @@ export const packages = [
     name: "@shipshitgames/ui",
     path: "packages/ui",
     description:
-      "Shared React components and CSS-first game UI classes for menus, HUD corners, buttons, and upgrade cards.",
+      "Private Deadrot workspace UI: React components, CSS-first classes, settings, music, menu configuration, and lobby navigation.",
   },
   {
     name: "@shipshitgames/engine",
