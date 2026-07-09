@@ -166,7 +166,7 @@ const LOOPBACK_HUB_SCRIPT = `
 
 type FpsWindow = {
   __fpsGame: {
-    startMultiplayer: (room: string, name: string, avatar: string) => void;
+    startMultiplayer: (room: string, name: string, avatar: string) => Promise<void>;
     multiplayerDebugSnapshot: () => MpSnapshot;
     ctx: { status: string };
     sys: { multiplayer: { sendHit: (target: string, dmg: number) => void } };
@@ -190,9 +190,9 @@ async function startRoom(page: Page): Promise<void> {
   await page.addInitScript(LOOPBACK_HUB_SCRIPT);
   await page.goto("/?sandbox=1");
   await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     const w = window as unknown as FpsWindow;
-    w.__fpsGame.startMultiplayer("BREACH-E2E", "Ace", "ranger");
+    await w.__fpsGame.startMultiplayer("BREACH-E2E", "Ace", "ranger");
     // No pointer lock headless, so force the playing state the sim loop gates on.
     w.__fpsGame.ctx.status = "playing";
   });

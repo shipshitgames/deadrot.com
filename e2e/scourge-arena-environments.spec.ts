@@ -68,8 +68,10 @@ test("Scourge campaign arenas render their full environment dressing", async ({ 
 
   for (const map of CAMPAIGN_MAPS) {
     const mapId = map.id;
-    await page.evaluate((id) => {
-      (window as unknown as { __fpsGame: { startSandbox: (mapId: string) => void } }).__fpsGame.startSandbox(id);
+    await page.evaluate(async (id) => {
+      await (
+        window as unknown as { __fpsGame: { startSandbox: (mapId: string) => Promise<void> } }
+      ).__fpsGame.startSandbox(id);
     }, mapId);
 
     // Poll mapId first — startSandbox rebuilds the arena and a rebuild races the

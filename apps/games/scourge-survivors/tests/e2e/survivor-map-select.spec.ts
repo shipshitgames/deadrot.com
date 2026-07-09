@@ -40,9 +40,9 @@ test.describe("survivor map select (#276)", () => {
     await page.goto("/");
     await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
 
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
       const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
-      game.startSurvivors("ranger", "maw");
+      await game.startSurvivors("ranger", "maw");
       game.sys.hud.emit();
     });
 
@@ -76,9 +76,9 @@ test.describe("survivor map select (#276)", () => {
     await page.goto("/");
     await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
 
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
       const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
-      game.startSurvivors("ranger", "not-a-map");
+      await game.startSurvivors("ranger", "not-a-map");
       game.sys.hud.emit();
     });
 

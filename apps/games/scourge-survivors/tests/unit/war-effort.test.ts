@@ -13,27 +13,14 @@ import { RUN_BIOMASS_CAP, runBiomass } from "../../src/game/data/survivors";
 import type { Enemy } from "../../src/game/entities/Enemy";
 import type { GameSystems } from "../../src/game/systems";
 
-// SurvivorsSystem and WeaponSystem statically pull spriteAssets (module-scope
-// THREE.TextureLoader → document.createElementNS), so we shim that single DOM hook
-// before importing them, exactly as projectile-combat.test.ts does.
+// These systems statically import sprite metadata. Runtime texture decoding is
+// now deferred, so importing them in node must not require a DOM shim.
 type SurvivorsModule = typeof import("../../src/game/modes/SurvivorsSystem");
 type WeaponModule = typeof import("../../src/game/entities/WeaponSystem");
 let SurvivorsSystem: SurvivorsModule["SurvivorsSystem"];
 let WeaponSystem: WeaponModule["WeaponSystem"];
 
 beforeAll(async () => {
-  if (typeof (globalThis as { document?: unknown }).document === "undefined") {
-    (globalThis as { document?: unknown }).document = {
-      createElementNS() {
-        return {
-          addEventListener() {},
-          removeEventListener() {},
-          set crossOrigin(_value: string) {},
-          set src(_value: string) {},
-        };
-      },
-    };
-  }
   SurvivorsSystem = (await import("../../src/game/modes/SurvivorsSystem")).SurvivorsSystem;
   WeaponSystem = (await import("../../src/game/entities/WeaponSystem")).WeaponSystem;
 });

@@ -4,7 +4,7 @@
   "generator": "scripts/generate-asset-index.mjs",
   "note": "Generated — do not edit by hand. Run `bun run --cwd packages/assets assets:index`.",
   "cdnBase": "https://assets.deadrot.com",
-  "assetCount": 742,
+  "assetCount": 743,
   "assets": [
     {
       "id": "brand/mark",
@@ -4577,6 +4577,18 @@
       "sha256": "aa3b611ff4fe8a535ce9cae4a3e0d6f67486a7a4c12f54455a6be139be967a6e",
       "width": 128,
       "height": 128
+    },
+    {
+      "id": "games/scourge-survivors/animations/scourge/scourge.atlas0",
+      "kind": "image",
+      "game": "scourge-survivors",
+      "path": "games/scourge-survivors/animations/scourge/scourge.atlas0.webp",
+      "cdnPath": "games/scourge-survivors/animations/scourge/scourge.atlas0.webp",
+      "mediaType": "image/webp",
+      "bytes": 3179618,
+      "sha256": "2f38c805d3545508bcf0c13e08d1bb99177648974b93c91634dc2eb36fbe729d",
+      "width": 4092,
+      "height": 1556
     },
     {
       "id": "games/scourge-survivors/animations/scourge/spitter-host/death/back/frame-00",

@@ -34,14 +34,14 @@ test.describe("scourge weapon tiers", () => {
     await waitForGame(page);
 
     // A fresh run starts at the base tier: neutral multiplier, first pip lit.
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
       type DevGame = {
         startSurvivors: (classId?: "ranger") => void;
         ctx: { status: string };
         sys: { hud: { emit: () => void } };
       };
       const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
-      game.startSurvivors("ranger");
+      await game.startSurvivors("ranger");
       game.ctx.status = "playing";
       game.sys.hud.emit();
     });
@@ -88,7 +88,7 @@ test.describe("scourge weapon tiers", () => {
     // Resolve a single-level draft with an offensive pick. The pick crosses base -> tier-2,
     // but the banner must fire only once the draft closes and status flips back to "playing"
     // (so it never plays behind the level-up overlay), alongside the power-cue sfx (#279).
-    const result = await page.evaluate(() => {
+    const result = await page.evaluate(async () => {
       type DevGame = {
         startSurvivors: (classId?: "ranger") => void;
         ctx: { status: string };
@@ -111,7 +111,7 @@ test.describe("scourge weapon tiers", () => {
       // The headless harness can't grant pointer lock; stub it so the resolve path completes.
       game.sys.input.requestLock = () => {};
 
-      game.startSurvivors("ranger");
+      await game.startSurvivors("ranger");
       game.sys.survivors.upgradeLevels = {};
       game.sys.survivors.pendingLevels = 1;
       game.ctx.status = "levelup";
@@ -179,7 +179,7 @@ test.describe("scourge weapon tiers", () => {
 
     // Drive the real WeaponSystem.doMelee against a parked dummy and read the health it
     // actually loses. This proves the tier mul reaches live combat — not just the HUD (#279).
-    const damage = await page.evaluate(() => {
+    const damage = await page.evaluate(async () => {
       type Enemy = {
         alive: boolean;
         health: number;
@@ -205,7 +205,7 @@ test.describe("scourge weapon tiers", () => {
         sys: { weapon: { doMelee: () => void } };
       };
       const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
-      game.startSandbox();
+      await game.startSandbox();
       game.ctx.status = "playing";
       // Make the swing deterministic: face -Z, no crit roll, no global dmg buff, no berserk.
       game.ctx.rig.facing.identity();

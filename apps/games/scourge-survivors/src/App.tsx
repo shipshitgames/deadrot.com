@@ -47,6 +47,11 @@ const SandboxPanel = import.meta.env.DEV
 
 const INITIAL_WEAPON_IDENTITY = weaponIdentityFor(STARTING_WEAPON);
 
+interface CombatLaunchRequest {
+  start: (game: Game) => Promise<void>;
+  onSuccess?: () => void;
+}
+
 const INITIAL_STATE: HudState = {
   status: "pointerlock-needed",
   playerHealth: PLAYER_MAX_HEALTH,
@@ -152,7 +157,11 @@ export default function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Game | null>(null);
   const hudRef = useRef<HudState>(INITIAL_STATE);
+  const combatLaunchGenerationRef = useRef(0);
+  const combatRetryRef = useRef<CombatLaunchRequest | undefined>(undefined);
   const [hud, setHudState] = useState<HudState>(INITIAL_STATE);
+  const [combatAssetLoading, setCombatAssetLoading] = useState(false);
+  const [combatAssetError, setCombatAssetError] = useState<string>();
   const [scores, setScores] = useState<ScoreEntry[]>(() => loadScores());
   const [shop, setShop] = useState<ShopState>(() => loadShop());
   const lastRunGoldRef = useRef(0);
@@ -165,9 +174,9 @@ export default function App() {
   );
   const initialSandbox = useMemo(
     () => sandboxAvailable && new URLSearchParams(window.location.search).get("sandbox") === "1",
-    [sandboxAvailable],
+    [],
   );
-  const [sandboxActive, setSandboxActive] = useState(initialSandbox);
+  const [sandboxActive, setSandboxActive] = useState(false);
   const setRoomInUrl = useCallback((room: string) => {
     const url = room ? `${window.location.pathname}?room=${encodeURIComponent(room)}` : window.location.pathname;
     window.history.replaceState(null, "", url);
@@ -249,6 +258,28 @@ export default function App() {
     setHudState(next);
   }, []);
 
+  const runCombatLaunch = useCallback(async (request: CombatLaunchRequest): Promise<void> => {
+    const game = gameRef.current;
+    if (!game) return;
+    const generation = ++combatLaunchGenerationRef.current;
+    combatRetryRef.current = request;
+    setCombatAssetError(undefined);
+    setCombatAssetLoading(true);
+    try {
+      await request.start(game);
+    } catch (error: unknown) {
+      if (generation !== combatLaunchGenerationRef.current || gameRef.current !== game) return;
+      audio.setMusicMode("menu");
+      setCombatAssetLoading(false);
+      setCombatAssetError(error instanceof Error ? error.message : String(error));
+      return;
+    }
+    if (generation !== combatLaunchGenerationRef.current || gameRef.current !== game) return;
+    combatRetryRef.current = undefined;
+    setCombatAssetLoading(false);
+    request.onSuccess?.();
+  }, []);
+
   // Mirror the global music/SFX sliders + mute (the shared GlobalGameSettingsPanel)
   // into the AudioEngine bus gains. subscribe fires once immediately with the
   // stored settings, so this also seeds the initial levels on mount.
@@ -267,7 +298,15 @@ export default function App() {
     gameRef.current = game;
     game.setShopUpgrades(shopTiersRef.current);
     game.start();
-    if (initialSandbox) game.startSandbox();
+    if (initialSandbox) {
+      void runCombatLaunch({
+        start: (current) => current.startSandbox(),
+        onSuccess: () => {
+          setSandboxActive(true);
+          setSandboxInUrl(true);
+        },
+      });
+    }
     if (import.meta.env.DEV) {
       (window as unknown as { __fpsGame?: Game; __fpsAudio?: typeof audio; __hudSnapshot?: () => HudState }).__fpsGame =
         game;
@@ -275,10 +314,11 @@ export default function App() {
       (window as unknown as { __hudSnapshot?: () => HudState }).__hudSnapshot = () => hudRef.current;
     }
     return () => {
+      combatLaunchGenerationRef.current++;
       game.dispose();
       gameRef.current = null;
     };
-  }, [initialSandbox, setHud]);
+  }, [initialSandbox, runCombatLaunch, setHud, setSandboxInUrl]);
 
   const handleLock = useCallback(() => {
     audio.unlock();
@@ -295,15 +335,19 @@ export default function App() {
   }, []);
   const handleClearScores = useCallback(() => setScores(clearScores()), []);
   const handleStartMultiplayer = useCallback(
-    (name: string, room: string, avatar: PlayerAvatarId) => {
+    async (name: string, room: string, avatar: PlayerAvatarId) => {
       audio.unlock();
-      audio.setMusicMode("multiplayer");
-      setSandboxActive(false);
-      setSandboxInUrl(false);
-      setRoomInUrl(room);
-      gameRef.current?.startMultiplayer(room, name, avatar);
+      await runCombatLaunch({
+        start: (game) => game.startMultiplayer(room, name, avatar),
+        onSuccess: () => {
+          audio.setMusicMode("multiplayer");
+          setSandboxActive(false);
+          setSandboxInUrl(false);
+          setRoomInUrl(room);
+        },
+      });
     },
-    [setRoomInUrl, setSandboxInUrl],
+    [runCombatLaunch, setRoomInUrl, setSandboxInUrl],
   );
   const handleLeaveRoom = useCallback(() => {
     setRoomInUrl("");
@@ -311,25 +355,33 @@ export default function App() {
     gameRef.current?.leaveMultiplayer(true);
   }, [setRoomInUrl]);
   const handleStartSurvivors = useCallback(
-    (classId?: SurvivorClassId, mapId?: string) => {
+    async (classId?: SurvivorClassId, mapId?: string) => {
       audio.unlock();
-      audio.setMusicMode("survivors");
-      setSandboxActive(false);
-      setSandboxInUrl(false);
-      gameRef.current?.startSurvivors(classId, mapId);
+      await runCombatLaunch({
+        start: (game) => game.startSurvivors(classId, mapId),
+        onSuccess: () => {
+          audio.setMusicMode("survivors");
+          setSandboxActive(false);
+          setSandboxInUrl(false);
+        },
+      });
     },
-    [setSandboxInUrl],
+    [runCombatLaunch, setSandboxInUrl],
   );
   const handleStartSandbox = useCallback(
-    (mapId?: string) => {
+    async (mapId?: string) => {
       if (!sandboxAvailable) return;
       audio.unlock();
-      setRoomInUrl("");
-      setSandboxActive(true);
-      setSandboxInUrl(true);
-      gameRef.current?.startSandbox(mapId);
+      await runCombatLaunch({
+        start: (game) => game.startSandbox(mapId),
+        onSuccess: () => {
+          setRoomInUrl("");
+          setSandboxActive(true);
+          setSandboxInUrl(true);
+        },
+      });
     },
-    [sandboxAvailable, setRoomInUrl, setSandboxInUrl],
+    [runCombatLaunch, setRoomInUrl, setSandboxInUrl],
   );
   const handleExitSandbox = useCallback(() => {
     setSandboxActive(false);
@@ -445,6 +497,53 @@ export default function App() {
             onClear={handleSandboxClear}
           />
         </Suspense>
+      )}
+      {combatAssetLoading && (
+        <div
+          data-testid="combat-asset-loading"
+          role="status"
+          aria-live="polite"
+          className="pointer-events-auto absolute inset-0 z-50 flex cursor-wait items-center justify-center bg-[#070709]/90 px-6 text-center"
+        >
+          <div className="rounded-[9px] border border-[#ff6a00]/45 bg-black/70 px-7 py-6 shadow-[0_0_70px_rgba(255,106,0,0.18)]">
+            <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#ff6a00]">Preparing breach</div>
+            <p className="mb-0 mt-2 text-[14px] text-[#e9e3d6]">Loading combat assets…</p>
+          </div>
+        </div>
+      )}
+      {combatAssetError && !combatAssetLoading && (
+        <div
+          data-testid="combat-asset-error"
+          role="alert"
+          className="pointer-events-auto absolute inset-0 z-50 flex items-center justify-center bg-[#070709]/90 px-6 text-center"
+        >
+          <div className="max-w-[520px] rounded-[9px] border border-[#c1121f]/65 bg-black/80 px-7 py-6">
+            <div className="text-[11px] font-black uppercase tracking-[0.2em] text-[#ff6a6a]">
+              Combat assets failed to load
+            </div>
+            <p className="my-3 text-[13px] leading-relaxed text-[#e9e3d6]">{combatAssetError}</p>
+            <div className="flex justify-center gap-3">
+              <button
+                type="button"
+                className="rounded-[7px] border border-[#ff6a00]/65 bg-[#ff6a00]/15 px-4 py-2 text-[12px] font-black uppercase tracking-[0.08em] text-[#ffb26b]"
+                onClick={() => {
+                  audio.unlock();
+                  const retry = combatRetryRef.current;
+                  if (retry) void runCombatLaunch(retry);
+                }}
+              >
+                Try again
+              </button>
+              <button
+                type="button"
+                className="rounded-[7px] border border-white/20 bg-white/5 px-4 py-2 text-[12px] font-black uppercase tracking-[0.08em] text-[#e9e3d6]"
+                onClick={() => setCombatAssetError(undefined)}
+              >
+                Back to menu
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

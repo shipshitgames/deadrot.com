@@ -10,6 +10,21 @@
     "side",
     "back"
   ],
+  "runtimeAtlas": {
+    "tool": "@shipshitgames/assetgen atlas",
+    "mapPath": "games/scourge-survivors/animations/scourge/scourge.atlas.json",
+    "padding": 2,
+    "frameCount": 270,
+    "note": "Derived lossless runtime packaging; pathTemplate remains the authoritative authored frame identity and split-file fallback metadata.",
+    "license": "Atlas frames inherit this animation pack's tool, model, and promptHistory provenance.",
+    "pages": [
+      {
+        "path": "games/scourge-survivors/animations/scourge/scourge.atlas0.webp",
+        "width": 4092,
+        "height": 1556
+      }
+    ]
+  },
   "entities": {
     "host-grunt": {
       "frameDimensions": [
