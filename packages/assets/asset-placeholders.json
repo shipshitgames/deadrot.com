@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "duplicateGroups": [
+    {
+      "id": "brawl-pactfall-title-art",
+      "status": "placeholder",
+      "reason": "Brawl currently reuses Pactfall title art until its own title treatment is authored.",
+      "paths": ["games/brawl/ui/menu/title.webp", "games/pactfall/ui/menu/title.webp"]
+    },
+    {
+      "id": "brawl-pactfall-social-art",
+      "status": "placeholder",
+      "reason": "Brawl currently reuses Pactfall social art until its own 1200x630 card is authored.",
+      "paths": ["games/brawl/ui/social/og.jpg", "games/pactfall/ui/social/og.jpg"]
+    }
+  ]
+}
