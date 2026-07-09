@@ -7,9 +7,7 @@ import { CONCEPTS, GAME_APPS } from "@deadrot/catalog";
 // manifest, which uses Vite's import.meta.glob and cannot load under `bun test`.
 import catalogJson from "../assets-catalog.json" with { type: "json" };
 
-const catalog = catalogJson as unknown as {
-  entities: { id: string; name: string; kind: string; games: string[] }[];
-};
+const catalog = catalogJson;
 
 import {
   bestiary,

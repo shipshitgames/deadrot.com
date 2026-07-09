@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { PLAYABLE_GAME_SLUGS } from "../../catalog/index.js";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const assetsRoot = resolve(scriptDir, "..");
@@ -236,13 +237,93 @@ function checkImageContracts() {
   }
 }
 
+function isAliasVariant(variant) {
+  return variant && typeof variant === "object" && variant.type === "alias" && typeof variant.sourceGame === "string";
+}
+
+function isPlaceholderVariant(variant) {
+  return variant && typeof variant === "object" && variant.type === "placeholder" && typeof variant.note === "string";
+}
+
+function resolveVariantPath(entity, game) {
+  let currentGame = game;
+  const visited = new Set();
+  while (true) {
+    if (visited.has(currentGame)) {
+      fail(`catalog variant alias cycle: ${entity.id}.${game}`);
+      return null;
+    }
+    visited.add(currentGame);
+
+    const variant = entity.variants?.[currentGame];
+    if (typeof variant === "string") return variant;
+    if (isAliasVariant(variant)) {
+      currentGame = variant.sourceGame;
+      continue;
+    }
+    return null;
+  }
+}
+
+function checkCatalogAppImports(catalog) {
+  for (const path of trackedFiles("apps/games")) {
+    if (!/\.(?:ts|tsx|js|jsx)$/.test(path)) continue;
+    const appSlug = path.match(/^apps\/games\/([^/]+)\//)?.[1];
+    if (!appSlug || !PLAYABLE_GAME_SLUGS.includes(appSlug)) continue;
+
+    const source = readFileSync(resolve(repoRoot, path), "utf8");
+    const imports = source.matchAll(/@shipshitgames\/assets\/entities\/([^/]+)\/([^"']+?)(?:\.webp)?["']/g);
+    for (const match of imports) {
+      const [, entityId, filename] = match;
+      const sourceGame = filename.replace(/\.webp$/, "");
+      const entity = catalog.entities?.find((candidate) => candidate.id === entityId);
+      if (!entity) {
+        fail(`app imports unknown catalog entity: ${path} -> ${entityId}`);
+        continue;
+      }
+      const appVariant = entity.variants?.[appSlug];
+      if (!entity.games?.includes(appSlug) && !isAliasVariant(appVariant)) {
+        fail(`app imports entity not intended or aliased for ${appSlug}: ${path} -> ${entityId}`);
+      }
+      if (sourceGame !== appSlug && (!isAliasVariant(appVariant) || appVariant.sourceGame !== sourceGame)) {
+        fail(`app imports undeclared cross-game entity variant: ${path} -> ${entityId}/${sourceGame}`);
+      }
+    }
+  }
+}
+
 function checkCatalogPaths() {
   const catalog = JSON.parse(readFileSync(assetPath("assets-catalog.json"), "utf8"));
+  const expectedGames = new Set(PLAYABLE_GAME_SLUGS);
 
   for (const entity of catalog.entities ?? []) {
-    for (const [game, path] of Object.entries(entity.variants ?? {})) {
-      if (path && !existsPackagePath(path)) {
-        fail(`catalog variant missing file: ${entity.id}.${game} -> ${path}`);
+    const variants = entity.variants ?? {};
+    const variantGames = Object.keys(variants);
+    if (variantGames.length !== expectedGames.size || variantGames.some((game) => !expectedGames.has(game))) {
+      fail(`catalog variant record must cover every playable game: ${entity.id}`);
+    }
+
+    for (const game of PLAYABLE_GAME_SLUGS) {
+      const variant = variants[game];
+      const intended = entity.games?.includes(game) === true;
+      if ((variant !== null) !== intended) {
+        fail(`catalog variant intent mismatch: ${entity.id}.${game}`);
+      }
+      if (variant !== null && typeof variant !== "string" && !isAliasVariant(variant) && !isPlaceholderVariant(variant)) {
+        fail(`catalog variant has an unsupported form: ${entity.id}.${game}`);
+      }
+      if (isAliasVariant(variant)) {
+        if (!expectedGames.has(variant.sourceGame) || variant.sourceGame === game) {
+          fail(`catalog alias has invalid source game: ${entity.id}.${game}`);
+        }
+        if (!resolveVariantPath(entity, game)) {
+          fail(`catalog alias resolves without an asset: ${entity.id}.${game}`);
+        }
+      }
+
+      const resolvedPath = resolveVariantPath(entity, game);
+      if (resolvedPath && !existsPackagePath(resolvedPath)) {
+        fail(`catalog variant missing file: ${entity.id}.${game} -> ${resolvedPath}`);
       }
     }
   }
@@ -252,6 +333,8 @@ function checkCatalogPaths() {
       fail(`catalog shared asset missing file: ${shared.id} -> ${shared.path}`);
     }
   }
+
+  checkCatalogAppImports(catalog);
 }
 
 function checkBannedGeneratorProvenance() {
