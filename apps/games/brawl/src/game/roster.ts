@@ -87,7 +87,9 @@ export const FIGHTERS: readonly FighterSpec[] = [
 ];
 
 export function fighterById(id: FighterId): FighterSpec {
-  return FIGHTERS.find((fighter) => fighter.id === id) ?? FIGHTERS[0];
+  const fallback = FIGHTERS[0];
+  if (!fallback) throw new Error("Brawl roster must include at least one fighter");
+  return FIGHTERS.find((fighter) => fighter.id === id) ?? fallback;
 }
 
 export function pickOpponent(selectedId: FighterId): FighterId {
