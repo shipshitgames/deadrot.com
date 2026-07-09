@@ -9,7 +9,7 @@ export type GameStatus =
   | "levelup" // Survivors mode: choosing an upgrade
   | "gameover";
 
-export type RunMode = "campaign" | "structured" | "endless" | "coop" | "sandbox";
+export type RunMode = "campaign" | "structured" | "endless" | "arena" | "sandbox";
 
 export interface UpgradeChoice {
   id: string;
@@ -104,7 +104,7 @@ export interface ScourgeHudExt {
   /** Breach-boss ability state (only meaningful while bossActive). */
   bossShielded: boolean;
   bossEnraged: boolean;
-  /** Co-op breach room state. */
+  /** Unauthenticated PvP arena preview room state. */
   multiplayer: boolean;
   connected: boolean;
   room: string;

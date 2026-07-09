@@ -57,7 +57,7 @@ export class HudSystem extends HudCoreSystem<ScourgeHudExt> {
           .map(([id]) => EVOLUTIONS[id as keyof typeof EVOLUTIONS].name);
         const weaponTier = sys.survivors.mainWeaponVisualTier();
         const runMode: ScourgeHudExt["runMode"] = ctx.multiplayer
-          ? "coop"
+          ? "arena"
           : ctx.survivors
             ? "structured"
             : ctx.sandbox

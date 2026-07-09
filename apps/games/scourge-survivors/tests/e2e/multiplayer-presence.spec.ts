@@ -1,13 +1,14 @@
 // Issue #94 — Extract transport and presence.
 //
 // Browser-level proof of the extracted net stack (`@deadrot/game-kit/net`,
-// wired through `MultiplayerSystem` + `RemoteAvatar`). The real game runs a co-op
+// wired through `MultiplayerSystem` + `RemoteAvatar`). The game runs a PvP preview
 // session against an in-page loopback hub that mirrors `party/arena.ts`'s wire
 // protocol, injected through the DEV-only `window.__fpsSocketFactory` seam — so no
 // live PartyKit server is needed. A scripted bot joins, moves, gets shot, and
 // leaves; we assert presence, transform interpolation, server-owned hit
 // resolution, and disposal entirely through the game's own debug snapshot.
 import { expect, type Page, test } from "@playwright/test";
+import { ARENA_POLICY } from "../../party/arenaPolicy";
 
 type MpSnapshot = {
   active: boolean;
@@ -25,6 +26,32 @@ type MpSnapshot = {
  */
 const LOOPBACK_HUB_SCRIPT = `
 (() => {
+  const POLICY = ${JSON.stringify(ARENA_POLICY)};
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const acceptCadence = (history, now, maxFrames) => {
+    const recent = history.filter((stamp) => stamp > now - POLICY.rateWindowMs);
+    return recent.length >= maxFrames ? null : [...recent, now];
+  };
+  const acceptPose = (current, m, now) => {
+    if (![m.x, m.y, m.z, m.yaw].every((value) => typeof value === "number" && Number.isFinite(value))) return null;
+    const x = m.x, y = m.y, z = m.z, yaw = m.yaw;
+    const edge = POLICY.arenaHalf - POLICY.playerRadius;
+    const desiredX = clamp(x, -edge, edge), desiredZ = clamp(z, -edge, edge);
+    const elapsed = clamp((now - current.acceptedAt) / 1000, 0, POLICY.maxCatchupSeconds);
+    const maxStep = POLICY.movementSlack + POLICY.maxHorizontalSpeed * elapsed;
+    const dx = desiredX - current.x, dz = desiredZ - current.z, distance = Math.hypot(dx, dz);
+    const scale = distance > maxStep && distance > 0 ? maxStep / distance : 1;
+    const wrappedYaw = ((yaw + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
+    return { x: current.x + dx * scale, y: clamp(y, POLICY.minY, POLICY.maxY), z: current.z + dz * scale, yaw: wrappedYaw, acceptedAt: now };
+  };
+  const acceptDamage = (shooter, target, value) => {
+    if (typeof value !== "number" || !Number.isFinite(value)) return null;
+    const damage = value;
+    if (damage <= 0 || damage > POLICY.maxClaimDamage) return null;
+    if (Math.hypot(target.x - shooter.x, target.z - shooter.z) > POLICY.maxHitRange) return null;
+    return Math.round(damage * 100) / 100;
+  };
+
   class HubSocket {
     constructor(id, hub) {
       this.id = id;
@@ -59,43 +86,53 @@ const LOOPBACK_HUB_SCRIPT = `
       this.outbox = [];
       this.nextId = 1;
       this.flushing = false;
+      this.clock = 0;
     }
     spawn(slot) { return { x: slot * 10, z: 0 }; }
     connect() {
       const id = "c" + this.nextId++;
       const slot = this.players.size + 1;
       const sp = this.spawn(slot);
-      const player = { id, name: "Player", avatar: "ranger", slot, x: sp.x, y: 1.8, z: sp.z, yaw: 0, weapon: "Rifle", health: 100, kills: 0, alive: true, joined: false };
+      const player = { id, name: "Player", avatar: "ranger", slot, x: sp.x, y: 1.8, z: sp.z, yaw: 0, weapon: "Pistol", health: 100, kills: 0, alive: true, joined: false, acceptedAt: this.clock, stateFrames: [], hitFrames: [] };
       this.players.set(id, player);
       const socket = new HubSocket(id, this);
       this.sockets.set(id, socket);
-      const visible = [...this.players.values()].filter((p) => p.id === id || p.joined);
+      const visible = [...this.players.values()].filter((p) => p.id === id || p.joined).map((p) => this.publicPlayer(p));
       this.queue(id, { t: "welcome", id, players: visible });
       return socket;
     }
     receive(senderId, raw) {
+      this.clock += 50;
       let m;
       try { m = JSON.parse(raw); } catch (_e) { return; }
       const p = this.players.get(senderId);
       if (!p) return;
       if (m.t === "join") {
-        p.name = String(m.name != null ? m.name : "Player").slice(0, 16) || "Player";
-        p.avatar = String(m.avatar != null ? m.avatar : "ranger");
+        p.name = String(m.name != null ? m.name : "Player").replace(/[\\u0000-\\u001f\\u007f]/g, "").trim().slice(0, 16) || "Player";
+        p.avatar = ["ranger", "heavy", "scout", "medic"].includes(String(m.avatar)) ? String(m.avatar) : "ranger";
         const wasJoined = p.joined;
         p.joined = true;
-        if (!wasJoined) this.broadcast({ t: "join", player: p }, [senderId]);
+        if (!wasJoined) this.broadcast({ t: "join", player: this.publicPlayer(p) }, [senderId]);
         this.broadcast({ t: "name", id: p.id, name: p.name, avatar: p.avatar, slot: p.slot });
       } else if (m.t === "state") {
-        p.x = Number(m.x) || 0;
-        p.y = Number(m.y) || 1.8;
-        p.z = Number(m.z) || 0;
-        p.yaw = Number(m.yaw) || 0;
-        if (typeof m.weapon === "string") p.weapon = m.weapon;
+        if (!p.joined) { this.scheduleFlush(); return; }
+        const cadence = acceptCadence(p.stateFrames, this.clock, POLICY.maxStateFramesPerWindow);
+        if (!cadence) { this.scheduleFlush(); return; }
+        p.stateFrames = cadence;
+        const pose = acceptPose(p, m, this.clock);
+        if (!pose) { this.scheduleFlush(); return; }
+        Object.assign(p, pose);
+        if (["Pistol", "SMG", "Shotgun", "Cannon", "Sniper"].includes(m.weapon)) p.weapon = m.weapon;
         this.broadcast({ t: "state", id: p.id, x: p.x, y: p.y, z: p.z, yaw: p.yaw, weapon: p.weapon, health: p.health }, [senderId]);
       } else if (m.t === "hit") {
+        if (!p.joined || typeof m.target !== "string") { this.scheduleFlush(); return; }
+        const cadence = acceptCadence(p.hitFrames, this.clock, POLICY.maxHitFramesPerWindow);
+        if (!cadence) { this.scheduleFlush(); return; }
+        p.hitFrames = cadence;
         const target = this.players.get(String(m.target));
-        const dmg = Number(m.dmg) || 0;
-        if (!target || !target.alive || dmg <= 0 || target.id === p.id) { this.scheduleFlush(); return; }
+        if (!target || !target.joined || !target.alive || target.id === p.id) { this.scheduleFlush(); return; }
+        const dmg = acceptDamage(p, target, m.dmg);
+        if (dmg === null) { this.scheduleFlush(); return; }
         target.health = Math.max(0, target.health - dmg);
         let killed = false;
         let respawn = null;
@@ -115,6 +152,10 @@ const LOOPBACK_HUB_SCRIPT = `
       this.sockets.delete(id);
       this.broadcast({ t: "leave", id });
       this.scheduleFlush();
+    }
+    publicPlayer(player) {
+      const { acceptedAt: _acceptedAt, stateFrames: _stateFrames, hitFrames: _hitFrames, ...visible } = player;
+      return visible;
     }
     broadcast(message, exclude) {
       const skip = exclude || [];
@@ -185,14 +226,14 @@ async function mpSnapshot(page: Page): Promise<MpSnapshot> {
   return page.evaluate(() => (window as unknown as FpsWindow).__fpsGame.multiplayerDebugSnapshot());
 }
 
-/** Launch the game and join a co-op room over the loopback hub, sim loop unblocked. */
+/** Launch the game and join a PvP preview room over the loopback hub, sim loop unblocked. */
 async function startRoom(page: Page): Promise<void> {
   await page.addInitScript(LOOPBACK_HUB_SCRIPT);
   await page.goto("/?sandbox=1");
   await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
   await page.evaluate(() => {
     const w = window as unknown as FpsWindow;
-    w.__fpsGame.startMultiplayer("BREACH-E2E", "Ace", "ranger");
+    w.__fpsGame.startMultiplayer("ARENA-E2E", "Ace", "ranger");
     // No pointer lock headless, so force the playing state the sim loop gates on.
     w.__fpsGame.ctx.status = "playing";
   });
@@ -213,13 +254,13 @@ async function joinBot(page: Page, name: string, avatar: string): Promise<string
 }
 
 test.describe("multiplayer presence (extracted transport + presence)", () => {
-  test("a peer joins, moves, takes a server-resolved hit, and leaves", async ({ page }) => {
+  test("a peer joins, moves, takes a validated server-resolved hit, and leaves", async ({ page }) => {
     await startRoom(page);
 
     // Solo to start: connected, self identified, no peers yet.
     const solo = await mpSnapshot(page);
     expect(solo.active).toBe(true);
-    expect(solo.room).toBe("BREACH-E2E");
+    expect(solo.room).toBe("ARENA-E2E");
     expect(solo.peers).toHaveLength(0);
 
     // A second player joins → presence registry builds exactly one peer avatar.
@@ -233,15 +274,21 @@ test.describe("multiplayer presence (extracted transport + presence)", () => {
 
     // The peer broadcasts a transform; the avatar lerps toward it in-scene.
     await page.evaluate(() => {
-      (window as unknown as FpsWindow).__bot.state({ x: 7, y: 1.8, z: -3, yaw: 1.0, weapon: "Rifle", health: 88 });
+      (window as unknown as FpsWindow).__bot.state({ x: 19, y: 1.8, z: -1, yaw: 1.0, weapon: "Pistol", health: 88 });
     });
     await expect
-      .poll(() => mpSnapshot(page).then((s) => Math.hypot(s.peers[0].x - 7, s.peers[0].z + 3) < 0.4))
+      .poll(() => mpSnapshot(page).then((s) => Math.hypot(s.peers[0].x - 19, s.peers[0].z + 1) < 0.4))
       .toBe(true);
 
     // The local player shoots the peer; the server (hub) owns the damage outcome.
     await page.evaluate((target) => {
       (window as unknown as FpsWindow).__fpsGame.sys.multiplayer.sendHit(target, 30);
+    }, botId);
+    await expect.poll(() => mpSnapshot(page).then((s) => s.peers[0]?.health)).toBe(70);
+
+    // Oversized client damage is only a claim and must not alter server-owned health.
+    await page.evaluate((target) => {
+      (window as unknown as FpsWindow).__fpsGame.sys.multiplayer.sendHit(target, 999);
     }, botId);
     await expect.poll(() => mpSnapshot(page).then((s) => s.peers[0]?.health)).toBe(70);
 
