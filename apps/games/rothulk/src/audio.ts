@@ -12,4 +12,16 @@ export const audio = createDeadrotAudio({
   sfxSamples: { hit: { url: hitImpact, volume: 0.86, loop: false } },
 });
 
-bindAudioToGlobalSettings(audio);
+let unbindSettings: (() => void) | null = null;
+
+export function activateAudio(): void {
+  if (!unbindSettings) unbindSettings = bindAudioToGlobalSettings(audio);
+}
+
+export function disposeAudio(): void {
+  unbindSettings?.();
+  unbindSettings = null;
+  audio.dispose();
+}
+
+activateAudio();

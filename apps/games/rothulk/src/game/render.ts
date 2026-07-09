@@ -37,6 +37,7 @@ export class Renderer {
   private flashAmount = 0;
 
   private aspect = 1;
+  private disposed = false;
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new THREE.WebGLRenderer({
@@ -528,8 +529,21 @@ export class Renderer {
     this.camera.updateProjectionMatrix();
   };
 
-  dispose() {
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
     window.removeEventListener("resize", this.resize);
+    for (const object of this.levelObjects) {
+      this.scene.remove(object);
+      this.disposeLevelObject(object);
+    }
+    this.levelObjects.length = 0;
+    this.scene.remove(this.hero);
+    this.disposeLevelObject(this.hero);
+    this.camera.remove(this.flashMesh);
+    this.disposeLevelObject(this.flashMesh);
+    this.scene.clear();
     this.renderer.dispose();
+    this.renderer.forceContextLoss();
   }
 }

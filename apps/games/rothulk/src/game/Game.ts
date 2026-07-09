@@ -2,7 +2,7 @@ import type { DeadrotSfx } from "@deadrot/game-kit/audio";
 import { InputLatch, recordWarResult } from "@deadrot/game-kit/core";
 import { FlashOverlay, ParticleBursts, ScreenShake } from "@deadrot/game-kit/juice";
 import { reportWarlineOperation } from "@deadrot/game-kit/warline";
-import { audio } from "../audio";
+import { activateAudio, audio, disposeAudio } from "../audio";
 import { COLORS, CONSTANTS } from "../constants";
 import {
   type CoreLoopState,
@@ -105,11 +105,14 @@ export class Game {
   private elapsed = 0;
   private running = false;
   private paused = false;
+  private raf = 0;
+  private disposed = false;
 
   // React bridge: fired whenever the paused flag flips so the UI can mirror it.
   onPauseChange: ((paused: boolean) => void) | null = null;
 
   constructor(canvas: HTMLCanvasElement) {
+    activateAudio();
     this.renderer = new Renderer(canvas);
     this.renderer.buildLevel(this.level);
     this.renderer.buildHero();
@@ -127,10 +130,24 @@ export class Game {
     return axis;
   }
 
-  start() {
+  start(): void {
+    if (this.running || this.disposed) return;
     this.running = true;
     this.lastTime = performance.now();
-    requestAnimationFrame(this.loop);
+    this.scheduleNextFrame();
+  }
+
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.running = false;
+    cancelAnimationFrame(this.raf);
+    this.onPauseChange = null;
+    this.input.dispose();
+    this.bursts.dispose();
+    this.flash.dispose();
+    this.renderer.dispose();
+    disposeAudio();
   }
 
   beginRun() {
@@ -284,7 +301,7 @@ export class Game {
     if (this.paused) {
       this.lastTime = now;
       this.renderer.render();
-      requestAnimationFrame(this.loop);
+      this.scheduleNextFrame();
       return;
     }
 
@@ -327,8 +344,13 @@ export class Game {
     this.renderer.camera.position.x -= shakeX;
     this.renderer.camera.position.y -= shakeY;
 
-    requestAnimationFrame(this.loop);
+    this.scheduleNextFrame();
   };
+
+  private scheduleNextFrame(): void {
+    if (!this.running || this.disposed) return;
+    this.raf = requestAnimationFrame(this.loop);
+  }
 
   private updateDead(dt: number) {
     this.respawnTimer -= dt;

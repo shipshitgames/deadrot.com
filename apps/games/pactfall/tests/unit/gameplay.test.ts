@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, spyOn, test } from "bun:test";
 import { COLORS, CONSTANTS, MARCH_DIR, type Team } from "../../src/game/constants";
 import { CHAMPIONS, DEFAULT_ENEMY_CHAMPION_ID, DEFAULT_PLAYER_CHAMPION_ID } from "../../src/game/data/champions";
 import { makeBase, makeChampion, makeMinion, makeScourge } from "../../src/game/factory";
@@ -221,6 +221,43 @@ describe("pactfall EntitySystem — reset & lane layout", () => {
     expect(minions(game.entities).length).toBe(0);
     expect(game.entities.towers.length).toBe(totalActiveTowers(ASHGATE_MAP));
     expect(allEntities(game.entities).length).toBe(5 + totalActiveTowers(ASHGATE_MAP));
+  });
+
+  test("reset disposes removed champion and beam GPU resources", () => {
+    const game = makeStubGame();
+    game.entities.reset();
+    const championMesh = game.entities.champion.mesh.children.find((child) => (child as { isMesh?: boolean }).isMesh);
+    expect(championMesh).toBeDefined();
+    const mesh = championMesh as import("three").Mesh;
+    const championGeometryDispose = spyOn(mesh.geometry, "dispose");
+    const championMaterial = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+    const championMaterialDispose = spyOn(championMaterial, "dispose");
+
+    game.entities.beam(game.entities.champion.pos, game.entities.enemyChampion.pos, COLORS.hellfire, 1, 1);
+    const beams = (game.entities as unknown as { beams: { mesh: import("three").Mesh }[] }).beams;
+    const beamGeometryDispose = spyOn(beams[0].mesh.geometry, "dispose");
+    const beamMaterialDispose = spyOn(beams[0].mesh.material as import("three").Material, "dispose");
+
+    game.entities.reset();
+
+    expect(championGeometryDispose).toHaveBeenCalledTimes(1);
+    expect(championMaterialDispose).toHaveBeenCalledTimes(1);
+    expect(beamGeometryDispose).toHaveBeenCalledTimes(1);
+    expect(beamMaterialDispose).toHaveBeenCalledTimes(1);
+  });
+
+  test("final disposal is idempotent and releases current entity resources once", () => {
+    const game = makeStubGame();
+    game.entities.reset();
+    const championMesh = game.entities.champion.mesh.children.find((child) => (child as { isMesh?: boolean }).isMesh);
+    const mesh = championMesh as import("three").Mesh;
+    const geometryDispose = spyOn(mesh.geometry, "dispose");
+
+    game.entities.dispose();
+    game.entities.dispose();
+
+    expect(geometryDispose).toHaveBeenCalledTimes(1);
+    expect(allEntities(game.entities)).toEqual([]);
   });
 });
 

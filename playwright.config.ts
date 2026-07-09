@@ -71,6 +71,7 @@ export default defineConfig({
         /redline-courier\.spec\.ts/,
         /starblight-drydock\.spec\.ts/,
         /deadlane-defense\.spec\.ts/,
+        /game-lifecycle\.spec\.ts/,
         /warline-front\.spec\.ts/,
       ],
       use: {

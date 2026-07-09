@@ -34,6 +34,7 @@ export class RenderSystem {
   private readonly baseCore: THREE.Mesh;
   private readonly baseCoreMat: THREE.MeshStandardMaterial;
   private readonly shake = new ScreenShake();
+  private disposed = false;
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new THREE.WebGLRenderer({
@@ -65,7 +66,7 @@ export class RenderSystem {
     this.bursts = new ParticleBursts(this.scene);
 
     this.resize();
-    window.addEventListener("resize", () => this.resize());
+    window.addEventListener("resize", this.resize);
   }
 
   // ---- scene construction ---------------------------------------------------
@@ -346,11 +347,32 @@ export class RenderSystem {
     this.renderer.render(this.scene, this.camera);
   }
 
-  private resize(): void {
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    window.removeEventListener("resize", this.resize);
+    this.bursts.dispose();
+    this.rig.dispose();
+    this.scene.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.geometry.dispose();
+      if (Array.isArray(mesh.material)) {
+        for (const material of mesh.material) material.dispose();
+      } else {
+        mesh.material.dispose();
+      }
+    });
+    this.scene.clear();
+    this.renderer.dispose();
+    this.renderer.forceContextLoss();
+  }
+
+  private readonly resize = (): void => {
     const w = window.innerWidth;
     const h = window.innerHeight;
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(w, h, false);
     this.rig.resize(w / h);
-  }
+  };
 }

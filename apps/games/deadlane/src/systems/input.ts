@@ -33,6 +33,7 @@ export class InputSystem {
   wantsSprint = false;
   private buildQueued = false;
   private selectQueued: TowerKind | null = null;
+  private disposed = false;
 
   constructor(
     private readonly rig: CameraRig,
@@ -76,9 +77,12 @@ export class InputSystem {
   }
 
   dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
     this.binder.unbind();
     window.removeEventListener("keydown", this.onRawKeyDown);
     window.removeEventListener("keyup", this.onRawKeyUp);
+    this.clearTransientInput();
   }
 
   takeBuildAction(): boolean {
