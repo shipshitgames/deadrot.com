@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "test": "bun run test:unit",
     "test:unit": "bun test tests/unit",
     "test:coverage": "bun test --coverage tests/unit",
