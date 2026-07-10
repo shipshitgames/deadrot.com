@@ -10,54 +10,54 @@ const gameEntries = [
     slug: "brawl",
     title: "Brawl - DEADROT",
     description: "Choose a faction fighter and settle a one-on-one battlefield clash against the Scourge.",
-    image: `${siteOrigin}/images/og/games/brawl.png`,
+    image: `${siteOrigin}/assets/games/brawl/ui/social/og.jpg`,
   },
   {
     slug: "deadlane",
     title: "DEADLANE - DEADROT",
     description:
       "Hold the lane as the Wardens. Build, wall, and bleed the Scourge dry before the breach reaches the line.",
-    image: `${siteOrigin}/images/og/games/deadlane.png`,
+    image: `${siteOrigin}/assets/games/deadlane/ui/social/og.jpg`,
   },
   {
     slug: "pactfall",
     title: "PACTFALL - DEADROT",
     description:
       "Settle the Pyre and Warden grudge in the arena, but do not let the Pact break while the Scourge surges.",
-    image: `${siteOrigin}/images/og/games/pactfall.png`,
+    image: `${siteOrigin}/assets/games/pactfall/ui/social/og.jpg`,
   },
   {
     slug: "redline",
     title: "REDLINE - DEADROT",
     description: "Outrun the Choir as a courier on dead roads. Keep the redline or the Scourge swarm catches up.",
-    image: `${siteOrigin}/images/og/games/redline.png`,
+    image: `${siteOrigin}/assets/games/redline/ui/social/og.jpg`,
   },
   {
     slug: "rothulk",
     title: "ROTHULK - DEADROT",
     description:
       "Climb a living Scourge bio-hulk, ignite its breach-core, and escape before the severed node collapses.",
-    image: `${siteOrigin}/images/og/games/rothulk.png`,
+    image: `${siteOrigin}/assets/games/rothulk/ui/social/og.jpg`,
   },
   {
     slug: "scourge-survivors",
     title: "Scourge Survivors - DEADROT",
     description: "Drop into the breach as a Pyre operator, survive the Scourge swarm, draft upgrades, and burn deeper.",
-    image: `${siteOrigin}/images/og/games/scourge-survivors.png`,
+    image: `${siteOrigin}/assets/games/scourge-survivors/ui/social/og.jpg`,
   },
   {
     slug: "starblight",
     title: "STARBLIGHT - DEADROT",
     description:
       "Burn Scourge infection out of orbit before spores, wreckage, and carrier-ships fall into the ground war.",
-    image: `${siteOrigin}/images/og/games/starblight.png`,
+    image: `${siteOrigin}/assets/games/starblight/ui/social/og.jpg`,
   },
   {
     slug: "warline",
     title: "Warline - DEADROT",
     description:
       "Manage the War for the Lanes, spend shared resources, fortify regions, and push back the Scourge front.",
-    image: `${siteOrigin}/images/hero.webp`,
+    image: `${siteOrigin}/assets/games/warline/ui/social/og.jpg`,
   },
 ];
 
@@ -88,7 +88,7 @@ const webSourceChecks = [
   },
   {
     file: "apps/web/app/games/[slug]/page.tsx",
-    contains: ["createSocialMetadata", "images/og/games", "path: `/games/", "game.slug}`"],
+    contains: ["createSocialMetadata", "assets/games", "path: `/games/", "game.slug}`"],
   },
   {
     file: "apps/web/app/characters/[slug]/page.tsx",
@@ -138,7 +138,11 @@ function publicPathFromSiteUrl(value) {
   if (url.origin !== siteOrigin) {
     throw new Error(`expected ${value} to use ${siteOrigin}`);
   }
-  return path.join(repoRoot, "apps/web/public", decodeURIComponent(url.pathname.slice(1)));
+  const relativePath = decodeURIComponent(url.pathname.slice(1));
+  if (relativePath.startsWith("assets/")) {
+    return path.join(repoRoot, "packages/assets", relativePath.slice("assets/".length));
+  }
+  return path.join(repoRoot, "apps/web/public", relativePath);
 }
 
 async function assertReadableFile(filePath, label) {
@@ -196,6 +200,17 @@ async function checkGameEntry(entry) {
     }
   }
 
+  const favicon = getLinkTag(head, "icon");
+  if (!favicon || getAttr(favicon, "href") !== "/favicon.svg") {
+    fail(`${rel(htmlPath)} must reference the canonical build-copied /favicon.svg`);
+  }
+
+  const viteConfigPath = path.join(repoRoot, "apps/games", entry.slug, "vite.config.ts");
+  const viteConfig = await readFile(viteConfigPath, "utf8");
+  if (!viteConfig.includes("packages/assets/masters/ui/brand/favicon")) {
+    fail(`${rel(viteConfigPath)} must use the canonical package favicon directory as publicDir`);
+  }
+
   await assertReadableFile(publicPathFromSiteUrl(entry.image), `${entry.slug} social image`);
 }
 
@@ -230,7 +245,11 @@ async function checkWebSources() {
     }
   }
 
-  await assertReadableFile(path.join(repoRoot, "apps/web/public/images/hero.webp"), "default social image");
+  await assertReadableFile(path.join(repoRoot, "packages/assets/universe/hero.webp"), "default social image");
+  await assertReadableFile(
+    path.join(repoRoot, "packages/assets/masters/ui/brand/favicon/favicon.svg"),
+    "canonical favicon",
+  );
 
   for (const check of webSourceChecks) {
     const filePath = path.join(repoRoot, check.file);
@@ -239,6 +258,17 @@ async function checkWebSources() {
       if (!source.includes(token)) {
         fail(`${check.file} is missing "${token}"`);
       }
+    }
+  }
+}
+
+async function checkNoWebSocialMirrors() {
+  for (const legacyPath of ["apps/web/public/images/og/games", "apps/web/public/images/hero.webp"]) {
+    try {
+      await stat(path.join(repoRoot, legacyPath));
+      fail(`${legacyPath} duplicates canonical package social assets`);
+    } catch {
+      // Expected: package assets are published by the controlled web sync.
     }
   }
 }
@@ -275,6 +305,7 @@ async function checkQuartzSocialImages() {
 await checkNoUnlistedGameEntries();
 await Promise.all(gameEntries.map(checkGameEntry));
 await checkWebSources();
+await checkNoWebSocialMirrors();
 await checkQuartzSocialImages();
 
 if (failures.length > 0) {

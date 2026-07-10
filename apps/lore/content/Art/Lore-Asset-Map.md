@@ -12,12 +12,12 @@ Generated coverage board for lore entries and their package-owned generated art.
 
 - Entries: 29
 - Locked: 2
-- Runtime linked: 5
-- In progress: 21
+- Runtime linked: 6
+- In progress: 20
 - Drafted only: 0
 - Missing: 1
 - Catalog-linked: 22
-- Runtime manifest-linked: 9
+- Runtime manifest-linked: 10
 - Package asset-linked: 26
 - Has masters: 15
 - Has generated sources: 15
@@ -28,15 +28,15 @@ Generated coverage board for lore entries and their package-owned generated art.
 | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- |
 | [[Breach-Boss|Breach-Boss]] | bestiary | locked | scourge-survivors, deadlane, rothulk | 2/3 | 7 | 3 | 4 | 7 | Yes | Wire animation frames into renderer. |
 | [[Graft-Breacher|Graft-Breacher]] | bestiary | in-progress | deadlane, scourge-survivors, rothulk | 2/3 | 0 | 2 | 1 | 1 | No | Generate final per-game variants. |
-| [[Orbital-Breach-Carrier|Orbital Breach Carrier]] | bestiary | in-progress | starblight | 1/1 | 0 | 1 | 2 | 1 | No | Replace with final Starblight boss render. |
+| [[Orbital-Breach-Carrier|Orbital Breach Carrier]] | bestiary | runtime-linked | starblight | 1/1 | 1 | 1 | 3 | 1 | No | Replace with final Starblight boss render. |
 | [[Quaver|Quaver]] | bestiary | in-progress | scourge-survivors, deadlane | none | 6 | 0 | 0 | 0 | - | - |
-| [[Render|Render]] | bestiary | in-progress | scourge-survivors, deadlane, redline | 2/3 | 0 | 3 | 1 | 1 | No | Generate final per-game variants. |
+| [[Render|Render]] | bestiary | in-progress | scourge-survivors, deadlane, redline | 2/3 | 0 | 3 | 2 | 1 | No | Generate final per-game variants. |
 | [[Rot-Engine|Rot-Engine]] | bestiary | in-progress | deadlane, scourge-survivors, redline | 2/3 | 0 | 2 | 1 | 1 | No | Generate final Deadlane camera render. |
 | [[Scourge|The Scourge]] | bestiary | missing | scourge-survivors, deadlane, pactfall, starblight, redline, rothulk | none | 0 | 0 | 0 | 0 | - | - |
 | [[Scourge-Fighter|Scourge Fighter]] | bestiary | in-progress | starblight | 1/1 | 0 | 1 | 6 | 1 | No | Replace with final Starblight sprite/ship render. |
 | [[Scourge-Host-Families|Scourge Host Families]] | bestiary | in-progress | scourge-survivors, deadlane, starblight, pactfall, redline, rothulk | none | 0 | 1 | 0 | 0 | - | - |
-| [[Swarm-Ripper|Swarm Ripper]] | bestiary | locked | scourge-survivors, deadlane, redline | 2/3 | 6 | 3 | 21 | 19 | Yes | Wire animation frames into renderer. |
-| [[Swarm-Spitter|Swarm Spitter]] | bestiary | runtime-linked | scourge-survivors, deadlane, rothulk | 2/3 | 6 | 2 | 4 | 3 | No | Review against locked reference, then promote/lock or regenerate. |
+| [[Swarm-Ripper|Swarm Ripper]] | bestiary | locked | scourge-survivors, deadlane, redline | 2/3 | 6 | 3 | 22 | 19 | Yes | Wire animation frames into renderer. |
+| [[Swarm-Spitter|Swarm Spitter]] | bestiary | runtime-linked | scourge-survivors, deadlane, rothulk | 2/3 | 6 | 2 | 5 | 3 | No | Review against locked reference, then promote/lock or regenerate. |
 | [[Trucebreaker|Trucebreaker]] | bestiary | in-progress | pactfall | 1/1 | 0 | 1 | 3 | 3 | No | Replace with final Pactfall boss render. |
 | [[Wound-Hound|Wound-Hound]] | bestiary | in-progress | scourge-survivors, deadlane, redline | none | 3 | 0 | 0 | 0 | - | - |
 | [[Bulwark|Bulwark]] | character | runtime-linked | scourge-survivors | 1/1 | 3 | 2 | 1 | 1 | No | Regenerate as locked comic/cel-ink production turnaround. |
@@ -93,15 +93,15 @@ Generated coverage board for lore entries and their package-owned generated art.
 ### Orbital Breach Carrier
 
 - Type: bestiary
-- Status: in-progress
+- Status: runtime-linked
 - Note: `Bestiary/Aircraft/Orbital-Breach-Carrier.md`
 - Sprite base: `portrait-orbital-breach-carrier`
 - Catalog entities: `orbital-breach-carrier`
 - Catalog variants: 1/1
-- Runtime records: 0
+- Runtime records: 1
 - Package asset paths: `packages/assets/entities/orbital-breach-carrier/starblight.webp`
 - Preview paths: `packages/assets/lore/asset-status/previews/enemies/orbital-breach-carrier.webp`
-- Master paths: `packages/assets/lore/art-masters/scourge/orbital-breach-carrier/orbital-breach-carrier-master-turnaround.png`<br>`packages/assets/lore/art-masters/scourge/orbital-breach-carrier/orbital-breach-carrier-runtime-placeholder.webp`
+- Master paths: `packages/assets/masters/sprites/starblight/runtime-v01/orbital-breach-carrier.png`<br>`packages/assets/lore/art-masters/scourge/orbital-breach-carrier/orbital-breach-carrier-master-turnaround.png`<br>`packages/assets/lore/art-masters/scourge/orbital-breach-carrier/orbital-breach-carrier-runtime-placeholder.webp`
 - Generated source paths: `packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/orbital-breach-carrier-master-turnaround.png`
 
 ### Quaver
@@ -129,7 +129,7 @@ Generated coverage board for lore entries and their package-owned generated art.
 - Runtime records: 0
 - Package asset paths: `packages/assets/entities/scourge-elite/deadlane.webp`<br>`packages/assets/entities/scourge-elite/pactfall.webp`<br>`packages/assets/entities/scourge-elite/scourge-survivors.webp`
 - Preview paths: `packages/assets/lore/asset-status/previews/enemies/render.webp`
-- Master paths: `packages/assets/masters/art/scourge/bestiary-v02/render-master-v02.png`
+- Master paths: `packages/assets/masters/art/scourge/bestiary-v02/render-master-v02.png`<br>`packages/assets/masters/sprites/starblight/runtime-v01/scourge-elite.png`
 - Generated source paths: `packages/assets/sources/generated/2026-06-16/lore/bestiary/master-candidates/render-master-v02.png`
 
 ### Rot-Engine
@@ -199,7 +199,7 @@ Generated coverage board for lore entries and their package-owned generated art.
 - Runtime records: 6
 - Package asset paths: `packages/assets/entities/scourge-swarm/deadlane.webp`<br>`packages/assets/entities/scourge-swarm/pactfall.webp`<br>`packages/assets/entities/scourge-swarm/scourge-survivors.webp`
 - Preview paths: `packages/assets/lore/asset-status/previews/enemies/swarm-ripper-host-grunt.webp`
-- Master paths: `packages/assets/masters/art/scourge/bestiary-v02/swarm-ripper-master-v02.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-01.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-02.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-03.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-04.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-05.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-06.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-07.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-08.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-09.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-10.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-11.png`
+- Master paths: `packages/assets/masters/art/scourge/bestiary-v02/swarm-ripper-master-v02.png`<br>`packages/assets/masters/sprites/starblight/runtime-v01/scourge-swarmling.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-01.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-02.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-03.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-04.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-05.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-06.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-07.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-08.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-09.png`<br>`packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-10.png`
 - Generated source paths: `packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper-master-candidate-fast.png`<br>`packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper-master-candidate-heavy.png`<br>`packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper-turnaround-candidate.png`<br>`packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper/reference/index.md`<br>`packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper/reference/swarm-ripper-reference-01.png`<br>`packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper/reference/swarm-ripper-reference-02.png`<br>`packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper/reference/swarm-ripper-reference-03.png`<br>`packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper/reference/swarm-ripper-reference-04.png`<br>`packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper/reference/swarm-ripper-reference-05.png`<br>`packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper/reference/swarm-ripper-reference-06.png`<br>`packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper/reference/swarm-ripper-reference-07.png`<br>`packages/assets/sources/generated/2026-06-11/lore/bestiary/swarm-ripper/reference/swarm-ripper-reference-08.png`
 
 ### Swarm Spitter
@@ -213,7 +213,7 @@ Generated coverage board for lore entries and their package-owned generated art.
 - Runtime records: 6
 - Package asset paths: `packages/assets/entities/scourge-spitter/deadlane.webp`<br>`packages/assets/entities/scourge-spitter/scourge-survivors.webp`
 - Preview paths: `packages/assets/lore/asset-status/previews/enemies/swarm-spitter-host.webp`
-- Master paths: `packages/assets/masters/art/scourge/bestiary-v02/swarm-spitter-master-v02.png`<br>`packages/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-master-turnaround.png`<br>`packages/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-runtime-placeholder.webp`<br>`packages/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-runtime-visual-lock.png`
+- Master paths: `packages/assets/masters/art/scourge/bestiary-v02/swarm-spitter-master-v02.png`<br>`packages/assets/masters/sprites/starblight/runtime-v01/scourge-spitter.png`<br>`packages/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-master-turnaround.png`<br>`packages/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-runtime-placeholder.webp`<br>`packages/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-runtime-visual-lock.png`
 - Generated source paths: `packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/swarm-spitter-master-turnaround.png`<br>`packages/assets/sources/generated/2026-06-12/lore/bestiary/scourge-foes/swarm-spitter-runtime-derived-master-turnaround.png`<br>`packages/assets/sources/generated/2026-06-16/lore/bestiary/master-candidates/swarm-spitter-master-v02.png`
 
 ### Trucebreaker

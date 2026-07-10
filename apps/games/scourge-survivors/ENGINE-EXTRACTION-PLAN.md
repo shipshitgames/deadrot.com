@@ -1,5 +1,10 @@
 # `@shipshitgames/engine` extraction plan
 
+> **EXECUTED / HISTORICAL.** The local engine fork described by this plan was
+> retired and upstreamed. Deadrot consumes published `@shipshitgames/engine`
+> from the sibling studio repository; this plan does not authorize creating a
+> local `packages/engine` package.
+
 > Output of the `engine-boundary-map` workflow (18 agents) — classify every `game/` symbol
 > on the **player-embodiment** axis, design the interface that cuts each coupling seam,
 > synthesize the package manifest + `CameraRig` API, and adversarially stress-test that API.

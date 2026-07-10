@@ -164,7 +164,7 @@ function randomRoom(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let s = "";
   for (let i = 0; i < 4; i++) s += chars[Math.floor(Math.random() * chars.length)];
-  return `BREACH-${s}`;
+  return `ARENA-${s}`;
 }
 
 function MultiplayerPanel({
@@ -195,7 +195,7 @@ function MultiplayerPanel({
     >
       <div className="text-[14px] tracking-[0.1em] uppercase text-[#ff8aa0] mb-[10px]">
         <IconText icon="swords" size={18}>
-          Co-op Breach Rooms
+          PvP Arena Preview
         </IconText>
       </div>
       <div className="flex gap-[10px] justify-center flex-wrap">
@@ -209,8 +209,8 @@ function MultiplayerPanel({
         />
         <input
           className={input}
-          placeholder="Breach code (blank = random)"
-          aria-label="Breach code"
+          placeholder="Arena code (blank = random)"
+          aria-label="Arena code"
           maxLength={20}
           value={room}
           onChange={(e) => setRoom(e.target.value)}
@@ -271,10 +271,13 @@ function MultiplayerPanel({
         onClick={join}
       >
         <IconText icon="swords" size={19}>
-          Join Breach
+          Join Arena
         </IconText>
       </button>
-      <div className="mt-2 text-[12px] opacity-60">Share the breach code so friends can join the same run.</div>
+      <div className="mt-2 text-[12px] opacity-70">
+        Preview: no PvE waves. Rooms are unauthenticated; clients own movement and submit hit claims, while the server
+        owns accepted positions, health, frags, and respawns.
+      </div>
     </div>
   );
 }
@@ -435,7 +438,7 @@ function SurvivorsHub({
   scores,
   onOperator,
   onShop,
-  onCoop,
+  onArena,
   onLeaderboard,
   onCodex,
   onSettings,
@@ -445,7 +448,7 @@ function SurvivorsHub({
   scores: ScoreEntry[];
   onOperator: () => void;
   onShop: () => void;
-  onCoop: () => void;
+  onArena: () => void;
   onLeaderboard: () => void;
   onCodex: () => void;
   onSettings: () => void;
@@ -479,14 +482,14 @@ function SurvivorsHub({
       />
       <MainMenuAction
         type="button"
-        variant="coop"
+        variant="default"
         label={
           <IconText icon="swords" size={18}>
-            Co-op
+            PvP Arena
           </IconText>
         }
-        meta="Co-op breach variant"
-        onClick={onCoop}
+        meta="Unauthenticated preview · no PvE waves"
+        onClick={onArena}
       />
       <MainMenuAction
         type="button"
@@ -546,7 +549,7 @@ function SurvivorsHub({
   );
 }
 
-/** Title splash + hub menus (operator loadout, shop, co-op, leaderboard, settings). */
+/** Title splash + hub menus (operator loadout, shop, PvP preview, leaderboard, settings). */
 export function MainMenu({
   state,
   scores,
@@ -619,7 +622,7 @@ export function MainMenu({
               scores={scores}
               onOperator={() => setMenuScreen("operator")}
               onShop={() => setMenuScreen("shop")}
-              onCoop={() => setMenuScreen("multiplayer")}
+              onArena={() => setMenuScreen("multiplayer")}
               onLeaderboard={() => setMenuScreen("leaderboard")}
               onCodex={() => setMenuScreen("codex")}
               onSettings={() => setMenuScreen("settings")}
@@ -681,7 +684,7 @@ export function MainMenu({
             <div className={menuScreenWrap}>
               <div className={MENU_HEADING}>
                 <IconText icon="swords" size={18}>
-                  Co-op
+                  PvP Arena Preview
                 </IconText>
               </div>
               <MultiplayerPanel onStart={onStartMultiplayer} initialRoom={initialRoom} />

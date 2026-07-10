@@ -6,6 +6,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [react()],
   base: "./",
+  publicDir: fileURLToPath(new URL("../../../packages/assets/masters/ui/brand/favicon", import.meta.url)),
   resolve: {
     // Dedupe so @shipshitgames/ui (react peer dep) shares one copy of react
     // with the app. Two react copies in the prod bundle cause React error #525.
