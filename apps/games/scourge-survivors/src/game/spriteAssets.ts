@@ -3,16 +3,17 @@ import {
   ANIMATION_MANIFEST,
   ASSET_CATALOG,
   ASSET_MANIFEST,
-  animationFrameUrl,
+  animationFrameSource,
   assetUrl,
   audioUrl,
+  bootSpriteUrl,
   loadSpriteTexture,
   loadTexture,
   type SpriteView,
   spriteEntry,
   spriteScale,
-  spriteUrl,
   textureEntry,
+  uiUrl,
 } from "../assets/catalog";
 import type { PlayerAvatarId } from "../net/playerAvatars";
 import type { WeaponId } from "./constants";
@@ -21,6 +22,35 @@ import { MAIN_WEAPON_VISUAL_TIERS, type MainWeaponVisualTier } from "./data/surv
 export type EnemySpriteKind = "melee" | "ranged" | "flying" | "hound" | "boss";
 export type EnemySpriteView = SpriteView;
 export type EnemySpriteAnimationState = "move" | "attack" | "death";
+
+const ENEMY_SPRITE_KINDS = ["melee", "ranged", "flying", "hound", "boss"] as const;
+const ENEMY_SPRITE_VIEWS = ["front", "side", "back"] as const;
+const ENEMY_ANIMATION_STATES = ["move", "attack", "death"] as const;
+const WEAPON_IDS = ["pistol", "smg", "shotgun", "cannon", "sniper"] as const satisfies readonly WeaponId[];
+
+type EnemyTextureRecord = Record<EnemySpriteKind, Record<EnemySpriteView, THREE.Texture>>;
+type EnemyAnimationTextureRecord = Record<
+  EnemySpriteKind,
+  Record<EnemySpriteAnimationState, Record<EnemySpriteView, THREE.Texture[]>>
+>;
+
+interface CombatAssetSnapshot {
+  enemyTextures: EnemyTextureRecord;
+  enemyAnimations: EnemyAnimationTextureRecord;
+  weaponTextures: Record<WeaponId, THREE.Texture>;
+  weaponAdsTextures: Partial<Record<WeaponId, THREE.Texture>>;
+  weaponLootTextures: Record<WeaponId, THREE.Texture>;
+  muzzleFlashTexture: THREE.Texture;
+  projectileTextures: Record<"enemy" | "boss" | "bolt" | "orb", THREE.Texture>;
+  pickupTextures: Record<"health" | "ammo" | "damage" | "dual", THREE.Texture>;
+  xpBloodTexture: THREE.Texture;
+  corpsePartTextures: Record<CorpsePartSpriteId, THREE.Texture>;
+  playerAvatarTextures: Record<PlayerAvatarId, Record<EnemySpriteView, THREE.Texture>>;
+  arenaTextures: Record<string, THREE.Texture>;
+}
+
+let combatAssetSnapshot: CombatAssetSnapshot | undefined;
+let combatAssetPreloadPromise: Promise<void> | undefined;
 
 export function enemySpriteAssetId(id: EnemySpriteKind): string {
   return ASSET_CATALOG.enemy(id).sprite;
@@ -60,19 +90,12 @@ function enemyAnimationAction(kind: EnemySpriteKind, state: EnemySpriteAnimation
   return action;
 }
 
-// Each weapon ships ONE horizontal tier SHEET (manifest `tierSheet`): the view-model
-// drawn at N escalating tiers, left to right. The runtime UV-samples one equal-width
-// cell per visual tier — so the tiers are generated together (perfectly consistent) and
-// loaded as a single texture. A weapon with no `tierSheet` is treated as a 1-column sheet
-// (the whole image is the only cell), so non-sheet weapons still render correctly.
-
-/** Cell count for a weapon's tier sheet (1 when the weapon has no sheet = single image). */
+// Each weapon ships one horizontal tier sheet. The runtime UV-samples a cell;
+// loading and wrapping the sheet happens once during combat preload.
 export function weaponSheetColumns(id: WeaponId): number {
   return spriteEntry(weaponSpriteAssetId(id)).tierSheet?.columns ?? 1;
 }
 
-/** Cell index (0-based, left to right) for a visual tier. Falls back to the highest tier
- *  cell ≤ the requested tier that the sheet actually defines, else cell 0 (base). */
 export function weaponTierCellIndex(id: WeaponId, tier: MainWeaponVisualTier): number {
   const tiers = spriteEntry(weaponSpriteAssetId(id)).tierSheet?.tiers;
   if (!tiers || tiers.length === 0) return 0;
@@ -83,54 +106,11 @@ export function weaponTierCellIndex(id: WeaponId, tier: MainWeaponVisualTier): n
   return 0;
 }
 
-function textureViews(id: string): Record<EnemySpriteView, THREE.Texture> {
-  return {
-    front: loadSpriteTexture(id, "front"),
-    side: loadSpriteTexture(id, "side"),
-    back: loadSpriteTexture(id, "back"),
-  };
-}
-
 function scaleViews(id: string): Record<EnemySpriteView, [number, number]> {
   return {
     front: spriteScale(id, "front"),
     side: spriteScale(id, "side"),
     back: spriteScale(id, "back"),
-  };
-}
-
-function loadEnemyAnimationTexture(
-  entity: string,
-  action: string,
-  view: EnemySpriteView,
-  frame: number,
-): THREE.Texture {
-  const texture = new THREE.TextureLoader().load(animationFrameUrl(entity, action, view, frame));
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.minFilter = THREE.NearestFilter;
-  texture.magFilter = THREE.NearestFilter;
-  texture.generateMipmaps = false;
-  texture.premultiplyAlpha = false;
-  return texture;
-}
-
-function animationFrameViews(entity: string, action: string): Record<EnemySpriteView, THREE.Texture[]> {
-  const frames = Array.from({ length: ANIMATION_MANIFEST.framesPerAction }, (_, frame) => frame);
-  return {
-    front: frames.map((frame) => loadEnemyAnimationTexture(entity, action, "front", frame)),
-    side: frames.map((frame) => loadEnemyAnimationTexture(entity, action, "side", frame)),
-    back: frames.map((frame) => loadEnemyAnimationTexture(entity, action, "back", frame)),
-  };
-}
-
-function animationStateViews(
-  kind: EnemySpriteKind,
-): Record<EnemySpriteAnimationState, Record<EnemySpriteView, THREE.Texture[]>> {
-  const entity = enemyAnimationEntity(kind);
-  return {
-    move: animationFrameViews(entity, enemyAnimationAction(kind, "move")),
-    attack: animationFrameViews(entity, enemyAnimationAction(kind, "attack")),
-    death: animationFrameViews(entity, enemyAnimationAction(kind, "death")),
   };
 }
 
@@ -140,52 +120,222 @@ function animationStateMeta(
   const entityId = enemyAnimationEntity(kind);
   const entity = ANIMATION_MANIFEST.entities[entityId];
   if (!entity) throw new Error(`Scourge Survivors animation manifest has no entity ${entityId}`);
-  const moveAction = enemyAnimationAction(kind, "move");
-  const attackAction = enemyAnimationAction(kind, "attack");
-  const deathAction = enemyAnimationAction(kind, "death");
-  const move = entity.actions[moveAction];
-  const attack = entity.actions[attackAction];
-  const death = entity.actions[deathAction];
-  if (!move) throw new Error(`Scourge Survivors animation manifest has no action ${entityId}/${moveAction}`);
-  if (!attack) throw new Error(`Scourge Survivors animation manifest has no action ${entityId}/${attackAction}`);
-  if (!death) throw new Error(`Scourge Survivors animation manifest has no action ${entityId}/${deathAction}`);
+  const meta = {} as Record<EnemySpriteAnimationState, { fps: number; loop: boolean; frameCount: number }>;
+  for (const state of ENEMY_ANIMATION_STATES) {
+    const actionId = enemyAnimationAction(kind, state);
+    const action = entity.actions[actionId];
+    if (!action) throw new Error(`Scourge Survivors animation manifest has no action ${entityId}/${actionId}`);
+    meta[state] = {
+      fps: action.fps,
+      loop: action.loop,
+      frameCount: ANIMATION_MANIFEST.framesPerAction,
+    };
+  }
+  return meta;
+}
+
+async function asyncRecord<K extends string, V>(
+  keys: readonly K[],
+  load: (key: K) => Promise<V>,
+): Promise<Record<K, V>> {
+  const entries = await Promise.all(keys.map(async (key) => [key, await load(key)] as const));
+  return Object.fromEntries(entries) as Record<K, V>;
+}
+
+function requireCombatAssets(): CombatAssetSnapshot {
+  if (!combatAssetSnapshot) {
+    throw new Error("Scourge Survivors combat assets were accessed before preloadCombatAssets() completed");
+  }
+  return combatAssetSnapshot;
+}
+
+function liveRecord<K extends string, V>(keys: readonly K[], read: (key: K) => V): Record<K, V> {
+  const record = {} as Record<K, V>;
+  for (const key of keys) {
+    Object.defineProperty(record, key, {
+      enumerable: true,
+      get: () => read(key),
+    });
+  }
+  return record;
+}
+
+const ANIMATION_BASE_TEXTURE_PROMISES = new Map<string, Promise<THREE.Texture>>();
+
+function animationBaseTexture(url: string, filter: THREE.MagnificationTextureFilter): Promise<THREE.Texture> {
+  const cached = ANIMATION_BASE_TEXTURE_PROMISES.get(url);
+  if (cached) return cached;
+  const promise = new THREE.TextureLoader()
+    .loadAsync(url)
+    .then((texture) => {
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.minFilter = filter;
+      texture.magFilter = filter;
+      texture.generateMipmaps = false;
+      texture.premultiplyAlpha = false;
+      return texture;
+    })
+    .catch((error) => {
+      ANIMATION_BASE_TEXTURE_PROMISES.delete(url);
+      throw error;
+    });
+  ANIMATION_BASE_TEXTURE_PROMISES.set(url, promise);
+  return promise;
+}
+
+async function loadEnemyAnimationTexture(
+  entity: string,
+  action: string,
+  view: EnemySpriteView,
+  frame: number,
+): Promise<THREE.Texture> {
+  const frameSource = await animationFrameSource(entity, action, view, frame);
+  const sourceKind = frameSource.atlas ? "atlas" : "frame";
+  const base = await animationBaseTexture(
+    frameSource.url,
+    frameSource.atlas ? THREE.NearestFilter : THREE.LinearFilter,
+  );
+  const texture = base.clone();
+  texture.userData.scourgeAnimation = { entity, action, view, frame, source: sourceKind };
+  texture.name = `scourge-animation:${entity}/${action}/${view}/${frame}`;
+
+  if (frameSource.atlas) {
+    const { pageWidth, pageHeight, x, y, w, h } = frameSource.atlas;
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    texture.repeat.set(w / pageWidth, h / pageHeight);
+    // Atlas metadata uses top-left pixel coordinates; THREE's texture offset is bottom-left.
+    texture.offset.set(x / pageWidth, 1 - (y + h) / pageHeight);
+    texture.matrixAutoUpdate = true;
+    texture.updateMatrix();
+  }
+
+  texture.needsUpdate = true;
+  return texture;
+}
+
+async function loadEnemyAnimations(): Promise<EnemyAnimationTextureRecord> {
+  return asyncRecord(ENEMY_SPRITE_KINDS, async (kind) => {
+    const entity = enemyAnimationEntity(kind);
+    return asyncRecord(ENEMY_ANIMATION_STATES, async (state) => {
+      const action = enemyAnimationAction(kind, state);
+      return asyncRecord(ENEMY_SPRITE_VIEWS, (view) =>
+        Promise.all(
+          Array.from({ length: ANIMATION_MANIFEST.framesPerAction }, (_, frame) =>
+            loadEnemyAnimationTexture(entity, action, view, frame),
+          ),
+        ),
+      );
+    });
+  });
+}
+
+async function loadAdsSpriteTexture(id: WeaponId): Promise<THREE.Texture> {
+  const entry = spriteEntry(weaponSpriteAssetId(id));
+  if (!entry.adsSprite) throw new Error(`Weapon sprite ${id} is missing scoped ADS metadata`);
+  const texture = await new THREE.TextureLoader().loadAsync(await assetUrl(entry.adsSprite.path));
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = entry.filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
+  texture.magFilter = entry.filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
+  texture.generateMipmaps = entry.filter !== "nearest";
+  texture.premultiplyAlpha = false;
+  return texture;
+}
+
+async function loadWeaponTexture(id: WeaponId): Promise<THREE.Texture> {
+  const texture = await loadSpriteTexture(weaponSpriteAssetId(id));
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+async function buildCombatAssetSnapshot(): Promise<CombatAssetSnapshot> {
+  const [
+    enemyTextures,
+    enemyAnimations,
+    weaponTextures,
+    weaponLootTextures,
+    muzzleFlashTexture,
+    projectileTextures,
+    pickupTextures,
+    xpBloodTexture,
+    corpsePartTextures,
+    playerAvatarTextures,
+    arenaTextures,
+    sniperAdsTexture,
+  ] = await Promise.all([
+    asyncRecord(ENEMY_SPRITE_KINDS, (kind) =>
+      asyncRecord(ENEMY_SPRITE_VIEWS, (view) => loadSpriteTexture(enemySpriteAssetId(kind), view)),
+    ),
+    loadEnemyAnimations(),
+    asyncRecord(WEAPON_IDS, loadWeaponTexture),
+    asyncRecord(WEAPON_IDS, (id) => loadSpriteTexture(weaponLootSpriteAssetId(id))),
+    loadSpriteTexture(fxSpriteAssetId("muzzleFlash")),
+    asyncRecord(["enemy", "boss", "bolt", "orb"] as const, (id) => loadSpriteTexture(projectileSpriteAssetId(id))),
+    asyncRecord(["health", "ammo", "damage", "dual"] as const, (id) => loadSpriteTexture(pickupSpriteAssetId(id))),
+    loadSpriteTexture(pickupSpriteAssetId("xpBlood")),
+    asyncRecord(CORPSE_PART_SPRITE_IDS, (id) => loadSpriteTexture(id)),
+    asyncRecord(["ranger", "heavy", "scout", "medic"] as const, (id) =>
+      asyncRecord(ENEMY_SPRITE_VIEWS, (view) => loadSpriteTexture(playerAvatarSpriteAssetId(id), view)),
+    ),
+    asyncRecord(Object.keys(ASSET_MANIFEST.textures), loadTexture),
+    loadAdsSpriteTexture("sniper"),
+  ]);
+
+  sniperAdsTexture.wrapS = THREE.RepeatWrapping;
+  sniperAdsTexture.needsUpdate = true;
+
   return {
-    move: {
-      fps: move.fps,
-      loop: move.loop,
-      frameCount: ANIMATION_MANIFEST.framesPerAction,
-    },
-    attack: {
-      fps: attack.fps,
-      loop: attack.loop,
-      frameCount: ANIMATION_MANIFEST.framesPerAction,
-    },
-    death: {
-      fps: death.fps,
-      loop: death.loop,
-      frameCount: ANIMATION_MANIFEST.framesPerAction,
-    },
+    enemyTextures,
+    enemyAnimations,
+    weaponTextures,
+    weaponAdsTextures: { sniper: sniperAdsTexture },
+    weaponLootTextures,
+    muzzleFlashTexture,
+    projectileTextures,
+    pickupTextures,
+    xpBloodTexture,
+    corpsePartTextures,
+    playerAvatarTextures,
+    arenaTextures,
   };
 }
 
-export const ENEMY_SPRITE_TEXTURES: Record<EnemySpriteKind, Record<EnemySpriteView, THREE.Texture>> = {
-  melee: textureViews(enemySpriteAssetId("melee")),
-  ranged: textureViews(enemySpriteAssetId("ranged")),
-  flying: textureViews(enemySpriteAssetId("flying")),
-  hound: textureViews(enemySpriteAssetId("hound")),
-  boss: textureViews(enemySpriteAssetId("boss")),
-};
+/**
+ * Resolve and decode the complete combat pack once. The snapshot is published
+ * only after every required texture succeeds, so synchronous game systems never
+ * observe a partially populated pack. A failed attempt can be retried.
+ */
+export function preloadCombatAssets(): Promise<void> {
+  if (combatAssetSnapshot) return Promise.resolve();
+  if (combatAssetPreloadPromise) return combatAssetPreloadPromise;
 
-export const ENEMY_SPRITE_ANIMATION_TEXTURES: Record<
-  EnemySpriteKind,
-  Record<EnemySpriteAnimationState, Record<EnemySpriteView, THREE.Texture[]>>
-> = {
-  melee: animationStateViews("melee"),
-  ranged: animationStateViews("ranged"),
-  flying: animationStateViews("flying"),
-  hound: animationStateViews("hound"),
-  boss: animationStateViews("boss"),
-};
+  combatAssetPreloadPromise = buildCombatAssetSnapshot()
+    .then((snapshot) => {
+      combatAssetSnapshot = snapshot;
+      MUZZLE_FLASH_TEXTURE = snapshot.muzzleFlashTexture;
+      XP_BLOOD_TEXTURE = snapshot.xpBloodTexture;
+    })
+    .catch((error) => {
+      combatAssetPreloadPromise = undefined;
+      throw error;
+    });
+  return combatAssetPreloadPromise;
+}
+
+export function combatAssetsReady(): boolean {
+  return combatAssetSnapshot !== undefined;
+}
+
+export const ENEMY_SPRITE_TEXTURES: EnemyTextureRecord = liveRecord(
+  ENEMY_SPRITE_KINDS,
+  (kind) => requireCombatAssets().enemyTextures[kind],
+);
+
+export const ENEMY_SPRITE_ANIMATION_TEXTURES: EnemyAnimationTextureRecord = liveRecord(
+  ENEMY_SPRITE_KINDS,
+  (kind) => requireCombatAssets().enemyAnimations[kind],
+);
 
 export const ENEMY_SPRITE_ANIMATION_META: Record<
   EnemySpriteKind,
@@ -206,30 +356,20 @@ export const ENEMY_SPRITE_SCALES: Record<EnemySpriteKind, Record<EnemySpriteView
   boss: scaleViews(enemySpriteAssetId("boss")),
 };
 
-export const WEAPON_SPRITE_TEXTURES: Record<WeaponId, THREE.Texture> = {
-  pistol: loadSpriteTexture(weaponSpriteAssetId("pistol")),
-  smg: loadSpriteTexture(weaponSpriteAssetId("smg")),
-  shotgun: loadSpriteTexture(weaponSpriteAssetId("shotgun")),
-  cannon: loadSpriteTexture(weaponSpriteAssetId("cannon")),
-  sniper: loadSpriteTexture(weaponSpriteAssetId("sniper")),
-};
-export const WEAPON_ADS_SPRITE_TEXTURES: Partial<Record<WeaponId, THREE.Texture>> = {
-  sniper: loadAdsSpriteTexture("sniper"),
-};
-// Tier sheets are UV-sampled per cell, so the weapon textures must repeat-wrap on U.
-// (repeat.x = 1/columns, offset.x = cell/columns — see WeaponSystem.applyWeaponModel.)
-for (const tex of [...Object.values(WEAPON_SPRITE_TEXTURES), ...Object.values(WEAPON_ADS_SPRITE_TEXTURES)]) {
-  tex.wrapS = THREE.RepeatWrapping;
-}
+export const WEAPON_SPRITE_TEXTURES: Record<WeaponId, THREE.Texture> = liveRecord(
+  WEAPON_IDS,
+  (id) => requireCombatAssets().weaponTextures[id],
+);
 
-/** Weapon-only floor-loot sprites (no hands), resolved from runtime weapon manifest refs. */
-export const WEAPON_LOOT_SPRITE_TEXTURES: Record<WeaponId, THREE.Texture> = {
-  pistol: loadSpriteTexture(weaponLootSpriteAssetId("pistol")),
-  smg: loadSpriteTexture(weaponLootSpriteAssetId("smg")),
-  shotgun: loadSpriteTexture(weaponLootSpriteAssetId("shotgun")),
-  cannon: loadSpriteTexture(weaponLootSpriteAssetId("cannon")),
-  sniper: loadSpriteTexture(weaponLootSpriteAssetId("sniper")),
-};
+export const WEAPON_ADS_SPRITE_TEXTURES: Partial<Record<WeaponId, THREE.Texture>> = liveRecord(
+  ["sniper"] as const,
+  (id) => requireCombatAssets().weaponAdsTextures[id] as THREE.Texture,
+);
+
+export const WEAPON_LOOT_SPRITE_TEXTURES: Record<WeaponId, THREE.Texture> = liveRecord(
+  WEAPON_IDS,
+  (id) => requireCombatAssets().weaponLootTextures[id],
+);
 
 export const WEAPON_LOOT_SPRITE_SCALES: Record<WeaponId, [number, number]> = {
   pistol: spriteScale(weaponLootSpriteAssetId("pistol")),
@@ -256,61 +396,41 @@ export const WEAPON_SPRITE_CONFIG: Record<
   sniper: weaponConfig("sniper"),
 };
 
-export const WEAPON_ADS_SPRITE_CONFIG: Partial<
-  Record<
-    WeaponId,
-    {
-      scale: [number, number];
-      offset: [number, number, number];
-      muzzle: [number, number, number];
-      flashScale: number;
-      flashRotation?: number;
-    }
-  >
-> = {
+export const WEAPON_ADS_SPRITE_CONFIG: Partial<Record<WeaponId, (typeof WEAPON_SPRITE_CONFIG)[WeaponId]>> = {
   sniper: adsWeaponConfig("sniper"),
 };
 
-/** The weapon's view-model texture (a tier sheet when `tierSheet` is set). The active
- *  tier cell is selected by UV offset in WeaponSystem, not by swapping textures. */
 export function weaponSpriteTexture(id: WeaponId): THREE.Texture {
   return WEAPON_SPRITE_TEXTURES[id];
 }
 
-/** Scoped/ADS view-model texture. When absent, the normal weapon sheet is used. */
 export function weaponAdsSpriteTexture(id: WeaponId): THREE.Texture {
   return WEAPON_ADS_SPRITE_TEXTURES[id] ?? WEAPON_SPRITE_TEXTURES[id];
 }
 
 export function weaponHasAdsSprite(id: WeaponId): boolean {
-  return Boolean(WEAPON_ADS_SPRITE_TEXTURES[id]);
+  return WEAPON_ADS_SPRITE_CONFIG[id] !== undefined;
 }
 
-/** Per-cell placement config (scale/offset/muzzle) — identical for every tier of a weapon. */
 export function weaponSpriteConfig(id: WeaponId) {
   return WEAPON_SPRITE_CONFIG[id];
 }
 
-/** Scoped/ADS placement config. When absent, the normal weapon placement is used. */
 export function weaponAdsSpriteConfig(id: WeaponId) {
   return WEAPON_ADS_SPRITE_CONFIG[id] ?? WEAPON_SPRITE_CONFIG[id];
 }
 
-export const MUZZLE_FLASH_TEXTURE = loadSpriteTexture(fxSpriteAssetId("muzzleFlash"));
+export let MUZZLE_FLASH_TEXTURE: THREE.Texture;
 
-export const PROJECTILE_SPRITE_TEXTURES = {
-  enemy: loadSpriteTexture(projectileSpriteAssetId("enemy")),
-  boss: loadSpriteTexture(projectileSpriteAssetId("boss")),
-  bolt: loadSpriteTexture(projectileSpriteAssetId("bolt")),
-  orb: loadSpriteTexture(projectileSpriteAssetId("orb")),
-} as const;
+export const PROJECTILE_SPRITE_TEXTURES = liveRecord(
+  ["enemy", "boss", "bolt", "orb"] as const,
+  (id) => requireCombatAssets().projectileTextures[id],
+);
 
-export const PICKUP_SPRITE_TEXTURES = {
-  health: loadSpriteTexture(pickupSpriteAssetId("health")),
-  ammo: loadSpriteTexture(pickupSpriteAssetId("ammo")),
-  damage: loadSpriteTexture(pickupSpriteAssetId("damage")),
-  dual: loadSpriteTexture(pickupSpriteAssetId("dual")),
-} as const;
+export const PICKUP_SPRITE_TEXTURES = liveRecord(
+  ["health", "ammo", "damage", "dual"] as const,
+  (id) => requireCombatAssets().pickupTextures[id],
+);
 
 export const PICKUP_SPRITE_SCALES = {
   health: spriteScale(pickupSpriteAssetId("health")),
@@ -319,7 +439,7 @@ export const PICKUP_SPRITE_SCALES = {
   dual: spriteScale(pickupSpriteAssetId("dual")),
 } as const;
 
-export const XP_BLOOD_TEXTURE = loadSpriteTexture(pickupSpriteAssetId("xpBlood"));
+export let XP_BLOOD_TEXTURE: THREE.Texture;
 export const XP_BLOOD_SCALE = spriteScale(pickupSpriteAssetId("xpBlood"));
 
 const CORPSE_PART_SPRITE_IDS = [
@@ -333,21 +453,27 @@ const CORPSE_PART_SPRITE_IDS = [
 
 export type CorpsePartSpriteId = (typeof CORPSE_PART_SPRITE_IDS)[number];
 
-export const CORPSE_PART_SPRITES = CORPSE_PART_SPRITE_IDS.map((id) => ({
-  id,
-  texture: loadSpriteTexture(id),
-  scale: spriteScale(id),
-}));
+export const CORPSE_PART_SPRITES: Array<{
+  id: CorpsePartSpriteId;
+  texture: THREE.Texture;
+  scale: [number, number];
+}> = CORPSE_PART_SPRITE_IDS.map((id) => {
+  const part = { id, scale: spriteScale(id) } as {
+    id: CorpsePartSpriteId;
+    texture: THREE.Texture;
+    scale: [number, number];
+  };
+  Object.defineProperty(part, "texture", {
+    enumerable: true,
+    get: () => requireCombatAssets().corpsePartTextures[id],
+  });
+  return part;
+});
 
 export const PLAYER_AVATAR_SPRITES: Record<
   PlayerAvatarId,
   { front: THREE.Texture; side: THREE.Texture; back: THREE.Texture }
-> = {
-  ranger: textureViews(playerAvatarSpriteAssetId("ranger")),
-  heavy: textureViews(playerAvatarSpriteAssetId("heavy")),
-  scout: textureViews(playerAvatarSpriteAssetId("scout")),
-  medic: textureViews(playerAvatarSpriteAssetId("medic")),
-};
+> = liveRecord(["ranger", "heavy", "scout", "medic"] as const, (id) => requireCombatAssets().playerAvatarTextures[id]);
 
 export const PLAYER_AVATAR_SCALES: Record<PlayerAvatarId, Record<SpriteView, [number, number]>> = {
   ranger: scaleViews(playerAvatarSpriteAssetId("ranger")),
@@ -356,21 +482,21 @@ export const PLAYER_AVATAR_SCALES: Record<PlayerAvatarId, Record<SpriteView, [nu
   medic: scaleViews(playerAvatarSpriteAssetId("medic")),
 };
 
+// Front-facing avatar portraits and menu art are the intentionally small,
+// synchronous boot surface. They do not instantiate THREE textures.
 export const PLAYER_AVATAR_PREVIEW_URLS: Record<PlayerAvatarId, string> = {
-  ranger: spriteUrl(playerAvatarSpriteAssetId("ranger"), "front"),
-  heavy: spriteUrl(playerAvatarSpriteAssetId("heavy"), "front"),
-  scout: spriteUrl(playerAvatarSpriteAssetId("scout"), "front"),
-  medic: spriteUrl(playerAvatarSpriteAssetId("medic"), "front"),
+  ranger: bootSpriteUrl(playerAvatarSpriteAssetId("ranger"), "front"),
+  heavy: bootSpriteUrl(playerAvatarSpriteAssetId("heavy"), "front"),
+  scout: bootSpriteUrl(playerAvatarSpriteAssetId("scout"), "front"),
+  medic: bootSpriteUrl(playerAvatarSpriteAssetId("medic"), "front"),
 };
 
 export const MENU_HERO_URL = ASSET_CATALOG.runtimeUiUrl("menuTitle");
 
-export const ARENA_TEXTURES = {
-  floor: loadTexture("arena-floor"),
-  wall: loadTexture("arena-wall"),
-  column: loadTexture("arena-column"),
-  block: loadTexture("arena-block"),
-} as const;
+export const ARENA_TEXTURES = liveRecord(
+  ["floor", "wall", "column", "block"] as const,
+  (role) => requireCombatAssets().arenaTextures[`arena-${role}`],
+);
 
 export const ARENA_TEXTURE_REPEAT = {
   floor: textureEntry("arena-floor").repeat,
@@ -379,14 +505,9 @@ export const ARENA_TEXTURE_REPEAT = {
   block: textureEntry("arena-block").repeat,
 } as const;
 
-const ARENA_TEXTURE_CACHE = new Map<string, THREE.Texture>();
-
 export function arenaTexture(id: string): THREE.Texture {
-  let texture = ARENA_TEXTURE_CACHE.get(id);
-  if (!texture) {
-    texture = loadTexture(id);
-    ARENA_TEXTURE_CACHE.set(id, texture);
-  }
+  const texture = requireCombatAssets().arenaTextures[id];
+  if (!texture) throw new Error(`Scourge Survivors combat preload has no arena texture ${id}`);
   return texture;
 }
 
@@ -394,21 +515,39 @@ export function arenaTextureRepeat(id: string): [number, number] {
   return textureEntry(id).repeat;
 }
 
-export const RUNTIME_VISUAL_ASSET_URLS = Object.fromEntries([
-  ...Object.entries(ASSET_MANIFEST.sprites).flatMap(([id, entry]) => {
-    if (entry.views) {
-      return Object.entries(entry.views).map(([view, viewEntry]) => [`${id}-${view}`, assetUrl(viewEntry.path)]);
-    }
-    if (!entry.path) return [];
-    return [[id, assetUrl(entry.path)]];
-  }),
-  ...Object.entries(ASSET_MANIFEST.textures).map(([id, entry]) => [id, assetUrl(entry.path)]),
-  ...Object.entries(ASSET_MANIFEST.ui).map(([id, entry]) => [id, assetUrl(entry.path)]),
-]) as Record<string, string>;
+let runtimeVisualAssetUrlsPromise: Promise<Record<string, string>> | undefined;
 
-export const RUNTIME_AUDIO_ASSET_URLS = Object.fromEntries(
-  Object.keys(ASSET_MANIFEST.audio).map((id) => [id, audioUrl(id)]),
-) as Record<string, string>;
+/** Resolve the sandbox asset browser only when the sandbox UI is opened. */
+export function loadRuntimeVisualAssetUrls(): Promise<Record<string, string>> {
+  if (runtimeVisualAssetUrlsPromise) return runtimeVisualAssetUrlsPromise;
+  const entries = [
+    ...Object.entries(ASSET_MANIFEST.sprites).flatMap(([id, entry]) => {
+      if (entry.views) {
+        return Object.entries(entry.views).map(([view, viewEntry]) =>
+          assetUrl(viewEntry.path).then((url) => [`${id}-${view}`, url] as const),
+        );
+      }
+      return entry.path ? [assetUrl(entry.path).then((url) => [id, url] as const)] : [];
+    }),
+    ...Object.entries(ASSET_MANIFEST.textures).map(([id, entry]) =>
+      assetUrl(entry.path).then((url) => [id, url] as const),
+    ),
+    ...Object.keys(ASSET_MANIFEST.ui).map((id) => Promise.resolve([id, uiUrl(id)] as const)),
+  ];
+  runtimeVisualAssetUrlsPromise = Promise.all(entries)
+    .then((resolved) => Object.fromEntries(resolved))
+    .catch((error) => {
+      runtimeVisualAssetUrlsPromise = undefined;
+      throw error;
+    });
+  return runtimeVisualAssetUrlsPromise;
+}
+
+export function loadRuntimeAudioAssetUrls(): Promise<Record<string, string>> {
+  return Promise.resolve(
+    Object.fromEntries(Object.keys(ASSET_MANIFEST.audio).map((id) => [id, audioUrl(id)])) as Record<string, string>,
+  );
+}
 
 function weaponConfig(id: WeaponId) {
   return weaponConfigForSpriteId(weaponSpriteAssetId(id));
@@ -427,18 +566,6 @@ function adsWeaponConfig(id: WeaponId) {
     flashScale: ads.flashScale ?? base.flashScale,
     flashRotation: ads.flashRotation ?? base.flashRotation,
   };
-}
-
-function loadAdsSpriteTexture(id: WeaponId): THREE.Texture {
-  const entry = spriteEntry(weaponSpriteAssetId(id));
-  if (!entry.adsSprite) throw new Error(`Weapon sprite ${id} is missing scoped ADS metadata`);
-  const texture = new THREE.TextureLoader().load(assetUrl(entry.adsSprite.path));
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.minFilter = entry.filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
-  texture.magFilter = entry.filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
-  texture.generateMipmaps = entry.filter !== "nearest";
-  texture.premultiplyAlpha = false;
-  return texture;
 }
 
 function weaponConfigForSpriteId(id: string) {

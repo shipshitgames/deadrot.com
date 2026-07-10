@@ -1,6 +1,6 @@
-import { createFixedLoop, type FixedLoop, recordWarResult } from "@deadrot/game-kit/core";
+import { createFixedLoop, type FixedLoop } from "@deadrot/game-kit/core";
 import { DamageNumbers, FlashOverlay, ParticleBursts, ScreenShake } from "@deadrot/game-kit/juice";
-import { reportWarlineOperation } from "@deadrot/game-kit/warline";
+import { completeRun, createRunNonce } from "@deadrot/game-kit/warline";
 import { audio } from "../audio";
 import { COLORS, CONSTANTS, type Team } from "./constants";
 import type { ChampionId } from "./data/champions";
@@ -50,6 +50,7 @@ export class Game {
   private heartbeatIn = 0; // low-health heartbeat cadence
   private lowHpActive = false;
   private disposed = false;
+  private runNonce = createRunNonce("pactfall");
 
   // Pactfall is a variable-step sim: run it in the render callback so the
   // shared loop only contributes the clamped rAF cadence, not fixed stepping.
@@ -100,6 +101,7 @@ export class Game {
   }
 
   beginRun(): void {
+    this.runNonce = createRunNonce("pactfall");
     this.buffTime = 0;
     this.elapsed = 0;
     this.setPaused(false);
@@ -246,8 +248,7 @@ export class Game {
     if (this.phase === "playing") {
       this.eruptBase(this.entities.enemyBase, COLORS.hellfire);
       const result = this.warResult("victory");
-      recordWarResult("pactfall", result, Date.now());
-      void reportWarlineOperation("pactfall", { outcome: "victory", score: result.score });
+      completeRun("pactfall", { ...result, nonce: this.runNonce });
       this.setPaused(false);
       this.setPhase("won");
       audio.sfx("victory");
@@ -258,8 +259,7 @@ export class Game {
     if (this.phase === "playing") {
       this.eruptBase(this.entities.friendlyBase, COLORS.bloodHot);
       const result = this.warResult("defeat");
-      recordWarResult("pactfall", result, Date.now());
-      void reportWarlineOperation("pactfall", { outcome: "defeat", score: result.score });
+      completeRun("pactfall", { ...result, nonce: this.runNonce });
       this.setPaused(false);
       this.setPhase("lost");
       audio.sfx("defeat");

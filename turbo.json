@@ -6,6 +6,10 @@
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**", "out/**"]
     },
+    "web#build": {
+      "dependsOn": ["^build", "scourge-survivors#build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**", "out/**"]
+    },
     "dev": {
       "cache": false,
       "persistent": true

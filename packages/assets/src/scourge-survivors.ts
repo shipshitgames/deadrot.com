@@ -1,10 +1,12 @@
 import animationManifestData from "../games/scourge-survivors/animations/scourge/animation-pack.json" with {
   type: "json",
 };
+import animationAtlasData from "../games/scourge-survivors/animations/scourge/scourge.atlas.json" with { type: "json" };
 import comicAnimationManifestData from "../games/scourge-survivors/animations/scourge-comic/animation-pack.json" with {
   type: "json",
 };
 import manifestData from "../games/scourge-survivors/assets.json" with { type: "json" };
+import { ScourgeSurvivorsAssetUrlCache } from "./scourge-survivors-url-cache";
 
 export type Vec2 = [number, number];
 export type Vec3 = [number, number, number];
@@ -144,6 +146,22 @@ export interface AnimationEntityEntry {
   actions: Record<string, AnimationActionEntry>;
 }
 
+export interface AnimationAtlasPageEntry {
+  path: string;
+  width: number;
+  height: number;
+}
+
+export interface AnimationRuntimeAtlasEntry {
+  tool: string;
+  mapPath: string;
+  padding: number;
+  frameCount: number;
+  note: string;
+  license: string;
+  pages: AnimationAtlasPageEntry[];
+}
+
 export interface ScourgeSurvivorsAnimationManifest {
   version: string;
   status: string;
@@ -152,7 +170,43 @@ export interface ScourgeSurvivorsAnimationManifest {
   promptHistory: string;
   framesPerAction: number;
   views: SpriteView[];
+  runtimeAtlas?: AnimationRuntimeAtlasEntry;
   entities: Record<string, AnimationEntityEntry>;
+}
+
+interface GeneratedAnimationAtlasPage {
+  image: string;
+  width: number;
+  height: number;
+}
+
+interface GeneratedAnimationAtlasFrame {
+  id: string;
+  page: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+interface GeneratedAnimationAtlas {
+  version: number;
+  padding: number;
+  frameCount: number;
+  pages: GeneratedAnimationAtlasPage[];
+  frames: GeneratedAnimationAtlasFrame[];
+}
+
+export interface ScourgeSurvivorsAnimationFrameSource {
+  url: string;
+  atlas?: {
+    pageWidth: number;
+    pageHeight: number;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  };
 }
 
 export const SCOURGE_SURVIVORS_ASSET_MANIFEST = manifestData as unknown as ScourgeSurvivorsAssetManifest;
@@ -160,20 +214,15 @@ export const SCOURGE_SURVIVORS_ASSET_MANIFEST = manifestData as unknown as Scour
 export const SCOURGE_SURVIVORS_ANIMATION_MANIFEST =
   animationManifestData as unknown as ScourgeSurvivorsAnimationManifest;
 
-const scourgeSurvivorsAssetModules = import.meta.glob<string>(
+/**
+ * Boot URLs stay synchronous for the title/menu shell. Importing URL modules
+ * only exposes their built URLs; browsers fetch the underlying media when a
+ * consumer assigns the URL to an image/audio/font request.
+ */
+const scourgeSurvivorsBootAssetModules = import.meta.glob<string>(
   [
-    "../games/scourge-survivors/animations/**/*.webp",
-    "../games/scourge-survivors/players/**/*.webp",
-    "../games/scourge-survivors/enemies/**/*.webp",
-    "../games/scourge-survivors/weapons/**/*.webp",
-    "../games/scourge-survivors/pickups/**/*.webp",
-    "../games/scourge-survivors/projectiles/**/*.webp",
-    "../games/scourge-survivors/textures/**/*.webp",
-    "../games/scourge-survivors/fx/**/*.webp",
-    "../games/scourge-survivors/ui/icons/pixel/*.webp",
-    "../games/scourge-survivors/ui/cards/**/*.webp",
-    "../games/scourge-survivors/ui/cover/**/*.webp",
-    "../games/scourge-survivors/ui/menu/**/*.webp",
+    "../games/scourge-survivors/players/**/front.webp",
+    "../games/scourge-survivors/ui/**/*.webp",
     "../games/scourge-survivors/audio/**/*.webm",
     "../games/scourge-survivors/fonts/*.ttf",
   ],
@@ -182,6 +231,37 @@ const scourgeSurvivorsAssetModules = import.meta.glob<string>(
     query: "?url",
     import: "default",
   },
+);
+
+/**
+ * Combat media is represented by lazy URL modules. The authored default split
+ * frames are deliberately absent: default animation playback uses the generated
+ * atlas page, while the opt-in comic pack remains split and lazy.
+ */
+const scourgeSurvivorsLazyAssetModules = import.meta.glob<string>(
+  [
+    "../games/scourge-survivors/animations/scourge/scourge.atlas*.webp",
+    "../games/scourge-survivors/animations/scourge-comic/**/*.webp",
+    "../games/scourge-survivors/players/**/side.webp",
+    "../games/scourge-survivors/players/**/back.webp",
+    "../games/scourge-survivors/enemies/**/*.webp",
+    "../games/scourge-survivors/weapons/**/*.webp",
+    "../games/scourge-survivors/pickups/**/*.webp",
+    "../games/scourge-survivors/projectiles/**/*.webp",
+    "../games/scourge-survivors/textures/**/*.webp",
+    "../games/scourge-survivors/fx/**/*.webp",
+  ],
+  {
+    eager: false,
+    query: "?url",
+    import: "default",
+  },
+);
+
+const scourgeSurvivorsAssetUrlCache = new ScourgeSurvivorsAssetUrlCache();
+const generatedAnimationAtlas = animationAtlasData as unknown as GeneratedAnimationAtlas;
+const generatedAnimationAtlasFrames = new Map(
+  generatedAnimationAtlas.frames.map((frame) => [frame.id, frame] as const),
 );
 
 const COMIC_STYLE_ENV_KEY = "VITE_DEADROT_COMIC_ASSETS";
@@ -226,6 +306,7 @@ const COMIC_WEAPON_PATHS: Partial<Record<string, string>> = {};
 // combat/key art into wall/floor textures is not a valid material asset.
 const COMIC_TEXTURE_PATHS: Partial<Record<string, string>> = {};
 
+const DEFAULT_ANIMATION_ROOT = "animations/scourge/";
 const COMIC_ANIMATION_ROOT = "animations/scourge-comic/";
 
 // Entities that actually ship comic animation frames. The comic pack is a
@@ -285,10 +366,60 @@ function comicTextureEntry(id: string, entry: TextureEntry): TextureEntry {
   return path ? { ...entry, path } : entry;
 }
 
+function scourgeSurvivorsAssetModuleKey(path: string): string {
+  return `../${path}`;
+}
+
+function assetLoadFailure(path: string, error: unknown): Error {
+  const detail = error instanceof Error ? error.message : String(error);
+  return new Error(`Failed to load Scourge Survivors asset URL for ${path}: ${detail}`);
+}
+
+/** Resolve a boot-eager URL synchronously. Combat callers must use the async loader. */
 export function scourgeSurvivorsAssetUrl(path: string): string {
-  const key = `../${path}`;
-  const url = scourgeSurvivorsAssetModules[key];
-  if (!url) throw new Error(`Scourge Survivors asset manifest references missing file: ${path}`);
+  const key = scourgeSurvivorsAssetModuleKey(path);
+  const url = scourgeSurvivorsBootAssetModules[key];
+  if (url) return url;
+  if (scourgeSurvivorsLazyAssetModules[key]) {
+    throw new Error(
+      `Scourge Survivors asset is lazy and cannot be resolved synchronously: ${path}; use scourgeSurvivorsLoadAssetUrl`,
+    );
+  }
+  throw new Error(`Scourge Survivors asset manifest references missing file: ${path}`);
+}
+
+/**
+ * Resolve either a boot or combat URL. Lazy module promises are cached by path,
+ * so concurrent texture requests share one dynamic import. Failed imports are
+ * evicted to allow a later retry while preserving a descriptive rejection.
+ */
+export function scourgeSurvivorsLoadAssetUrl(path: string): Promise<string> {
+  const key = scourgeSurvivorsAssetModuleKey(path);
+  const bootUrl = scourgeSurvivorsBootAssetModules[key];
+  if (bootUrl) {
+    return scourgeSurvivorsAssetUrlCache.load(key, () => Promise.resolve(bootUrl));
+  }
+
+  const load = scourgeSurvivorsLazyAssetModules[key];
+  if (!load) {
+    return Promise.reject(new Error(`Scourge Survivors asset manifest references missing file: ${path}`));
+  }
+
+  return scourgeSurvivorsAssetUrlCache.load(key, load, (error) => assetLoadFailure(path, error));
+}
+
+/** Synchronous front-view URL reserved for title-menu operator previews. */
+export function scourgeSurvivorsBootSpriteUrl(id: string, view: SpriteView = "front"): string {
+  if (view !== "front") {
+    throw new Error(`Scourge Survivors boot sprite URLs only support the front view: ${id}/${view}`);
+  }
+  const entry = scourgeSurvivorsSpriteEntry(id);
+  const front = entry.views?.[view];
+  if (!front) throw new Error(`Scourge Survivors boot sprite asset ${id} has no ${view} view`);
+  const url = scourgeSurvivorsBootAssetModules[scourgeSurvivorsAssetModuleKey(front.path)];
+  if (!url) {
+    throw new Error(`Scourge Survivors boot sprite asset ${id} is not in the eager front-preview set: ${front.path}`);
+  }
   return url;
 }
 
@@ -324,15 +455,15 @@ export function scourgeSurvivorsUiUrl(id: string): string {
   return scourgeSurvivorsAssetUrl(scourgeSurvivorsUiEntry(id).path);
 }
 
-export function scourgeSurvivorsSpriteUrl(id: string, view?: SpriteView): string {
+export async function scourgeSurvivorsSpriteUrl(id: string, view?: SpriteView): Promise<string> {
   const entry = scourgeSurvivorsSpriteEntry(id);
   if (view) {
     const viewEntry = entry.views?.[view];
     if (!viewEntry) throw new Error(`Scourge Survivors sprite asset ${id} has no ${view} view`);
-    return scourgeSurvivorsAssetUrl(viewEntry.path);
+    return scourgeSurvivorsLoadAssetUrl(viewEntry.path);
   }
   if (!entry.path) throw new Error(`Scourge Survivors sprite asset ${id} has no direct path`);
-  return scourgeSurvivorsAssetUrl(entry.path);
+  return scourgeSurvivorsLoadAssetUrl(entry.path);
 }
 
 export function scourgeSurvivorsSpriteScale(id: string, view?: SpriteView): Vec2 {
@@ -346,26 +477,80 @@ export function scourgeSurvivorsSpriteScale(id: string, view?: SpriteView): Vec2
   return entry.scale;
 }
 
-export function scourgeSurvivorsAnimationFrameUrl(
+export async function scourgeSurvivorsAnimationFrameSource(
   entity: string,
   action: string,
   view: SpriteView,
   frame: number,
-): string {
+): Promise<ScourgeSurvivorsAnimationFrameSource> {
   const entityEntry = SCOURGE_SURVIVORS_ANIMATION_MANIFEST.entities[entity];
   if (!entityEntry) throw new Error(`Unknown Scourge Survivors animation entity: ${entity}`);
   const actionEntry = entityEntry.actions[action];
   if (!actionEntry) throw new Error(`Unknown Scourge Survivors animation action: ${entity}/${action}`);
+  if (!Number.isInteger(frame) || frame < 0 || frame >= SCOURGE_SURVIVORS_ANIMATION_MANIFEST.framesPerAction) {
+    throw new Error(
+      `Scourge Survivors animation frame is out of range: ${entity}/${action}/${view}/${frame} (expected 0-${SCOURGE_SURVIVORS_ANIMATION_MANIFEST.framesPerAction - 1})`,
+    );
+  }
+
   const frameId = String(frame).padStart(2, "0");
-  // Only rewrite to the comic pack for entities that have comic frames; others
-  // (e.g. wound-hound) keep the default pack so comic mode can't crash on a
-  // missing-file lookup.
-  const pathTemplate =
-    comicAssetsEnabled() && COMIC_ANIMATION_ENTITIES.has(entity)
-      ? actionEntry.pathTemplate.replace("animations/scourge/", COMIC_ANIMATION_ROOT)
-      : actionEntry.pathTemplate;
-  const path = `games/scourge-survivors/${pathTemplate.replace("{view}", view).replace("{frame}", frameId)}`;
-  return scourgeSurvivorsAssetUrl(path);
+  const defaultPath = actionEntry.pathTemplate.replace("{view}", view).replace("{frame}", frameId);
+
+  // Comic selection is atomic per entity. The four comic entities use their
+  // split frames; wound-hound and any future comic-less entity stay on the
+  // default atlas rather than mixing styles or resolving a missing file.
+  if (comicAssetsEnabled() && COMIC_ANIMATION_ENTITIES.has(entity)) {
+    const comicPath = defaultPath.replace(DEFAULT_ANIMATION_ROOT, COMIC_ANIMATION_ROOT);
+    const url = await scourgeSurvivorsLoadAssetUrl(`games/scourge-survivors/${comicPath}`);
+    return { url };
+  }
+
+  if (!defaultPath.startsWith(DEFAULT_ANIMATION_ROOT)) {
+    throw new Error(
+      `Scourge Survivors default animation path leaves ${DEFAULT_ANIMATION_ROOT}: ${entity}/${action} -> ${defaultPath}`,
+    );
+  }
+  const atlasFrameId = defaultPath.slice(DEFAULT_ANIMATION_ROOT.length);
+  const atlasFrame = generatedAnimationAtlasFrames.get(atlasFrameId);
+  if (!atlasFrame) {
+    throw new Error(`Scourge Survivors animation atlas is missing frame: ${entity}/${action}/${view}/${frameId}`);
+  }
+
+  const runtimeAtlas = SCOURGE_SURVIVORS_ANIMATION_MANIFEST.runtimeAtlas;
+  if (!runtimeAtlas) throw new Error("Scourge Survivors default animation manifest is missing runtimeAtlas metadata");
+  const generatedPage = generatedAnimationAtlas.pages[atlasFrame.page];
+  const manifestPage = runtimeAtlas.pages[atlasFrame.page];
+  if (!generatedPage || !manifestPage) {
+    throw new Error(
+      `Scourge Survivors animation atlas frame ${atlasFrameId} references missing page ${atlasFrame.page}`,
+    );
+  }
+  if (manifestPage.width !== generatedPage.width || manifestPage.height !== generatedPage.height) {
+    throw new Error(
+      `Scourge Survivors animation atlas page metadata drift: manifest ${manifestPage.width}x${manifestPage.height}, generated ${generatedPage.width}x${generatedPage.height}`,
+    );
+  }
+
+  return {
+    url: await scourgeSurvivorsLoadAssetUrl(manifestPage.path),
+    atlas: {
+      pageWidth: manifestPage.width,
+      pageHeight: manifestPage.height,
+      x: atlasFrame.x,
+      y: atlasFrame.y,
+      w: atlasFrame.w,
+      h: atlasFrame.h,
+    },
+  };
+}
+
+export async function scourgeSurvivorsAnimationFrameUrl(
+  entity: string,
+  action: string,
+  view: SpriteView,
+  frame: number,
+): Promise<string> {
+  return (await scourgeSurvivorsAnimationFrameSource(entity, action, view, frame)).url;
 }
 
 export const SCOURGE_SURVIVORS_PIXEL_ICON_IDS = [

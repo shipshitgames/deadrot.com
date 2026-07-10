@@ -1,6 +1,6 @@
-import { createFixedLoop, type FixedLoop, recordWarResult } from "@deadrot/game-kit/core";
+import { createFixedLoop, type FixedLoop } from "@deadrot/game-kit/core";
 import { FlashOverlay } from "@deadrot/game-kit/juice";
-import { reportWarlineOperation } from "@deadrot/game-kit/warline";
+import { completeRun, createRunNonce } from "@deadrot/game-kit/warline";
 import * as THREE from "three";
 import { audio } from "./audio";
 import { cellToWorld, inBounds, isPathCell, playBounds, worldToCell } from "./board";
@@ -72,6 +72,7 @@ export class Game {
   private elapsed = 0;
   private pausedForCapture = false;
   private disposed = false;
+  private runNonce = createRunNonce("deadlane");
 
   constructor(canvas: HTMLCanvasElement) {
     this.render = new RenderSystem(canvas);
@@ -151,6 +152,7 @@ export class Game {
   };
 
   private startRun(): void {
+    this.runNonce = createRunNonce("deadlane");
     this.hud.hideBanner();
     this.clearPauseMenu();
     this.render.placePlayerAtStart();
@@ -479,16 +481,7 @@ export class Game {
   private win(): void {
     if (this.state.phase === "won") return;
     const score = runScore(this.state);
-    recordWarResult(
-      "deadlane",
-      {
-        outcome: "victory",
-        score,
-        wave: this.state.wave,
-      },
-      Date.now(),
-    );
-    void reportWarlineOperation("deadlane", { outcome: "victory", score });
+    completeRun("deadlane", { outcome: "victory", score, wave: this.state.wave, nonce: this.runNonce });
     this.state.phase = "won";
     this.input.setActive(false);
     this.render.rig.releaseCapture(true);
@@ -499,16 +492,7 @@ export class Game {
   private lose(): void {
     if (this.state.phase === "lost") return;
     const score = runScore(this.state);
-    recordWarResult(
-      "deadlane",
-      {
-        outcome: "defeat",
-        score,
-        wave: this.state.wave,
-      },
-      Date.now(),
-    );
-    void reportWarlineOperation("deadlane", { outcome: "defeat", score });
+    completeRun("deadlane", { outcome: "defeat", score, wave: this.state.wave, nonce: this.runNonce });
     this.state.phase = "lost";
     this.input.setActive(false);
     this.render.rig.releaseCapture(true);

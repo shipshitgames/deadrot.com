@@ -6,4 +6,4 @@ name = "localhost"
 script = "bun install --frozen-lockfile"
 
 [cleanup]
-script = "rm -rm node_modules"
+script = "rm -rf node_modules"

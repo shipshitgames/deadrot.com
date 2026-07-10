@@ -42,13 +42,16 @@ exact tier math and tuning.
 ### 2. Report the run — and bank what was looted — at run end
 
 ```ts
-import { reportWarlineOperation } from "@deadrot/game-kit/warline";
+import { completeRun, createRunNonce } from "@deadrot/game-kit/warline";
 
-// Once per run, beside your existing recordWarResult(...) site. Fire-and-forget.
-void reportWarlineOperation("scourge-survivors", {
+// Generate this once at run start, then complete through the canonical seam.
+// Re-entrant game-over paths reuse the nonce and are ignored.
+const nonce = createRunNonce("scourge-survivors");
+completeRun("scourge-survivors", {
   outcome: didWin ? "victory" : "defeat",
   score: finalScore,
   contributed: lootedWarResource, // #280: war-resource units banked into the shared pool
+  nonce,
 });
 ```
 
@@ -70,6 +73,8 @@ primary resource** (`WAR_RESOURCE[slug]` in `@shipshitgames/warline` — e.g.
 
 | export | purpose |
 |--------|---------|
+| `completeRun(slug, result, opts?)` | Canonical game-over seam: records locally and starts one offline-safe report. Same `(slug, nonce)` completes only once. |
+| `createRunNonce(slug)` | Generate one nonce at run start; pass it unchanged to `completeRun` at game-over. |
 | `reportWarlineOperation(slug, run, opts?)` | Build + send an `OperationResult`. Resolves to `{ reported, status, result, error? }`; never rejects. |
 | `fetchWarEffortBonus(opts?)` | Read the shared buff. Resolves to a `WarEffortBonus`; never rejects. |
 | `buildOperationResult(slug, run)` | Pure builder (faction default, score/`contributed` clamp). Unit-test your mapping with no network. |
@@ -125,6 +130,7 @@ Be explicit about what that means:
 
 ## Boundary note
 
-This is deliberately separate from `@deadrot/game-kit/core`'s `recordWarResult`,
+`completeRun` composes, but does not replace, the deliberately separate lower-level
+`@deadrot/game-kit/core` `recordWarResult` primitive:
 which is **display-only `localStorage`** and must never feed the shared
 simulation. This module is the one path that *does* feed the shared front.

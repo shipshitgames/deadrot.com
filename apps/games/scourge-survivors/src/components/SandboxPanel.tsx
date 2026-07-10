@@ -9,7 +9,7 @@ import {
   mainWeaponTierDamageMul,
 } from "../game/data/survivors";
 import type { SandboxEnemyKind } from "../game/Game";
-import { RUNTIME_AUDIO_ASSET_URLS, RUNTIME_VISUAL_ASSET_URLS, weaponSpriteAssetId } from "../game/spriteAssets";
+import { loadRuntimeAudioAssetUrls, loadRuntimeVisualAssetUrls, weaponSpriteAssetId } from "../game/spriteAssets";
 import type { HudState } from "../game/types";
 
 interface Props {
@@ -31,142 +31,105 @@ type AssetKind = "sprite" | "texture" | "ui";
 type VisualAsset = { id: string; label: string; src: string; kind: AssetKind };
 type AudioAsset = { id: string; label: string; src: string; kind: "music" | "sfx" };
 
-function visualAssetUrl(id: string): string {
-  const src = RUNTIME_VISUAL_ASSET_URLS[id];
-  if (!src) throw new Error(`Missing Scourge Survivors visual asset URL for ${id}`);
-  return src;
-}
-
-const weaponPistol = visualAssetUrl(weaponSpriteAssetId("pistol"));
-const weaponSmg = visualAssetUrl(weaponSpriteAssetId("smg"));
-const weaponShotgun = visualAssetUrl(weaponSpriteAssetId("shotgun"));
-const weaponCannon = visualAssetUrl(weaponSpriteAssetId("cannon"));
-const weaponSniper = visualAssetUrl(weaponSpriteAssetId("sniper"));
-const enemyMeleeFront = visualAssetUrl("enemy-melee-front");
-const enemyMeleeSide = visualAssetUrl("enemy-melee-side");
-const enemyMeleeBack = visualAssetUrl("enemy-melee-back");
-const enemyRangedFront = visualAssetUrl("enemy-ranged-front");
-const enemyRangedSide = visualAssetUrl("enemy-ranged-side");
-const enemyRangedBack = visualAssetUrl("enemy-ranged-back");
-const enemyFlyingFront = visualAssetUrl("enemy-flying-front");
-const enemyFlyingSide = visualAssetUrl("enemy-flying-side");
-const enemyFlyingBack = visualAssetUrl("enemy-flying-back");
-const bossFront = visualAssetUrl("boss-front");
-const bossSide = visualAssetUrl("boss-side");
-const bossBack = visualAssetUrl("boss-back");
-const playerRangerFront = visualAssetUrl("player-ranger-front");
-const playerRangerSide = visualAssetUrl("player-ranger-side");
-const playerRangerBack = visualAssetUrl("player-ranger-back");
-const playerHeavyFront = visualAssetUrl("player-heavy-front");
-const playerHeavySide = visualAssetUrl("player-heavy-side");
-const playerHeavyBack = visualAssetUrl("player-heavy-back");
-const playerScoutFront = visualAssetUrl("player-scout-front");
-const playerScoutSide = visualAssetUrl("player-scout-side");
-const playerScoutBack = visualAssetUrl("player-scout-back");
-const playerMedicFront = visualAssetUrl("player-medic-front");
-const playerMedicSide = visualAssetUrl("player-medic-side");
-const playerMedicBack = visualAssetUrl("player-medic-back");
-const projectileEnemy = visualAssetUrl("projectile-enemy");
-const projectileBoss = visualAssetUrl("projectile-boss");
-const pickupHealth = visualAssetUrl("pickup-health");
-const pickupAmmo = visualAssetUrl("pickup-ammo");
-const pickupDamage = visualAssetUrl("pickup-damage");
-const pickupDual = visualAssetUrl("pickup-dual");
-const pickupXpBlood = visualAssetUrl("pickup-xp-blood");
-const arenaFloor = visualAssetUrl("arena-floor");
-const arenaWall = visualAssetUrl("arena-wall");
-const arenaColumn = visualAssetUrl("arena-column");
-const arenaBlock = visualAssetUrl("arena-block");
-const menuHero = visualAssetUrl("ui-menu-hero");
-const menuCardBreach = visualAssetUrl("ui-card-breach");
-const menuCardBastion = visualAssetUrl("ui-card-bastion");
-const menuCardFleshworks = visualAssetUrl("ui-card-fleshworks");
-
-const WEAPON_IMAGES: Record<WeaponId, string> = {
-  pistol: weaponPistol,
-  smg: weaponSmg,
-  shotgun: weaponShotgun,
-  cannon: weaponCannon,
-  sniper: weaponSniper,
-};
+type VisualAssetDescriptor = Omit<VisualAsset, "src"> & { urlId?: string };
+type AudioAssetDescriptor = Omit<AudioAsset, "src"> & { urlId?: string };
 
 const ARENA_TEXTURE_ROLES = ["floor", "wall", "block", "column", "decal", "prop"] as const;
 
-const VISUAL_ASSETS: VisualAsset[] = [
-  { id: "weapon-pistol", label: "Pistol", src: weaponPistol, kind: "sprite" },
-  { id: "weapon-smg", label: "SMG", src: weaponSmg, kind: "sprite" },
-  { id: "weapon-shotgun", label: "Shotgun", src: weaponShotgun, kind: "sprite" },
-  { id: "weapon-cannon", label: "Cannon", src: weaponCannon, kind: "sprite" },
-  { id: "weapon-sniper", label: "Sniper", src: weaponSniper, kind: "sprite" },
-  { id: "enemy-melee-front", label: "Melee front", src: enemyMeleeFront, kind: "sprite" },
-  { id: "enemy-melee-side", label: "Melee side", src: enemyMeleeSide, kind: "sprite" },
-  { id: "enemy-melee-back", label: "Melee back", src: enemyMeleeBack, kind: "sprite" },
-  { id: "enemy-ranged-front", label: "Ranged front", src: enemyRangedFront, kind: "sprite" },
-  { id: "enemy-ranged-side", label: "Ranged side", src: enemyRangedSide, kind: "sprite" },
-  { id: "enemy-ranged-back", label: "Ranged back", src: enemyRangedBack, kind: "sprite" },
-  { id: "enemy-flying-front", label: "Flying front", src: enemyFlyingFront, kind: "sprite" },
-  { id: "enemy-flying-side", label: "Flying side", src: enemyFlyingSide, kind: "sprite" },
-  { id: "enemy-flying-back", label: "Flying back", src: enemyFlyingBack, kind: "sprite" },
-  { id: "boss-front", label: "Boss front", src: bossFront, kind: "sprite" },
-  { id: "boss-side", label: "Boss side", src: bossSide, kind: "sprite" },
-  { id: "boss-back", label: "Boss back", src: bossBack, kind: "sprite" },
-  { id: "player-ranger-front", label: "Ranger front", src: playerRangerFront, kind: "sprite" },
-  { id: "player-ranger-side", label: "Ranger side", src: playerRangerSide, kind: "sprite" },
-  { id: "player-ranger-back", label: "Ranger back", src: playerRangerBack, kind: "sprite" },
-  { id: "player-heavy-front", label: "Bulwark front", src: playerHeavyFront, kind: "sprite" },
-  { id: "player-heavy-side", label: "Bulwark side", src: playerHeavySide, kind: "sprite" },
-  { id: "player-heavy-back", label: "Bulwark back", src: playerHeavyBack, kind: "sprite" },
-  { id: "player-scout-front", label: "Vector front", src: playerScoutFront, kind: "sprite" },
-  { id: "player-scout-side", label: "Vector side", src: playerScoutSide, kind: "sprite" },
-  { id: "player-scout-back", label: "Vector back", src: playerScoutBack, kind: "sprite" },
-  { id: "player-medic-front", label: "Patch front", src: playerMedicFront, kind: "sprite" },
-  { id: "player-medic-side", label: "Patch side", src: playerMedicSide, kind: "sprite" },
-  { id: "player-medic-back", label: "Patch back", src: playerMedicBack, kind: "sprite" },
-  { id: "projectile-enemy", label: "Enemy shot", src: projectileEnemy, kind: "sprite" },
-  { id: "projectile-boss", label: "Boss shot", src: projectileBoss, kind: "sprite" },
-  { id: "pickup-health", label: "Health pickup", src: pickupHealth, kind: "sprite" },
-  { id: "pickup-ammo", label: "Ammo pickup", src: pickupAmmo, kind: "sprite" },
-  { id: "pickup-damage", label: "Damage pickup", src: pickupDamage, kind: "sprite" },
-  { id: "pickup-dual", label: "Dual pickup", src: pickupDual, kind: "sprite" },
-  { id: "pickup-xp-blood", label: "XP ichor", src: pickupXpBlood, kind: "sprite" },
-  { id: "gib-meat-chunk", label: "Meat gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-meat-chunk"], kind: "sprite" },
-  { id: "gib-skull-shard", label: "Skull gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-skull-shard"], kind: "sprite" },
-  { id: "gib-bone-blade", label: "Bone gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-bone-blade"], kind: "sprite" },
-  { id: "gib-claw-limb", label: "Claw gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-claw-limb"], kind: "sprite" },
-  { id: "gib-acid-sac", label: "Acid sac gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-acid-sac"], kind: "sprite" },
-  { id: "gib-wing-membrane", label: "Wing gib", src: RUNTIME_VISUAL_ASSET_URLS["gib-wing-membrane"], kind: "sprite" },
-  { id: "arena-floor", label: "Arena floor", src: arenaFloor, kind: "texture" },
-  { id: "arena-wall", label: "Arena wall", src: arenaWall, kind: "texture" },
-  { id: "arena-column", label: "Arena column", src: arenaColumn, kind: "texture" },
-  { id: "arena-block", label: "Arena block", src: arenaBlock, kind: "texture" },
+const VISUAL_ASSET_DESCRIPTORS: VisualAssetDescriptor[] = [
+  { id: "weapon-pistol", label: "Pistol", kind: "sprite" },
+  { id: "weapon-smg", label: "SMG", kind: "sprite" },
+  { id: "weapon-shotgun", label: "Shotgun", kind: "sprite" },
+  { id: "weapon-cannon", label: "Cannon", kind: "sprite" },
+  { id: "weapon-sniper", label: "Sniper", kind: "sprite" },
+  { id: "enemy-melee-front", label: "Melee front", kind: "sprite" },
+  { id: "enemy-melee-side", label: "Melee side", kind: "sprite" },
+  { id: "enemy-melee-back", label: "Melee back", kind: "sprite" },
+  { id: "enemy-ranged-front", label: "Ranged front", kind: "sprite" },
+  { id: "enemy-ranged-side", label: "Ranged side", kind: "sprite" },
+  { id: "enemy-ranged-back", label: "Ranged back", kind: "sprite" },
+  { id: "enemy-flying-front", label: "Flying front", kind: "sprite" },
+  { id: "enemy-flying-side", label: "Flying side", kind: "sprite" },
+  { id: "enemy-flying-back", label: "Flying back", kind: "sprite" },
+  { id: "boss-front", label: "Boss front", kind: "sprite" },
+  { id: "boss-side", label: "Boss side", kind: "sprite" },
+  { id: "boss-back", label: "Boss back", kind: "sprite" },
+  { id: "player-ranger-front", label: "Ranger front", kind: "sprite" },
+  { id: "player-ranger-side", label: "Ranger side", kind: "sprite" },
+  { id: "player-ranger-back", label: "Ranger back", kind: "sprite" },
+  { id: "player-heavy-front", label: "Bulwark front", kind: "sprite" },
+  { id: "player-heavy-side", label: "Bulwark side", kind: "sprite" },
+  { id: "player-heavy-back", label: "Bulwark back", kind: "sprite" },
+  { id: "player-scout-front", label: "Vector front", kind: "sprite" },
+  { id: "player-scout-side", label: "Vector side", kind: "sprite" },
+  { id: "player-scout-back", label: "Vector back", kind: "sprite" },
+  { id: "player-medic-front", label: "Patch front", kind: "sprite" },
+  { id: "player-medic-side", label: "Patch side", kind: "sprite" },
+  { id: "player-medic-back", label: "Patch back", kind: "sprite" },
+  { id: "projectile-enemy", label: "Enemy shot", kind: "sprite" },
+  { id: "projectile-boss", label: "Boss shot", kind: "sprite" },
+  { id: "pickup-health", label: "Health pickup", kind: "sprite" },
+  { id: "pickup-ammo", label: "Ammo pickup", kind: "sprite" },
+  { id: "pickup-damage", label: "Damage pickup", kind: "sprite" },
+  { id: "pickup-dual", label: "Dual pickup", kind: "sprite" },
+  { id: "pickup-xp-blood", label: "XP ichor", kind: "sprite" },
+  { id: "gib-meat-chunk", label: "Meat gib", kind: "sprite" },
+  { id: "gib-skull-shard", label: "Skull gib", kind: "sprite" },
+  { id: "gib-bone-blade", label: "Bone gib", kind: "sprite" },
+  { id: "gib-claw-limb", label: "Claw gib", kind: "sprite" },
+  { id: "gib-acid-sac", label: "Acid sac gib", kind: "sprite" },
+  { id: "gib-wing-membrane", label: "Wing gib", kind: "sprite" },
+  { id: "arena-floor", label: "Arena floor", kind: "texture" },
+  { id: "arena-wall", label: "Arena wall", kind: "texture" },
+  { id: "arena-column", label: "Arena column", kind: "texture" },
+  { id: "arena-block", label: "Arena block", kind: "texture" },
   ...MAP_PICKER.flatMap((map) =>
     ARENA_TEXTURE_ROLES.map((role) => ({
       id: `arena-${map.id}-${role}`,
       label: `${map.name} ${role}`,
-      src: RUNTIME_VISUAL_ASSET_URLS[`arena-${map.id}-${role}`],
       kind: "texture" as const,
     })),
   ),
-  { id: "ui-hero", label: "Menu hero", src: menuHero, kind: "ui" },
-  { id: "ui-breach", label: "Breach card", src: menuCardBreach, kind: "ui" },
-  { id: "ui-bastion", label: "Bastion card", src: menuCardBastion, kind: "ui" },
-  { id: "ui-fleshworks", label: "Fleshworks card", src: menuCardFleshworks, kind: "ui" },
+  { id: "ui-hero", urlId: "ui-menu-hero", label: "Menu hero", kind: "ui" },
+  { id: "ui-breach", urlId: "ui-card-breach", label: "Breach card", kind: "ui" },
+  { id: "ui-bastion", urlId: "ui-card-bastion", label: "Bastion card", kind: "ui" },
+  { id: "ui-fleshworks", urlId: "ui-card-fleshworks", label: "Fleshworks card", kind: "ui" },
 ];
 
-const AUDIO_ASSETS: AudioAsset[] = [
-  { id: "music-ash-reactor", label: "Ash Reactor", src: RUNTIME_AUDIO_ASSET_URLS["music-ash-reactor"], kind: "music" },
+const AUDIO_ASSET_DESCRIPTORS: AudioAssetDescriptor[] = [
+  { id: "music-ash-reactor", label: "Ash Reactor", kind: "music" },
   {
     id: "music-blood-circuit",
+    urlId: "music-blood-circuit-ascension",
     label: "Blood Circuit Ascension",
-    src: RUNTIME_AUDIO_ASSET_URLS["music-blood-circuit-ascension"],
     kind: "music",
   },
-  { id: "sfx-pistol-pyre", label: "Pistol SFX", src: RUNTIME_AUDIO_ASSET_URLS["sfx-pistol-pyre"], kind: "sfx" },
-  { id: "sfx-sniper", label: "Sniper SFX", src: RUNTIME_AUDIO_ASSET_URLS["sfx-sniper"], kind: "sfx" },
-  { id: "sfx-smg", label: "SMG SFX", src: RUNTIME_AUDIO_ASSET_URLS["sfx-smg"], kind: "sfx" },
-  { id: "sfx-shotgun", label: "Shotgun SFX", src: RUNTIME_AUDIO_ASSET_URLS["sfx-shotgun"], kind: "sfx" },
-  { id: "sfx-cannon", label: "Cannon SFX", src: RUNTIME_AUDIO_ASSET_URLS["sfx-cannon"], kind: "sfx" },
+  { id: "sfx-pistol-pyre", label: "Pistol SFX", kind: "sfx" },
+  { id: "sfx-sniper", label: "Sniper SFX", kind: "sfx" },
+  { id: "sfx-smg", label: "SMG SFX", kind: "sfx" },
+  { id: "sfx-shotgun", label: "Shotgun SFX", kind: "sfx" },
+  { id: "sfx-cannon", label: "Cannon SFX", kind: "sfx" },
 ];
+
+function requireAssetUrl(urls: Record<string, string>, id: string): string {
+  const url = urls[id];
+  if (!url) throw new Error(`Missing Scourge Survivors runtime asset URL for ${id}`);
+  return url;
+}
+
+function buildVisualAssets(urls: Record<string, string>): VisualAsset[] {
+  return VISUAL_ASSET_DESCRIPTORS.map(({ urlId, ...asset }) => ({
+    ...asset,
+    src: requireAssetUrl(urls, urlId ?? asset.id),
+  }));
+}
+
+function buildAudioAssets(urls: Record<string, string>): AudioAsset[] {
+  return AUDIO_ASSET_DESCRIPTORS.map(({ urlId, ...asset }) => ({
+    ...asset,
+    src: requireAssetUrl(urls, urlId ?? asset.id),
+  }));
+}
 
 const PICKUP_KINDS: PickupKind[] = ["health", "ammo", "damage", "dual", ...WEAPON_ORDER];
 const ASSET_FILTERS: Array<"all" | AssetKind | "audio"> = ["all", "sprite", "texture", "ui", "audio"];
@@ -321,18 +284,45 @@ export function SandboxPanel({
   const [spawnCount, setSpawnCount] = useState(3);
   const [sbTier, setSbTier] = useState<MainWeaponVisualTier>("base");
   const [assetFilter, setAssetFilter] = useState<(typeof ASSET_FILTERS)[number]>("sprite");
+  const [runtimeAssetUrls, setRuntimeAssetUrls] = useState<{
+    visual: Record<string, string>;
+    audio: Record<string, string>;
+  }>();
+  const [runtimeAssetError, setRuntimeAssetError] = useState<string>();
   const panelRef = useRef<HTMLDivElement>(null);
+  const visualAssets = useMemo(
+    () => (runtimeAssetUrls ? buildVisualAssets(runtimeAssetUrls.visual) : []),
+    [runtimeAssetUrls],
+  );
+  const audioAssets = useMemo(
+    () => (runtimeAssetUrls ? buildAudioAssets(runtimeAssetUrls.audio) : []),
+    [runtimeAssetUrls],
+  );
   const filteredAssets = useMemo(
     () =>
       assetFilter === "all"
-        ? VISUAL_ASSETS
+        ? visualAssets
         : assetFilter === "audio"
           ? []
-          : VISUAL_ASSETS.filter((asset) => asset.kind === assetFilter),
-    [assetFilter],
+          : visualAssets.filter((asset) => asset.kind === assetFilter),
+    [assetFilter, visualAssets],
   );
   const activeWeapon = WEAPON_ORDER.find((id) => WEAPONS[id].name === state.weapon) ?? STARTING_WEAPON;
   const needsLock = state.status === "pointerlock-needed" || state.status === "paused";
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([loadRuntimeVisualAssetUrls(), loadRuntimeAudioAssetUrls()])
+      .then(([visual, audio]) => {
+        if (!cancelled) setRuntimeAssetUrls({ visual, audio });
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) setRuntimeAssetError(error instanceof Error ? error.message : String(error));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (state.status !== "playing") return;
@@ -426,7 +416,14 @@ export function SandboxPanel({
                 )}
                 onClick={() => onWeapon(id)}
               >
-                <img src={WEAPON_IMAGES[id]} alt="" className="h-[36px] max-w-full object-contain" draggable={false} />
+                {runtimeAssetUrls ? (
+                  <img
+                    src={requireAssetUrl(runtimeAssetUrls.visual, weaponSpriteAssetId(id))}
+                    alt=""
+                    className="h-[36px] max-w-full object-contain"
+                    draggable={false}
+                  />
+                ) : null}
                 {WEAPONS[id].name}
               </button>
             ))}
@@ -517,7 +514,20 @@ export function SandboxPanel({
               </LabButton>
             ))}
           </div>
-          {assetFilter === "audio" ? <AudioList assets={AUDIO_ASSETS} /> : <AssetGrid assets={filteredAssets} />}
+          {runtimeAssetError ? (
+            <p
+              role="alert"
+              className="m-0 rounded-[7px] border border-[#c1121f]/60 bg-[#c1121f]/15 p-2 text-[11px] text-[#ffd7d7]"
+            >
+              Runtime asset browser unavailable: {runtimeAssetError}
+            </p>
+          ) : !runtimeAssetUrls ? (
+            <p className="m-0 text-[11px] text-white/55">Loading runtime asset index…</p>
+          ) : assetFilter === "audio" ? (
+            <AudioList assets={audioAssets} />
+          ) : (
+            <AssetGrid assets={filteredAssets} />
+          )}
         </Section>
       </div>
     </div>

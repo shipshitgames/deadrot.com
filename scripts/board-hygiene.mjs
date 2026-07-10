@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
-const DEFAULT_TARGET_PROJECTS = [1, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+import { pathToFileURL } from "node:url";
+
+export const DEFAULT_TARGET_PROJECTS = [3, 10];
 const DEFAULT_OPEN_STATUS = "Backlog";
 const STATUS_OPTIONS = [DEFAULT_OPEN_STATUS, "In Progress", "Done", "Deferred"];
 
@@ -23,60 +25,63 @@ const config = {
 
 const token = process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN;
 let lastRateLimit = null;
+const isCli = process.argv[1] ? import.meta.url === pathToFileURL(process.argv[1]).href : false;
 
-if (!token) {
-  throw new Error("Set GITHUB_TOKEN or GH_TOKEN before running board hygiene.");
-}
-
-console.log(
-  [
-    `Board hygiene for ${config.repoOwner}/${config.repo}`,
-    `projects=${config.targetProjects.join(",")}`,
-    `hub=${config.hubProjectNumber}`,
-    `dryRun=${config.dryRun}`,
-    `chunkSize=${config.chunkSize}`,
-    `rateFloor=${config.rateFloor}`,
-  ].join(" "),
-);
-
-const projects = await loadProjects(config.targetProjects);
-const existingUpdates = [];
-
-for (const project of projects) {
-  validateProjectShape(project);
-  const updates = collectProjectUpdates(project);
-  existingUpdates.push(...updates);
+if (isCli) {
+  if (!token) {
+    throw new Error("Set GITHUB_TOKEN or GH_TOKEN before running board hygiene.");
+  }
 
   console.log(
-    `Project #${project.number} ${project.title}: ${project.items.length} item(s), ${updates.length} pending field update(s)`,
+    [
+      `Board hygiene for ${config.repoOwner}/${config.repo}`,
+      `projects=${config.targetProjects.join(",")}`,
+      `hub=${config.hubProjectNumber}`,
+      `dryRun=${config.dryRun}`,
+      `chunkSize=${config.chunkSize}`,
+      `rateFloor=${config.rateFloor}`,
+    ].join(" "),
   );
+
+  const projects = await loadProjects(config.targetProjects);
+  const existingUpdates = [];
+
+  for (const project of projects) {
+    validateProjectShape(project);
+    const updates = collectProjectUpdates(project);
+    existingUpdates.push(...updates);
+
+    console.log(
+      `Project #${project.number} ${project.title}: ${project.items.length} item(s), ${updates.length} pending field update(s)`,
+    );
+  }
+
+  const hubProject = projects.find((project) => project.number === config.hubProjectNumber);
+
+  if (!hubProject) {
+    throw new Error(`Hub project #${config.hubProjectNumber} is not in BOARD_HYGIENE_PROJECTS.`);
+  }
+
+  const { hubless: hublessIssues, laneless: lanelessIssues } = await loadOpenIssues();
+
+  console.log(
+    `Prepared ${existingUpdates.length} existing field update(s) and ${hublessIssues.length} hubless issue add(s).`,
+  );
+
+  await applyFieldUpdates(existingUpdates, "existing project items");
+
+  for (const issue of hublessIssues) {
+    await addIssueToHub(issue, hubProject);
+  }
+
+  reportLanelessIssues(lanelessIssues);
+
+  if (lastRateLimit) {
+    console.log(`GraphQL remaining=${lastRateLimit.remaining} reset=${lastRateLimit.resetAt ?? "unknown"}`);
+  }
+
+  console.log("Board hygiene complete.");
 }
-
-const hubProject = projects.find((project) => project.number === config.hubProjectNumber);
-
-if (!hubProject) {
-  throw new Error(`Hub project #${config.hubProjectNumber} is not in BOARD_HYGIENE_PROJECTS.`);
-}
-
-const { boardless: boardlessIssues, laneless: lanelessIssues } = await loadOpenIssues();
-
-console.log(
-  `Prepared ${existingUpdates.length} existing field update(s) and ${boardlessIssues.length} boardless issue add(s).`,
-);
-
-await applyFieldUpdates(existingUpdates, "existing project items");
-
-for (const issue of boardlessIssues) {
-  await addIssueToHub(issue, hubProject);
-}
-
-reportLanelessIssues(lanelessIssues);
-
-if (lastRateLimit) {
-  console.log(`GraphQL remaining=${lastRateLimit.remaining} reset=${lastRateLimit.resetAt ?? "unknown"}`);
-}
-
-console.log("Board hygiene complete.");
 
 function boolFromEnv(name, fallback) {
   const value = process.env[name];
@@ -104,7 +109,7 @@ function numberFromEnv(name, fallback) {
   return parsed;
 }
 
-function projectNumbersFromEnv(value, fallback) {
+export function projectNumbersFromEnv(value, fallback) {
   if (!value) {
     return fallback;
   }
@@ -246,6 +251,11 @@ async function loadProject(projectNumber) {
                       title
                       state
                       url
+                      labels(first: 50) {
+                        nodes {
+                          name
+                        }
+                      }
                       repository {
                         nameWithOwner
                       }
@@ -356,7 +366,7 @@ function collectProjectUpdates(project) {
           itemId: item.id,
           fieldId: status.id,
           optionId: statusOptions.get("Done"),
-          summary: `#${issue.number} ${project.title} Status -> Done`,
+          summary: `#${issue.number} ${project.title} Status ${existingStatus ?? "(empty)"} -> Done`,
         });
       }
     } else if (!existingStatus) {
@@ -365,22 +375,36 @@ function collectProjectUpdates(project) {
         itemId: item.id,
         fieldId: status.id,
         optionId: statusOptions.get(DEFAULT_OPEN_STATUS),
-        summary: `#${issue.number} ${project.title} Status -> ${DEFAULT_OPEN_STATUS}`,
+        summary: `#${issue.number} ${project.title} Status (empty) -> ${DEFAULT_OPEN_STATUS}`,
       });
     }
 
     if (!existingPriority) {
+      const targetPriority = priorityForIssue(issue);
       updates.push({
         projectId: project.id,
         itemId: item.id,
         fieldId: priority.id,
-        optionId: priorityOptions.get("P3"),
-        summary: `#${issue.number} ${project.title} Priority -> P3`,
+        optionId: priorityOptions.get(targetPriority),
+        summary: `#${issue.number} ${project.title} Priority (empty) -> ${targetPriority}`,
       });
     }
   }
 
   return updates;
+}
+
+export function priorityForIssue(issue) {
+  const labels = issue.labels?.nodes ?? [];
+  const labelNames = new Set(labels.map((label) => label.name.toLowerCase()));
+
+  for (const priority of ["P0", "P1", "P2", "P3"]) {
+    if (labelNames.has(priority.toLowerCase())) {
+      return priority;
+    }
+  }
+
+  return "P3";
 }
 
 function singleSelectValues(item) {
@@ -396,7 +420,7 @@ function singleSelectValues(item) {
 }
 
 async function loadOpenIssues() {
-  const boardless = [];
+  const hubless = [];
   const laneless = [];
   let cursor = null;
 
@@ -421,7 +445,7 @@ async function loadOpenIssues() {
                     login
                   }
                 }
-                projectItems(first: 25) {
+                projectItems(first: 50) {
                   nodes {
                     id
                     project {
@@ -449,8 +473,8 @@ async function loadOpenIssues() {
     const issueConnection = data.repository.issues;
 
     for (const issue of issueConnection.nodes) {
-      if (issue.projectItems.nodes.length === 0) {
-        boardless.push(issue);
+      if (issueNeedsHubProject(issue, config.hubProjectNumber)) {
+        hubless.push(issue);
       }
 
       const labelNames = new Set(issue.labels.nodes.map((label) => label.name));
@@ -465,7 +489,15 @@ async function loadOpenIssues() {
     cursor = issueConnection.pageInfo.hasNextPage ? issueConnection.pageInfo.endCursor : null;
   } while (cursor);
 
-  return { boardless, laneless };
+  return { hubless, laneless };
+}
+
+export function issueNeedsHubProject(issue, hubProjectNumber) {
+  return !issueHasProject(issue, hubProjectNumber);
+}
+
+function issueHasProject(issue, projectNumber) {
+  return issue.projectItems?.nodes?.some((item) => item.project?.number === projectNumber) ?? false;
 }
 
 function reportLanelessIssues(laneless) {
@@ -511,6 +543,9 @@ async function applyFieldUpdates(updates, label) {
     ensureRateBudget(`${label} chunk ${index / config.chunkSize + 1}`);
 
     await graphql(buildFieldUpdateMutation(chunk), buildFieldUpdateVariables(chunk));
+    for (const update of chunk) {
+      console.log(`- ${update.summary}`);
+    }
     console.log(`Applied ${Math.min(index + chunk.length, updates.length)}/${updates.length} ${label} update(s).`);
 
     if (index + chunk.length < updates.length) {
@@ -561,19 +596,20 @@ function buildFieldUpdateVariables(updates) {
 async function addIssueToHub(issue, hubProject) {
   const status = singleSelectField(hubProject, "Status");
   const priority = singleSelectField(hubProject, "Priority");
+  const targetPriority = priorityForIssue(issue);
 
   const updates = [
     {
       projectId: hubProject.id,
       fieldId: status.id,
       optionId: optionId(status, DEFAULT_OPEN_STATUS),
-      summary: `#${issue.number} ${hubProject.title} Status -> ${DEFAULT_OPEN_STATUS}`,
+      summary: `#${issue.number} ${hubProject.title} Status (new) -> ${DEFAULT_OPEN_STATUS}`,
     },
     {
       projectId: hubProject.id,
       fieldId: priority.id,
-      optionId: optionId(priority, "P3"),
-      summary: `#${issue.number} ${hubProject.title} Priority -> P3`,
+      optionId: optionId(priority, targetPriority),
+      summary: `#${issue.number} ${hubProject.title} Priority (new) -> ${targetPriority}`,
     },
   ];
 

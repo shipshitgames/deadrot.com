@@ -1,5 +1,4 @@
-import { recordWarResult } from "@deadrot/game-kit/core";
-import { reportWarlineOperation } from "@deadrot/game-kit/warline";
+import { completeRun, createRunNonce } from "@deadrot/game-kit/warline";
 import { GlobalMusicToggle, subscribeGlobalGameSettings } from "@shipshitgames/ui";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { audio } from "./audio/AudioEngine";
@@ -46,6 +45,11 @@ const SandboxPanel = import.meta.env.DEV
   : null;
 
 const INITIAL_WEAPON_IDENTITY = weaponIdentityFor(STARTING_WEAPON);
+
+interface CombatLaunchRequest {
+  start: (game: Game) => Promise<void>;
+  onSuccess?: () => void;
+}
 
 const INITIAL_STATE: HudState = {
   status: "pointerlock-needed",
@@ -152,12 +156,24 @@ export default function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Game | null>(null);
   const hudRef = useRef<HudState>(INITIAL_STATE);
+  const combatLaunchGenerationRef = useRef(0);
+  const combatRetryRef = useRef<CombatLaunchRequest | undefined>(undefined);
   const [hud, setHudState] = useState<HudState>(INITIAL_STATE);
+  const [combatAssetLoading, setCombatAssetLoading] = useState(false);
+  const [combatAssetError, setCombatAssetError] = useState<string>();
   const [scores, setScores] = useState<ScoreEntry[]>(() => loadScores());
   const [shop, setShop] = useState<ShopState>(() => loadShop());
   const lastRunGoldRef = useRef(0);
   const sandboxAvailable = import.meta.env.DEV;
   const savedRef = useRef(false);
+  // Generated once for the active run and replaced only after it leaves the
+  // game-over state, so repeated HUD snapshots cannot bank the run twice.
+  const runNonceRef = useRef<string | null>(null);
+  if (runNonceRef.current === null) runNonceRef.current = createRunNonce("scourge-survivors");
+  const currentRunNonce = useCallback(() => {
+    if (runNonceRef.current === null) runNonceRef.current = createRunNonce("scourge-survivors");
+    return runNonceRef.current;
+  }, []);
   // A shared link like `?room=ARENA-AB12` lands the player on the PvP preview screen.
   const initialRoom = useMemo(
     () => (new URLSearchParams(window.location.search).get("room") || "").toUpperCase().slice(0, 24),
@@ -167,7 +183,7 @@ export default function App() {
     () => sandboxAvailable && new URLSearchParams(window.location.search).get("sandbox") === "1",
     [sandboxAvailable],
   );
-  const [sandboxActive, setSandboxActive] = useState(initialSandbox);
+  const [sandboxActive, setSandboxActive] = useState(false);
   const setRoomInUrl = useCallback((room: string) => {
     const url = room ? `${window.location.pathname}?room=${encodeURIComponent(room)}` : window.location.pathname;
     window.history.replaceState(null, "", url);
@@ -187,66 +203,82 @@ export default function App() {
   // Record a run on the leaderboard (and award Survivors gold) once per
   // game-over, right where the engine pushes the HUD snapshot — the game-over
   // "event" originates here, not in a React render.
-  const setHud = useCallback((next: HudState) => {
-    hudRef.current = next;
-    if (next.status === "gameover" && next.outcome && !next.sandbox && !savedRef.current) {
-      savedRef.current = true;
-      if (next.outcome === "win") audio.setMusicMode("victory");
-      const earnedGold = next.survivors
-        ? runGold(next.kills, next.level, next.time, shopTiersRef.current.greed ?? 0)
-        : 0;
-      lastRunGoldRef.current = earnedGold;
-      setScores(
-        saveScore({
-          score: next.score,
-          kills: next.kills,
-          headshots: next.headshots,
-          time: next.time,
-          outcome: next.outcome,
-          mode: next.runMode,
-          level: next.level,
-          depthReached: next.runDepth,
-          depthTotal: next.runDepthTotal,
-          depthName: next.runDepthName,
-          goldEarned: earnedGold,
-          date: Date.now(),
-        }),
-      );
-      // Mirror the run into the shared cross-game war record (display-only;
-      // Warline's "Your War Record" card reads it back). Survivors chapter runs
-      // progress by depth, not the clamped arena wave — report the deeper number.
-      recordWarResult(
-        "scourge-survivors",
-        {
+  const setHud = useCallback(
+    (next: HudState) => {
+      const previous = hudRef.current;
+      hudRef.current = next;
+      if (next.status === "gameover" && next.outcome && !next.sandbox && !savedRef.current) {
+        savedRef.current = true;
+        if (next.outcome === "win") audio.setMusicMode("victory");
+        const earnedGold = next.survivors
+          ? runGold(next.kills, next.level, next.time, shopTiersRef.current.greed ?? 0)
+          : 0;
+        lastRunGoldRef.current = earnedGold;
+        setScores(
+          saveScore({
+            score: next.score,
+            kills: next.kills,
+            headshots: next.headshots,
+            time: next.time,
+            outcome: next.outcome,
+            mode: next.runMode,
+            level: next.level,
+            depthReached: next.runDepth,
+            depthTotal: next.runDepthTotal,
+            depthName: next.runDepthName,
+            goldEarned: earnedGold,
+            date: Date.now(),
+          }),
+        );
+        // Survivors chapter runs progress by depth, not the clamped arena wave.
+        // `contributed` is biomass banked into the shared effort regardless of outcome.
+        completeRun("scourge-survivors", {
           outcome: next.outcome === "win" ? "victory" : "defeat",
           score: next.score,
           wave: next.survivors ? Math.max(next.runDepth, next.wave) : next.wave,
           bossKill: next.bossKills,
-        },
-        Date.now(),
-      );
-      // Report the breach purge into the shared Warline front (config-gated, offline-safe).
-      // `contributed` is the biomass salvaged this run, banked into the shared
-      // cross-game war-effort pool (#280) — credited regardless of outcome.
-      void reportWarlineOperation("scourge-survivors", {
-        outcome: next.outcome === "win" ? "victory" : "defeat",
-        score: next.score,
-        contributed: runBiomass(next.kills, next.level, next.time),
-      });
-      if (next.survivors) {
-        setShop((prev) => {
-          const nextShop = { ...prev, gold: prev.gold + earnedGold };
-          saveShop(nextShop);
-          return nextShop;
+          contributed: runBiomass(next.kills, next.level, next.time),
+          nonce: currentRunNonce(),
         });
-      } else {
+        if (next.survivors) {
+          setShop((prev) => {
+            const nextShop = { ...prev, gold: prev.gold + earnedGold };
+            saveShop(nextShop);
+            return nextShop;
+          });
+        } else {
+          lastRunGoldRef.current = 0;
+        }
+      } else if (next.status !== "gameover") {
+        if (previous.status === "gameover") runNonceRef.current = createRunNonce("scourge-survivors");
+        savedRef.current = false;
         lastRunGoldRef.current = 0;
       }
-    } else if (next.status !== "gameover") {
-      savedRef.current = false;
-      lastRunGoldRef.current = 0;
+      setHudState(next);
+    },
+    [currentRunNonce],
+  );
+
+  const runCombatLaunch = useCallback(async (request: CombatLaunchRequest): Promise<void> => {
+    const game = gameRef.current;
+    if (!game) return;
+    const generation = ++combatLaunchGenerationRef.current;
+    combatRetryRef.current = request;
+    setCombatAssetError(undefined);
+    setCombatAssetLoading(true);
+    try {
+      await request.start(game);
+    } catch (error: unknown) {
+      if (generation !== combatLaunchGenerationRef.current || gameRef.current !== game) return;
+      audio.setMusicMode("menu");
+      setCombatAssetLoading(false);
+      setCombatAssetError(error instanceof Error ? error.message : String(error));
+      return;
     }
-    setHudState(next);
+    if (generation !== combatLaunchGenerationRef.current || gameRef.current !== game) return;
+    combatRetryRef.current = undefined;
+    setCombatAssetLoading(false);
+    request.onSuccess?.();
   }, []);
 
   // Mirror the global music/SFX sliders + mute (the shared GlobalGameSettingsPanel)
@@ -267,7 +299,15 @@ export default function App() {
     gameRef.current = game;
     game.setShopUpgrades(shopTiersRef.current);
     game.start();
-    if (initialSandbox) game.startSandbox();
+    if (initialSandbox) {
+      void runCombatLaunch({
+        start: (current) => current.startSandbox(),
+        onSuccess: () => {
+          setSandboxActive(true);
+          setSandboxInUrl(true);
+        },
+      });
+    }
     if (import.meta.env.DEV) {
       (window as unknown as { __fpsGame?: Game; __fpsAudio?: typeof audio; __hudSnapshot?: () => HudState }).__fpsGame =
         game;
@@ -275,10 +315,11 @@ export default function App() {
       (window as unknown as { __hudSnapshot?: () => HudState }).__hudSnapshot = () => hudRef.current;
     }
     return () => {
+      combatLaunchGenerationRef.current++;
       game.dispose();
       gameRef.current = null;
     };
-  }, [initialSandbox, setHud]);
+  }, [initialSandbox, runCombatLaunch, setHud, setSandboxInUrl]);
 
   const handleLock = useCallback(() => {
     audio.unlock();
@@ -295,15 +336,19 @@ export default function App() {
   }, []);
   const handleClearScores = useCallback(() => setScores(clearScores()), []);
   const handleStartMultiplayer = useCallback(
-    (name: string, room: string, avatar: PlayerAvatarId) => {
+    async (name: string, room: string, avatar: PlayerAvatarId) => {
       audio.unlock();
-      audio.setMusicMode("multiplayer");
-      setSandboxActive(false);
-      setSandboxInUrl(false);
-      setRoomInUrl(room);
-      gameRef.current?.startMultiplayer(room, name, avatar);
+      await runCombatLaunch({
+        start: (game) => game.startMultiplayer(room, name, avatar),
+        onSuccess: () => {
+          audio.setMusicMode("multiplayer");
+          setSandboxActive(false);
+          setSandboxInUrl(false);
+          setRoomInUrl(room);
+        },
+      });
     },
-    [setRoomInUrl, setSandboxInUrl],
+    [runCombatLaunch, setRoomInUrl, setSandboxInUrl],
   );
   const handleLeaveRoom = useCallback(() => {
     setRoomInUrl("");
@@ -311,25 +356,33 @@ export default function App() {
     gameRef.current?.leaveMultiplayer(true);
   }, [setRoomInUrl]);
   const handleStartSurvivors = useCallback(
-    (classId?: SurvivorClassId, mapId?: string) => {
+    async (classId?: SurvivorClassId, mapId?: string) => {
       audio.unlock();
-      audio.setMusicMode("survivors");
-      setSandboxActive(false);
-      setSandboxInUrl(false);
-      gameRef.current?.startSurvivors(classId, mapId);
+      await runCombatLaunch({
+        start: (game) => game.startSurvivors(classId, mapId),
+        onSuccess: () => {
+          audio.setMusicMode("survivors");
+          setSandboxActive(false);
+          setSandboxInUrl(false);
+        },
+      });
     },
-    [setSandboxInUrl],
+    [runCombatLaunch, setSandboxInUrl],
   );
   const handleStartSandbox = useCallback(
-    (mapId?: string) => {
+    async (mapId?: string) => {
       if (!sandboxAvailable) return;
       audio.unlock();
-      setRoomInUrl("");
-      setSandboxActive(true);
-      setSandboxInUrl(true);
-      gameRef.current?.startSandbox(mapId);
+      await runCombatLaunch({
+        start: (game) => game.startSandbox(mapId),
+        onSuccess: () => {
+          setRoomInUrl("");
+          setSandboxActive(true);
+          setSandboxInUrl(true);
+        },
+      });
     },
-    [sandboxAvailable, setRoomInUrl, setSandboxInUrl],
+    [runCombatLaunch, sandboxAvailable, setRoomInUrl, setSandboxInUrl],
   );
   const handleExitSandbox = useCallback(() => {
     setSandboxActive(false);
@@ -445,6 +498,53 @@ export default function App() {
             onClear={handleSandboxClear}
           />
         </Suspense>
+      )}
+      {combatAssetLoading && (
+        <div
+          data-testid="combat-asset-loading"
+          role="status"
+          aria-live="polite"
+          className="pointer-events-auto absolute inset-0 z-50 flex cursor-wait items-center justify-center bg-[#070709]/90 px-6 text-center"
+        >
+          <div className="rounded-[9px] border border-[#ff6a00]/45 bg-black/70 px-7 py-6 shadow-[0_0_70px_rgba(255,106,0,0.18)]">
+            <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#ff6a00]">Preparing breach</div>
+            <p className="mb-0 mt-2 text-[14px] text-[#e9e3d6]">Loading combat assets…</p>
+          </div>
+        </div>
+      )}
+      {combatAssetError && !combatAssetLoading && (
+        <div
+          data-testid="combat-asset-error"
+          role="alert"
+          className="pointer-events-auto absolute inset-0 z-50 flex items-center justify-center bg-[#070709]/90 px-6 text-center"
+        >
+          <div className="max-w-[520px] rounded-[9px] border border-[#c1121f]/65 bg-black/80 px-7 py-6">
+            <div className="text-[11px] font-black uppercase tracking-[0.2em] text-[#ff6a6a]">
+              Combat assets failed to load
+            </div>
+            <p className="my-3 text-[13px] leading-relaxed text-[#e9e3d6]">{combatAssetError}</p>
+            <div className="flex justify-center gap-3">
+              <button
+                type="button"
+                className="rounded-[7px] border border-[#ff6a00]/65 bg-[#ff6a00]/15 px-4 py-2 text-[12px] font-black uppercase tracking-[0.08em] text-[#ffb26b]"
+                onClick={() => {
+                  audio.unlock();
+                  const retry = combatRetryRef.current;
+                  if (retry) void runCombatLaunch(retry);
+                }}
+              >
+                Try again
+              </button>
+              <button
+                type="button"
+                className="rounded-[7px] border border-white/20 bg-white/5 px-4 py-2 text-[12px] font-black uppercase tracking-[0.08em] text-[#e9e3d6]"
+                onClick={() => setCombatAssetError(undefined)}
+              >
+                Back to menu
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

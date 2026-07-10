@@ -132,14 +132,13 @@ describe("asset catalog resolution (#76)", () => {
   });
 
   describe("url resolution", () => {
-    it("resolves a directly-pathed sprite url", () => {
-      const url = spriteUrl("weapon-pistol");
+    it("resolves a directly-pathed sprite url", async () => {
+      const url = await spriteUrl("weapon-pistol");
       expect(url).toMatch(/\.webp(\?|$)/);
     });
 
-    it("resolves a per-view sprite url for a directional sprite", () => {
-      const front = spriteUrl("enemy-melee", "front");
-      const back = spriteUrl("enemy-melee", "back");
+    it("resolves a per-view sprite url for a directional sprite", async () => {
+      const [front, back] = await Promise.all([spriteUrl("enemy-melee", "front"), spriteUrl("enemy-melee", "back")]);
       expect(front).toMatch(URL_EXT);
       expect(back).toMatch(URL_EXT);
       expect(front).not.toBe(back);
@@ -165,7 +164,9 @@ describe("asset catalog resolution (#76)", () => {
     });
 
     it("throws when resolving a manifest path that has no underlying file", () => {
-      expect(() => assetUrl("games/scourge-survivors/this/file/does/not/exist.webp")).toThrowError(/missing file/);
+      expect(() => assetUrl("games/scourge-survivors/this/file/does/not/exist.webp")).toThrowError(
+        /missing from generated index/,
+      );
     });
   });
 
@@ -191,9 +192,9 @@ describe("asset catalog resolution (#76)", () => {
   });
 
   describe("standalone helpers delegate to the singleton", () => {
-    it("spriteEntry/spriteUrl/audioEntry match the catalog methods", () => {
+    it("spriteEntry/spriteUrl/audioEntry match the catalog methods", async () => {
       expect(spriteEntry("weapon-pistol")).toBe(ASSET_CATALOG.spriteEntry("weapon-pistol"));
-      expect(spriteUrl("weapon-pistol")).toBe(ASSET_CATALOG.spriteUrl("weapon-pistol"));
+      expect(await spriteUrl("weapon-pistol")).toBe(await ASSET_CATALOG.spriteUrl("weapon-pistol"));
       expect(audioEntry("sfx-sniper")).toBe(ASSET_CATALOG.audioEntry("sfx-sniper"));
     });
   });

@@ -5,20 +5,13 @@ name: Web E2E
 # per game and never picks up apps/web changes. Playwright boots `next dev` itself
 # (apps/web/playwright.config.ts), so no game dev servers are needed here.
 #
-# Triggers on every non-docs PR (paths-ignore parity with e2e.yml) so the
-# always-reporting `web-e2e-gate` can be a required status check. A cheap
-# in-workflow `detect` job then decides whether the heavy Playwright matrix
-# actually runs, so game-only PRs don't pay for a full web run.
+# Triggers on every PR, including docs-only changes, so the always-reporting
+# `web-e2e-gate` can be a required status check. A cheap in-workflow `detect`
+# job then decides whether the heavy Playwright matrix actually runs, so
+# unrelated PRs don't pay for a full web run.
 
 on:
   pull_request:
-    paths-ignore:
-      - "**/*.md"
-      - "**/*.mdx"
-      - "docs/**"
-      - ".agents/**"
-      - ".claude/**"
-      - "skills/**"
   push:
     branches:
       - master

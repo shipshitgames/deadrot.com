@@ -150,6 +150,24 @@ function runtimeMatches(entry, runtimeRecords, assetIndexByPath) {
     .sort((a, b) => `${a.game}:${a.path}`.localeCompare(`${b.game}:${b.path}`));
 }
 
+function catalogVariantPath(entity, game) {
+  let currentGame = game;
+  const visited = new Set();
+
+  while (!visited.has(currentGame)) {
+    visited.add(currentGame);
+    const variant = entity.variants?.[currentGame];
+    if (typeof variant === "string") return variant;
+    if (variant?.type === "alias" && typeof variant.sourceGame === "string") {
+      currentGame = variant.sourceGame;
+      continue;
+    }
+    return null;
+  }
+
+  return null;
+}
+
 function catalogCoverage(entry, catalogEntities, assetIndexByPath) {
   const games = entry.appearsIn?.length
     ? entry.appearsIn
@@ -157,7 +175,7 @@ function catalogCoverage(entry, catalogEntities, assetIndexByPath) {
   const variants = [];
   for (const entity of catalogEntities) {
     for (const game of games) {
-      const variantPath = entity.variants?.[game] ?? null;
+      const variantPath = catalogVariantPath(entity, game);
       variants.push({
         entityId: entity.id,
         game,

@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { GAME_APPS } from "@deadrot/catalog";
+import { createDeadrotViteConfig } from "../apps/games/vite.config";
 import { DEFAULT_PORT_BASE, parsePortBase, parseSelectedGameSlugs, parseSelectedViewports } from "./game-catalog";
 
 // Issue #7 — cross-game E2E coverage: unit coverage for the pure catalog/selection
@@ -97,13 +98,26 @@ describe("parsePortBase", () => {
   });
 });
 
-describe("catalog ↔ vite.config drift guard", () => {
-  test("each game app's vite.config.ts server.port matches its catalog devPort", () => {
+describe("catalog ↔ Vite configuration", () => {
+  test("the shared factory derives every game port and common resolver settings from the catalog", () => {
     for (const game of GAME_APPS) {
-      const configPath = join(import.meta.dir, "..", "apps", "games", game.slug, "vite.config.ts");
-      const config = readFileSync(configPath, "utf8");
-      const match = config.match(/port:\s*(\d+)/);
-      expect(match?.[1]).toBe(String(game.devPort));
+      const config = createDeadrotViteConfig(game.slug);
+      const surfaceConfig = readFileSync(
+        join(import.meta.dir, "..", "apps", "games", game.slug, "vite.config.ts"),
+        "utf8",
+      );
+
+      expect(surfaceConfig).toContain(`createDeadrotViteConfig("${game.slug}"`);
+      expect(config.base).toBe("./");
+      expect(config.server).toEqual({ host: true, port: game.devPort });
+      expect(config.resolve?.dedupe).toEqual(["three", "react", "react-dom", "react/jsx-runtime"]);
+      expect(config.resolve?.alias).toEqual({ "@": expect.stringContaining(`/apps/games/${game.slug}/src`) });
+      expect(config.build).toMatchObject({
+        target: "es2020",
+        outDir: "dist",
+        emptyOutDir: true,
+        sourcemap: true,
+      });
     }
   });
 });
