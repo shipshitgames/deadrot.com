@@ -65,7 +65,11 @@ test("catalog schema and every entity variant record cover the playable roster",
   const schemaGames = schema.definitions.gameSlug.enum;
   const requiredVariantGames = schema.definitions.variants.required;
   assert.deepEqual(schemaGames, PLAYABLE_GAME_SLUGS, "schema game enum must derive from the playable roster");
-  assert.deepEqual(requiredVariantGames, PLAYABLE_GAME_SLUGS, "schema required variants must derive from the playable roster");
+  assert.deepEqual(
+    requiredVariantGames,
+    PLAYABLE_GAME_SLUGS,
+    "schema required variants must derive from the playable roster",
+  );
 
   for (const entity of catalog.entities) {
     assert.deepEqual(Object.keys(entity.variants), PLAYABLE_GAME_SLUGS, `${entity.id} variant keys`);

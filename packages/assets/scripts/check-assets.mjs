@@ -309,7 +309,12 @@ function checkCatalogPaths() {
       if ((variant !== null) !== intended) {
         fail(`catalog variant intent mismatch: ${entity.id}.${game}`);
       }
-      if (variant !== null && typeof variant !== "string" && !isAliasVariant(variant) && !isPlaceholderVariant(variant)) {
+      if (
+        variant !== null &&
+        typeof variant !== "string" &&
+        !isAliasVariant(variant) &&
+        !isPlaceholderVariant(variant)
+      ) {
         fail(`catalog variant has an unsupported form: ${entity.id}.${game}`);
       }
       if (isAliasVariant(variant)) {

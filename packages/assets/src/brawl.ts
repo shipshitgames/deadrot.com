@@ -1,8 +1,8 @@
+import catalogJson from "../assets-catalog.json" with { type: "json" };
 import pyreDuelistUrl from "../entities/pyre-duelist/pactfall.webp";
 import scourgeEliteUrl from "../entities/scourge-elite/pactfall.webp";
 import trucebreakerUrl from "../entities/trucebreaker/pactfall.webp";
 import wardenBastionUrl from "../entities/warden-bastion/pactfall.webp";
-import catalogJson from "../assets-catalog.json" with { type: "json" };
 
 const BRAWL_ALIAS_URLS: Record<string, string> = {
   "entities/pyre-duelist/pactfall.webp": pyreDuelistUrl,

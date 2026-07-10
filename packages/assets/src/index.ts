@@ -153,12 +153,22 @@ function isAssetVariant(value: unknown): value is AssetVariant {
 
 /** Fail at package load when the checked-in JSON drifts from the catalog contract. */
 function assertCatalog(value: unknown): asserts value is AssetCatalog {
-  if (!isRecord(value) || !Array.isArray(value.entities) || !Array.isArray(value.shared) || typeof value.version !== "string") {
+  if (
+    !isRecord(value) ||
+    !Array.isArray(value.entities) ||
+    !Array.isArray(value.shared) ||
+    typeof value.version !== "string"
+  ) {
     throw new Error("Invalid asset catalog root.");
   }
 
   for (const entity of value.entities) {
-    if (!isRecord(entity) || typeof entity.id !== "string" || !Array.isArray(entity.games) || !isRecord(entity.variants)) {
+    if (
+      !isRecord(entity) ||
+      typeof entity.id !== "string" ||
+      !Array.isArray(entity.games) ||
+      !isRecord(entity.variants)
+    ) {
       throw new Error("Invalid asset catalog entity.");
     }
     if (!entity.games.every(isGameSlug)) throw new Error(`Invalid game intent for catalog entity: ${entity.id}`);
