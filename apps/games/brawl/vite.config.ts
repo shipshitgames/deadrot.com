@@ -4,6 +4,7 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   base: "./",
+  publicDir: fileURLToPath(new URL("../../../packages/assets/masters/ui/brand/favicon", import.meta.url)),
   plugins: [react()],
   resolve: {
     dedupe: ["three", "react", "react-dom", "react/jsx-runtime"],
