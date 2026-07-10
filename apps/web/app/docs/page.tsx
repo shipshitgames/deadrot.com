@@ -35,7 +35,7 @@ import {
 export const metadata: Metadata = createSocialMetadata({
   title: "Docs",
   description:
-    "Public Ship Shit Games documentation for the games, canon, Warline, shared packages, asset pipeline, and studio workflow.",
+    "Public Deadrot documentation for the games, canon, Warline, shared packages, asset custody, and runtime workflow.",
   path: "/docs",
   openGraphTitle: "DEADROT Docs",
 });
@@ -54,7 +54,7 @@ export default function DocsPage() {
           priority
           sizes="100vw"
           className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20"
-          style={{ imageRendering: "pixelated" }}
+          style={{ imageRendering: "auto" }}
         />
         <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-void via-void/80 to-void/50" />
 
@@ -66,8 +66,8 @@ export default function DocsPage() {
                 Everything We Ship
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ash">
-                The public map for Ship Shit Games: the browser games, Scourge canon, Warline, shared packages, asset
-                generation, research, and the studio workflow behind the work.
+                The public map for Deadrot: browser games, Scourge canon, Warline, shared packages, asset custody, and
+                the runtime workflow behind the work.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <Button asChild size="xl" className="font-display uppercase tracking-widest shadow-ember">
@@ -119,15 +119,15 @@ export default function DocsPage() {
 
       <section id="apps" className="scroll-mt-24 border-t border-gunmetal/40 px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-7xl">
-          <Eyebrow>Studio Platform</Eyebrow>
+          <Eyebrow>Repository Surfaces</Eyebrow>
           <div className="mt-3 grid gap-6 lg:grid-cols-[24rem_minmax(0,1fr)]">
             <div>
               <h2 className="font-display text-4xl font-bold uppercase tracking-tight text-bone sm:text-5xl">
                 App Surfaces
               </h2>
               <p className="mt-4 leading-relaxed text-ash">
-                The repo is a studio platform, not only a marketing site. These are the public and internal surfaces
-                that currently exist in the workspace.
+                The repo is the player-facing Deadrot product. These are the shipped surfaces that currently exist in
+                the workspace.
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-3">

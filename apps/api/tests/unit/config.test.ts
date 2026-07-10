@@ -10,6 +10,7 @@ describe("loadConfig", () => {
       cdnOrigin: "https://cdn.deadrot.com",
       databaseSslMode: "no-verify",
       host: "0.0.0.0",
+      nodeEnv: "development",
       port: 3004,
       serviceName: "deadrot-api",
     });
@@ -22,8 +23,11 @@ describe("loadConfig", () => {
       DATABASE_SSL_MODE: "verify-full",
       DATABASE_URL: "postgres://example",
       HOST: "127.0.0.1",
+      NODE_ENV: "production",
       PORT: "4010",
       SERVICE_NAME: "example-api",
+      WAITLIST_FORWARD_URL: "https://sink.example.com/waitlist",
+      WAITLIST_INGEST_TOKEN: "test-token",
     });
 
     expect(config).toMatchObject({
@@ -32,8 +36,11 @@ describe("loadConfig", () => {
       databaseSslMode: "verify-full",
       databaseUrl: "postgres://example",
       host: "127.0.0.1",
+      nodeEnv: "production",
       port: 4010,
       serviceName: "example-api",
+      waitlistForwardUrl: "https://sink.example.com/waitlist",
+      waitlistIngestToken: "test-token",
     });
   });
 

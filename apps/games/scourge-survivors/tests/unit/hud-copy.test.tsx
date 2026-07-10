@@ -6,12 +6,12 @@ describe("HUD copy uses Survivors run vocabulary (#77)", () => {
     expect(runModeLabel("campaign")).toBe("Breach");
     expect(runModeLabel("structured")).toBe("Structured");
     expect(runModeLabel("endless")).toBe("Endless");
-    expect(runModeLabel("coop")).toBe("Co-op");
+    expect(runModeLabel("arena")).toBe("Arena Preview");
     expect(runModeLabel("sandbox")).toBe("Sandbox");
     expect(runModeLabel()).toBe("Run");
   });
 
-  it("uses co-op neutral kill vocabulary instead of frag language", () => {
+  it("keeps the shared aggregate stat label stable", () => {
     expect(killStatLabel()).toBe("Kills");
   });
 });

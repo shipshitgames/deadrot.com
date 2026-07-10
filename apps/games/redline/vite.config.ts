@@ -6,6 +6,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [react()],
   base: "./",
+  publicDir: fileURLToPath(new URL("../../../packages/assets/masters/ui/brand/favicon", import.meta.url)),
   resolve: {
     // Dedupe React + three so @shipshitgames/ui (react peer) doesn't pull a
     // second copy into the prod bundle (avoids runtime React error #525).

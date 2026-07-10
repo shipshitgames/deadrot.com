@@ -1,3 +1,5 @@
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { defineConfig, devices } from "@playwright/test";
 
 // Web (hub) E2E — kept SEPARATE from the root playwright.config.ts, which boots the
@@ -7,8 +9,8 @@ import { defineConfig, devices } from "@playwright/test";
 //
 // No Clerk/Stripe env is set, so the gate degrades fully open (lib/access.ts
 // authEnabled === false) and every card renders its static access badge — the smoke
-// path never depends on auth being configured. The waitlist POST likewise needs no
-// sink wired: the route structured-logs and returns ok (lib/waitlist-sink.ts).
+// path never depends on auth being configured. Waitlist success still requires a
+// durable write: E2E explicitly uses an fsynced JSONL file under the OS temp dir.
 
 const CI = Boolean(process.env.CI);
 const PORT = Number(process.env.WEB_E2E_PORT ?? 3100);
@@ -43,6 +45,7 @@ export default defineConfig({
     env: {
       ...process.env,
       FLAG_OVERRIDES: process.env.FLAG_OVERRIDES ?? JSON.stringify({ "game-rothulk-visible": false }),
+      WAITLIST_LOCAL_FILE: process.env.WAITLIST_LOCAL_FILE ?? join(tmpdir(), `deadrot-waitlist-e2e-${PORT}.jsonl`),
     },
   },
   projects: [
