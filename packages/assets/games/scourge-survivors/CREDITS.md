@@ -1,5 +1,10 @@
 # Asset Credits
 
+> Entries that describe pixel grids, chroma-key sheets, or pre-2026-06-17 prompt
+> rules are historical provenance for the runtime scaffolding. They do not set
+> the current house style; new work follows the comic-ink lock in
+> `apps/lore/content/Universe/Style-Bible.md`.
+
 ## 2026-06-24 - edge-quality rematte and weapon sheet padding
 
 - Status: promoted into runtime.
@@ -177,7 +182,8 @@
   `enemies/scourge/spitter-host/{front,side,back}.webp`,
   `enemies/scourge/winged-host/{front,side,back}.webp`, and
   `enemies/scourge/breach-boss/{front,side,back}.webp`.
-- Prompt source: user direction that current enemy sprites are outdated plus Scourge canon rules from this repo and sibling lore.
+- Prompt source: user direction plus the then-current Deadrot lore rules. This
+  is a historical record, not a current generation brief.
 - Post-processing: generated on magenta chroma-key background, split into front/side/back columns, removed with the bundled imagegen chroma-key helper, and trimmed into high-resolution source cutouts. Runtime WebPs were then downscaled into low-resolution pixel-art sprites, palette-reduced, hard-alpha padded, given a one-pixel readability outline, and encoded lossless with `cwebp -lossless -exact`.
 - Runtime note: source masters are no longer kept inside `packages/assets`;
   `assets.json` marks the enemy families with `filter: "nearest"` so the game
@@ -191,14 +197,17 @@
 - Faction / role: Scourge melee host and breach boss billboard sprites.
 - Tool: `gpt-image-2` via built-in `image_gen`.
 - Plan: Codex built-in.
-- Kind: generated 2D enemy sprite sheets in the locked medium-chunky pixel style.
+- Kind: generated 2D enemy sprite sheets in the then-active medium-chunky pixel
+  style (historical; superseded by the comic-ink lock).
 - Source outputs:
   - `~/.codex/generated_images/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_0470aa91021088af016a22ed9b2b6c819197f8d4b4b0ac3443.png`
   - `~/.codex/generated_images/019e9847-b3ba-7de1-996b-bc342ffdd61a/ig_0470aa91021088af016a22ee1ffd2c8191bc6029fcddaa27ad.png`
 - Workspace draft folder: historical generated source folder
   `sources/drafts/sprites/2026-06-05-locked-runtime-refresh/`.
 - Final assets: `enemies/scourge/host-grunt/{front,side,back}.webp`, `enemies/scourge/breach-boss/{front,side,back}.webp`.
-- Prompt source: `apps/lore/content/Art/style-bakeoff/run-d2.sh`, `apps/lore/content/Art/style-refs/scourge-survivors.webp`, and user direction that melee foes need body-grown swords and the boss is getting cut in-game.
+- Prompt source: the now-archived pixel bake-off recipe and style reference,
+  plus user direction that melee foes need body-grown swords and the boss is
+  getting cut in-game. Historical provenance only.
 - Post-processing: generated as three-view sheets on sampled magenta chroma-key, split into front/side/back cells, keyed with ffmpeg `colorkey`, nearest-neighbor downscaled, padded with alpha, and encoded lossless with `cwebp -lossless -exact`.
 - Runtime note: melee host sprites are now 128x128 with clear forearm-grown bone sword blades. Boss sprites are now padded 128x180 plates with corrected in-world sprite scale in `assets.json`, preventing the boss art from filling/cutting against the camera while keeping boss mass.
 - Notes: The shared entity preview plates for `scourge-swarm` and `breach-boss`
@@ -287,7 +296,8 @@
 - Workspace draft cutout: historical app-local draft
   `src/assets/sprites/drafts/2026-06-04-pixel-runtime-candidates/weapon-smg-pyre-firstperson-v04-cutout.png`.
 - Final asset: `weapons/pyre/smg-tiers.webp`.
-- Prompt source: sibling `lore` repo `DESIGN.md`, `Games/Scourge-Survivors.md`, and Pyre palette/canon rules.
+- Prompt source: the then-current Deadrot lore design material and Pyre canon
+  rules. Historical provenance only.
 - Post-processing: generated on chroma-key background, removed with the bundled imagegen chroma-key helper, then encoded to lossless WebP with `cwebp -lossless -exact`.
 - Notes: This replaces the previous clean neon/cyberpunk SMG with a Pyre-compatible first-person hand-and-weapon sprite using blackened gunmetal, bone, blood, and hellfire.
 
@@ -305,6 +315,7 @@
 - Workspace draft cutout: historical app-local draft
   `src/assets/sprites/drafts/2026-06-04-pixel-runtime-candidates/muzzle-flash-pyre-v01-cutout.png`.
 - Final asset: `fx/pyre/muzzle-flash.webp`.
-- Prompt source: Pyre palette/canon rules from the sibling `lore` repo `DESIGN.md`.
+- Prompt source: the then-current Deadrot lore design material and Pyre canon
+  rules. Historical provenance only.
 - Post-processing: generated on chroma-key background, removed with the bundled imagegen chroma-key helper, scaled to 256x256, then encoded to lossless WebP with `cwebp -lossless -exact`.
 - Notes: Replaces the prior flat square muzzle flash with a directional bone-white, blood-hot, and hellfire pixel-art burst.

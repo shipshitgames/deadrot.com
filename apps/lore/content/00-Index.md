@@ -22,7 +22,7 @@ Start here, follow the links, open the graph view.
 - [[Design/Bestiary/Scourge-Foe-Art-Masters|Scourge Foe Art Masters]] — attached master/reference images and lock status for Scourge enemies _(active)_
 - [[Art/Comic-Book-Master-Atlas-v01|Comic Book Master Atlas v01]] — exploratory comic-book master boards for missing lore illustration families _(exploratory)_
 - [[Design/Characters/Character-Art-Masters|Character Art Masters]] — attached master/reference images and lock status for playable/faction characters _(active)_
-- [[Art/Comic-Style-Exploration-v01|Comic Style Exploration v01]] — XIII-informed comic/cel-shaded game art and UI exploration _(active)_
+- [[Art/Comic-Style-Exploration-v01|Comic Style Exploration v01]] — evidence that informed the comic/cel-ink lock _(historical)_
 - [[Art/Combat-Wallpapers-v02|Combat Wallpapers v02]] — earlier iteration; see v05 for current direction _(archived)_
 - [[Art/Combat-Wallpapers-v05|Combat Wallpapers v05]] — gritty realistic combat wallpaper rule; keep warzone grit, reject speckled Scourge glow _(active)_
 - [[Art/Combat-Wallpapers-v04|Combat Wallpapers v04]] — previous active pass; superseded by v05 _(superseded)_
@@ -32,16 +32,16 @@ Start here, follow the links, open the graph view.
 - [[Character-Prompt-Library]] — reusable generation prompts _(superseded — see [[Style-Bible]])_
 - [[Variation-Matrix]] — batch planning + selection criteria _(draft)_
 - [[Generation-History]] — generated asset ledger _(active)_
-- [[Style-Bakeoff]] — house-look validation · outcome locked 2026-06-04 _(active)_
-- [[Art/Style-Lock-Audit-2026-06-05|Style Lock Audit 2026-06-05]] — asset/style lock follow-up audit _(active)_
+- [[Style-Bakeoff]] — pre-lock house-look validation _(historical; superseded 2026-06-17)_
+- [[Art/Style-Lock-Audit-2026-06-05|Style Lock Audit 2026-06-05]] — pre-lock follow-up audit _(historical)_
 - [[Character-Asset-Status]] — visual asset review board with sprite/portrait previews, source paths, and lock status _(active)_
 - [[Art/Lore-Asset-Map|Lore Asset Map]] — generated coverage map from lore entries to package art, catalog variants, runtime manifests, masters, and sources _(active)_
-- [[Art/style-refs/README|Locked Style References]] — pinned per-game style-reference files _(active)_
+- [[Art/style-refs/README|Historical Pixel Style References]] — pre-lock pixel references _(historical)_
 - [[Art/Prompt-Batches/2026-06-03-gallery-thumbnails-and-menu-ui|2026-06-03 Gallery Thumbnails and Menu UI]] — historical web/menu prompt batch
 - [[Art/Prompt-Batches/2026-06-03-scourge-host-family-concepts|2026-06-03 Scourge Host Family Concepts]] — historical Scourge host-family exploration
 - [[Art/Prompt-Batches/2026-06-04-key-art-placeholders|2026-06-04 Key Art Placeholders]] — historical/off-canon placeholder batch
 - [[Art/Prompt-Batches/2026-06-04-website-portrait-placeholders|2026-06-04 Website Portrait Placeholders]] — historical/off-canon portrait batch
-- [[Art/Prompt-Batches/2026-06-04-game-previs|2026-06-04 Game Previs Prompts]] — saved prompts for per-game key-art pre-viz _(active)_
+- [[Art/Prompt-Batches/2026-06-04-game-previs|2026-06-04 Game Previs Prompts]] — pre-lock pixel prompts _(historical)_
 - [[Art/UI-Drafts/2026-06-04-fps-hud-previs/README|Scourge Survivors FPS HUD Previs]] — Doom-pixel HUD overlay direction _(active)_
 - [[Art/Prompt-Batches/2026-06-05-game-og-cards|2026-06-05 Game OG Cards]] — deterministic social-card composition batch
 - [[Art/Prompt-Batches/2026-06-05-scourge-animation-pack|2026-06-05 Scourge Animation Pack]] — first-pass Scourge animation sheet prompts

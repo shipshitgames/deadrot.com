@@ -2,8 +2,8 @@ import { expect, test } from "@playwright/test";
 
 // Smoke coverage for the Deadrot access surface (#355). Runs under both the
 // web:desktop and web:mobile projects (playwright.config.ts), so the waitlist
-// path is exercised on both viewports per AC5. No auth/sink env is wired: the
-// gate reads fully open and the waitlist route structured-logs + returns ok.
+// path is exercised on both viewports per AC5. No auth env is wired: the gate
+// reads fully open. Playwright config explicitly wires fsynced local persistence.
 
 test.describe("home access surface", () => {
   test("the game-card access legend distinguishes all four states", async ({ page }) => {

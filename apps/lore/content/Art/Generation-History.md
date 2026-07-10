@@ -232,7 +232,10 @@ reviewed outside runtime paths under `packages/assets/_archive/`.
 - Final asset:
   - `packages/assets/games/scourge-survivors/enemies/scourge/host-grunt/{front,side,back}.webp`
   - `packages/assets/games/scourge-survivors/enemies/scourge/breach-boss/{front,side,back}.webp`
-- Prompt source: `Art/style-bakeoff/run-d2.sh`, `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/scourge-survivors.webp`, and direct review that melee foes need body-grown swords and the boss was being cut in-game.
+- Prompt source: the now-archived pre-lock bake-off recipe,
+  `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/scourge-survivors.webp`,
+  and direct review that melee foes need body-grown swords and the boss was
+  being cut in-game. Historical provenance only.
 - Post-processing: copied source sheets into the asset package; sliced three equal cells; removed sampled magenta key with ffmpeg `colorkey`; nearest-neighbor downscaled; padded with alpha; encoded lossless WebP.
 - Notes: Melee now has sword-like bone blades grown from the forearms, not separate held weapons. Boss sprites have extra texture padding and reduced manifest sprite height so they stop filling/cutting the camera.
 - Decision: promoted to runtime and mirrored to website/public sprite copies plus shared entity preview plates.

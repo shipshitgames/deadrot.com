@@ -12,6 +12,8 @@ interface SelectPanelProps {
   onSlots: (slots: number) => void;
   onChoose: (id: FighterId) => void;
   onStart: () => void;
+  onSettings: () => void;
+  onCodex: () => void;
 }
 
 const SLOT_CHOICES = Array.from(
@@ -29,6 +31,8 @@ export function SelectPanel({
   onSlots,
   onChoose,
   onStart,
+  onSettings,
+  onCodex,
 }: SelectPanelProps) {
   const arena = mode === "arena";
   return (
@@ -72,6 +76,12 @@ export function SelectPanel({
       <div className="select-actions">
         <button type="button" className="primary-action" onClick={onStart}>
           {arena ? "Start Arena" : "Fight"}
+        </button>
+        <button type="button" className="ghost-action" onClick={onCodex}>
+          Codex
+        </button>
+        <button type="button" className="ghost-action" onClick={onSettings}>
+          Settings
         </button>
         <a className="ghost-action" href="/warline/">
           Warline

@@ -1,10 +1,19 @@
 import { expect, type Page, test } from "@playwright/test";
+import { getLocation } from "@shipshitgames/assets/lore";
+import { SURVIVOR_RUN_CHAPTERS } from "../../src/game/data/survivors";
 
 // The Toll (#278): at the 10:00 mark of a structured Survivors run the breach
 // sends its named reaper, which ends the run one way or the other. These specs
 // fast-forward the run clock to the final second (house style: direct state
 // surgery on __fpsGame), let real frames deliver the arrival, then force each
 // ending deterministically.
+//
+// The run holds its pre-picked arena for the whole descent (#276), and the
+// reaper wears that arena's lore-sourced climax boss. These specs clear
+// localStorage, so the run lands on the default site, Ashgate — expectations
+// come from the lore data layer, never a hardcoded boss banner.
+const ARENA_BOSS = getLocation("ashgate")?.boss?.name;
+const FINAL_CHAPTER = SURVIVOR_RUN_CHAPTERS[SURVIVOR_RUN_CHAPTERS.length - 1];
 
 type HudSnapshot = {
   status: string;
@@ -14,7 +23,6 @@ type HudSnapshot = {
   runDepth: number;
   runDepthTotal: number;
   runDepthName: string;
-  mapName: string;
   bossActive: boolean;
   bossName: string | null;
 };
@@ -25,7 +33,7 @@ type DevEnemy = {
 };
 
 type DevGame = {
-  startSurvivors: (classId: "ranger", mapId: "ashgate") => void;
+  startSurvivors: (classId: "ranger") => void;
   ctx: {
     status: string;
     survivorGoalTime: number;
@@ -71,7 +79,7 @@ async function boot(page: Page) {
 async function startStructuredRun(page: Page) {
   await page.evaluate(() => {
     const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
-    game.startSurvivors("ranger", "ashgate");
+    game.startSurvivors("ranger");
     // Bypass the pointer-lock gate so the rAF loop actually ticks gameplay.
     game.ctx.status = "playing";
     game.sys.hud.emit();
@@ -82,8 +90,7 @@ async function startStructuredRun(page: Page) {
 
 /** Jump the run clock to one second before SURVIVOR_RUN_GOAL_TIME (600s — read
  *  live from ctx.survivorGoalTime), then let real frames cross the threshold:
- *  advance to the final pacing chapter, show the warning, then spawn the
- *  selected arena's lore-backed reaper without changing maps. */
+ *  the final chapter advance first, the warning toast, then the arrival. */
 async function fastForwardToFinalSecond(page: Page) {
   await page.evaluate(() => {
     const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
@@ -113,20 +120,19 @@ test.describe("the 10:00 reaper (The Toll)", () => {
     await startStructuredRun(page);
     await fastForwardToFinalSecond(page);
 
-    // The run stays in the explicitly selected Ashgate arena. Its final pacing
-    // chapter is Source Frenzy, while the reaper identity comes from Ashgate's
-    // lore entry rather than a hardcoded generic or Perdition boss banner.
+    // The arrival lands on the final chapter and carries the arena's
+    // lore-sourced boss name — never a hardcoded generic boss banner.
+    expect(ARENA_BOSS, "lore must name Ashgate's climax boss").toBeTruthy();
     const arrival = await snapshot(page);
     expect(arrival).toMatchObject({
       bossActive: true,
-      bossName: "Lane Tyrant",
+      bossName: ARENA_BOSS,
       runMode: "structured",
-      runDepth: 4,
-      runDepthTotal: 4,
-      runDepthName: "Source Frenzy",
-      mapName: "Ashgate",
+      runDepth: SURVIVOR_RUN_CHAPTERS.length,
+      runDepthTotal: SURVIVOR_RUN_CHAPTERS.length,
+      runDepthName: FINAL_CHAPTER.name,
     });
-    await expect(page.locator(".scourge-boss-label")).toContainText("Lane Tyrant");
+    await expect(page.locator(".scourge-boss-label")).toContainText(ARENA_BOSS as string);
 
     // Make the one-shot deterministic: stand the reaper next to the player and
     // let its touch attack land on real frames (house style allows mutation).
@@ -151,9 +157,8 @@ test.describe("the 10:00 reaper (The Toll)", () => {
     // shows the earned amount.
     await expect.poll(() => shopGold(page)).toBeGreaterThan(goldBefore);
     const earned = (await shopGold(page)) - goldBefore;
-    const goldSummary = page.getByTestId("summary-gold");
-    await expect(goldSummary).toContainText(`+${earned.toLocaleString()}`);
-    await expect(goldSummary).toContainText("saved to shop");
+    await expect(page.getByTestId("summary-gold")).toContainText(`+${earned.toLocaleString()}`);
+    await expect(page.getByText("saved to shop")).toBeVisible();
   });
 
   test("felling the toll seals the breach", async ({ page }) => {

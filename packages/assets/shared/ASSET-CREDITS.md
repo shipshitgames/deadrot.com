@@ -10,17 +10,17 @@ First-pass shared placeholders added 2026-06-05 so
   Deadrot website/runtime sprite or portrait for each canon entity id.
 - License: project-owned derived placeholders.
 - Notes: these replaced 182-byte placeholder WebPs. They are not final per-game
-  camera renders; regenerate them through the locked medium-chunky pixel
-  pipeline.
+  camera renders; replace them through the locked comic-ink production path.
 
 ## FX
 
 - Files: `fx/blood-splatter.webp`, `fx/ember-burst.webp`,
   `fx/muzzle-flash.webp`, `fx/breach-glow.webp`
-- Source: deterministic local pixel-art placeholders generated with `ffmpeg`
+- Source: deterministic local pixel-era placeholders generated with `ffmpeg`
   filter graphs.
 - License: project-owned placeholder output.
-- Notes: replace with promoted sprite sheets when the shared FX pass lands.
+- Notes: historical scaffolding; replace with promoted comic-ink sprite sheets
+  when the shared FX pass lands.
 
 ## UI
 
