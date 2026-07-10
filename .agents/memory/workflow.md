@@ -1,6 +1,6 @@
 # Workflow
 
-last_verified: 2026-06-19
+last_verified: 2026-07-09
 
 This repo is **trunk-based**: `master` is the single long-lived branch (and the
 GitHub default). Shipped work flows through short-lived task branches and squash
@@ -40,12 +40,14 @@ claude/<slug> | codex/<slug> task branch -> squash PR -> master -> tag vX.Y.Z ->
 The PR gate (runs on pull requests into `master`) is the **fast** gate:
 
 - **CI** (`ci.yml`): `quality` (format + lint + import order, typecheck,
-  generated-assets check), `unit` (package + cross-game catalog unit tests), and
-  `coverage` (coverage gate over the agreed scope).
+  generated-assets check, deterministic full build), `unit` (package +
+  cross-game catalog unit tests), and `coverage` (coverage gate over the agreed
+  scope).
 - **React Doctor** (`react-doctor.yml`).
 - **Secret Scan** (`secret-scan.yml`).
-- **Game E2E** (`e2e.yml`) and **Web E2E** (`web-e2e.yml`) run path-scoped, for
-  affected games / web + package changes only.
+- **Game E2E** (`e2e.yml`) and **Web E2E** (`web-e2e.yml`) start on every PR so
+  their required aggregate gates always report. Cheap detector jobs skip the
+  heavy matrices when no affected game or web/package files changed.
 
 The full every-game Playwright matrix is **not** on the PR gate — it runs at
 release time (see below) so merges stay quick.
@@ -59,7 +61,7 @@ release time (see below) so merges stay quick.
   git tag v1.4.0 && git push origin v1.4.0
   ```
 
-- The tag runs the FULL heavy suite: `quality`, `unit`, `web-e2e`
+- The tag runs the FULL heavy suite: `quality`, deterministic `build`, `unit`, `web-e2e`
   (desktop + mobile), every game's Playwright E2E sharded game x viewport, and a
   full-history `secret-scan`. A single `release-gate` job aggregates them.
 - Only if every gate is green do the deploy jobs run:
