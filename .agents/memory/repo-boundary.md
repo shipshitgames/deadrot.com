@@ -52,12 +52,17 @@ packages. Keep it canonical in `../shipshitgames/packages/engine`, do not rename
 it to `@deadrot/engine`, and do not create a separate engine repo/board until
 the release cadence or external consumers justify that overhead.
 
-Status (2026-06-19): Deadrot is the first franchise under the Ship Shit Games
-umbrella; see `../shipshitgames/STUDIO-ARCHITECTURE.md`. Deadrot keeps its own
-Clerk + Stripe + game gates. Studio Pass is being decoupled to
-tools/courses-only; the cross-property bridge in
-`apps/web/lib/shipshit-entitlement*.ts` is being removed after grandfathering
-existing game-access subscribers. No Clerk consolidation or user migration.
+Status (2026-07-10, revises 2026-06-19): pricing model LOCKED — see
+`../shipshitgames/STUDIO-ARCHITECTURE.md` "Pricing Model" and
+shipshit.games#330. Deadrot keeps its own Clerk + Stripe + game gates and
+sells games as cheap one-time purchases (Deadrot Collection, $4.99 live).
+The studio Studio Pass subscription now INCLUDES deadrot.com all-games
+access (the games are the POC): the cross-property bridge in
+`apps/web/lib/shipshit-entitlement*.ts` is **kept and first-class** — a
+one-way, verified-email, revocable grant derived from live Stripe state.
+Enable via `SHIPSHIT_STRIPE_PRODUCT_IDS` + live keys; kill switch
+`SHIPSHIT_ENTITLEMENT_DISABLED=1`. Still no Clerk consolidation or user
+migration.
 
 Status (2026-06-09): the temporary Deadrot fork at `packages/engine` has been
 RETIRED. Its camera + input extraction (#87/#88) was upstreamed into the
