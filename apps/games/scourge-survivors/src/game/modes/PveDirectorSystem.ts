@@ -178,6 +178,11 @@ export class PveDirectorSystem {
       audio.sfx("explosion");
     }
 
+    // Lethal-headshot kill beat: every kill source funnels through onEnemyDeath,
+    // so this one hook covers hitscan, sandbox damage, and all mode branches.
+    // FX-only — counters/score/audio at the call sites are untouched.
+    if (headshot) this.sys.fx.spawnHeadshotKillFx(deathPos, { scale: deathScale, boss: wasBoss });
+
     if (this.ctx.sandbox) {
       this.sys.hud.killSeq++;
       this.ctx.score += wasBoss ? 250 : 10;

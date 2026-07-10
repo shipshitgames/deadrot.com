@@ -483,6 +483,7 @@ export function SandboxPanel({
             <LabButton onClick={() => onDamage(18)}>Tap Nearest</LabButton>
             <LabButton onClick={() => onDamage(70)}>Body Hit</LabButton>
             <LabButton onClick={() => onDamage(-1)}>Kill Nearest</LabButton>
+            <LabButton onClick={() => onDamage(-1, true)}>Headshot Kill</LabButton>
             <LabButton onClick={() => onDamage(35, false, true)}>Hit All</LabButton>
             <LabButton onClick={() => onDamage(100, true, true)}>Headshot All</LabButton>
             <LabButton danger onClick={onClear}>
