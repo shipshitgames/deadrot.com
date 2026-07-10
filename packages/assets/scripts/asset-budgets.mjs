@@ -29,6 +29,14 @@ const RUNTIME_EXTENSIONS = new Set([
 const RASTER_EXTENSIONS = new Set([".avif", ".gif", ".jpeg", ".jpg", ".png", ".webp"]);
 const FORBIDDEN_RUNTIME_RASTER = new Set([".avif", ".gif", ".jpeg", ".jpg", ".png"]);
 const OG_CARD_PATTERN = /^games\/[^/]+\/ui\/social\/og\.jpg$/;
+const BROWSER_BUDGET_FIELDS = [
+  "maxBootResourceRequests",
+  "maxBootWebpRequests",
+  "maxBootDecodedBodyBytes",
+  "maxCombatResourceRequests",
+  "maxCombatWebpRequests",
+  "maxCombatDecodedBodyBytes",
+];
 
 const options = parseArgs(process.argv.slice(2));
 const report = analyzeAssetBudgets();
@@ -134,8 +142,10 @@ function analyzeGame(game, config, catalog) {
   fileList.sort((a, b) => a.path.localeCompare(b.path));
 
   const totalBytes = sum(fileList.map((file) => file.bytes));
-  const initialFiles = fileList.filter((file) => file.initial);
-  const initialBytes = sum(initialFiles.map((file) => file.bytes));
+  // This is a declaration/path heuristic, not an observation of browser boot
+  // requests. Browser budgets are enforced by each game's production E2E gate.
+  const declaredInitialFiles = fileList.filter((file) => file.initial);
+  const declaredInitialBytes = sum(declaredInitialFiles.map((file) => file.bytes));
   const coveredFiles = fileList.filter((file) => file.manifestCovered);
   const manifestCoverage = fileList.length ? coveredFiles.length / fileList.length : 1;
   const largestFiles = [...fileList].sort((a, b) => b.bytes - a.bytes).slice(0, 10);
@@ -145,7 +155,7 @@ function analyzeGame(game, config, catalog) {
     fileList,
     missingFiles,
     totalBytes,
-    initialBytes,
+    declaredInitialBytes,
     manifestCoverage,
   });
 
@@ -156,8 +166,8 @@ function analyzeGame(game, config, catalog) {
     budget: pickBudgetFields(budget),
     files: fileList.length,
     totalBytes,
-    initialBytes,
-    initialFiles: initialFiles.length,
+    declaredInitialBytes,
+    declaredInitialFiles: declaredInitialFiles.length,
     manifestCoveredFiles: coveredFiles.length,
     manifestCoverage,
     largestFiles: largestFiles.map((file) => ({
@@ -169,7 +179,7 @@ function analyzeGame(game, config, catalog) {
   };
 }
 
-function collectViolations({ budget, fileList, missingFiles, totalBytes, initialBytes, manifestCoverage }) {
+function collectViolations({ budget, fileList, missingFiles, totalBytes, declaredInitialBytes, manifestCoverage }) {
   const violations = [];
 
   if (totalBytes > budget.maxTotalBytes) {
@@ -181,13 +191,27 @@ function collectViolations({ budget, fileList, missingFiles, totalBytes, initial
     });
   }
 
-  if (initialBytes > budget.maxInitialBytes) {
+  if (declaredInitialBytes > budget.maxInitialBytes) {
     violations.push({
-      type: "initial-budget",
+      type: "declared-initial-budget",
       limitBytes: budget.maxInitialBytes,
-      actualBytes: initialBytes,
+      actualBytes: declaredInitialBytes,
       files: fileList.filter((file) => file.initial).map((file) => file.path),
     });
+  }
+
+  const hasBrowserBudget = BROWSER_BUDGET_FIELDS.some((field) => budget[field] !== undefined);
+  if (hasBrowserBudget) {
+    for (const field of BROWSER_BUDGET_FIELDS) {
+      if (!Number.isInteger(budget[field]) || budget[field] <= 0) {
+        violations.push({
+          type: "invalid-browser-budget",
+          field,
+          reason: "browser budget fields must be positive integers and must be configured as a complete set",
+          files: [],
+        });
+      }
+    }
   }
 
   for (const file of fileList) {
@@ -274,6 +298,11 @@ function readAnimationPackPaths(slug) {
   for (const packPath of walkFiles(join(assetsRoot, "games", slug))) {
     if (!packPath.endsWith(`${sep}animation-pack.json`)) continue;
     const pack = readJson(packPath);
+    const atlasPages = Array.isArray(pack.runtimeAtlas?.pages) ? pack.runtimeAtlas.pages : [];
+    for (const page of atlasPages) {
+      if (typeof page?.path === "string" && page.path.trim()) paths.push(normalizeAssetPath(page.path));
+    }
+
     const views = Array.isArray(pack.views) ? pack.views : [];
     const framesPerAction = Number(pack.framesPerAction);
     if (!Number.isInteger(framesPerAction) || framesPerAction <= 0) continue;
@@ -328,12 +357,16 @@ function normalizeAssetPath(path) {
 }
 
 function pickBudgetFields(budget) {
-  return {
+  const fields = {
     maxTotalBytes: budget.maxTotalBytes,
-    maxInitialBytes: budget.maxInitialBytes,
+    maxDeclaredInitialBytes: budget.maxInitialBytes,
     maxFileBytes: budget.maxFileBytes,
     minManifestCoverage: budget.minManifestCoverage,
   };
+  for (const field of BROWSER_BUDGET_FIELDS) {
+    if (budget[field] !== undefined) fields[field] = budget[field];
+  }
+  return fields;
 }
 
 function renderTextReport(report) {
@@ -343,9 +376,20 @@ function renderTextReport(report) {
     const mark = game.violations.length ? "FAIL" : "PASS";
     lines.push(
       `${mark} ${game.slug} (${game.category}) ${formatBytes(game.totalBytes)} total, ${formatBytes(
-        game.initialBytes,
-      )} initial, ${game.files} files, ${Math.round(game.manifestCoverage * 100)}% covered`,
+        game.declaredInitialBytes,
+      )} declared initial, ${game.files} files, ${Math.round(game.manifestCoverage * 100)}% covered`,
     );
+    if (game.budget.maxBootWebpRequests !== undefined) {
+      lines.push(
+        `  Browser budgets: boot <= ${game.budget.maxBootResourceRequests} resources / ${formatBytes(
+          game.budget.maxBootDecodedBodyBytes,
+        )} decoded / ${game.budget.maxBootWebpRequests} WebPs; combat <= ${
+          game.budget.maxCombatResourceRequests
+        } resources / ${formatBytes(
+          game.budget.maxCombatDecodedBodyBytes,
+        )} decoded / ${game.budget.maxCombatWebpRequests} WebPs`,
+      );
+    }
     lines.push("  Largest files:");
     for (const file of game.largestFiles.slice(0, 5)) {
       lines.push(`  - ${formatBytes(file.bytes).padStart(9)} ${file.path}`);

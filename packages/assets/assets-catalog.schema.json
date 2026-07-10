@@ -24,7 +24,7 @@
   "definitions": {
     "gameSlug": {
       "type": "string",
-      "enum": ["scourge-survivors", "deadlane", "pactfall", "starblight", "redline", "rothulk"]
+      "enum": ["scourge-survivors", "deadlane", "pactfall", "brawl", "starblight", "redline", "rothulk"]
     },
     "faction": {
       "type": "string",
@@ -40,18 +40,43 @@
         { "type": "null" }
       ]
     },
+    "variant": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "object",
+          "required": ["type", "sourceGame"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "alias" },
+            "sourceGame": { "$ref": "#/definitions/gameSlug" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "note"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "placeholder" },
+            "note": { "type": "string", "minLength": 1 }
+          }
+        },
+        { "type": "null" }
+      ]
+    },
     "variants": {
       "type": "object",
       "description": "Per-game render paths (relative to this package). null = no render for that game.",
-      "required": ["scourge-survivors", "deadlane", "pactfall", "starblight", "redline", "rothulk"],
+      "required": ["scourge-survivors", "deadlane", "pactfall", "brawl", "starblight", "redline", "rothulk"],
       "additionalProperties": false,
       "properties": {
-        "scourge-survivors": { "type": ["string", "null"] },
-        "deadlane": { "type": ["string", "null"] },
-        "pactfall": { "type": ["string", "null"] },
-        "starblight": { "type": ["string", "null"] },
-        "redline": { "type": ["string", "null"] },
-        "rothulk": { "type": ["string", "null"] }
+        "scourge-survivors": { "$ref": "#/definitions/variant" },
+        "deadlane": { "$ref": "#/definitions/variant" },
+        "pactfall": { "$ref": "#/definitions/variant" },
+        "brawl": { "$ref": "#/definitions/variant" },
+        "starblight": { "$ref": "#/definitions/variant" },
+        "redline": { "$ref": "#/definitions/variant" },
+        "rothulk": { "$ref": "#/definitions/variant" }
       }
     },
     "entity": {

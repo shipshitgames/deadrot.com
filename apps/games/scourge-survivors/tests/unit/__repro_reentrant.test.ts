@@ -6,21 +6,22 @@ import type { Enemy, EnemyShot } from "../../src/game/entities/Enemy";
 import type { GameSystems } from "../../src/game/systems";
 
 type ProjectilesModule = typeof import("../../src/game/entities/ProjectilesSystem");
+
+vi.mock("../../src/game/spriteAssets", async () => {
+  const THREE = await import("three");
+  return {
+    PROJECTILE_SPRITE_TEXTURES: {
+      enemy: new THREE.Texture(),
+      boss: new THREE.Texture(),
+      bolt: new THREE.Texture(),
+      orb: new THREE.Texture(),
+    },
+  };
+});
+
 let ProjectilesSystem: ProjectilesModule["ProjectilesSystem"];
 
 beforeAll(async () => {
-  if (typeof (globalThis as { document?: unknown }).document === "undefined") {
-    (globalThis as { document?: unknown }).document = {
-      createElementNS() {
-        return {
-          addEventListener() {},
-          removeEventListener() {},
-          set crossOrigin(_value: string) {},
-          set src(_value: string) {},
-        };
-      },
-    };
-  }
   ProjectilesSystem = (await import("../../src/game/entities/ProjectilesSystem")).ProjectilesSystem;
 });
 

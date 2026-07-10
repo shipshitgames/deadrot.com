@@ -1,0 +1,2445 @@
+{
+  "version": 1,
+  "game": "all",
+  "padding": 2,
+  "pages": [
+    {
+      "image": "scourge.atlas0.webp",
+      "width": 4092,
+      "height": 1556
+    }
+  ],
+  "frameCount": 270,
+  "frames": [
+    {
+      "id": "breach-boss/barrage/back/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 2,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/barrage/back/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 134,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/barrage/back/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 266,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/barrage/back/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 398,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/barrage/back/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 530,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/barrage/back/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 662,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/barrage/front/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 794,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/barrage/front/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 926,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/barrage/front/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 1058,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/barrage/front/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 1190,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/barrage/front/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 1322,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/barrage/front/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 1454,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/barrage/side/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 1586,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/barrage/side/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 1718,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/barrage/side/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 1850,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/barrage/side/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 1982,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/barrage/side/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 2114,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/barrage/side/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 2246,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/death/back/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 2378,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/death/back/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 2510,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/death/back/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 2642,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/death/back/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 2774,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/death/back/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 2906,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/death/back/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 3038,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/death/front/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 3170,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/death/front/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 3302,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/death/front/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 3434,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/death/front/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 3566,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/death/front/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 3698,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/death/front/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 3830,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/death/side/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 3962,
+      "y": 2,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/death/side/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 2,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/death/side/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 134,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/death/side/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 266,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/death/side/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 398,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/death/side/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 530,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/lurch/back/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 662,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/lurch/back/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 794,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/lurch/back/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 926,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/lurch/back/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 1058,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/lurch/back/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 1190,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/lurch/back/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 1322,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/lurch/front/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 1454,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/lurch/front/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 1586,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/lurch/front/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 1718,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/lurch/front/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 1850,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/lurch/front/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 1982,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/lurch/front/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 2114,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/lurch/side/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 2246,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/lurch/side/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 2378,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/lurch/side/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 2510,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/lurch/side/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 2642,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/lurch/side/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 2774,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "breach-boss/lurch/side/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 2906,
+      "y": 186,
+      "w": 128,
+      "h": 180
+    },
+    {
+      "id": "host-grunt/death/back/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 3038,
+      "y": 186,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/death/back/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 3170,
+      "y": 186,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/death/back/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 3302,
+      "y": 186,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/death/back/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 3434,
+      "y": 186,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/death/back/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 3566,
+      "y": 186,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/death/back/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 3698,
+      "y": 186,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/death/front/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 3830,
+      "y": 186,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/death/front/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 3962,
+      "y": 186,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/death/front/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 2,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/death/front/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 134,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/death/front/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 266,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/death/front/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 398,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/death/side/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 530,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/death/side/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 662,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/death/side/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 794,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/death/side/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 926,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/death/side/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 1058,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/death/side/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 1190,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/slash/back/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 1322,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/slash/back/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 1454,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/slash/back/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 1586,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/slash/back/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 1718,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/slash/back/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 1850,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/slash/back/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 1982,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/slash/front/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 2114,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/slash/front/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 2246,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/slash/front/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 2378,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/slash/front/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 2510,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/slash/front/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 2642,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/slash/front/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 2774,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/slash/side/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 2906,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/slash/side/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 3038,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/slash/side/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 3170,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/slash/side/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 3302,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/slash/side/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 3434,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/slash/side/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 3566,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/walk/back/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 3698,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/walk/back/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 3830,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/walk/back/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 3962,
+      "y": 370,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/walk/back/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 2,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/walk/back/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 134,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/walk/back/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 266,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/walk/front/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 398,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/walk/front/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 530,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/walk/front/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 662,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/walk/front/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 794,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/walk/front/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 926,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/walk/front/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 1058,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/walk/side/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 1190,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/walk/side/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 1322,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/walk/side/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 1454,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/walk/side/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 1586,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/walk/side/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 1718,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "host-grunt/walk/side/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 1850,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/death/back/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 1982,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/death/back/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 2114,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/death/back/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 2246,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/death/back/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 2378,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/death/back/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 2510,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/death/back/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 2642,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/death/front/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 2774,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/death/front/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 2906,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/death/front/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 3038,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/death/front/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 3170,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/death/front/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 3302,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/death/front/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 3434,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/death/side/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 3566,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/death/side/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 3698,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/death/side/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 3830,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/death/side/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 3962,
+      "y": 502,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/death/side/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 2,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/death/side/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 134,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/spit/back/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 266,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/spit/back/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 398,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/spit/back/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 530,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/spit/back/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 662,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/spit/back/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 794,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/spit/back/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 926,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/spit/front/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 1058,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/spit/front/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 1190,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/spit/front/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 1322,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/spit/front/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 1454,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/spit/front/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 1586,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/spit/front/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 1718,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/spit/side/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 1850,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/spit/side/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 1982,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/spit/side/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 2114,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/spit/side/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 2246,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/spit/side/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 2378,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/spit/side/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 2510,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/walk/back/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 2642,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/walk/back/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 2774,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/walk/back/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 2906,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/walk/back/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 3038,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/walk/back/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 3170,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/walk/back/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 3302,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/walk/front/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 3434,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/walk/front/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 3566,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/walk/front/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 3698,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/walk/front/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 3830,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/walk/front/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 3962,
+      "y": 634,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/walk/front/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 2,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/walk/side/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 134,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/walk/side/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 266,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/walk/side/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 398,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/walk/side/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 530,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/walk/side/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 662,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "spitter-host/walk/side/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 794,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/attack/back/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 926,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/attack/back/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 1058,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/attack/back/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 1190,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/attack/back/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 1322,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/attack/back/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 1454,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/attack/back/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 1586,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/attack/front/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 1718,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/attack/front/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 1850,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/attack/front/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 1982,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/attack/front/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 2114,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/attack/front/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 2246,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/attack/front/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 2378,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/attack/side/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 2510,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/attack/side/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 2642,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/attack/side/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 2774,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/attack/side/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 2906,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/attack/side/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 3038,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/attack/side/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 3170,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/death/back/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 3302,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/death/back/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 3434,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/death/back/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 3566,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/death/back/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 3698,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/death/back/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 3830,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/death/back/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 3962,
+      "y": 766,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/death/front/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 2,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/death/front/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 134,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/death/front/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 266,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/death/front/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 398,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/death/front/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 530,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/death/front/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 662,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/death/side/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 794,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/death/side/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 926,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/death/side/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 1058,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/death/side/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 1190,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/death/side/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 1322,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/death/side/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 1454,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/fly/back/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 1586,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/fly/back/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 1718,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/fly/back/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 1850,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/fly/back/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 1982,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/fly/back/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 2114,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/fly/back/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 2246,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/fly/front/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 2378,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/fly/front/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 2510,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/fly/front/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 2642,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/fly/front/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 2774,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/fly/front/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 2906,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/fly/front/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 3038,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/fly/side/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 3170,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/fly/side/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 3302,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/fly/side/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 3434,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/fly/side/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 3566,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/fly/side/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 3698,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "winged-host/fly/side/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 3830,
+      "y": 898,
+      "w": 128,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/death/back/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 2,
+      "y": 1030,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/death/back/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 262,
+      "y": 1030,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/death/back/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 522,
+      "y": 1030,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/death/back/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 782,
+      "y": 1030,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/death/back/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 1042,
+      "y": 1030,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/death/back/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 1302,
+      "y": 1030,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/death/front/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 1562,
+      "y": 1030,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/death/front/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 1822,
+      "y": 1030,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/death/front/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 2082,
+      "y": 1030,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/death/front/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 2342,
+      "y": 1030,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/death/front/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 2602,
+      "y": 1030,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/death/front/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 2862,
+      "y": 1030,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/death/side/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 3122,
+      "y": 1030,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/death/side/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 3382,
+      "y": 1030,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/death/side/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 3642,
+      "y": 1030,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/death/side/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 2,
+      "y": 1162,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/death/side/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 262,
+      "y": 1162,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/death/side/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 522,
+      "y": 1162,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/mark/back/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 782,
+      "y": 1162,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/mark/back/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 1042,
+      "y": 1162,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/mark/back/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 1302,
+      "y": 1162,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/mark/back/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 1562,
+      "y": 1162,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/mark/back/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 1822,
+      "y": 1162,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/mark/back/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 2082,
+      "y": 1162,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/mark/front/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 2342,
+      "y": 1162,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/mark/front/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 2602,
+      "y": 1162,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/mark/front/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 2862,
+      "y": 1162,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/mark/front/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 3122,
+      "y": 1162,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/mark/front/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 3382,
+      "y": 1162,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/mark/front/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 3642,
+      "y": 1162,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/mark/side/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 2,
+      "y": 1294,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/mark/side/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 262,
+      "y": 1294,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/mark/side/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 522,
+      "y": 1294,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/mark/side/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 782,
+      "y": 1294,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/mark/side/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 1042,
+      "y": 1294,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/mark/side/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 1302,
+      "y": 1294,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/run/back/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 1562,
+      "y": 1294,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/run/back/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 1822,
+      "y": 1294,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/run/back/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 2082,
+      "y": 1294,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/run/back/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 2342,
+      "y": 1294,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/run/back/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 2602,
+      "y": 1294,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/run/back/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 2862,
+      "y": 1294,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/run/front/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 3122,
+      "y": 1294,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/run/front/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 3382,
+      "y": 1294,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/run/front/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 3642,
+      "y": 1294,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/run/front/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 2,
+      "y": 1426,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/run/front/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 262,
+      "y": 1426,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/run/front/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 522,
+      "y": 1426,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/run/side/frame-00.webp",
+      "game": null,
+      "page": 0,
+      "x": 782,
+      "y": 1426,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/run/side/frame-01.webp",
+      "game": null,
+      "page": 0,
+      "x": 1042,
+      "y": 1426,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/run/side/frame-02.webp",
+      "game": null,
+      "page": 0,
+      "x": 1302,
+      "y": 1426,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/run/side/frame-03.webp",
+      "game": null,
+      "page": 0,
+      "x": 1562,
+      "y": 1426,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/run/side/frame-04.webp",
+      "game": null,
+      "page": 0,
+      "x": 1822,
+      "y": 1426,
+      "w": 256,
+      "h": 128
+    },
+    {
+      "id": "wound-hound/run/side/frame-05.webp",
+      "game": null,
+      "page": 0,
+      "x": 2082,
+      "y": 1426,
+      "w": 256,
+      "h": 128
+    }
+  ]
+}

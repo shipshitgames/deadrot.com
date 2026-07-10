@@ -1,5 +1,4 @@
-import { spawn } from "node:child_process";
-import { cp, mkdir, rm } from "node:fs/promises";
+import { cp, mkdir, rm, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -13,25 +12,20 @@ const PUBLIC_GAME_BUILDS = [
   },
 ];
 
-function run(command, args, options) {
-  return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { stdio: "inherit", ...options });
-    child.on("error", reject);
-    child.on("exit", (code) => {
-      if (code === 0) {
-        resolve();
-        return;
-      }
-      reject(new Error(`${command} ${args.join(" ")} exited with code ${code}`));
-    });
-  });
-}
-
 for (const game of PUBLIC_GAME_BUILDS) {
-  await run("bun", ["run", "build"], { cwd: game.sourceRoot });
-
   const outputRoot = path.join(game.sourceRoot, "dist");
   const publicRoot = path.join(WEB_ROOT, "public", game.slug);
+  const entryPoint = path.join(outputRoot, "index.html");
+  const [outputStat, entryStat] = await Promise.all([
+    stat(outputRoot).catch(() => null),
+    stat(entryPoint).catch(() => null),
+  ]);
+
+  if (!outputStat?.isDirectory() || !entryStat?.isFile()) {
+    throw new Error(
+      `Missing completed build output for ${game.slug} at ${outputRoot}. Run the root build so Turbo builds game dependencies before web.`,
+    );
+  }
 
   await rm(publicRoot, { recursive: true, force: true });
   await mkdir(path.dirname(publicRoot), { recursive: true });

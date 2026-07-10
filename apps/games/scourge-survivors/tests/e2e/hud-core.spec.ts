@@ -32,14 +32,14 @@ async function snapshot(page: Page): Promise<HudSnapshot> {
 async function bootPlaying(page: Page) {
   await page.goto("/?sandbox=1");
   await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     type DevGame = {
       startSandbox: () => void;
       ctx: { status: string; health: number };
       sys: { hud: { emit: () => void } };
     };
     const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
-    game.startSandbox();
+    await game.startSandbox();
     game.ctx.status = "playing";
     game.sys.hud.emit();
   });

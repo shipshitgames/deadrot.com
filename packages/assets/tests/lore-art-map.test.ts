@@ -153,6 +153,49 @@ test("buildLoreArtMap counts direct package assets without catalog coverage", ()
   assert.equal(scourge?.runtime.existing, 0);
 });
 
+test("buildLoreArtMap resolves aliases and leaves planned placeholders pathless", () => {
+  const report = buildLoreArtMap({
+    characters: [
+      { slug: "duelist", name: "Duelist", appearsIn: ["brawl"], spriteBase: "portrait-duelist" },
+      { slug: "spitter", name: "Spitter", appearsIn: ["rothulk"], spriteBase: "portrait-spitter" },
+    ],
+    bestiary: [],
+    catalog: {
+      entities: [
+        {
+          id: "pyre-duelist",
+          name: "Duelist",
+          games: ["pactfall", "brawl"],
+          variants: {
+            pactfall: "entities/pyre-duelist/pactfall.webp",
+            brawl: { type: "alias", sourceGame: "pactfall" },
+          },
+        },
+        {
+          id: "scourge-spitter",
+          name: "Spitter",
+          games: ["rothulk"],
+          variants: {
+            rothulk: { type: "placeholder", note: "Render is planned." },
+          },
+        },
+      ],
+    },
+    assetIndex: { assets: [{ path: "entities/pyre-duelist/pactfall.webp" }] },
+    gameManifests: {},
+    assetPaths: [],
+    notePaths: new Map(),
+    manualStatusMarkdown: "",
+  });
+
+  const duelist = report.entries.find((entry) => entry.slug === "duelist");
+  const spitter = report.entries.find((entry) => entry.slug === "spitter");
+  assert.equal(duelist?.catalog.variants[0]?.path, "entities/pyre-duelist/pactfall.webp");
+  assert.equal(duelist?.catalog.existing, 1);
+  assert.equal(spitter?.catalog.variants[0]?.path, null);
+  assert.equal(spitter?.catalog.existing, 0);
+});
+
 test("renderLoreArtMapMarkdown includes coverage and weak-entry sections", () => {
   const markdown = renderLoreArtMapMarkdown({
     summary: {

@@ -9,16 +9,18 @@ import {
   type RuntimeWeaponRef,
   SCOURGE_SURVIVORS_ANIMATION_MANIFEST,
   SCOURGE_SURVIVORS_ASSET_MANIFEST,
+  type ScourgeSurvivorsAnimationFrameSource,
   type ScourgeSurvivorsAnimationManifest,
   type ScourgeSurvivorsAssetManifest,
   type SpriteEntry,
   type SpriteFilter,
   type SpriteView,
   type SpriteViewEntry,
-  scourgeSurvivorsAnimationFrameUrl,
-  scourgeSurvivorsAssetUrl,
+  scourgeSurvivorsAnimationFrameSource,
   scourgeSurvivorsAudioEntry,
   scourgeSurvivorsAudioUrl,
+  scourgeSurvivorsBootSpriteUrl,
+  scourgeSurvivorsLoadAssetUrl,
   scourgeSurvivorsSpriteEntry,
   scourgeSurvivorsSpriteScale,
   scourgeSurvivorsSpriteUrl,
@@ -31,6 +33,7 @@ import {
   type Vec3,
 } from "@shipshitgames/assets/scourge-survivors";
 import * as THREE from "three";
+import { ASSETS, type AssetId } from "../assets.generated";
 
 export type {
   AnimationActionEntry,
@@ -41,6 +44,7 @@ export type {
   RuntimeSpriteRef,
   RuntimeUiRef,
   RuntimeWeaponRef,
+  ScourgeSurvivorsAnimationFrameSource as AnimationFrameSource,
   ScourgeSurvivorsAnimationManifest as AnimationManifest,
   ScourgeSurvivorsAssetManifest as AssetManifest,
   SpriteEntry,
@@ -56,6 +60,31 @@ export type {
 export const ASSET_MANIFEST = SCOURGE_SURVIVORS_ASSET_MANIFEST;
 export const ANIMATION_MANIFEST = SCOURGE_SURVIVORS_ANIMATION_MANIFEST;
 
+const GENERATED_ASSET_ID_BY_PATH = new Map<string, AssetId>(
+  (Object.keys(ASSETS) as AssetId[]).map((id) => [ASSETS[id].path, id]),
+);
+
+/**
+ * Keep runtime manifest paths honest against assetgen's generated, typed index.
+ * Metadata remains synchronous; URL materialization is the only async boundary.
+ */
+function generatedAssetId(path: string): AssetId {
+  const id = GENERATED_ASSET_ID_BY_PATH.get(path);
+  if (!id) throw new Error(`Scourge Survivors asset is missing from generated index: ${path}`);
+  return id;
+}
+
+function spritePath(id: string, view?: SpriteView): string {
+  const entry = scourgeSurvivorsSpriteEntry(id);
+  if (view) {
+    const viewEntry = entry.views?.[view];
+    if (!viewEntry) throw new Error(`Scourge Survivors sprite asset ${id} has no ${view} view`);
+    return viewEntry.path;
+  }
+  if (!entry.path) throw new Error(`Scourge Survivors sprite asset ${id} has no direct path`);
+  return entry.path;
+}
+
 type RuntimeDomain = keyof ScourgeSurvivorsAssetManifest["runtime"];
 type RuntimeSpriteDomain = Exclude<RuntimeDomain, "ui" | "enemies" | "weapons">;
 
@@ -65,8 +94,9 @@ export class AssetCatalog {
     readonly animations: ScourgeSurvivorsAnimationManifest = SCOURGE_SURVIVORS_ANIMATION_MANIFEST,
   ) {}
 
-  assetUrl(path: string): string {
-    return scourgeSurvivorsAssetUrl(path);
+  assetUrl(path: string): Promise<string> {
+    generatedAssetId(path);
+    return scourgeSurvivorsLoadAssetUrl(path);
   }
 
   spriteEntry(id: string): SpriteEntry {
@@ -90,15 +120,31 @@ export class AssetCatalog {
   }
 
   uiUrl(id: string): string {
+    generatedAssetId(this.uiEntry(id).path);
     return scourgeSurvivorsUiUrl(id);
   }
 
-  spriteUrl(id: string, view?: SpriteView): string {
+  bootSpriteUrl(id: string, view: SpriteView): string {
+    generatedAssetId(spritePath(id, view));
+    return scourgeSurvivorsBootSpriteUrl(id, view);
+  }
+
+  spriteUrl(id: string, view?: SpriteView): Promise<string> {
+    generatedAssetId(spritePath(id, view));
     return scourgeSurvivorsSpriteUrl(id, view);
   }
 
-  animationFrameUrl(entity: string, action: string, view: SpriteView, frame: number): string {
-    return scourgeSurvivorsAnimationFrameUrl(entity, action, view, frame);
+  animationFrameSource(
+    entity: string,
+    action: string,
+    view: SpriteView,
+    frame: number,
+  ): Promise<ScourgeSurvivorsAnimationFrameSource> {
+    return scourgeSurvivorsAnimationFrameSource(entity, action, view, frame);
+  }
+
+  async animationFrameUrl(entity: string, action: string, view: SpriteView, frame: number): Promise<string> {
+    return (await this.animationFrameSource(entity, action, view, frame)).url;
   }
 
   spriteScale(id: string, view?: SpriteView): Vec2 {
@@ -157,7 +203,7 @@ export class AssetCatalog {
 
 export const ASSET_CATALOG = new AssetCatalog();
 
-export function assetUrl(path: string): string {
+export function assetUrl(path: string): Promise<string> {
   return ASSET_CATALOG.assetUrl(path);
 }
 
@@ -185,11 +231,24 @@ export function uiUrl(id: string): string {
   return ASSET_CATALOG.uiUrl(id);
 }
 
-export function spriteUrl(id: string, view?: SpriteView): string {
+export function bootSpriteUrl(id: string, view: SpriteView): string {
+  return ASSET_CATALOG.bootSpriteUrl(id, view);
+}
+
+export function spriteUrl(id: string, view?: SpriteView): Promise<string> {
   return ASSET_CATALOG.spriteUrl(id, view);
 }
 
-export function animationFrameUrl(entity: string, action: string, view: SpriteView, frame: number): string {
+export function animationFrameSource(
+  entity: string,
+  action: string,
+  view: SpriteView,
+  frame: number,
+): Promise<ScourgeSurvivorsAnimationFrameSource> {
+  return ASSET_CATALOG.animationFrameSource(entity, action, view, frame);
+}
+
+export function animationFrameUrl(entity: string, action: string, view: SpriteView, frame: number): Promise<string> {
   return ASSET_CATALOG.animationFrameUrl(entity, action, view, frame);
 }
 
@@ -197,22 +256,39 @@ export function spriteScale(id: string, view?: SpriteView): Vec2 {
   return ASSET_CATALOG.spriteScale(id, view);
 }
 
-export function loadSpriteTexture(id: string, view?: SpriteView): THREE.Texture {
-  const entry = spriteEntry(id);
-  const texture = new THREE.TextureLoader().load(spriteUrl(id, view));
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.minFilter = entry.filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
-  texture.magFilter = entry.filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
-  texture.generateMipmaps = entry.filter !== "nearest";
-  texture.premultiplyAlpha = false;
-  return texture;
+const TEXTURE_PROMISES = new Map<string, Promise<THREE.Texture>>();
+
+function cachedTexture(key: string, load: () => Promise<THREE.Texture>): Promise<THREE.Texture> {
+  const cached = TEXTURE_PROMISES.get(key);
+  if (cached) return cached;
+  const promise = load().catch((error) => {
+    TEXTURE_PROMISES.delete(key);
+    throw error;
+  });
+  TEXTURE_PROMISES.set(key, promise);
+  return promise;
 }
 
-export function loadTexture(id: string): THREE.Texture {
+export function loadSpriteTexture(id: string, view?: SpriteView): Promise<THREE.Texture> {
+  const entry = spriteEntry(id);
+  return cachedTexture(`sprite:${id}:${view ?? "direct"}`, async () => {
+    const texture = await new THREE.TextureLoader().loadAsync(await spriteUrl(id, view));
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.minFilter = entry.filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
+    texture.magFilter = entry.filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
+    texture.generateMipmaps = entry.filter !== "nearest";
+    texture.premultiplyAlpha = false;
+    return texture;
+  });
+}
+
+export function loadTexture(id: string): Promise<THREE.Texture> {
   const entry = textureEntry(id);
-  const texture = new THREE.TextureLoader().load(assetUrl(entry.path));
-  texture.colorSpace = entry.colorSpace === "srgb" ? THREE.SRGBColorSpace : THREE.NoColorSpace;
-  texture.minFilter = THREE.LinearMipmapLinearFilter;
-  texture.magFilter = THREE.LinearFilter;
-  return texture;
+  return cachedTexture(`texture:${id}`, async () => {
+    const texture = await new THREE.TextureLoader().loadAsync(await assetUrl(entry.path));
+    texture.colorSpace = entry.colorSpace === "srgb" ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    return texture;
+  });
 }

@@ -77,9 +77,9 @@ async function boot(page: Page) {
 }
 
 async function startStructuredRun(page: Page) {
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
-    game.startSurvivors("ranger");
+    await game.startSurvivors("ranger");
     // Bypass the pointer-lock gate so the rAF loop actually ticks gameplay.
     game.ctx.status = "playing";
     game.sys.hud.emit();

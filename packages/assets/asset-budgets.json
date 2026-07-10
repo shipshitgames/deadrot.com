@@ -37,7 +37,13 @@
       "category": "small-arcade"
     },
     "scourge-survivors": {
-      "category": "3d-arena"
+      "category": "3d-arena",
+      "maxBootResourceRequests": 36,
+      "maxBootWebpRequests": 22,
+      "maxBootDecodedBodyBytes": 2621440,
+      "maxCombatResourceRequests": 170,
+      "maxCombatWebpRequests": 80,
+      "maxCombatDecodedBodyBytes": 18874368
     },
     "starblight": {
       "category": "small-arcade"
