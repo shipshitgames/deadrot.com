@@ -1,6 +1,15 @@
 # @shipshitgames/ui
 
-Shared Ship Shit Games UI system.
+Deadrot's private, workspace-only UI system. The existing package name is kept
+to preserve consumer imports, but this package is not an npm publishing
+boundary: it depends on the private `@deadrot/catalog` roster and intentionally
+contains Deadrot-specific menu copy, lobby navigation, settings, and music
+runtime behavior.
+
+All current consumers live in this monorepo and must depend on it with
+`"@shipshitgames/ui": "workspace:*"`. Reusable org-level UI can be extracted
+only when a concrete non-Deadrot consumer establishes that contract; do not
+publish this package as-is.
 
 The cross-game contract is CSS first:
 
@@ -28,6 +37,19 @@ React games can additionally import wrappers:
 
 ```tsx
 import { Button, Card, UpgradeCard } from "@shipshitgames/ui";
+```
+
+The root export is the supported workspace API. It includes the generic-looking
+primitives as well as Deadrot adapters such as `gameMenuConfig`, lobby helpers,
+global game settings, and `MusicDirector`. `styles.css` is the only supported
+subpath export.
+
+## Verification
+
+```sh
+bun run --cwd packages/ui test
+bun run --cwd packages/ui typecheck
+bun run --cwd packages/ui build
 ```
 
 ## Style

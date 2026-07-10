@@ -62,6 +62,7 @@ export class MusicDirector {
   private orderPos = 0;
   private intensity = 0;
   private unsubscribe: (() => void) | null = null;
+  private readonly fadeTimeouts = new Set<number>();
   private readonly baseGain: number;
 
   constructor(opts?: { baseGain?: number }) {
@@ -112,9 +113,12 @@ export class MusicDirector {
   dispose(): void {
     this.unsubscribe?.();
     this.unsubscribe = null;
+    for (const timeout of this.fadeTimeouts) window.clearTimeout(timeout);
+    this.fadeTimeouts.clear();
     for (const voice of this.voices) {
       if (!voice) continue;
       voice.el.pause();
+      voice.el.onended = null;
       voice.el.src = "";
       try {
         voice.src.disconnect();
@@ -225,6 +229,12 @@ export class MusicDirector {
     g.setValueAtTime(g.value, now);
     if (ms <= 0) g.setValueAtTime(to, now);
     else g.linearRampToValueAtTime(to, now + ms / 1000);
-    if (onDone) window.setTimeout(onDone, ms + 30);
+    if (onDone) {
+      const timeout = window.setTimeout(() => {
+        this.fadeTimeouts.delete(timeout);
+        onDone();
+      }, ms + 30);
+      this.fadeTimeouts.add(timeout);
+    }
   }
 }
