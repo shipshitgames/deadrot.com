@@ -1,7 +1,4 @@
-import pyreDuelistUrl from "@shipshitgames/assets/entities/pyre-duelist/pactfall.webp";
-import scourgeEliteUrl from "@shipshitgames/assets/entities/scourge-elite/pactfall.webp";
-import trucebreakerUrl from "@shipshitgames/assets/entities/trucebreaker/pactfall.webp";
-import wardenBastionUrl from "@shipshitgames/assets/entities/warden-bastion/pactfall.webp";
+import { brawlFighterAssetUrl } from "@shipshitgames/assets/brawl";
 
 export type FighterId = "pyre-duelist" | "warden-bastion" | "scourge-render" | "trucebreaker";
 
@@ -29,7 +26,7 @@ export const FIGHTERS: readonly FighterSpec[] = [
     name: "Pyre Duelist",
     faction: "Pyre",
     role: "fast pressure",
-    spriteUrl: pyreDuelistUrl,
+    spriteUrl: brawlFighterAssetUrl("pyre-duelist"),
     tint: "#ff7a1a",
     maxHealth: 105,
     speed: 7.2,
@@ -44,7 +41,7 @@ export const FIGHTERS: readonly FighterSpec[] = [
     name: "Warden Bastion",
     faction: "Wardens",
     role: "guard bruiser",
-    spriteUrl: wardenBastionUrl,
+    spriteUrl: brawlFighterAssetUrl("warden-bastion"),
     tint: "#d8d2c4",
     maxHealth: 130,
     speed: 5.4,
@@ -59,7 +56,7 @@ export const FIGHTERS: readonly FighterSpec[] = [
     name: "Render",
     faction: "Scourge",
     role: "feral striker",
-    spriteUrl: scourgeEliteUrl,
+    spriteUrl: brawlFighterAssetUrl("scourge-render"),
     tint: "#9fe22e",
     maxHealth: 115,
     speed: 6.5,
@@ -74,7 +71,7 @@ export const FIGHTERS: readonly FighterSpec[] = [
     name: "Trucebreaker",
     faction: "Scourge",
     role: "heavy boss",
-    spriteUrl: trucebreakerUrl,
+    spriteUrl: brawlFighterAssetUrl("trucebreaker"),
     tint: "#d03428",
     maxHealth: 150,
     speed: 4.7,

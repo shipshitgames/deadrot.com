@@ -3,21 +3,21 @@
  * for the Scourge universe.
  *
  * ENTITY sprites are PER-GAME renders of shared canon (companion to issue #6):
- * the catalog records one canonical entity, then a per-game variant path (or
- * `null` when a game does not yet render it). Truly game-agnostic assets (FX,
- * UI, fonts, audio) live in the `shared` section and are used identically by
- * every game.
+ * the catalog records one canonical entity, then a per-game variant record.
+ * Truly game-agnostic assets (FX, UI, fonts, audio) live in the `shared`
+ * section and are used identically by every game.
  */
 
 import type { PlayableGameSlug } from "@deadrot/catalog";
 import { PLAYABLE_GAME_SLUGS } from "@deadrot/catalog";
 import catalogJson from "../assets-catalog.json" with { type: "json" };
 
-/** The six games in the shared Scourge universe. */
+/** Every playable game in the shared Scourge universe. */
 export type GameSlug = PlayableGameSlug;
 
 /** Ordered list of every game slug, for iteration/validation. */
 export const GAME_SLUGS: readonly GameSlug[] = PLAYABLE_GAME_SLUGS;
+const GAME_SLUG_SET = new Set<string>(GAME_SLUGS);
 
 /** What an asset represents. */
 export type AssetKind = "entity" | "boss" | "fx" | "ui" | "font" | "audio";
@@ -33,10 +33,24 @@ export type HostFamily = "rot-flesh" | "chitin" | "mycelial" | "machine-graft" |
 
 /**
  * Per-game variant paths for a canonical entity. Each game slug maps to the
- * relative path of that game's render, or `null` when the game has no render
- * for the entity yet.
+ * relative path of that game's render, an explicit alias, a planned placeholder,
+ * or `null` when the entity is not intended for that game.
  */
-export type AssetVariants = Record<GameSlug, string | null>;
+export type AssetVariant = string | AssetVariantAlias | AssetVariantPlaceholder | null;
+
+/** An explicit reuse of the same entity's render from another playable game. */
+export interface AssetVariantAlias {
+  type: "alias";
+  sourceGame: GameSlug;
+}
+
+/** An intended render whose visual asset has not been produced yet. */
+export interface AssetVariantPlaceholder {
+  type: "placeholder";
+  note: string;
+}
+
+export type AssetVariants = Record<GameSlug, AssetVariant>;
 
 /**
  * A canonical universe entity (enemy, boss, ...). The render is per-game:
@@ -62,7 +76,7 @@ export interface EntityAsset {
   promptBase: string;
   /**
    * The games this entity is intended to render in — the variant-matrix row.
-   * `variants[game]` may be non-null only for a `game` listed here.
+   * A non-null `variants[game]` exists exactly when `game` is listed here.
    */
   games: GameSlug[];
   /** Per-game render paths, relative to this package. */
@@ -114,8 +128,88 @@ export interface AssetCatalog {
   shared: SharedAsset[];
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isGameSlug(value: unknown): value is GameSlug {
+  return typeof value === "string" && GAME_SLUG_SET.has(value);
+}
+
+export function isAssetVariantAlias(variant: AssetVariant): variant is AssetVariantAlias {
+  return typeof variant === "object" && variant !== null && variant.type === "alias";
+}
+
+export function isAssetVariantPlaceholder(variant: AssetVariant): variant is AssetVariantPlaceholder {
+  return typeof variant === "object" && variant !== null && variant.type === "placeholder";
+}
+
+function isAssetVariant(value: unknown): value is AssetVariant {
+  if (value === null || typeof value === "string") return true;
+  if (!isRecord(value)) return false;
+  if (value.type === "alias") return isGameSlug(value.sourceGame);
+  return value.type === "placeholder" && typeof value.note === "string" && value.note.length > 0;
+}
+
+/** Fail at package load when the checked-in JSON drifts from the catalog contract. */
+function assertCatalog(value: unknown): asserts value is AssetCatalog {
+  if (
+    !isRecord(value) ||
+    !Array.isArray(value.entities) ||
+    !Array.isArray(value.shared) ||
+    typeof value.version !== "string"
+  ) {
+    throw new Error("Invalid asset catalog root.");
+  }
+
+  for (const entity of value.entities) {
+    if (
+      !isRecord(entity) ||
+      typeof entity.id !== "string" ||
+      !Array.isArray(entity.games) ||
+      !isRecord(entity.variants)
+    ) {
+      throw new Error("Invalid asset catalog entity.");
+    }
+    if (!entity.games.every(isGameSlug)) throw new Error(`Invalid game intent for catalog entity: ${entity.id}`);
+
+    const variantKeys = Object.keys(entity.variants);
+    if (variantKeys.length !== GAME_SLUGS.length || !GAME_SLUGS.every((game) => variantKeys.includes(game))) {
+      throw new Error(`Incomplete variant record for catalog entity: ${entity.id}`);
+    }
+    for (const game of GAME_SLUGS) {
+      if (!isAssetVariant(entity.variants[game])) {
+        throw new Error(`Invalid ${game} variant for catalog entity: ${entity.id}`);
+      }
+    }
+  }
+}
+
+assertCatalog(catalogJson);
+
 /** The canon asset catalog, loaded from `assets-catalog.json`. */
-export const catalog: AssetCatalog = catalogJson as unknown as AssetCatalog;
+export const catalog: AssetCatalog = catalogJson;
+
+/** Resolve an entity's local or aliased variant path; placeholders resolve to `null`. */
+export function resolveEntityVariantPath(entity: EntityAsset, game: GameSlug): string | null {
+  let currentGame = game;
+  const visited = new Set<GameSlug>();
+
+  while (true) {
+    if (visited.has(currentGame)) {
+      throw new Error(`Circular variant alias for catalog entity: ${entity.id}`);
+    }
+    visited.add(currentGame);
+
+    const variant = entity.variants[currentGame];
+    if (typeof variant === "string") return variant;
+    if (isAssetVariantAlias(variant)) {
+      currentGame = variant.sourceGame;
+      continue;
+    }
+    return null;
+  }
+}
 
 /**
  * Resolve an asset by id.
@@ -130,7 +224,7 @@ export const catalog: AssetCatalog = catalogJson as unknown as AssetCatalog;
 export function getAsset(catalog: AssetCatalog, id: string, game?: GameSlug): Asset | undefined {
   const entity = catalog.entities.find((e) => e.id === id);
   if (entity) {
-    const path = game ? (entity.variants[game] ?? null) : null;
+    const path = game ? resolveEntityVariantPath(entity, game) : null;
     return {
       id: entity.id,
       kind: entity.kind,
@@ -159,7 +253,7 @@ export interface MatrixCell {
   game: GameSlug;
   /** This game is in the entity's `games` (the matrix intends a render here). */
   intended: boolean;
-  /** A render exists for this game (its `variants` path is non-null). */
+  /** A local or aliased render exists for this game. */
   rendered: boolean;
   /** The render path, or `null` when not yet rendered. */
   path: string | null;
@@ -180,7 +274,7 @@ export function gamesFor(catalog: AssetCatalog, id: string): GameSlug[] {
 
 /** The games for which an entity has an actual render (non-null variant path). */
 export function renderedGames(entity: EntityAsset): GameSlug[] {
-  return GAME_SLUGS.filter((g) => (entity.variants[g] ?? null) !== null);
+  return GAME_SLUGS.filter((g) => resolveEntityVariantPath(entity, g) !== null);
 }
 
 /**
@@ -188,7 +282,7 @@ export function renderedGames(entity: EntityAsset): GameSlug[] {
  * work the matrix generator still has to do for that entity.
  */
 export function pendingGames(entity: EntityAsset): GameSlug[] {
-  return entity.games.filter((g) => (entity.variants[g] ?? null) === null);
+  return entity.games.filter((g) => resolveEntityVariantPath(entity, g) === null);
 }
 
 /**
@@ -201,7 +295,7 @@ export function matrixRows(catalog: AssetCatalog): MatrixRow[] {
     name: e.name,
     faction: e.faction,
     cells: GAME_SLUGS.map((game) => {
-      const path = e.variants[game] ?? null;
+      const path = resolveEntityVariantPath(e, game);
       return {
         game,
         intended: e.games.includes(game),

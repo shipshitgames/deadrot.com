@@ -8,3 +8,8 @@ interface ImportMeta {
     },
   ): Record<string, T>;
 }
+
+declare module "*.webp" {
+  const url: string;
+  export default url;
+}

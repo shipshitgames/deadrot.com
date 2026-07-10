@@ -19,6 +19,10 @@
       "types": "./src/scourge-survivors.ts",
       "default": "./src/scourge-survivors.ts"
     },
+    "./brawl": {
+      "types": "./src/brawl.ts",
+      "default": "./src/brawl.ts"
+    },
     "./lore": {
       "types": "./src/lore.ts",
       "default": "./src/lore.ts"
