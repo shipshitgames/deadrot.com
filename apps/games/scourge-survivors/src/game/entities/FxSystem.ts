@@ -48,6 +48,11 @@ export class FxSystem {
   pops: Pop[] = [];
   corpseParts: CorpsePart[] = [];
   deathSprites: DeathSprite[] = [];
+  /** Monotonic count of lethal-headshot kill beats. Test/debug seam — never reset
+   *  (clearTransientFx drains the meshes, not this). */
+  headshotKillSeq = 0;
+  /** Scalar snapshot of the last headshot-kill beat. No Enemy/Object3D refs. */
+  lastHeadshotKill: { x: number; z: number; scale: number; boss: boolean; at: number } | null = null;
   private berserkParticleTimer = 0;
 
   constructor(
@@ -216,6 +221,86 @@ export class FxSystem {
         growth: opts.elite ? 2.4 : 1.35,
         floor: true,
       });
+    }
+  }
+
+  /** Lethal-headshot kill beat: white skull-pop core + expanding crimson shell +
+   *  vertical bone/blood fountain at head height, layered on the normal death FX.
+   *  World-space only (no full-screen flash — photosensitivity) and fire-and-forget
+   *  on cloned scalars: never holds an Enemy (pooled) and never reads pos.y (the
+   *  group is parked at y=-100 by kill() before this runs — Y derives from scale,
+   *  matching every other death FX in this file). Camera juice is suppressed for
+   *  bosses so their bigger death beat (0.45 shake / 0.06 hitstop) stays authoritative. */
+  spawnHeadshotKillFx(pos: THREE.Vector3, opts: { scale?: number; boss?: boolean } = {}) {
+    const scale = Math.max(0.8, opts.scale ?? 1);
+    this.headshotKillSeq++;
+    this.lastHeadshotKill = { x: pos.x, z: pos.z, scale, boss: !!opts.boss, at: this.ctx.time };
+    const headY = 1.75 * scale; // same head origin as the existing headshot particle burst (spawnEnemyDeath)
+
+    // 1) White-hot core flash — the instantaneous "skull-pop" read.
+    const core = new THREE.Mesh(
+      new THREE.SphereGeometry(0.16 * scale, 10, 8),
+      new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.9,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      }),
+    );
+    core.position.set(pos.x, headY, pos.z);
+    this.ctx.scene.add(core);
+    this.pops.push({ mesh: core, age: 0, ttl: 0.12, baseScale: 0.5, growth: 2.2 });
+
+    // 2) Expanding crimson shell — clean contour that reads from any camera angle.
+    const shell = new THREE.Mesh(
+      new THREE.SphereGeometry(0.24 * scale, 12, 8),
+      new THREE.MeshBasicMaterial({
+        color: 0xff2d55,
+        transparent: true,
+        opacity: 0.9,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      }),
+    );
+    shell.position.set(pos.x, headY, pos.z);
+    this.ctx.scene.add(shell);
+    this.pops.push({ mesh: shell, age: 0, ttl: 0.22, baseScale: 0.6, growth: 3.2 });
+
+    // 3) Vertical bone/blood fountain off the head — the tall geyser is what
+    //    distinguishes a head kill from a body kill at FPS combat distance.
+    for (let i = 0; i < 6; i++) {
+      const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(0.05 + Math.random() * 0.04, 6, 4),
+        new THREE.MeshBasicMaterial({
+          color: i % 3 === 0 ? 0xe9e3d6 : i % 2 === 0 ? 0xff415f : 0xb11226, // bone / bright blood / deep blood
+          transparent: true,
+          opacity: 0.9,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        }),
+      );
+      mesh.position.set(
+        pos.x + (Math.random() * 2 - 1) * 0.15 * scale,
+        headY,
+        pos.z + (Math.random() * 2 - 1) * 0.15 * scale,
+      );
+      const a = Math.random() * Math.PI * 2;
+      const lateral = 0.6 + Math.random() * 0.9;
+      this.ctx.scene.add(mesh);
+      this.pops.push({
+        mesh,
+        age: 0,
+        ttl: 0.28 + Math.random() * 0.12,
+        vel: new THREE.Vector3(Math.cos(a) * lateral, 4.5 + Math.random() * 3.0, Math.sin(a) * lateral),
+        baseScale: 0.7,
+        growth: 0.5,
+      });
+    }
+
+    if (!opts.boss) {
+      this.addShake(0.12); // sums with hitscan's existing 0.2 → 0.32, well under the 1.0 clamp
+      this.hitstop(0.05); // hitstop() takes MAX not sum
     }
   }
 
