@@ -38,3 +38,11 @@ when a game gains a real asset pack, not just because a file happened to grow:
 Category defaults keep small arcade games tight while allowing larger 3D arena
 and hub/meta packs. Per-game overrides may be added when a shipped game has a
 specific release contract.
+
+Scourge Survivors also has a production-browser gate for request counts and
+decoded response bodies. Chromium can report an `HTMLMediaElement` resource as
+zero bytes, a buffered range, or the whole media file depending on playback
+timing. The gate therefore keeps `audio` and `video` initiators in request
+counts and raw diagnostics, allowlists the expected track paths, and applies
+the decoded-body ceiling to deterministic non-media resources. The package
+gate above still enforces the shipped per-file ceiling for those tracks.

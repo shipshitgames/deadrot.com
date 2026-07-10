@@ -12,6 +12,7 @@ type BrowserBudget = {
 
 type BrowserResource = {
   pathname: string;
+  initiatorType: string;
   transferSize: number;
   encodedBodySize: number;
   decodedBodySize: number;
@@ -20,9 +21,12 @@ type BrowserResource = {
 type ResourceSnapshot = {
   entries: BrowserResource[];
   webpEntries: BrowserResource[];
+  streamingMediaEntries: BrowserResource[];
   transferBytes: number;
   encodedBodyBytes: number;
   decodedBodyBytes: number;
+  budgetedDecodedBodyBytes: number;
+  streamingMediaDecodedBodyBytes: number;
   webpTransferBytes: number;
   webpEncodedBodyBytes: number;
   webpDecodedBodyBytes: number;
@@ -31,6 +35,9 @@ type ResourceSnapshot = {
 const budget = assetBudgets.games["scourge-survivors"] as BrowserBudget;
 const RESOURCE_QUIET_MS = 2_000;
 const RESOURCE_SETTLE_TIMEOUT_MS = 45_000;
+
+const ALLOWED_BOOT_STREAMING_MEDIA_BASENAMES = [/^ash-reactor-[^.]+\.webm$/];
+const ALLOWED_COMBAT_STREAMING_MEDIA_BASENAMES = [/^ash-reactor-[^.]+\.webm$/, /^blood-circuit-ascension-[^.]+\.webm$/];
 
 // Vite retains each source basename before its content hash. None of these
 // combat-only payload families belongs on the title splash.
@@ -63,51 +70,64 @@ async function settleResourceTimings(page: Page): Promise<void> {
 }
 
 async function resourceSnapshot(page: Page): Promise<ResourceSnapshot> {
-  return page.evaluate(() => {
-    const entries = (performance.getEntriesByType("resource") as PerformanceResourceTiming[])
+  const entries = await page.evaluate(() =>
+    (performance.getEntriesByType("resource") as PerformanceResourceTiming[])
       .filter((entry) => new URL(entry.name).origin === window.location.origin)
       .map((entry) => ({
         pathname: new URL(entry.name).pathname,
+        initiatorType: entry.initiatorType,
         transferSize: entry.transferSize,
         encodedBodySize: entry.encodedBodySize,
         decodedBodySize: entry.decodedBodySize,
-      }));
-    const webpEntries = entries.filter((entry) => entry.pathname.endsWith(".webp"));
-    const sum = (resources: typeof entries, field: "transferSize" | "encodedBodySize" | "decodedBodySize") =>
-      resources.reduce((total, entry) => total + entry[field], 0);
+      })),
+  );
 
-    return {
-      entries,
-      webpEntries,
-      transferBytes: sum(entries, "transferSize"),
-      encodedBodyBytes: sum(entries, "encodedBodySize"),
-      decodedBodyBytes: sum(entries, "decodedBodySize"),
-      webpTransferBytes: sum(webpEntries, "transferSize"),
-      webpEncodedBodyBytes: sum(webpEntries, "encodedBodySize"),
-      webpDecodedBodyBytes: sum(webpEntries, "decodedBodySize"),
-    };
-  });
+  return buildResourceSnapshot(entries);
 }
 
 function basename(pathname: string): string {
   return decodeURIComponent(pathname.split("/").at(-1) ?? pathname);
 }
 
-function resourceDelta(before: ResourceSnapshot, after: ResourceSnapshot): ResourceSnapshot {
-  const entries = after.entries.slice(before.entries.length);
+function isStreamingMedia(entry: BrowserResource): boolean {
+  return entry.initiatorType === "audio" || entry.initiatorType === "video";
+}
+
+function buildResourceSnapshot(entries: BrowserResource[]): ResourceSnapshot {
   const webpEntries = entries.filter((entry) => entry.pathname.endsWith(".webp"));
+  const streamingMediaEntries = entries.filter(isStreamingMedia);
+  const budgetedEntries = entries.filter((entry) => !isStreamingMedia(entry));
   const sum = (resources: BrowserResource[], field: "transferSize" | "encodedBodySize" | "decodedBodySize") =>
     resources.reduce((total, entry) => total + entry[field], 0);
+
   return {
     entries,
     webpEntries,
+    streamingMediaEntries,
     transferBytes: sum(entries, "transferSize"),
     encodedBodyBytes: sum(entries, "encodedBodySize"),
     decodedBodyBytes: sum(entries, "decodedBodySize"),
+    // Chromium reports an HTMLMediaElement's decodedBodySize as zero, the
+    // current range, or the entire media file depending on playback timing.
+    // Keep those requests in every count and in the raw diagnostics, but apply
+    // the body ceiling to deterministic resources. assets:check independently
+    // enforces the shipped file-size ceiling for the explicitly allowed tracks.
+    budgetedDecodedBodyBytes: sum(budgetedEntries, "decodedBodySize"),
+    streamingMediaDecodedBodyBytes: sum(streamingMediaEntries, "decodedBodySize"),
     webpTransferBytes: sum(webpEntries, "transferSize"),
     webpEncodedBodyBytes: sum(webpEntries, "encodedBodySize"),
     webpDecodedBodyBytes: sum(webpEntries, "decodedBodySize"),
   };
+}
+
+function resourceDelta(before: ResourceSnapshot, after: ResourceSnapshot): ResourceSnapshot {
+  return buildResourceSnapshot(after.entries.slice(before.entries.length));
+}
+
+function unexpectedStreamingMedia(snapshot: ResourceSnapshot, allowedBasenames: RegExp[]): string[] {
+  return snapshot.streamingMediaEntries
+    .map((entry) => basename(entry.pathname))
+    .filter((name) => !allowedBasenames.some((pattern) => pattern.test(name)));
 }
 
 function logSnapshot(phase: string, snapshot: ResourceSnapshot): void {
@@ -118,6 +138,9 @@ function logSnapshot(phase: string, snapshot: ResourceSnapshot): void {
       transferBytes: snapshot.transferBytes,
       encodedBodyBytes: snapshot.encodedBodyBytes,
       decodedBodyBytes: snapshot.decodedBodyBytes,
+      budgetedDecodedBodyBytes: snapshot.budgetedDecodedBodyBytes,
+      streamingMediaRequests: snapshot.streamingMediaEntries.length,
+      streamingMediaDecodedBodyBytes: snapshot.streamingMediaDecodedBodyBytes,
       webpRequests: snapshot.webpEntries.length,
       webpTransferBytes: snapshot.webpTransferBytes,
       webpEncodedBodyBytes: snapshot.webpEncodedBodyBytes,
@@ -125,6 +148,47 @@ function logSnapshot(phase: string, snapshot: ResourceSnapshot): void {
     }),
   );
 }
+
+test("HTML media buffering stays diagnostic without excluding fetched audio", () => {
+  const deterministicEntries: BrowserResource[] = [
+    {
+      pathname: "/assets/app.js",
+      initiatorType: "script",
+      transferSize: 1_000,
+      encodedBodySize: 1_000,
+      decodedBodySize: 2_000,
+    },
+    {
+      pathname: "/assets/shotgun.webm",
+      initiatorType: "fetch",
+      transferSize: 5_000,
+      encodedBodySize: 5_000,
+      decodedBodySize: 5_000,
+    },
+  ];
+  const musicEntry: BrowserResource = {
+    pathname: "/assets/ash-reactor.webm",
+    initiatorType: "audio",
+    transferSize: 9_494,
+    encodedBodySize: 9_494,
+    decodedBodySize: 9_494,
+  };
+  const partialMedia = buildResourceSnapshot([...deterministicEntries, musicEntry]);
+  const fullyBufferedMedia = buildResourceSnapshot([
+    ...deterministicEntries,
+    {
+      ...musicEntry,
+      transferSize: 3_745_046,
+      encodedBodySize: 3_745_046,
+      decodedBodySize: 3_745_046,
+    },
+  ]);
+
+  expect(partialMedia.budgetedDecodedBodyBytes).toBe(7_000);
+  expect(fullyBufferedMedia.budgetedDecodedBodyBytes).toBe(partialMedia.budgetedDecodedBodyBytes);
+  expect(fullyBufferedMedia.decodedBodyBytes).toBeGreaterThan(partialMedia.decodedBodyBytes);
+  expect(fullyBufferedMedia.streamingMediaEntries).toHaveLength(1);
+});
 
 test("production boot defers combat WebPs until the run transition", async ({ page }) => {
   // The default Resource Timing buffer is too small for the regression this
@@ -151,38 +215,50 @@ test("production boot defers combat WebPs until the run transition", async ({ pa
   const forbiddenBootAssets = beforeCombat.webpEntries
     .map((entry) => basename(entry.pathname))
     .filter((name) => FORBIDDEN_BOOT_COMBAT_BASENAMES.some((pattern) => pattern.test(name)));
+  const unexpectedBootMedia = unexpectedStreamingMedia(beforeCombat, ALLOWED_BOOT_STREAMING_MEDIA_BASENAMES);
   logSnapshot("menu-pre-combat", beforeCombat);
 
   expect(forbiddenBootAssets, `combat WebPs requested before combat: ${forbiddenBootAssets.join(", ")}`).toEqual([]);
+  expect(
+    unexpectedBootMedia,
+    `unexpected streaming media requested before combat: ${unexpectedBootMedia.join(", ")}`,
+  ).toEqual([]);
   expect(beforeCombat.entries.length, "pre-combat resource request budget").toBeLessThanOrEqual(
     budget.maxBootResourceRequests,
   );
   expect(beforeCombat.webpEntries.length, "pre-combat WebP request budget").toBeLessThanOrEqual(
     budget.maxBootWebpRequests,
   );
-  expect(beforeCombat.decodedBodyBytes, "pre-combat decoded resource body budget").toBeLessThanOrEqual(
+  expect(beforeCombat.budgetedDecodedBodyBytes, "pre-combat decoded resource body budget").toBeLessThanOrEqual(
     budget.maxBootDecodedBodyBytes,
   );
 
   await page.getByRole("button", { name: /^Play a Run$/i }).click();
-  await expect(page.getByRole("button", { name: "Click to play", exact: true })).toBeVisible();
-  await expect(page.getByTestId("combat-asset-loading")).toHaveCount(0);
+  const combatAssetLoading = page.getByTestId("combat-asset-loading");
+  await expect(combatAssetLoading).toBeVisible();
+  await expect(combatAssetLoading).toHaveCount(0, { timeout: 60_000 });
+  await expect(page.getByTestId("combat-asset-error")).toHaveCount(0);
   await settleResourceTimings(page);
 
   const afterCombat = await resourceSnapshot(page);
   const combat = resourceDelta(beforeCombat, afterCombat);
+  const unexpectedCombatMedia = unexpectedStreamingMedia(combat, ALLOWED_COMBAT_STREAMING_MEDIA_BASENAMES);
   logSnapshot("combat-transition", combat);
 
+  expect(
+    unexpectedCombatMedia,
+    `unexpected streaming media requested during combat transition: ${unexpectedCombatMedia.join(", ")}`,
+  ).toEqual([]);
   expect(combat.entries.length, "combat transition must load at least one resource").toBeGreaterThan(0);
   expect(combat.webpEntries.length, "combat transition must load at least one WebP payload").toBeGreaterThan(0);
-  expect(combat.decodedBodyBytes, "combat transition must load a non-empty resource body").toBeGreaterThan(0);
+  expect(combat.budgetedDecodedBodyBytes, "combat transition must load a non-empty resource body").toBeGreaterThan(0);
   expect(combat.entries.length, "combat-transition resource request budget").toBeLessThanOrEqual(
     budget.maxCombatResourceRequests,
   );
   expect(combat.webpEntries.length, "combat-transition WebP request budget").toBeLessThanOrEqual(
     budget.maxCombatWebpRequests,
   );
-  expect(combat.decodedBodyBytes, "combat-transition decoded resource body budget").toBeLessThanOrEqual(
+  expect(combat.budgetedDecodedBodyBytes, "combat-transition decoded resource body budget").toBeLessThanOrEqual(
     budget.maxCombatDecodedBodyBytes,
   );
 });
