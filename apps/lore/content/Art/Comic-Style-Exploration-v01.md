@@ -1,15 +1,14 @@
 ---
 type: art-style-exploration
-status: active
+status: historical-exploration
 scope: comic/cel-shaded game art and UI
 updated: 2026-06-17
 ---
 # Comic Style Exploration v01
 
-This is a Deadrot exploration lane for comic/cel-shaded game art and UI. It is
-not a replacement for the locked pixel-art bible yet. The purpose is to test
-whether comic panels, thick ink outlines, and flat/cel-shaded shapes solve the
-dotted/stippled texture failure from gritty generated wallpaper art.
+This was a Deadrot exploration lane for comic/cel-shaded game art and UI. Its
+results informed the 2026-06-17 comic-ink lock in [[Style-Bible]]. It is kept as
+evidence, not an alternate active art direction or generation brief.
 
 ## XIII Research Notes
 
@@ -80,8 +79,8 @@ VITE_DEADROT_COMIC_ASSETS=1 bun run dev
 
 This is not a final promotion. It preserves the current runtime dimensions,
 enemy animation manifest, and arena texture ids so the style can be tested
-directly inside Scourge Survivors without replacing the locked pixel runtime
-pack.
+directly inside Scourge Survivors without replacing the historical pixel runtime
+scaffolding.
 
 Enemy override status: disabled. The rejected first pass filtered the existing
 small runtime sprites, then the game scaled them into large billboards. The

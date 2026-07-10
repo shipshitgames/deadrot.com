@@ -579,7 +579,7 @@ export const SANDBOX_MAPS: Record<string, NormalizedArenaMap> = {
  */
 export const CAMPAIGN_ORDER: string[] = ["ashgate", "hollowlanes", "maw", "perdition"];
 
-/** Default arena for non-structured modes (Survivors / co-op / menu). */
+/** Default arena for non-structured modes (Survivors / PvP preview / menu). */
 export const DEFAULT_MAP_ID = "ashgate";
 
 export function getMap(id: string): NormalizedArenaMap {

@@ -158,7 +158,7 @@ export default function App() {
   const lastRunGoldRef = useRef(0);
   const sandboxAvailable = import.meta.env.DEV;
   const savedRef = useRef(false);
-  // A shared link like `?room=BREACH-AB12` lands the player on the join screen.
+  // A shared link like `?room=ARENA-AB12` lands the player on the PvP preview screen.
   const initialRoom = useMemo(
     () => (new URLSearchParams(window.location.search).get("room") || "").toUpperCase().slice(0, 24),
     [],

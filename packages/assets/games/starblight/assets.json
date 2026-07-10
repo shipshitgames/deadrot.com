@@ -1,0 +1,116 @@
+{
+  "sprites": {
+    "player-interceptor": {
+      "type": "sprite",
+      "path": "games/starblight/players/pyre/player-interceptor.webp",
+      "dimensions": [116, 132],
+      "anchor": [0.5, 0.5],
+      "filter": "nearest",
+      "license": {
+        "tool": "Codex image generation",
+        "plan": "built-in image generation",
+        "date": "2026-06-04",
+        "kind": "AI-generated and locally post-processed player interceptor sprite",
+        "scope": "Starblight runtime"
+      }
+    },
+    "scourge-grunt": {
+      "type": "sprite",
+      "path": "games/starblight/enemies/scourge/scourge-grunt.webp",
+      "dimensions": [75, 114],
+      "anchor": [0.5, 0.5],
+      "filter": "nearest",
+      "license": {
+        "tool": "Codex image generation",
+        "plan": "built-in image generation",
+        "date": "2026-06-04",
+        "kind": "AI-generated and locally post-processed Scourge grunt sprite",
+        "scope": "Starblight runtime"
+      }
+    },
+    "scourge-swarmling": {
+      "type": "sprite",
+      "path": "games/starblight/enemies/scourge/scourge-swarmling.webp",
+      "dimensions": [40, 94],
+      "anchor": [0.5, 0.5],
+      "filter": "nearest",
+      "license": {
+        "tool": "Codex image generation",
+        "plan": "built-in image generation",
+        "date": "2026-06-04",
+        "kind": "AI-generated and locally post-processed Scourge swarmling sprite",
+        "scope": "Starblight runtime"
+      }
+    },
+    "scourge-weaver": {
+      "type": "sprite",
+      "path": "games/starblight/enemies/scourge/scourge-weaver.webp",
+      "dimensions": [125, 108],
+      "anchor": [0.5, 0.5],
+      "filter": "nearest",
+      "license": {
+        "tool": "Codex image generation",
+        "plan": "built-in image generation",
+        "date": "2026-06-04",
+        "kind": "AI-generated and locally post-processed Scourge weaver sprite",
+        "scope": "Starblight runtime"
+      }
+    },
+    "scourge-spitter": {
+      "type": "sprite",
+      "path": "games/starblight/enemies/scourge/scourge-spitter.webp",
+      "dimensions": [96, 114],
+      "anchor": [0.5, 0.5],
+      "filter": "nearest",
+      "license": {
+        "tool": "Codex image generation",
+        "plan": "built-in image generation",
+        "date": "2026-06-04",
+        "kind": "AI-generated and locally post-processed Scourge spitter sprite",
+        "scope": "Starblight runtime"
+      }
+    },
+    "scourge-elite": {
+      "type": "sprite",
+      "path": "games/starblight/enemies/scourge/scourge-elite.webp",
+      "dimensions": [109, 148],
+      "anchor": [0.5, 0.5],
+      "filter": "nearest",
+      "license": {
+        "tool": "Codex image generation",
+        "plan": "built-in image generation",
+        "date": "2026-06-04",
+        "kind": "AI-generated and locally post-processed Scourge elite sprite",
+        "scope": "Starblight runtime"
+      }
+    },
+    "orbital-breach-carrier": {
+      "type": "sprite",
+      "path": "games/starblight/enemies/scourge/orbital-breach-carrier.webp",
+      "dimensions": [114, 196],
+      "anchor": [0.5, 0.5],
+      "filter": "nearest",
+      "license": {
+        "tool": "Codex image generation",
+        "plan": "built-in image generation",
+        "date": "2026-06-04",
+        "kind": "AI-generated and locally post-processed orbital breach carrier sprite",
+        "scope": "Starblight runtime"
+      }
+    },
+    "salvage-shard": {
+      "type": "sprite",
+      "path": "games/starblight/pickups/salvage/salvage-shard.webp",
+      "dimensions": [38, 60],
+      "anchor": [0.5, 0.5],
+      "filter": "nearest",
+      "license": {
+        "tool": "Codex image generation",
+        "plan": "built-in image generation",
+        "date": "2026-06-04",
+        "kind": "AI-generated and locally post-processed salvage shard sprite",
+        "scope": "Starblight runtime"
+      }
+    }
+  }
+}
