@@ -248,6 +248,7 @@
   /* When paused, freeze every in-flight HUD animation — except the pause
      overlay's own UI (marked .pause-ui). */
   .hud-paused *:not(.pause-ui):not(.pause-ui *) {
+    /* biome-ignore lint/complexity/noImportantStyles: a global pause must beat every element's own `animation` shorthand (which resets play-state to running), so !important is required to force the freeze. */
     animation-play-state: paused !important;
   }
 }
@@ -1426,6 +1427,7 @@
   white-space: nowrap;
 }
 
+/* biome-ignore lint/style/noDescendingSpecificity: cross-context selector — this `b` never coexists with the earlier higher-specificity `.ssg-menu-item__copy b`, so there is no real cascade conflict. */
 .game-root .scourge-berserk-meter__text b {
   color: #ff2a18;
   font-size: 17px;
@@ -1512,6 +1514,7 @@
   text-transform: uppercase;
 }
 
+/* biome-ignore lint/style/noDescendingSpecificity: cross-context selector — this `b` never coexists with the earlier higher-specificity `.ssg-menu-item__copy b`, so there is no real cascade conflict. */
 .game-root .scourge-integrity-meta b {
   color: #ffd166;
   font-weight: 900;
@@ -1566,6 +1569,7 @@
     font-size: 11px;
   }
 
+  /* biome-ignore lint/style/noDescendingSpecificity: cross-context selector — this `b` never coexists with the earlier higher-specificity `.ssg-menu-item__copy b`, so there is no real cascade conflict. */
   .game-root .scourge-berserk-meter__text b {
     font-size: 16px;
   }

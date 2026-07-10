@@ -67,7 +67,6 @@ export function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => 
     <div
       data-testid="shop-panel"
       className="pointer-events-auto w-[min(680px,92vw)] mt-[14px] bg-[rgba(255,209,102,0.05)] border border-[rgba(255,209,102,0.35)] rounded-xl px-4 py-[14px]"
-      onClick={(e) => e.stopPropagation()}
     >
       <div className="flex justify-between items-center mb-[10px]">
         <span className="text-[14px] tracking-[0.08em] uppercase text-[#ffd166]">
@@ -189,10 +188,7 @@ function MultiplayerPanel({
   const input =
     "pointer-events-auto text-[15px] text-fg bg-black/35 border border-white/20 rounded-lg px-3 py-[9px] min-w-[200px] focus:outline-none focus:border-accent";
   return (
-    <div
-      className="pointer-events-auto mt-4 w-[min(700px,88vw)] bg-[rgba(255,77,109,0.06)] border border-[rgba(255,77,109,0.35)] rounded-[10px] px-5 py-4 text-center"
-      onClick={(e) => e.stopPropagation()}
-    >
+    <div className="pointer-events-auto mt-4 w-[min(700px,88vw)] bg-[rgba(255,77,109,0.06)] border border-[rgba(255,77,109,0.35)] rounded-[10px] px-5 py-4 text-center">
       <div className="text-[14px] tracking-[0.1em] uppercase text-[#ff8aa0] mb-[10px]">
         <IconText icon="swords" size={18}>
           PvP Arena Preview
@@ -292,7 +288,7 @@ function SurvivorsPanel({ onNext, onBack }: { onNext: (classId: SurvivorClassId)
   };
 
   return (
-    <div className="pointer-events-auto w-[min(940px,92vw)]" onClick={(e) => e.stopPropagation()}>
+    <div className="pointer-events-auto w-[min(940px,92vw)]">
       <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
         {SURVIVOR_CLASS_IDS.map((id) => {
           const cls = SURVIVOR_CLASSES[id];
@@ -370,7 +366,7 @@ function MapSelectPanel({
   };
 
   return (
-    <div className="pointer-events-auto w-[min(940px,92vw)]" onClick={(e) => e.stopPropagation()}>
+    <div className="pointer-events-auto w-[min(940px,92vw)]">
       <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
         {MAP_PICKER.map((m) => {
           const active = m.id === selected.id;

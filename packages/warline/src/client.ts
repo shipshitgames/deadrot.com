@@ -51,7 +51,7 @@ export class WarlineClient {
     const headers: Record<string, string> = {
       "content-type": "application/json",
     };
-    if (this.token) headers["authorization"] = `Bearer ${this.token}`;
+    if (this.token) headers.authorization = `Bearer ${this.token}`;
     const res = await fetch(warlineUrl(this.host), {
       method: "POST",
       headers,

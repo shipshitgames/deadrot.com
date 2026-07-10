@@ -26,7 +26,7 @@ const UNORDERED = `${[
   'import { zebra } from "./zebra";',
   'import { apple } from "./apple";',
   "",
-  "export const value = `${apple}${zebra}`;",
+  "export const value = apple + zebra;",
 ].join("\n")}\n`;
 
 function biomeCheck(relPath: string, extraArgs: string[] = []) {

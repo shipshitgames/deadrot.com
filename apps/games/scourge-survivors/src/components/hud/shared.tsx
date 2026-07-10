@@ -80,7 +80,6 @@ export function Leaderboard({
   return (
     <div
       className={`pointer-events-auto min-w-[320px] bg-white/[0.04] border border-white/10 rounded-[10px] px-[14px] py-3 ${className}`}
-      onClick={(e) => e.stopPropagation()}
     >
       <div className="flex items-center justify-between mb-2">
         <span className="text-[14px] tracking-[0.1em] uppercase opacity-85">

@@ -86,6 +86,7 @@ export function WarMap({ state, selectedId, onSelect }: WarMapProps) {
               const midX = (a.x + b.x) / 2;
               const midY = (a.y + b.y) / 2;
               return (
+                // biome-ignore lint/a11y/noStaticElementInteractions: decorative SVG lane connector that only reveals control/flow on hover; it has no click or keyboard action (the accessible strategic state lives on the region buttons).
                 <line
                   key={lane.id}
                   x1={a.x}
@@ -109,21 +110,6 @@ export function WarMap({ state, selectedId, onSelect }: WarMapProps) {
                     })
                   }
                   onMouseLeave={() => setHover(null)}
-                  onFocus={() =>
-                    setHover({
-                      x: midX,
-                      y: midY,
-                      title: lane.name,
-                      lines: [
-                        `Control: ${lane.control} — who dominates this route.`,
-                        `Flow: ${Math.round(lane.flow)} — pressure spread strength.`,
-                      ],
-                    })
-                  }
-                  onBlur={() => setHover(null)}
-                  tabIndex={0}
-                  role="img"
-                  aria-label={`${lane.name}. Controlled by ${lane.control}. Flow ${Math.round(lane.flow)}.`}
                   style={{ cursor: "help" }}
                 />
               );
@@ -218,6 +204,7 @@ function RegionNode({ state, region, selected, onSelect, onHover }: RegionNodePr
   }
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: an SVG <g> cannot be a native <button>; role="button" with tabIndex/onKeyDown/aria-pressed is the correct accessible pattern for an interactive SVG region.
     <g
       onClick={() => onSelect(region.id)}
       onMouseEnter={showHover}

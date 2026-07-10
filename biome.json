@@ -44,6 +44,14 @@
           }
         }
       }
+    },
+    {
+      "includes": ["**", "!apps/web"],
+      "linter": {
+        "domains": {
+          "next": "none"
+        }
+      }
     }
   ],
   "formatter": {
