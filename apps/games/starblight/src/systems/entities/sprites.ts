@@ -1,27 +1,35 @@
+import starblightAssets from "@shipshitgames/assets/games/starblight/assets.json";
+import orbitalBreachCarrierUrl from "@shipshitgames/assets/games/starblight/enemies/scourge/orbital-breach-carrier.webp";
+import scourgeEliteUrl from "@shipshitgames/assets/games/starblight/enemies/scourge/scourge-elite.webp";
+import scourgeGruntUrl from "@shipshitgames/assets/games/starblight/enemies/scourge/scourge-grunt.webp";
+import scourgeSpitterUrl from "@shipshitgames/assets/games/starblight/enemies/scourge/scourge-spitter.webp";
+import scourgeSwarmlingUrl from "@shipshitgames/assets/games/starblight/enemies/scourge/scourge-swarmling.webp";
+import scourgeWeaverUrl from "@shipshitgames/assets/games/starblight/enemies/scourge/scourge-weaver.webp";
+import salvageShardUrl from "@shipshitgames/assets/games/starblight/pickups/salvage/salvage-shard.webp";
+import playerInterceptorUrl from "@shipshitgames/assets/games/starblight/players/pyre/player-interceptor.webp";
 import * as THREE from "three";
-import orbitalBreachCarrierUrl from "../../assets/sprites/runtime/orbital-breach-carrier.webp";
-import playerInterceptorUrl from "../../assets/sprites/runtime/player-interceptor.webp";
-import salvageShardUrl from "../../assets/sprites/runtime/salvage-shard.webp";
-import scourgeEliteUrl from "../../assets/sprites/runtime/scourge-elite.webp";
-import scourgeGruntUrl from "../../assets/sprites/runtime/scourge-grunt.webp";
-import scourgeSpitterUrl from "../../assets/sprites/runtime/scourge-spitter.webp";
-import scourgeSwarmlingUrl from "../../assets/sprites/runtime/scourge-swarmling.webp";
-import scourgeWeaverUrl from "../../assets/sprites/runtime/scourge-weaver.webp";
 import type { EnemyType } from "../../game/constants";
 
 export type SpriteKey = "player" | "grunt" | "swarmling" | "weaver" | "spitter" | "elite" | "boss" | "salvage";
 
 export type SpriteTextures = Record<SpriteKey, THREE.Texture>;
 
+type StarblightSpriteId = keyof typeof starblightAssets.sprites;
+
+function spriteSpec(url: string, id: StarblightSpriteId): { url: string; aspect: number } {
+  const [width, height] = starblightAssets.sprites[id].dimensions;
+  return { url, aspect: width / height };
+}
+
 const SPRITE_SPECS: Record<SpriteKey, { url: string; aspect: number }> = {
-  player: { url: playerInterceptorUrl, aspect: 116 / 132 },
-  grunt: { url: scourgeGruntUrl, aspect: 75 / 114 },
-  swarmling: { url: scourgeSwarmlingUrl, aspect: 40 / 94 },
-  weaver: { url: scourgeWeaverUrl, aspect: 125 / 108 },
-  spitter: { url: scourgeSpitterUrl, aspect: 96 / 114 },
-  elite: { url: scourgeEliteUrl, aspect: 109 / 148 },
-  boss: { url: orbitalBreachCarrierUrl, aspect: 114 / 196 },
-  salvage: { url: salvageShardUrl, aspect: 38 / 60 },
+  player: spriteSpec(playerInterceptorUrl, "player-interceptor"),
+  grunt: spriteSpec(scourgeGruntUrl, "scourge-grunt"),
+  swarmling: spriteSpec(scourgeSwarmlingUrl, "scourge-swarmling"),
+  weaver: spriteSpec(scourgeWeaverUrl, "scourge-weaver"),
+  spitter: spriteSpec(scourgeSpitterUrl, "scourge-spitter"),
+  elite: spriteSpec(scourgeEliteUrl, "scourge-elite"),
+  boss: spriteSpec(orbitalBreachCarrierUrl, "orbital-breach-carrier"),
+  salvage: spriteSpec(salvageShardUrl, "salvage-shard"),
 };
 
 export const ENEMY_SPRITES: Record<EnemyType, SpriteKey> = {

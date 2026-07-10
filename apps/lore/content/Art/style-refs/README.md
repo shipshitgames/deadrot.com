@@ -1,43 +1,19 @@
-# Locked Style References
+# Historical Pixel Style References
 
-Status: locked
-Last updated: 2026-06-05
+Status: historical — not an active visual pin
+Superseded: 2026-06-17 clean comic-book / cel-shaded ink lock
 
-This folder pins the image-reference files named by `DESIGN.md`
-`assetgen.referenceImages`.
+The files formerly listed here document the 2026-06-04 pixel-art experiment.
+They remain in `packages/assets/sources/generated/lore-art-style-refs/` for
+provenance only. Do not use them to prompt, grade, or promote new work.
 
-## Primary Visual Pin
+The active visual contract is [[Style-Bible]]. For a new batch, select a reviewed
+comic-ink master appropriate to the game and asset family, record that source in
+the relevant design lock or [[Generation-History]], and use studio tooling from
+the sibling `../shipshitgames` repository. Deadrot keeps the reviewed originals,
+masters, runtime WebPs, and credit record.
 
-`packages/assets/sources/generated/lore-art-style-refs/2026-06-04/scourge-survivors.webp` is sourced from
-`packages/assets/sources/generated/lore-art-style-bakeoff/2026-06-04/d2-ripper-medium.png`. This is the locked house look:
-
-- high-detail medium-chunky pixel art
-- visible square pixel grid, roughly 110px-tall runtime sprite target
-- hard crisp edges, ordered dithering, no anti-aliasing
-- silhouette-first Scourge parasite read
-- blood / rust / gunmetal / bone with Scourge-only toxic green
-- near-black void, one low hellfire rim light
-- not hi-fi render, not smooth 3D, not painted concept art
-
-The source prompt is preserved in `../style-bakeoff/run-d2.sh`, under
-`PROMPT[ripper-medium]`. Use that prompt family and `Style-Bible.md` for every
-new asset.
-
-## First-Pass Per-Game Refs
-
-These are style pins, not final gameplay assets. Replace a game's file only with
-a stronger locked-medium image in that game's camera:
-
-- `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/scourge-survivors.webp` - exact `d2-ripper-medium` visual lock.
-- `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/deadlane.webp` - first top-down/lane pre-viz ref.
-- `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/pactfall.webp` - first isometric arena pre-viz ref.
-- `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/starblight.webp` - first side/top-down orbital pre-viz ref.
-- `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/redline.webp` - first runner-camera pre-viz ref.
-- `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/rothulk.webp` - first platformer-camera pre-viz ref.
-- `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/scourge-survivors.webp` - exact `d2-ripper-medium` visual lock for fallback use.
-
-## Drift Rule
-
-Any prompt or asset asking for `hi-fi render`, `smooth 3D render`,
-`not pixel art`, blue/teal/cyan/magenta neon, fantasy knights, or polished
-clean sci-fi is off-canon unless the Style Bible is explicitly changed first.
+The historical images may be consulted only when maintaining old pixel runtime
+scaffolding or interpreting past credits. A replacement reference is active only
+when its approved master and provenance are recorded; this README is intentionally
+not a second registry of generator inputs.

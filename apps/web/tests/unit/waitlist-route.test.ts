@@ -3,19 +3,22 @@ import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import { POST } from "@/app/api/waitlist/route";
 
 // Exercises the POST handler end-to-end through the REAL sink (lib/waitlist-sink.ts):
-// a forward URL is wired and globalThis.fetch is faked, so a recorded signup shows up
-// as a forwarded JSON payload we can inspect. Deliberately uses NO mock.module — bun's
-// module mocks are process-global and are not undone by mock.restore(), so mocking the
-// sink here would leak into the sibling waitlist-sink.test.ts depending on file order.
+// the first-party API is wired and globalThis.fetch is faked, so a durably accepted
+// signup shows up as a JSON payload we can inspect. Deliberately uses NO mock.module —
+// Bun's module mocks are process-global and can leak between sibling test files.
 
-const FORWARD = "https://sink.test/intake";
+const PERSISTENCE = "https://api.deadrot.test/v1/waitlist";
 let realFetch: typeof fetch;
-let savedForwardUrl: string | undefined;
+const savedEnv: Record<string, string | undefined> = {};
 let forwarded: Array<{ url: string; body: Record<string, unknown> }>;
 
 beforeEach(() => {
-  savedForwardUrl = process.env.WAITLIST_FORWARD_URL;
-  process.env.WAITLIST_FORWARD_URL = FORWARD;
+  for (const key of ["WAITLIST_API_URL", "WAITLIST_API_TOKEN", "WAITLIST_LOCAL_FILE"] as const) {
+    savedEnv[key] = process.env[key];
+    delete process.env[key];
+  }
+  process.env.WAITLIST_API_URL = PERSISTENCE;
+  process.env.WAITLIST_API_TOKEN = "test-token";
   forwarded = [];
   realFetch = globalThis.fetch;
   globalThis.fetch = mock(async (url: string | URL | Request, init?: RequestInit) => {
@@ -26,8 +29,10 @@ beforeEach(() => {
 
 afterEach(() => {
   globalThis.fetch = realFetch;
-  if (savedForwardUrl === undefined) delete process.env.WAITLIST_FORWARD_URL;
-  else process.env.WAITLIST_FORWARD_URL = savedForwardUrl;
+  for (const key of ["WAITLIST_API_URL", "WAITLIST_API_TOKEN", "WAITLIST_LOCAL_FILE"] as const) {
+    if (savedEnv[key] === undefined) delete process.env[key];
+    else process.env[key] = savedEnv[key];
+  }
 });
 
 function jsonReq(body: unknown): Request {
@@ -54,7 +59,7 @@ describe("POST /api/waitlist", () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
     expect(forwarded).toHaveLength(1);
-    expect(forwarded[0].url).toBe(FORWARD);
+    expect(forwarded[0].url).toBe(PERSISTENCE);
     expect(forwarded[0].body).toMatchObject({ email: "survivor@deadrot.com", source: "site-waitlist" });
     // The route stamps an ISO timestamp the pure layer never sees.
     expect(String(forwarded[0].body.at)).toMatch(/^\d{4}-\d{2}-\d{2}T/);
@@ -95,5 +100,17 @@ describe("POST /api/waitlist", () => {
 
     expect(res.status).toBe(400);
     expect(forwarded).toHaveLength(0);
+  });
+
+  test("unavailable persistence returns a retryable 503 and never claims success", async () => {
+    globalThis.fetch = mock(async () => new Response(null, { status: 500 })) as unknown as typeof fetch;
+
+    const res = await POST(jsonReq({ email: "survivor@deadrot.com" }));
+
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({
+      ok: false,
+      error: "We couldn't save your signup. Please try again.",
+    });
   });
 });

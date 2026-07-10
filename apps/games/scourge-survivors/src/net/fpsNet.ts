@@ -11,7 +11,7 @@ import {
 } from "@deadrot/game-kit/net";
 
 /**
- * FPS co-op networking schema + wiring. The generic transport/presence
+ * FPS PvP arena-preview networking schema + wiring. The generic transport/presence
  * primitives live in `@deadrot/game-kit/net`; this module owns the
  * Scourge-specific message shapes (`t: 'state' | 'name' | 'hit'`) and the
  * factories that bind them to the room. The PartyKit server (`party/arena.ts`)
@@ -75,7 +75,7 @@ function resolveSocketFactory(host: string): SocketFactory {
   return createPartySocketFactory({ host, party: "main" });
 }
 
-/** Build the FPS co-op transport (PartySocket-backed, or a dev-injected loopback). */
+/** Build the FPS PvP transport (PartySocket-backed, or a dev-injected loopback). */
 export function createFpsTransport(host: string = PARTYKIT_HOST): NetTransport {
   return createTransport({ socketFactory: resolveSocketFactory(host) });
 }

@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const game = getGame(slug);
   if (!game) return {};
-  const socialImagePath = game.slug === "warline" ? "/images/hero.webp" : `/images/og/games/${game.slug}.png`;
+  const socialImagePath = `/assets/games/${game.slug}/ui/social/og.jpg`;
   const image = {
     url: `${SITE_URL}${socialImagePath}`,
     width: 1200,

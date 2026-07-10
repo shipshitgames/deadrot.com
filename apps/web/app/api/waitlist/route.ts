@@ -1,12 +1,11 @@
 import { parseWaitlistFields, type WaitlistFields } from "@/lib/waitlist";
-import { recordSignup } from "@/lib/waitlist-sink";
+import { recordSignup, WaitlistPersistenceError } from "@/lib/waitlist-sink";
 
 // First-party waitlist capture for the Deadrot access surface (#355). The hub
 // posts here (same-origin) instead of a third-party form endpoint, so the
 // capture, validation, and follow-up wiring all live in the repo. The actual
-// destination is pluggable via env (see lib/waitlist-sink.ts + docs/waitlist.md);
-// with nothing wired the route still succeeds and structured-logs, so dev/e2e
-// never depend on an external service.
+// address is committed to first-party persistence before success is returned
+// (see lib/waitlist-sink.ts + docs/waitlist.md).
 //
 // Returns plain web Responses (not NextResponse) so the handler unit-tests as a
 // pure function — no Next runtime required.
@@ -36,6 +35,11 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ ok: true });
   }
 
-  await recordSignup({ ...parsed.signup, at: new Date().toISOString() });
+  try {
+    await recordSignup({ ...parsed.signup, at: new Date().toISOString() });
+  } catch (error) {
+    if (!(error instanceof WaitlistPersistenceError)) throw error;
+    return Response.json({ ok: false, error: "We couldn't save your signup. Please try again." }, { status: 503 });
+  }
   return Response.json({ ok: true });
 }

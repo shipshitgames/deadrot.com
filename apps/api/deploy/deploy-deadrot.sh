@@ -85,6 +85,10 @@ if ! grep -q '^DATABASE_URL=' "${tmp}"; then
   echo "ERROR: no DATABASE_URL rendered from ${DEADROT_SSM_PATH} in ${AWS_REGION}" >&2
   exit 1
 fi
+if ! grep -q '^WAITLIST_INGEST_TOKEN=.' "${tmp}"; then
+  echo "ERROR: no non-empty WAITLIST_INGEST_TOKEN rendered from ${DEADROT_SSM_PATH} in ${AWS_REGION}" >&2
+  exit 1
+fi
 mv "${tmp}" "${ENV_FILE}"
 trap - EXIT
 

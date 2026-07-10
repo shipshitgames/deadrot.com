@@ -15,8 +15,9 @@ import {
 // file validates it stays READABLE: no map buries enemies/pickups/projectiles
 // behind opaque dressing, carpets the floor, over-hazes the skyline, tightens
 // fog onto the play space, lightens the background, or drops a silhouette into
-// the arena. The same budget is read back off the live scene by
-// tests/e2e/arena-readability.spec.ts.
+// the arena. The same budget is read back off the live scene (via
+// debugSnapshot().readability) by the arena-environments test in
+// tests/e2e/sandbox.spec.ts.
 
 const allMaps = { ...MAPS, ...SANDBOX_MAPS };
 

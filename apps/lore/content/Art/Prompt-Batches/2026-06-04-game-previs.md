@@ -1,13 +1,17 @@
 ---
-status: active
+status: historical
 type: prompt-batch
-style: locked medium-chunky detailed pixel art
+style: pre-lock medium-chunky detailed pixel art
 feeds:
   - packages/assets/sources/generated/lore-art-previs/2026-06-04
   - Generation-History
 ---
 
-# 2026-06-04 Game Pre-Viz
+# 2026-06-04 Game Pre-Viz (Historical)
+
+> **HISTORICAL / OFF-CANON FOR NEW WORK.** This batch predates the 2026-06-17
+> comic-ink lock. Preserve it with its outputs as provenance; do not use its
+> pixel prompts for new masters or promoted runtime assets.
 
 Purpose: create one cover/key-art pre-viz direction per game in the locked [[Style-Bible]]
 house style, with an extra [[Scourge-Survivors]] variant for comparison.

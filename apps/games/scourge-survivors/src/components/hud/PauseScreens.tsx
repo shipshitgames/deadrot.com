@@ -51,13 +51,13 @@ export function PauseScreens({
   }, [pausePanel, status, suppressMenu]);
 
   // Status row + real actions for the shared PauseMenu (mirrors the title menu;
-  // no shop affordance). Multiplayer surfaces breach/connection info + Leave.
+  // no shop affordance). Multiplayer surfaces arena/connection info + Leave.
   const pauseStatus = useMemo<ReactNode>(
     () =>
       multiplayer ? (
         <>
           <span>
-            Breach {room || "-"} · {connected ? "connected" : "connecting…"}
+            Arena {room || "-"} · {connected ? "connected" : "connecting…"}
           </span>
           <span>{kills} frags</span>
         </>
@@ -85,20 +85,24 @@ export function PauseScreens({
       variant: "default",
       onSelect: () => setPausePanel("controls"),
     },
-    {
-      id: "restart",
-      label: "Restart Run",
-      meta: "New breach",
-      variant: "default",
-      onSelect: onRestart,
-    },
+    ...(multiplayer
+      ? []
+      : [
+          {
+            id: "restart",
+            label: "Restart Run",
+            meta: "New breach",
+            variant: "default" as const,
+            onSelect: onRestart,
+          },
+        ]),
     ...(multiplayer
       ? [
           {
             id: "leave",
-            label: "Leave Breach",
-            meta: room || "Co-op room",
-            variant: "coop" as const,
+            label: "Leave Arena",
+            meta: room || "PvP preview room",
+            variant: "default" as const,
             onSelect: onLeaveRoom,
           },
         ]
@@ -119,8 +123,8 @@ export function PauseScreens({
           open
           className="pause-ui"
           backgroundImage={MENU_HERO_URL}
-          kicker={multiplayer ? "Breach run" : "Pyre breach"}
-          subtitle={multiplayer ? "Hold the line — the breach keeps churning while you regroup." : undefined}
+          kicker={multiplayer ? "PvP arena preview" : "Pyre breach"}
+          subtitle={multiplayer ? "No PvE waves. The live arena continues while you regroup." : undefined}
           status={pauseStatus}
           onResume={onEscapeResume}
           actions={pauseActions}

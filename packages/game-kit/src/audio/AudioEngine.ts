@@ -50,7 +50,8 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
   private currentTrack: Track | null = null;
   private loadedTrack: Track | null = null;
   private autoUnlockArmed = false;
-  private lifecycle = 0;
+  private autoUnlockHandler: (() => void) | null = null;
+  private disposed = false;
 
   // authored SFX sample buffers (decoded once; procedural synth is the fallback)
   private sampleBuffers = new Map<Sfx, AudioBuffer>();
@@ -78,6 +79,7 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
   }
 
   private ensure(): boolean {
+    if (this.disposed) return false;
     if (this.ctx) return true;
     try {
       const Ctor: typeof AudioContext =
@@ -254,6 +256,15 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
     return el;
   }
 
+  private readonly onMusicError = () => this.handleTrackPlaybackFailure();
+
+  private readonly onMusicEnded = () => {
+    const el = this.musicEl;
+    if (!el || !this.musicEnabled || !this.currentTrack || !el.loop) return;
+    el.currentTime = 0;
+    void el.play().catch(() => this.handleTrackPlaybackFailure());
+  };
+
   private connectMusicElement(): boolean {
     if (!this.ctx || !this.musicBus) return true;
     const el = this.ensureMusicElement();
@@ -269,11 +280,27 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
   }
 
   private armAutoUnlock() {
-    if (this.autoUnlockArmed || typeof window === "undefined") return;
+    if (this.disposed || this.autoUnlockArmed || typeof window === "undefined") return;
     this.autoUnlockArmed = true;
-    window.addEventListener("pointerdown", this.onAutoUnlock, { once: true, passive: true });
-    window.addEventListener("keydown", this.onAutoUnlock, { once: true });
-    window.addEventListener("touchstart", this.onAutoUnlock, { once: true, passive: true });
+    const unlockOnce = () => {
+      this.disarmAutoUnlock();
+      this.unlock();
+    };
+    this.autoUnlockHandler = unlockOnce;
+    window.addEventListener("pointerdown", unlockOnce, { once: true, passive: true });
+    window.addEventListener("keydown", unlockOnce, { once: true });
+    window.addEventListener("touchstart", unlockOnce, { once: true, passive: true });
+  }
+
+  private disarmAutoUnlock() {
+    const handler = this.autoUnlockHandler;
+    if (handler && typeof window !== "undefined") {
+      window.removeEventListener("pointerdown", handler);
+      window.removeEventListener("keydown", handler);
+      window.removeEventListener("touchstart", handler);
+    }
+    this.autoUnlockHandler = null;
+    this.autoUnlockArmed = false;
   }
 
   // ----------------------------------------------------------------- sfx
@@ -282,7 +309,6 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
   private loadSamples() {
     if (this.samplesRequested || !this.ctx) return;
     this.samplesRequested = true;
-    const lifecycle = this.lifecycle;
     const samples = this.config.sfxSamples;
     if (!samples) return;
     for (const [name, entry] of Object.entries(samples) as [Sfx, AudioSource | undefined][]) {
@@ -292,7 +318,7 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
         .then((r) => r.arrayBuffer())
         .then((b) => this.ctx?.decodeAudioData(b))
         .then((decoded) => {
-          if (decoded && lifecycle === this.lifecycle) this.sampleBuffers.set(name, decoded);
+          if (decoded && !this.disposed) this.sampleBuffers.set(name, decoded);
         })
         .catch(() => {}); // unloaded → procedural fallback for this cue
     }
@@ -374,55 +400,42 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
     return buf;
   }
 
-  /** Fully release browser listeners, media, graph nodes, decoded buffers, and the AudioContext. */
+  /**
+   * Tear down every browser resource owned by the engine. Closing the context
+   * also stops any short-lived oscillator/buffer sources still in flight.
+   */
   dispose(): void {
-    this.lifecycle++;
-    this.removeAutoUnlock();
-    if (this.musicEl) {
-      this.musicEl.pause();
-      this.musicEl.removeEventListener("error", this.onMusicError);
-      this.musicEl.removeEventListener("ended", this.onMusicEnded);
-      this.musicEl.removeAttribute("src");
-      this.musicEl.load();
+    if (this.disposed) return;
+    this.disposed = true;
+    this.disarmAutoUnlock();
+
+    const music = this.musicEl;
+    if (music) {
+      music.pause();
+      music.removeEventListener("error", this.onMusicError);
+      music.removeEventListener("ended", this.onMusicEnded);
+      music.removeAttribute("src");
+      music.load();
     }
+
     this.musicSrcNode?.disconnect();
     this.musicBus?.disconnect();
     this.sfxBus?.disconnect();
     this.master?.disconnect();
-    const context = this.ctx;
-    this.ctx = null;
-    this.master = null;
-    this.musicBus = null;
-    this.sfxBus = null;
+
+    const ctx = this.ctx;
+    if (ctx && ctx.state !== "closed") void ctx.close().catch(() => {});
+
     this.musicEl = null;
     this.musicSrcNode = null;
+    this.musicBus = null;
+    this.sfxBus = null;
+    this.master = null;
+    this.ctx = null;
+    this.currentTrack = null;
     this.loadedTrack = null;
     this.sampleBuffers.clear();
     this.sampleVolumes.clear();
-    this.samplesRequested = false;
-    if (context && context.state !== "closed") void context.close().catch(() => {});
-  }
-
-  private readonly onMusicError = (): void => this.handleTrackPlaybackFailure();
-
-  private readonly onMusicEnded = (): void => {
-    const el = this.musicEl;
-    if (!el || !this.musicEnabled || !this.currentTrack || !el.loop) return;
-    el.currentTime = 0;
-    void el.play().catch(() => this.handleTrackPlaybackFailure());
-  };
-
-  private readonly onAutoUnlock = (): void => {
-    this.removeAutoUnlock();
-    this.unlock();
-  };
-
-  private removeAutoUnlock(): void {
-    if (!this.autoUnlockArmed || typeof window === "undefined") return;
-    window.removeEventListener("pointerdown", this.onAutoUnlock);
-    window.removeEventListener("keydown", this.onAutoUnlock);
-    window.removeEventListener("touchstart", this.onAutoUnlock);
-    this.autoUnlockArmed = false;
   }
 }
 
