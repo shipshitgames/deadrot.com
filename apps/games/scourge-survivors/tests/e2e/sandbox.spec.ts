@@ -56,6 +56,12 @@ type ArenaDebugSnapshot = {
   solidMeshes: number;
   raycastTargets: number;
   obstacleBoxes: number;
+  readability: {
+    ok: boolean;
+    violations: number;
+    fogFar: number;
+    fogFarRequired: number;
+  } | null;
 };
 
 type HudPanelSample = {
@@ -697,6 +703,17 @@ test.describe("dev sandbox smoke", () => {
       expect(result.obstacleBoxes).toBeLessThan(result.solidMeshes);
       expect(result.raycastTargets).toBe(result.solidMeshes);
       expect(result.bounds).toEqual({ minX: -40, maxX: 40, minZ: -40, maxZ: 40 });
+      // Combat readability (#35): the same READABILITY_BUDGET the unit audit
+      // enforces on authored map data, re-scored off the LIVE scene materials,
+      // fog, and background by ArenaSystem.liveReadabilitySnapshot. Surface the
+      // measured metrics in the failure message, not just ok:false.
+      expect(result.readability, `${result.mapId}: ${JSON.stringify(result.readability)}`).toMatchObject({
+        ok: true,
+        violations: 0,
+      });
+      // fogFarRequired derives from the built arena's bounds — a zero would
+      // mean the readback measured nothing, which must not pass silently.
+      expect(result.readability?.fogFarRequired, result.mapId).toBeGreaterThan(0);
     }
 
     expect(consoleErrors).toEqual([]);
