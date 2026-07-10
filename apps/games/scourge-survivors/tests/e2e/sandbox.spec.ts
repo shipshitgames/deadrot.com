@@ -87,6 +87,26 @@ async function dismissTitleSplash(page: Page) {
   await page.keyboard.press("Enter");
 }
 
+// Neutralise pointer lock for every spec in this file. Headless CI Chromium can
+// grant a real pointer lock without a user gesture, which fires the rig's
+// capture event and flips the run status pointerlock-needed → playing before the
+// assertions run — deterministically hard-failing the campaign spec (#765) and
+// flaking the hub spec (#91) on CI while passing headed locally. No-op the API
+// so the lock never actually engages; the specs that need "playing" set
+// ctx.status directly, so this is inert for them. Mirrors reaper.spec.ts.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(HTMLElement.prototype, "requestPointerLock", {
+      configurable: true,
+      value: function requestPointerLock() {},
+    });
+    Object.defineProperty(document, "exitPointerLock", {
+      configurable: true,
+      value: function exitPointerLock() {},
+    });
+  });
+});
+
 test.describe("survivors menu", () => {
   test("opens on the Survivors hub and starts a run from the primary action", async ({ page }) => {
     const consoleErrors: string[] = [];
