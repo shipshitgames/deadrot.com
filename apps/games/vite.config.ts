@@ -19,6 +19,9 @@ export function createDeadrotViteConfig(slug: GameSlug, plugins: PluginOption[] 
   return {
     // Static builds are mounted below the web hub's game route.
     base: "./",
+    // Every game serves the shared DEADROT favicon set from the assets
+    // masters instead of a per-game public/ copy.
+    publicDir: fileURLToPath(new URL("../../packages/assets/masters/ui/brand/favicon", import.meta.url)),
     plugins,
     resolve: {
       // The engine and UI expose peer dependencies; all games must use the app's

@@ -61,6 +61,11 @@ public traffic always arrives via Caddy.
 - The deadrot params live in **us-east-1** even though the RDS and host are in
   us-west-1, so `deploy-deadrot.sh` defaults `AWS_REGION=us-east-1`. Pointing it at
   the host's own region would find no `/shipshit/production/deadrot` params and fail.
+- `WAITLIST_INGEST_TOKEN` is required in that Deadrot subtree. The deploy validates
+  it before touching the live container, and `/health/ready` rejects a production
+  process without it. The matching web secret is `WAITLIST_API_TOKEN`.
+- `WAITLIST_FORWARD_URL` is optional. Without it, signups remain durable in the
+  Deadrot Postgres outbox; adding the sink later drains the backlog.
 
 ### Isolation from `api.shipshit.dev`
 

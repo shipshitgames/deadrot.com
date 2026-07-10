@@ -1,15 +1,18 @@
 ---
-status: active
+status: historical
 type: asset-audit
 date: 2026-06-05
 ---
 
 # Style Lock Audit - 2026-06-05
 
+> **HISTORICAL.** This audit describes the pre-2026-06-17 pixel lock. The current
+> comic-ink lock is [[Style-Bible]]; retain this file only to explain the assets
+> and decisions that preceded it.
+
 ## Answer
 
-Yes, we have the prompt. The exact prompt that produced the locked reference
-family is preserved in `Art/style-bakeoff/run-d2.sh`. The specific package image
+Yes, we preserved the prompt. Its former shell runner is archived; the specific package image
 `packages/assets/sources/generated/lore-art-style-bakeoff/2026-06-04/d2-ripper-medium.png` maps to `PROMPT[ripper-medium]`:
 
 ```text
@@ -32,9 +35,8 @@ Medium-chunky pixel grid, roughly a 110px-tall sprite - clearly blocky visible
 pixels.
 ```
 
-The subject clause is the Scourge Swarm-Ripper. The palette and parasite rules
-are in the same script and are mirrored by `Universe/Style-Bible.md` plus
-`DESIGN.md`'s `assetgen:` block.
+The subject clause is the Scourge Swarm-Ripper. This is historical evidence only;
+the active palette and parasite rules are in [[DESIGN]] and [[Style-Bible]].
 
 ## Do We Follow It Everywhere?
 
