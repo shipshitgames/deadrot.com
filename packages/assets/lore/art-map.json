@@ -4,12 +4,12 @@
   "summary": {
     "entries": 29,
     "locked": 2,
-    "runtimeLinked": 5,
-    "inProgress": 21,
+    "runtimeLinked": 6,
+    "inProgress": 20,
     "drafted": 0,
     "missing": 1,
     "catalogLinked": 22,
-    "runtimeManifestLinked": 9,
+    "runtimeManifestLinked": 10,
     "packageLinked": 26,
     "hasMasters": 15,
     "hasSources": 15
@@ -320,9 +320,26 @@
         ]
       },
       "runtime": {
-        "existing": 0,
-        "generated": 0,
-        "records": []
+        "existing": 1,
+        "generated": 1,
+        "records": [
+          {
+            "game": "starblight",
+            "bucket": "sprites",
+            "key": "orbital-breach-carrier",
+            "keyPath": "orbital-breach-carrier",
+            "path": "games/starblight/enemies/scourge/orbital-breach-carrier.webp",
+            "license": {
+              "tool": "Codex image generation",
+              "plan": "built-in image generation",
+              "date": "2026-06-04",
+              "kind": "AI-generated and locally post-processed orbital breach carrier sprite",
+              "scope": "Starblight runtime"
+            },
+            "exists": true,
+            "generated": true
+          }
+        ]
       },
       "packageAssets": {
         "count": 1,
@@ -337,8 +354,9 @@
         ]
       },
       "masters": {
-        "count": 2,
+        "count": 3,
         "paths": [
+          "packages/assets/masters/sprites/starblight/runtime-v01/orbital-breach-carrier.png",
           "packages/assets/lore/art-masters/scourge/orbital-breach-carrier/orbital-breach-carrier-master-turnaround.png",
           "packages/assets/lore/art-masters/scourge/orbital-breach-carrier/orbital-breach-carrier-runtime-placeholder.webp"
         ]
@@ -356,7 +374,7 @@
         "source": "`packages/assets/entities/orbital-breach-carrier/starblight.webp`",
         "nextAction": "Replace with final Starblight boss render."
       },
-      "status": "in-progress"
+      "status": "runtime-linked"
     },
     {
       "type": "bestiary",
@@ -555,9 +573,10 @@
         ]
       },
       "masters": {
-        "count": 1,
+        "count": 2,
         "paths": [
-          "packages/assets/masters/art/scourge/bestiary-v02/render-master-v02.png"
+          "packages/assets/masters/art/scourge/bestiary-v02/render-master-v02.png",
+          "packages/assets/masters/sprites/starblight/runtime-v01/scourge-elite.png"
         ]
       },
       "sources": {
@@ -969,9 +988,10 @@
         ]
       },
       "masters": {
-        "count": 21,
+        "count": 22,
         "paths": [
           "packages/assets/masters/art/scourge/bestiary-v02/swarm-ripper-master-v02.png",
+          "packages/assets/masters/sprites/starblight/runtime-v01/scourge-swarmling.png",
           "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-01.png",
           "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-02.png",
           "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-03.png",
@@ -981,8 +1001,7 @@
           "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-07.png",
           "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-08.png",
           "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-09.png",
-          "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-10.png",
-          "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-11.png"
+          "packages/assets/lore/art-masters/scourge/swarm-ripper/references/swarm-ripper-reference-10.png"
         ]
       },
       "sources": {
@@ -1166,9 +1185,10 @@
         ]
       },
       "masters": {
-        "count": 4,
+        "count": 5,
         "paths": [
           "packages/assets/masters/art/scourge/bestiary-v02/swarm-spitter-master-v02.png",
+          "packages/assets/masters/sprites/starblight/runtime-v01/scourge-spitter.png",
           "packages/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-master-turnaround.png",
           "packages/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-runtime-placeholder.webp",
           "packages/assets/lore/art-masters/scourge/swarm-spitter/swarm-spitter-runtime-visual-lock.png"

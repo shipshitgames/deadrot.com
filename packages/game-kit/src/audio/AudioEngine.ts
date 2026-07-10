@@ -50,6 +50,8 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
   private currentTrack: Track | null = null;
   private loadedTrack: Track | null = null;
   private autoUnlockArmed = false;
+  private autoUnlockHandler: (() => void) | null = null;
+  private disposed = false;
 
   // authored SFX sample buffers (decoded once; procedural synth is the fallback)
   private sampleBuffers = new Map<Sfx, AudioBuffer>();
@@ -77,6 +79,7 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
   }
 
   private ensure(): boolean {
+    if (this.disposed) return false;
     if (this.ctx) return true;
     try {
       const Ctor: typeof AudioContext =
@@ -247,15 +250,20 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
     const el = new Audio();
     el.preload = "auto";
     el.crossOrigin = "anonymous";
-    el.addEventListener("error", () => this.handleTrackPlaybackFailure());
-    el.addEventListener("ended", () => {
-      if (!this.musicEnabled || !this.currentTrack || !el.loop) return;
-      el.currentTime = 0;
-      void el.play().catch(() => this.handleTrackPlaybackFailure());
-    });
+    el.addEventListener("error", this.onMusicError);
+    el.addEventListener("ended", this.onMusicEnded);
     this.musicEl = el;
     return el;
   }
+
+  private readonly onMusicError = () => this.handleTrackPlaybackFailure();
+
+  private readonly onMusicEnded = () => {
+    const el = this.musicEl;
+    if (!el || !this.musicEnabled || !this.currentTrack || !el.loop) return;
+    el.currentTime = 0;
+    void el.play().catch(() => this.handleTrackPlaybackFailure());
+  };
 
   private connectMusicElement(): boolean {
     if (!this.ctx || !this.musicBus) return true;
@@ -272,18 +280,27 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
   }
 
   private armAutoUnlock() {
-    if (this.autoUnlockArmed || typeof window === "undefined") return;
+    if (this.disposed || this.autoUnlockArmed || typeof window === "undefined") return;
     this.autoUnlockArmed = true;
     const unlockOnce = () => {
-      window.removeEventListener("pointerdown", unlockOnce);
-      window.removeEventListener("keydown", unlockOnce);
-      window.removeEventListener("touchstart", unlockOnce);
-      this.autoUnlockArmed = false;
+      this.disarmAutoUnlock();
       this.unlock();
     };
+    this.autoUnlockHandler = unlockOnce;
     window.addEventListener("pointerdown", unlockOnce, { once: true, passive: true });
     window.addEventListener("keydown", unlockOnce, { once: true });
     window.addEventListener("touchstart", unlockOnce, { once: true, passive: true });
+  }
+
+  private disarmAutoUnlock() {
+    const handler = this.autoUnlockHandler;
+    if (handler && typeof window !== "undefined") {
+      window.removeEventListener("pointerdown", handler);
+      window.removeEventListener("keydown", handler);
+      window.removeEventListener("touchstart", handler);
+    }
+    this.autoUnlockHandler = null;
+    this.autoUnlockArmed = false;
   }
 
   // ----------------------------------------------------------------- sfx
@@ -301,7 +318,7 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
         .then((r) => r.arrayBuffer())
         .then((b) => this.ctx?.decodeAudioData(b))
         .then((decoded) => {
-          if (decoded) this.sampleBuffers.set(name, decoded);
+          if (decoded && !this.disposed) this.sampleBuffers.set(name, decoded);
         })
         .catch(() => {}); // unloaded → procedural fallback for this cue
     }
@@ -381,6 +398,44 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
     const data = buf.getChannelData(0);
     for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
     return buf;
+  }
+
+  /**
+   * Tear down every browser resource owned by the engine. Closing the context
+   * also stops any short-lived oscillator/buffer sources still in flight.
+   */
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.disarmAutoUnlock();
+
+    const music = this.musicEl;
+    if (music) {
+      music.pause();
+      music.removeEventListener("error", this.onMusicError);
+      music.removeEventListener("ended", this.onMusicEnded);
+      music.removeAttribute("src");
+      music.load();
+    }
+
+    this.musicSrcNode?.disconnect();
+    this.musicBus?.disconnect();
+    this.sfxBus?.disconnect();
+    this.master?.disconnect();
+
+    const ctx = this.ctx;
+    if (ctx && ctx.state !== "closed") void ctx.close().catch(() => {});
+
+    this.musicEl = null;
+    this.musicSrcNode = null;
+    this.musicBus = null;
+    this.sfxBus = null;
+    this.master = null;
+    this.ctx = null;
+    this.currentTrack = null;
+    this.loadedTrack = null;
+    this.sampleBuffers.clear();
+    this.sampleVolumes.clear();
   }
 }
 

@@ -43,8 +43,8 @@ export function runModeLabel(mode?: HudState["runMode"]): string {
       return "Structured";
     case "endless":
       return "Endless";
-    case "coop":
-      return "Co-op";
+    case "arena":
+      return "Arena Preview";
     case "sandbox":
       return "Sandbox";
     case "campaign":
