@@ -45,18 +45,29 @@ if (all) {
 }
 
 const selectedGames = gameDirs.filter((slug) => reasons.get(slug).length > 0);
+// Subset that ships its own app-local Playwright suite (apps/games/<slug>/tests/e2e
+// run via the package's own `test:e2e`). These run in a separate CI job against
+// the app-local config — the root ./e2e matrix never sees them — so they need
+// their own affected-slug list. Any game that later adds the pair is picked up.
+const appE2eGames = selectedGames.filter((slug) => hasAppE2eSuite(slug));
 const outputs = {
   game_slugs: selectedGames.join(","),
   // JSON array form for the GitHub Actions matrix (fromJSON). Always a valid
   // array — "[]" when nothing is affected — so fromJSON never throws.
   game_slugs_json: JSON.stringify(selectedGames),
   count: String(selectedGames.length),
+  app_e2e_slugs: appE2eGames.join(","),
+  app_e2e_slugs_json: JSON.stringify(appE2eGames),
+  app_e2e_count: String(appE2eGames.length),
 };
 
 if (process.env.GITHUB_OUTPUT) {
   appendFileSync(process.env.GITHUB_OUTPUT, `game_slugs=${outputs.game_slugs}\n`);
   appendFileSync(process.env.GITHUB_OUTPUT, `game_slugs_json=${outputs.game_slugs_json}\n`);
   appendFileSync(process.env.GITHUB_OUTPUT, `count=${outputs.count}\n`);
+  appendFileSync(process.env.GITHUB_OUTPUT, `app_e2e_slugs=${outputs.app_e2e_slugs}\n`);
+  appendFileSync(process.env.GITHUB_OUTPUT, `app_e2e_slugs_json=${outputs.app_e2e_slugs_json}\n`);
+  appendFileSync(process.env.GITHUB_OUTPUT, `app_e2e_count=${outputs.app_e2e_count}\n`);
 }
 
 if (!selectedGames.length) {
@@ -70,6 +81,10 @@ for (const slug of selectedGames) {
   const visible = slugReasons.slice(0, 6).join(", ");
   const more = slugReasons.length > 6 ? ` (+${slugReasons.length - 6} more)` : "";
   console.log(`- ${slug}: ${visible}${more}`);
+}
+
+if (appE2eGames.length) {
+  console.log(`App-local E2E suites (${appE2eGames.length}): ${appE2eGames.join(", ")}`);
 }
 
 function flagValue(name) {
@@ -149,6 +164,15 @@ function isE2eInfra(file) {
 
 function isRootDependencyFile(file) {
   return ["package.json", "bun.lock", "turbo.json"].includes(file);
+}
+
+// A game owns an app-local Playwright suite when it both declares a `test:e2e`
+// script and ships an apps/games/<slug>/tests/e2e directory to run.
+function hasAppE2eSuite(slug) {
+  const pkg = gamePackages.get(slug);
+  const hasScript = Boolean(pkg?.scripts?.["test:e2e"]);
+  const hasSpecs = existsSync(path.join(gamesRoot, slug, "tests", "e2e"));
+  return hasScript && hasSpecs;
 }
 
 function sharedPackageFor(file) {

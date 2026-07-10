@@ -42,6 +42,9 @@ jobs:
       game_slugs: ${{ steps.detect.outputs.game_slugs }}
       game_slugs_json: ${{ steps.detect.outputs.game_slugs_json }}
       count: ${{ steps.detect.outputs.count }}
+      app_e2e_slugs: ${{ steps.detect.outputs.app_e2e_slugs }}
+      app_e2e_slugs_json: ${{ steps.detect.outputs.app_e2e_slugs_json }}
+      app_e2e_count: ${{ steps.detect.outputs.app_e2e_count }}
 
     steps:
       - name: Checkout
@@ -127,6 +130,72 @@ jobs:
             test-results/
           retention-days: 7
 
+  app-e2e:
+    name: App E2E (${{ matrix.game }})
+    needs: affected-games
+    if: needs.affected-games.outputs.app_e2e_count != '0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      # One runner per affected game that ships its own app-local Playwright
+      # suite. No viewport split — the app-local config is desktop-only — and a
+      # dedicated runner per game sidesteps the shared port-5178 the app config
+      # binds (reuseExistingServer: !CI, so each run owns its own dev server).
+      matrix:
+        game: ${{ fromJSON(needs.affected-games.outputs.app_e2e_slugs_json) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Cache Bun install cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
+      - name: Install Playwright browsers
+        run: bunx playwright install --with-deps chromium
+
+      # Runs the game's own `test:e2e` (apps/games/<slug>/playwright.config.ts)
+      # against its app-local suite. Uses the dev server directly — the same way
+      # the root `games` matrix boots each game — so no upstream package build is
+      # needed. The root ./e2e matrix never runs these specs.
+      - name: Run app-local E2E (${{ matrix.game }})
+        run: bun run --cwd apps/games/${{ matrix.game }} test:e2e
+        env:
+          CI: true
+
+      - name: Upload app-local Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-e2e-${{ matrix.game }}-${{ github.run_id }}
+          path: |
+            apps/games/${{ matrix.game }}/playwright-report/
+            apps/games/${{ matrix.game }}/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
   docker-game-e2e:
     name: Dockerized game E2E
     needs: affected-games
@@ -178,7 +247,7 @@ jobs:
   # skipped on PRs.
   game-e2e-gate:
     name: game-e2e-gate
-    needs: [affected-games, games]
+    needs: [affected-games, games, app-e2e]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -188,17 +257,23 @@ jobs:
         env:
           AFFECTED_RESULT: ${{ needs.affected-games.result }}
           GAMES_RESULT: ${{ needs.games.result }}
+          APP_E2E_RESULT: ${{ needs.app-e2e.result }}
         run: |
           echo "affected-games: $AFFECTED_RESULT"
           echo "games:          $GAMES_RESULT"
+          echo "app-e2e:        $APP_E2E_RESULT"
           # Detector must have completed cleanly, else we don't know what to test.
           if [[ "$AFFECTED_RESULT" != "success" ]]; then
             echo "::error::affected-games did not succeed ($AFFECTED_RESULT)"
             exit 1
           fi
-          # `games` is skipped when no games were affected (count == 0) — a
+          # `games`/`app-e2e` are skipped when nothing they cover was affected — a
           # legitimate pass. Only real failure/cancellation should gate.
           case "$GAMES_RESULT" in
-            success|skipped) echo "Game E2E gate passed." ;;
+            success|skipped) echo "Game E2E matrix passed." ;;
             *) echo "::error::game E2E matrix result: $GAMES_RESULT"; exit 1 ;;
+          esac
+          case "$APP_E2E_RESULT" in
+            success|skipped) echo "App-local E2E passed." ;;
+            *) echo "::error::app-local E2E result: $APP_E2E_RESULT"; exit 1 ;;
           esac

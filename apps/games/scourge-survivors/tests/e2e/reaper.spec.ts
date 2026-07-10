@@ -1,10 +1,20 @@
 import { expect, type Page, test } from "@playwright/test";
+import { DEFAULT_MAP_ID } from "../../src/game/data/maps";
+import { reaperForMap } from "../../src/game/data/reaper";
+import { SURVIVOR_RUN_CHAPTERS } from "../../src/game/data/survivors";
 
 // The Toll (#278): at the 10:00 mark of a structured Survivors run the breach
 // sends its named reaper, which ends the run one way or the other. These specs
 // fast-forward the run clock to the final second (house style: direct state
 // surgery on __fpsGame), let real frames deliver the arrival, then force each
 // ending deterministically.
+
+// A no-map structured run holds the default breach site for the whole descent
+// (#276), so the arrival lands on that map's final chapter and carries that
+// map's lore-sourced reaper — derived here rather than hardcoded so a lore
+// rename can't silently rot this spec.
+const FINAL_CHAPTER = SURVIVOR_RUN_CHAPTERS[SURVIVOR_RUN_CHAPTERS.length - 1];
+const DEFAULT_REAPER = reaperForMap(DEFAULT_MAP_ID);
 
 type HudSnapshot = {
   status: string;
@@ -81,7 +91,7 @@ async function startStructuredRun(page: Page) {
 
 /** Jump the run clock to one second before SURVIVOR_RUN_GOAL_TIME (600s — read
  *  live from ctx.survivorGoalTime), then let real frames cross the threshold:
- *  chapter advance to Perdition first, the warning toast, then the arrival. */
+ *  chapter advance to the final chapter first, the warning toast, then the arrival. */
 async function fastForwardToFinalSecond(page: Page) {
   await page.evaluate(() => {
     const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
@@ -111,18 +121,18 @@ test.describe("the 10:00 reaper (The Toll)", () => {
     await startStructuredRun(page);
     await fastForwardToFinalSecond(page);
 
-    // The arrival lands on the final chapter (Perdition) and carries the
+    // The arrival lands on the run's final chapter and carries the map's
     // lore-sourced name — never a hardcoded generic boss banner.
     const arrival = await snapshot(page);
     expect(arrival).toMatchObject({
       bossActive: true,
-      bossName: "The Choir Node",
+      bossName: DEFAULT_REAPER.name,
       runMode: "structured",
-      runDepth: 4,
-      runDepthTotal: 4,
-      runDepthName: "Perdition",
+      runDepth: SURVIVOR_RUN_CHAPTERS.length,
+      runDepthTotal: SURVIVOR_RUN_CHAPTERS.length,
+      runDepthName: FINAL_CHAPTER.name,
     });
-    await expect(page.locator(".scourge-boss-label")).toContainText("The Choir Node");
+    await expect(page.locator(".scourge-boss-label")).toContainText(DEFAULT_REAPER.name);
 
     // Make the one-shot deterministic: stand the reaper next to the player and
     // let its touch attack land on real frames (house style allows mutation).
@@ -143,12 +153,13 @@ test.describe("the 10:00 reaper (The Toll)", () => {
     await expect(page.getByText("RUN SUMMARY")).toBeVisible();
     await expect(page.getByText("Structured run — operator signal gone")).toBeVisible();
 
-    // The run still banks gold: persistent shop balance grows and the summary
-    // shows the earned amount.
+    // The run still banks gold: persistent shop balance grows and the summary's
+    // gold stat shows the exact earned amount saved to the shop.
     await expect.poll(() => shopGold(page)).toBeGreaterThan(goldBefore);
     const earned = (await shopGold(page)) - goldBefore;
-    await expect(page.locator(".ssg-stat-value", { hasText: `+${earned.toLocaleString()}` })).toBeVisible();
-    await expect(page.getByText("saved to shop")).toBeVisible();
+    const goldStat = page.getByTestId("summary-gold");
+    await expect(goldStat).toContainText(`+${earned.toLocaleString()}`);
+    await expect(goldStat).toContainText("saved to shop");
   });
 
   test("felling the toll seals the breach", async ({ page }) => {

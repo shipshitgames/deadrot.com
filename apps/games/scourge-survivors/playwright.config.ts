@@ -12,6 +12,12 @@ export default defineConfig({
     timeout: 10_000,
   },
   fullyParallel: false,
+  // One worker: every spec drives heavy WebGL/Three.js gameplay against a single
+  // shared dev server on one port, so parallel workers thrash that server and
+  // flake on frame timing. Mirrors the root e2e config's workers:1 for the same
+  // reason. (On a 2-core CI runner Playwright already defaults to ~1 worker; this
+  // makes it explicit and keeps local high-core-count runs reliable too.)
+  workers: 1,
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI
     ? [["list"], ["html", { open: "never", outputFolder: process.env.PLAYWRIGHT_HTML_REPORT ?? "playwright-report" }]]
