@@ -6,9 +6,11 @@ import type { GameSystems } from "../systems";
 
 /** Owns the renderer/scene/camera/controls bootstrap and the per-frame draw. */
 export class RenderSystem {
+  // `_sys` keeps the uniform `(ctx, sys)` system-constructor signature; RenderSystem
+  // does not currently reach for sibling systems, so it is intentionally unstored.
   constructor(
     private ctx: GameContext,
-    private sys: GameSystems,
+    _sys: GameSystems,
   ) {}
 
   setupRenderer() {

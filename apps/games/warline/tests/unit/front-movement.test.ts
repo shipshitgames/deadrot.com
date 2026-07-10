@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { makeMoveIntent, RectBounds } from "@shipshitgames/engine";
+import { type firstPersonPointerLock, makeMoveIntent, RectBounds } from "@shipshitgames/engine";
 import * as THREE from "three";
 import { createMoveState, resetMoveState, updateMovement } from "../../src/front/movement";
 
@@ -38,7 +38,7 @@ function makeHarness() {
       this.body.position.x += right;
       this.body.position.z += forward;
     },
-  } as any;
+  } as unknown as ReturnType<typeof firstPersonPointerLock>;
 
   return { move, rig, state };
 }

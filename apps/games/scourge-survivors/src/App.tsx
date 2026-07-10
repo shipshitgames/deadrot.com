@@ -44,6 +44,10 @@ const SandboxPanel = import.meta.env.DEV
   ? lazy(() => import("./components/SandboxPanel").then((mod) => ({ default: mod.SandboxPanel })))
   : null;
 
+// Build-time constant (Vite statically replaces `import.meta.env.DEV`). Kept at
+// module scope so it is never treated as a hook dependency.
+const sandboxAvailable = import.meta.env.DEV;
+
 const INITIAL_WEAPON_IDENTITY = weaponIdentityFor(STARTING_WEAPON);
 
 interface CombatLaunchRequest {
@@ -164,7 +168,6 @@ export default function App() {
   const [scores, setScores] = useState<ScoreEntry[]>(() => loadScores());
   const [shop, setShop] = useState<ShopState>(() => loadShop());
   const lastRunGoldRef = useRef(0);
-  const sandboxAvailable = import.meta.env.DEV;
   const savedRef = useRef(false);
   // Generated once for the active run and replaced only after it leaves the
   // game-over state, so repeated HUD snapshots cannot bank the run twice.
@@ -181,7 +184,8 @@ export default function App() {
   );
   const initialSandbox = useMemo(
     () => sandboxAvailable && new URLSearchParams(window.location.search).get("sandbox") === "1",
-    [sandboxAvailable],
+    // `sandboxAvailable` is `import.meta.env.DEV`, a build-time constant — never a reactive dep.
+    [],
   );
   const [sandboxActive, setSandboxActive] = useState(false);
   const setRoomInUrl = useCallback((room: string) => {
@@ -382,7 +386,7 @@ export default function App() {
         },
       });
     },
-    [runCombatLaunch, sandboxAvailable, setRoomInUrl, setSandboxInUrl],
+    [runCombatLaunch, setRoomInUrl, setSandboxInUrl],
   );
   const handleExitSandbox = useCallback(() => {
     setSandboxActive(false);

@@ -66,6 +66,7 @@ body {
   font-family: var(--mono);
 }
 .hidden {
+  /* biome-ignore lint/complexity/noImportantStyles: generic hide utility must override higher-specificity base display rules (e.g. `#boss-bar { display: flex }`), which requires !important. */
   display: none !important;
 }
 .label {

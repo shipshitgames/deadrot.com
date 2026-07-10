@@ -155,10 +155,7 @@ export function PauseScreens({
               Controls
             </IconText>
           </h2>
-          <div
-            className="pause-ui relative z-[1] flex flex-col gap-[10px] w-[min(340px,86vw)] pointer-events-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="pause-ui relative z-[1] flex flex-col gap-[10px] w-[min(340px,86vw)] pointer-events-auto">
             <div className="flex flex-col gap-2 px-[18px] py-[14px] bg-white/[0.04] border border-white/[0.12] rounded-[10px] text-[14px] [&>div]:flex [&>div]:items-center [&>div]:gap-[10px] [&_span]:shrink-0 [&_span]:w-[110px] [&_span]:text-right [&_span]:opacity-85">
               <div>
                 <span>
