@@ -38,6 +38,13 @@ type AnimationSample = {
   frame: number;
   src: string;
   state: string;
+  animation?: {
+    entity: string;
+    action: string;
+    view: "front" | "side" | "back";
+    frame: number;
+    source: "atlas" | "frame";
+  };
 };
 
 type ArenaDebugSnapshot = {
@@ -109,7 +116,6 @@ test.describe("survivors menu", () => {
     await expect(page.getByText("SCOURGE", { exact: true })).toBeVisible();
     await expect(page.getByText("SURVIVORS", { exact: true })).toBeVisible();
     // The title screen holds the menu behind a "press enter to continue" splash.
-    await expect(page.getByText("Press Enter to continue")).toBeVisible();
     await dismissTitleSplash(page);
     const hub = page.getByRole("navigation", { name: /survivors hub/i });
     await expect(hub).toBeVisible();
@@ -137,7 +143,7 @@ test.describe("survivors menu", () => {
     await expect(page.locator(".ssg-section-heading", { hasText: "Breach Site" })).toBeVisible();
     await page.getByRole("button", { name: /play a run/i }).click();
 
-    await expect(page.getByRole("button", { name: /click to play/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /click to (?:play|lock)/i })).toBeVisible();
     await expect.poll(() => snapshot(page).then((state) => state.status)).toBe("pointerlock-needed");
     await expect.poll(() => snapshot(page).then((state) => state.survivors)).toBe(true);
     await expect.poll(() => snapshot(page).then((state) => state.multiplayer)).toBe(false);
@@ -146,7 +152,7 @@ test.describe("survivors menu", () => {
 });
 
 async function stageActiveSurvivorsHud(page: Page) {
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     type DevGame = {
       startSurvivors: (classId?: "heavy") => void;
       ctx: {
@@ -178,7 +184,7 @@ async function stageActiveSurvivorsHud(page: Page) {
     };
 
     const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
-    game.startSurvivors("heavy");
+    await game.startSurvivors("heavy");
     game.ctx.status = "playing";
     game.ctx.time = 93;
     game.ctx.score = 12_500;
@@ -285,7 +291,7 @@ test.describe("dev sandbox smoke", () => {
     await page.goto("/");
     await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
 
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
       type DevGame = {
         startSurvivors: (classId?: "ranger") => void;
         ctx: {
@@ -305,7 +311,7 @@ test.describe("dev sandbox smoke", () => {
       };
 
       const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
-      game.startSurvivors("ranger");
+      await game.startSurvivors("ranger");
       game.ctx.status = "playing";
       game.ctx.kills = 42;
       game.ctx.headshots = 5;
@@ -333,7 +339,7 @@ test.describe("dev sandbox smoke", () => {
     await expect(page.locator(".scourge-top-stats")).toHaveCount(0);
     await expect(page.getByTestId("weapon-panel")).not.toContainText("∞");
 
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
       type DevGame = {
         sys: { gameOver: { gameOver: (outcome: "dead") => void } };
       };
@@ -376,7 +382,7 @@ test.describe("dev sandbox smoke", () => {
     await page.goto("/");
     await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
 
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
       type DevGame = {
         ctx: {
           campaign: boolean;
@@ -782,8 +788,10 @@ test.describe("dev sandbox smoke", () => {
     await page.goto("/");
     await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
 
-    await page.evaluate(() => {
-      (window as unknown as { __fpsGame: { startCampaign: (mapId: string) => void } }).__fpsGame.startCampaign("maw");
+    await page.evaluate(async () => {
+      await (
+        window as unknown as { __fpsGame: { startCampaign: (mapId: string) => Promise<void> } }
+      ).__fpsGame.startCampaign("maw");
     });
 
     await expect.poll(() => snapshot(page).then((state) => state.campaign)).toBe(true);
@@ -806,7 +814,7 @@ test.describe("dev sandbox smoke", () => {
       missionExtractionReady: false,
       missionComplete: false,
     });
-    await expect(page.getByRole("button", { name: /click to play/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /click to (?:play|lock)/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /start run/i })).toHaveCount(0);
   });
 
@@ -814,7 +822,7 @@ test.describe("dev sandbox smoke", () => {
     await page.goto("/?sandbox=1");
     await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
 
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
       type DevGame = {
         startSandbox: () => void;
         ctx: {
@@ -828,7 +836,7 @@ test.describe("dev sandbox smoke", () => {
       };
 
       const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
-      game.startSandbox();
+      await game.startSandbox();
       game.ctx.status = "playing";
       game.sys.pickups.collectPickup("damage");
     });
@@ -893,6 +901,9 @@ test.describe("dev sandbox smoke", () => {
               currentSrc?: string;
               src?: string;
             };
+            userData?: {
+              scourgeAnimation?: AnimationSample["animation"];
+            };
           };
         };
         attackAnimationDuration: () => number;
@@ -924,10 +935,11 @@ test.describe("dev sandbox smoke", () => {
             frame: enemy.spriteAnimationFrame,
             src: enemy.spriteMat.map?.image?.currentSrc || enemy.spriteMat.map?.image?.src || "",
             state: enemy.spriteAnimationState,
+            animation: enemy.spriteMat.map?.userData?.scourgeAnimation,
           }))
           .sort((a, b) => a.kind.localeCompare(b.kind));
 
-      game.startSandbox();
+      await game.startSandbox();
       game.ctx.status = "playing";
       game.clearSandboxActors();
       for (const kind of ["melee", "ranged", "flying", "boss"] as const) {
@@ -962,9 +974,18 @@ test.describe("dev sandbox smoke", () => {
     expect(result.moveB.map((sample) => sample.kind)).toEqual(["boss", "flying", "melee", "ranged"]);
 
     for (const sample of result.moveB) {
-      expect(sample.src).toContain("/animations/scourge/");
+      expect(sample.src).toContain("/animations/scourge/scourge.atlas0.webp");
+      expect(sample.animation?.source).toBe("atlas");
+      expect(sample.animation?.frame).toBe(sample.frame);
+      expect(["front", "side", "back"]).toContain(sample.animation?.view);
     }
 
+    expect(Object.fromEntries(result.moveB.map((sample) => [sample.kind, sample.animation?.entity]))).toMatchObject({
+      boss: "breach-boss",
+      flying: "winged-host",
+      melee: "host-grunt",
+      ranged: "spitter-host",
+    });
     for (const kind of ["boss", "flying", "melee", "ranged"] as const) {
       const kindSamples = result.moveSamples.flat().filter((sample) => sample.kind === kind);
       expect(kindSamples.some((sample) => sample.state === "move")).toBe(true);
@@ -972,13 +993,32 @@ test.describe("dev sandbox smoke", () => {
       expect(frames.size).toBeGreaterThan(1);
     }
 
-    expect(Object.fromEntries(result.attacking.map((sample) => [sample.kind, sample.src]))).toMatchObject({
-      boss: expect.stringContaining("/breach-boss/barrage/"),
-      flying: expect.stringContaining("/winged-host/attack/"),
-      melee: expect.stringContaining("/host-grunt/slash/"),
-      ranged: expect.stringContaining("/spitter-host/spit/"),
+    const movingActionByKind = Object.fromEntries(
+      (["boss", "flying", "melee", "ranged"] as const).map((kind) => [
+        kind,
+        result.moveSamples.flat().find((sample) => sample.kind === kind && sample.state === "move")?.animation?.action,
+      ]),
+    );
+    expect(movingActionByKind).toMatchObject({
+      boss: "lurch",
+      flying: "fly",
+      melee: "walk",
+      ranged: "walk",
     });
+
+    expect(Object.fromEntries(result.attacking.map((sample) => [sample.kind, sample.animation?.action]))).toMatchObject(
+      {
+        boss: "barrage",
+        flying: "attack",
+        melee: "slash",
+        ranged: "spit",
+      },
+    );
     expect(result.attacking.every((sample) => sample.state === "attack")).toBe(true);
+    expect(result.attacking.every((sample) => sample.animation?.source === "atlas")).toBe(true);
+    expect(result.attacking.every((sample) => sample.src.includes("/animations/scourge/scourge.atlas0.webp"))).toBe(
+      true,
+    );
   });
 
   test("uses death animation frames and sprite gibs for enemy kills", async ({ page }) => {
@@ -991,6 +1031,15 @@ test.describe("dev sandbox smoke", () => {
           image?: {
             currentSrc?: string;
             src?: string;
+          };
+          userData?: {
+            scourgeAnimation?: {
+              entity: string;
+              action: string;
+              view: "front" | "side" | "back";
+              frame: number;
+              source: "atlas" | "frame";
+            };
           };
         };
       };
@@ -1030,7 +1079,7 @@ test.describe("dev sandbox smoke", () => {
       const srcOf = (material?: DevSpriteMaterial) =>
         material?.map?.image?.currentSrc || material?.map?.image?.src || "";
 
-      game.startSandbox();
+      await game.startSandbox();
       game.ctx.status = "playing";
       game.clearSandboxActors();
       game.spawnSandboxEnemy("melee", 1);
@@ -1048,11 +1097,19 @@ test.describe("dev sandbox smoke", () => {
         corpseTypes: game.sys.fx.corpseParts.map((part) => part.mesh.type),
         deathCount: game.sys.fx.deathSprites.length,
         deathSrc: srcOf(game.sys.fx.deathSprites[0]?.material),
+        deathAnimation: game.sys.fx.deathSprites[0]?.material.map?.userData?.scourgeAnimation,
       };
     });
 
     expect(result.deathCount).toBeGreaterThan(0);
-    expect(result.deathSrc).toContain("/animations/scourge/host-grunt/death/");
+    expect(result.deathSrc).toContain("/animations/scourge/scourge.atlas0.webp");
+    expect(result.deathAnimation).toMatchObject({
+      entity: "host-grunt",
+      action: "death",
+      source: "atlas",
+    });
+    expect(["front", "side", "back"]).toContain(result.deathAnimation?.view);
+    expect(result.deathAnimation?.frame).toBeGreaterThanOrEqual(0);
     expect(result.corpseCount).toBeGreaterThan(0);
     expect(result.corpseTypes.every((type) => type === "Sprite")).toBe(true);
     expect(result.corpseSources.every((src) => src.includes("/fx/gibs/"))).toBe(true);

@@ -131,9 +131,13 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
       await expect(page.getByText("Scourge Labs")).toBeVisible();
       await expect(page.getByTestId("game-canvas")).toBeVisible();
       await page.waitForFunction(() => {
-        const win = window as unknown as { __fpsGame?: unknown; __hudSnapshot?: () => unknown };
-        return Boolean(win.__fpsGame && win.__hudSnapshot);
+        const win = window as unknown as {
+          __fpsGame?: unknown;
+          __hudSnapshot?: () => { sandbox?: boolean };
+        };
+        return Boolean(win.__fpsGame && win.__hudSnapshot?.().sandbox);
       });
+      await expect(page.getByTestId("combat-asset-loading")).toHaveCount(0);
     },
     async exercise(page) {
       const snapshot = await page.evaluate(() => {

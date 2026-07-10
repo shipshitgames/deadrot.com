@@ -26,9 +26,9 @@ async function snapshot(page: Page): Promise<HudSnapshot> {
 }
 
 async function startSurvivors(page: Page, classId: SurvivorClassId) {
-  await page.evaluate((id) => {
+  await page.evaluate(async (id) => {
     const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
-    game.startSurvivors(id);
+    await game.startSurvivors(id);
     game.sys.hud.emit();
   }, classId);
 }

@@ -19,7 +19,7 @@ type WaveRunResult = {
 };
 
 async function runCampaignToBoss(page: Page): Promise<WaveRunResult> {
-  return page.evaluate(() => {
+  return page.evaluate(async () => {
     type DevEnemy = {
       alive: boolean;
       health: number;
@@ -48,7 +48,7 @@ async function runCampaignToBoss(page: Page): Promise<WaveRunResult> {
     };
 
     const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
-    game.startCampaign();
+    await game.startCampaign();
     game.ctx.status = "playing";
     // Fresh director state so the run is deterministic regardless of menu flow.
     game.sys.pve.startWaveSystem();

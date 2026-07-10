@@ -258,9 +258,13 @@ async function boot(page: Page) {
 
   // Wait for the DEV hooks to be installed before driving the game.
   await page.waitForFunction(() => {
-    const win = window as unknown as { __fpsGame?: unknown; __hudSnapshot?: () => unknown };
-    return Boolean(win.__fpsGame && win.__hudSnapshot);
+    const win = window as unknown as {
+      __fpsGame?: unknown;
+      __hudSnapshot?: () => { sandbox?: boolean };
+    };
+    return Boolean(win.__fpsGame && win.__hudSnapshot?.().sandbox);
   });
+  await expect(page.getByTestId("combat-asset-loading")).toHaveCount(0);
 
   // Sanity-gate the starting snapshot (matches the smoke) before deep drives.
   expect(await snapshot(page)).toMatchObject({ sandbox: true, status: "pointerlock-needed" });

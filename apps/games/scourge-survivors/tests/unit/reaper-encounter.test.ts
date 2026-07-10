@@ -3,9 +3,9 @@
 // reaper.test.ts — this file drives the REAL SurvivorsSystem and PveDirectorSystem
 // with hand-rolled plain-object fakes (the mission-system.test.ts harness pattern).
 //
-// Two module mocks neutralize browser-only module-scope work so the systems can
-// load under node: spriteAssets eagerly builds textures via THREE.TextureLoader
-// (needs `document`), and the audio singleton is replaced with a recording stub.
+// Two module mocks keep the system harness focused: spriteAssets is replaced
+// with inert textures (combat preload belongs to its own tests), and the audio
+// singleton is replaced with a recording stub.
 
 import * as THREE from "three";
 import { beforeEach, describe, expect, it, vi } from "vitest";
