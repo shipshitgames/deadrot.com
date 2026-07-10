@@ -1,6 +1,12 @@
 # 2026-06-05 - Scourge Animation Pack
 
-Purpose: first-pass animation sprite sheets for Scourge Survivors foes using the locked medium-chunky pixel-art direction and existing runtime front / side / back sprites as visual references.
+> **HISTORICAL / OFF-CANON FOR NEW WORK.** This first-pass sheet recipe uses the
+> former pixel-art direction. Keep it only to interpret existing runtime
+> scaffolding; use [[Style-Bible]] for new comic-ink animation work.
+
+Purpose: first-pass animation sprite sheets for Scourge Survivors foes using the
+former medium-chunky pixel-art direction and existing runtime front / side / back
+sprites as visual references.
 
 Tool path: built-in `image_gen`, `gpt-image-2`.
 
