@@ -1,55 +1,94 @@
+import { mkdir, open } from "node:fs/promises";
+import { dirname } from "node:path";
+
 import type { WaitlistSignup } from "@/lib/waitlist";
 
-// Where a confirmed waitlist signup goes for follow-up. The capture surface stays
-// first-party (deadrot.com/api/waitlist) while the actual destination is pluggable
-// per-env, so the repo owns the form, validation, and wiring without pinning a
-// single vendor:
-//
-//   - WAITLIST_FORWARD_URL  — any endpoint that accepts a JSON POST (webhook,
-//                             serverless function, Google Apps Script, …).
-//   - FORMSPREE_ID / NEXT_PUBLIC_FORMSPREE_ID — convenience shorthand for the
-//                             Formspree inbox the static form used historically.
-//
-// Unset (CI / local dev / e2e) => we just structured-log and return. The request
-// still succeeds, so the UX and the smoke tests never depend on an external
-// service being reachable. The admin/export path is documented in docs/waitlist.md.
-
-/** Resolved follow-up destination, or null when none is configured. Reads env at
- *  call time (not import time) so it tracks the live config and stays unit-testable. */
-function waitlistForwardTarget(): string | null {
-  const forwardUrl = process.env.WAITLIST_FORWARD_URL?.trim();
-  if (forwardUrl) return forwardUrl;
-  const formspreeId = (process.env.FORMSPREE_ID ?? process.env.NEXT_PUBLIC_FORMSPREE_ID)?.trim();
-  if (formspreeId) return `https://formspree.io/f/${formspreeId}`;
-  return null;
+export class WaitlistPersistenceError extends Error {
+  constructor() {
+    super("Waitlist persistence is unavailable");
+    this.name = "WaitlistPersistenceError";
+  }
 }
 
-export async function recordSignup(signup: WaitlistSignup): Promise<void> {
-  const target = waitlistForwardTarget();
-  if (!target) {
-    // No sink wired: the structured log IS the record (ops can replay from logs
-    // / the platform's log drain). Never log the raw address at info level.
-    console.info("[waitlist] signup", { source: signup.source, at: signup.at });
-    return;
-  }
+function isLocalRuntime(env: NodeJS.ProcessEnv): boolean {
+  return (
+    (env.NODE_ENV === "development" || env.NODE_ENV === "test") &&
+    env.VERCEL_ENV !== "preview" &&
+    env.VERCEL_ENV !== "production"
+  );
+}
+
+function apiTarget(env: NodeJS.ProcessEnv): URL | null {
+  const raw = env.WAITLIST_API_URL?.trim();
+  if (!raw) return null;
+
   try {
-    const res = await fetch(target, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ email: signup.email, source: signup.source, at: signup.at }),
-    });
-    if (!res.ok) {
-      // fetch only rejects on transport failure, not on a 4xx/5xx reply. Surface
-      // the non-ok status so a forward that returns (e.g.) 500 isn't silently lost.
-      console.error("[waitlist] forward returned non-ok", {
-        status: res.status,
-        source: signup.source,
-        at: signup.at,
-      });
-    }
-  } catch (error) {
-    // A forward outage must never 500 the signup. Swallow + log; the structured
-    // record above is the fallback so a dropped forward is recoverable.
-    console.error("[waitlist] forward failed", error);
+    const url = new URL(raw);
+    const localHost = url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "[::1]";
+    const validProtocol = url.protocol === "https:" || (isLocalRuntime(env) && localHost && url.protocol === "http:");
+    if (!validProtocol || url.username || url.password || url.search || url.hash) return null;
+    return url;
+  } catch {
+    return null;
   }
+}
+
+async function appendLocalRecord(path: string, signup: WaitlistSignup): Promise<void> {
+  await mkdir(dirname(path), { recursive: true });
+  const file = await open(path, "a", 0o600);
+  try {
+    await file.chmod(0o600);
+    await file.appendFile(`${JSON.stringify(signup)}\n`, "utf8");
+    await file.sync();
+  } finally {
+    await file.close();
+  }
+}
+
+/**
+ * Record a signup durably before the route reports success.
+ *
+ * Production/preview use the first-party Postgres-backed API. An explicitly
+ * configured, fsynced JSONL file is available only to local dev/E2E. There is no
+ * logging fallback: missing or unavailable persistence rejects the request.
+ */
+export async function recordSignup(
+  signup: WaitlistSignup,
+  env: NodeJS.ProcessEnv = process.env,
+  fetchImpl: typeof fetch = fetch,
+): Promise<void> {
+  const target = apiTarget(env);
+  const token = env.WAITLIST_API_TOKEN?.trim();
+
+  if (target && token) {
+    try {
+      const response = await fetchImpl(target, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(signup),
+        signal: AbortSignal.timeout(7_000),
+      });
+      if (response.ok) return;
+    } catch {
+      // The route reports a generic retryable error below. Never log addresses,
+      // response bodies, tokens, or target URLs from this privacy-sensitive path.
+    }
+    throw new WaitlistPersistenceError();
+  }
+
+  const localFile = env.WAITLIST_LOCAL_FILE?.trim();
+  if (localFile && isLocalRuntime(env)) {
+    try {
+      await appendLocalRecord(localFile, signup);
+      return;
+    } catch {
+      throw new WaitlistPersistenceError();
+    }
+  }
+
+  throw new WaitlistPersistenceError();
 }

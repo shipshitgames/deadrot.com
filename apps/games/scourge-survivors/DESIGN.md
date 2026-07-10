@@ -2,9 +2,8 @@
 version: "0.1.0"
 name: "Scourge Survivors"
 description: >-
-  Game-local visual identity for the DEADROT FPS survivor slice: first-person
-  billboard sprites, hard HUD chrome, blood/hellfire combat feedback, and
-  Scourge parasite infestation.
+  Game-local application of Deadrot's comic-ink visual contract to the
+  first-person survivor slice.
 colors:
   primary: "#c1121f"
   void: "#0a0a0a"
@@ -20,16 +19,16 @@ colors:
   toxic: "#8bdc1f"
 typography:
   display:
-    fontFamily: "\"SSG Press Start\", ui-monospace, SFMono-Regular, Menlo, monospace"
-    fontWeight: 400
+    fontFamily: "\"SSG Comic Condensed\", \"Arial Black\", Impact, sans-serif"
+    fontWeight: 800
     letterSpacing: "0em"
     textTransform: "uppercase"
   body:
-    fontFamily: "\"SSG Press Start\", ui-monospace, SFMono-Regular, Menlo, monospace"
-    fontWeight: 400
-    lineHeight: 1.6
+    fontFamily: "\"SSG Comic Condensed\", \"Arial Black\", Impact, sans-serif"
+    fontWeight: 600
+    lineHeight: 1.35
   mono:
-    fontFamily: "\"SSG Press Start\", ui-monospace, SFMono-Regular, Menlo, monospace"
+    fontFamily: "\"SSG Comic Condensed\", \"Arial Black\", Impact, sans-serif"
 rounded:
   none: "0px"
   sm: "2px"
@@ -101,12 +100,10 @@ components:
     typography: "{typography.display}"
     rounded: "{rounded.sm}"
     padding: "4px 8px"
-pixelArt:
-  medium: "high-detail medium-chunky pixel art"
-  gridHeight: "110px for rank-and-file enemies; bosses may go larger"
-  rendering: "visible square pixels, hard crisp edges, no anti-aliasing"
-  shading: "ordered dithering, subtle dark outline, hellfire-to-blood rim light"
-  palette: "void, coal, gunmetal, blood, rust, bone, hellfire; toxic only for Scourge breach cores"
+artDirection:
+  medium: "clean comic-book / cel-shaded ink"
+  rendering: "bold black contours, graphic flat shadows, readable value blocks, controlled grime"
+  exclusions: "pixel grids, dithering, halftone, stipple, noisy speckles, smooth 3D, photorealism"
 gameArtDirection:
   camera: "first-person billboard sprites, front-facing full-body enemies and pickups"
   assetFraming: "enemy silhouettes readable at FPS combat distance; weapons and pickups centered and iconic"
@@ -116,11 +113,10 @@ gameArtDirection:
 
 ## Overview
 
-The local design override for **Scourge Survivors**, the first-person DEADROT
-survivor slice. The shared DEADROT identity still applies: brutal metal, blood,
-hellfire, hard HUD edges, and no neon. This file narrows the art direction to
-FPS billboard sprites, readable combat silhouettes, and Scourge parasite
-infestation.
+The local application of the shared DEADROT contract for **Scourge Survivors**,
+the first-person survivor slice. The source of truth is
+`apps/lore/content/DESIGN.md` plus `Universe/Style-Bible.md`; this file adds only
+FPS-specific framing and runtime readability requirements.
 
 ### Game Art Direction
 
@@ -150,9 +146,10 @@ Rule: **red + fire + metal + bone.** Toxic-green is reserved for the Scourge. Ne
 
 ## Typography
 
-- **Display** — SSG Press Start / Press Start 2P 400, UPPERCASE, zero tracking. Pixel title, menu, and HUD labels.
-- **Body** — SSG Press Start / Press Start 2P 400. All player-facing UI should stay pixelized.
-- **Mono** — SSG Press Start / Press Start 2P 400. Counters, ammo, timers, and HUD numerics.
+- **Display** — SSG Comic Condensed / heavy condensed comic display, UPPERCASE,
+  zero tracking. Use for title, menu, HUD labels, and impact words.
+- **Body** — condensed comic sans for readable player-facing UI.
+- **Mono** — tabular numerics where possible for counters, ammo, and timers.
 
 ## Layout
 
@@ -182,8 +179,10 @@ Rule: **red + fire + metal + bone.** Toxic-green is reserved for the Scourge. Ne
 
 ## Do's and Don'ts
 
-**Do:** lead with red + fire + metal + bone; UPPERCASE pixel headers; reserve toxic-green
-for the Scourge; use ember glow sparingly; keep edges hard and high-contrast.
+**Do:** lead with red + fire + metal + bone; use uppercase comic headers;
+reserve toxic-green for the Scourge; use ember glow sparingly; keep edges hard
+and high-contrast.
 
 **Don't:** magenta/cyan or any neon; soft/large glows; pastel or low-contrast text;
-heavy rounding; clean/minimal sci-fi. If it doesn't feel like blood on gunmetal, it's wrong.
+heavy rounding; clean/minimal sci-fi; pixel grids, dithering, halftone, or
+stipple. If it doesn't feel like blood on gunmetal, it's wrong.

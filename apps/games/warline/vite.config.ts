@@ -7,6 +7,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
   // Relative base keeps the static build usable behind the monorepo hub route.
   base: "./",
+  publicDir: fileURLToPath(new URL("../../../packages/assets/masters/ui/brand/favicon", import.meta.url)),
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },

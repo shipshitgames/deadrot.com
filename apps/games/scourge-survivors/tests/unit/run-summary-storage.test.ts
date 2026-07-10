@@ -97,13 +97,21 @@ describe("run-summary storage (#75)", () => {
     });
 
     it("preserves each supported run mode", () => {
-      const modes: RunMode[] = ["campaign", "structured", "endless", "coop", "sandbox"];
+      const modes: RunMode[] = ["campaign", "structured", "endless", "arena", "sandbox"];
       // Save in ascending score so ordering is deterministic and 1:1 with `modes`.
       modes.forEach((mode, i) => {
         saveScore(makeEntry({ mode, score: (i + 1) * 10, kills: 0 }));
       });
       const loaded = loadScores();
       expect(loaded.map((e) => e.mode).sort()).toEqual([...modes].sort());
+    });
+
+    it("maps legacy co-op records to the honest arena-preview mode", () => {
+      localStorage.setItem(
+        "scourge-survivors.scores.v1",
+        JSON.stringify([makeEntry({ mode: "coop" as unknown as RunMode })]),
+      );
+      expect(loadScores()[0]?.mode).toBe("arena");
     });
   });
 

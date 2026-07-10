@@ -16,14 +16,17 @@ Scope: this entire `deadrotcom` repository.
 - `apps/lore/content` is the Obsidian vault root for Deadrot canon.
 - `apps/games/*` contains shipped Deadrot games.
 - `packages/assets` is the canonical shared asset package for Deadrot games.
-- `packages/engine`, `packages/ui`, and `packages/warline` are runtime packages
-  consumed by shipped games.
+- `packages/catalog`, `packages/game-kit`, `packages/ui`, and
+  `packages/warline` are runtime packages consumed by shipped games.
+- `apps/api` is the player-facing Bun/Postgres API.
 
 ## Boundary
 
 - Studio tooling for building/generating assets belongs in sibling repo
   `../shipshitgames`.
 - `packages/assetgen` stays in `../shipshitgames`; do not move it here.
+- `@shipshitgames/engine` is consumed from its published org-level package; do
+  not create a local `packages/engine` fork here.
 - Generated outputs, runtime packs, audio, soundtrack, and preserved asset
   history belong in this repo, usually under `packages/assets`.
 - Games should consume shared packages with `workspace:*`, including
@@ -63,3 +66,4 @@ Scope: this entire `deadrotcom` repository.
 - `bun run typecheck`
 - `cd apps/games/scourge-survivors && bun run typecheck`
 - `cd apps/games/scourge-survivors && bun run test:unit`
+- `bun run docs:catalog:check`

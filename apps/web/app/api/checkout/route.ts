@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
 import { authEnabled, COLLECTION_FLAG, DEFAULT_STRIPE_PRICE_ID, EARLY_BUYER_CODE, hasCollection } from "@/lib/access";
+import { canonicalSiteOrigin } from "@/lib/site-origin";
 
 // Creates a Stripe Checkout Session for the Deadrot Collection one-time unlock.
 // The Clerk userId rides along in metadata so the webhook can flip the
@@ -10,20 +11,43 @@ import { authEnabled, COLLECTION_FLAG, DEFAULT_STRIPE_PRICE_ID, EARLY_BUYER_CODE
 // marker in metadata is what the webhook trusts — only sessions created here
 // grant the collection, never other products on the Stripe account.
 
-export async function POST(req: Request) {
-  const secretKey = process.env.STRIPE_SECRET_KEY;
-  if (!authEnabled || !secretKey) {
+type CheckoutUser = {
+  primaryEmailAddress?: { emailAddress: string } | null;
+  publicMetadata: unknown;
+};
+
+export type CheckoutDependencies = {
+  authenticate: () => Promise<{ userId: string | null }>;
+  createStripe: (secretKey: string) => Stripe;
+  getUser: (userId: string) => Promise<CheckoutUser>;
+};
+
+const productionDependencies: CheckoutDependencies = {
+  authenticate: auth,
+  createStripe: (secretKey) => new Stripe(secretKey),
+  getUser: async (userId) => {
+    const client = await clerkClient();
+    return client.users.getUser(userId);
+  },
+};
+
+export async function handleCheckout(
+  _req: Request,
+  dependencies: CheckoutDependencies = productionDependencies,
+  env: NodeJS.ProcessEnv = process.env,
+): Promise<Response> {
+  const secretKey = env.STRIPE_SECRET_KEY;
+  const enabled = dependencies === productionDependencies ? authEnabled : true;
+  if (!enabled || !secretKey) {
     return NextResponse.json({ error: "Checkout is not configured" }, { status: 503 });
   }
 
-  const { userId } = await auth();
+  const { userId } = await dependencies.authenticate();
   if (!userId) {
     return NextResponse.json({ error: "Sign in to buy the collection" }, { status: 401 });
   }
 
-  const stripe = new Stripe(secretKey);
-  const client = await clerkClient();
-  const user = await client.users.getUser(userId);
+  const user = await dependencies.getUser(userId);
 
   // Owners have nothing to buy — send them back to the unlock page instead of
   // letting a stale tab double-charge them.
@@ -31,17 +55,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ url: "/unlock/" });
   }
 
+  let siteOrigin: string;
+  try {
+    siteOrigin = canonicalSiteOrigin(env);
+  } catch {
+    return NextResponse.json({ error: "Checkout is not configured" }, { status: 503 });
+  }
+
+  const stripe = dependencies.createStripe(secretKey);
   const email = user.primaryEmailAddress?.emailAddress;
 
-  const origin = req.headers.get("origin") ?? new URL(req.url).origin;
   const baseParams: Stripe.Checkout.SessionCreateParams = {
     mode: "payment",
-    line_items: [{ price: process.env.STRIPE_PRICE_ID ?? DEFAULT_STRIPE_PRICE_ID, quantity: 1 }],
+    line_items: [{ price: env.STRIPE_PRICE_ID ?? DEFAULT_STRIPE_PRICE_ID, quantity: 1 }],
     client_reference_id: userId,
     metadata: { clerkUserId: userId, entitlement: COLLECTION_FLAG },
     customer_email: email,
-    success_url: `${origin}/unlock/?success=1`,
-    cancel_url: `${origin}/unlock/?canceled=1`,
+    success_url: `${siteOrigin}/unlock/?success=1`,
+    cancel_url: `${siteOrigin}/unlock/?canceled=1`,
   };
 
   // Pre-apply the early-buyer promo so checkout opens at the discounted price
@@ -49,10 +80,14 @@ export async function POST(req: Request) {
   // customer-facing code each request (no hardcoded promo id) so the access.ts
   // constant stays the single source of truth; once it expires or hits its
   // redemption cap the lookup returns nothing and we fall back to manual entry.
-  const promotionId = await redeemablePromotionId(stripe, process.env.STRIPE_PROMO_CODE ?? EARLY_BUYER_CODE);
+  const promotionId = await redeemablePromotionId(stripe, env.STRIPE_PROMO_CODE ?? EARLY_BUYER_CODE);
   const session = await createCheckoutSession(stripe, baseParams, promotionId);
 
   return NextResponse.json({ url: session.url });
+}
+
+export async function POST(req: Request): Promise<Response> {
+  return handleCheckout(req);
 }
 
 /**

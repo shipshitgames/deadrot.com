@@ -51,7 +51,8 @@ export function loadScores(): ScoreEntry[] {
 }
 
 function normalizeRunMode(mode: unknown): RunMode | undefined {
-  return mode === "campaign" || mode === "structured" || mode === "endless" || mode === "coop" || mode === "sandbox"
+  if (mode === "coop") return "arena"; // legacy records predate the honest PvP preview label
+  return mode === "campaign" || mode === "structured" || mode === "endless" || mode === "arena" || mode === "sandbox"
     ? mode
     : undefined;
 }

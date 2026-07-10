@@ -6,8 +6,11 @@ export type ApiConfig = {
   databaseSslMode: DatabaseSslMode;
   databaseUrl?: string;
   host: string;
+  nodeEnv: string;
   port: number;
   serviceName: string;
+  waitlistForwardUrl?: string;
+  waitlistIngestToken?: string;
 };
 
 const DEFAULT_ALLOWED_ORIGINS = ["https://deadrot.com", "https://www.deadrot.com"];
@@ -45,13 +48,18 @@ function parseDatabaseSslMode(value: string | undefined): DatabaseSslMode {
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
+  const nodeEnv = env.NODE_ENV ?? "development";
+
   return {
     allowedOrigins: parseOrigins(env.ALLOWED_ORIGINS),
     cdnOrigin: env.CDN_ORIGIN ?? "https://cdn.deadrot.com",
     databaseSslMode: parseDatabaseSslMode(env.DATABASE_SSL_MODE),
     databaseUrl: env.DATABASE_URL,
     host: env.HOST ?? "0.0.0.0",
+    nodeEnv,
     port: parsePort(env.PORT, 3004),
     serviceName: env.SERVICE_NAME ?? "deadrot-api",
+    waitlistForwardUrl: env.WAITLIST_FORWARD_URL?.trim() || undefined,
+    waitlistIngestToken: env.WAITLIST_INGEST_TOKEN?.trim() || undefined,
   };
 }
