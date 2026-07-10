@@ -83,6 +83,47 @@ function checkPathFields(value, source) {
   }
 }
 
+function isRecord(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isCatalogAlias(variant) {
+  return isRecord(variant) && variant.type === "alias" && typeof variant.sourceGame === "string";
+}
+
+function isCatalogPlaceholder(variant) {
+  return isRecord(variant) && variant.type === "placeholder" && typeof variant.note === "string" && variant.note.trim();
+}
+
+function resolveCatalogVariantPath(entity, game) {
+  const variants = entity.variants ?? {};
+  const visited = new Set();
+  let currentGame = game;
+
+  while (true) {
+    if (visited.has(currentGame)) {
+      fail(`assets-catalog entity ${entity.id ?? "<unknown>"}.${game}: alias cycle`);
+      return null;
+    }
+    visited.add(currentGame);
+
+    const variant = variants[currentGame];
+    if (typeof variant === "string") return variant;
+    if (variant === null || isCatalogPlaceholder(variant)) return null;
+    if (!isCatalogAlias(variant)) {
+      fail(
+        `assets-catalog entity ${entity.id ?? "<unknown>"}.${currentGame}: variant must be a path, alias, placeholder, or null`,
+      );
+      return null;
+    }
+    if (variant.sourceGame === currentGame || !Object.hasOwn(variants, variant.sourceGame)) {
+      fail(`assets-catalog entity ${entity.id ?? "<unknown>"}.${currentGame}: alias has an invalid source game`);
+      return null;
+    }
+    currentGame = variant.sourceGame;
+  }
+}
+
 function checkCanonCatalog() {
   const catalogPath = join(assetsRoot, "assets-catalog.json");
   const catalog = readJson(catalogPath);
@@ -90,8 +131,24 @@ function checkCanonCatalog() {
 
   for (const entity of catalog.entities ?? []) {
     const id = entity.id ?? "<unknown>";
-    for (const [game, relPath] of Object.entries(entity.variants ?? {})) {
-      assertAssetPath(relPath, `assets-catalog entity ${id}.${game}`);
+    if (!Array.isArray(entity.games) || !isRecord(entity.variants)) {
+      fail(`assets-catalog entity ${id}: games and variants are required`);
+      continue;
+    }
+
+    for (const [game, variant] of Object.entries(entity.variants)) {
+      const source = `assets-catalog entity ${id}.${game}`;
+      if ((variant !== null) !== entity.games.includes(game)) {
+        fail(`${source}: variant intent must match the entity games list`);
+      }
+      if (isCatalogPlaceholder(variant) || variant === null) continue;
+
+      const relPath = resolveCatalogVariantPath(entity, game);
+      if (relPath === null && isCatalogAlias(variant)) {
+        fail(`${source}: alias resolves without an asset path`);
+        continue;
+      }
+      if (relPath !== null) assertAssetPath(relPath, source);
     }
   }
 

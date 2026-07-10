@@ -88,8 +88,10 @@ async function bootSandbox(page: Page) {
 }
 
 async function loadMap(page: Page, mapId: string) {
-  await page.evaluate((id) => {
-    (window as unknown as { __fpsGame: { startSandbox: (mapId: string) => void } }).__fpsGame.startSandbox(id);
+  await page.evaluate(async (id) => {
+    await (
+      window as unknown as { __fpsGame: { startSandbox: (mapId: string) => Promise<void> } }
+    ).__fpsGame.startSandbox(id);
   }, mapId);
   // Poll mapId before reading the readback — a rebuild races the snapshot.
   await expect.poll(() => hud(page).then((s) => s.sandbox)).toBe(true);

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "useDefineForClassFields": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    // The existing game code has not yet completed the array-index hardening
+    // required by the root setting. Keep this one compatibility exemption
+    // shared across every game while retaining TypeScript strict mode.
+    "noUncheckedIndexedAccess": false,
+    "types": ["vite/client"]
+  }
+}

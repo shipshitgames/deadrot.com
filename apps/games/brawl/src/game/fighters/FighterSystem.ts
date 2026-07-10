@@ -1,5 +1,4 @@
-import { recordWarResult } from "@deadrot/game-kit/core";
-import { reportWarlineOperation } from "@deadrot/game-kit/warline";
+import { completeRun, createRunNonce } from "@deadrot/game-kit/warline";
 import {
   ARENA_RULES,
   aliveCount,
@@ -40,6 +39,7 @@ export class FighterSystem {
   private hits = 0;
   private roundStartedAt = 0;
   private resultRecorded = false;
+  private runNonce = createRunNonce("brawl");
 
   constructor(
     private readonly render: FighterRenderPort,
@@ -100,6 +100,7 @@ export class FighterSystem {
     this.timer = ARENA.roundSeconds;
     this.hits = 0;
     this.resultRecorded = false;
+    this.runNonce = createRunNonce("brawl");
     this.roundStartedAt = performance.now();
     this.input.clear();
     this.audio.roundStart("duel");
@@ -131,6 +132,7 @@ export class FighterSystem {
     this.timer = ARENA.roundSeconds;
     this.hits = 0;
     this.resultRecorded = false;
+    this.runNonce = createRunNonce("brawl");
     this.roundStartedAt = performance.now();
     this.input.clear();
     this.audio.roundStart("arena");
@@ -658,16 +660,14 @@ export class FighterSystem {
     this.resultRecorded = true;
     const duration = Math.max(1, performance.now() - this.roundStartedAt);
     const score = Math.round(healthRatio * 500 + this.timer * 10 + this.hits * 25);
-    recordWarResult("brawl", { outcome, score, timeMs: duration, bossKill }, Date.now());
-    void reportWarlineOperation("brawl", { outcome, score });
+    completeRun("brawl", { outcome, score, timeMs: duration, bossKill, nonce: this.runNonce });
   }
 
   private recordArenaOutcome(outcome: "victory" | "defeat", score: number, bossKill: boolean) {
     if (this.resultRecorded) return;
     this.resultRecorded = true;
     const duration = Math.max(1, performance.now() - this.roundStartedAt);
-    recordWarResult("brawl", { outcome, score, timeMs: duration, bossKill }, Date.now());
-    void reportWarlineOperation("brawl", { outcome, score });
+    completeRun("brawl", { outcome, score, timeMs: duration, bossKill, nonce: this.runNonce });
   }
 
   // --- Shared rendering / fighters / FX -----------------------------------

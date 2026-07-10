@@ -40,6 +40,7 @@ import { PveDirectorSystem } from "./modes/PveDirectorSystem";
 import { SurvivorsSystem } from "./modes/SurvivorsSystem";
 import { type ArenaDebugSnapshot, ArenaSystem } from "./render/ArenaSystem";
 import { RenderSystem } from "./render/RenderSystem";
+import { preloadCombatAssets } from "./spriteAssets";
 import type { GameSystems } from "./systems";
 import { HudSystem } from "./systems/HudSystem";
 import { InputSystem } from "./systems/InputSystem";
@@ -55,6 +56,10 @@ export type SandboxEnemyKind = "melee" | "ranged" | "flying" | "boss";
 export class Game {
   private ctx: GameContext;
   private sys: GameSystems;
+  private combatPreparation?: Promise<void>;
+  private weaponInitialized = false;
+  private survivorsInitialized = false;
+  private launchGeneration = 0;
 
   constructor(container: HTMLElement, listener: StateListener) {
     const ctx = new GameContext(container, listener);
@@ -84,12 +89,7 @@ export class Game {
   start() {
     this.sys.render.setupRenderer();
     this.sys.render.setupScene();
-    this.sys.arena.buildArena(getMap(DEFAULT_MAP_ID));
-    this.sys.weapon.buildWeapon();
     this.sys.input.bindEvents();
-    this.sys.survivors.init();
-    this.sys.player.resetPlayer();
-    this.sys.pve.startWaveSystem();
     this.ctx.clock.start();
     this.sys.hud.emit();
     this.loop();
@@ -166,35 +166,41 @@ export class Game {
     this.sys.input.resumeFromPauseWithoutCapture();
   }
 
-  startCampaign(startMapId?: string) {
-    this.ctx.sandbox = false;
-    this.sys.mission.startCampaign(startMapId);
+  async startCampaign(startMapId?: string): Promise<void> {
+    await this.launchCombatRun(() => {
+      this.ctx.sandbox = false;
+      this.sys.mission.startCampaign(startMapId);
+    });
   }
 
-  startSurvivors(classId?: SurvivorClassId, mapId?: string) {
-    this.ctx.sandbox = false;
-    this.sys.survivors.startSurvivors(classId, mapId);
+  async startSurvivors(classId?: SurvivorClassId, mapId?: string): Promise<void> {
+    await this.launchCombatRun(() => {
+      this.ctx.sandbox = false;
+      this.sys.survivors.startSurvivors(classId, mapId);
+    });
   }
 
   setSurvivorClass(classId: SurvivorClassId) {
     this.sys.survivors.setSurvivorClass(classId);
   }
 
-  startSandbox(mapId: string = this.ctx.currentMap?.id ?? DEFAULT_MAP_ID) {
-    this.sys.multiplayer.leaveMultiplayer(false);
-    this.sys.mission.clearMissionState();
-    this.ctx.sandbox = true;
-    this.ctx.survivors = false;
-    this.sys.survivors.recomputeStats();
-    this.sys.arena.buildArena(getMap(mapId));
-    this.sys.player.resetPlayer();
-    this.sys.fx.clearTransientFx();
-    this.sys.survivors.clearSurvivorsEntities();
-    this.sys.pve.startWaveSystem();
-    this.unlockSandboxArsenal(STARTING_WEAPON);
-    this.ctx.status = "pointerlock-needed";
-    this.sys.hud.announce("SANDBOX");
-    this.sys.hud.emit();
+  async startSandbox(mapId: string = this.ctx.currentMap?.id ?? DEFAULT_MAP_ID): Promise<void> {
+    await this.launchCombatRun(() => {
+      this.sys.multiplayer.leaveMultiplayer(false);
+      this.sys.mission.clearMissionState();
+      this.ctx.sandbox = true;
+      this.ctx.survivors = false;
+      this.sys.survivors.recomputeStats();
+      this.sys.arena.buildArena(getMap(mapId));
+      this.sys.player.resetPlayer();
+      this.sys.fx.clearTransientFx();
+      this.sys.survivors.clearSurvivorsEntities();
+      this.sys.pve.startWaveSystem();
+      this.unlockSandboxArsenal(STARTING_WEAPON);
+      this.ctx.status = "pointerlock-needed";
+      this.sys.hud.announce("SANDBOX");
+      this.sys.hud.emit();
+    });
   }
 
   arenaDebugSnapshot(): ArenaDebugSnapshot {
@@ -358,10 +364,12 @@ export class Game {
     this.sys.hud.emit();
   }
 
-  startMultiplayer(room: string, name: string, avatar: PlayerAvatarId = "ranger") {
-    this.ctx.sandbox = false;
-    this.sys.mission.clearMissionState();
-    this.sys.multiplayer.startMultiplayer(room, name, avatar);
+  async startMultiplayer(room: string, name: string, avatar: PlayerAvatarId = "ranger"): Promise<void> {
+    await this.launchCombatRun(() => {
+      this.ctx.sandbox = false;
+      this.sys.mission.clearMissionState();
+      this.sys.multiplayer.startMultiplayer(room, name, avatar);
+    });
   }
 
   leaveMultiplayer(toMenu = true) {
@@ -404,8 +412,38 @@ export class Game {
   }
 
   returnToMenu() {
+    this.launchGeneration++;
     this.ctx.sandbox = false;
     this.sys.gameOver.returnToMenu();
+  }
+
+  private async launchCombatRun(start: () => void): Promise<void> {
+    const generation = ++this.launchGeneration;
+    await this.prepareCombat();
+    if (this.ctx.disposed || generation !== this.launchGeneration) return;
+    start();
+  }
+
+  private prepareCombat(): Promise<void> {
+    if (this.weaponInitialized && this.survivorsInitialized) return Promise.resolve();
+    if (this.combatPreparation) return this.combatPreparation;
+
+    const attempt = preloadCombatAssets().then(() => {
+      if (this.ctx.disposed) return;
+      if (!this.weaponInitialized) {
+        this.sys.weapon.buildWeapon();
+        this.weaponInitialized = true;
+      }
+      if (!this.survivorsInitialized) {
+        this.sys.survivors.init();
+        this.survivorsInitialized = true;
+      }
+    });
+    this.combatPreparation = attempt;
+    void attempt.catch(() => {
+      if (this.combatPreparation === attempt) this.combatPreparation = undefined;
+    });
+    return attempt;
   }
 
   private unlockSandboxArsenal(active: WeaponId) {
@@ -435,6 +473,7 @@ export class Game {
   }
 
   dispose() {
+    this.launchGeneration++;
     this.ctx.disposed = true;
     cancelAnimationFrame(this.ctx.raf);
 

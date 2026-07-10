@@ -1,7 +1,7 @@
 import type { DeadrotSfx } from "@deadrot/game-kit/audio";
-import { InputLatch, recordWarResult } from "@deadrot/game-kit/core";
+import { InputLatch } from "@deadrot/game-kit/core";
 import { FlashOverlay, ParticleBursts, ScreenShake } from "@deadrot/game-kit/juice";
-import { reportWarlineOperation } from "@deadrot/game-kit/warline";
+import { completeRun, createRunNonce } from "@deadrot/game-kit/warline";
 import { audio } from "../audio";
 import { COLORS, CONSTANTS } from "../constants";
 import {
@@ -71,6 +71,7 @@ export class Game {
   private level: LevelData = buildLevelAt(0);
   private globs: ToxicGlob[] = makeGlobPool();
   private mode: GameMode = "title";
+  private runNonce = createRunNonce("rothulk");
 
   // --- Juice (consumed once per displayed frame) ----------------------------
   private shake = new ScreenShake();
@@ -172,6 +173,7 @@ export class Game {
 
   // Full reset (new run from the title or after win/gameover via R).
   private resetRun() {
+    this.runNonce = createRunNonce("rothulk");
     this.lives = CONSTANTS.START_LIVES;
     this.hp = CONSTANTS.MAX_HP;
     this.embers = 0;
@@ -335,9 +337,7 @@ export class Game {
     if (this.respawnTimer <= 0) {
       if (this.lives <= 0) {
         this.mode = "gameover";
-        const result = this.warResult("defeat");
-        recordWarResult("rothulk", result, Date.now());
-        void reportWarlineOperation("rothulk", { outcome: "defeat", score: result.score });
+        completeRun("rothulk", { ...this.warResult("defeat"), nonce: this.runNonce });
         this.playSfx("defeat");
         this.hud.showBigToast("gameover");
       } else {
@@ -764,9 +764,7 @@ export class Game {
     }
 
     this.mode = "won";
-    const result = this.warResult("victory");
-    recordWarResult("rothulk", result, Date.now());
-    void reportWarlineOperation("rothulk", { outcome: "victory", score: result.score });
+    completeRun("rothulk", { ...this.warResult("victory"), nonce: this.runNonce });
     this.playSfx("victory");
     this.renderer.setExitArmed(false);
     this.hud.setProgress(1);

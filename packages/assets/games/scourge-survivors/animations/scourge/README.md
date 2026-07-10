@@ -2,7 +2,19 @@
 
 First-pass generated animation frames for Scourge Survivors enemies.
 
-Status: source and runtime-ready frame assets generated; not yet wired into the game renderer.
+Status: generated and wired. The authored split frames remain the authoritative
+`pathTemplate` identities and fallback material; the default browser runtime
+loads the lossless `scourge.atlas0.webp` page using frame rectangles from
+`scourge.atlas.json` and manifest metadata in `animation-pack.json`.
+
+Regenerate the derived runtime atlas with the studio-owned CLI:
+
+```bash
+bun packages/assetgen/src/cli.ts atlas \
+  --assets-dir ../deadrotcom/packages/assets/games/scourge-survivors/animations/scourge \
+  --out-dir ../deadrotcom/packages/assets/games/scourge-survivors/animations/scourge \
+  --name scourge
+```
 
 Frame layout:
 

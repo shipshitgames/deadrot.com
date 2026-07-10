@@ -2,13 +2,6 @@ name: Game E2E
 
 on:
   pull_request:
-    paths-ignore:
-      - "**/*.md"
-      - "**/*.mdx"
-      - "docs/**"
-      - ".agents/**"
-      - ".claude/**"
-      - "skills/**"
   push:
     branches:
       - master
@@ -117,6 +110,13 @@ jobs:
           E2E_GAME_SLUGS: ${{ matrix.game }}
           E2E_VIEWPORT: ${{ matrix.view }}
 
+      - name: Enforce Scourge production asset budget
+        if: matrix.game == 'scourge-survivors' && matrix.view == 'desktop'
+        working-directory: apps/games/scourge-survivors
+        run: bun run test:e2e:asset-budget
+        env:
+          CI: true
+
       - name: Upload Playwright artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -125,6 +125,8 @@ jobs:
           path: |
             playwright-report/
             test-results/
+            apps/games/scourge-survivors/playwright-report-browser-budget/
+            apps/games/scourge-survivors/test-results/browser-budget/
           retention-days: 7
 
   docker-game-e2e:

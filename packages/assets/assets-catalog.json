@@ -1,7 +1,7 @@
 {
   "$schema": "./assets-catalog.schema.json",
-  "version": "0.2.0",
-  "note": "Canon asset catalog for the Scourge universe. Entity sprites are PER-GAME renders of shared canon — the variant matrix (issue #6): each entity lists the games it renders in (`games`) and a per-game `variants` path (null until rendered by @shipshitgames/assetgen). The 'shared' section lists truly game-agnostic assets every game uses identically.",
+  "version": "0.3.0",
+  "note": "Canon asset catalog for the Scourge universe. Entity sprites are per-game renders of shared canon: each entity lists the games it is intended for (`games`) and a complete per-game `variants` record. A string is a local render, an alias explicitly reuses another game's render, a placeholder records an intended render without artwork yet, and null means the entity is not intended for that game. The 'shared' section lists truly game-agnostic assets every game uses identically.",
   "entities": [
     {
       "id": "scourge-swarm",
@@ -11,13 +11,14 @@
       "hostFamily": "rot-flesh",
       "canon": "Fast melee Scourge fodder that floods lanes and breach rooms through numbers and claws.",
       "promptBase": "Scourge melee swarm creature with hunched parasite frame, black chitin over raw muscle, blade-like forearms, toxic-green breach cores, wet gore and exposed sinew.",
-      "games": ["scourge-survivors", "deadlane", "redline"],
+      "games": ["scourge-survivors", "deadlane", "pactfall", "redline"],
       "variants": {
         "scourge-survivors": "entities/scourge-swarm/scourge-survivors.webp",
         "deadlane": "entities/scourge-swarm/deadlane.webp",
         "pactfall": "entities/scourge-swarm/pactfall.webp",
+        "brawl": null,
         "starblight": null,
-        "redline": null,
+        "redline": { "type": "placeholder", "note": "Redline render is intended but has not been produced." },
         "rothulk": null
       }
     },
@@ -34,9 +35,10 @@
         "scourge-survivors": "entities/scourge-spitter/scourge-survivors.webp",
         "deadlane": "entities/scourge-spitter/deadlane.webp",
         "pactfall": null,
+        "brawl": null,
         "starblight": null,
         "redline": null,
-        "rothulk": null
+        "rothulk": { "type": "placeholder", "note": "Rothulk render is intended but has not been produced." }
       }
     },
     {
@@ -47,13 +49,14 @@
       "hostFamily": "chitin",
       "canon": "Chitin Warhost melee charger that charges in straight lines with armor-piercing carapace, enraging at half health with exposed toxic-green breach nodes.",
       "promptBase": "Scourge elite charger with cracked alien carapace, hunched low-profile silhouette, blade-claw forelimbs, toxic-green parasite nodes at seams, enrage variant shows blood-hot exposed tissue.",
-      "games": ["scourge-survivors", "deadlane", "redline"],
+      "games": ["scourge-survivors", "deadlane", "pactfall", "brawl", "redline"],
       "variants": {
         "scourge-survivors": "entities/scourge-elite/scourge-survivors.webp",
         "deadlane": "entities/scourge-elite/deadlane.webp",
         "pactfall": "entities/scourge-elite/pactfall.webp",
+        "brawl": { "type": "alias", "sourceGame": "pactfall" },
         "starblight": null,
-        "redline": null,
+        "redline": { "type": "placeholder", "note": "Redline render is intended but has not been produced." },
         "rothulk": null
       }
     },
@@ -70,9 +73,10 @@
         "scourge-survivors": "entities/graft-breacher/scourge-survivors.webp",
         "deadlane": "entities/graft-breacher/deadlane.webp",
         "pactfall": null,
+        "brawl": null,
         "starblight": null,
         "redline": null,
-        "rothulk": null
+        "rothulk": { "type": "placeholder", "note": "Rothulk render is intended but has not been produced." }
       }
     },
     {
@@ -88,8 +92,9 @@
         "scourge-survivors": "entities/rot-engine/scourge-survivors.webp",
         "deadlane": "entities/rot-engine/deadlane.webp",
         "pactfall": null,
+        "brawl": null,
         "starblight": null,
-        "redline": null,
+        "redline": { "type": "placeholder", "note": "Redline render is intended but has not been produced." },
         "rothulk": null
       }
     },
@@ -101,14 +106,15 @@
       "hostFamily": "bone-titan",
       "canon": "Monstrous Scourge expression grown around a breach heart, wielding melee pressure and ranged barrages behind a shield-organ ring.",
       "promptBase": "Scourge breach-boss with huge non-human war body, toxic-green chest core, shield-organ ring, fused rusted metal and wet chitin, massive arms, projectile vents.",
-      "games": ["scourge-survivors", "deadlane", "rothulk"],
+      "games": ["scourge-survivors", "deadlane", "pactfall", "rothulk"],
       "variants": {
         "scourge-survivors": "entities/breach-boss/scourge-survivors.webp",
         "deadlane": "entities/breach-boss/deadlane.webp",
         "pactfall": "entities/breach-boss/pactfall.webp",
+        "brawl": null,
         "starblight": null,
         "redline": null,
-        "rothulk": null
+        "rothulk": { "type": "placeholder", "note": "Rothulk render is intended but has not been produced." }
       }
     },
     {
@@ -119,11 +125,12 @@
       "hostFamily": null,
       "canon": "Neutral Scourge arena threat in Pactfall that pressures both Pyre and Wardens equally from broken arena wreckage.",
       "promptBase": "Neutral Scourge arena boss with parasite mass grown over broken arena metal, toxic-green core, chitin and raw tissue, objective monster silhouette readable from top-down view.",
-      "games": ["pactfall"],
+      "games": ["pactfall", "brawl"],
       "variants": {
         "scourge-survivors": null,
         "deadlane": null,
         "pactfall": "entities/trucebreaker/pactfall.webp",
+        "brawl": { "type": "alias", "sourceGame": "pactfall" },
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -142,6 +149,7 @@
         "scourge-survivors": null,
         "deadlane": null,
         "pactfall": null,
+        "brawl": null,
         "starblight": "entities/scourge-fighter/starblight.webp",
         "redline": null,
         "rothulk": null
@@ -160,6 +168,7 @@
         "scourge-survivors": null,
         "deadlane": null,
         "pactfall": null,
+        "brawl": null,
         "starblight": "entities/orbital-breach-carrier/starblight.webp",
         "redline": null,
         "rothulk": null
@@ -173,11 +182,12 @@
       "hostFamily": null,
       "canon": "Baseline Pyre Purger operating rifle-first at medium armor and balanced speed for breach descent.",
       "promptBase": "Pyre human Purger, medium armor, rifle, scorched gunmetal, bone ceramic, furnace visor, hellfire orange heat lines, high contrast gunmetal and blood",
-      "games": ["scourge-survivors"],
+      "games": ["scourge-survivors", "pactfall"],
       "variants": {
         "scourge-survivors": "entities/pyre-ranger/scourge-survivors.webp",
         "deadlane": null,
         "pactfall": "entities/pyre-ranger/pactfall.webp",
+        "brawl": null,
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -191,11 +201,12 @@
       "hostFamily": null,
       "canon": "Heavy Pyre Purger built to stand in breach pressure longer than anyone, running heavy cannon or shotgun.",
       "promptBase": "Pyre heavy Purger, broad slab armor, rotary shotgun or cannon, furnace vents, scorched gunmetal, cracked bone plates, hellfire light",
-      "games": ["scourge-survivors"],
+      "games": ["scourge-survivors", "pactfall"],
       "variants": {
         "scourge-survivors": "entities/pyre-bulwark/scourge-survivors.webp",
         "deadlane": null,
         "pactfall": "entities/pyre-bulwark/pactfall.webp",
+        "brawl": null,
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -209,11 +220,12 @@
       "hostFamily": null,
       "canon": "Fast Pyre scout breaching to mark infiltration points and kiting swarms with sensor rig and grapnel.",
       "promptBase": "Pyre scout Purger, slim fast armor, compact SMG, breach-marker sensors, scorched black suit, ember visor, blood and rust",
-      "games": ["scourge-survivors"],
+      "games": ["scourge-survivors", "pactfall"],
       "variants": {
         "scourge-survivors": "entities/pyre-vector/scourge-survivors.webp",
         "deadlane": null,
         "pactfall": "entities/pyre-vector/pactfall.webp",
+        "brawl": null,
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -227,11 +239,12 @@
       "hostFamily": null,
       "canon": "Pyre support operator cauterizing field damage faster than breach pressure can inflict it, using injector tubes and heat-seal tools.",
       "promptBase": "Pyre support Purger, scorched cauterizer medic rig, injector tubes, bone plates, furnace visor, ember medical heat glow, grimy industrial",
-      "games": ["scourge-survivors"],
+      "games": ["scourge-survivors", "pactfall"],
       "variants": {
         "scourge-survivors": "entities/pyre-patch/scourge-survivors.webp",
         "deadlane": null,
         "pactfall": "entities/pyre-patch/pactfall.webp",
+        "brawl": null,
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -245,11 +258,12 @@
       "hostFamily": null,
       "canon": "Arena-tuned Pyre fighter built for sanctioned violence where the Pact is tested but not broken, driving aggressive melee pressure.",
       "promptBase": "Pyre arena duelist, light scorched armor, ember blade or carbide weapon, aggressive triangular silhouette, blood and rust, hellfire, sanctioned arena gear",
-      "games": ["pactfall"],
+      "games": ["pactfall", "brawl"],
       "variants": {
         "scourge-survivors": null,
         "deadlane": null,
         "pactfall": "entities/pyre-duelist/pactfall.webp",
+        "brawl": { "type": "alias", "sourceGame": "pactfall" },
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -268,6 +282,7 @@
         "scourge-survivors": null,
         "deadlane": null,
         "pactfall": "entities/pyre-cauterizer/pactfall.webp",
+        "brawl": null,
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -286,6 +301,7 @@
         "scourge-survivors": null,
         "deadlane": null,
         "pactfall": null,
+        "brawl": null,
         "starblight": "entities/pyre-interceptor-pilot/starblight.webp",
         "redline": null,
         "rothulk": null
@@ -299,11 +315,12 @@
       "hostFamily": null,
       "canon": "Warden builder who turns broken ground into defendable lanes, deploying tower-control rigs and repair harnesses under fire.",
       "promptBase": "Warden field engineer, practical armored technician, square modular plates, tool harness, tower-control rig, gunmetal, industrial yellow, bone stencils, ember hardware",
-      "games": ["deadlane"],
+      "games": ["deadlane", "pactfall"],
       "variants": {
         "scourge-survivors": null,
         "deadlane": "entities/warden-field-engineer/deadlane.webp",
         "pactfall": "entities/warden-field-engineer/pactfall.webp",
+        "brawl": null,
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -317,11 +334,12 @@
       "hostFamily": null,
       "canon": "Warden heavy gunner who wins by staying planted while the Scourge breaks itself against attrition firepower and reinforced stance.",
       "promptBase": "Warden lane gunner, heavy stabilized weapon, ammo feed pack, planted stance, gunmetal armor, hazard yellow, ember targeting lamps, square modular silhouette",
-      "games": ["deadlane"],
+      "games": ["deadlane", "pactfall"],
       "variants": {
         "scourge-survivors": null,
         "deadlane": "entities/warden-lane-gunner/deadlane.webp",
         "pactfall": "entities/warden-lane-gunner/pactfall.webp",
+        "brawl": null,
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -335,11 +353,12 @@
       "hostFamily": null,
       "canon": "Warden specialist who builds the last wall before a lane becomes a grave, deploying shield emitters and barricade anchors.",
       "promptBase": "Warden Wallwright, shield emitter backpack, deployable barricade anchors, slab armor, gunmetal, worn steel, hazard stripes, ember field nodes, gritty industrial",
-      "games": ["deadlane"],
+      "games": ["deadlane", "pactfall"],
       "variants": {
         "scourge-survivors": null,
         "deadlane": "entities/warden-wallwright/deadlane.webp",
         "pactfall": "entities/warden-wallwright/pactfall.webp",
+        "brawl": null,
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -353,11 +372,12 @@
       "hostFamily": null,
       "canon": "Warden arena defender who turns a duel into a fortified position, projecting shields inside sanctioned blood-arenas.",
       "promptBase": "Warden Bastion, shield projector, square heavy silhouette, gunmetal slab armor, industrial yellow, ember barrier hardware, gritty blood-arena defender",
-      "games": ["pactfall"],
+      "games": ["pactfall", "brawl"],
       "variants": {
         "scourge-survivors": null,
         "deadlane": null,
         "pactfall": "entities/warden-bastion/pactfall.webp",
+        "brawl": { "type": "alias", "sourceGame": "pactfall" },
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -376,6 +396,7 @@
         "scourge-survivors": null,
         "deadlane": null,
         "pactfall": "entities/warden-artillerist/pactfall.webp",
+        "brawl": null,
         "starblight": null,
         "redline": null,
         "rothulk": null
@@ -394,6 +415,7 @@
         "scourge-survivors": null,
         "deadlane": null,
         "pactfall": null,
+        "brawl": null,
         "starblight": "entities/warden-defense-pilot/starblight.webp",
         "redline": null,
         "rothulk": null

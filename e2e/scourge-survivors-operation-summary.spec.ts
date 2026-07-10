@@ -16,7 +16,7 @@ interface HudSnapshot {
 }
 
 type DevGame = {
-  startSurvivors: (classId: "ranger") => void;
+  startSurvivors: (classId: "ranger") => Promise<void>;
   // ctx.time is the run clock the HUD reads (HudSystem: `time: Math.floor(ctx.time)`),
   // and runBiomass(kills, level, time) keys off it — NOT survivors.survClock.
   ctx: { status: string; time: number };
@@ -52,9 +52,9 @@ async function boot(page: Page) {
 /** Start a survivors run, let a little run-clock accrue so the run banks a real
  *  (non-zero) contribution, then force the death ending — all deterministic. */
 async function runToGameOver(page: Page) {
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
-    game.startSurvivors("ranger");
+    await game.startSurvivors("ranger");
     game.ctx.status = "playing";
     // Bank a real survival time onto the run clock the HUD reads, so the run's
     // contribution — runBiomass(kills, level, time) — is a stable, non-zero

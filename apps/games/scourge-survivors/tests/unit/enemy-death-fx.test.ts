@@ -1,4 +1,5 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import * as THREE from "three";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 /**
  * HUD cleanup + death FX (#23). The integrity/shield math lives in HUD.tsx (JSX),
@@ -6,11 +7,8 @@ import { beforeAll, describe, expect, it } from "vitest";
  * authored and we wired into the runtime catalog, plus the pure death-FX
  * selection on the Enemy entity.
  *
- * Loading these modules eagerly constructs THREE textures via
- * `THREE.TextureLoader().load(...)`, which calls `document.createElementNS`.
- * vitest runs in node here (no jsdom/happy-dom installed in this workspace), so
- * we stub the single DOM hook THREE's ImageLoader needs, then dynamic-import the
- * modules under test. This keeps us from modifying any source or vitest config.
+ * The sprite module must remain safe to import in node and at the title menu.
+ * Combat preload is explicit; TextureLoader is stubbed only for that boundary.
  */
 
 type SpriteAssetsModule = typeof import("../../src/game/spriteAssets");
@@ -32,25 +30,19 @@ const FRAMES_PER_ACTION = 6;
 
 let spriteAssets: SpriteAssetsModule;
 let Enemy: EnemyModule["Enemy"];
+let textureLoadCalls = 0;
 
 beforeAll(async () => {
-  if (typeof (globalThis as { document?: unknown }).document === "undefined") {
-    // Minimal stand-in for THREE's ImageLoader: it only ever calls
-    // document.createElementNS('...','img') and then add/removeEventListener +
-    // sets crossOrigin/src on the returned element.
-    (globalThis as { document?: unknown }).document = {
-      createElementNS() {
-        return {
-          addEventListener() {},
-          removeEventListener() {},
-          set crossOrigin(_value: string) {},
-          set src(_value: string) {},
-        };
-      },
-    };
-  }
+  vi.spyOn(THREE.TextureLoader.prototype, "loadAsync").mockImplementation(async (url) => {
+    textureLoadCalls++;
+    const texture = new THREE.Texture();
+    texture.name = String(url);
+    return texture;
+  });
 
   spriteAssets = await import("../../src/game/spriteAssets");
+  expect(textureLoadCalls, "import must not instantiate/load THREE textures").toBe(0);
+  await spriteAssets.preloadCombatAssets();
   Enemy = (await import("../../src/game/entities/Enemy")).Enemy;
 });
 
@@ -84,6 +76,36 @@ describe("enemy death animation textures (#23 death FX)", () => {
         }
       }
     }
+  });
+
+  it("samples one shared atlas source with stable per-frame debug metadata", () => {
+    const { ENEMY_SPRITE_ANIMATION_TEXTURES } = spriteAssets;
+    const allFrames = ENEMY_SPRITE_KINDS.flatMap((kind) =>
+      ANIMATION_STATES.flatMap((state) =>
+        SPRITE_VIEWS.flatMap((view) => ENEMY_SPRITE_ANIMATION_TEXTURES[kind][state][view]),
+      ),
+    );
+    expect(new Set(allFrames.map((texture) => texture.source)).size).toBe(1);
+
+    const first = ENEMY_SPRITE_ANIMATION_TEXTURES.melee.move.front[0];
+    const last = ENEMY_SPRITE_ANIMATION_TEXTURES.melee.move.front[FRAMES_PER_ACTION - 1];
+    expect(first.source).toBe(last.source);
+    expect(first.userData.scourgeAnimation).toEqual({
+      entity: "host-grunt",
+      action: "walk",
+      view: "front",
+      frame: 0,
+      source: "atlas",
+    });
+    expect(last.userData.scourgeAnimation.frame).toBe(FRAMES_PER_ACTION - 1);
+    expect(first.repeat.x).toBeLessThan(1);
+    expect(first.repeat.y).toBeLessThan(1);
+  });
+
+  it("caches the completed combat preload", async () => {
+    const callsAfterFirstPreload = textureLoadCalls;
+    await Promise.all([spriteAssets.preloadCombatAssets(), spriteAssets.preloadCombatAssets()]);
+    expect(textureLoadCalls).toBe(callsAfterFirstPreload);
   });
 });
 

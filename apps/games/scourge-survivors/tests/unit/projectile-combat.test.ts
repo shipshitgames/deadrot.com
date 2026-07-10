@@ -1,6 +1,5 @@
 // Issue #91 — ProjectileCombat seam: integrator (flight/TTL/bounds/obstacles/dispose) vs injected hit resolver.
-// ProjectilesSystem statically imports spriteAssets (module-scope THREE.TextureLoader → document.createElementNS),
-// so we shim that single DOM hook in beforeAll and dynamic-import the system, as in enemy-death-fx.test.ts.
+// Projectiles use shared combat textures; this unit isolates the integrator with inert maps.
 import * as THREE from "three";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { PROJECTILE_HIT_RADIUS, PROJECTILE_TTL, WALL_THICKNESS } from "../../src/game/constants";
@@ -12,25 +11,21 @@ import type { GameSystems } from "../../src/game/systems";
 
 type ProjectilesModule = typeof import("../../src/game/entities/ProjectilesSystem");
 
+vi.mock("../../src/game/spriteAssets", async () => {
+  const THREE = await import("three");
+  return {
+    PROJECTILE_SPRITE_TEXTURES: {
+      enemy: new THREE.Texture(),
+      boss: new THREE.Texture(),
+      bolt: new THREE.Texture(),
+      orb: new THREE.Texture(),
+    },
+  };
+});
+
 let ProjectilesSystem: ProjectilesModule["ProjectilesSystem"];
 
 beforeAll(async () => {
-  if (typeof (globalThis as { document?: unknown }).document === "undefined") {
-    // Minimal stand-in for THREE's ImageLoader: it only ever calls
-    // document.createElementNS('...','img') and then add/removeEventListener +
-    // sets crossOrigin/src on the returned element.
-    (globalThis as { document?: unknown }).document = {
-      createElementNS() {
-        return {
-          addEventListener() {},
-          removeEventListener() {},
-          set crossOrigin(_value: string) {},
-          set src(_value: string) {},
-        };
-      },
-    };
-  }
-
   ProjectilesSystem = (await import("../../src/game/entities/ProjectilesSystem")).ProjectilesSystem;
 });
 

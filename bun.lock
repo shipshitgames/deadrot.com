@@ -300,7 +300,6 @@
         "@radix-ui/react-slot": "^1.2.4",
         "@sentry/nextjs": "^10.57.0",
         "@shipshitgames/assets": "workspace:*",
-        "@shipshitgames/ui": "workspace:*",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "lucide-react": "1.17.0",
@@ -327,7 +326,6 @@
         "@deadrot/catalog": "workspace:*",
       },
       "devDependencies": {
-        "@deadrot/catalog": "workspace:*",
         "@types/node": "25.9.1",
         "typescript": "6.0.3",
       },
@@ -369,7 +367,6 @@
         "@deadrot/catalog": "workspace:*",
       },
       "devDependencies": {
-        "@types/node": "25.9.1",
         "@types/react": "19.2.16",
         "@types/react-dom": "19.2.3",
         "react": "19.2.7",
