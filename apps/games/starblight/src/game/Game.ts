@@ -1,5 +1,4 @@
-import { recordWarResult } from "@deadrot/game-kit/core";
-import { reportWarlineOperation } from "@deadrot/game-kit/warline";
+import { completeRun, createRunNonce } from "@deadrot/game-kit/warline";
 import { audio } from "../audio";
 import { EntitySystem } from "../systems/EntitySystem";
 import { HudSystem } from "../systems/HudSystem";
@@ -65,6 +64,7 @@ export class Game {
   private raf = 0;
   private prev = 0;
   private disposed = false;
+  private runNonce = createRunNonce("starblight");
 
   constructor(canvas: HTMLCanvasElement) {
     this.render = new RenderSystem(canvas);
@@ -88,9 +88,12 @@ export class Game {
         this.vacuum = true;
         this.phase = "victory";
         emitRunEnd(Math.round(this.salvage)); // bank salvage as Drydock wreckage
-        // Bank the boss kill into the cross-game war record (Warline shows it).
-        recordWarResult("starblight", { outcome: "victory", score: this.level, bossKill: true }, Date.now());
-        void reportWarlineOperation("starblight", { outcome: "victory", score: this.level });
+        completeRun("starblight", {
+          outcome: "victory",
+          score: this.level,
+          bossKill: true,
+          nonce: this.runNonce,
+        });
         this.emitHud();
       },
     });
@@ -133,6 +136,7 @@ export class Game {
   // --- run lifecycle -----------------------------------------------------
 
   private startRun() {
+    this.runNonce = createRunNonce("starblight");
     const levels = new Map<UpgradeId, number>([["seeker", 1]]); // start armed
     // Drydock: Phalanx Cache starts the sortie with the orbiting drones too.
     if ((this.shopTiers.phalanxcache ?? 0) > 0) levels.set("phalanx", 1);
@@ -313,9 +317,7 @@ export class Game {
       this.phase = "gameover";
       audio.sfx("defeat");
       emitRunEnd(Math.round(this.salvage)); // bank salvage as Drydock wreckage
-      // Bank the loss into the cross-game war record (Warline shows it).
-      recordWarResult("starblight", { outcome: "defeat", score: this.level }, Date.now());
-      void reportWarlineOperation("starblight", { outcome: "defeat", score: this.level });
+      completeRun("starblight", { outcome: "defeat", score: this.level, nonce: this.runNonce });
       this.emitHud();
     }
   }

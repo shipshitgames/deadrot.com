@@ -15,8 +15,7 @@
  */
 
 import { createFixedLoop, type FixedLoop } from "@deadrot/game-kit";
-import { recordWarResult } from "@deadrot/game-kit/core";
-import { reportWarlineOperation } from "@deadrot/game-kit/warline";
+import { completeRun, createRunNonce } from "@deadrot/game-kit/warline";
 import { audio } from "./audio";
 import { CAMERA, FEEDBACK, RUNNER } from "./constants";
 import { generateCourse } from "./course";
@@ -45,6 +44,7 @@ export class Game {
   private paused = false;
   private time = 0; // run timer (s)
   private score = new ScoreSystem();
+  private runNonce = createRunNonce("redline");
 
   // Kit defaults match the old hand-rolled loop: 1/120 fixed dt, 0.1s max frame.
   private loop: FixedLoop = createFixedLoop({
@@ -154,6 +154,7 @@ export class Game {
   // ---------------------------------------------------------------------------
 
   private startRun() {
+    this.runNonce = createRunNonce("redline");
     audio.unlock(); // start screens are reached via gesture; arm music + cues
     audio.sfx("uiSelect");
     this.course = generateCourse(); // same seed -> identical, fair course
@@ -172,14 +173,12 @@ export class Game {
     audio.sfx("victory");
     const summary = this.score.summary(this.time);
     const records = this.hud.submitRun(this.time, summary.total);
-    // Bank the delivery into the cross-game war record (Warline shows it).
-    recordWarResult(
-      "redline",
-      { outcome: "victory", timeMs: Math.round(this.time * 1000), score: summary.total },
-      Date.now(),
-    );
-    // Report the delivery into the shared Warline front (config-gated, offline-safe).
-    void reportWarlineOperation("redline", { outcome: "victory", score: summary.total });
+    completeRun("redline", {
+      outcome: "victory",
+      timeMs: Math.round(this.time * 1000),
+      score: summary.total,
+      nonce: this.runNonce,
+    });
     this.hud.showWin(summary, records, () => this.startRun());
   }
 
@@ -187,8 +186,7 @@ export class Game {
     this.phase = "dead";
     audio.sfx("defeat");
     // A lost run counts against the war record too — cargo in the pit is a defeat.
-    recordWarResult("redline", { outcome: "defeat" }, Date.now());
-    void reportWarlineOperation("redline", { outcome: "defeat" });
+    completeRun("redline", { outcome: "defeat", nonce: this.runNonce });
     this.render.kickShake(0.8);
     this.hud.flashHit();
     this.hud.showDead(reason, () => this.startRun());

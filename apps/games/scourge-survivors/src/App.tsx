@@ -1,5 +1,4 @@
-import { recordWarResult } from "@deadrot/game-kit/core";
-import { reportWarlineOperation } from "@deadrot/game-kit/warline";
+import { completeRun, createRunNonce } from "@deadrot/game-kit/warline";
 import { GlobalMusicToggle, subscribeGlobalGameSettings } from "@shipshitgames/ui";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { audio } from "./audio/AudioEngine";
@@ -158,6 +157,14 @@ export default function App() {
   const lastRunGoldRef = useRef(0);
   const sandboxAvailable = import.meta.env.DEV;
   const savedRef = useRef(false);
+  // Generated once for the active run and replaced only after it leaves the
+  // game-over state, so repeated HUD snapshots cannot bank the run twice.
+  const runNonceRef = useRef<string | null>(null);
+  if (runNonceRef.current === null) runNonceRef.current = createRunNonce("scourge-survivors");
+  const currentRunNonce = useCallback(() => {
+    if (runNonceRef.current === null) runNonceRef.current = createRunNonce("scourge-survivors");
+    return runNonceRef.current;
+  }, []);
   // A shared link like `?room=ARENA-AB12` lands the player on the PvP preview screen.
   const initialRoom = useMemo(
     () => (new URLSearchParams(window.location.search).get("room") || "").toUpperCase().slice(0, 24),
@@ -187,67 +194,61 @@ export default function App() {
   // Record a run on the leaderboard (and award Survivors gold) once per
   // game-over, right where the engine pushes the HUD snapshot — the game-over
   // "event" originates here, not in a React render.
-  const setHud = useCallback((next: HudState) => {
-    hudRef.current = next;
-    if (next.status === "gameover" && next.outcome && !next.sandbox && !savedRef.current) {
-      savedRef.current = true;
-      if (next.outcome === "win") audio.setMusicMode("victory");
-      const earnedGold = next.survivors
-        ? runGold(next.kills, next.level, next.time, shopTiersRef.current.greed ?? 0)
-        : 0;
-      lastRunGoldRef.current = earnedGold;
-      setScores(
-        saveScore({
-          score: next.score,
-          kills: next.kills,
-          headshots: next.headshots,
-          time: next.time,
-          outcome: next.outcome,
-          mode: next.runMode,
-          level: next.level,
-          depthReached: next.runDepth,
-          depthTotal: next.runDepthTotal,
-          depthName: next.runDepthName,
-          goldEarned: earnedGold,
-          date: Date.now(),
-        }),
-      );
-      // Mirror the run into the shared cross-game war record (display-only;
-      // Warline's "Your War Record" card reads it back). Survivors chapter runs
-      // progress by depth, not the clamped arena wave — report the deeper number.
-      recordWarResult(
-        "scourge-survivors",
-        {
+  const setHud = useCallback(
+    (next: HudState) => {
+      const previous = hudRef.current;
+      hudRef.current = next;
+      if (next.status === "gameover" && next.outcome && !next.sandbox && !savedRef.current) {
+        savedRef.current = true;
+        if (next.outcome === "win") audio.setMusicMode("victory");
+        const earnedGold = next.survivors
+          ? runGold(next.kills, next.level, next.time, shopTiersRef.current.greed ?? 0)
+          : 0;
+        lastRunGoldRef.current = earnedGold;
+        setScores(
+          saveScore({
+            score: next.score,
+            kills: next.kills,
+            headshots: next.headshots,
+            time: next.time,
+            outcome: next.outcome,
+            mode: next.runMode,
+            level: next.level,
+            depthReached: next.runDepth,
+            depthTotal: next.runDepthTotal,
+            depthName: next.runDepthName,
+            goldEarned: earnedGold,
+            date: Date.now(),
+          }),
+        );
+        // Survivors chapter runs progress by depth, not the clamped arena wave.
+        // `contributed` is biomass banked into the shared effort regardless of outcome.
+        completeRun("scourge-survivors", {
           outcome: next.outcome === "win" ? "victory" : "defeat",
           score: next.score,
           wave: next.survivors ? Math.max(next.runDepth, next.wave) : next.wave,
           bossKill: next.bossKills,
-        },
-        Date.now(),
-      );
-      // Report the breach purge into the shared Warline front (config-gated, offline-safe).
-      // `contributed` is the biomass salvaged this run, banked into the shared
-      // cross-game war-effort pool (#280) — credited regardless of outcome.
-      void reportWarlineOperation("scourge-survivors", {
-        outcome: next.outcome === "win" ? "victory" : "defeat",
-        score: next.score,
-        contributed: runBiomass(next.kills, next.level, next.time),
-      });
-      if (next.survivors) {
-        setShop((prev) => {
-          const nextShop = { ...prev, gold: prev.gold + earnedGold };
-          saveShop(nextShop);
-          return nextShop;
+          contributed: runBiomass(next.kills, next.level, next.time),
+          nonce: currentRunNonce(),
         });
-      } else {
+        if (next.survivors) {
+          setShop((prev) => {
+            const nextShop = { ...prev, gold: prev.gold + earnedGold };
+            saveShop(nextShop);
+            return nextShop;
+          });
+        } else {
+          lastRunGoldRef.current = 0;
+        }
+      } else if (next.status !== "gameover") {
+        if (previous.status === "gameover") runNonceRef.current = createRunNonce("scourge-survivors");
+        savedRef.current = false;
         lastRunGoldRef.current = 0;
       }
-    } else if (next.status !== "gameover") {
-      savedRef.current = false;
-      lastRunGoldRef.current = 0;
-    }
-    setHudState(next);
-  }, []);
+      setHudState(next);
+    },
+    [currentRunNonce],
+  );
 
   // Mirror the global music/SFX sliders + mute (the shared GlobalGameSettingsPanel)
   // into the AudioEngine bus gains. subscribe fires once immediately with the
