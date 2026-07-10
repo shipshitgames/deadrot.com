@@ -1,6 +1,11 @@
 import { describe, expect, test } from "bun:test";
 
-import { DEFAULT_TARGET_PROJECTS, issueNeedsHubProject, priorityForIssue, projectNumbersFromEnv } from "./board-hygiene.mjs";
+import {
+  DEFAULT_TARGET_PROJECTS,
+  issueNeedsHubProject,
+  priorityForIssue,
+  projectNumbersFromEnv,
+} from "./board-hygiene.mjs";
 
 function issueOnProjects(projectNumbers) {
   return {
