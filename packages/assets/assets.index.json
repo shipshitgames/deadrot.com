@@ -4,7 +4,7 @@
   "generator": "scripts/generate-asset-index.mjs",
   "note": "Generated — do not edit by hand. Run `bun run --cwd packages/assets assets:index`.",
   "cdnBase": "https://assets.deadrot.com",
-  "assetCount": 743,
+  "assetCount": 751,
   "assets": [
     {
       "id": "brand/mark",
@@ -8449,6 +8449,102 @@
       "sha256": "7f4698326c11ccb3cc1c289705091511d48b4986fcd993c49d2063696291376b",
       "width": 2172,
       "height": 724
+    },
+    {
+      "id": "games/starblight/enemies/scourge/orbital-breach-carrier",
+      "kind": "image",
+      "game": "starblight",
+      "path": "games/starblight/enemies/scourge/orbital-breach-carrier.webp",
+      "cdnPath": "games/starblight/enemies/scourge/orbital-breach-carrier.webp",
+      "mediaType": "image/webp",
+      "bytes": 6174,
+      "sha256": "d302c0365612694abc3779e0c07d9fe4c7b8882bbcc562bf82b42fc4d62dc72d",
+      "width": 114,
+      "height": 196
+    },
+    {
+      "id": "games/starblight/enemies/scourge/scourge-elite",
+      "kind": "image",
+      "game": "starblight",
+      "path": "games/starblight/enemies/scourge/scourge-elite.webp",
+      "cdnPath": "games/starblight/enemies/scourge/scourge-elite.webp",
+      "mediaType": "image/webp",
+      "bytes": 4534,
+      "sha256": "b10e738534f21f8873cc10a08c99b555fa23784b18a9ef2735543953f28138d6",
+      "width": 109,
+      "height": 148
+    },
+    {
+      "id": "games/starblight/enemies/scourge/scourge-grunt",
+      "kind": "image",
+      "game": "starblight",
+      "path": "games/starblight/enemies/scourge/scourge-grunt.webp",
+      "cdnPath": "games/starblight/enemies/scourge/scourge-grunt.webp",
+      "mediaType": "image/webp",
+      "bytes": 2406,
+      "sha256": "c710a86a4a499fbce28ff034d3c79e76e6f517a02f7469ebf1a295c6405098f7",
+      "width": 75,
+      "height": 114
+    },
+    {
+      "id": "games/starblight/enemies/scourge/scourge-spitter",
+      "kind": "image",
+      "game": "starblight",
+      "path": "games/starblight/enemies/scourge/scourge-spitter.webp",
+      "cdnPath": "games/starblight/enemies/scourge/scourge-spitter.webp",
+      "mediaType": "image/webp",
+      "bytes": 3416,
+      "sha256": "4359bd066eb763a24e35f422cb0d7d239cfa893bd0b266b08fb55374476c940a",
+      "width": 96,
+      "height": 114
+    },
+    {
+      "id": "games/starblight/enemies/scourge/scourge-swarmling",
+      "kind": "image",
+      "game": "starblight",
+      "path": "games/starblight/enemies/scourge/scourge-swarmling.webp",
+      "cdnPath": "games/starblight/enemies/scourge/scourge-swarmling.webp",
+      "mediaType": "image/webp",
+      "bytes": 1214,
+      "sha256": "ce1151279a2e2e4dad33fbfcaa24070ae93dd1d0b275e058e0ad9a0f4f346690",
+      "width": 40,
+      "height": 94
+    },
+    {
+      "id": "games/starblight/enemies/scourge/scourge-weaver",
+      "kind": "image",
+      "game": "starblight",
+      "path": "games/starblight/enemies/scourge/scourge-weaver.webp",
+      "cdnPath": "games/starblight/enemies/scourge/scourge-weaver.webp",
+      "mediaType": "image/webp",
+      "bytes": 3442,
+      "sha256": "bc25a935c1859b83b45c020ae2d52be3261afc8ea22464f7a33627a4436622b7",
+      "width": 125,
+      "height": 108
+    },
+    {
+      "id": "games/starblight/pickups/salvage/salvage-shard",
+      "kind": "image",
+      "game": "starblight",
+      "path": "games/starblight/pickups/salvage/salvage-shard.webp",
+      "cdnPath": "games/starblight/pickups/salvage/salvage-shard.webp",
+      "mediaType": "image/webp",
+      "bytes": 938,
+      "sha256": "16f97ae41a8b874ab8ced95c233f212d0826772ace242742aee6c874a7b79d61",
+      "width": 38,
+      "height": 60
+    },
+    {
+      "id": "games/starblight/players/pyre/player-interceptor",
+      "kind": "image",
+      "game": "starblight",
+      "path": "games/starblight/players/pyre/player-interceptor.webp",
+      "cdnPath": "games/starblight/players/pyre/player-interceptor.webp",
+      "mediaType": "image/webp",
+      "bytes": 3330,
+      "sha256": "03731928520e2d85757e3f72c56cba14838b97692886e9f4d0c36ad9c2354fd7",
+      "width": 116,
+      "height": 132
     },
     {
       "id": "games/starblight/ui/menu/title",

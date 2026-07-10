@@ -263,6 +263,7 @@ other dependency.
 
 ## Design canon
 
-DOOM, not neon. Blood `#c1121f`, hellfire `#ff6a00`, gunmetal, bone; all
-player-facing UI uses the shared Press Start 2P pixel face. See
-`apps/lore/content/DESIGN.md`.
+Comic ink, not neon or pixel grids. Blood `#c1121f`, hellfire `#ff6a00`,
+gunmetal, and bone carry the grade; player-facing UI uses the shared condensed
+comic type system. See `apps/lore/content/DESIGN.md` and
+`apps/lore/content/Universe/Style-Bible.md`.

@@ -1,10 +1,15 @@
 ---
-status: active
+status: historical
 type: style-validation
-feeds: DECISION shipshitgames/shipshitgames#62
+completed: 2026-06-17
 ---
 
-# Style Bake-Off — validate the house look before locking it
+# Style Bake-Off — historical decision record
+
+> **EXECUTED / HISTORICAL.** The pixel candidate described below was superseded
+> on 2026-06-17. The locked house medium is clean comic-book / cel-shaded ink;
+> see [[Style-Bible]]. This document is evidence for that decision, not an
+> executable generation recipe.
 
 Goal: pick the render style for the **whole universe** (one look, six cameras) by
 **looking**, not reading. We render the same four subjects — **player · foes ·
@@ -89,20 +94,17 @@ a row of game cards with cover art, a blood-red **PLAY** button with an ember gl
 gunmetal panels on a near-black page, a hero banner showing a Scourge breach.
 Desktop-browser web UI mockup.
 
-## Run it (codex, your ChatGPT sub — no API key)
+## Historical execution record
 
-`run.sh` (next to this file) renders all 12 into `style-bakeoff/`:
-
-```bash
-bash lore/Art/style-bakeoff/run.sh
-```
-
-Then compare the preserved outputs in `packages/assets/sources/generated/lore-art-style-bakeoff/2026-06-04/`. Each filename is `<style>-<subject>.png`.
+The original local shell runner was archived because studio-generation scripts
+do not belong in this repository. Preserved outputs remain under
+`packages/assets/sources/generated/lore-art-style-bakeoff/2026-06-04/`; this
+document and the archive record explain their provenance.
 
 ## Judge, then lock
 
 Score each style on: **(1)** does it look amazing per-asset, **(2)** does the
 roster stay coherent, **(3)** can Redline/Rothulk actually animate it cheaply.
-Pick one. Locking it = edit the `assetgen:` block + Style-Bible prose, then
-`bun assetgen tokens` re-flows every game at once. Record the verdict on
-shipshitgames/shipshitgames#62.
+The decision has been made: use clean comic-book / cel-shaded ink. Generator
+implementation now belongs in the sibling `../shipshitgames` repository; do not
+recreate or run a studio-generation script from this historical document.

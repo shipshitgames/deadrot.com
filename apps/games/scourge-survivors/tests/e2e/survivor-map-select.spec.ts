@@ -105,7 +105,9 @@ test.describe("survivor map select (#276)", () => {
     await expect(hub).toBeVisible();
     await expect(hub.getByRole("button", { name: /Play a Run/i })).toContainText(/Structured run/i);
     await expect(hub.getByRole("button", { name: /Shop/i })).toBeVisible();
-    await expect(hub.getByRole("button", { name: /Co-op/i })).toContainText(/Co-op breach variant/i);
+    await expect(hub.getByRole("button", { name: /PvP Arena/i })).toContainText(
+      /Unauthenticated preview · no PvE waves/i,
+    );
     await expect(hub.getByRole("button", { name: /Leaderboard/i })).toBeVisible();
     await expect(hub.getByRole("button", { name: /Campaign/i })).toHaveCount(0);
     await expect(hub.getByRole("button", { name: /Multiplayer/i })).toHaveCount(0);

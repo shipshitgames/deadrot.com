@@ -15,7 +15,7 @@ import type { GameContext } from "../context";
 import { DEFAULT_MAP_ID, getMap } from "../data/maps";
 import type { GameSystems } from "../systems";
 
-/** Snapshot of co-op room state for tests/debug harnesses. */
+/** Snapshot of PvP arena preview state for tests/debug harnesses. */
 export interface MultiplayerDebugSnapshot {
   active: boolean;
   connected: boolean;
@@ -25,7 +25,7 @@ export interface MultiplayerDebugSnapshot {
 }
 
 export class MultiplayerSystem {
-  // Co-op breach room state. The generic transport owns the wire; the presence
+  // PvP preview room state. The generic transport owns the wire; the presence
   // registry owns the set of remote avatars. Both are null outside a session.
   transport: NetTransport | null = null;
   presence: FpsPresence<RemoteAvatar> | null = null;
@@ -40,7 +40,7 @@ export class MultiplayerSystem {
     private sys: GameSystems,
   ) {}
 
-  /** True while a co-op session is live (a transport exists). */
+  /** True while a PvP preview session is live (a transport exists). */
   get active(): boolean {
     return this.transport !== null;
   }
@@ -59,7 +59,7 @@ export class MultiplayerSystem {
     this.leaveMultiplayer(false); // tear down any prior session/avatars first
     this.sys.mission.clearMissionState();
     this.ctx.campaignStage = 0;
-    this.sys.arena.buildArena(getMap(DEFAULT_MAP_ID)); // Co-op rooms use the default breach arena.
+    this.sys.arena.buildArena(getMap(DEFAULT_MAP_ID)); // PvP preview uses the default arena.
     this.sys.player.resetPlayer();
     this.ctx.multiplayer = true;
     this.connected = false;
@@ -68,7 +68,7 @@ export class MultiplayerSystem {
     this.playerAvatar = avatar;
     this.ctx.kills = 0;
 
-    // Disable solo run progression while the co-op room owns pacing.
+    // The preview is a player-vs-player arena, so solo PvE progression is absent.
     for (const e of this.ctx.enemies) e.kill();
     this.sys.pve.suspendWaves();
     this.sys.pve.bossActive = false;
@@ -217,7 +217,6 @@ export class MultiplayerSystem {
           z: player.z,
           yaw: this._euler.y,
           weapon: WEAPONS[this.ctx.activeWeapon].name,
-          health: Math.round(this.ctx.health),
         },
         45, // ~22 Hz; safe to call every frame
       );

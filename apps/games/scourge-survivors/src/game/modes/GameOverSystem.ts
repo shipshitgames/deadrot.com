@@ -12,8 +12,8 @@ export class GameOverSystem {
 
   /** "Play Again" — replays the current mode (structured descent restarts from stage 1). */
   restart() {
-    // Co-op rooms have no local "restart" — the server owns room state. A Restart click
-    // from a co-op pause must not reset stats / rebuild the arena under the
+    // PvP preview rooms have no local "restart". A Restart click
+    // from an arena pause must not reset stats / rebuild the arena under the
     // live net session (that strands the player in a broken half-run state);
     // treat it as a resume instead.
     if (this.ctx.multiplayer) {

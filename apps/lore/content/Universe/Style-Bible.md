@@ -6,15 +6,14 @@ supersedes:
   - Art/Character-Sprite-Direction.md
   - Art/Character-Prompt-Library.md
 inherits:
-  - DESIGN.md (palette + type tokens — authoritative, do not relitigate)
-  - assetgen DESIGN.md `assetgen:` block (machine twin of this prose)
+  - DESIGN.md (palette, type tokens, framing, and production boundary — authoritative)
 ---
 
 # The Scourge Style Bible
 
-**At a glance:** the locked art bible · the one render look every creature/operator/machine wears · feeds [[DESIGN]] tokens + the `assetgen:` block · governs all 6 games.
+**At a glance:** the locked art bible · the one render look every creature/operator/machine wears · interprets [[DESIGN]]'s tokens and production boundary · governs seven playable fronts plus Warline.
 
-> **Status: LOCKED. House medium = clean comic-book / cel-shaded ink** — decided 2026-06-17 after the pixel pass failed the readability and identity tests. The prior medium-chunky pixel-art target is now historical scaffolding only. This is the most-read art doc in the studio and it is the law. The render look, lighting rig, color discipline, faction grammar, Scourge parasite rule, and per-asset recipes are decided. Build on them — do not relitigate them. Palette and type tokens live in [[DESIGN]] (authoritative); this bible is their visual conscience. The machine-readable twin of everything here ships as the `assetgen:` block in [[DESIGN]]'s frontmatter. **Edit the bible, the generator changes.** One source of truth, no drift.
+> **Status: LOCKED. House medium = clean comic-book / cel-shaded ink** — decided 2026-06-17 after the pixel pass failed the readability and identity tests. The prior medium-chunky pixel-art target is historical scaffolding only. This bible is the canonical visual prose and active prompt skeleton. [[DESIGN]] owns tokens, framing, and custody; sibling-repository studio tooling owns generator implementation. Build on the lock — do not relitigate it or recreate generator configuration in this vault.
 
 ---
 
@@ -227,7 +226,10 @@ For every Scourge batch, record both the **threat role** (Ripper, Spitter, elite
 
 ## 10. One look, many cameras — identity never changes
 
-The style-ref pins the **rendering style and grade;** per-game **camera framing** changes around it. Same sculpt, same materials, same rim, same DOOM grade — re-shot from the game's angle. These framing strings are the canon `GAME_FRAMING` map (mirrored in the `assetgen:` block):
+The approved comic-ink master pins the **rendering style and grade;** per-game
+**camera framing** changes around it. Same sculpt, same materials, same rim,
+same DOOM grade — re-shot from the game's angle. The canonical framing map is
+in [[DESIGN]]:
 
 | Game | Camera framing |
 |---|---|
@@ -260,7 +262,7 @@ A subject is rendered for one of two jobs. **Never request a rim-lit void and a 
 
 ## 12. The negative-prompt set
 
-Always-on style exclusions. On providers with a real negative prompt these map there; on providers without one, fold them into the positive suffix as `only / single / plain` constraints. The canonical set (machine twin: `DESIGN.md` → `assetgen.negativePrompts`) now treats pixel art and dotted/noisy effects as exclusions:
+Always-on style exclusions. On providers with a real negative prompt these map there; on providers without one, fold them into the positive suffix as `only / single / plain` constraints. Pixel art and dotted/noisy effects are exclusions for all new work:
 
 ```text
 photorealistic, photographic skin, shallow depth of field, lens bokeh, smooth 3D render,
@@ -569,17 +571,22 @@ hard ember light, NO neon, no soft pastel haze, no text, no watermark.
 
 ---
 
-## 14. Consistency at scale — the workflow
+## 15. Consistency at scale — the workflow
 
 Coherence comes from **conditioning, not seeds.** Seeds are a weak, provider-specific tiebreaker that break the moment an image input is added — never promise reproducibility on a style-ref path. Pin the look with two levers and a discipline.
 
 ### The style-reference strategy
 
-**One locked style-reference image per game** — six total — generated on the hero track, hand-approved, and version-pinned. Every generation for that game is passed that ref with the instruction to *match the rendering style, lighting, and palette; new subject described below.* That is how a new asset inherits the look:
+Use a reviewed comic-ink master for the target game and asset family; record its
+path in the design lock or [[Generation-History]]. Historical pixel reference
+files are not active pins. Every generation should be instructed to *match the
+rendering style, lighting, and palette; new subject described below.*
 
 > **frozen prompt skeleton + swapped `{SUBJECT}` line + the game's pinned style-ref.**
 
-The reference-image paths are canon in the `assetgen:` block (`referenceImages.<game>` → `packages/assets/sources/generated/lore-art-style-refs/2026-06-04/<game>.webp`). The catalog/provider plumbing to pass them is downstream work, but the **paths are now law** so providers can wire `image_urls` later without another bible edit. Until the plumbing ships, generate against the ref manually in the noob loop.
+Studio tooling lives in `../shipshitgames`; it may consume the approved master
+as a provider reference, but the tool configuration is not canon stored here.
+Deadrot records the resulting original, master, and promotion provenance.
 
 ### Per provider
 
@@ -587,9 +594,9 @@ The reference-image paths are canon in the `assetgen:` block (`referenceImages.<
 - **FLUX / fal** (reproducible scriptable workhorse): anchor with **Redux or IP-Adapter at LOW `image_prompt_strength` (0.10–0.25)** so the ref pins *style, not silhouette* — push higher and every creature collapses toward the ref's shape. Real seeds and real `negative_prompt` here (`seed:42`, `guidance_scale ~3.5`, `num_inference_steps ~28`). For per-creature consistency edits use **FLUX Kontext** and restate the invariants. Seed reproducibility breaks once an image ref is attached — treat it as a tiebreaker, not a guarantee.
 - **codex / ChatGPT image path:** same gpt-image family underneath — a no-seed, conversational gpt-image-2. Good for the noob loop, not for deterministic batch.
 
-### The noob loop (per asset, fully scriptable)
+### The noob loop (per asset)
 
-1. frozen skeleton + swapped `{SUBJECT}` line + the pinned per-game style-ref
+1. frozen skeleton + swapped `{SUBJECT}` line + a reviewed comic-ink master
 2. generate 4 candidates
 3. eye-pick the best — do **not** tune parameters between picks
 4. **rembg** cutout (anime/object model variant for stylized subjects)
@@ -597,14 +604,14 @@ The reference-image paths are canon in the `assetgen:` block (`referenceImages.<
 
 ### Batch discipline — change one axis at a time
 
-Freeze the style-ref image, the prompt skeleton, the provider, the model version, the size, and (on FLUX) the seed — these are **immutable across the roster.** When an asset misses, alter exactly **one** of `{subject line | style-ref | one parameter}`, regenerate, and **log what you changed** in [[Generation-History]] (the provenance ledger). Vary the host family or faction read; never rewrite the whole prompt.
+Freeze the approved master, the prompt skeleton, the provider, the model version, the size, and (on FLUX) the seed for a batch. When an asset misses, alter exactly **one** of `{subject line | approved master | one parameter}`, regenerate, and **log what changed** in [[Generation-History]] (the provenance ledger). Vary the host family or faction read; never rewrite the whole prompt.
 
 ---
 
-## 15. Pointers — where the rest lives
+## 16. Pointers — where the rest lives
 
 - **Tokens (authoritative):** [[DESIGN]] — the 11-color palette, type, UI, shape, and component tokens. Never relitigate them here.
-- **Machine twin:** the `assetgen:` block in [[DESIGN]]'s frontmatter compiles to `style.generated.ts` and drives `buildPrompt`. This bible is its prose conscience; they must agree.
+- **Production boundary:** [[DESIGN]] identifies the Deadrot custody paths; reusable generator tooling lives in `../shipshitgames`.
 - **Provenance:** [[Generation-History]] — the per-batch ledger; every generation logs prompt, provider, params, and what one axis changed.
 - **Canon to honor:** [[Scourge]], [[Scourge-Host-Families]], the Bestiary tier entries, and [[The-Pyre]] / [[The-Wardens]] / [[The-Listeners]].
 - **World & tone:** [[Premise]] and the per-game pages.

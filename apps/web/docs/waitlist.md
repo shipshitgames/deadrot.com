@@ -1,75 +1,98 @@
-# Access waitlist (#355)
+# Access waitlist
 
-The Deadrot site captures access-waitlist signups **first-party**: the form posts
-to `POST /api/waitlist/` on our own origin rather than to a third-party form
-endpoint, so the form markup, validation, spam handling, and follow-up wiring all
-live in this repo and are unit-/e2e-tested.
+Deadrot captures access-waitlist signups first-party. A browser posts to the web
+route, and that route reports success only after the dedicated Deadrot API has
+committed the normalized address to the existing Deadrot Postgres database.
 
-## How it works
-
-```
-components/site/waitlist.tsx   →  POST /api/waitlist/   →  lib/waitlist-sink.ts
-        (form, honeypot)            (app/api/waitlist/route.ts)     (follow-up)
-                                     uses lib/waitlist.ts
-                                     (pure validation contract)
+```text
+browser → POST deadrot.com/api/waitlist/ → POST api.deadrot.com/v1/waitlist
+                                               │
+                                               ├─ waitlist_signups (authoritative)
+                                               └─ waitlist_outbox → optional sink
 ```
 
-- **`lib/waitlist.ts`** — pure, framework-free validation shared by the route, the
-  form, and the tests: email normalize/validate, source normalize (length-capped),
-  honeypot check, and `parseWaitlistFields()`.
-- **`app/api/waitlist/route.ts`** — the handler. Returns plain web `Response.json`
-  (not `NextResponse`) so it unit-tests as a pure function. On a valid signup it
-  stamps an ISO timestamp and calls `recordSignup`.
-- **`lib/waitlist-sink.ts`** — the only side-effecting layer: forwards the signup
-  to the configured destination, or structured-logs when none is set.
+## Integrity and failure behavior
 
-## Spam handling
+- The web route validates and normalizes the email, applies the honeypot, then
+  authenticates server-to-server with `WAITLIST_API_TOKEN`.
+- The API validates again and stores the address in `waitlist_signups` inside a
+  transaction. Normalized email is unique, so retries and duplicate submissions
+  return success without creating duplicate records or outbox jobs.
+- The same transaction creates one `waitlist_outbox` row. If no downstream sink
+  is configured, the durable database record remains authoritative and the job
+  waits. When `WAITLIST_FORWARD_URL` is present, the long-running API worker
+  attempts delivery in leased batches.
+- Sink 4xx, 5xx, timeout, and network failures never roll back or delete the
+  signup. The job is released with a sanitized reason and exponential retry
+  delay (30 seconds up to 6 hours). Expired leases make a worker crash retryable.
+  Delivery is at-least-once; every attempt carries the stable
+  `Idempotency-Key: deadrot-waitlist-<signup id>` so compatible sinks can dedupe a
+  success followed by a worker crash.
+- Missing/invalid production or preview web config, an unavailable API, or an
+  unavailable database returns `503`; the UI keeps the form and asks the visitor
+  to retry. There is no log-only success path.
+- The API deploy requires a non-empty `WAITLIST_INGEST_TOKEN` in the Deadrot SSM
+  subtree before replacing the live container. Production readiness also fails
+  closed when that token is missing.
 
-A hidden `company` honeypot field (off-screen, `aria-hidden`, `tabIndex=-1`) is
-never filled by a human. When it is filled the route returns `200 { ok: true }`
-but records **nothing** — the bot is dropped silently and never told it was caught.
-The email regex is anchored and class-based (no backtracking) so a long hostile
-input can't ReDoS, and both email and source are length-capped before they reach
-the log or forward payload.
+## Environment
 
-## Where signups go (follow-up / export / admin)
+Web (Vercel):
 
-The capture surface is fixed; the **destination is pluggable per environment** so
-the repo never pins a single vendor. Resolution order (see `waitlistForwardTarget`):
+```dotenv
+WAITLIST_API_URL=https://api.deadrot.com/v1/waitlist
+WAITLIST_API_TOKEN=<same secret as the API>
+```
 
-| Env var | Destination |
-| --- | --- |
-| `WAITLIST_FORWARD_URL` | Any endpoint that accepts a JSON `POST { email, source, at }` — a webhook, a serverless function, a Google Apps Script writing to a Sheet, an ESP/CRM intake, etc. **Wins if both are set.** |
-| `FORMSPREE_ID` / `NEXT_PUBLIC_FORMSPREE_ID` | Shorthand for a [Formspree](https://formspree.io) inbox, posted to `https://formspree.io/f/<id>`. Matches the inbox the older static form used. |
-| _(neither set)_ | The route **structured-logs** `{ source, at }` at info level (never the raw address) and returns ok. The platform log drain is the record of last resort; ops can replay from it. Dev / CI / e2e use this path so they never depend on an external service. |
+API (Deadrot SSM subtree rendered into the container):
 
-A forward outage never 500s a signup: `recordSignup` catches transport errors and
-also checks `res.ok`, logging a non-ok HTTP reply (4xx/5xx) at error level rather
-than letting it pass silently — so both a dropped connection and a rejected forward
-leave a trace, and the structured log remains a recoverable fallback either way.
+```dotenv
+WAITLIST_INGEST_TOKEN=<same secret as the web>
+WAITLIST_FORWARD_URL=<optional HTTPS sink>
+```
 
-### Recommended production setup
+Local development can run both apps with a local database. UI-only E2E explicitly
+sets `WAITLIST_LOCAL_FILE`; the web route appends JSONL, fsyncs it, and only then
+returns success. Local-file mode is rejected under production or Vercel preview,
+so it cannot become an accidental hosted persistence layer.
 
-1. Stand up a destination that persists signups somewhere queryable/exportable —
-   the lowest-friction options are a Formspree inbox (CSV export + email
-   notifications, zero infra) or a Google Apps Script web app appending rows to a
-   Sheet (free, exportable, shareable with non-engineers).
-2. Set `WAITLIST_FORWARD_URL` (or `FORMSPREE_ID`) in the web app's environment.
-3. **Export / admin:** pull the list from whichever destination you chose
-   (Formspree dashboard CSV, the backing Sheet, or your CRM). There is no
-   in-repo admin UI by design — the signup is forwarded to a system that already
-   owns list management, dedup, and unsubscribe.
+## Privacy, retention, export, and deletion
 
-### Privacy note
+- Raw addresses exist only in the Postgres signup table, an explicitly configured
+  local test file, and the optional forwarding payload. Application logs contain
+  no email, bearer token, sink response body, or exception text. Outbox errors
+  store only `http_<status>` or `network_error`.
+- Access to the database and exports is limited to operators already authorized
+  for the dedicated Deadrot RDS. Exports are operational artifacts: write them to
+  an access-controlled encrypted location, do not commit them, and delete them
+  after import/hand-off is verified.
+- Retain active waitlist records while the access program is operating. Review
+  quarterly; purge addresses no later than 90 days after the program closes or
+  immediately on a verified deletion request. Never purge an undelivered outbox
+  row independently of its signup. Keep delivered outbox rows for the signup's
+  lifetime: their unique key prevents a later duplicate submission from being
+  forwarded twice.
 
-The raw email address is only ever sent to the configured destination. The
-fallback structured log deliberately omits it (logs `source` + `at` only), so
-turning the sink off does not leak addresses into log storage.
+Run exports and retention actions with `psql` against the dedicated Deadrot DB:
+
+```sql
+-- CSV export (psql \copy creates the file on the operator machine)
+\copy (SELECT email, source, captured_at, last_seen_at FROM waitlist_signups ORDER BY captured_at) TO 'waitlist.csv' WITH (FORMAT csv, HEADER true)
+
+-- Verified deletion request (the outbox row cascades)
+\set email 'verified-address@example.com'
+DELETE FROM waitlist_signups WHERE email = lower(trim(:'email'));
+```
+
+Program-close retention is a deliberate operator action because the close date
+is a product decision, not a timestamp the service can infer safely.
 
 ## Tests
 
-- `tests/unit/waitlist.test.ts` — the pure validation contract.
-- `tests/unit/waitlist-route.test.ts` — the handler: valid JSON + form-encoded
-  capture, 400 on invalid, honeypot records nothing, malformed JSON is a 400.
-- `e2e/waitlist.spec.ts` — desktop + mobile smoke: a visitor joins from the
-  homepage and sees the confirmation; the access-state legend is visible.
+- Web route/unit tests cover validation, unavailable persistence, hostile Stripe
+  `Origin`, canonical redirect policy, and owner checkout no-op behavior.
+- API route tests cover durable success, authentication, duplicate signup, and
+  unavailable persistence.
+- API outbox tests cover sink 4xx/5xx/network failure, privacy-safe errors, retry,
+  recovery, and the no-sink pending state.
+- Playwright desktop/mobile smoke uses explicit fsynced test persistence.

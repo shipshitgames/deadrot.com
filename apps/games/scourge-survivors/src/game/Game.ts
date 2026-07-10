@@ -376,7 +376,7 @@ export class Game {
     this.sys.multiplayer.leaveMultiplayer(toMenu);
   }
 
-  /** Live co-op room state — exposed on `window.__fpsGame` for the e2e harness. */
+  /** Live PvP preview state — exposed on `window.__fpsGame` for the e2e harness. */
   multiplayerDebugSnapshot() {
     return this.sys.multiplayer.debugSnapshot();
   }

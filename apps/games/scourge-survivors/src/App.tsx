@@ -167,14 +167,14 @@ export default function App() {
   const lastRunGoldRef = useRef(0);
   const sandboxAvailable = import.meta.env.DEV;
   const savedRef = useRef(false);
-  // A shared link like `?room=BREACH-AB12` lands the player on the join screen.
+  // A shared link like `?room=ARENA-AB12` lands the player on the PvP preview screen.
   const initialRoom = useMemo(
     () => (new URLSearchParams(window.location.search).get("room") || "").toUpperCase().slice(0, 24),
     [],
   );
   const initialSandbox = useMemo(
     () => sandboxAvailable && new URLSearchParams(window.location.search).get("sandbox") === "1",
-    [],
+    [sandboxAvailable],
   );
   const [sandboxActive, setSandboxActive] = useState(false);
   const setRoomInUrl = useCallback((room: string) => {
@@ -381,7 +381,7 @@ export default function App() {
         },
       });
     },
-    [runCombatLaunch, setRoomInUrl, setSandboxInUrl],
+    [runCombatLaunch, sandboxAvailable, setRoomInUrl, setSandboxInUrl],
   );
   const handleExitSandbox = useCallback(() => {
     setSandboxActive(false);

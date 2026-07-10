@@ -127,6 +127,9 @@
       }
     },
     "wound-hound": {
+      "status": "placeholder-static",
+      "placeholder": true,
+      "placeholderReason": "Each action/view currently repeats one static pose across all six frame slots pending authored animation.",
       "frameDimensions": [
         256,
         128

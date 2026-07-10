@@ -1,6 +1,6 @@
 import type { FighterId } from "./roster";
 
-export type GameStatus = "select" | "playing" | "round-over";
+export type GameStatus = "select" | "playing" | "paused" | "round-over";
 export type GameMode = "duel" | "arena";
 export type AttackKind = "light" | "heavy" | "special";
 export type InputAction = "left" | "right" | "jump" | "guard" | AttackKind;
