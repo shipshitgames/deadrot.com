@@ -86,7 +86,7 @@ export class PveDirectorSystem {
     this.bossName = null;
   }
 
-  /** Freeze wave progression when an outside authority (e.g. a co-op room) owns pacing. */
+  /** Freeze wave progression when the PvP arena preview intentionally disables PvE. */
   suspendWaves() {
     this.director.suspend();
   }

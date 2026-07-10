@@ -193,7 +193,7 @@ export function GameOverScreen({
       : `${runModeLabel(state.runMode)} run — operator signal gone`
     : outcome === "win"
       ? `${runModeLabel(state.runMode)} run — run cleared`
-      : `${runModeLabel(state.runMode)} run — ${state.multiplayer ? "squad down" : "operator down"}`;
+      : `${runModeLabel(state.runMode)} run — ${state.multiplayer ? "match ended" : "operator down"}`;
 
   const summaryTitle = outcome === "win" && !survivors ? "VICTORY" : "RUN SUMMARY";
   const depthValue =
