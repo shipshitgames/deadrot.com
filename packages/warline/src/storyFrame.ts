@@ -44,19 +44,19 @@ export const STORY_FRAME = {
   /** The thesis, in five words. */
   headline: "Every preview is an operation.",
   thesis:
-    "Each playable build is a sortie on the same war. Your runs report in as operations, spend the Pact's pooled resources, and nudge a provisional line the whole community is pushing together.",
+    "Each playable build is a sortie on the same war. Authenticated, bounded run claims can enter as operations and nudge a provisional line the whole community is pushing together.",
 
   /** How a preview becomes a move on the front (scope: operations, resources, provisional movement). */
   pillars: [
     {
       slug: "operations",
-      title: "Builds report as operations",
-      body: "Every game is one operation on the front — purge, hold, contest, duel, intercept, run, or sabotage. Play a preview and that run reads into Warline as a sortie against the Scourge.",
+      title: "Trusted reports become operations",
+      body: "Every game maps to one operation — purge, hold, contest, duel, intercept, run, or sabotage. Signed-in players report through a server broker; anonymous browser demos never move the shared line.",
     },
     {
       slug: "resources",
       title: "Runs spend the shared war pool",
-      body: "Operations credit and burn the four war resources — scrap, fuel, biomass, intel — from one pool every game shares. What your run banks is what the next command can spend.",
+      body: "Accepted operations credit the four war resources — scrap, fuel, biomass, intel — in one shared pool. Browser command-table spending stays inside an isolated local demo.",
     },
     {
       slug: "front-movement",
@@ -72,7 +72,7 @@ export const STORY_FRAME = {
    */
   reports: {
     lead: "Playtests become field reports, not promises.",
-    body: "Community results — your wins, losses, and feedback — read into the front as provisional dispatches that move the prototype line and the war record. They are never auto-promoted into locked canon; authored lore decides what holds.",
+    body: "Accepted, identity-bound community results read into the front as provisional dispatches. Client gameplay claims are bounded and rate-limited, not treated as cheat-proof proof, and never auto-promoted into locked canon; authored lore decides what holds.",
     /** Hard invariant: this loop never writes locked canon from a run. */
     provisional: true,
   },

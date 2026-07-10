@@ -111,11 +111,11 @@ test.describe("survivors menu", () => {
     await expect(hub).toBeVisible();
     await expect(hub.getByRole("button", { name: /play a run/i })).toBeVisible();
     await expect(hub.getByRole("button", { name: /shop/i })).toBeVisible();
-    await expect(hub.getByRole("button", { name: /co-op/i })).toBeVisible();
+    await expect(hub.getByRole("button", { name: /pvp arena/i })).toBeVisible();
     await expect(hub.getByRole("button", { name: /leaderboard/i })).toBeVisible();
 
-    await hub.getByRole("button", { name: /co-op/i }).click();
-    await expect(page.getByText("Co-op Breach Rooms")).toBeVisible();
+    await hub.getByRole("button", { name: /pvp arena/i }).click();
+    await expect(page.getByText("PvP Arena Preview").last()).toBeVisible();
     await page.getByRole("button", { name: /back/i }).click();
 
     // Leaving the home screen re-arms the splash, so reveal the hub again.
@@ -257,20 +257,21 @@ function overlaps(a: HudPanelSample, b: HudPanelSample) {
 }
 
 test.describe("dev sandbox smoke", () => {
-  test("main menu uses Survivors run and co-op breach vocabulary", async ({ page }) => {
+  test("main menu labels the networked mode as a PvP arena preview", async ({ page }) => {
     await page.goto("/");
 
     await dismissTitleSplash(page);
 
     await expect(page.getByRole("button", { name: /play a run/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: /^co-op/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^pvp arena/i })).toContainText(/no PvE waves/i);
 
-    await page.getByRole("button", { name: /^co-op/i }).click();
+    await page.getByRole("button", { name: /^pvp arena/i }).click();
 
-    await expect(page.getByText("Co-op Breach Rooms")).toBeVisible();
-    await expect(page.getByPlaceholder("Breach code (blank = random)")).toBeVisible();
-    await expect(page.getByRole("button", { name: /join breach/i })).toBeVisible();
-    await expect(page.getByText("Share the breach code so friends can join the same run.")).toBeVisible();
+    await expect(page.getByText("PvP Arena Preview").last()).toBeVisible();
+    await expect(page.getByPlaceholder("Arena code (blank = random)")).toBeVisible();
+    await expect(page.getByRole("button", { name: /join arena/i })).toBeVisible();
+    await expect(page.getByText(/Rooms are unauthenticated; clients own movement/)).toBeVisible();
+    await expect(page.getByText(/server owns accepted positions, health, frags, and respawns/)).toBeVisible();
   });
 
   test("uses the Survivors HUD as the active run HUD and saves run-summary metadata", async ({ page }) => {
@@ -364,7 +365,7 @@ test.describe("dev sandbox smoke", () => {
     await expect(page.getByTestId("summary-gold")).toContainText(`+${saved.goldEarned.toLocaleString()}`);
   });
 
-  test("shows run-summary mode and depth for co-op game over", async ({ page }) => {
+  test("shows the arena-preview mode in a forced multiplayer summary", async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.clear();
     });
@@ -405,8 +406,8 @@ test.describe("dev sandbox smoke", () => {
     });
 
     await expect(page.getByText("RUN SUMMARY")).toBeVisible();
-    await expect(page.getByText("Co-op run — squad down")).toBeVisible();
-    await expect(page.getByTestId("summary-mode")).toContainText("Co-op");
+    await expect(page.getByText("Arena Preview run — match ended")).toBeVisible();
+    await expect(page.getByTestId("summary-mode")).toContainText("Arena Preview");
     await expect(page.getByTestId("summary-depth")).toContainText("1/3");
     await expect(page.getByTestId("summary-kills")).toContainText("11");
     await expect(page.getByTestId("summary-gold")).toHaveCount(0);
@@ -418,7 +419,7 @@ test.describe("dev sandbox smoke", () => {
           return entry?.mode;
         }),
       )
-      .toBe("coop");
+      .toBe("arena");
   });
 
   test("loads runtime visual/audio assets and fires each gun", async ({ page }) => {

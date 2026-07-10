@@ -6,12 +6,9 @@
 // `@shipshitgames/warline/client`. Call `reportWarlineOperation(slug, run)`
 // once per run, beside the game's existing `recordWarResult(...)` site.
 //
-// Reporting is CONFIG-GATED and offline-graceful: with no host configured the
-// call is a silent no-op, and a network/server failure never throws into the
-// game loop. The host/token come (in order) from an explicit per-call option,
-// a process-wide `configureWarlineReporter()` call, a runtime
-// `globalThis.__warlineReporter` override (handy for tests/e2e), or the build
-// env (`VITE_WARLINE_HOST` / `VITE_WARLINE_TOKEN`).
+// Reporting is offline-graceful: browser games post to the same-origin
+// authenticated broker (`/api/warline/report`) without carrying an authority
+// credential. The public PartyKit host is used only for read-only front state.
 //
 // Boundary note: this is deliberately separate from `core/warRecord`, which is
 // display-only localStorage and must never feed the shared simulation. This
@@ -31,10 +28,10 @@ const FACTION_KEY = "warline.faction";
 
 /** Where to send reports. An empty/missing host disables reporting. */
 export interface WarlineReporterConfig {
-  /** PartyKit host, e.g. "warline.example.partykit.dev". Empty/undefined disables reporting. */
+  /** Public PartyKit host used only for reading the shared front. */
   host?: string;
-  /** Bearer token for trusted reports (the server gates on `WARLINE_TOKEN`). */
-  token?: string;
+  /** Same-origin authenticated broker. Empty disables browser reporting. */
+  reportEndpoint?: string;
 }
 
 /** What a game knows about a finished run. */
@@ -141,8 +138,14 @@ export function resolveWarlineConfig(options?: WarlineReporterConfig): WarlineRe
   // `VITE_WARLINE_HOST=" "`) collapses to "" and reads as disabled, rather than
   // sailing past the no-op gate into a doomed request to a malformed URL.
   const host = (options?.host ?? moduleConfig.host ?? override?.host ?? readEnv("VITE_WARLINE_HOST") ?? "").trim();
-  const token = options?.token ?? moduleConfig.token ?? override?.token ?? readEnv("VITE_WARLINE_TOKEN");
-  return token ? { host, token } : { host };
+  const reportEndpoint = (
+    options?.reportEndpoint ??
+    moduleConfig.reportEndpoint ??
+    override?.reportEndpoint ??
+    readEnv("VITE_WARLINE_REPORT_ENDPOINT") ??
+    "/api/warline/report"
+  ).trim();
+  return { host, reportEndpoint };
 }
 
 // ---- faction + result building ----
@@ -195,22 +198,47 @@ export async function reportWarlineOperation(
   run: WarlineRunInput,
   options?: WarlineReporterOptions,
 ): Promise<WarlineReportOutcome> {
-  const result = buildOperationResult(game, run);
+  const built = buildOperationResult(game, run);
+  const result: OperationResult = { ...built, nonce: built.nonce ?? createReportNonce() };
 
   const config = resolveWarlineConfig(options);
-  if (!options?.client && !config.host) {
+  if (!options?.client && !config.reportEndpoint) {
     return { reported: false, status: "disabled", result };
   }
 
   try {
-    const client: WarlineReportClient =
-      options?.client ?? new WarlineClient({ host: config.host as string, token: config.token });
+    const client: WarlineReportClient = options?.client ?? browserReportClient(config.reportEndpoint as string);
     const response = await client.reportOperation(result);
     if (response.ok) return { reported: true, status: "ok", result };
     return { reported: false, status: "error", result, error: response.error ?? "report rejected" };
   } catch (error) {
     return { reported: false, status: "error", result, error: String(error) };
   }
+}
+
+function createReportNonce(): string {
+  const cryptoApi = globalThis.crypto;
+  if (cryptoApi && typeof cryptoApi.randomUUID === "function") return cryptoApi.randomUUID();
+  const random = Math.random().toString(36).slice(2).padEnd(12, "0");
+  return `run-${Date.now().toString(36)}-${random}`;
+}
+
+function browserReportClient(endpoint: string): WarlineReportClient {
+  return {
+    reportOperation: async (result) => {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ result }),
+      });
+      const data = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+      return {
+        ok: response.ok && data?.ok === true,
+        error: data?.error ?? (response.ok ? undefined : `HTTP ${response.status}`),
+      };
+    },
+  };
 }
 
 // ---- reading the shared war-effort buff (#280) ----
@@ -256,8 +284,7 @@ export async function fetchWarEffortBonus(options?: WarEffortOptions): Promise<W
     return NEUTRAL_WAR_EFFORT;
   }
   try {
-    const client: WarlineStateClient =
-      options?.client ?? new WarlineClient({ host: config.host as string, token: config.token });
+    const client: WarlineStateClient = options?.client ?? new WarlineClient({ host: config.host as string });
     const state = await withTimeout(client.fetchState(), options?.timeoutMs ?? DEFAULT_WAR_EFFORT_TIMEOUT_MS);
     return warEffortBonus(state);
   } catch {

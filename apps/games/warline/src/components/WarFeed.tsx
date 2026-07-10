@@ -38,8 +38,8 @@ export function WarFeed({ feed }: WarFeedProps) {
         <div className="flex items-center gap-1.5">
           <h2 className="font-display text-sm tracking-wide text-bone">War Feed</h2>
           <HelpTooltip label="Explain war feed" side="top">
-            This is the event log for the shared campaign. It records commands, simulated operations, region falls,
-            resets, and sealed breaches. Newest events appear first.
+            In LIVE, this is the authoritative event log. In LOCAL, it is an isolated demo log and cannot change the
+            shared campaign. Newest events appear first.
           </HelpTooltip>
         </div>
         <span className="font-mono text-[0.65rem] text-ash">{feed.length} events</span>

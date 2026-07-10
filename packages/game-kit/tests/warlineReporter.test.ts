@@ -146,25 +146,24 @@ test("readSharedFaction returns wardens with no localStorage (SSR)", () => {
 // ---- resolveWarlineConfig precedence ----
 
 test("resolveWarlineConfig prefers explicit options over module config and runtime override", () => {
-  configureWarlineReporter({ host: "module-host", token: "module-token" });
-  g.__warlineReporter = { host: "runtime-host" };
-  const config = resolveWarlineConfig({ host: "opt-host", token: "opt-token" });
-  assert.deepEqual(config, { host: "opt-host", token: "opt-token" });
+  configureWarlineReporter({ host: "module-host", reportEndpoint: "/module-report" });
+  g.__warlineReporter = { host: "runtime-host", reportEndpoint: "/runtime-report" };
+  const config = resolveWarlineConfig({ host: "opt-host", reportEndpoint: "/opt-report" });
+  assert.deepEqual(config, { host: "opt-host", reportEndpoint: "/opt-report" });
 });
 
 test("resolveWarlineConfig falls back to module config then runtime override", () => {
-  g.__warlineReporter = { host: "runtime-host", token: "runtime-token" };
-  assert.deepEqual(resolveWarlineConfig(), { host: "runtime-host", token: "runtime-token" });
+  g.__warlineReporter = { host: "runtime-host", reportEndpoint: "/runtime-report" };
+  assert.deepEqual(resolveWarlineConfig(), { host: "runtime-host", reportEndpoint: "/runtime-report" });
 
   configureWarlineReporter({ host: "module-host" });
-  // module host wins over runtime host; runtime token still applies as fallback.
-  assert.deepEqual(resolveWarlineConfig(), { host: "module-host", token: "runtime-token" });
+  assert.deepEqual(resolveWarlineConfig(), { host: "module-host", reportEndpoint: "/runtime-report" });
 });
 
 test("resolveWarlineConfig defaults host to empty string when nothing is configured", () => {
   const config = resolveWarlineConfig();
   assert.equal(config.host, "");
-  assert.equal(config.token, undefined);
+  assert.equal(config.reportEndpoint, "/api/warline/report");
 });
 
 test("resolveWarlineConfig trims a whitespace-only host to empty (reads as disabled)", () => {
@@ -172,8 +171,7 @@ test("resolveWarlineConfig trims a whitespace-only host to empty (reads as disab
   assert.equal(resolveWarlineConfig({ host: "  warline.test  " }).host, "warline.test");
 });
 
-test("reportWarlineOperation treats a whitespace-only host as disabled (no request)", async () => {
-  // A misconfigured host must collapse to a silent no-op, not a doomed fetch.
+test("reportWarlineOperation treats an empty report endpoint as disabled (no request)", async () => {
   const original = globalThis.fetch;
   let fetched = false;
   globalThis.fetch = (async () => {
@@ -181,7 +179,11 @@ test("reportWarlineOperation treats a whitespace-only host as disabled (no reque
     return { ok: true, json: async () => ({ ok: true }) } as unknown as Response;
   }) as typeof fetch;
   try {
-    const outcome = await reportWarlineOperation("redline", { outcome: "victory", score: 1 }, { host: "   " });
+    const outcome = await reportWarlineOperation(
+      "redline",
+      { outcome: "victory", score: 1 },
+      { reportEndpoint: "   " },
+    );
     assert.equal(outcome.reported, false);
     assert.equal(outcome.status, "disabled");
     assert.equal(fetched, false);
@@ -192,8 +194,12 @@ test("reportWarlineOperation treats a whitespace-only host as disabled (no reque
 
 // ---- reportWarlineOperation ----
 
-test("reportWarlineOperation is a no-op (disabled) with no host configured", async () => {
-  const outcome = await reportWarlineOperation("scourge-survivors", { outcome: "victory", score: 9 });
+test("reportWarlineOperation is a no-op when the same-origin broker is explicitly disabled", async () => {
+  const outcome = await reportWarlineOperation(
+    "scourge-survivors",
+    { outcome: "victory", score: 9 },
+    { reportEndpoint: "" },
+  );
   assert.equal(outcome.reported, false);
   assert.equal(outcome.status, "disabled");
   // The result is still built (useful for diagnostics / window sinks).
@@ -218,7 +224,9 @@ test("reportWarlineOperation sends the built result through an injected client o
     outcome: "victory",
     score: 7,
     player: "ace",
+    nonce: captured[0]?.nonce,
   });
+  assert.match(captured[0]?.nonce ?? "", /^[A-Za-z0-9][A-Za-z0-9:_-]{15,127}$/);
 });
 
 test("reportWarlineOperation surfaces a server rejection as an error outcome", async () => {
@@ -239,13 +247,16 @@ test("reportWarlineOperation never throws when the client throws", async () => {
   assert.match(outcome.error ?? "", /network down/);
 });
 
-test("reportWarlineOperation reports through a configured host without an injected client", async () => {
-  // No injected client: a configured host means it constructs a real WarlineClient,
-  // which POSTs via fetch. Stub fetch so the call resolves locally.
+test("reportWarlineOperation posts to the same-origin broker without a browser credential", async () => {
   const original = globalThis.fetch;
-  const calls: { url: unknown; body: unknown }[] = [];
-  globalThis.fetch = (async (url: unknown, init?: { body?: string }) => {
-    calls.push({ url, body: init?.body ? JSON.parse(init.body) : undefined });
+  const calls: { url: unknown; body: unknown; headers: unknown; credentials: unknown }[] = [];
+  globalThis.fetch = (async (url: unknown, init?: RequestInit) => {
+    calls.push({
+      url,
+      body: init?.body ? JSON.parse(String(init.body)) : undefined,
+      headers: init?.headers,
+      credentials: init?.credentials,
+    });
     return {
       ok: true,
       json: async () => ({ ok: true }),
@@ -256,18 +267,20 @@ test("reportWarlineOperation reports through a configured host without an inject
     const outcome = await reportWarlineOperation(
       "deadlane",
       { outcome: "victory", score: 4 },
-      { host: "warline.test" },
+      { reportEndpoint: "/api/warline/report" },
     );
     assert.equal(outcome.reported, true);
     assert.equal(outcome.status, "ok");
     assert.equal(calls.length, 1);
-    assert.match(String(calls[0]?.url), /\/parties\/main\/front$/);
-    assert.deepEqual((calls[0]?.body as { result: OperationResult }).result, {
-      game: "deadlane",
-      faction: "wardens",
-      outcome: "victory",
-      score: 4,
-    });
+    assert.equal(calls[0]?.url, "/api/warline/report");
+    assert.equal(calls[0]?.credentials, "same-origin");
+    assert.equal(JSON.stringify(calls[0]?.headers).toLowerCase().includes("authorization"), false);
+    const result = (calls[0]?.body as { result: OperationResult }).result;
+    assert.equal(result.game, "deadlane");
+    assert.equal(result.faction, "wardens");
+    assert.equal(result.outcome, "victory");
+    assert.equal(result.score, 4);
+    assert.match(result.nonce ?? "", /^[A-Za-z0-9][A-Za-z0-9:_-]{15,127}$/);
   } finally {
     globalThis.fetch = original;
   }

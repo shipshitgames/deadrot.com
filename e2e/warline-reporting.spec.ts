@@ -6,33 +6,36 @@ import { expect, type Page, test } from "@playwright/test";
 // score clamp, transport) is unit-tested across every slug in game-kit; this
 // spec proves the END-TO-END wiring inside a real game build:
 //
-//   1. a finished run POSTs an OperationResult to the configured front, and
-//   2. an unconfigured front stays a silent no-op that never breaks the run.
+//   1. a finished run POSTs a nonce-bearing claim to the same-origin broker
+//      without a browser credential, and
+//   2. an explicitly disabled broker stays a silent no-op.
 //
 // Rothulk is the vehicle: it exposes a debug handle (`window.__rothulkGame`)
 // with teleport helpers, so a deterministic victory is one evaluate() away —
 // the same handle the shared games.spec already drives to a win.
 
 interface ReportPayload {
-  type: string;
   result: {
     game: string;
     faction: string;
     outcome: string;
     score: number;
+    nonce: string;
   };
 }
 
-const FRONT_GLOB = "**/parties/main/front";
+const REPORT_GLOB = "**/api/warline/report";
 
 test.describe("Warline cross-game operation reporting", () => {
-  test("a finished run reports its OperationResult to the configured front", async ({ page }, testInfo) => {
+  test("a finished run submits its OperationResult to the credential-free browser broker", async ({ page }, testInfo) => {
     test.skip(!testInfo.project.name.startsWith("rothulk:"), "Driven through Rothulk's debug handle.");
 
     const reports: ReportPayload[] = [];
-    await page.route(FRONT_GLOB, async (route) => {
+    let authorizationSeen = false;
+    await page.route(REPORT_GLOB, async (route) => {
       if (route.request().method() === "POST") {
         reports.push(route.request().postDataJSON() as ReportPayload);
+        authorizationSeen ||= route.request().headers().authorization !== undefined;
       }
       await route.fulfill({
         status: 200,
@@ -41,10 +44,12 @@ test.describe("Warline cross-game operation reporting", () => {
       });
     });
 
-    // Point the config-gated reporter at an interceptable host BEFORE any game
-    // code runs, and pick the Pyre allegiance so we can assert it round-trips.
+    // Point the reporter at the same-origin broker before game code runs and
+    // pick the Pyre allegiance so we can assert it round-trips.
     await page.addInitScript(() => {
-      (globalThis as { __warlineReporter?: { host: string } }).__warlineReporter = { host: "warline.e2e.test" };
+      (globalThis as { __warlineReporter?: { reportEndpoint: string } }).__warlineReporter = {
+        reportEndpoint: "/api/warline/report",
+      };
       try {
         localStorage.setItem("warline.faction", "pyre");
       } catch {
@@ -57,19 +62,20 @@ test.describe("Warline cross-game operation reporting", () => {
 
     await expect.poll(() => reports.length, { timeout: 8000 }).toBeGreaterThan(0);
     const report = reports[0];
-    expect(report?.type).toBe("report");
     expect(report?.result.game).toBe("rothulk");
     expect(report?.result.outcome).toBe("victory");
     expect(report?.result.faction).toBe("pyre");
     expect(typeof report?.result.score).toBe("number");
     expect(report?.result.score).toBeGreaterThanOrEqual(0);
+    expect(report?.result.nonce).toMatch(/^[A-Za-z0-9][A-Za-z0-9:_-]{15,127}$/);
+    expect(authorizationSeen).toBe(false);
   });
 
-  test("an unconfigured front never fires a report and never breaks the run", async ({ page }, testInfo) => {
+  test("an explicitly disabled broker never fires a report and never breaks the run", async ({ page }, testInfo) => {
     test.skip(!testInfo.project.name.startsWith("rothulk:"), "Driven through Rothulk's debug handle.");
 
     let posted = false;
-    await page.route(FRONT_GLOB, async (route) => {
+    await page.route(REPORT_GLOB, async (route) => {
       if (route.request().method() === "POST") posted = true;
       await route.fulfill({
         status: 200,
@@ -78,10 +84,11 @@ test.describe("Warline cross-game operation reporting", () => {
       });
     });
 
-    // An explicit empty host disables reporting even if the build env sets one,
-    // so this assertion holds regardless of how the dev server was configured.
+    // An explicit empty broker endpoint disables reporting regardless of build config.
     await page.addInitScript(() => {
-      (globalThis as { __warlineReporter?: { host: string } }).__warlineReporter = { host: "" };
+      (globalThis as { __warlineReporter?: { reportEndpoint: string } }).__warlineReporter = {
+        reportEndpoint: "",
+      };
     });
 
     await boot(page);

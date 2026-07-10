@@ -22,8 +22,8 @@ export function Header({ state, summary, status }: HeaderProps) {
         <div className="flex items-baseline gap-3">
           <h1 className="font-display text-2xl leading-none text-bone sm:text-3xl">WARLINE</h1>
           <HelpTooltip label="Explain Warline" side="bottom">
-            Warline is the shared campaign front. Other games report victories here, then this screen turns those
-            results into territory, resource, breach, and threat changes.
+            Warline is the shared campaign front. Authenticated game services can submit bounded operation claims;
+            browser demos never write to the persistent world.
           </HelpTooltip>
           <span className="font-display text-xs tracking-wide text-hellfire sm:text-sm">War for the Lanes</span>
         </div>
@@ -48,8 +48,8 @@ export function Header({ state, summary, status }: HeaderProps) {
               {status}
             </span>
             <HelpTooltip label="Explain connection status" side="bottom">
-              LIVE means this client mirrors the shared PartyKit server. LOCAL means the same simulation is running in
-              this browser. CONNECTING means it is trying to reach the shared front.
+              LIVE mirrors the shared PartyKit front read-only. LOCAL is an isolated browser demo. Any demo action
+              leaves LIVE before changing state. CONNECTING is still trying to reach the front.
             </HelpTooltip>
           </div>
 

@@ -13,14 +13,14 @@ export function OpsPanel({ simulate }: OpsPanelProps) {
         <div className="flex items-center gap-1.5">
           <h2 className="font-display text-xs tracking-wide text-ash">Demo · Operations</h2>
           <HelpTooltip label="Explain demo operations" side="left">
-            These buttons pretend another game just reported a mission result into Warline. They are for testing the
-            shared campaign loop without launching the other games.
+            These buttons fork the current snapshot into an isolated browser demo, then pretend a game reported a
+            result. They never write to the authoritative front.
           </HelpTooltip>
         </div>
         <span className="font-mono text-[0.6rem] text-hellfire">SIMULATE</span>
       </div>
       <p className="mb-2 text-[0.65rem] leading-snug text-ash">
-        Each Ship Shit Game reports an operation that credits the shared war. Fire one to push the front.
+        Preview an operation locally. If this screen is LIVE, the first click disconnects before changing the demo.
       </p>
 
       <div className="flex flex-col gap-2">

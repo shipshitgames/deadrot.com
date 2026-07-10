@@ -1,62 +1,120 @@
-import type { Command, GameSlug, OperationResult, WorldState } from "@shipshitgames/warline";
-import {
-  applyCommand,
-  applyOperation,
-  createInitialWorld,
-  GAME_SLUGS,
-  HUMAN_FACTIONS,
-  resetWorld,
-  summarize,
-  TICK_MS,
-  tick,
-} from "@shipshitgames/warline";
+import type { GameSlug, ResourceBag, Summary, WarEvent, WorldState } from "@shipshitgames/warline";
+import { applyOperation, createInitialWorld, resetWorld, summarize, TICK_MS, tick } from "@shipshitgames/warline";
 import type * as Party from "partykit/server";
+import {
+  ADMIN_LIMIT,
+  ADMIN_WINDOW_MS,
+  bearer,
+  MAX_REPORT_BYTES,
+  parseMutationMeta,
+  parseReportBody,
+  parseReporterRegistry,
+  RECEIPT_TTL_MS,
+  REPORT_LIMIT,
+  REPORT_WINDOW_MS,
+  reportFingerprint,
+  safeTokenEqual,
+  storageIdentity,
+  type TrustedOperationResult,
+} from "./trust";
 
-// Warline front room (spec §12). Singleton room `front` on party `main`.
-// Holds the authoritative WorldState, ticks the living world on an alarm, and
-// fans out every mutation to connected clients. Imports ONLY the pure core of
-// @shipshitgames/warline — never the browser ./client subpath.
+// The `front` room is the authoritative persistent world. Browser WebSockets
+// and GET are read-only. Mutations arrive only from authenticated server-side
+// reporters (HTTP report) or an administrator (HTTP reset).
 
 interface WarlineEnv {
-  WARLINE_TOKEN?: string;
+  /** JSON: { "reporter-id": { "token": "...", "games": ["slug"] } } */
+  WARLINE_REPORTERS?: string;
   WARLINE_ADMIN_TOKEN?: string;
 }
 
-const STORAGE_KEY = "world";
-
-const CORS_HEADERS: Record<string, string> = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
-
-function pick<T>(arr: readonly T[], i: number): T {
-  // arr is always one of the non-empty constant tables above; the fallback keeps
-  // noUncheckedIndexedAccess happy without ever actually being reached.
-  const v = arr[((i % arr.length) + arr.length) % arr.length];
-  return v ?? arr[0]!;
+interface ReceiptBody {
+  ok: true;
+  summary: Summary;
+  credited?: Partial<ResourceBag>;
+  event?: WarEvent;
+  idempotent?: boolean;
 }
 
-function jsonResponse(body: unknown, status = 200): Response {
+interface Receipt {
+  fingerprint: string;
+  response: ReceiptBody;
+  expiresAt: number;
+}
+
+interface RateWindow {
+  startedAt: number;
+  count: number;
+}
+
+type MutationResult =
+  | { kind: "accepted"; state: WorldState; body: ReceiptBody }
+  | { kind: "duplicate"; body: ReceiptBody }
+  | { kind: "conflict" }
+  | { kind: "limited"; retryAfterSeconds: number };
+
+const STORAGE_KEY = "world";
+const RECEIPT_PREFIX = "receipt:";
+const RATE_PREFIX = "rate:";
+
+const PUBLIC_READ_HEADERS: Record<string, string> = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+function jsonResponse(
+  body: unknown,
+  status = 200,
+  options: { publicRead?: boolean; headers?: Record<string, string> } = {},
+): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.publicRead ? PUBLIC_READ_HEADERS : {}),
+      ...options.headers,
+    },
   });
 }
 
-function bearer(req: Party.Request): string | undefined {
-  const header = req.headers.get("Authorization") ?? req.headers.get("authorization");
-  if (!header) return undefined;
-  const match = /^Bearer\s+(.+)$/i.exec(header);
-  return match ? match[1] : undefined;
+function exactResetBody(body: unknown): boolean {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    !Array.isArray(body) &&
+    Object.keys(body).length === 1 &&
+    (body as { type?: unknown }).type === "reset"
+  );
+}
+
+async function readJsonBody(
+  req: Party.Request,
+): Promise<{ ok: true; body: unknown } | { ok: false; response: Response }> {
+  const declared = Number(req.headers.get("content-length") ?? "0");
+  if (Number.isFinite(declared) && declared > MAX_REPORT_BYTES) {
+    return { ok: false, response: jsonResponse({ ok: false, error: "request too large" }, 413) };
+  }
+  const text = await req.text();
+  if (new TextEncoder().encode(text).byteLength > MAX_REPORT_BYTES) {
+    return { ok: false, response: jsonResponse({ ok: false, error: "request too large" }, 413) };
+  }
+  try {
+    return { ok: true, body: JSON.parse(text) as unknown };
+  } catch {
+    return { ok: false, response: jsonResponse({ ok: false, error: "invalid json" }, 400) };
+  }
+}
+
+function nextRateWindow(current: RateWindow | undefined, now: number, windowMs: number): RateWindow {
+  if (!current || now - current.startedAt >= windowMs) return { startedAt: now, count: 1 };
+  return { startedAt: current.startedAt, count: current.count + 1 };
 }
 
 export default class Warline implements Party.Server {
   state: WorldState;
 
   constructor(readonly room: Party.Room) {
-    // Provisional seed; onStart replaces this with the persisted world (or a
-    // fresh one) before anything is served.
     this.state = createInitialWorld(Date.now());
   }
 
@@ -67,194 +125,211 @@ export default class Warline implements Party.Server {
   async onStart() {
     const stored = await this.room.storage.get<WorldState>(STORAGE_KEY);
     this.state = stored ?? createInitialWorld(Date.now());
-    if (!stored) await this.persist();
-
-    const alarm = await this.room.storage.getAlarm();
-    if (alarm === null) {
+    if (!stored) await this.room.storage.put(STORAGE_KEY, this.state);
+    if ((await this.room.storage.getAlarm()) === null) {
       await this.room.storage.setAlarm(Date.now() + TICK_MS);
     }
-  }
-
-  private async persist() {
-    await this.room.storage.put(STORAGE_KEY, this.state);
   }
 
   private broadcast() {
     this.room.broadcast(JSON.stringify({ t: "state", state: this.state }));
   }
 
-  /** Persist the world then fan the new state out to every connection. */
-  private async commit() {
-    await this.persist();
-    this.broadcast();
-  }
-
-  /** Shared command pipeline for the WS and HTTP paths (framing stays per-caller). */
-  private async runCommand(command: Command | undefined): Promise<{ ok: boolean; error?: string }> {
-    if (!command) return { ok: false, error: "missing command" };
-    const result = applyCommand(this.state, command, Date.now());
-    if (result.ok) {
-      this.state = result.state;
-      await this.commit();
-    }
-    return { ok: result.ok, error: result.error };
-  }
-
-  /** Admin-token gate shared by the WS and HTTP reset paths. */
-  private authorizeReset(token: string | undefined): boolean {
-    const admin = this.env.WARLINE_ADMIN_TOKEN;
-    if (admin) return token === admin;
-    console.warn("[warline] WARLINE_ADMIN_TOKEN unset — allowing reset (dev-permissive)");
-    return true;
-  }
-
-  private async doReset() {
-    this.state = resetWorld(Date.now(), this.state.epoch);
-    await this.commit();
-  }
-
   async onAlarm() {
-    this.state = tick(this.state, Date.now());
-    await this.commit();
-    await this.room.storage.setAlarm(Date.now() + TICK_MS);
+    const now = Date.now();
+    this.state = await this.room.storage.transaction(async (txn) => {
+      const current = (await txn.get<WorldState>(STORAGE_KEY)) ?? this.state;
+      const next = tick(current, now);
+      await txn.put(STORAGE_KEY, next);
+      return next;
+    });
+    this.broadcast();
+
+    // Receipts only need to outlive the accepted replay window. Bounded expiry
+    // keeps idempotency durable without turning storage into an unbounded log.
+    const receipts = await this.room.storage.list<Receipt>({ prefix: RECEIPT_PREFIX, limit: 1_000 });
+    const expired = [...receipts.entries()].filter(([, receipt]) => receipt.expiresAt <= now).map(([key]) => key);
+    if (expired.length) await this.room.storage.delete(expired);
+    await this.room.storage.setAlarm(now + TICK_MS);
   }
 
   onConnect(conn: Party.Connection) {
-    conn.send(JSON.stringify({ t: "hello", state: this.state }));
+    conn.send(JSON.stringify({ t: "hello", state: this.state, authority: "read-only" }));
   }
 
-  async onMessage(raw: string, sender: Party.Connection) {
-    let msg: { t?: string; [k: string]: unknown };
+  onMessage(raw: string | ArrayBuffer | ArrayBufferView, sender: Party.Connection) {
+    if (typeof raw !== "string") return;
+    let msg: { t?: unknown };
     try {
-      msg = JSON.parse(raw);
+      msg = JSON.parse(raw) as { t?: unknown };
     } catch {
       return;
     }
-
-    if (msg.t === "command") {
-      const result = await this.runCommand(msg.command as Command | undefined);
-      sender.send(JSON.stringify({ t: "cmdresult", ok: result.ok, error: result.error }));
-      return;
-    }
-
-    if (msg.t === "sim") {
-      const requested = typeof msg.game === "string" ? (msg.game as GameSlug) : undefined;
-      const op = this.synthOperation(sender.id, requested);
-      const { state } = applyOperation(this.state, op, Date.now());
-      this.state = state;
-      await this.commit();
-      return;
-    }
-
-    if (msg.t === "reset") {
-      const token = typeof msg.token === "string" ? msg.token : "";
-      if (!this.authorizeReset(token)) {
-        sender.send(JSON.stringify({ t: "cmdresult", ok: false, error: "unauthorized" }));
-        return;
-      }
-      await this.doReset();
-      return;
+    if (msg.t === "command" || msg.t === "sim" || msg.t === "reset") {
+      sender.send(
+        JSON.stringify({
+          t: "cmdresult",
+          ok: false,
+          error: "authoritative front is read-only; use the isolated browser demo",
+        }),
+      );
     }
   }
 
-  // Demo path (spec §12): build a plausible OperationResult that varies by the
-  // connection id and the current tick so the stream can show the loop with no
-  // token. Clearly a demo — not the trusted `report` HTTP route.
-  private synthOperation(connId: string, requested?: GameSlug): OperationResult {
-    let seed = this.state.tick * 31;
-    for (let i = 0; i < connId.length; i++) {
-      seed = (seed * 33 + connId.charCodeAt(i)) >>> 0;
+  private async mutateReport(
+    reporterId: string,
+    subject: string,
+    result: TrustedOperationResult,
+    now: number,
+  ): Promise<MutationResult> {
+    const identity = `${storageIdentity(reporterId)}:${storageIdentity(subject)}`;
+    const receiptKey = `${RECEIPT_PREFIX}${identity}:${result.nonce}`;
+    const rateKey = `${RATE_PREFIX}report:${identity}`;
+    const fingerprint = reportFingerprint(reporterId, subject, result);
+
+    return this.room.storage.transaction(async (txn) => {
+      const existing = await txn.get<Receipt>(receiptKey);
+      if (existing && existing.expiresAt > now) {
+        if (existing.fingerprint !== fingerprint) return { kind: "conflict" } as const;
+        return { kind: "duplicate", body: { ...existing.response, idempotent: true } } as const;
+      }
+      if (existing) await txn.delete(receiptKey);
+
+      const currentRate = await txn.get<RateWindow>(rateKey);
+      if (currentRate && now - currentRate.startedAt < REPORT_WINDOW_MS && currentRate.count >= REPORT_LIMIT) {
+        return {
+          kind: "limited",
+          retryAfterSeconds: Math.max(1, Math.ceil((currentRate.startedAt + REPORT_WINDOW_MS - now) / 1_000)),
+        } as const;
+      }
+
+      const current = (await txn.get<WorldState>(STORAGE_KEY)) ?? this.state;
+      const applied = applyOperation(current, result, now);
+      const body: ReceiptBody = {
+        ok: true,
+        summary: summarize(applied.state),
+        credited: applied.credited,
+        event: applied.event,
+      };
+      await txn.put(STORAGE_KEY, applied.state);
+      await txn.put(rateKey, nextRateWindow(currentRate, now, REPORT_WINDOW_MS));
+      await txn.put(receiptKey, { fingerprint, response: body, expiresAt: now + RECEIPT_TTL_MS } satisfies Receipt);
+      return { kind: "accepted", state: applied.state, body } as const;
+    });
+  }
+
+  private async handleReport(req: Party.Request, body: unknown): Promise<Response> {
+    const registry = parseReporterRegistry(this.env.WARLINE_REPORTERS);
+    if (!registry) return jsonResponse({ ok: false, error: "reporting unavailable" }, 503);
+
+    const reporterId = req.headers.get("x-warline-reporter") ?? "";
+    const reporter = registry.get(reporterId);
+    if (!reporter || !safeTokenEqual(bearer(req.headers), reporter.token)) {
+      return jsonResponse({ ok: false, error: "unauthorized" }, 401);
     }
-    const game = requested && GAME_SLUGS.includes(requested) ? requested : pick(GAME_SLUGS, seed);
-    const faction = pick(HUMAN_FACTIONS, seed >>> 3);
-    // Mostly victories so the demo visibly pushes the front back.
-    const outcome: OperationResult["outcome"] = (seed >>> 5) % 5 === 0 ? "defeat" : "victory";
-    const score = 400 + ((seed >>> 7) % 3200);
-    return { game, faction, outcome, score, player: "demo" };
+
+    const now = Date.now();
+    const meta = parseMutationMeta(req.headers, now);
+    if (!meta.ok) return jsonResponse({ ok: false, error: meta.error }, meta.status);
+    const parsed = parseReportBody(body, meta.value.requestId);
+    if (!parsed.ok) return jsonResponse({ ok: false, error: parsed.error }, parsed.status);
+    if (!reporter.games.includes(parsed.value.game as GameSlug)) {
+      return jsonResponse({ ok: false, error: "reporter not authorized for game" }, 403);
+    }
+
+    const mutation = await this.mutateReport(reporterId, meta.value.subject, parsed.value, now);
+    if (mutation.kind === "conflict") return jsonResponse({ ok: false, error: "nonce conflict" }, 409);
+    if (mutation.kind === "limited") {
+      return jsonResponse({ ok: false, error: "rate limit exceeded" }, 429, {
+        headers: { "Retry-After": String(mutation.retryAfterSeconds) },
+      });
+    }
+    if (mutation.kind === "accepted") {
+      this.state = mutation.state;
+      this.broadcast();
+    }
+    return jsonResponse(mutation.body);
+  }
+
+  private async mutateReset(subject: string, requestId: string, now: number): Promise<MutationResult> {
+    const identity = storageIdentity(subject);
+    const receiptKey = `${RECEIPT_PREFIX}admin:${identity}:${requestId}`;
+    const rateKey = `${RATE_PREFIX}admin`;
+    const fingerprint = JSON.stringify({ type: "reset", subject });
+
+    return this.room.storage.transaction(async (txn) => {
+      const existing = await txn.get<Receipt>(receiptKey);
+      if (existing && existing.expiresAt > now) {
+        if (existing.fingerprint !== fingerprint) return { kind: "conflict" } as const;
+        return { kind: "duplicate", body: { ...existing.response, idempotent: true } } as const;
+      }
+      if (existing) await txn.delete(receiptKey);
+
+      const currentRate = await txn.get<RateWindow>(rateKey);
+      if (currentRate && now - currentRate.startedAt < ADMIN_WINDOW_MS && currentRate.count >= ADMIN_LIMIT) {
+        return {
+          kind: "limited",
+          retryAfterSeconds: Math.max(1, Math.ceil((currentRate.startedAt + ADMIN_WINDOW_MS - now) / 1_000)),
+        } as const;
+      }
+
+      const current = (await txn.get<WorldState>(STORAGE_KEY)) ?? this.state;
+      const next = resetWorld(now, current.epoch);
+      const body: ReceiptBody = { ok: true, summary: summarize(next) };
+      await txn.put(STORAGE_KEY, next);
+      await txn.put(rateKey, nextRateWindow(currentRate, now, ADMIN_WINDOW_MS));
+      await txn.put(receiptKey, { fingerprint, response: body, expiresAt: now + RECEIPT_TTL_MS } satisfies Receipt);
+      return { kind: "accepted", state: next, body } as const;
+    });
+  }
+
+  private async handleReset(req: Party.Request, body: unknown): Promise<Response> {
+    const admin = this.env.WARLINE_ADMIN_TOKEN;
+    if (!admin || admin.length < 32) return jsonResponse({ ok: false, error: "reset unavailable" }, 503);
+    if (!safeTokenEqual(bearer(req.headers), admin)) {
+      return jsonResponse({ ok: false, error: "unauthorized" }, 401);
+    }
+    if (!exactResetBody(body)) return jsonResponse({ ok: false, error: "invalid reset envelope" }, 400);
+
+    const now = Date.now();
+    const meta = parseMutationMeta(req.headers, now);
+    if (!meta.ok) return jsonResponse({ ok: false, error: meta.error }, meta.status);
+    const mutation = await this.mutateReset(meta.value.subject, meta.value.requestId, now);
+    if (mutation.kind === "conflict") return jsonResponse({ ok: false, error: "nonce conflict" }, 409);
+    if (mutation.kind === "limited") {
+      return jsonResponse({ ok: false, error: "rate limit exceeded" }, 429, {
+        headers: { "Retry-After": String(mutation.retryAfterSeconds) },
+      });
+    }
+    if (mutation.kind === "accepted") {
+      this.state = mutation.state;
+      this.broadcast();
+    }
+    return jsonResponse(mutation.body);
   }
 
   async onRequest(req: Party.Request): Promise<Response> {
     if (req.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: CORS_HEADERS });
+      return new Response(null, { status: 204, headers: PUBLIC_READ_HEADERS });
     }
-
     if (req.method === "GET") {
-      return jsonResponse({ state: this.state, summary: summarize(this.state) });
+      return jsonResponse({ state: this.state, summary: summarize(this.state) }, 200, { publicRead: true });
+    }
+    if (req.method !== "POST") {
+      return jsonResponse({ ok: false, error: "method not allowed" }, 405);
     }
 
-    if (req.method === "POST") {
-      let body: { type?: string; [k: string]: unknown };
-      try {
-        body = (await req.json()) as { type?: string; [k: string]: unknown };
-      } catch {
-        return jsonResponse({ ok: false, error: "invalid json" }, 400);
-      }
-
-      if (body.type === "report") {
-        const expected = this.env.WARLINE_TOKEN;
-        if (expected) {
-          if (bearer(req) !== expected) {
-            return jsonResponse({ ok: false, error: "unauthorized" }, 401);
-          }
-        } else {
-          console.warn("[warline] WARLINE_TOKEN unset — accepting report (dev-permissive)");
-        }
-        const result = body.result as OperationResult | undefined;
-        if (!result || !this.isOperationResult(result)) {
-          return jsonResponse({ ok: false, error: "invalid result" }, 400);
-        }
-        const applied = applyOperation(this.state, result, Date.now());
-        this.state = applied.state;
-        await this.commit();
-        return jsonResponse({
-          ok: true,
-          summary: summarize(this.state),
-          credited: applied.credited,
-          event: applied.event,
-        });
-      }
-
-      if (body.type === "command") {
-        const command = body.command as Command | undefined;
-        if (!command) {
-          return jsonResponse({ ok: false, error: "missing command" }, 400);
-        }
-        const result = await this.runCommand(command);
-        return jsonResponse({
-          ok: result.ok,
-          error: result.error,
-          summary: summarize(this.state),
-        });
-      }
-
-      if (body.type === "reset") {
-        if (!this.authorizeReset(bearer(req))) {
-          return jsonResponse({ ok: false, error: "unauthorized" }, 401);
-        }
-        await this.doReset();
-        return jsonResponse({ ok: true, summary: summarize(this.state) });
-      }
-
-      return jsonResponse({ ok: false, error: "unknown type" }, 400);
+    const parsed = await readJsonBody(req);
+    if (!parsed.ok) return parsed.response;
+    const type =
+      typeof parsed.body === "object" && parsed.body !== null && !Array.isArray(parsed.body)
+        ? (parsed.body as { type?: unknown }).type
+        : undefined;
+    if (type === "report") return this.handleReport(req, parsed.body);
+    if (type === "reset") return this.handleReset(req, parsed.body);
+    if (type === "command" || type === "sim") {
+      return jsonResponse({ ok: false, error: "authoritative front is read-only" }, 403);
     }
-
-    return jsonResponse({ ok: false, error: "method not allowed" }, 405);
-  }
-
-  private isOperationResult(v: unknown): v is OperationResult {
-    if (typeof v !== "object" || v === null) return false;
-    const r = v as Record<string, unknown>;
-    // `contributed` is optional looted war resource (#280): if present it must be
-    // a finite number — the reducer clamps the value, but a non-number is malformed.
-    if (r.contributed !== undefined && (typeof r.contributed !== "number" || !Number.isFinite(r.contributed))) {
-      return false;
-    }
-    return (
-      typeof r.game === "string" &&
-      GAME_SLUGS.includes(r.game as GameSlug) &&
-      (r.faction === "pyre" || r.faction === "wardens") &&
-      (r.outcome === "victory" || r.outcome === "defeat") &&
-      typeof r.score === "number"
-    );
+    return jsonResponse({ ok: false, error: "unknown type" }, 400);
   }
 }

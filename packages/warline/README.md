@@ -20,12 +20,9 @@ One shared planet, three factions, four resources, one living world.
 - The **Scourge presses every tick**: breaches pump, pressure spreads along lanes,
   and human regions can **fall** (`pressure >= 100`). Quiet Scourge regions next to
   human land can **recede** to neutral. Territory flips both ways.
-- Players push back two ways:
-  1. **Operations** — each mini-game reports an `OperationResult` that credits the
-     shared war (seal breaches, hold lanes, contest territory, intercept, run
-     logistics, sabotage).
-  2. **Commands** — open build/spend/raise-army actions: `fortify`, `muster`,
-     `deploy` (can recapture weak Scourge regions), `recon`.
+- The authoritative world moves through authenticated, bounded **operation
+  reports** from server-side reporters. The browser command table is an isolated
+  local sandbox; anonymous commands never mutate the shared front.
 
 Everything is **pure + immutable**: reducers clone the input `WorldState`, never
 read the clock (callers pass `now`), and clamp pressure/defense/intensity/flow to
@@ -80,30 +77,30 @@ player's grind in Scourge Survivors makes everyone's shots hit harder.
   (`damageMult: 1`). Current tuning: `unitPerTier: 5000`, `perTier: 0.04` (+4%
   damage/tier), `maxTier: 10` (so the buff saturates at +40%).
 
-A game **reports** its loot through `reportWarlineOperation(slug, { …, contributed })`
-and **reads** the live buff through `fetchWarEffortBonus()`, both from
-`@deadrot/game-kit/warline`. Both are config-gated and offline-graceful: with no
-host the read returns `NEUTRAL_WAR_EFFORT` and the report is a no-op, so a
-single-game build is simply unbuffed and never blocked. See that package's
+A browser game **submits** its run claim through
+`reportWarlineOperation(slug, { …, contributed })` to the same-origin authenticated
+broker and **reads** the public live buff through `fetchWarEffortBonus()`, both from
+`@deadrot/game-kit/warline`. Both are offline-graceful: a rejected report never
+blocks the run, and a missing/unreachable read returns `NEUTRAL_WAR_EFFORT`. See that package's
 `warline/README.md` for the consumer-facing contract and the privacy/security stance.
 
 ## How it's consumed
 
 - **Server** (`apps/games/warline/party`) imports `@shipshitgames/warline` (this barrel only —
   never `./client`). It holds one `WorldState`, runs `tick(state, Date.now())` on an
-  alarm, applies `applyOperation` for bearer-token game reports and `applyCommand`
-  for open commands, and broadcasts state over WS.
+  alarm, applies `applyOperation` only for authenticated server reporters, and
+  broadcasts read-only state over WS. It rejects anonymous WS/HTTP mutations.
 - **Hub** (`apps/games/warline/src`) connects with `connectWarline()` from
   `@shipshitgames/warline/client` and mirrors server state; if no server is reachable it
   seeds `createInitialWorld()` and runs the identical reducers locally.
-- **Games** report run results through `reportWarlineOperation()` from
+- **Games** submit run claims through `reportWarlineOperation()` from
   `@deadrot/game-kit/warline`, called once per run beside each game's
-  `recordWarResult(...)`. That helper builds the `OperationResult` (clamping the
-  score, reading the shared `warline.faction` allegiance) and forwards it via
-  `WarlineClient.reportOperation()` from `@shipshitgames/warline/client` (Bearer
-  token). It is config-gated on `VITE_WARLINE_HOST`: with no host configured the
-  call is a no-op, so single-game builds never touch the network and an
-  unreachable front never breaks a run.
+  `recordWarResult(...)`. The browser helper carries no secret and posts to the
+  same-origin broker. That server authenticates the player, checks game access,
+  derives the subject, and forwards with a server-only reporter credential.
+  PartyKit enforces strict fields, game authorization, score/contribution caps,
+  rate limits, timestamps, and durable nonce receipts. Client gameplay remains a
+  bounded claim rather than cheat-proof evidence.
 
 The pure core (`@shipshitgames/warline`) has **no runtime dependencies**. Only the
 `@shipshitgames/warline/client` subpath imports `partysocket`, keeping the core safe to

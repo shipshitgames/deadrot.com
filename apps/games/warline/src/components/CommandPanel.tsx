@@ -89,8 +89,8 @@ export function CommandPanel({ state, faction, setFaction, selectedId, command }
       <div className="mb-2 flex items-center gap-1.5">
         <h2 className="font-display text-xs tracking-wide text-ash">Command</h2>
         <HelpTooltip label="Explain command panel" side="left">
-          This is the open action panel. Pick the faction you are acting for, select a map region when needed, then
-          spend shared resources to push the front back.
+          This is a local planning sandbox. Pick a faction and issue commands against an isolated copy; browser commands
+          never spend authoritative shared resources.
         </HelpTooltip>
       </div>
 
@@ -99,7 +99,7 @@ export function CommandPanel({ state, faction, setFaction, selectedId, command }
         <span className="font-display text-[0.6rem] tracking-wide text-ash">Acting Faction</span>
         <HelpTooltip label="Explain acting faction" side="left">
           Pyre and Wardens are both Pact factions. This only decides who gets credited in the war feed when you issue
-          commands.
+          local demo commands.
         </HelpTooltip>
       </div>
       <div className="mb-3 flex border-2 border-gunmetal">

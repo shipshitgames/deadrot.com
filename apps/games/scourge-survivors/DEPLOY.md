@@ -1,13 +1,19 @@
 # Deploying FPS Arena
 
 Two pieces: the **game** (static Vite SPA hosted by the monorepo hub) and the
-**multiplayer room server** (PartyKit → Cloudflare edge). Single-player works
-with just the front end; multiplayer needs the PartyKit server.
+**PvP arena preview server** (PartyKit → Cloudflare edge). Single-player works
+with just the front end; the arena preview needs the PartyKit server.
 
-## 1. Multiplayer server (PartyKit)
+The PartyKit mode is an unauthenticated preview, not co-op and not a competitive
+anti-cheat service. PvE waves are disabled. Clients propose movement and hit claims;
+the server validates and owns accepted transforms, health, frag credit, and respawns.
+Drop-in co-op Survivors remains tracked in
+[#74](https://github.com/shipshitgames/deadrot.com/issues/74).
+
+## 1. PvP arena preview server (PartyKit)
 
 ```bash
-npm run party:deploy        # = partykit deploy  (first run prompts a login)
+bun run party:deploy        # = partykit deploy  (first run prompts a login)
 ```
 
 This deploys `party/arena.ts` and prints a host like:
@@ -19,17 +25,17 @@ scourge-survivors.<your-username>.partykit.dev
 Copy that host — the front end needs it.
 
 Local dev (run the game **and** the room server together — this is what makes
-multiplayer work locally; `npm run dev` alone starts only the game):
+arena rooms work locally; `bun run dev` alone starts only the game):
 
 ```bash
-npm run dev:all             # vite (game) + partykit dev (rooms) together
+bun run dev:all             # Vite (game) + PartyKit dev (rooms) together
 # or run them in two terminals:
-npm run party:dev           # ws server on http://127.0.0.1:1999
-npm run dev                 # game on http://localhost:5178
+bun run party:dev           # ws server on http://127.0.0.1:1999
+bun run dev                 # game on http://localhost:5178
 ```
 
-In dev the client auto-targets `localhost:1999`. If multiplayer shows
-"○ connecting…" forever, the room server isn't running — use `npm run dev:all`.
+In dev the client auto-targets `localhost:1999`. If the arena shows
+"○ connecting…" forever, the room server isn't running — use `bun run dev:all`.
 
 **Sharing a room:** joining sets the URL to `…/?room=CODE`. Send that link (or
 use the **Copy room link** button on the pause screen) and your friend lands on
@@ -62,8 +68,8 @@ Vercel project.
 ## Notes
 
 - In **dev**, the client defaults `VITE_PARTYKIT_HOST` to `localhost:1999`, so
-  `npm run party:dev` + `npm run dev` is all you need locally.
+  `bun run party:dev` + `bun run dev` is all you need locally.
 - If `VITE_PARTYKIT_HOST` is unset in production, single-player still works; the
-  multiplayer "Join Room" button just won't be able to connect.
+  arena "Join Arena" button just won't be able to connect.
 - The leaderboard is per-browser (`localStorage`). A global online leaderboard would
   reuse the same PartyKit backend (add a persistent "scores" room).

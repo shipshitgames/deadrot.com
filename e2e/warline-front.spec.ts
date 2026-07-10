@@ -141,9 +141,9 @@ test('the "Why Builds Matter" briefing frames previews as operations on the shar
 
   // Thesis: every preview is an operation feeding one shared war.
   await expect(briefing.getByText("Every preview is an operation.")).toBeVisible();
-  // Scope axis 1 — builds report as operations (the operations pillar), with a
+  // Scope axis 1 — trusted reports become operations, with a
   // contract-derived slate naming the real operations the Ops panel fires.
-  await expect(briefing.getByText("Builds report as operations")).toBeVisible();
+  await expect(briefing.getByText("Trusted reports become operations")).toBeVisible();
   await expect(briefing.getByText("Every build fields one operation on the front:")).toBeVisible();
   await expect(briefing.getByText("Purge a Breach")).toBeVisible();
 

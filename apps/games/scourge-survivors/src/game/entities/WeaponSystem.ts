@@ -409,7 +409,7 @@ export class WeaponSystem {
         for (const h of hits) {
           const ud = h.object.userData as { enemy?: Enemy; part?: string; solid?: boolean; remoteId?: string };
           if (ud.remoteId) {
-            // Co-op room hit sync: the server owns remote health/kills.
+            // PvP claim: the server validates it and owns remote health/frags.
             const headshot = ud.part === "head";
             const dmg = spec.damage * dmgMult * (headshot ? headshotMultiplier : 1);
             this.sys.multiplayer.sendHit(ud.remoteId, dmg);

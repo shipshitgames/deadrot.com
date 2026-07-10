@@ -50,7 +50,7 @@ export default function App() {
           backgroundImage={menuHero}
           style={{ position: "fixed", zIndex: 60 }}
         >
-          <MainMenuTopBar mark="SSG" meta={status === "LIVE" ? "Live front" : "Local front"} aria-hidden>
+          <MainMenuTopBar mark="SSG" meta={status === "LIVE" ? "Live front · read-only" : "Local demo"} aria-hidden>
             {menu.topBar}
           </MainMenuTopBar>
           <MainMenuLayout className={revealed ? "ssg-main-menu-layout--menu" : "ssg-main-menu-layout--splash"}>
@@ -59,7 +59,7 @@ export default function App() {
               <GameMenuTitle config={menu} />
               <p className="ssg-main-menu-subtitle">{menu.titleSubtitle}</p>
               <MainMenuStatus>
-                <span>{status === "LIVE" ? "Shared front online" : "Standalone simulation"}</span>
+                <span>{status === "LIVE" ? "Shared front online · read-only" : "Isolated simulation"}</span>
                 <span>Threat {Math.round(summary.threat)}%</span>
               </MainMenuStatus>
             </MainMenuCopy>
@@ -177,9 +177,9 @@ export default function App() {
         <p className="font-mono text-[0.65rem] text-ash">
           WARLINE · War for the Lanes ·{" "}
           {status === "LOCAL"
-            ? "standalone simulation (no server)"
+            ? "isolated browser demo (never authoritative)"
             : status === "LIVE"
-              ? "live shared front"
+              ? "live shared front (read-only browser view)"
               : "connecting to the front…"}
         </p>
       </footer>

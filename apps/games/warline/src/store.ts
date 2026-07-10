@@ -47,8 +47,7 @@ function pickGame(): GameSlug {
 /**
  * Synthesize a plausible OperationResult for a demo "Run operation" click.
  * Mostly victories (the front needs the help) with a varied score so the
- * magnitude swings. Mirrors the server's `sim` demo path so LOCAL and LIVE
- * behave the same to the player.
+ * magnitude swings. This result exists only inside the isolated LOCAL demo.
  */
 function synthResult(faction: HumanFaction, game: GameSlug): OperationResult {
   const outcome: OperationResult["outcome"] = Math.random() < 0.78 ? "victory" : "defeat";
@@ -60,10 +59,11 @@ function synthResult(faction: HumanFaction, game: GameSlug): OperationResult {
  * useWarline — dual-runtime store (spec §13).
  *
  * Tries to connect to a PartyKit server via connectWarline. If a socket opens,
- * we mirror authoritative server state and forward commands/sims over the wire
- * (LIVE). If there is no host, or the socket never opens within a short window,
- * we fall back to a fully-playable in-browser simulation seeded from
- * createInitialWorld(Date.now()), ticking every TICK_MS (LOCAL).
+ * we mirror authoritative server state read-only (LIVE). If there is no host,
+ * or the socket never opens within a short window, we use a fully-playable
+ * in-browser simulation (LOCAL). Using a command or simulated operation while
+ * LIVE explicitly forks the last snapshot into LOCAL and disconnects; anonymous
+ * demo actions never mutate the persistent shared world.
  */
 export function useWarline(): WarlineStore {
   const [state, setState] = useState<WorldState>(() => createInitialWorld(Date.now()));
@@ -73,6 +73,7 @@ export function useWarline(): WarlineStore {
   // Refs so callbacks can read the latest values without re-binding.
   const socketRef = useRef<WarlineSocket | null>(null);
   const liveRef = useRef(false);
+  const demoRef = useRef(false);
   const stateRef = useRef(state);
   stateRef.current = state;
   const factionRef = useRef(faction);
@@ -91,12 +92,12 @@ export function useWarline(): WarlineStore {
 
     const socket = connectWarline(WARLINE_HOST, {
       onState: (s) => {
-        if (cancelled) return;
+        if (cancelled || demoRef.current) return;
         liveRef.current = true;
         setState(s);
       },
       onStatus: (connected) => {
-        if (cancelled) return;
+        if (cancelled || demoRef.current) return;
         if (connected) {
           opened = true;
           liveRef.current = true;
@@ -112,7 +113,7 @@ export function useWarline(): WarlineStore {
 
     // If the socket never opens in time, fall back to a local simulation.
     const timer = window.setTimeout(() => {
-      if (cancelled || opened || liveRef.current) return;
+      if (cancelled || opened || liveRef.current || demoRef.current) return;
       liveRef.current = false;
       socket.close();
       socketRef.current = null;
@@ -146,31 +147,38 @@ export function useWarline(): WarlineStore {
     }
   }, []);
 
-  // ---- command dispatch (LIVE -> ws, LOCAL -> reducer) ----
-  const command = useCallback((cmd: Command) => {
-    if (liveRef.current && socketRef.current) {
-      socketRef.current.send({ t: "command", command: cmd });
-      return;
-    }
-    setState((prev) => {
-      const res = applyCommand(prev, cmd, Date.now());
-      return res.ok ? res.state : prev;
-    });
+  const forkIntoLocalDemo = useCallback((mutate: (current: WorldState) => WorldState) => {
+    demoRef.current = true;
+    liveRef.current = false;
+    socketRef.current?.close();
+    socketRef.current = null;
+    setStatus("LOCAL");
+    setState((current) => mutate(current));
   }, []);
 
-  // ---- operation simulation (LIVE -> ws, LOCAL -> reducer) ----
-  const simulate = useCallback((game?: GameSlug) => {
-    const slug = game ?? pickGame();
-    if (liveRef.current && socketRef.current) {
-      socketRef.current.send({ t: "sim", game: slug });
-      return;
-    }
-    setState((prev) => {
-      const result = synthResult(factionRef.current, slug);
-      const res = applyOperation(prev, result, Date.now());
-      return res.state;
-    });
-  }, []);
+  // ---- isolated demo command dispatch ----
+  const command = useCallback(
+    (cmd: Command) => {
+      forkIntoLocalDemo((prev) => {
+        const res = applyCommand(prev, cmd, Date.now());
+        return res.ok ? res.state : prev;
+      });
+    },
+    [forkIntoLocalDemo],
+  );
+
+  // ---- isolated demo operation simulation ----
+  const simulate = useCallback(
+    (game?: GameSlug) => {
+      const slug = game ?? pickGame();
+      forkIntoLocalDemo((prev) => {
+        const result = synthResult(factionRef.current, slug);
+        const res = applyOperation(prev, result, Date.now());
+        return res.state;
+      });
+    },
+    [forkIntoLocalDemo],
+  );
 
   const summary = useMemo(() => summarize(state), [state]);
   const connected = status === "LIVE";

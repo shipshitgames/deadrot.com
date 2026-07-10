@@ -6,17 +6,28 @@
  */
 
 import { PartySocket } from "partysocket";
-import type { Command, OperationResult, ResourceBag, Summary, WorldState } from "./types";
+import type { OperationResult, ResourceBag, Summary, WorldState } from "./types";
+
+export interface WarlineReporterIdentity {
+  /** Server-configured reporter id present in WARLINE_REPORTERS. */
+  id: string;
+  /** Server-only credential. Never expose this through a VITE_* variable. */
+  token: string;
+  /** Identity established by the calling server (for example a Clerk user id). */
+  subject: string;
+}
 
 export interface WarlineClientOptions {
   host: string;
-  token?: string;
+  /** Omit for the public read-only client; required by reportOperation. */
+  reporter?: WarlineReporterIdentity;
 }
 
 export interface ReportResponse {
   ok: boolean;
   summary?: Summary;
   credited?: Partial<ResourceBag>;
+  idempotent?: boolean;
   error?: string;
 }
 
@@ -31,11 +42,11 @@ export function warlineUrl(host: string): string {
 
 export class WarlineClient {
   private host: string;
-  private token?: string;
+  private reporter?: WarlineReporterIdentity;
 
   constructor(opts: WarlineClientOptions) {
     this.host = opts.host;
-    this.token = opts.token;
+    this.reporter = opts.reporter;
   }
 
   /** GET the current world (server returns { state, summary }). */
@@ -46,12 +57,18 @@ export class WarlineClient {
     return data.state;
   }
 
-  /** POST a trusted game result. Requires the bearer token. */
+  /** POST a trusted game result from a server-side reporter. */
   async reportOperation(result: OperationResult): Promise<ReportResponse> {
+    if (!this.reporter) return { ok: false, error: "server reporter identity required" };
+    if (!result.nonce) return { ok: false, error: "operation nonce required" };
     const headers: Record<string, string> = {
       "content-type": "application/json",
+      authorization: `Bearer ${this.reporter.token}`,
+      "x-warline-reporter": this.reporter.id,
+      "x-warline-subject": this.reporter.subject,
+      "x-warline-request-id": result.nonce,
+      "x-warline-timestamp": String(Date.now()),
     };
-    if (this.token) headers["authorization"] = `Bearer ${this.token}`;
     const res = await fetch(warlineUrl(this.host), {
       method: "POST",
       headers,
@@ -60,24 +77,9 @@ export class WarlineClient {
     const data = (await res.json().catch(() => ({}))) as ReportResponse;
     return { ...data, ok: res.ok && data.ok !== false };
   }
-
-  /** POST an open build/deploy command (no auth). */
-  async sendCommand(cmd: Command): Promise<{ ok: boolean; error?: string }> {
-    const res = await fetch(warlineUrl(this.host), {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ type: "command", command: cmd }),
-    });
-    const data = (await res.json().catch(() => ({}))) as {
-      ok?: boolean;
-      error?: string;
-    };
-    return { ok: res.ok && data.ok !== false, error: data.error };
-  }
 }
 
 export interface WarlineSocket {
-  send: (msg: unknown) => void;
   close: () => void;
 }
 
@@ -119,7 +121,6 @@ export function connectWarline(
   });
 
   return {
-    send: (msg: unknown) => socket.send(JSON.stringify(msg)),
     close: () => socket.close(),
   };
 }

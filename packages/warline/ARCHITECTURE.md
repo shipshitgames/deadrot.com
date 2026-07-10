@@ -14,9 +14,10 @@
 - **Full living world.** The Scourge presses every tick: breaches pump pressure, pressure
   spreads along lanes, and human regions can **fall**. Players push back with operations +
   build/deploy. Territory flips both ways.
-- **Open shared front.** Build/deploy **commands** are unauthenticated (Foxhole model — one
-  shared war everyone contributes to). Game-result **reports** require a bearer token (games
-  are trusted reporters). **Reset** requires an admin token.
+- **Closed authoritative front.** Browser GET/WS state is public and read-only.
+  Commands/simulation are isolated local demos. Reports require a server-authenticated
+  reporter and subject; reset requires a server-only administrator credential. Missing
+  configuration always fails closed.
 - **Pure core, dual runtime.** Everything in `src/` is pure TypeScript with **no runtime
   dependencies** (except the browser-only `./client` subpath). The reducers run identically
   in the edge server (authoritative) and the browser (standalone/local demo mode).
@@ -319,17 +320,17 @@ threat = clamp(mean pressure over human+neutral regions + 0.3·mean active-breac
 
 ## 8. Client SDK (`src/client.ts`, package subpath `@shipshitgames/warline/client`)
 
-Browser/fetch only. May import `partysocket`.
+Public reads/WS work in browsers; report credentials are server-only. May import `partysocket`.
 ```ts
-export interface WarlineClientOptions { host: string; token?: string }
-export interface ReportResponse { ok: boolean; summary?: Summary; credited?: Partial<ResourceBag>; error?: string }
+export interface WarlineReporterIdentity { id: string; token: string; subject: string }
+export interface WarlineClientOptions { host: string; reporter?: WarlineReporterIdentity }
+export interface ReportResponse { ok: boolean; summary?: Summary; credited?: Partial<ResourceBag>; idempotent?: boolean; error?: string }
 export class WarlineClient {
   constructor(opts: WarlineClientOptions)
   fetchState(): Promise<WorldState>                                  // GET
-  reportOperation(result: OperationResult): Promise<ReportResponse>  // POST {type:'report'}, Bearer token
-  sendCommand(cmd: Command): Promise<{ ok: boolean; error?: string }>// POST {type:'command'}
+  reportOperation(result: OperationResult): Promise<ReportResponse>  // server reporter only; nonce required
 }
-export interface WarlineSocket { send: (msg: unknown) => void; close: () => void }
+export interface WarlineSocket { close: () => void }
 export function connectWarline(host: string, handlers: {
   onState: (s: WorldState) => void
   onStatus?: (connected: boolean) => void
@@ -376,16 +377,22 @@ canAfford false when broke. Use a small pure event-id; no network.
 - **Tick:** in `onStart`, if no alarm pending, `room.storage.setAlarm(Date.now()+TICK_MS)`.
   `onAlarm()` → `state = tick(state, Date.now())`, persist, broadcast, set next alarm.
 - **WS** `onConnect(conn)` → `conn.send({ t:'hello', state })`.
-  `onMessage(raw, conn)`:
-  - `{ t:'command', command }` → `applyCommand`; persist; **broadcast** `{ t:'state', state }`; reply `{ t:'cmdresult', ok, error }` to sender.
-  - `{ t:'sim', game? }` → **demo**: synthesize a plausible `OperationResult` (random-ish from the connection/time; pick `game` or random) and `applyOperation`; persist; broadcast. (Lets the stream demo the loop with no token. Clearly a demo path.)
-  - `{ t:'reset', token }` → if `token === ADMIN_TOKEN` → `resetWorld`; persist; broadcast.
-- **HTTP** `onRequest(req)` (CORS `*`, handle `OPTIONS`):
+  Browser WS is read-only. `{t:'command'|'sim'|'reset'}` receives a rejected
+  `cmdresult` and never mutates storage.
+- **HTTP** `onRequest(req)` (public CORS only for `GET`/`OPTIONS`):
   - `GET` → `{ state, summary: summarize(state) }`.
-  - `POST {type:'report', result}` → require `Authorization: Bearer ${WARLINE_TOKEN}` (if env unset, allow + warn in dev); `applyOperation`; persist; broadcast `{t:'state',state}`; return `{ ok, summary, credited, event }`.
-  - `POST {type:'command', command}` → open; `applyCommand`; persist; broadcast; return `{ ok, error?, summary }`.
-  - `POST {type:'reset'}` → require `Bearer ${WARLINE_ADMIN_TOKEN}`; reset; broadcast.
-- Env via `this.room.env` (PartyKit): `WARLINE_TOKEN`, `WARLINE_ADMIN_TOKEN`. Missing → dev-permissive with a `console.warn`.
+  - `POST {type:'report', result}` → require a reporter id/token from the
+    server-only `WARLINE_REPORTERS` registry plus server-derived subject,
+    request-id/nonce, and timestamp headers. Reject missing configuration,
+    unknown fields, actor/target claims, unauthorized games, non-finite/out-of-range
+    values, stale requests, nonce conflicts, and rate excess. Exact retries return
+    the durable receipt without applying twice.
+  - `POST {type:'command'|'sim'}` → `403`; the authoritative route is not a demo.
+  - `POST {type:'reset'}` → require server-only `WARLINE_ADMIN_TOKEN`, subject,
+    timestamp, and request id; fail closed and apply the same replay/rate controls.
+- Browser games call the authenticated deadrot.com `/api/warline/report` broker.
+  The broker establishes Clerk identity/access and owns the reporter credential;
+  no `VITE_*` value is authoritative.
 - Broadcast helper: `this.room.broadcast(JSON.stringify({ t:'state', state }))`.
 - `partykit.json`: `{ "$schema":"https://www.partykit.io/schema.json", "name":"warline", "main":"party/warline.ts", "compatibilityDate":"2024-09-01" }`.
 - Server imports ONLY from `@shipshitgames/warline` (the pure core) — never `@shipshitgames/warline/client`.
@@ -394,7 +401,8 @@ canAfford false when broke. Use a small pure event-id; no network.
 
 - **Store** `src/store.ts` — `useWarline()` hook returning `{ state, summary, status, faction, setFaction, command(cmd), simulate(game?), connected }`.
   - Connects via `connectWarline(WARLINE_HOST, …)` from `@shipshitgames/warline/client`.
-  - **Dual mode:** if a socket connects → mirror server `state`; `command()`/`simulate()` send over ws.
+  - **Dual mode:** if a socket connects → mirror server `state` read-only. Calling
+    `command()`/`simulate()` disconnects first and forks the last snapshot into LOCAL.
     If it never connects (no server deployed) → **local mode**: seed `createInitialWorld(Date.now())`,
     run `tick()` every `TICK_MS` via `setInterval`, and apply `applyCommand`/`applyOperation` locally
     so the hub is fully playable standalone (great for the Vercel-only demo). Show status `LIVE` vs `LOCAL`.
@@ -423,7 +431,8 @@ canAfford false when broke. Use a small pure event-id; no network.
       "@vitejs/plugin-react":"^4.3.3","concurrently":"^9.2.1","partykit":"^0.0.114","tailwindcss":"^4.1.8","typescript":"5.8.3","vite":"^5.4.10" } }
   ```
   (Web agent owns this file; it includes the `partykit`/`partysocket` deps the server needs. Server agent must NOT create package.json.)
-- `README.md` for the app: what it is, `bun run dev` / `dev:all`, env (`VITE_WARLINE_HOST`, `WARLINE_TOKEN`), the game→meta contract table, deploy notes.
+- `README.md` for the app: what it is, `bun run dev` / `dev:all`, public read host,
+  server-only reporter/admin configuration, the game→meta contract table, and deploy notes.
 
 ---
 

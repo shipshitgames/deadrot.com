@@ -99,7 +99,7 @@ export interface OperationResult {
   score: number; // >= 0; magnitude (game score / wave / tier)
   targetId?: string; // optional explicit region/lane/breach id; else server picks
   player?: string; // optional handle
-  nonce?: string; // optional idempotency key
+  nonce?: string; // authoritative HTTP reports require this idempotency key; pure reducers do not
   /**
    * War-resource units looted during the run and banked into the shared pool
    * (#280). Finite and >= 0; the reducer clamps to [0, MAX_CONTRIBUTION] and

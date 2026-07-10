@@ -6,7 +6,7 @@ One shared planet front (regions / lanes / breaches); three factions — **Pyre*
 build / raise-army loop. Each mini-game is an **operation** that credits the shared war.
 
 This is the **web hub** (`apps/games/warline`): a Vite + React 19 + Tailwind v4 app. It renders
-the living front, lets you issue build/deploy commands, and demos the game→operation loop.
+the living front and provides an isolated local sandbox for commands and operation previews.
 The pure simulation lives in the `@shipshitgames/warline` package; the authoritative server is
 the PartyKit Durable Object in `party/warline.ts`.
 
@@ -15,12 +15,12 @@ the PartyKit Durable Object in `party/warline.ts`.
 The hub is fully playable with **no backend deployed**. The store (`src/store.ts`) tries to
 connect to a PartyKit server via `connectWarline`:
 
-- **LIVE** — a socket opened: the hub mirrors authoritative server state, and
-  `command()` / `simulate()` are sent over the wire.
+- **LIVE** — a socket opened: the hub mirrors authoritative server state read-only.
+  The first command/demo action deliberately disconnects and forks that snapshot into LOCAL.
 - **LOCAL** — no `VITE_WARLINE_HOST` (and not dev), or the socket never opened in time:
   the hub seeds `createInitialWorld(Date.now())`, runs `tick()` every `TICK_MS` via
   `setInterval`, and applies `applyCommand` / `applyOperation` in the browser. Great for the
-  static demo.
+  static demo. LOCAL never writes to the authoritative PartyKit room.
 
 Status is shown as a pill in the header (`LIVE` / `LOCAL` / `CONNECTING`).
 
@@ -41,16 +41,33 @@ bun run preview    # preview the production build
 | var | where | meaning |
 |-----|-------|---------|
 | `VITE_WARLINE_HOST` | web build | PartyKit host, e.g. `warline.<user>.partykit.dev`. Empty ⇒ LOCAL mode. In dev it defaults to `localhost:1999`. |
-| `WARLINE_TOKEN` | server | bearer token games must present to `POST {type:'report'}`. |
-| `WARLINE_ADMIN_TOKEN` | server | bearer token required to reset the world. |
+| `WARLINE_REPORTERS` | PartyKit secret | JSON reporter registry: reporter id → server-only token plus authorized game slugs. Missing/invalid ⇒ reports fail closed. |
+| `WARLINE_ADMIN_TOKEN` | PartyKit secret | Server-only reset credential. Missing/short ⇒ resets fail closed. |
+| `WARLINE_HOST` | deadrot.com server | PartyKit host used by the authenticated `/api/warline/report` broker. |
+| `WARLINE_REPORTER_ID` / `WARLINE_REPORTER_TOKEN` | deadrot.com server | Broker identity and credential. Never expose them through `VITE_*`. |
+
+The PartyKit reporter registry must authorize that broker id for the exact games
+it may submit. Tokens are at least 32 characters and remain server-only:
+
+```json
+{
+  "deadrot-web": {
+    "token": "[server-only token, same value as WARLINE_REPORTER_TOKEN]",
+    "games": ["scourge-survivors", "deadlane", "pactfall", "brawl", "starblight", "redline", "rothulk"]
+  }
+}
+```
 
 ## Game → operation contract
 
-Every game reports exactly one operation kind (`@shipshitgames/warline` `GAME_OPERATIONS`).
-Each game wires this through `reportWarlineOperation()` from `@deadrot/game-kit/warline`,
-called once per run beside its `recordWarResult(...)`. Reporting is config-gated on
-`VITE_WARLINE_HOST`: with no host set the call is a no-op, so standalone game builds
-never reach for the front and an unreachable server never breaks a run.
+Every game maps to one operation kind (`@shipshitgames/warline` `GAME_OPERATIONS`).
+`reportWarlineOperation()` posts a nonce-bearing claim to the same-origin
+`/api/warline/report` broker without a credential. The broker authenticates the
+player and game entitlement, strips spoofable actor/target fields, then uses its
+server-only identity to call PartyKit. Standalone deployments receive a graceful
+rejection and gameplay continues. Accepted claims are identity-bound, strictly
+validated, rate-limited, replay-safe, and capped; they are not proof of cheat-proof
+client gameplay.
 
 | game | operation | effect on the front | primary credits |
 |------|-----------|---------------------|-----------------|
@@ -61,9 +78,10 @@ never reach for the front and an unreachable server never breaks a run.
 | redline | Run Logistics | pushes convoys to muster the Pact war effort | scrap, fuel |
 | rothulk | Sabotage a Breach | cripples the hottest breach and hardens its region | biomass |
 
-## Commands (open shared-front actions)
+## Commands (isolated browser demo)
 
-Costs come from `COMMAND_COSTS`; buttons disable when `!canAfford`:
+Costs come from `COMMAND_COSTS`; buttons disable when `!canAfford`. These actions
+run only in LOCAL and never spend persistent shared resources:
 
 - **Fortify** (region, held) — `+defense`, `−pressure`.
 - **Muster** — `+army strength`.
@@ -77,8 +95,10 @@ Costs come from `COMMAND_COSTS`; buttons disable when `!canAfford`:
   Git-linked to a standalone game repo. Use `bun run deploy:games:changed` at
   the repo root so docs-only edits skip game deploys. Set `VITE_WARLINE_HOST` to
   point at the deployed PartyKit server for LIVE mode.
-- Server: `bun run party:deploy` (PartyKit). Configure `WARLINE_TOKEN` /
-  `WARLINE_ADMIN_TOKEN` as PartyKit secrets.
+- Server: `bun run party:deploy` (PartyKit). Configure `WARLINE_REPORTERS` and
+  `WARLINE_ADMIN_TOKEN` as PartyKit secrets, and configure the broker's server-only
+  `WARLINE_HOST`, `WARLINE_REPORTER_ID`, and `WARLINE_REPORTER_TOKEN` values in the
+  deadrot.com server environment.
 
 ## Design
 

@@ -4,7 +4,7 @@
 // `createPresenceRegistry` clients (from `@deadrot/game-kit/net`) talk through an
 // in-memory hub that mirrors the wire protocol of `party/arena.ts` (the real
 // PartyKit server, intentionally left untouched). This is the headless stand-in
-// for "playtest a 2-client co-op session": join, presence, state sync, server-owned
+// for "playtest a 2-client PvP preview": join, presence, accepted state sync, server-owned
 // hit/kill resolution, and leave — all without a browser or a live PartyKit dev
 // server.
 import {
@@ -16,6 +16,15 @@ import {
   type TransportSocket,
 } from "@deadrot/game-kit/net";
 import { describe, expect, it } from "vitest";
+import {
+  ARENA_POLICY,
+  acceptCadence,
+  acceptClientPose,
+  acceptDamageClaim,
+  acceptWeaponName,
+  normalizeAvatarId,
+  sanitizePlayerName,
+} from "../../party/arenaPolicy";
 import type { HitMessage, RemotePlayerInfo } from "../../src/net/fpsNet";
 
 // --- In-memory PartyKit Arena, faithful to party/arena.ts broadcast semantics ---
@@ -34,6 +43,9 @@ interface PlayerState {
   kills: number;
   alive: boolean;
   joined: boolean;
+  acceptedAt: number;
+  stateFrames: number[];
+  hitFrames: number[];
 }
 
 /** A loopback socket the transport drives; routes sends into the hub. */
@@ -76,6 +88,7 @@ class ArenaHub {
   private sockets = new Map<string, HubSocket>();
   private outbox: Array<{ socket: HubSocket; data: string }> = [];
   private nextId = 1;
+  private clock = 0;
 
   /** A deterministic spawn so assertions are stable (arena.ts randomises). */
   private spawn(slot: number): { x: number; z: number } {
@@ -95,21 +108,25 @@ class ArenaHub {
       y: 1.8,
       z: sp.z,
       yaw: 0,
-      weapon: "Rifle",
+      weapon: "Pistol",
       health: 100,
       kills: 0,
       alive: true,
       joined: false,
+      acceptedAt: this.clock,
+      stateFrames: [],
+      hitFrames: [],
     };
     this.players.set(id, player);
     const socket = new HubSocket(id, this);
     this.sockets.set(id, socket);
-    const visible = [...this.players.values()].filter((p) => p.id === id || p.joined);
+    const visible = [...this.players.values()].filter((p) => p.id === id || p.joined).map((p) => this.publicPlayer(p));
     this.queue(id, { t: "welcome", id, players: visible });
     return socket;
   }
 
   receive(senderId: string, raw: string) {
+    this.clock += 50;
     let m: { t?: string; [k: string]: unknown };
     try {
       m = JSON.parse(raw);
@@ -120,25 +137,42 @@ class ArenaHub {
     if (!p) return;
 
     if (m.t === "join") {
-      p.name = String(m.name ?? "Player").slice(0, 16) || "Player";
-      p.avatar = String(m.avatar ?? "ranger");
+      p.name = sanitizePlayerName(m.name);
+      p.avatar = normalizeAvatarId(m.avatar);
       const wasJoined = p.joined;
       p.joined = true;
-      if (!wasJoined) this.broadcast({ t: "join", player: p }, [senderId]);
+      if (!wasJoined) {
+        for (const peer of this.players.values()) {
+          if (peer.id !== p.id && peer.joined) this.queue(senderId, { t: "join", player: this.publicPlayer(peer) });
+        }
+        this.broadcast({ t: "join", player: this.publicPlayer(p) }, [senderId]);
+      }
       this.broadcast({ t: "name", id: p.id, name: p.name, avatar: p.avatar, slot: p.slot });
     } else if (m.t === "state") {
-      p.x = Number(m.x) || 0;
-      p.y = Number(m.y) || 1.8;
-      p.z = Number(m.z) || 0;
-      p.yaw = Number(m.yaw) || 0;
-      if (typeof m.weapon === "string") p.weapon = m.weapon;
+      if (!p.joined) return;
+      const cadence = acceptCadence(p.stateFrames, this.clock, ARENA_POLICY.maxStateFramesPerWindow);
+      if (!cadence) return;
+      p.stateFrames = cadence;
+      const pose = acceptClientPose(p, m, this.clock);
+      if (!pose) return;
+      p.x = pose.x;
+      p.y = pose.y;
+      p.z = pose.z;
+      p.yaw = pose.yaw;
+      p.acceptedAt = pose.acceptedAt;
+      p.weapon = acceptWeaponName(m.weapon, p.weapon);
       this.broadcast({ t: "state", id: p.id, x: p.x, y: p.y, z: p.z, yaw: p.yaw, weapon: p.weapon, health: p.health }, [
         senderId,
       ]);
     } else if (m.t === "hit") {
+      if (!p.joined || typeof m.target !== "string") return;
+      const cadence = acceptCadence(p.hitFrames, this.clock, ARENA_POLICY.maxHitFramesPerWindow);
+      if (!cadence) return;
+      p.hitFrames = cadence;
       const target = this.players.get(String(m.target));
-      const dmg = Number(m.dmg) || 0;
-      if (!target?.alive || dmg <= 0 || target.id === p.id) return;
+      if (!target?.joined || !target.alive || target.id === p.id) return;
+      const dmg = acceptDamageClaim(p, target, m.dmg);
+      if (dmg === null) return;
       target.health = Math.max(0, target.health - dmg);
       let killed = false;
       let respawn: { x: number; y: number; z: number } | null = null;
@@ -169,6 +203,11 @@ class ArenaHub {
     if (!this.players.delete(id)) return;
     this.sockets.delete(id);
     this.broadcast({ t: "leave", id });
+  }
+
+  private publicPlayer(p: PlayerState) {
+    const { acceptedAt: _acceptedAt, stateFrames: _stateFrames, hitFrames: _hitFrames, ...visible } = p;
+    return visible;
   }
 
   private broadcast(message: object, exclude: string[] = []) {
@@ -297,11 +336,11 @@ function makeClient(hub: ArenaHub, name: string, avatar = "ranger"): Client {
     }
   });
 
-  transport.connect("BREACH-TEST");
+  transport.connect("ARENA-TEST");
   return { transport, presence, self };
 }
 
-describe("multiplayer transport + presence (2-client co-op)", () => {
+describe("multiplayer transport + presence (2-client PvP arena preview)", () => {
   it("two clients join and see each other as peers", () => {
     const hub = new ArenaHub();
     const a = makeClient(hub, "Ana");
@@ -330,12 +369,12 @@ describe("multiplayer transport + presence (2-client co-op)", () => {
     // A client owns its transform but NOT its health: the server stamps the
     // authoritative health onto every broadcast `state`, so the spoofed 88 is
     // dropped and the peer still reads the server-owned 100.
-    a.transport.emit("state", { x: 7, y: 1.8, z: -3, yaw: 1.2, weapon: "Rifle", health: 88 });
+    a.transport.emit("state", { x: 8, y: 1.8, z: -2, yaw: 1.2, weapon: "Pistol", health: 88 });
     hub.settle();
 
     const bSeesA = b.presence.get(a.presence.selfId);
-    expect(bSeesA?.target.x).toBe(7);
-    expect(bSeesA?.target.z).toBe(-3);
+    expect(bSeesA?.target.x).toBe(8);
+    expect(bSeesA?.target.z).toBe(-2);
     expect(bSeesA?.health).toBe(100);
   });
 
@@ -355,7 +394,7 @@ describe("multiplayer transport + presence (2-client co-op)", () => {
     expect(b.self.deaths).toBe(0);
 
     // Lethal hit: server zeroes then respawns Bo at full, credits Ana a kill.
-    a.transport.emit("hit", { target: bId, dmg: 999 });
+    a.transport.emit("hit", { target: bId, dmg: 70 });
     hub.settle();
     expect(a.self.kills).toBe(1);
     expect(b.self.deaths).toBe(1);
