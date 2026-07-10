@@ -24,22 +24,42 @@ function job(source, name) {
 }
 
 describe("release-confidence wiring", () => {
-  test("required game and web E2E workflows start on every pull request", () => {
-    for (const workflow of [".github/workflows/e2e.yml", ".github/workflows/web-e2e.yml"]) {
-      const trigger = pullRequestTrigger(read(workflow));
+  test("docs-only pull requests still emit both required aggregate gates", () => {
+    const workflows = [
+      {
+        path: ".github/workflows/e2e.yml",
+        gate: "game-e2e-gate",
+        needs: "needs: [affected-games, games",
+        matrix: "games",
+        skipCondition: "if: needs.affected-games.outputs.count != '0'",
+      },
+      {
+        path: ".github/workflows/web-e2e.yml",
+        gate: "web-e2e-gate",
+        needs: "needs: [detect, web-e2e]",
+        matrix: "web-e2e",
+        skipCondition: "if: needs.detect.outputs.run_web == 'true'",
+      },
+    ];
+
+    for (const workflow of workflows) {
+      const source = read(workflow.path);
+      const trigger = pullRequestTrigger(source);
       expect(trigger).toBe("  pull_request:\n");
       expect(trigger).not.toContain("paths");
+
+      // A docs-only diff makes the heavy matrix skip, but the fixed aggregate
+      // context must still run and treat that skip as a legitimate pass.
+      expect(job(source, workflow.matrix)).toContain(workflow.skipCondition);
+      const gate = job(source, workflow.gate);
+      expect(gate).toContain(`name: ${workflow.gate}`);
+      expect(gate).toContain(workflow.needs);
+      expect(gate).toContain("if: always()");
+      expect(gate).toContain("success|skipped)");
     }
-  });
 
-  test("required E2E aggregate jobs always report detector and matrix results", () => {
-    const gameGate = job(read(".github/workflows/e2e.yml"), "game-e2e-gate");
-    expect(gameGate).toContain("needs: [affected-games, games]");
-    expect(gameGate).toContain("if: always()");
-
-    const webGate = job(read(".github/workflows/web-e2e.yml"), "web-e2e-gate");
-    expect(webGate).toContain("needs: [detect, web-e2e]");
-    expect(webGate).toContain("if: always()");
+    expect(job(read(".github/workflows/e2e.yml"), "affected-games")).toContain("outputs.count");
+    expect(job(read(".github/workflows/web-e2e.yml"), "detect")).toContain('echo "run_web=false"');
   });
 
   test("Turbo completes Scourge before web copies its build", () => {
@@ -53,11 +73,14 @@ describe("release-confidence wiring", () => {
   });
 
   test("CI and release both gate on the deterministic full build", () => {
-    const ciQuality = job(read(".github/workflows/ci.yml"), "quality");
+    const ci = read(".github/workflows/ci.yml");
+    const ciQuality = job(ci, "quality");
     expect(ciQuality).toContain("run: bun run build");
+    expect(job(ci, "unit")).toContain("run: bun run test:scripts");
 
     const release = read(".github/workflows/release.yml");
     expect(job(release, "build")).toContain("run: bun run build");
+    expect(job(release, "unit")).toContain("run: bun run test:scripts");
     expect(job(release, "release-gate")).toContain(
       "needs: [quality, unit, build, web-e2e, all-games, game-e2e, secret-scan]",
     );

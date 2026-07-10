@@ -101,6 +101,9 @@ jobs:
       - name: Run package unit tests
         run: bun run test:unit
 
+      - name: Run repository script tests
+        run: bun run test:scripts
+
       - name: Run cross-game catalog unit tests
         run: bun run test:e2e:unit
 
