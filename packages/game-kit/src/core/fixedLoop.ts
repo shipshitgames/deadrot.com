@@ -41,7 +41,7 @@ export function createFixedLoop(opts: FixedLoopOptions): FixedLoop {
       acc -= fixedDt;
     }
     opts.render?.(acc / fixedDt, dt);
-    raf = requestAnimationFrame(frame);
+    if (running) raf = requestAnimationFrame(frame);
   };
 
   return {
@@ -53,8 +53,10 @@ export function createFixedLoop(opts: FixedLoopOptions): FixedLoop {
       raf = requestAnimationFrame(frame);
     },
     stop() {
+      if (!running) return;
       running = false;
       cancelAnimationFrame(raf);
+      raf = 0;
     },
     get running() {
       return running;

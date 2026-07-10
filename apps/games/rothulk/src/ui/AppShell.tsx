@@ -75,6 +75,8 @@ export function AppShell({ createGame }: AppShellProps) {
     game.onPauseChange = setPaused;
     return () => {
       game.onPauseChange = null;
+      game.dispose();
+      if (gameRef.current === game) gameRef.current = null;
     };
   }, [createGame]);
 

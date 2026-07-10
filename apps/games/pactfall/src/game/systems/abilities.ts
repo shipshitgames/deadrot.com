@@ -190,13 +190,15 @@ export class AbilitySystem {
   constructor(private readonly game: Game) {}
 
   reset(): void {
-    for (const zone of this.zones) this.disposeMesh(zone.mesh);
-    for (const shot of this.shots) this.disposeMesh(shot.mesh);
-    this.zones = [];
-    this.shots = [];
+    this.disposeTransientMeshes();
     const ent = this.game.entities;
     this.player.setSpecs(abilitySpecsFor(ent.champion.abilities ?? CHAMPIONS[DEFAULT_PLAYER_CHAMPION_ID].abilities));
     this.enemy.setSpecs(abilitySpecsFor(ent.enemyChampion.abilities ?? CHAMPIONS[DEFAULT_ENEMY_CHAMPION_ID].abilities));
+    this.clearEvents();
+  }
+
+  dispose(): void {
+    this.disposeTransientMeshes();
     this.clearEvents();
   }
 
@@ -442,6 +444,13 @@ export class AbilitySystem {
     this.game.render.remove(mesh);
     mesh.geometry.dispose();
     (mesh.material as THREE.Material).dispose();
+  }
+
+  private disposeTransientMeshes(): void {
+    for (const zone of this.zones) this.disposeMesh(zone.mesh);
+    for (const shot of this.shots) this.disposeMesh(shot.mesh);
+    this.zones = [];
+    this.shots = [];
   }
 
   private kitFor(caster: Entity): ChampionAbilityKit {

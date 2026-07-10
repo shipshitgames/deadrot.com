@@ -75,10 +75,7 @@ export class EntitySystem {
   }
 
   reset(): void {
-    for (const e of this.all) this.game.render.remove(e.mesh);
-    for (const b of this.beams) this.game.render.remove(b.mesh);
-    this.all = [];
-    this.beams = [];
+    this.disposeOwnedMeshes();
     this.towers = [];
     this.nextId = 1;
     // Stagger the first waves so the lane isn't a perfect mirror that locks at
@@ -122,6 +119,12 @@ export class EntitySystem {
     }
 
     this.syncMeshes();
+  }
+
+  dispose(): void {
+    this.disposeOwnedMeshes();
+    this.towers = [];
+    this.clearEvents();
   }
 
   private spawn(e: Entity): Entity {
@@ -631,6 +634,19 @@ export class EntitySystem {
         });
       } else mat?.dispose();
     });
+  }
+
+  private disposeOwnedMeshes(): void {
+    for (const e of this.all) {
+      this.game.render.remove(e.mesh);
+      this.disposeMesh(e.mesh);
+    }
+    for (const beam of this.beams) {
+      this.game.render.remove(beam.mesh);
+      this.disposeMesh(beam.mesh);
+    }
+    this.all = [];
+    this.beams = [];
   }
 
   private syncMeshes(): void {

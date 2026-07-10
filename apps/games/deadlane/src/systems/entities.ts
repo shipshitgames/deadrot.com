@@ -42,6 +42,7 @@ export class EntitySystem {
     stasis: new THREE.SphereGeometry(PROJECTILE_LOOKS.stasis.size, 8, 8),
     mortar: new THREE.SphereGeometry(PROJECTILE_LOOKS.mortar.size, 8, 8),
   };
+  private disposed = false;
 
   constructor(private readonly scene: THREE.Scene) {}
 
@@ -329,6 +330,7 @@ export class EntitySystem {
     state.creeps = state.creeps.filter((c) => {
       if (c.dead) {
         this.scene.remove(c.mesh);
+        this.disposeMaterials(c.mesh);
         return false;
       }
       return true;
@@ -336,6 +338,7 @@ export class EntitySystem {
     state.projectiles = state.projectiles.filter((p) => {
       if (!p.alive) {
         this.scene.remove(p.mesh);
+        this.disposeMaterials(p.mesh);
         return false;
       }
       return true;
@@ -344,11 +347,51 @@ export class EntitySystem {
 
   /** Tear down all entity meshes (used on reset). */
   clear(state: GameState): void {
-    for (const t of state.towers) this.scene.remove(t.mesh);
-    for (const c of state.creeps) this.scene.remove(c.mesh);
-    for (const p of state.projectiles) this.scene.remove(p.mesh);
+    for (const t of state.towers) {
+      this.scene.remove(t.mesh);
+      this.disposeObject(t.mesh);
+    }
+    for (const c of state.creeps) {
+      this.scene.remove(c.mesh);
+      this.disposeMaterials(c.mesh);
+    }
+    for (const p of state.projectiles) {
+      this.scene.remove(p.mesh);
+      this.disposeMaterials(p.mesh);
+    }
     state.towers = [];
     state.creeps = [];
     state.projectiles = [];
+  }
+
+  dispose(state: GameState): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.clear(state);
+    this.creepGeo.dispose();
+    for (const geometry of Object.values(this.projGeos)) geometry.dispose();
+    this.events.kills.length = 0;
+    this.events.breachDamage = 0;
+  }
+
+  private disposeObject(object: THREE.Object3D): void {
+    object.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.geometry.dispose();
+      this.disposeMaterials(mesh);
+    });
+  }
+
+  private disposeMaterials(object: THREE.Object3D): void {
+    object.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      if (Array.isArray(mesh.material)) {
+        for (const material of mesh.material) material.dispose();
+      } else {
+        mesh.material.dispose();
+      }
+    });
   }
 }

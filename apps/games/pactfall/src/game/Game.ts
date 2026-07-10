@@ -49,6 +49,7 @@ export class Game {
   private hurtSfxIn = 0; // throttle for the hurt cue
   private heartbeatIn = 0; // low-health heartbeat cadence
   private lowHpActive = false;
+  private disposed = false;
   private runNonce = createRunNonce("pactfall");
 
   // Pactfall is a variable-step sim: run it in the render callback so the
@@ -141,11 +142,27 @@ export class Game {
   }
 
   start(): void {
+    if (this.disposed) return;
     this.loop.start();
   }
 
   stop(): void {
     this.loop.stop();
+  }
+
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.stop();
+    this.input.dispose();
+    this.abilities.dispose();
+    this.entities.dispose();
+    this.bursts.dispose();
+    this.damageNumbers.dispose();
+    this.flash.dispose();
+    this.phaseListeners.clear();
+    this.pauseListeners.clear();
+    this.render.dispose();
   }
 
   get buffed(): boolean {

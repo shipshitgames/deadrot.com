@@ -91,3 +91,42 @@ test("stop halts the loop and start is idempotent", () => {
   step(50);
   assert.equal(updates, 0);
 });
+
+test("mount -> dispose -> mount owns exactly one pending frame", () => {
+  let renders = 0;
+  const mount = () =>
+    createFixedLoop({
+      update: () => {},
+      render: () => renders++,
+    });
+
+  const first = mount();
+  first.start();
+  assert.equal(queue.length, 1);
+  step(16);
+  assert.equal(queue.length, 1);
+  first.stop();
+  first.stop();
+  assert.equal(queue.length, 0);
+
+  const second = mount();
+  second.start();
+  assert.equal(queue.length, 1);
+  step(16);
+  assert.equal(renders, 2);
+  assert.equal(queue.length, 1);
+  second.stop();
+  assert.equal(queue.length, 0);
+});
+
+test("stopping during render does not orphan a follow-up frame", () => {
+  let loop: ReturnType<typeof createFixedLoop>;
+  loop = createFixedLoop({
+    update: () => {},
+    render: () => loop.stop(),
+  });
+  loop.start();
+  step(16);
+  assert.equal(loop.running, false);
+  assert.equal(queue.length, 0);
+});

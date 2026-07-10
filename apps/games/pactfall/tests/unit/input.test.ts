@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, test } from "bun:test";
 import { InputSystem } from "../../src/game/systems/InputSystem";
 import type { RenderSystem } from "../../src/game/systems/RenderSystem";
 
@@ -9,14 +9,41 @@ import type { RenderSystem } from "../../src/game/systems/RenderSystem";
 // is pure state shared by keyboard Q/W/E and the HUD tap-to-cast buttons.
 // ---------------------------------------------------------------------------
 
-const listenerSink = { addEventListener: () => {} };
-(globalThis as { window?: unknown }).window ??= listenerSink;
+class ListenerSink {
+  private readonly listeners = new Map<string, Set<EventListenerOrEventListenerObject>>();
+
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject): void {
+    const listeners = this.listeners.get(type) ?? new Set<EventListenerOrEventListenerObject>();
+    listeners.add(listener);
+    this.listeners.set(type, listeners);
+  }
+
+  removeEventListener(type: string, listener: EventListenerOrEventListenerObject): void {
+    this.listeners.get(type)?.delete(listener);
+  }
+
+  get listenerCount(): number {
+    let count = 0;
+    for (const listeners of this.listeners.values()) count += listeners.size;
+    return count;
+  }
+}
+
+const listenerSink = new ListenerSink();
+(globalThis as { window?: unknown }).window = listenerSink;
+const createdInputs: InputSystem[] = [];
 
 function makeInput(): InputSystem {
   const canvas = listenerSink as unknown as HTMLCanvasElement;
   const render = {} as RenderSystem;
-  return new InputSystem(canvas, render);
+  const input = new InputSystem(canvas, render);
+  createdInputs.push(input);
+  return input;
 }
+
+afterEach(() => {
+  for (const input of createdInputs.splice(0)) input.dispose();
+});
 
 describe("InputSystem — Q/W/E ability latch", () => {
   test("pressAbility latches presses in order; takeAbilities drains the queue once", () => {
@@ -49,5 +76,18 @@ describe("InputSystem — Q/W/E ability latch", () => {
     input.clearAbilities();
     input.pressAbility("w");
     expect(input.takeAbilities()).toEqual(["w"]);
+  });
+
+  test("mount -> dispose -> mount never duplicates browser listeners", () => {
+    const first = makeInput();
+    expect(listenerSink.listenerCount).toBe(6);
+    first.dispose();
+    first.dispose();
+    expect(listenerSink.listenerCount).toBe(0);
+
+    const second = makeInput();
+    expect(listenerSink.listenerCount).toBe(6);
+    second.dispose();
+    expect(listenerSink.listenerCount).toBe(0);
   });
 });

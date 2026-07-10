@@ -12,6 +12,7 @@ export class RenderSystem {
   private readonly lookTarget = new THREE.Vector3();
   private readonly emberLight: THREE.PointLight;
   private emberPhase = 0;
+  private disposed = false;
 
   // Top-down MOBA follow-cam tunables. The camera rides high and steeply behind
   // the champion so it reads like Dota/LoL — and stays high enough that the
@@ -47,7 +48,7 @@ export class RenderSystem {
     this.scene.add(this.emberLight);
 
     this.resize();
-    window.addEventListener("resize", () => this.resize());
+    window.addEventListener("resize", this.resize);
   }
 
   add(obj: THREE.Object3D): void {
@@ -145,12 +146,31 @@ export class RenderSystem {
     this.renderer.render(this.scene, this.camera);
   }
 
-  private resize(): void {
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    window.removeEventListener("resize", this.resize);
+    this.scene.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.geometry.dispose();
+      if (Array.isArray(mesh.material)) {
+        for (const material of mesh.material) material.dispose();
+      } else {
+        mesh.material.dispose();
+      }
+    });
+    this.scene.clear();
+    this.renderer.dispose();
+    this.renderer.forceContextLoss();
+  }
+
+  private readonly resize = (): void => {
     const w = window.innerWidth;
     const h = window.innerHeight;
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / Math.max(1, h);
     this.camera.updateProjectionMatrix();
-  }
+  };
 }

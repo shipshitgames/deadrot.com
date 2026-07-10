@@ -35,6 +35,7 @@ interface DeadlaneDebug {
     gold: number;
     creepCount: number;
     paused: boolean;
+    hudPublications: number;
   };
   /**
    * Advance the sim by `seconds` of fixed-step time — replays the loop's own
@@ -70,6 +71,7 @@ export class Game {
 
   private elapsed = 0;
   private pausedForCapture = false;
+  private disposed = false;
   private runNonce = createRunNonce("deadlane");
 
   constructor(canvas: HTMLCanvasElement) {
@@ -112,6 +114,7 @@ export class Game {
           gold: this.state.gold,
           creepCount: this.state.creeps.length,
           paused: this.pausedForCapture,
+          hudPublications: this.hud.publicationCount,
         }),
         fastForward: (seconds) => {
           const fixedDt = CONSTANTS.loop.fixedDt;
@@ -122,7 +125,7 @@ export class Game {
           }
           // Sync the HUD store once so DOM-reading assertions see fresh values;
           // never render.render() — that would touch WebGL.
-          this.hud.update(this.state);
+          this.hud.update(this.state, 0, true);
           return this.state.phase;
         },
       };
@@ -169,7 +172,7 @@ export class Game {
   private resetRun(): void {
     this.entities.clear(this.state);
     Object.assign(this.state, freshState());
-    this.hud.update(this.state);
+    this.hud.update(this.state, 0, true);
     this.startRun();
   }
 
@@ -260,7 +263,7 @@ export class Game {
       this.frameBreachDamage = 0;
     }
 
-    this.hud.update(this.state);
+    this.hud.update(this.state, frameDt);
     this.flash.update(frameDt);
     this.render.update(frameDt, this.elapsed, baseHit);
     this.render.render();
@@ -550,12 +553,26 @@ export class Game {
     this.entities.clear(this.state);
     Object.assign(this.state, freshState());
     this.render.placePlayerAtStart();
-    this.hud.update(this.state);
+    this.hud.update(this.state, 0, true);
     this.showTitleBanner();
   }
 
   private clearPauseMenu(): void {
     setPauseSnapshot({ open: false, onResume: null, onExitToTitle: null });
+  }
+
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.loop.stop();
+    document.removeEventListener("click", this.onDocumentClick);
+    this.render.rig.off("capture", this.onCapture);
+    this.render.rig.off("release", this.onRelease);
+    this.clearPauseMenu();
+    this.input.dispose();
+    this.entities.dispose(this.state);
+    this.flash.dispose();
+    this.render.dispose();
   }
 }
 

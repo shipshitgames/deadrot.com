@@ -28,26 +28,54 @@ export class InputSystem {
   private readonly abilityPresses: AbilityKey[] = [];
   // Last known pointer position (client space) for skillshot aiming.
   private lastPointer: { x: number; y: number } | null = null;
+  private disposed = false;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
     private readonly render: RenderSystem,
   ) {
-    window.addEventListener("keydown", (e) => this.onKey(e, true));
-    window.addEventListener("keyup", (e) => this.onKey(e, false));
+    window.addEventListener("keydown", this.onKeyDown);
+    window.addEventListener("keyup", this.onKeyUp);
     // Clear AND recompute on focus loss — otherwise the cached move vector keeps
     // its last non-zero value and the champion drifts forever after an alt-tab.
-    window.addEventListener("blur", () => {
-      this.keys.clear();
-      this.recompute();
-    });
-    canvas.addEventListener("pointerdown", (e) => this.onPointer(e));
-    canvas.addEventListener("pointermove", (e) => {
-      this.lastPointer = { x: e.clientX, y: e.clientY };
-    });
+    window.addEventListener("blur", this.onBlur);
+    canvas.addEventListener("pointerdown", this.onPointer);
+    canvas.addEventListener("pointermove", this.onPointerMove);
     // Suppress the context menu so right-drag camera feel isn't hijacked.
-    canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+    canvas.addEventListener("contextmenu", this.onContextMenu);
   }
+
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    window.removeEventListener("keydown", this.onKeyDown);
+    window.removeEventListener("keyup", this.onKeyUp);
+    window.removeEventListener("blur", this.onBlur);
+    this.canvas.removeEventListener("pointerdown", this.onPointer);
+    this.canvas.removeEventListener("pointermove", this.onPointerMove);
+    this.canvas.removeEventListener("contextmenu", this.onContextMenu);
+    this.keys.clear();
+    this.move.set(0, 0);
+    this.clickTarget = null;
+    this.lastPointer = null;
+    this.clearAbilities();
+    this.onRestart = null;
+  }
+
+  private readonly onKeyDown = (event: KeyboardEvent): void => this.onKey(event, true);
+
+  private readonly onKeyUp = (event: KeyboardEvent): void => this.onKey(event, false);
+
+  private readonly onBlur = (): void => {
+    this.keys.clear();
+    this.recompute();
+  };
+
+  private readonly onPointerMove = (event: PointerEvent): void => {
+    this.lastPointer = { x: event.clientX, y: event.clientY };
+  };
+
+  private readonly onContextMenu = (event: Event): void => event.preventDefault();
 
   private onKey(e: KeyboardEvent, down: boolean): void {
     const k = e.key.toLowerCase();
@@ -82,7 +110,7 @@ export class InputSystem {
     }
   }
 
-  private onPointer(e: PointerEvent): void {
+  private readonly onPointer = (e: PointerEvent): void => {
     // Only the primary button (left-click / touch / pen) issues orders; a
     // right- or middle-click must not redeploy or walk the champion.
     if (e.button !== 0) return;
@@ -105,7 +133,7 @@ export class InputSystem {
     } else {
       this.clickTarget = null;
     }
-  }
+  };
 
   /**
    * Latch one ability press. Keyboard Q/W/E and the HUD tap-to-cast buttons
