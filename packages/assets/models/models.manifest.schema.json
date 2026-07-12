@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://shipshit.dev/schemas/models-manifest.json",
+  "title": "Deadrot 3D model manifest",
+  "description": "Curated manifest of 3D model masters in packages/assets/models: stable id, source/provenance, and one or more Git LFS-tracked GLB/glTF variants (static, animated, and later optimized runtime derivatives). Hand-edited; validated by scripts/check-models.mjs (deadrot.com#493). Consumed through the typed resolver in src/models.ts.",
+  "type": "object",
+  "required": ["version", "cdnBase", "models"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "string", "description": "Format version of the manifest document." },
+    "note": { "type": "string" },
+    "cdnBase": {
+      "type": "string",
+      "format": "uri",
+      "description": "Default CDN origin; overridable at runtime via ASSET_BASE_URL or an explicit baseUrl."
+    },
+    "models": {
+      "type": "array",
+      "description": "Every catalogued 3D model, one canonical entry per stable id.",
+      "items": { "$ref": "#/definitions/model" }
+    }
+  },
+  "definitions": {
+    "model": {
+      "type": "object",
+      "required": ["id", "name", "format", "pbr", "source", "defaultVariant", "variants"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "Stable model id, addressable the same way sprite ids are." },
+        "entity": {
+          "type": "string",
+          "description": "Canonical universe entity id this model renders (links to assets-catalog.json), where applicable."
+        },
+        "name": { "type": "string", "description": "Human display name." },
+        "faction": { "type": "string", "description": "Owning faction, where applicable." },
+        "format": { "type": "string", "enum": ["glb", "gltf"], "description": "Container format of the variants." },
+        "pbr": { "type": "boolean", "description": "Whether the model carries PBR materials." },
+        "faceCount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Approximate triangle/face budget of the master mesh."
+        },
+        "source": { "$ref": "#/definitions/source" },
+        "license": { "type": "string", "description": "License / usage terms." },
+        "provenance": { "type": "string", "description": "How the model was produced and what it derives from." },
+        "defaultVariant": {
+          "type": "string",
+          "description": "The `key` of the variant resolvers return when none is requested."
+        },
+        "variants": {
+          "type": "array",
+          "minItems": 1,
+          "description": "The concrete GLB/glTF files for this model.",
+          "items": { "$ref": "#/definitions/variant" }
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": ["provider", "model"],
+      "additionalProperties": false,
+      "properties": {
+        "provider": { "type": "string", "description": "Generation provider, e.g. `replicate`." },
+        "model": { "type": "string", "description": "Provider model id, e.g. `tencent/hunyuan-3d-3.1`." },
+        "predictionId": { "type": "string", "description": "Provider prediction/job id for traceability." },
+        "generatedAt": { "type": "string", "description": "ISO date the master was generated (YYYY-MM-DD)." },
+        "url": { "type": "string", "format": "uri", "description": "Provider prediction URL." }
+      }
+    },
+    "variant": {
+      "type": "object",
+      "required": ["key", "pose", "optimization", "path", "bytes", "sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "Variant selector, unique within a model (e.g. `static`, `animated`, `runtime`)."
+        },
+        "pose": {
+          "type": "string",
+          "enum": ["static", "animated"],
+          "description": "Whether the variant carries animation channels."
+        },
+        "optimization": {
+          "type": "string",
+          "enum": ["master", "runtime"],
+          "description": "`master` is the raw source-of-truth; `runtime` is a Draco/WebP-optimized derivative."
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^models/.+\\.(glb|gltf)$",
+          "description": "Package-relative path to the LFS-tracked file."
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "File size in bytes (matches the LFS pointer `size`)."
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Hex SHA-256 of the file contents (matches the LFS pointer `oid`)."
+        },
+        "derivedFrom": {
+          "type": "string",
+          "description": "The `key` of the variant this one was derived from, if any."
+        },
+        "tool": { "type": "string", "description": "Tool that produced a derived variant." }
+      }
+    }
+  }
+}
