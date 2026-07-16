@@ -173,6 +173,14 @@ Run the package boundary check before merging asset changes:
 bun run --cwd packages/assets assets:check
 ```
 
+Audit or repair the default Scourge enemy pack's chroma-key edge residue
+(static sprites, split animation frames, and the runtime atlas):
+
+```bash
+bun run --cwd packages/assets assets:check-enemy-alpha
+bun run --cwd packages/assets assets:fix-enemy-alpha
+```
+
 Refresh the lore-to-art coverage map after adding or promoting lore art:
 
 ```bash

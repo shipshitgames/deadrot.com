@@ -5,6 +5,26 @@
 > the current house style; new work follows the comic-ink lock in
 > `apps/lore/content/Universe/Style-Bible.md`.
 
+## 2026-07-16 - Scourge enemy matte regression cleanup
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Faction / role: default Scourge static sprites, split animation frames, and
+  generated runtime atlas.
+- Tool: local deterministic cleanup with `dwebp`,
+  `packages/assets/scripts/lib/alpha-fringe.mjs`, and `cwebp`.
+- Plan: Codex local cleanup for deadrot.com#17.
+- Kind: alpha-preserving magenta/purple chroma-key edge rematte.
+- Source assets: existing committed runtime WebPs under
+  `enemies/scourge/` and `animations/scourge/`.
+- Final assets: the same runtime paths, including `scourge.atlas0.webp`.
+- Post-processing: replaced low-green magenta edge pixels from nearby
+  non-magenta subject color, then rebuilt the atlas page from all authoritative
+  split frames and its committed extrusion map; alpha, dimensions, anchors,
+  atlas coordinates, and manifest paths are unchanged.
+- Notes: No new raster art was generated. The comic opt-in enemy pack was
+  audited separately and already had zero matching fringe pixels.
+
 ## 2026-06-24 - edge-quality rematte and weapon sheet padding
 
 - Status: promoted into runtime.

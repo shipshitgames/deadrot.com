@@ -3,9 +3,17 @@ import { Buffer } from "node:buffer";
 import { test } from "node:test";
 
 import {
+  cleanMagentaFringe,
+  copyRgbaFrameWithExtrudedPadding,
+  countRgbaRectMismatches,
   hasTransparentNeighbor,
   isDarkFringePixel,
+  isMagentaDominantPixel,
+  isOpaqueMagentaFringePixel,
+  isPurpleFringePixel,
   measureAlphaFringe,
+  measureMagentaFringe,
+  nonMagentaReplacementColorNear,
   rematteDarkFringe,
   replacementColorNear,
   webpEncodingKind,
@@ -92,6 +100,139 @@ test("rematteDarkFringe clears isolated dark matte when no subject color exists"
     clearedPixels: 1,
   });
   assert.deepEqual(Array.from(data.subarray((1 * 3 + 1) * 4, (1 * 3 + 1) * 4 + 4)), [0, 0, 0, 0]);
+});
+
+test("magenta fringe detectors distinguish matte residue from opaque subject color", () => {
+  assert.equal(isPurpleFringePixel(150, 40, 180, 128), true);
+  assert.equal(isPurpleFringePixel(150, 40, 180, 255), false);
+  assert.equal(isMagentaDominantPixel(220, 25, 210, 255), true);
+  assert.equal(isMagentaDominantPixel(150, 70, 180, 255), true);
+  assert.equal(isMagentaDominantPixel(205, 35, 28, 255), false);
+  assert.equal(isOpaqueMagentaFringePixel(127, 0, 107, 255), true);
+  assert.equal(isOpaqueMagentaFringePixel(159, 75, 138, 255), false);
+});
+
+test("measureMagentaFringe counts purple alpha and opaque magenta edge residue", () => {
+  const data = image(3, 3, [
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [150, 40, 180, 128],
+    [220, 25, 210, 255],
+    [0, 0, 0, 0],
+    [205, 35, 28, 255],
+    [235, 220, 190, 255],
+  ]);
+
+  assert.deepEqual(measureMagentaFringe(data, 3, 3), {
+    purpleAlphaPixels: 1,
+    opaqueMagentaEdgePixels: 1,
+    total: 2,
+  });
+});
+
+test("cleanMagentaFringe remats purple alpha and opaque magenta edges without changing alpha", () => {
+  const data = image(3, 3, [
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [150, 40, 180, 128],
+    [220, 25, 210, 255],
+    [0, 0, 0, 0],
+    [205, 35, 28, 255],
+    [235, 220, 190, 255],
+  ]);
+
+  assert.deepEqual(nonMagentaReplacementColorNear(data, 3, 3, 2, 1), [220, 128, 109]);
+  assert.deepEqual(cleanMagentaFringe(data, 3, 3), {
+    changedPixels: 2,
+    remattedPixels: 2,
+  });
+  assert.deepEqual(Array.from(data.subarray((1 * 3 + 1) * 4, (1 * 3 + 1) * 4 + 4)), [220, 128, 109, 128]);
+  assert.deepEqual(Array.from(data.subarray((1 * 3 + 2) * 4, (1 * 3 + 2) * 4 + 4)), [220, 128, 109, 255]);
+  assert.equal(measureMagentaFringe(data, 3, 3).total, 0);
+
+  const once = Buffer.from(data);
+  assert.deepEqual(cleanMagentaFringe(data, 3, 3), {
+    changedPixels: 0,
+    remattedPixels: 0,
+  });
+  assert.deepEqual(data, once);
+});
+
+test("nonMagentaReplacementColorNear widens past a magenta average", () => {
+  const data = image(
+    5,
+    5,
+    Array.from({ length: 25 }, () => [0, 0, 0, 0]),
+  );
+  const set = (x: number, y: number, rgba: [number, number, number, number]) => {
+    data.set(rgba, (y * 5 + x) * 4);
+  };
+  set(1, 2, [205, 35, 28, 255]);
+  set(3, 2, [28, 35, 205, 255]);
+  set(2, 0, [235, 220, 190, 255]);
+
+  assert.deepEqual(nonMagentaReplacementColorNear(data, 5, 5, 2, 2), [156, 97, 141]);
+});
+
+test("nonMagentaReplacementColorNear falls back to the closest subject color when averages stay magenta", () => {
+  const data = image(3, 3, [
+    [0, 0, 0, 0],
+    [205, 35, 28, 255],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [127, 0, 107, 255],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [28, 35, 205, 255],
+    [0, 0, 0, 0],
+  ]);
+
+  assert.deepEqual(nonMagentaReplacementColorNear(data, 3, 3, 1, 1), [205, 35, 28]);
+});
+
+test("countRgbaRectMismatches compares authored pixels with an atlas rectangle", () => {
+  const source = image(2, 1, [
+    [205, 35, 28, 255],
+    [235, 220, 190, 255],
+  ]);
+  const atlas = image(4, 2, [
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [205, 35, 28, 255],
+    [235, 220, 190, 255],
+    [0, 0, 0, 0],
+  ]);
+
+  assert.equal(countRgbaRectMismatches(source, 2, 1, atlas, 4, 1, 1), 0);
+  atlas[(1 * 4 + 2) * 4] = 0;
+  assert.equal(countRgbaRectMismatches(source, 2, 1, atlas, 4, 1, 1), 1);
+});
+
+test("copyRgbaFrameWithExtrudedPadding rebuilds an atlas rect and its gutter", () => {
+  const source = image(2, 1, [
+    [205, 35, 28, 255],
+    [235, 220, 190, 255],
+  ]);
+  const atlas = image(
+    6,
+    3,
+    Array.from({ length: 18 }, () => [0, 0, 0, 0]),
+  );
+
+  copyRgbaFrameWithExtrudedPadding(source, 2, 1, atlas, 6, 3, 2, 1, 1);
+
+  assert.deepEqual(Array.from(atlas.subarray((1 * 6 + 2) * 4, (1 * 6 + 4) * 4)), Array.from(source));
+  assert.deepEqual(Array.from(atlas.subarray((1 * 6 + 1) * 4, (1 * 6 + 2) * 4)), [205, 35, 28, 255]);
+  assert.deepEqual(Array.from(atlas.subarray((1 * 6 + 4) * 4, (1 * 6 + 5) * 4)), [235, 220, 190, 255]);
+  assert.deepEqual(Array.from(atlas.subarray((0 * 6 + 2) * 4, (0 * 6 + 4) * 4)), Array.from(source));
+  assert.deepEqual(Array.from(atlas.subarray((2 * 6 + 2) * 4, (2 * 6 + 4) * 4)), Array.from(source));
 });
 
 test("webpEncodingKind detects VP8L lossless and VP8 lossy chunks", () => {

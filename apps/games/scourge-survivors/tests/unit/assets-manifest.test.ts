@@ -54,6 +54,8 @@ function scourgeEnemySpritePaths() {
     }
   }
 
+  for (const page of animationManifest.runtimeAtlas.pages) paths.push(page.path);
+
   return paths.sort();
 }
 
@@ -177,7 +179,7 @@ describe("asset manifest", () => {
     const hash = createHash("sha256");
     const paths = scourgeEnemySpritePaths();
 
-    expect(paths).toHaveLength(285);
+    expect(paths).toHaveLength(286);
 
     for (const path of paths) {
       hash.update(path);
@@ -186,7 +188,7 @@ describe("asset manifest", () => {
       hash.update("\0");
     }
 
-    expect(hash.digest("hex")).toBe("fc4e03208cc242061cd550e229baf8f83b9c8ec1bce9d9d55e449f74a40db75d");
+    expect(hash.digest("hex")).toBe("2de556de0a98be790a01eb01bb7e7c6d87ef3106de0764bff217816b5d5e7bd1");
   });
 
   it("defines weapon sprite metadata needed for first-person runtime placement", () => {
