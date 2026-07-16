@@ -1559,10 +1559,10 @@
         11.5
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling floor texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific floor texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1580,10 +1580,10 @@
         1
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling wall texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific wall texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1601,10 +1601,10 @@
         1
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling block texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific block texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1622,10 +1622,10 @@
         3
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling column texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific column texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1664,10 +1664,10 @@
         11.5
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling floor texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific floor texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1685,10 +1685,10 @@
         1
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling wall texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific wall texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1706,10 +1706,10 @@
         1
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling block texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific block texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1727,10 +1727,10 @@
         3
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling column texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific column texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1769,10 +1769,10 @@
         11.5
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling floor texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific floor texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1790,10 +1790,10 @@
         1
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling wall texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific wall texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1811,10 +1811,10 @@
         1
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling block texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific block texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1832,10 +1832,10 @@
         3
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling column texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific column texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1874,10 +1874,10 @@
         11.5
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling floor texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific floor texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1895,10 +1895,10 @@
         1
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling wall texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific wall texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1916,10 +1916,10 @@
         1
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling block texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific block texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1937,10 +1937,10 @@
         3
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling column texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific column texture",
         "scope": "Scourge Survivors runtime"
       }
     },

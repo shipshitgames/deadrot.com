@@ -12,6 +12,13 @@ type Manifest = typeof manifest;
 type SpriteEntry = Manifest["sprites"][keyof Manifest["sprites"]];
 type AudioEntry = Manifest["audio"][keyof Manifest["audio"]];
 type UiEntry = Manifest["ui"][keyof Manifest["ui"]];
+type ArenaSurfaceEntry = {
+  path: string;
+  dimensions: readonly number[];
+  colorSpace: string;
+  wrap: string;
+  repeat: readonly number[];
+};
 
 const assetsRoot = fileURLToPath(new URL("../../../../../packages/assets/", import.meta.url));
 
@@ -318,6 +325,31 @@ describe("asset manifest", () => {
       for (const prop of map.environment.props) {
         expect(textureIds.has(prop.texture), `${mapId} prop ${prop.texture}`).toBe(true);
         expectExistingAsset(manifest.textures[prop.texture as keyof typeof manifest.textures].path);
+      }
+    }
+  });
+
+  it("keeps campaign surfaces wired to production dimensions and UV repeats", () => {
+    const expectedRepeats = {
+      floor: [11.5, 11.5],
+      wall: [16, 1],
+      block: [1, 1],
+      column: [1, 3],
+    } as const;
+
+    for (const mapId of CAMPAIGN_ORDER) {
+      const map = MAPS[mapId];
+
+      for (const [role, id] of Object.entries(map.materials)) {
+        const entry = manifest.textures[id as keyof typeof manifest.textures] as ArenaSurfaceEntry;
+
+        expect(entry.path, `${mapId} ${role} path`).toBe(
+          `games/scourge-survivors/textures/arenas/${mapId}/${role}.webp`,
+        );
+        expect(entry.dimensions, `${mapId} ${role} dimensions`).toEqual([512, 512]);
+        expect(entry.colorSpace, `${mapId} ${role} color space`).toBe("srgb");
+        expect(entry.wrap, `${mapId} ${role} wrap`).toBe("repeat");
+        expect(entry.repeat, `${mapId} ${role} repeat`).toEqual(expectedRepeats[role as keyof typeof expectedRepeats]);
       }
     }
   });
