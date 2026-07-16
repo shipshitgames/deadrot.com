@@ -108,7 +108,8 @@ test("magenta fringe detectors distinguish matte residue from opaque subject col
   assert.equal(isMagentaDominantPixel(220, 25, 210, 255), true);
   assert.equal(isMagentaDominantPixel(150, 70, 180, 255), true);
   assert.equal(isMagentaDominantPixel(205, 35, 28, 255), false);
-  assert.equal(isOpaqueMagentaFringePixel(127, 0, 107, 255), true);
+  assert.equal(isOpaqueMagentaFringePixel(127, 0, 110, 255), true);
+  assert.equal(isOpaqueMagentaFringePixel(127, 0, 109, 255), false);
   assert.equal(isOpaqueMagentaFringePixel(159, 75, 138, 255), false);
 });
 
