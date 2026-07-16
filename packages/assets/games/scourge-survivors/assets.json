@@ -140,7 +140,7 @@
     },
     "boss": {
       "type": "sprite",
-      "filter": "nearest",
+      "filter": "linear",
       "views": {
         "front": {
           "path": "games/scourge-survivors/enemies/scourge/breach-boss/front.webp",
@@ -149,8 +149,8 @@
             180
           ],
           "scale": [
-            2.45,
-            3.6
+            3.3,
+            3.5
           ]
         },
         "side": {
@@ -160,8 +160,8 @@
             180
           ],
           "scale": [
-            2.45,
-            3.6
+            3.3,
+            3.5
           ]
         },
         "back": {
@@ -171,16 +171,16 @@
             180
           ],
           "scale": [
-            2.45,
-            3.6
+            3.3,
+            3.5
           ]
         }
       },
       "license": {
         "tool": "gpt-image-2",
-        "plan": "built-in image_gen",
-        "date": "2026-06-05",
-        "kind": "AI generated 2D Scourge boss sprite sheet",
+        "plan": "Codex built-in image_gen; Sharp flood-key/crop; lossless WebP",
+        "date": "2026-07-17",
+        "kind": "AI-generated clean comic/cel-ink Breach-Boss three-view runtime sheet",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1225,7 +1225,7 @@
     },
     "comic-boss": {
       "type": "sprite",
-      "filter": "nearest",
+      "filter": "linear",
       "views": {
         "front": {
           "path": "games/scourge-survivors/enemies/scourge-comic/breach-boss/front.webp",
@@ -1251,10 +1251,10 @@
       },
       "license": {
         "tool": "gpt-image-2",
-        "plan": "Codex built-in image_gen comic asset pass",
-        "date": "2026-06-17",
-        "kind": "runtime comic-style Scourge Survivors exploratory asset",
-        "scope": "Scourge Survivors runtime opt-in comic pack"
+        "plan": "Codex built-in image_gen; Sharp flood-key/crop; lossless WebP",
+        "date": "2026-07-17",
+        "kind": "AI-generated clean comic/cel-ink Breach-Boss three-view runtime sheet",
+        "scope": "Scourge Survivors runtime comic pack"
       }
     },
     "comic-weapon-pistol": {

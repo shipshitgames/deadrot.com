@@ -19,7 +19,7 @@ bun packages/assetgen/src/cli.ts atlas \
 Frame layout:
 
 - Non-boss frames: `128x128` lossless WebP with alpha.
-- Boss frames: `128x180` lossless WebP with alpha to preserve the padded boss crop.
+- Boss frames: `128x180` lossless WebP with alpha to preserve the padded low-wide boss crop.
 - Every action has `front`, `side`, and `back` view folders.
 - Every view has six frames: `frame-00.webp` through `frame-05.webp`.
 - Original generated sheets were moved out of the runtime package and archived
@@ -30,7 +30,7 @@ Readability lanes:
 - `host-grunt`: blood-red melee brute, black sinew, bone sword blades, small toxic green core. Heavy grounded lurch, blade-weight drag, big shoulder sway.
 - `spitter-host`: sickly chartreuse / acid yellow-green sacs and throat glow, ochre infected flesh, darker limbs. Twitchy ranged scuttle, elastic sac swelling, recoil after spit.
 - `winged-host`: bruised violet / purple wing membranes, red-black body, bone tips, small toxic green organs. Lightweight hover bob, fast wing-beat arcs, diving snap.
-- `breach-boss`: deep crimson-black boss mass, large bone skull plates, bright toxic green cores, orange hell-rim accents. Massive slow inertia, tendril lag, heavy torso compression.
+- `breach-boss`: production comic/cel-ink breach-engine silhouette with a bone-caged toxic heart, planted anchor limbs, barrage vents, black chitin, and wet crimson tissue. Its current action slots repeat the static production pose so runtime animation cannot fall back to the obsolete humanoid boss while authored action sheets are pending.
 
 Prompt history:
 

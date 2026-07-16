@@ -5,6 +5,20 @@
 > the current house style; new work follows the comic-ink lock in
 > `apps/lore/content/Universe/Style-Bible.md`.
 
+## 2026-07-17 - Breach-Boss production comic runtime
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Faction / role: Scourge Breach-Boss, region-holding breach engine and artillery altar.
+- Tool: `gpt-image-2` via Codex built-in `image_gen`, then Sharp flood-key/crop and lossless WebP encoding.
+- Plan: Codex built-in image generation.
+- Kind: clean comic/cel-ink three-view billboard sprite sheet.
+- Source output: `~/.codex/generated_images/019f6d37-6091-7b10-bee9-e73808d06dd9/exec-e67e84c7-331f-4797-bd72-98eca1efd933.png`.
+- Preserved source: `packages/assets/sources/generated/2026-07-17/scourge-survivors/enemies/breach-boss-comic-turnaround-source.png` and keyed front/side/back cutouts.
+- Final assets: `enemies/scourge/breach-boss/{front,side,back}.webp`, the matching `enemies/scourge-comic` views, shared entity preview, split action slots, and the patched default runtime atlas.
+- Post-processing: removed only border-connected green screen pixels, preserved the enclosed toxic-green organs, trimmed and padded each view to `128x180`, and encoded lossless alpha WebP. Current action slots intentionally repeat the static production pose until authored action sheets are available.
+- Notes: Replaces the obsolete tall melee-brute boss with a low-wide, planted breach engine whose bone-caged toxic heart and barrage organs remain readable under the existing hit flash, boss scale, and death FX paths.
+
 ## 2026-06-24 - edge-quality rematte and weapon sheet padding
 
 - Status: promoted into runtime.

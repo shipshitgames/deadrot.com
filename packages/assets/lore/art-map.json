@@ -66,10 +66,10 @@
             "path": "games/scourge-survivors/enemies/scourge-comic/breach-boss/back.webp",
             "license": {
               "tool": "gpt-image-2",
-              "plan": "Codex built-in image_gen comic asset pass",
-              "date": "2026-06-17",
-              "kind": "runtime comic-style Scourge Survivors exploratory asset",
-              "scope": "Scourge Survivors runtime opt-in comic pack"
+              "plan": "Codex built-in image_gen; Sharp flood-key/crop; lossless WebP",
+              "date": "2026-07-17",
+              "kind": "AI-generated clean comic/cel-ink Breach-Boss three-view runtime sheet",
+              "scope": "Scourge Survivors runtime comic pack"
             },
             "exists": true,
             "generated": true
@@ -82,10 +82,10 @@
             "path": "games/scourge-survivors/enemies/scourge-comic/breach-boss/front.webp",
             "license": {
               "tool": "gpt-image-2",
-              "plan": "Codex built-in image_gen comic asset pass",
-              "date": "2026-06-17",
-              "kind": "runtime comic-style Scourge Survivors exploratory asset",
-              "scope": "Scourge Survivors runtime opt-in comic pack"
+              "plan": "Codex built-in image_gen; Sharp flood-key/crop; lossless WebP",
+              "date": "2026-07-17",
+              "kind": "AI-generated clean comic/cel-ink Breach-Boss three-view runtime sheet",
+              "scope": "Scourge Survivors runtime comic pack"
             },
             "exists": true,
             "generated": true
@@ -98,10 +98,10 @@
             "path": "games/scourge-survivors/enemies/scourge-comic/breach-boss/side.webp",
             "license": {
               "tool": "gpt-image-2",
-              "plan": "Codex built-in image_gen comic asset pass",
-              "date": "2026-06-17",
-              "kind": "runtime comic-style Scourge Survivors exploratory asset",
-              "scope": "Scourge Survivors runtime opt-in comic pack"
+              "plan": "Codex built-in image_gen; Sharp flood-key/crop; lossless WebP",
+              "date": "2026-07-17",
+              "kind": "AI-generated clean comic/cel-ink Breach-Boss three-view runtime sheet",
+              "scope": "Scourge Survivors runtime comic pack"
             },
             "exists": true,
             "generated": true
@@ -114,9 +114,9 @@
             "path": "games/scourge-survivors/enemies/scourge/breach-boss/back.webp",
             "license": {
               "tool": "gpt-image-2",
-              "plan": "built-in image_gen",
-              "date": "2026-06-05",
-              "kind": "AI generated 2D Scourge boss sprite sheet",
+              "plan": "Codex built-in image_gen; Sharp flood-key/crop; lossless WebP",
+              "date": "2026-07-17",
+              "kind": "AI-generated clean comic/cel-ink Breach-Boss three-view runtime sheet",
               "scope": "Scourge Survivors runtime"
             },
             "exists": true,
@@ -130,9 +130,9 @@
             "path": "games/scourge-survivors/enemies/scourge/breach-boss/front.webp",
             "license": {
               "tool": "gpt-image-2",
-              "plan": "built-in image_gen",
-              "date": "2026-06-05",
-              "kind": "AI generated 2D Scourge boss sprite sheet",
+              "plan": "Codex built-in image_gen; Sharp flood-key/crop; lossless WebP",
+              "date": "2026-07-17",
+              "kind": "AI-generated clean comic/cel-ink Breach-Boss three-view runtime sheet",
               "scope": "Scourge Survivors runtime"
             },
             "exists": true,
@@ -146,9 +146,9 @@
             "path": "games/scourge-survivors/enemies/scourge/breach-boss/side.webp",
             "license": {
               "tool": "gpt-image-2",
-              "plan": "built-in image_gen",
-              "date": "2026-06-05",
-              "kind": "AI generated 2D Scourge boss sprite sheet",
+              "plan": "Codex built-in image_gen; Sharp flood-key/crop; lossless WebP",
+              "date": "2026-07-17",
+              "kind": "AI-generated clean comic/cel-ink Breach-Boss three-view runtime sheet",
               "scope": "Scourge Survivors runtime"
             },
             "exists": true,
@@ -196,11 +196,15 @@
         ]
       },
       "sources": {
-        "count": 7,
+        "count": 11,
         "paths": [
           "packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/breach-boss-breach-engine-master-turnaround.png",
           "packages/assets/sources/generated/2026-06-17/lore/wallpapers/combat-v03/pact-boss-standoff-wallpaper-v03.png",
           "packages/assets/sources/generated/2026-06-17/lore/wallpapers/combat-v05/gritty-warzone-matte-boss-wallpaper-v05.png",
+          "packages/assets/sources/generated/2026-07-17/scourge-survivors/enemies/breach-boss-comic-back-cutout.png",
+          "packages/assets/sources/generated/2026-07-17/scourge-survivors/enemies/breach-boss-comic-front-cutout.png",
+          "packages/assets/sources/generated/2026-07-17/scourge-survivors/enemies/breach-boss-comic-side-cutout.png",
+          "packages/assets/sources/generated/2026-07-17/scourge-survivors/enemies/breach-boss-comic-turnaround-source.png",
           "packages/assets/sources/generated/lore-art-style-bakeoff/2026-06-04/d2-boss-breachheart.png",
           "packages/assets/sources/generated/scourge-survivors/animation-sheets/2026-06-11/breach-boss-barrage-sheet.png",
           "packages/assets/sources/generated/scourge-survivors/animation-sheets/2026-06-11/breach-boss-death-sheet.png",
@@ -212,7 +216,7 @@
         "good": "Good",
         "locked": "Yes",
         "source": "`packages/assets/games/scourge-survivors/enemies/scourge/breach-boss/{front,side,back}.webp`",
-        "nextAction": "Wire animation frames into renderer."
+        "nextAction": "Author lurch, barrage, and death sheets; retain the static fallback until promoted."
       },
       "status": "locked"
     },

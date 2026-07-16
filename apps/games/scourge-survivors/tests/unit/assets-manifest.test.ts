@@ -3,6 +3,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import animationManifest from "@shipshitgames/assets/games/scourge-survivors/animations/scourge/animation-pack.json";
+import comicAnimationManifest from "@shipshitgames/assets/games/scourge-survivors/animations/scourge-comic/animation-pack.json";
 import manifest from "@shipshitgames/assets/games/scourge-survivors/assets.json";
 import { describe, expect, it } from "vitest";
 import { ASSET_CATALOG } from "../../src/assets/catalog";
@@ -159,8 +160,8 @@ describe("asset manifest", () => {
     }
   });
 
-  it("keeps promoted enemy sprites low-resolution and nearest-filtered for pixel art", () => {
-    const enemySpriteIds = ["enemy-melee", "enemy-ranged", "enemy-flying", "enemy-hound", "boss"] as const;
+  it("keeps legacy rank-and-file sprites low-resolution and nearest-filtered", () => {
+    const enemySpriteIds = ["enemy-melee", "enemy-ranged", "enemy-flying", "enemy-hound"] as const;
 
     for (const id of enemySpriteIds) {
       const entry = manifest.sprites[id];
@@ -168,7 +169,40 @@ describe("asset manifest", () => {
 
       for (const view of Object.values(entry.views)) {
         expect(view.dimensions[0], `${id} width`).toBeLessThanOrEqual(id === "enemy-hound" ? 256 : 128);
-        expect(view.dimensions[1], `${id} height`).toBeLessThanOrEqual(id === "boss" ? 180 : 128);
+        expect(view.dimensions[1], `${id} height`).toBeLessThanOrEqual(128);
+      }
+    }
+  });
+
+  it("keeps the Breach-Boss on its distinct low-wide production silhouette", () => {
+    const boss = manifest.sprites.boss;
+    expect(boss.filter).toBe("linear");
+    expect(boss.license.kind).toMatch(/comic\/cel-ink/);
+
+    for (const [view, entry] of Object.entries(boss.views)) {
+      expect(entry.dimensions, `${view} padded runtime plate`).toEqual([128, 180]);
+      expect(entry.scale, `${view} low-wide world scale`).toEqual([3.3, 3.5]);
+    }
+
+    for (const [pack, spriteId] of [
+      [animationManifest, "boss"],
+      [comicAnimationManifest, "comic-boss"],
+    ] as const) {
+      const entity = pack.entities["breach-boss"];
+      expect(entity.status).toBe("placeholder-static");
+      expect(entity.placeholder).toBe(true);
+
+      for (const [view, entry] of Object.entries(manifest.sprites[spriteId].views)) {
+        const staticBytes = readFileSync(join(assetsRoot, entry.path));
+        for (const action of Object.values(entity.actions)) {
+          for (let frame = 0; frame < pack.framesPerAction; frame += 1) {
+            const frameId = String(frame).padStart(2, "0");
+            const framePath = `games/scourge-survivors/${action.pathTemplate
+              .replace("{view}", view)
+              .replace("{frame}", frameId)}`;
+            expect(readFileSync(join(assetsRoot, framePath)), framePath).toEqual(staticBytes);
+          }
+        }
       }
     }
   });
@@ -186,7 +220,7 @@ describe("asset manifest", () => {
       hash.update("\0");
     }
 
-    expect(hash.digest("hex")).toBe("fc4e03208cc242061cd550e229baf8f83b9c8ec1bce9d9d55e449f74a40db75d");
+    expect(hash.digest("hex")).toBe("dd4e0385ed41f42e0dda65cced7170e99476dca5289e2fb9495e96d5a65c12f7");
   });
 
   it("defines weapon sprite metadata needed for first-person runtime placement", () => {

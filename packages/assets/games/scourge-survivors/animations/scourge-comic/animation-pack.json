@@ -74,9 +74,12 @@
       }
     },
     "breach-boss": {
+      "status": "placeholder-static",
+      "placeholder": true,
+      "placeholderReason": "Each action/view repeats the production comic/cel-ink static pose so the boss remains silhouette-consistent while authored action sheets are pending.",
       "frameDimensions": [128, 180],
-      "colorLane": "comic breach boss, oversized bone plates and toxic core read",
-      "physicsLane": "lurch, barrage, and heavy death cycles",
+      "colorLane": "low-wide comic breach engine with bone rib cage, black chitin, wet crimson tissue, and toxic-green breach heart",
+      "physicsLane": "static production pose repeated across lurch, barrage, and death slots pending authored comic action sheets",
       "actions": {
         "lurch": {
           "loop": true,

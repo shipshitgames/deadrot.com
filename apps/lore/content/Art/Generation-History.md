@@ -36,6 +36,24 @@ reviewed outside runtime paths under `packages/assets/_archive/`.
 - Decision:
 ```
 
+## 2026-07-17 - breach-boss-comic-runtime - v01
+
+- Status: promoted into the Scourge Survivors runtime pack.
+- Game: [[Scourge-Survivors]].
+- Faction: [[Scourge]].
+- Character/role: Breach-Boss, region-holding breach engine / artillery altar.
+- View: front / true side / back FPS billboard turnaround.
+- Tool: built-in `image_gen` / `gpt-image-2`.
+- Plan: Codex built-in.
+- Kind: AI-generated clean comic/cel-ink three-view runtime sprite sheet.
+- Source output: `~/.codex/generated_images/019f6d37-6091-7b10-bee9-e73808d06dd9/exec-e67e84c7-331f-4797-bd72-98eca1efd933.png`.
+- Workspace source: `packages/assets/sources/generated/2026-07-17/scourge-survivors/enemies/breach-boss-comic-turnaround-source.png` plus the three keyed cutouts beside it.
+- Final asset: `packages/assets/games/scourge-survivors/enemies/scourge/breach-boss/{front,side,back}.webp`, mirrored into the comic lane, the shared `entities/breach-boss/scourge-survivors.webp` variant, and the boss animation slots.
+- Prompt source: [[Design/Bestiary/Breach-Boss-DESIGN]], [[Bestiary/Bosses/Breach-Boss]], [[Universe/Style-Bible]], [[DESIGN]], and `CANON.md`.
+- Post-processing: split three equal source panels; flood-keyed only border-connected green pixels so internal toxic organs remain opaque; trimmed and padded each view into a `128x180` lossless WebP plate; patched the existing runtime atlas cells without changing authored frame identities.
+- Notes: Replaces the tall humanoid melee-boss silhouette with the locked low-wide breach engine: planted anchor limbs, bone-caged toxic heart, barrage vents, black chitin, wet crimson tissue, and rusted machine grafts. The current action slots repeat the production static pose to prevent a style/silhouette morph until authored comic action sheets land.
+- Decision: promote as the production static runtime read; keep true lurch/barrage/death animation as a follow-up art pass.
+
 ## 2026-06-17 - comic-book-master-atlas - v01
 
 - Status: exploratory masters attached to lore.

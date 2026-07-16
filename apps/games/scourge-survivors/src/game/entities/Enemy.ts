@@ -35,6 +35,11 @@ import {
 import { chasePlayerStrategy, redirectBlockedRangedRetreat } from "./ChasePlayerStrategy";
 
 const HEALTHBAR_WIDTH = 0.95;
+const BOSS_HIT_RADIUS_TO_SPRITE_WIDTH = 0.3;
+// Keep oversized boss variants navigable in crowded arenas; the clamp is still
+// wider than the legacy boss radius while preventing Reaper-scale body blocking.
+const BOSS_HIT_RADIUS_MAX = 3;
+const BOSS_SHIELD_RADIUS = 1.5;
 type EnemySpriteKind = "melee" | "ranged" | "flying" | "hound" | "boss";
 type EnemySpriteView = DirectionalSpriteView;
 
@@ -229,7 +234,7 @@ export class Enemy extends Agent {
 
     // Boss shield bubble (hidden unless the boss raises it).
     this.shieldMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(1.5, 20, 16),
+      new THREE.SphereGeometry(BOSS_SHIELD_RADIUS, 20, 16),
       new THREE.MeshBasicMaterial({
         color: 0x39c7ff,
         transparent: true,
@@ -319,7 +324,11 @@ export class Enemy extends Agent {
 
     const scale = cfg.scale ?? 1;
     this.group.scale.setScalar(scale);
-    this.radius = ENEMY_RADIUS * (this.isBoss ? scale * 0.8 : this.flying ? scale * 0.72 : 1);
+    this.radius = this.isBoss
+      ? Math.min(ENEMY_SPRITE_SCALES.boss.front[0] * scale * BOSS_HIT_RADIUS_TO_SPRITE_WIDTH, BOSS_HIT_RADIUS_MAX)
+      : ENEMY_RADIUS * (this.flying ? scale * 0.72 : 1);
+    const bossShieldScale = ENEMY_SPRITE_SCALES.boss.front[0] / (BOSS_SHIELD_RADIUS * 2);
+    this.shieldMesh.scale.set(this.isBoss ? bossShieldScale : 1, 1, this.isBoss ? bossShieldScale : 1);
 
     this.applyStyle(cfg.color ?? 0xff5a3c);
     this.applySprite();
