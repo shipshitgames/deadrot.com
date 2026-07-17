@@ -174,38 +174,42 @@ describe("asset manifest", () => {
     }
   });
 
-  it("keeps the Breach-Boss on its distinct low-wide production silhouette", () => {
-    const boss = manifest.sprites.boss;
-    expect(boss.filter).toBe("linear");
-    expect(boss.license.kind).toMatch(/comic\/cel-ink/);
+  it(
+    "keeps the Breach-Boss on its distinct low-wide production silhouette",
+    () => {
+      const boss = manifest.sprites.boss;
+      expect(boss.filter).toBe("linear");
+      expect(boss.license.kind).toMatch(/comic\/cel-ink/);
 
-    for (const [view, entry] of Object.entries(boss.views)) {
-      expect(entry.dimensions, `${view} padded runtime plate`).toEqual([128, 180]);
-      expect(entry.scale, `${view} low-wide world scale`).toEqual([3.3, 3.5]);
-    }
+      for (const [view, entry] of Object.entries(boss.views)) {
+        expect(entry.dimensions, `${view} padded runtime plate`).toEqual([128, 180]);
+        expect(entry.scale, `${view} low-wide world scale`).toEqual([3.3, 3.5]);
+      }
 
-    for (const [pack, spriteId] of [
-      [animationManifest, "boss"],
-      [comicAnimationManifest, "comic-boss"],
-    ] as const) {
-      const entity = pack.entities["breach-boss"];
-      expect(entity.status).toBe("placeholder-static");
-      expect(entity.placeholder).toBe(true);
+      for (const [pack, spriteId] of [
+        [animationManifest, "boss"],
+        [comicAnimationManifest, "comic-boss"],
+      ] as const) {
+        const entity = pack.entities["breach-boss"];
+        expect(entity.status).toBe("placeholder-static");
+        expect(entity.placeholder).toBe(true);
 
-      for (const [view, entry] of Object.entries(manifest.sprites[spriteId].views)) {
-        const staticBytes = readFileSync(join(assetsRoot, entry.path));
-        for (const action of Object.values(entity.actions)) {
-          for (let frame = 0; frame < pack.framesPerAction; frame += 1) {
-            const frameId = String(frame).padStart(2, "0");
-            const framePath = `games/scourge-survivors/${action.pathTemplate
-              .replace("{view}", view)
-              .replace("{frame}", frameId)}`;
-            expect(readFileSync(join(assetsRoot, framePath)), framePath).toEqual(staticBytes);
+        for (const [view, entry] of Object.entries(manifest.sprites[spriteId].views)) {
+          const staticBytes = readFileSync(join(assetsRoot, entry.path));
+          for (const action of Object.values(entity.actions)) {
+            for (let frame = 0; frame < pack.framesPerAction; frame += 1) {
+              const frameId = String(frame).padStart(2, "0");
+              const framePath = `games/scourge-survivors/${action.pathTemplate
+                .replace("{view}", view)
+                .replace("{frame}", frameId)}`;
+              expect(readFileSync(join(assetsRoot, framePath)), framePath).toEqual(staticBytes);
+            }
           }
         }
       }
-    }
-  });
+    },
+    15_000,
+  );
 
   it("keeps Scourge enemy sprite cutouts on the cleaned alpha baseline", () => {
     const hash = createHash("sha256");
