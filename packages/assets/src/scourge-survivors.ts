@@ -554,9 +554,9 @@ export async function scourgeSurvivorsAnimationFrameUrl(
   return (await scourgeSurvivorsAnimationFrameSource(entity, action, view, frame)).url;
 }
 
-export const SCOURGE_SURVIVORS_BONUS_ICON_IDS = Object.keys(
-  manifestData.runtime.bonusIcons,
-) as Array<keyof typeof manifestData.runtime.bonusIcons>;
+export const SCOURGE_SURVIVORS_BONUS_ICON_IDS = Object.keys(manifestData.runtime.bonusIcons) as Array<
+  keyof typeof manifestData.runtime.bonusIcons
+>;
 
 export type ScourgeSurvivorsBonusIconId = (typeof SCOURGE_SURVIVORS_BONUS_ICON_IDS)[number];
 

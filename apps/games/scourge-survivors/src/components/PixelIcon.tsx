@@ -1,10 +1,5 @@
 import type { CSSProperties } from "react";
-import {
-  BONUS_ICON_URLS,
-  type BonusIconId,
-  PIXEL_ICON_URLS,
-  type PixelIconId,
-} from "../assets/ui/pixelIcons";
+import { BONUS_ICON_URLS, type BonusIconId, PIXEL_ICON_URLS, type PixelIconId } from "../assets/ui/pixelIcons";
 
 interface SharedIconProps {
   label?: string;
