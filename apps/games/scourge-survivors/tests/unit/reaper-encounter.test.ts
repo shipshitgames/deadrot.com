@@ -25,7 +25,7 @@ import {
 } from "../../src/game/constants";
 import type { GameContext } from "../../src/game/context";
 import { getMap } from "../../src/game/data/maps";
-import { reaperForMap } from "../../src/game/data/reaper";
+import { reaperForLoreId } from "../../src/game/data/reaper";
 import { SURVIVOR_RUN_CHAPTERS, SURVIVOR_RUN_GOAL_TIME } from "../../src/game/data/survivors";
 import type { Enemy } from "../../src/game/entities/Enemy";
 import { PveDirectorSystem } from "../../src/game/modes/PveDirectorSystem";
@@ -140,6 +140,7 @@ function survivorsHarness(shopTiers: Record<string, number> = {}) {
       hitstop: () => calls.push("fx:hitstop"),
       spawnEnemyDeath: () => calls.push("fx:spawnEnemyDeath"),
     },
+    player: { walkableSurfaceHeight: () => 0 },
     gameOver: { gameOver: (outcome: "win" | "dead") => calls.push(`gameover:${outcome}`) },
     projectiles: { clearProjectiles: () => calls.push("projectiles:clear") },
     arena: {
@@ -192,6 +193,7 @@ function directorHarness() {
   };
   const sys = {
     survivors,
+    player: { walkableSurfaceHeight: () => 0 },
     projectiles: { removeProjectilesFrom: () => calls.push("projectiles:removeFrom") },
     fx: {
       registerKill: () => 1,
@@ -236,7 +238,7 @@ beforeEach(() => {
 describe("reaper arrival (the toll, #278)", () => {
   it("spawns the lore-named reaper exactly once when the clock crosses the goal", () => {
     const { calls, spawns, ctx, pve, system } = survivorsHarness();
-    const identity = reaperForMap("ashgate");
+    const identity = reaperForLoreId("ashgate");
     system.reaperWarned = true; // warning beat is covered separately
     system.survClock = SURVIVOR_RUN_GOAL_TIME - 0.5;
 
@@ -258,6 +260,7 @@ describe("reaper arrival (the toll, #278)", () => {
       attackInterval: REAPER_ATTACK_INTERVAL,
       attackRange: REAPER_ATTACK_RANGE,
       projectileDamage: REAPER_PROJECTILE_DAMAGE,
+      groundHeight: 0,
     });
 
     // arrival presentation: lore name on the banner, stakes toast, layered sfx

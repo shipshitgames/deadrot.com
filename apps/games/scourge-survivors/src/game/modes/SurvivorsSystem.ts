@@ -20,7 +20,13 @@ import type { GameContext } from "../context";
 import { eliteCountForWave, eliteXpValue, planSurge, rollEliteAffix, takeSplitAllowance } from "../data/eliteWaves";
 import { pickWeightedEnemyArchetype, SCOURGE_THREAT_TIERS } from "../data/enemies";
 import { DEFAULT_MAP_ID, getMap, normalizeMapId } from "../data/maps";
-import { canResistReaper, reaperForMap, reaperTouchDamage, reaperWarningDue, shouldSpawnReaper } from "../data/reaper";
+import {
+  canResistReaper,
+  reaperForLoreId,
+  reaperTouchDamage,
+  reaperWarningDue,
+  shouldSpawnReaper,
+} from "../data/reaper";
 import {
   AMP_PER_TIER,
   availableEvolutionChoice,
@@ -522,9 +528,9 @@ export class SurvivorsSystem {
   /** The toll: the named breach reaper arrives at the goal time and ends the run
    *  one way or the other. Identity (name/host/tint) comes from the lore layer. */
   private spawnReaper() {
-    const identity = reaperForMap(this.ctx.currentMap?.id ?? DEFAULT_MAP_ID);
+    const identity = reaperForLoreId(this.ctx.currentMap?.loreId ?? getMap(DEFAULT_MAP_ID).loreId);
     const enemy = this.sys.pve.getFreeEnemy();
-    const { x, z } = this.swarmSpawnPoint();
+    const { x, y, z } = this.swarmSpawnPoint();
     enemy.spawnAt(x, z, {
       archetype: "tank",
       isBoss: true,
@@ -539,6 +545,7 @@ export class SurvivorsSystem {
       // The boss ability cycle barrages for ANY isBoss enemy regardless of `ranged`,
       // so its projectiles stay modest — the TOUCH is the killer, never a chip shot.
       projectileDamage: REAPER_PROJECTILE_DAMAGE,
+      groundHeight: y,
     });
     this.reaper = enemy;
     this.sys.pve.bossActive = true;
@@ -552,7 +559,7 @@ export class SurvivorsSystem {
     audio.sfx("boss"); // announce() only auto-plays this for "BOSS" banners; lore names aren't
     this.sys.fx.addShake(0.5);
     this.sys.fx.hitstop(0.06);
-    this.sys.fx.spawnEnemyDeath(new THREE.Vector3(x, 0, z), { scale: REAPER_SCALE, color: identity.tint });
+    this.sys.fx.spawnEnemyDeath(new THREE.Vector3(x, y, z), { scale: REAPER_SCALE, color: identity.tint });
   }
 
   /** Reaper checks key off the director-held reference (elites also carry isBoss);
@@ -562,14 +569,14 @@ export class SurvivorsSystem {
   }
 
   /** A point on a ring around the player, just out of immediate sight, clamped in-bounds. */
-  private swarmSpawnPoint(): { x: number; z: number } {
+  private swarmSpawnPoint(): { x: number; y: number; z: number } {
     const a = Math.random() * Math.PI * 2;
     const r = 26 + Math.random() * 10;
     let x = this.ctx.body.position.x + Math.cos(a) * r;
     let z = this.ctx.body.position.z + Math.sin(a) * r;
     x = Math.max(this.ctx.bounds.minX + 2, Math.min(this.ctx.bounds.maxX - 2, x));
     z = Math.max(this.ctx.bounds.minZ + 2, Math.min(this.ctx.bounds.maxZ - 2, z));
-    return { x, z };
+    return { x, y: this.sys.player.walkableSurfaceHeight(x, z), z };
   }
 
   /**
@@ -615,7 +622,7 @@ export class SurvivorsSystem {
 
   spawnSwarmEnemy(elite: boolean) {
     const enemy = this.sys.pve.getFreeEnemy();
-    const { x, z } = this.swarmSpawnPoint();
+    const { x, y, z } = this.swarmSpawnPoint();
 
     if (elite) {
       const chapter = this.currentChapter();
@@ -629,13 +636,14 @@ export class SurvivorsSystem {
         scale: 2.2,
         attackDamage: 16,
         projectileDamage: 7,
+        groundHeight: y,
       });
       this.enemyXp.set(enemy, SURV_XP_ELITE_VALUE);
       return;
     }
 
     const arch = this.rollArchetype();
-    enemy.spawnAt(x, z, this.swarmSpawnOptions(arch));
+    enemy.spawnAt(x, z, { ...this.swarmSpawnOptions(arch), groundHeight: y });
     this.enemyXp.set(enemy, arch.xp);
   }
 
@@ -679,7 +687,7 @@ export class SurvivorsSystem {
   /** Promoted spawn for an ELITE WAVE: bigger, tinted, affix-modified, triple gem value. */
   spawnAffixedElite(affix: EliteAffixDef) {
     const enemy = this.sys.pve.getFreeEnemy();
-    const { x, z } = this.swarmSpawnPoint();
+    const { x, y, z } = this.swarmSpawnPoint();
     const chapter = this.currentChapter();
     const timeScale = (1 + this.survClock * SURV_HP_RAMP_PER_SEC) * chapter.hpMul;
     const arch = this.rollArchetype();
@@ -687,14 +695,17 @@ export class SurvivorsSystem {
     enemy.spawnAt(
       x,
       z,
-      this.swarmSpawnOptions(arch, {
-        hpMul: ELITE_HP_MUL,
-        speedMul: frenzied ? ELITE_FRENZY_SPEED_MUL : 1,
-        dmgMul: frenzied ? ELITE_FRENZY_DAMAGE_MUL : 1,
-        scaleMul: ELITE_SCALE_MUL,
-        affix: affix.id,
-        overshield: affix.id === "shielded" ? Math.round(ELITE_SHIELD_HP * timeScale) : 0,
-      }),
+      {
+        ...this.swarmSpawnOptions(arch, {
+          hpMul: ELITE_HP_MUL,
+          speedMul: frenzied ? ELITE_FRENZY_SPEED_MUL : 1,
+          dmgMul: frenzied ? ELITE_FRENZY_DAMAGE_MUL : 1,
+          scaleMul: ELITE_SCALE_MUL,
+          affix: affix.id,
+          overshield: affix.id === "shielded" ? Math.round(ELITE_SHIELD_HP * timeScale) : 0,
+        }),
+        groundHeight: y,
+      },
     );
     this.enemyXp.set(enemy, eliteXpValue(arch.xp));
   }

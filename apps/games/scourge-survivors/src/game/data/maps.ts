@@ -541,6 +541,214 @@ const GANTRY: ArenaMap = {
   ],
 };
 
+// ============================================================================
+// FOUNDRY WARDS — a selectable Survivors variant inside Ashgate's fabrication
+// yards. Two authored ground-level rooms are separated by a furnace bulkhead
+// with a wide traversal opening through the centre.
+//
+// Presentation deliberately reuses Ashgate's registered assets. The layout is
+// new runtime data, while loreId/front keep the arena joined to the canon place.
+// ============================================================================
+const FOUNDRY_WARDS: ArenaMap = {
+  id: "foundry-wards",
+  loreId: "ashgate",
+  front: "holdout",
+  name: "Foundry Wards",
+  subtitle: "Ashgate fabrication yards — furnace by furnace",
+  icon: "foundry",
+  accent: "#ff6a00",
+  biomeId: "foundry",
+  materials: ASHGATE.materials,
+  environment: ASHGATE.environment,
+  spawn: { x: -34, z: 0 },
+  obstacles: [],
+  rooms: [
+    {
+      id: "assembly-yard",
+      name: "Assembly Yard",
+      bounds: { kind: "rect", minX: -40, maxX: 0, minZ: -40, maxZ: 40 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        // The two bulkhead runs leave a 24m opening from z=-12..12.
+        { x: -1, z: -26, w: 2, h: 4, d: 28, mat: "wall" },
+        { x: -1, z: 26, w: 2, h: 4, d: 28, mat: "wall" },
+        { x: -26, z: 0, w: 10, h: 1.2, d: 2.4, mat: "wall" },
+        { x: -20, z: -18, w: 4, h: 3, d: 4, mat: "crate" },
+        { x: -18, z: 18, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+      ],
+    },
+    {
+      id: "furnace-yard",
+      name: "Furnace Yard",
+      bounds: { kind: "rect", minX: 0, maxX: 40, minZ: -40, maxZ: 40 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        { x: 26, z: 0, w: 10, h: 1.2, d: 2.4, mat: "wall" },
+        { x: 20, z: -16, w: 4, h: 3, d: 4, mat: "crate" },
+        { x: 18, z: 18, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: 29, z: 27, w: 3, h: 3, d: 3, mat: "crate" },
+      ],
+    },
+  ],
+  anchors: [
+    {
+      kind: "playerSpawn",
+      id: "assembly-spawn",
+      x: -34,
+      z: 0,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "assembly-yard",
+    },
+    {
+      kind: "breachSpawn",
+      id: "furnace-breach",
+      x: 34,
+      z: 0,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "furnace-yard",
+      laneId: "east",
+    },
+    {
+      kind: "breachSpawn",
+      id: "assembly-breach",
+      x: -34,
+      z: -28,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "assembly-yard",
+      laneId: "west",
+    },
+    {
+      kind: "objective",
+      id: "ward-furnace",
+      x: 30,
+      z: 8,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "furnace-yard",
+    },
+  ],
+};
+
+// ============================================================================
+// BREACH PRIMUS — the authored multi-level crossing at The Maw. Purgers enter
+// from the lower breach lip, climb the central ramp, then fight across a raised
+// span while the horde breaches from the far deck and both flanks.
+//
+// Like The Gantry demonstrator, this reuses The Maw's registered presentation;
+// unlike The Gantry, it is a shipped Survivors-selectable arena.
+// ============================================================================
+const BREACH_PRIMUS: ArenaMap = {
+  id: "breach-primus",
+  loreId: "maw",
+  front: "breach",
+  name: "Breach Primus",
+  subtitle: "Climb the throat-span while the Maw pours upward",
+  icon: "maw",
+  accent: "#6acf3c",
+  biomeId: "rot",
+  materials: MAW.materials,
+  environment: MAW.environment,
+  spawn: { x: 0, z: 32 },
+  obstacles: [],
+  levels: [{ id: "throat-span", y: 3, name: "Breach Primus Span" }],
+  rooms: [
+    {
+      id: "breach-lip",
+      name: "Breach Lip",
+      bounds: { kind: "rect", minX: -40, maxX: 40, minZ: 4, maxZ: 40 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        // Retaining walls leave the central 12m ramp mouth clear.
+        { x: -23, z: 4.75, w: 34, h: 3, d: 1.5, mat: "wall" },
+        { x: 23, z: 4.75, w: 34, h: 3, d: 1.5, mat: "wall" },
+        { x: -18, z: 22, w: 3, h: 3, d: 3, mat: "crate" },
+        { x: 18, z: 18, w: 3, h: 3, d: 3, mat: "crate" },
+        { x: 0, z: 25, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+      ],
+    },
+    {
+      id: "primus-span",
+      name: "Breach Primus Span",
+      bounds: { kind: "rect", minX: -40, maxX: 40, minZ: -40, maxZ: 4 },
+      levelId: "throat-span",
+      obstacles: [
+        { x: -20, z: -22, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: 20, z: -22, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: -11, z: -10, w: 9, h: 1.1, d: 2.4, mat: "wall" },
+        { x: 11, z: -10, w: 9, h: 1.1, d: 2.4, mat: "wall" },
+        { x: 0, z: -28, w: 4, h: 3, d: 4, mat: "crate" },
+      ],
+    },
+  ],
+  ramps: [
+    {
+      id: "primus-ramp",
+      kind: "ramp",
+      from: { x: 0, z: 10 },
+      to: { x: 0, z: 4 },
+      width: 6,
+      fromLevelId: GROUND_LEVEL_ID,
+      toLevelId: "throat-span",
+    },
+  ],
+  platforms: [
+    {
+      id: "throat-overlook",
+      x: 0,
+      z: -34,
+      w: 12,
+      d: 6,
+      y: 3.4,
+      thickness: 0.4,
+      levelId: "throat-span",
+    },
+  ],
+  anchors: [
+    {
+      kind: "playerSpawn",
+      id: "breach-lip-spawn",
+      x: 0,
+      z: 32,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "breach-lip",
+    },
+    {
+      kind: "breachSpawn",
+      id: "north-throat",
+      x: 10,
+      z: -36,
+      levelId: "throat-span",
+      roomId: "primus-span",
+      laneId: "north",
+    },
+    {
+      kind: "breachSpawn",
+      id: "east-throat",
+      x: 34,
+      z: -18,
+      levelId: "throat-span",
+      roomId: "primus-span",
+      laneId: "east",
+    },
+    {
+      kind: "breachSpawn",
+      id: "west-throat",
+      x: -34,
+      z: -18,
+      levelId: "throat-span",
+      roomId: "primus-span",
+      laneId: "west",
+    },
+    {
+      kind: "objective",
+      id: "primus-node",
+      x: 0,
+      z: -20,
+      levelId: "throat-span",
+      roomId: "primus-span",
+    },
+  ],
+};
+
 // ----------------------------------------------------------------------------
 
 /** Registry normalization entry point: attaches the normalized structural
@@ -563,6 +771,16 @@ export const MAPS: Record<string, NormalizedArenaMap> = {
 };
 
 /**
+ * Shipped Survivors-selectable maps. Campaign maps stay in MAPS so the
+ * canonical four-stage sequence remains a separate, closed contract.
+ */
+export const SURVIVOR_MAPS: Record<string, NormalizedArenaMap> = {
+  ...MAPS,
+  "foundry-wards": normalizeMap(FOUNDRY_WARDS),
+  "breach-primus": normalizeMap(BREACH_PRIMUS),
+};
+
+/**
  * Sandbox-only maps: dev/e2e-reachable demonstrators that are NOT part of the
  * campaign and NOT in MAPS (so CAMPAIGN_ORDER/MAPS invariants stay intact).
  * getMap falls through to here, so startSandbox("gantry") resolves a real,
@@ -579,16 +797,19 @@ export const SANDBOX_MAPS: Record<string, NormalizedArenaMap> = {
  */
 export const CAMPAIGN_ORDER: string[] = ["ashgate", "hollowlanes", "maw", "perdition"];
 
+/** Stable picker order: the canon campaign first, then optional breach arenas. */
+export const SURVIVOR_MAP_ORDER: string[] = [...CAMPAIGN_ORDER, "foundry-wards", "breach-primus"];
+
 /** Default arena for non-structured modes (Survivors / PvP preview / menu). */
 export const DEFAULT_MAP_ID = "ashgate";
 
 export function getMap(id: string): NormalizedArenaMap {
-  return MAPS[id] ?? SANDBOX_MAPS[id] ?? MAPS[DEFAULT_MAP_ID];
+  return SURVIVOR_MAPS[id] ?? SANDBOX_MAPS[id] ?? MAPS[DEFAULT_MAP_ID];
 }
 
 /** Resolve a saved/requested map id to a real one, falling back to the default. */
 export function normalizeMapId(id?: string | null): string {
-  return id && MAPS[id] ? id : DEFAULT_MAP_ID;
+  return id && SURVIVOR_MAPS[id] ? id : DEFAULT_MAP_ID;
 }
 
 /**
@@ -609,15 +830,14 @@ export interface MapMeta {
   icon: PixelIconId;
   accent: string;
 }
-export const MAP_PICKER: MapMeta[] = CAMPAIGN_ORDER.map((id) => {
-  const m = MAPS[id];
+export const MAP_PICKER: MapMeta[] = SURVIVOR_MAP_ORDER.map((id) => {
+  const m = SURVIVOR_MAPS[id];
   return { id: m.id, name: m.name, subtitle: m.subtitle, icon: m.icon, accent: m.accent };
 });
 
 /** Picker list for the dev sandbox: the campaign maps plus the sandbox-only
- *  demonstrators (e.g. The Gantry). Used ONLY for the map-switch buttons —
- *  texture preload stays on MAP_PICKER so no `arena-gantry-*` assets are
- *  requested (sandbox maps reuse a campaign map's material ids). */
+ *  demonstrators (e.g. The Gantry). Used only for map-switch buttons; the
+ *  asset browser derives its registered ids from each map's presentation. */
 export const SANDBOX_MAP_PICKER: MapMeta[] = [
   ...MAP_PICKER,
   ...Object.values(SANDBOX_MAPS).map((m) => ({
