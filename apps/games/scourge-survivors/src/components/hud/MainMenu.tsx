@@ -367,7 +367,7 @@ function MapSelectPanel({
 
   return (
     <div className="pointer-events-auto w-[min(940px,92vw)]">
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         {MAP_PICKER.map((m) => {
           const active = m.id === selected.id;
           return (

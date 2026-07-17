@@ -31,6 +31,16 @@ import type { MapObstacle } from "../data/maps";
 import type { GameSystems } from "../systems";
 import { createBreachSpawnProvider } from "./breachSpawn";
 
+export function walkableSurfaceHeight(surfaceBoxes: readonly THREE.Box3[], x: number, z: number): number {
+  let height = 0;
+  for (const box of surfaceBoxes) {
+    if (x >= box.min.x && x <= box.max.x && z >= box.min.z && z <= box.max.z) {
+      height = Math.max(height, box.max.y);
+    }
+  }
+  return height;
+}
+
 export class PlayerSystem {
   constructor(
     private ctx: GameContext,
@@ -163,6 +173,13 @@ export class PlayerSystem {
     for (const box of this.ctx.obstacleBoxes) lift(box);
     for (const box of this.ctx.surfaceBoxes) lift(box);
     return groundY;
+  }
+
+  /** Highest authored walkable surface at an arbitrary arena point. Enemy
+   *  grounding uses this seam so raised rooms and ramp steps are playable by
+   *  the whole horde, without treating crates as navigable floors. */
+  walkableSurfaceHeight(x: number, z: number): number {
+    return walkableSurfaceHeight(this.ctx.surfaceBoxes, x, z);
   }
 
   private pushPlayerOutOfObstacles(pos: THREE.Vector3, radius: number) {

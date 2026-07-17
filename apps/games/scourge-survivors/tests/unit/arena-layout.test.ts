@@ -29,6 +29,8 @@ import {
   MAP_PICKER,
   MAPS,
   type MapObstacle,
+  SURVIVOR_MAP_ORDER,
+  SURVIVOR_MAPS,
 } from "../../src/game/data/maps";
 
 describe("v1 maps normalize through the v2 adapter at registry load", () => {
@@ -208,13 +210,14 @@ describe("registry backward compatibility", () => {
     expect(campaignSequence("unknown").map((m) => m.id)).toEqual(CAMPAIGN_ORDER);
   });
 
-  it("keeps MAP_PICKER shape in campaign order", () => {
+  it("keeps the campaign first in MAP_PICKER, followed by shipped Survivors variants", () => {
     expect(MAP_PICKER).toEqual(
-      CAMPAIGN_ORDER.map((id) => {
-        const map = MAPS[id];
+      SURVIVOR_MAP_ORDER.map((id) => {
+        const map = SURVIVOR_MAPS[id];
         return { id: map.id, name: map.name, subtitle: map.subtitle, icon: map.icon, accent: map.accent };
       }),
     );
+    expect(MAP_PICKER.slice(0, CAMPAIGN_ORDER.length).map((map) => map.id)).toEqual(CAMPAIGN_ORDER);
   });
 
   it("pins engine MapBounds ⇄ game-kit ArenaBounds mutual assignability", () => {

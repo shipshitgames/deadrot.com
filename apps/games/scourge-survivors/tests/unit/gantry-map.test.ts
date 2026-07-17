@@ -5,7 +5,15 @@
 
 import { anchorsOfKind, boundsToRect, flattenObstacles, GROUND_LEVEL_ID } from "@deadrot/game-kit/maps";
 import { describe, expect, it } from "vitest";
-import { CAMPAIGN_ORDER, getMap, MAP_PICKER, MAPS, SANDBOX_MAP_PICKER, SANDBOX_MAPS } from "../../src/game/data/maps";
+import {
+  CAMPAIGN_ORDER,
+  getMap,
+  MAP_PICKER,
+  MAPS,
+  SANDBOX_MAP_PICKER,
+  SANDBOX_MAPS,
+  SURVIVOR_MAP_ORDER,
+} from "../../src/game/data/maps";
 
 describe("The Gantry — sandbox registry isolation", () => {
   it("stays OUT of the campaign registry so MAPS/CAMPAIGN_ORDER invariants hold", () => {
@@ -72,8 +80,9 @@ describe("The Gantry — structural layout", () => {
 });
 
 describe("The Gantry — sandbox picker wiring", () => {
-  it("appears in the sandbox picker but not the campaign picker", () => {
-    expect(MAP_PICKER.map((m) => m.id)).toEqual(CAMPAIGN_ORDER); // campaign list untouched
+  it("appears in the sandbox picker but not the shipped Survivors picker", () => {
+    expect(MAP_PICKER.map((m) => m.id)).toEqual(SURVIVOR_MAP_ORDER);
+    expect(MAP_PICKER.slice(0, CAMPAIGN_ORDER.length).map((m) => m.id)).toEqual(CAMPAIGN_ORDER);
     expect(SANDBOX_MAP_PICKER).toHaveLength(MAP_PICKER.length + 1);
     expect(SANDBOX_MAP_PICKER.some((m) => m.id === "gantry")).toBe(true);
     expect(MAP_PICKER.some((m) => m.id === "gantry")).toBe(false);

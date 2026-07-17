@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type PickupKind, STARTING_WEAPON, WEAPON_ORDER, WEAPONS, type WeaponId } from "../game/constants";
-import { MAP_PICKER, SANDBOX_MAP_PICKER } from "../game/data/maps";
+import { type ArenaMaterialRole, SANDBOX_MAP_PICKER, SURVIVOR_MAPS } from "../game/data/maps";
 import {
   MAIN_WEAPON_TIER_LABEL,
   MAIN_WEAPON_VISUAL_TIERS,
@@ -34,7 +34,28 @@ type AudioAsset = { id: string; label: string; src: string; kind: "music" | "sfx
 type VisualAssetDescriptor = Omit<VisualAsset, "src"> & { urlId?: string };
 type AudioAssetDescriptor = Omit<AudioAsset, "src"> & { urlId?: string };
 
-const ARENA_TEXTURE_ROLES = ["floor", "wall", "block", "column", "decal", "prop"] as const;
+const ARENA_MATERIAL_ROLES: readonly ArenaMaterialRole[] = ["floor", "wall", "block", "column"];
+
+const ARENA_ASSET_DESCRIPTORS: VisualAssetDescriptor[] = (() => {
+  const byId = new Map<string, VisualAssetDescriptor>();
+  for (const map of Object.values(SURVIVOR_MAPS)) {
+    for (const role of ARENA_MATERIAL_ROLES) {
+      const id = map.materials[role];
+      if (!byId.has(id)) byId.set(id, { id, label: `${map.name} ${role}`, kind: "texture" });
+    }
+    for (const decal of map.environment.decals) {
+      if (!byId.has(decal.texture)) {
+        byId.set(decal.texture, { id: decal.texture, label: `${map.name} decal`, kind: "texture" });
+      }
+    }
+    for (const prop of map.environment.props) {
+      if (!byId.has(prop.texture)) {
+        byId.set(prop.texture, { id: prop.texture, label: `${map.name} prop`, kind: "texture" });
+      }
+    }
+  }
+  return [...byId.values()];
+})();
 
 const VISUAL_ASSET_DESCRIPTORS: VisualAssetDescriptor[] = [
   { id: "weapon-pistol", label: "Pistol", kind: "sprite" },
@@ -83,13 +104,7 @@ const VISUAL_ASSET_DESCRIPTORS: VisualAssetDescriptor[] = [
   { id: "arena-wall", label: "Arena wall", kind: "texture" },
   { id: "arena-column", label: "Arena column", kind: "texture" },
   { id: "arena-block", label: "Arena block", kind: "texture" },
-  ...MAP_PICKER.flatMap((map) =>
-    ARENA_TEXTURE_ROLES.map((role) => ({
-      id: `arena-${map.id}-${role}`,
-      label: `${map.name} ${role}`,
-      kind: "texture" as const,
-    })),
-  ),
+  ...ARENA_ASSET_DESCRIPTORS,
   { id: "ui-hero", urlId: "ui-menu-hero", label: "Menu hero", kind: "ui" },
   { id: "ui-breach", urlId: "ui-card-breach", label: "Breach card", kind: "ui" },
   { id: "ui-bastion", urlId: "ui-card-bastion", label: "Bastion card", kind: "ui" },
