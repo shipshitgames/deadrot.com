@@ -7,6 +7,7 @@ import manifest from "@shipshitgames/assets/games/scourge-survivors/assets.json"
 import { describe, expect, it } from "vitest";
 import { ASSET_CATALOG } from "../../src/assets/catalog";
 import { CAMPAIGN_ORDER, MAPS } from "../../src/game/data/maps";
+import { EVOLUTIONS, SHOP_UPGRADES, UPGRADES } from "../../src/game/data/survivors";
 
 type Manifest = typeof manifest;
 type SpriteEntry = Manifest["sprites"][keyof Manifest["sprites"]];
@@ -93,6 +94,10 @@ describe("asset manifest", () => {
       "menuHero",
       "menuTitle",
     ]);
+    const usedBonusIcons = [
+      ...new Set([...UPGRADES, ...SHOP_UPGRADES, ...Object.values(EVOLUTIONS)].map(({ icon }) => icon)),
+    ].sort();
+    expect(Object.keys(manifest.runtime.bonusIcons).sort()).toEqual(usedBonusIcons);
   });
 
   it("resolves runtime catalog aliases to real manifest entries", () => {
@@ -131,6 +136,15 @@ describe("asset manifest", () => {
       // Runtime UI raster ships as WebP (deadrot.com#118). The OG social card is
       // the only allowed non-WebP runtime raster and is not part of runtime.ui.
       expect(ASSET_CATALOG.runtimeUiUrl(id), `ui.${id} URL`).toMatch(/\.webp(\?|$)/);
+    }
+
+    for (const [id, ref] of Object.entries(manifest.runtime.bonusIcons)) {
+      const entry = manifest.ui[ref.asset as keyof typeof manifest.ui];
+      expect(entry, `bonusIcons.${id}`).toMatchObject({
+        role: "bonus-icon",
+        path: expect.stringMatching(/\.webp$/),
+        dimensions: [128, 128],
+      });
     }
   });
 

@@ -36,6 +36,35 @@ reviewed outside runtime paths under `packages/assets/_archive/`.
 - Decision:
 ```
 
+## 2026-07-17 - scourge-survivors-comic-bonus-icons - v01
+
+- Status: promoted into runtime.
+- Game: [[Scourge-Survivors]].
+- Faction: [[The-Pyre]].
+- Character/role: level-up bonuses, permanent shop upgrades, and the Cautery
+  Ring blade choice.
+- View: transparent 128x128 comic/cel UI glyphs.
+- Tool: `gpt-image-2` via Codex built-in `image_gen`.
+- Plan: Codex built-in.
+- Kind: ai-2d-comic-ui-icon-atlas.
+- Source output:
+  `packages/assets/_archive/raw-generator-cache/codex-generated-images/2026-07-17/raw/019f6da4-55d3-7d63-aa0b-e4d5c76d0385/exec-aedb1ce0-7a1f-460f-914b-ea126bf2ae4c.png`.
+- Workspace draft:
+  `packages/assets/sources/generated/2026-07-17/scourge-survivors/ui/bonus-icons-comic-atlas-source.png`.
+- Final asset: `packages/assets/games/scourge-survivors/ui/icons/comic/*.webp`.
+- Prompt source: [[CANON]], [[DESIGN]], [[Universe/Style-Bible]],
+  [[Games/Scourge-Survivors]], the locked comic HUD master, and the legacy
+  icon atlas as a semantic-reference-only ordering guide.
+- Post-processing: sampled green chroma removal and despill with Sharp; split
+  the exact 7x3 atlas; removed disconnected matte fragments; alpha-trimmed,
+  padded, and encoded each glyph as lossless WebP.
+- Notes: exact semantic order is orbit, bolt, nova, fire, battery, lightning,
+  trident, target, boot, heart, medic-cross, armor, shield, spikes, bloodtap,
+  bastion, dodge, grace, magnet, chart, gold. The runtime manifest owns this
+  list so the HUD draft and permanent shop cannot drift onto different art.
+- Decision: promoted as the canonical bonus icon family; retain the legacy
+  pixel atlas only for non-bonus shell controls.
+
 ## 2026-06-17 - comic-book-master-atlas - v01
 
 - Status: exploratory masters attached to lore.

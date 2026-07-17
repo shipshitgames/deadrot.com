@@ -5,6 +5,28 @@
 > the current house style; new work follows the comic-ink lock in
 > `apps/lore/content/Universe/Style-Bible.md`.
 
+## 2026-07-17 - comic bonus and blade icon set
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Role: run upgrades, permanent shop bonuses, and Pyre blade/auto-weapon
+  choices.
+- Tool: `gpt-image-2` through Codex built-in `image_gen`, followed by Sharp
+  chroma cleanup, atlas slicing, alpha trim, and lossless WebP encoding.
+- Plan: Codex built-in.
+- Source atlas:
+  `sources/generated/2026-07-17/scourge-survivors/ui/bonus-icons-comic-atlas-source.png`.
+- Preserved raw output:
+  `_archive/raw-generator-cache/codex-generated-images/2026-07-17/raw/019f6da4-55d3-7d63-aa0b-e4d5c76d0385/exec-aedb1ce0-7a1f-460f-914b-ea126bf2ae4c.png`.
+- Final assets: `ui/icons/comic/*.webp`.
+- Prompt sources: `apps/lore/content/CANON.md`, `apps/lore/content/DESIGN.md`,
+  `apps/lore/content/Universe/Style-Bible.md`,
+  `apps/lore/content/Games/Scourge-Survivors.md`, and the locked comic HUD
+  master.
+- Notes: the 21 semantic icons form one canonical set shared by the level-up
+  draft and permanent-upgrade shop. Existing world pickup sprites remain the
+  package-owned runtime set referenced by `runtime.pickups`.
+
 ## 2026-06-24 - edge-quality rematte and weapon sheet padding
 
 - Status: promoted into runtime.
