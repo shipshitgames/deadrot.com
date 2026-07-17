@@ -156,25 +156,59 @@ export const CONSTANTS = {
 
   // --- Juice ------------------------------------------------------------
   fx: {
-    // ScreenShake trauma kicks (game-kit units, 0..1; largest pending wins).
+    // Four-step shake language. Events map to a named tier so combat beats
+    // stay consistent as individual effects are tuned.
     shake: {
-      gruntKill: 0.04,
-      novaDetonate: 0.08,
-      mineDetonate: 0.1,
-      eliteSpawn: 0.12,
-      eliteKill: 0.25, // big explosions
-      playerHit: 0.3,
-      bossCharge: 0.4, // boss dash lunge + beam ignition
-      bossSpawn: 0.5,
-      bossPhase: 0.5, // boss phase transition
-      bossDeath: 0.6,
+      tiers: {
+        tap: 0.04,
+        pop: 0.1,
+        thump: 0.3,
+        slam: 0.6,
+      },
+      events: {
+        weaponFire: "tap",
+        gruntKill: "tap",
+        lowIntegrityPulse: "tap",
+        novaDetonate: "pop",
+        mineDetonate: "pop",
+        eliteSpawn: "pop",
+        eliteKill: "thump",
+        playerHit: "thump",
+        bossCharge: "thump",
+        bossSpawn: "slam",
+        bossPhase: "slam",
+        bossDeath: "slam",
+      },
     },
     shakeDecay: 6, // trauma decay per second (proportional; higher settles faster)
+    directionalShakeDecay: 13, // directional kick settles faster than trauma
     shakeMax: 1, // hard cap on any single kick
     shakeWorldScale: 2.2, // kit offsets -> ortho world units (view is 48 tall)
+    // Marquee impact slowdowns use real-time countdown but scale only the
+    // simulation delta. Camera shake and HUD remain responsive.
+    hitStop: {
+      eliteKill: { duration: 0.045, timeScale: 0.04 },
+      bossPhase: { duration: 0.07, timeScale: 0.03 },
+      bossDeath: { duration: 0.11, timeScale: 0.02 },
+      playerHit: { duration: 0.055, timeScale: 0.04 },
+    },
+    flash: {
+      levelUp: { durationMs: 180, opacity: 0.5 },
+      eliteKill: { durationMs: 90, opacity: 0.72 },
+      bossPhase: { durationMs: 110, opacity: 0.78 },
+      bossDeath: { durationMs: 150, opacity: 0.9 },
+      playerHit: { durationMs: 80, opacity: 0.6 },
+    },
+    flashSprite: {
+      eliteKill: { duration: 0.09, size: 7 },
+      bossDeath: { duration: 0.14, size: 13 },
+    },
+    hitFlashDuration: 0.09,
+    bossAttackFlashDuration: 0.12,
     // Kill-pop burst sizing (game-kit ParticleBursts; counts scale with the
     // user's global "particles" setting).
     burst: {
+      muzzle: { count: 3, speed: 4.5, life: 0.16, size: 0.14 },
       enemy: { count: 10, speed: 7, life: 0.45, size: 0.24 },
       elite: { count: 30, speed: 11, life: 0.7, size: 0.34 },
       bossHit: { count: 6, speed: 6, life: 0.3, size: 0.2, every: 0.12 },
@@ -184,15 +218,17 @@ export const CONSTANTS = {
     particlePerPop: 12,
     particleLife: 0.5,
     particleSpeed: 14,
+    gemSparkCount: 4,
     trailLife: 0.34, // thruster-trail quad lifetime
   },
 
   // --- Audio cue shaping (throttles + pitch ramps; cues are game-kit's) --
   audio: {
     laserMinInterval: 1 / 6, // cap weapon-fire cues at ~6 plays/sec
+    muzzleMinInterval: 1 / 12, // visual recoil stays responsive without per-projectile spam
     laserPitchLo: 0.92, // fire-cue pitch jitter range
     laserPitchHi: 1.12,
-    explosionMinInterval: 0.1, // chained elite kills don't stack booms
+    explosionMinInterval: 0.1, // coalesce chained elite kills into one marquee beat
     gemMinInterval: 0.07, // a vacuum pulls many gems/frame — space the dings
     gemStreakWindow: 1.5, // pickups inside this window keep raising the pitch
     gemPitchStep: 0.045, // pitch climb per streak step
