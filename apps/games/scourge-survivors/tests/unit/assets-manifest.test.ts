@@ -10,6 +10,20 @@ import { CAMPAIGN_ORDER, MAPS } from "../../src/game/data/maps";
 
 type Manifest = typeof manifest;
 type SpriteEntry = Manifest["sprites"][keyof Manifest["sprites"]];
+type WeaponSpriteEntry = {
+  path: string;
+  tierSheet?: {
+    columns: number;
+    tiers: string[];
+  };
+  weapon?: {
+    flashScale: number;
+    muzzles?: {
+      left: [number, number, number];
+      right: [number, number, number];
+    };
+  };
+};
 type AudioEntry = Manifest["audio"][keyof Manifest["audio"]];
 type UiEntry = Manifest["ui"][keyof Manifest["ui"]];
 
@@ -132,6 +146,36 @@ describe("asset manifest", () => {
       // the only allowed non-WebP runtime raster and is not part of runtime.ui.
       expect(ASSET_CATALOG.runtimeUiUrl(id), `ui.${id} URL`).toMatch(/\.webp(\?|$)/);
     }
+  });
+
+  it("covers every dual-compatible firearm with dedicated tier art and per-hand muzzle metadata", () => {
+    const dualCompatible = ["pistol", "smg", "shotgun", "sniper"] as const;
+
+    for (const id of dualCompatible) {
+      const ref = manifest.runtime.weapons[id];
+      expect(ref.dualSprite, `weapons.${id} dedicated dual sprite`).toBe(`weapon-${id}-dual`);
+      const dual = manifest.sprites[ref.dualSprite as keyof typeof manifest.sprites] as WeaponSpriteEntry;
+      const primary = manifest.sprites[ref.sprite as keyof typeof manifest.sprites] as WeaponSpriteEntry;
+      expect(dual.path, `${id} dual path`).toMatch(/\/dual\/.+-dual-tiers\.webp$/);
+      expect(dual.path, `${id} dedicated runtime path`).not.toBe(primary.path);
+      expect(dual.tierSheet, `${id} dual tier coverage`).toEqual(primary.tierSheet);
+      expect(dual.weapon?.muzzles?.left, `${id} left muzzle`).toHaveLength(3);
+      expect(dual.weapon?.muzzles?.right, `${id} right muzzle`).toHaveLength(3);
+      expect(dual.weapon?.muzzles?.left[0], `${id} left/right separation`).toBeLessThan(
+        dual.weapon?.muzzles?.right[0] ?? 0,
+      );
+      expect(dual.weapon?.flashScale, `${id} flash scale`).toBeGreaterThan(0);
+    }
+
+    expect(manifest.runtime.weapons.cannon).not.toHaveProperty("dualSprite");
+    expect(manifest.sprites).not.toHaveProperty("weapon-cannon-dual");
+  });
+
+  it("promotes purpose-built raw dual masters without a mirror-composite fallback", () => {
+    const generatorPath = join(assetsRoot, "scripts/generate-scourge-dual-weapons.mjs");
+    const generator = readFileSync(generatorPath, "utf8");
+    expect(generator).toContain("_archive/raw-generator-cache/codex-generated-images/2026-07-17");
+    expect(generator).not.toMatch(/compositeHand|flop|mirrorUv|weaponTierCellUvMirrored/);
   });
 
   it("keeps enemies and player avatars covered by front, side, and back views", () => {

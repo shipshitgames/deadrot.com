@@ -532,6 +532,10 @@ test.describe("dev sandbox smoke", () => {
       .evaluateAll((nodes) => nodes.map((node) => node.textContent ?? ""));
     expect(textureLabels).toEqual(
       expect.arrayContaining([
+        "Pistol · dual",
+        "SMG · dual",
+        "Shotgun · dual",
+        "Sniper · dual",
         "Arena floor",
         "Arena wall",
         "Arena column",

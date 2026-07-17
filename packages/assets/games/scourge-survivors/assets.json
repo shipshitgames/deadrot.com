@@ -441,6 +441,242 @@
         "scope": "Scourge Survivors runtime"
       }
     },
+    "weapon-pistol-dual": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/dual/pistol-dual-tiers.webp",
+      "dimensions": [
+        2175,
+        724
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.564,
+        0.94
+      ],
+      "weapon": {
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "muzzle": [
+          -0.15,
+          0.25,
+          -0.1
+        ],
+        "muzzles": {
+          "left": [
+            -0.15,
+            0.25,
+            -0.1
+          ],
+          "right": [
+            0.15,
+            0.25,
+            -0.1
+          ]
+        },
+        "flashScale": 0.24
+      },
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; deterministic alpha/WebP promotion",
+        "plan": "Codex reference-anchored dual-wield redraw from the approved Pyre pistol tier sheet",
+        "date": "2026-07-17",
+        "kind": "purpose-built dual-wield first-person tier sheet",
+        "scope": "Scourge Survivors dual-weapon runtime"
+      }
+    },
+    "weapon-smg-dual": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/dual/smg-dual-tiers.webp",
+      "dimensions": [
+        2175,
+        724
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.582,
+        0.97
+      ],
+      "weapon": {
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "muzzle": [
+          -0.16,
+          0.23,
+          -0.1
+        ],
+        "muzzles": {
+          "left": [
+            -0.16,
+            0.23,
+            -0.1
+          ],
+          "right": [
+            0.16,
+            0.23,
+            -0.1
+          ]
+        },
+        "flashScale": 0.2
+      },
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; deterministic alpha/WebP promotion",
+        "plan": "Codex reference-anchored dual-wield redraw from the approved Pyre SMG tier sheet",
+        "date": "2026-07-17",
+        "kind": "purpose-built dual-wield first-person tier sheet",
+        "scope": "Scourge Survivors dual-weapon runtime"
+      }
+    },
+    "weapon-shotgun-dual": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/dual/shotgun-dual-tiers.webp",
+      "dimensions": [
+        2175,
+        724
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.618,
+        1.03
+      ],
+      "weapon": {
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "muzzle": [
+          -0.14,
+          0.25,
+          -0.1
+        ],
+        "muzzles": {
+          "left": [
+            -0.14,
+            0.25,
+            -0.1
+          ],
+          "right": [
+            0.14,
+            0.25,
+            -0.1
+          ]
+        },
+        "flashScale": 0.42
+      },
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; deterministic alpha/WebP promotion",
+        "plan": "Codex reference-anchored dual-wield redraw from the approved Pyre shotgun tier sheet",
+        "date": "2026-07-17",
+        "kind": "purpose-built dual-wield first-person tier sheet",
+        "scope": "Scourge Survivors dual-weapon runtime"
+      }
+    },
+    "weapon-sniper-dual": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/dual/sniper-dual-tiers.webp",
+      "dimensions": [
+        2175,
+        724
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.6,
+        1
+      ],
+      "weapon": {
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "muzzle": [
+          -0.13,
+          0.31,
+          -0.1
+        ],
+        "muzzles": {
+          "left": [
+            -0.13,
+            0.31,
+            -0.1
+          ],
+          "right": [
+            0.13,
+            0.31,
+            -0.1
+          ]
+        },
+        "flashScale": 0.32
+      },
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; deterministic alpha/WebP promotion",
+        "plan": "Codex reference-anchored dual-wield redraw from the approved Pyre sniper tier sheet",
+        "date": "2026-07-17",
+        "kind": "purpose-built dual-wield first-person tier sheet",
+        "scope": "Scourge Survivors dual-weapon runtime"
+      }
+    },
     "muzzle-flash-pyre": {
       "type": "sprite",
       "path": "games/scourge-survivors/fx/pyre/muzzle-flash.webp",
@@ -2331,15 +2567,18 @@
     "weapons": {
       "pistol": {
         "sprite": "weapon-pistol",
-        "lootSprite": "weapon-pistol-loot"
+        "lootSprite": "weapon-pistol-loot",
+        "dualSprite": "weapon-pistol-dual"
       },
       "smg": {
         "sprite": "weapon-smg",
-        "lootSprite": "weapon-smg-loot"
+        "lootSprite": "weapon-smg-loot",
+        "dualSprite": "weapon-smg-dual"
       },
       "shotgun": {
         "sprite": "weapon-shotgun",
-        "lootSprite": "weapon-shotgun-loot"
+        "lootSprite": "weapon-shotgun-loot",
+        "dualSprite": "weapon-shotgun-dual"
       },
       "cannon": {
         "sprite": "weapon-cannon",
@@ -2347,7 +2586,8 @@
       },
       "sniper": {
         "sprite": "weapon-sniper",
-        "lootSprite": "weapon-sniper-loot"
+        "lootSprite": "weapon-sniper-loot",
+        "dualSprite": "weapon-sniper-dual"
       }
     },
     "pickups": {

@@ -38,10 +38,14 @@ const ARENA_TEXTURE_ROLES = ["floor", "wall", "block", "column", "decal", "prop"
 
 const VISUAL_ASSET_DESCRIPTORS: VisualAssetDescriptor[] = [
   { id: "weapon-pistol", label: "Pistol", kind: "sprite" },
+  { id: "weapon-pistol-dual", label: "Pistol · dual", kind: "sprite" },
   { id: "weapon-smg", label: "SMG", kind: "sprite" },
+  { id: "weapon-smg-dual", label: "SMG · dual", kind: "sprite" },
   { id: "weapon-shotgun", label: "Shotgun", kind: "sprite" },
+  { id: "weapon-shotgun-dual", label: "Shotgun · dual", kind: "sprite" },
   { id: "weapon-cannon", label: "Cannon", kind: "sprite" },
   { id: "weapon-sniper", label: "Sniper", kind: "sprite" },
+  { id: "weapon-sniper-dual", label: "Sniper · dual", kind: "sprite" },
   { id: "enemy-melee-front", label: "Melee front", kind: "sprite" },
   { id: "enemy-melee-side", label: "Melee side", kind: "sprite" },
   { id: "enemy-melee-back", label: "Melee back", kind: "sprite" },

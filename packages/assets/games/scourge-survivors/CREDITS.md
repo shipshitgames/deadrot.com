@@ -319,3 +319,27 @@
   rules. Historical provenance only.
 - Post-processing: generated on chroma-key background, removed with the bundled imagegen chroma-key helper, scaled to 256x256, then encoded to lossless WebP with `cwebp -lossless -exact`.
 - Notes: Replaces the prior flat square muzzle flash with a directional bone-white, blood-hot, and hellfire pixel-art burst.
+
+## 2026-07-17 - purpose-built dual held-weapon tier sheets
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Faction / role: Pyre pistol, SMG, shotgun, and sniper dual-wield view models.
+- Tool: `gpt-image-2` via Codex built-in `image_gen`, followed by deterministic
+  local alpha cleanup and WebP promotion.
+- Plan: Codex built-in, reference-anchored redraw from the approved Pyre
+  `weapons/pyre/{pistol,smg,shotgun,sniper}-tiers.webp` runtime sheets.
+- Source outputs:
+  - `~/.codex/generated_images/019f6f5c-bac3-7ac0-8881-c7cb86fe01e7/call_azOfo1vi9G5CGlbYrWuqyOEu.png`
+  - `~/.codex/generated_images/019f6f5c-bac3-7ac0-8881-c7cb86fe01e7/call_KmHRV7ExZz71dOLC1x3inS1a.png`
+  - `~/.codex/generated_images/019f6f5c-bac3-7ac0-8881-c7cb86fe01e7/call_P08gr2NAJsBZbe2EcrjtoZpB.png`
+  - `~/.codex/generated_images/019f6f5c-bac3-7ac0-8881-c7cb86fe01e7/call_t0OguipFMmAzui2qGGFamph6.png`
+- Preserved raw masters:
+  `packages/assets/_archive/raw-generator-cache/codex-generated-images/2026-07-17/raw/019f6f5c-bac3-7ac0-8881-c7cb86fe01e7/`.
+- Final assets: `weapons/pyre/dual/{pistol,smg,shotgun,sniper}-dual-tiers.webp`.
+- Generator: `packages/assets/scripts/generate-scourge-dual-weapons.mjs`.
+- Post-processing: flood-clears the baked neutral checkerboard, normalizes each
+  sheet to five exact 435px tier cells, and encodes high-quality WebP with exact
+  full-quality alpha.
+- Notes: every cell is a new uncrossed one-weapon-per-hand pose. The cannon is
+  excluded because it is not dual-compatible.

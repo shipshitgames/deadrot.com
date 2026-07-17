@@ -2,11 +2,11 @@ import manifest from "@shipshitgames/assets/games/scourge-survivors/assets.json"
 import { describe, expect, it } from "vitest";
 import { MAIN_WEAPON_VISUAL_TIERS } from "../../src/game/data/survivors";
 import {
+  dualWeaponViewActive,
   MAIN_WEAPON_TIER_VIEW_SCALE,
   mainWeaponTierViewScale,
   type TierCellUv,
   weaponTierCellUv,
-  weaponTierCellUvMirrored,
 } from "../../src/game/data/weaponView";
 
 /** Where along a UV window u∈[0,1] lands once the texture wrap is applied. */
@@ -65,45 +65,24 @@ describe("weapon view-model — tier-sheet cell UV (#265)", () => {
   });
 });
 
-describe("weapon view-model — akimbo mirror UV (#265)", () => {
-  it("reflects the SAME cell rather than bleeding into a neighbour", () => {
-    const cols = 5;
-    for (let cell = 0; cell < cols; cell++) {
-      const normal = weaponTierCellUv(cell, cols);
-      const mirror = weaponTierCellUvMirrored(cell, cols);
-
-      // A negative repeat flips U: the mirror starts at the cell's RIGHT edge and ends at
-      // its LEFT edge — same span, traversed in reverse.
-      expect(mirror.repeat).toBeCloseTo(-1 / cols, 9);
-      expect(sampleAt(mirror, 0)).toBeCloseTo((cell + 1) / cols, 9);
-      expect(sampleAt(mirror, 1)).toBeCloseTo(cell / cols, 9);
-
-      // The reflected span equals the normal cell's span exactly (just reversed)…
-      const normalSpan = [sampleAt(normal, 0), sampleAt(normal, 1)].sort((a, b) => a - b);
-      const mirrorSpan = [sampleAt(mirror, 0), sampleAt(mirror, 1)].sort((a, b) => a - b);
-      expect(mirrorSpan[0]).toBeCloseTo(normalSpan[0], 9);
-      expect(mirrorSpan[1]).toBeCloseTo(normalSpan[1], 9);
-
-      // …and shares the cell's centre, proving it is the same tier art, not the next cell.
-      expect(sampleAt(mirror, 0.5)).toBeCloseTo(sampleAt(normal, 0.5), 9);
-
-      // Every sample across the mirror stays inside this cell's column (no adjacent bleed).
-      for (let u = 0; u <= 1; u += 0.1) {
-        const s = sampleAt(mirror, u);
-        expect(s).toBeGreaterThanOrEqual(cell / cols - 1e-9);
-        expect(s).toBeLessThanOrEqual((cell + 1) / cols + 1e-9);
-      }
-    }
+describe("weapon view-model — dedicated dual-art lifetime (#258)", () => {
+  it("uses dual art only while a compatible weapon has a live bonus", () => {
+    expect(dualWeaponViewActive(12, true, true)).toBe(true);
+    expect(dualWeaponViewActive(0.01, true, true)).toBe(true);
   });
 
-  it("mirrors correctly for the base (cell 0) and evolved (last cell) tiers", () => {
-    const cols = 5;
-    const base = weaponTierCellUvMirrored(0, cols);
-    expect(sampleAt(base, 0)).toBeCloseTo(1 / cols, 9);
-    expect(sampleAt(base, 1)).toBeCloseTo(0, 9);
-    const evolved = weaponTierCellUvMirrored(cols - 1, cols);
-    expect(sampleAt(evolved, 0)).toBeCloseTo(1, 9);
-    expect(sampleAt(evolved, 1)).toBeCloseTo((cols - 1) / cols, 9);
+  it("returns to the primary view immediately when the timer expires", () => {
+    expect(dualWeaponViewActive(0, true, true)).toBe(false);
+    expect(dualWeaponViewActive(-0.01, true, true)).toBe(false);
+  });
+
+  it("never falls back to duplicated primary art for incompatible or uncovered weapons", () => {
+    expect(dualWeaponViewActive(12, false, true)).toBe(false);
+    expect(dualWeaponViewActive(12, true, false)).toBe(false);
+  });
+
+  it("lets the scoped ADS view win while the dual gameplay bonus stays live", () => {
+    expect(dualWeaponViewActive(12, true, true, true)).toBe(false);
   });
 });
 
