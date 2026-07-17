@@ -6,16 +6,7 @@
 // every sheet to five exact 435px cells, and emits runtime alpha WebP.
 
 import { execFileSync, spawnSync } from "node:child_process";
-import {
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  renameSync,
-  rmSync,
-  statSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -91,11 +82,9 @@ function encodeWebp(path, width, height, data) {
   const webpPath = join(dir, "sheet.webp");
   try {
     writeFileSync(pamPath, pamBuffer(width, height, data));
-    execFileSync(
-      "cwebp",
-      ["-quiet", "-q", "80", "-alpha_q", "100", "-m", "6", "-exact", pamPath, "-o", webpPath],
-      { maxBuffer: 128 * 1024 * 1024 },
-    );
+    execFileSync("cwebp", ["-quiet", "-q", "80", "-alpha_q", "100", "-m", "6", "-exact", pamPath, "-o", webpPath], {
+      maxBuffer: 128 * 1024 * 1024,
+    });
     if (!existsSync(webpPath) || statSync(webpPath).size <= 0) {
       throw new Error(`${path}: cwebp did not produce a valid output file`);
     }
