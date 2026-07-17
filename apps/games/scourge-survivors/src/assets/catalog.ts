@@ -86,7 +86,7 @@ function spritePath(id: string, view?: SpriteView): string {
 }
 
 type RuntimeDomain = keyof ScourgeSurvivorsAssetManifest["runtime"];
-type RuntimeSpriteDomain = Exclude<RuntimeDomain, "ui" | "enemies" | "weapons">;
+type RuntimeSpriteDomain = Exclude<RuntimeDomain, "ui" | "bonusIcons" | "enemies" | "weapons">;
 
 export class AssetCatalog {
   constructor(

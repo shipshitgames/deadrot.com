@@ -1,7 +1,7 @@
 // Vampire-Survivors-style "Survivors" mode: endless swarms, XP/levels, and a
 // level-up draft where the player picks 1 of 3 upgrades to stack into combos.
 
-import type { PixelIconId } from "../../assets/ui/pixelIcons";
+import type { BonusIconId, PixelIconId } from "../../assets/ui/pixelIcons";
 import type { WeaponId } from "../constants";
 import type { BuildEntry, UpgradeChoice } from "../types";
 
@@ -40,7 +40,7 @@ export interface UpgradeDef {
   id: UpgradeId;
   name: string;
   desc: string;
-  icon: PixelIconId;
+  icon: BonusIconId;
   max: number;
   kind: "passive" | "weapon";
 }
@@ -187,7 +187,7 @@ export interface EvolutionDef {
   passive: UpgradeId; // the passive that must be maxed to unlock the evolution
   name: string;
   desc: string;
-  icon: PixelIconId;
+  icon: BonusIconId;
 }
 
 export const EVOLUTIONS: Record<WeaponUpgradeId, EvolutionDef> = {
@@ -551,7 +551,7 @@ export interface ShopDef {
   id: ShopId;
   name: string;
   desc: string;
-  icon: PixelIconId;
+  icon: BonusIconId;
   max: number;
   baseCost: number;
 }
