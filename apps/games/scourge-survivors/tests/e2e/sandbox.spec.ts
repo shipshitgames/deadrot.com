@@ -484,10 +484,14 @@ test.describe("dev sandbox smoke", () => {
     expect(assetLabels).toEqual(
       expect.arrayContaining([
         "Pistol",
+        "Pistol · dual",
         "SMG",
+        "SMG · dual",
         "Shotgun",
+        "Shotgun · dual",
         "Cannon",
         "Sniper",
+        "Sniper · dual",
         "Melee front",
         "Melee side",
         "Melee back",
@@ -532,10 +536,6 @@ test.describe("dev sandbox smoke", () => {
       .evaluateAll((nodes) => nodes.map((node) => node.textContent ?? ""));
     expect(textureLabels).toEqual(
       expect.arrayContaining([
-        "Pistol · dual",
-        "SMG · dual",
-        "Shotgun · dual",
-        "Sniper · dual",
         "Arena floor",
         "Arena wall",
         "Arena column",
