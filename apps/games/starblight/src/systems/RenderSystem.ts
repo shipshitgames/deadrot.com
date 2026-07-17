@@ -1,6 +1,8 @@
 import { ParticleBursts, ScreenShake } from "@deadrot/game-kit/juice";
+import { subscribeGlobalGameSettings } from "@shipshitgames/ui";
 import * as THREE from "three";
 import { COLORS, CONSTANTS, WORLD } from "../game/constants";
+import type { ImpactDirection } from "../game/feedback";
 
 // Owns the renderer, scene, orthographic FOLLOW-camera, parallax starfield, the
 // containment-lattice world border, and screen-shake. The camera frames a fixed
@@ -13,13 +15,25 @@ export class RenderSystem {
 
   /** Pooled kill-pop bursts (shared juice module; honors the particles setting). */
   readonly bursts: ParticleBursts;
+  /** One reused sprite for big-kill flash frames; hard-bounded to one draw. */
+  private readonly impactFlash: THREE.Sprite;
+  private readonly impactFlashMaterial: THREE.SpriteMaterial;
+  private impactFlashTime = 0;
+  private impactFlashDuration = 0;
 
   // Follow state.
   readonly camFocus = new THREE.Vector2(0, 0);
   private halfW = WORLD.halfW;
   private halfH = WORLD.halfH;
-  // Kit ScreenShake honors the global "shake" setting automatically.
-  private readonly shake = new ScreenShake({ decay: CONSTANTS.fx.shakeDecay });
+  private shakeLevel = 1;
+  private flashLevel = 1;
+  private particlesLevel = 1;
+  private unsubscribeSettings: () => void = () => {};
+  private readonly shake = new ScreenShake({
+    decay: CONSTANTS.fx.shakeDecay,
+    getLevel: () => this.shakeLevel,
+  });
+  private readonly directionalKick = new THREE.Vector2();
 
   private nearStars!: THREE.Points;
   private farStars!: THREE.Points;
@@ -39,7 +53,25 @@ export class RenderSystem {
     });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    this.bursts = new ParticleBursts(this.scene);
+    this.bursts = new ParticleBursts(this.scene, { getLevel: () => this.particlesLevel });
+    const impactTexture = this.buildImpactTexture();
+    this.impactFlashMaterial = new THREE.SpriteMaterial({
+      map: impactTexture,
+      color: COLORS.bone,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    this.impactFlash = new THREE.Sprite(this.impactFlashMaterial);
+    this.impactFlash.visible = false;
+    this.impactFlash.position.z = 2;
+    this.scene.add(this.impactFlash);
+    this.unsubscribeSettings = subscribeGlobalGameSettings((settings) => {
+      this.shakeLevel = settings.effectLevels.shake;
+      this.flashLevel = settings.effectLevels.flash;
+      this.particlesLevel = settings.effectLevels.particles;
+    });
 
     this.buildStars();
     this.buildLattice();
@@ -49,7 +81,11 @@ export class RenderSystem {
 
   dispose() {
     window.removeEventListener("resize", this.resize);
+    this.unsubscribeSettings();
     this.bursts.dispose();
+    this.scene.remove(this.impactFlash);
+    this.impactFlashMaterial.map?.dispose();
+    this.impactFlashMaterial.dispose();
     for (const layer of [this.nearStars, this.farStars]) {
       this.scene.remove(layer);
       layer.geometry.dispose();
@@ -81,17 +117,41 @@ export class RenderSystem {
     return { x: this.camFocus.x + ndcX * this.halfW, y: this.camFocus.y + ndcY * this.halfH };
   }
 
-  /** Adds a screen-shake impulse (kit trauma units, 0..1; larger = harder). */
-  addShake(amount: number) {
-    this.shake.kick(Math.min(amount, CONSTANTS.fx.shakeMax));
+  /** Adds a trauma kick and, when supplied, an impact-directed camera shove. */
+  addShake(amount: number, direction?: ImpactDirection) {
+    const capped = Math.min(amount, CONSTANTS.fx.shakeMax);
+    this.shake.kick(capped);
+    if (direction) this.addDirectionalKick(capped, direction);
+  }
+
+  addDirectionalKick(amount: number, direction: ImpactDirection) {
+    const capped = Math.min(amount, CONSTANTS.fx.shakeMax);
+    const length = Math.hypot(direction.x, direction.y);
+    if (length <= 0.001) return;
+    if (capped < this.directionalKick.length()) return;
+    this.directionalKick.set((direction.x / length) * capped, (direction.y / length) * capped);
+  }
+
+  flashFrame(x: number, y: number, color: number, preset: { duration: number; size: number }) {
+    if (this.flashLevel <= 0) return;
+    this.impactFlash.position.set(x, y, 2);
+    this.impactFlash.scale.setScalar(preset.size);
+    this.impactFlashMaterial.color.setHex(color);
+    this.impactFlashDuration = preset.duration;
+    this.impactFlashTime = preset.duration;
+    this.impactFlash.visible = true;
   }
 
   resetFocus(x: number, y: number) {
     this.camFocus.set(x, y);
+    this.shake.reset();
+    this.directionalKick.set(0, 0);
+    this.impactFlashTime = 0;
+    this.impactFlash.visible = false;
   }
 
   /** Eases the camera toward the ship (deadzone box) and applies shake. */
-  update(dt: number, shipX: number, shipY: number, simulateFx = true) {
+  update(dt: number, shipX: number, shipY: number, simulateFx = true, effectsDt = dt) {
     const c = CONSTANTS.camera;
     const dzW = c.deadzoneW / 2;
     const dzH = c.deadzoneH / 2;
@@ -111,16 +171,22 @@ export class RenderSystem {
     // Shake is an additive pan on top of the follow target (no rotation). The
     // kit offsets are ~screen-space; scale into ortho world units.
     this.shake.update(dt);
+    this.directionalKick.multiplyScalar(Math.exp(-CONSTANTS.fx.directionalShakeDecay * dt));
     const ws = CONSTANTS.fx.shakeWorldScale;
-    const fx = this.camFocus.x + this.shake.offsetX * ws;
-    const fy = this.camFocus.y + this.shake.offsetY * ws;
+    const fx = this.camFocus.x + (this.shake.offsetX + this.directionalKick.x * this.shakeLevel) * ws;
+    const fy = this.camFocus.y + (this.shake.offsetY + this.directionalKick.y * this.shakeLevel) * ws;
     this.camera.position.set(fx, fy, c.z);
     this.camera.lookAt(fx, fy, 0);
+    if (this.impactFlashTime > 0) {
+      this.impactFlashTime = Math.max(0, this.impactFlashTime - dt);
+      this.impactFlashMaterial.opacity = (this.impactFlashTime / this.impactFlashDuration) * this.flashLevel;
+      this.impactFlash.visible = this.impactFlashTime > 0;
+    }
 
     // Advance pooled kill-pop bursts only while the game is simulating — they
     // must freeze alongside the legacy particle pops during pause and the
     // level-up draft (the camera/backdrop above still animates every frame).
-    if (simulateFx) this.bursts.update(dt);
+    if (simulateFx) this.bursts.update(effectsDt);
 
     // Parallax: star layers trail the camera at (1 - parallax), so flying any
     // direction streaks them past you. No per-point JS loop.
@@ -131,6 +197,27 @@ export class RenderSystem {
 
   render() {
     this.renderer.render(this.scene, this.camera);
+  }
+
+  private buildImpactTexture(): THREE.CanvasTexture {
+    const canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Could not create Starblight impact texture");
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.moveTo(32, 0);
+    ctx.lineTo(39, 25);
+    ctx.lineTo(64, 32);
+    ctx.lineTo(39, 39);
+    ctx.lineTo(32, 64);
+    ctx.lineTo(25, 39);
+    ctx.lineTo(0, 32);
+    ctx.lineTo(25, 25);
+    ctx.closePath();
+    ctx.fill();
+    return new THREE.CanvasTexture(canvas);
   }
 
   add(obj: THREE.Object3D) {

@@ -82,7 +82,7 @@ function LevelUpDraft({
             <div key={c.id} className="relative flex">
               <UpgradeCard
                 featured={c.golden}
-                icon={<PixelIcon id={c.icon} size={60} label={c.name} />}
+                icon={<PixelIcon id={c.icon} variant="bonus" size={60} label={c.name} />}
                 title={c.name}
                 meta={c.golden ? "EVO" : c.level === 0 ? "NEW" : `LV ${c.level + 1}`}
                 metaTone={c.level === 0 ? "new" : "level"}

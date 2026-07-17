@@ -2490,6 +2490,279 @@
         "kind": "codex card illustration",
         "scope": "Scourge Survivors runtime UI"
       }
+    },
+    "ui-bonus-icon-orbit": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/orbit.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-bolt": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/bolt.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-nova": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/nova.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-fire": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/fire.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-battery": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/battery.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-lightning": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/lightning.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-trident": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/trident.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-target": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/target.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-boot": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/boot.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-heart": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/heart.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-medic-cross": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/medic-cross.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-armor": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/armor.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-shield": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/shield.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-spikes": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/spikes.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-bloodtap": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/bloodtap.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-bastion": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/bastion.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-dodge": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/dodge.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-grace": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/grace.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-magnet": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/magnet.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-chart": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/chart.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-gold": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/gold.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
     }
   },
   "runtime": {
@@ -2642,6 +2915,29 @@
       "cardFleshworks": {
         "asset": "ui-card-fleshworks"
       }
+    },
+    "bonusIcons": {
+      "orbit": { "asset": "ui-bonus-icon-orbit" },
+      "bolt": { "asset": "ui-bonus-icon-bolt" },
+      "nova": { "asset": "ui-bonus-icon-nova" },
+      "fire": { "asset": "ui-bonus-icon-fire" },
+      "battery": { "asset": "ui-bonus-icon-battery" },
+      "lightning": { "asset": "ui-bonus-icon-lightning" },
+      "trident": { "asset": "ui-bonus-icon-trident" },
+      "target": { "asset": "ui-bonus-icon-target" },
+      "boot": { "asset": "ui-bonus-icon-boot" },
+      "heart": { "asset": "ui-bonus-icon-heart" },
+      "medic-cross": { "asset": "ui-bonus-icon-medic-cross" },
+      "armor": { "asset": "ui-bonus-icon-armor" },
+      "shield": { "asset": "ui-bonus-icon-shield" },
+      "spikes": { "asset": "ui-bonus-icon-spikes" },
+      "bloodtap": { "asset": "ui-bonus-icon-bloodtap" },
+      "bastion": { "asset": "ui-bonus-icon-bastion" },
+      "dodge": { "asset": "ui-bonus-icon-dodge" },
+      "grace": { "asset": "ui-bonus-icon-grace" },
+      "magnet": { "asset": "ui-bonus-icon-magnet" },
+      "chart": { "asset": "ui-bonus-icon-chart" },
+      "gold": { "asset": "ui-bonus-icon-gold" }
     }
   }
 }

@@ -1,5 +1,6 @@
 import * as THREE from "three";
-import { COLORS, CONSTANTS } from "../game/constants";
+import { COLORS } from "../game/constants";
+import { shakeFor } from "../game/feedback";
 import { TAU } from "../game/math";
 import type { Enemy } from "../game/types";
 import { atLevel, type Stats, type UpgradeId, WEAPONS } from "../game/upgrades";
@@ -358,7 +359,7 @@ export class WeaponSystem {
     this.render.add(mesh);
     this.novas.push({ mesh, age: 0, ttl: 0.5, maxR, dmg, knock, hit: new Set() });
     this.entities.pop(sx, sy, COLORS.hellfire, 8);
-    this.render.addShake(CONSTANTS.fx.shake.novaDetonate);
+    this.render.addShake(shakeFor("novaDetonate"));
     if (lv >= 5) {
       // A lingering scorch disc you stand inside (the SUPERNOVA evolution).
       const sm = new THREE.Mesh(new THREE.CircleGeometry(1, 32), this.scorchMat.clone());
@@ -497,7 +498,7 @@ export class WeaponSystem {
       }
     }
     this.entities.pop(mx, my, COLORS.hellfire, 14);
-    this.render.addShake(CONSTANTS.fx.shake.mineDetonate);
+    this.render.addShake(shakeFor("mineDetonate"));
     if (chain) {
       for (const other of this.mines) {
         if (other === m || other.dead) continue;
