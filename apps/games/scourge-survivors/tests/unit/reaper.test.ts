@@ -10,6 +10,7 @@ import {
   REAPER_WARNING_LEAD,
 } from "../../src/game/constants";
 import { SCOURGE_THREAT_TIERS } from "../../src/game/data/enemies";
+import { SURVIVOR_MAP_ORDER, SURVIVOR_MAPS } from "../../src/game/data/maps";
 import {
   canResistReaper,
   REAPER_HOST_TINTS,
@@ -19,7 +20,6 @@ import {
   reaperWarningDue,
   shouldSpawnReaper,
 } from "../../src/game/data/reaper";
-import { SURVIVOR_MAP_ORDER, SURVIVOR_MAPS } from "../../src/game/data/maps";
 import {
   SHOP_BY_ID,
   SURVIVOR_CLASS_IDS,

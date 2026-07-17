@@ -15,10 +15,7 @@ import { walkableSurfaceHeight } from "../../src/game/entities/PlayerSystem";
 const VARIANT_IDS = ["foundry-wards", "breach-primus"] as const;
 
 function overlaps(a: MapObstacle, b: MapObstacle): boolean {
-  return (
-    Math.abs(a.x - b.x) < (a.w + b.w) / 2 &&
-    Math.abs(a.z - b.z) < (a.d + b.d) / 2
-  );
+  return Math.abs(a.x - b.x) < (a.w + b.w) / 2 && Math.abs(a.z - b.z) < (a.d + b.d) / 2;
 }
 
 function expectValidGeometry(map: NormalizedArenaMap) {
@@ -77,8 +74,7 @@ function expectValidGeometry(map: NormalizedArenaMap) {
       expect(
         room!.obstacles.some(
           (obstacle) =>
-            Math.abs(anchor.x - obstacle.x) < obstacle.w / 2 &&
-            Math.abs(anchor.z - obstacle.z) < obstacle.d / 2,
+            Math.abs(anchor.x - obstacle.x) < obstacle.w / 2 && Math.abs(anchor.z - obstacle.z) < obstacle.d / 2,
         ),
         `${map.id}/${anchor.id} is inside solid geometry`,
       ).toBe(false);

@@ -31,11 +31,7 @@ import type { MapObstacle } from "../data/maps";
 import type { GameSystems } from "../systems";
 import { createBreachSpawnProvider } from "./breachSpawn";
 
-export function walkableSurfaceHeight(
-  surfaceBoxes: readonly THREE.Box3[],
-  x: number,
-  z: number,
-): number {
+export function walkableSurfaceHeight(surfaceBoxes: readonly THREE.Box3[], x: number, z: number): number {
   let height = 0;
   for (const box of surfaceBoxes) {
     if (x >= box.min.x && x <= box.max.x && z >= box.min.z && z <= box.max.z) {

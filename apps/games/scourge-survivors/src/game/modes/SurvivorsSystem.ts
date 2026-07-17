@@ -692,21 +692,17 @@ export class SurvivorsSystem {
     const timeScale = (1 + this.survClock * SURV_HP_RAMP_PER_SEC) * chapter.hpMul;
     const arch = this.rollArchetype();
     const frenzied = affix.id === "frenzied";
-    enemy.spawnAt(
-      x,
-      z,
-      {
-        ...this.swarmSpawnOptions(arch, {
-          hpMul: ELITE_HP_MUL,
-          speedMul: frenzied ? ELITE_FRENZY_SPEED_MUL : 1,
-          dmgMul: frenzied ? ELITE_FRENZY_DAMAGE_MUL : 1,
-          scaleMul: ELITE_SCALE_MUL,
-          affix: affix.id,
-          overshield: affix.id === "shielded" ? Math.round(ELITE_SHIELD_HP * timeScale) : 0,
-        }),
-        groundHeight: y,
-      },
-    );
+    enemy.spawnAt(x, z, {
+      ...this.swarmSpawnOptions(arch, {
+        hpMul: ELITE_HP_MUL,
+        speedMul: frenzied ? ELITE_FRENZY_SPEED_MUL : 1,
+        dmgMul: frenzied ? ELITE_FRENZY_DAMAGE_MUL : 1,
+        scaleMul: ELITE_SCALE_MUL,
+        affix: affix.id,
+        overshield: affix.id === "shielded" ? Math.round(ELITE_SHIELD_HP * timeScale) : 0,
+      }),
+      groundHeight: y,
+    });
     this.enemyXp.set(enemy, eliteXpValue(arch.xp));
   }
 

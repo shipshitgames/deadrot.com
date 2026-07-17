@@ -316,21 +316,17 @@ export class PveDirectorSystem {
       const r = 0.8 + Math.random() * 0.9;
       const x = Math.max(this.ctx.bounds.minX + 1.5, Math.min(this.ctx.bounds.maxX - 1.5, pos.x + Math.cos(a) * r));
       const z = Math.max(this.ctx.bounds.minZ + 1.5, Math.min(this.ctx.bounds.maxZ - 1.5, pos.z + Math.sin(a) * r));
-      child.spawnAt(
-        x,
-        z,
-        {
-          maxHealth: Math.max(10, parent.maxHealth * 0.18),
-          speed: Math.max(parent.speed * 1.35, 3.2),
-          archetype: childDef.id,
-          color: childDef.color,
-          scale: 0.7,
-          attackDamage: Math.max(4, childDef.attackDamage - 1),
-          flying: childDef.flying,
-          hoverHeight: childDef.hoverHeight,
-          groundHeight: this.sys.player.walkableSurfaceHeight(x, z),
-        },
-      );
+      child.spawnAt(x, z, {
+        maxHealth: Math.max(10, parent.maxHealth * 0.18),
+        speed: Math.max(parent.speed * 1.35, 3.2),
+        archetype: childDef.id,
+        color: childDef.color,
+        scale: 0.7,
+        attackDamage: Math.max(4, childDef.attackDamage - 1),
+        flying: childDef.flying,
+        hoverHeight: childDef.hoverHeight,
+        groundHeight: this.sys.player.walkableSurfaceHeight(x, z),
+      });
       if (this.ctx.survivors) this.sys.survivors.enemyXp.set(child, 1);
     }
   }
@@ -341,14 +337,8 @@ export class PveDirectorSystem {
     const billboardQuat = this.ctx.camera.quaternion;
     for (const enemy of this.ctx.enemies) {
       if (!enemy.alive) continue;
-      const tick = enemy.update(
-        delta,
-        elapsed,
-        playerPos,
-        this.ctx.enemies,
-        billboardQuat,
-        this.ctx.bounds,
-        (x, z) => this.sys.player.walkableSurfaceHeight(x, z),
+      const tick = enemy.update(delta, elapsed, playerPos, this.ctx.enemies, billboardQuat, this.ctx.bounds, (x, z) =>
+        this.sys.player.walkableSurfaceHeight(x, z),
       );
       damageToPlayer += tick.melee;
       for (const shot of tick.shots) this.sys.projectiles.spawnProjectile(shot, enemy);
