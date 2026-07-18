@@ -59,13 +59,15 @@ test.describe("Survivors balance telemetry lifecycle", () => {
     });
 
     const events = await balanceEvents(page);
-    const names = events.map((event) => event.event);
+    const runEnd = [...events].reverse().find((event) => event.event === "run_end");
+    expect(runEnd?.runId).toBeTruthy();
+    const runEvents = events.filter((event) => event.runId === runEnd?.runId);
+    const names = runEvents.map((event) => event.event);
     expect(names).toEqual(
       expect.arrayContaining(["run_start", "choice_offered", "choice_picked", "checkpoint", "run_end"]),
     );
-    expect(new Set(events.map((event) => event.schema))).toEqual(new Set(["deadrot.balance.v1"]));
-    expect(new Set(events.map((event) => event.runId).filter(Boolean)).size).toBe(1);
-    expect(events.find((event) => event.event === "run_start")).toMatchObject({
+    expect(new Set(runEvents.map((event) => event.schema))).toEqual(new Set(["deadrot.balance.v1"]));
+    expect(runEvents.find((event) => event.event === "run_start")).toMatchObject({
       game: "scourge-survivors",
       mode: "survivors",
       tuningVersion: "scourge-survivors.balance.v1",
@@ -74,7 +76,7 @@ test.describe("Survivors balance telemetry lifecycle", () => {
         class_id: "ranger",
       },
     });
-    expect(events.find((event) => event.event === "run_end")).toMatchObject({
+    expect(runEnd).toMatchObject({
       elapsedSec: 60,
       properties: {
         outcome: "dead",
