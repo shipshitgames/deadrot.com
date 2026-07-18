@@ -1,5 +1,5 @@
 import { BALANCE_TELEMETRY_KEY, type BalanceEvent } from "@deadrot/game-kit/telemetry";
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 type DevGame = {
   startSurvivors: (classId: "ranger") => Promise<void>;
@@ -16,15 +16,6 @@ type DevGame = {
     gameOver: { gameOver: (outcome: "dead") => void };
   };
 };
-
-async function balanceEvents(page: Page): Promise<BalanceEvent[]> {
-  return page.evaluate((key) => {
-    const stored = JSON.parse(localStorage.getItem(key) ?? "null") as {
-      data?: unknown;
-    } | null;
-    return Array.isArray(stored?.data) ? (stored.data as BalanceEvent[]) : [];
-  }, BALANCE_TELEMETRY_KEY);
-}
 
 test.describe("Survivors balance telemetry lifecycle", () => {
   test.beforeEach(async ({ page }) => {
@@ -45,7 +36,7 @@ test.describe("Survivors balance telemetry lifecycle", () => {
     await page.goto("/");
     await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
 
-    await page.evaluate(async () => {
+    const events = await page.evaluate(async (key) => {
       const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
       await game.startSurvivors("ranger");
       game.ctx.status = "playing";
@@ -56,18 +47,23 @@ test.describe("Survivors balance telemetry lifecycle", () => {
       game.sys.survivors.survClock = 60;
       game.sys.telemetry.update();
       game.sys.gameOver.gameOver("dead");
-    });
 
-    const events = await balanceEvents(page);
-    const runEnd = [...events].reverse().find((event) => event.event === "run_end");
-    expect(runEnd?.runId).toBeTruthy();
-    const runEvents = events.filter((event) => event.runId === runEnd?.runId);
+      const stored = JSON.parse(localStorage.getItem(key) ?? "null") as {
+        data?: unknown;
+      } | null;
+      return Array.isArray(stored?.data) ? (stored.data as BalanceEvent[]) : [];
+    }, BALANCE_TELEMETRY_KEY);
+
+    const runStart = [...events].reverse().find((event) => event.event === "run_start");
+    expect(runStart?.runId).toBeTruthy();
+    const runEvents = events.filter((event) => event.runId === runStart?.runId);
+    const runEnd = runEvents.find((event) => event.event === "run_end");
     const names = runEvents.map((event) => event.event);
     expect(names).toEqual(
       expect.arrayContaining(["run_start", "choice_offered", "choice_picked", "checkpoint", "run_end"]),
     );
     expect(new Set(runEvents.map((event) => event.schema))).toEqual(new Set(["deadrot.balance.v1"]));
-    expect(runEvents.find((event) => event.event === "run_start")).toMatchObject({
+    expect(runStart).toMatchObject({
       game: "scourge-survivors",
       mode: "survivors",
       tuningVersion: "scourge-survivors.balance.v1",
