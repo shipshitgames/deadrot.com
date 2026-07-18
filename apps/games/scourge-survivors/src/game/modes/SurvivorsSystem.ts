@@ -131,7 +131,7 @@ export class SurvivorsSystem {
   }
 
   startSurvivors(classId: SurvivorClassId = this.selectedClass, mapId: string = this.selectedMapId) {
-    this.sys.telemetry.endRun("restarted");
+    this.sys.telemetry?.endRun("restarted");
     this.sys.multiplayer.leaveMultiplayer(false);
     this.sys.mission.clearMissionState();
     this.selectedClass = survivorClassFor(classId).id;
@@ -195,7 +195,7 @@ export class SurvivorsSystem {
     this.ctx.ammo = WEAPONS[this.ctx.activeWeapon].magazineSize;
     this.ctx.reserve = 0; // unused in Survivors (reload ignores reserve); shown as ∞
     this.ctx.reloading = false;
-    this.sys.telemetry.startRun();
+    this.sys.telemetry?.startRun();
   }
 
   mainWeaponVisualTier() {
@@ -319,7 +319,7 @@ export class SurvivorsSystem {
     this.ctx.status = "levelup";
     this.rerolls = REROLLS_PER_LEVEL;
     this.rollChoices();
-    this.sys.telemetry.recordChoicesOffered("level_up");
+    this.sys.telemetry?.recordChoicesOffered("level_up");
     if (this.ctx.rig.captured) this.ctx.rig.releaseCapture();
     audio.sfx("levelup"); // dedicated rising fanfare — the best beat in the mode
     this.sys.hud.emit();
@@ -375,7 +375,7 @@ export class SurvivorsSystem {
     if (this.ctx.status !== "levelup" || this.rerolls <= 0) return;
     this.rerolls--;
     this.rollChoices();
-    this.sys.telemetry.recordChoicesOffered("reroll");
+    this.sys.telemetry?.recordChoicesOffered("reroll");
     audio.sfx("switch");
     this.sys.hud.emit();
   }
@@ -389,7 +389,7 @@ export class SurvivorsSystem {
     this.banished.add(uid);
     this.banishes--;
     this.rollChoices();
-    this.sys.telemetry.recordChoicesOffered("banish");
+    this.sys.telemetry?.recordChoicesOffered("banish");
     audio.sfx("switch");
     this.sys.hud.emit();
   }
@@ -420,7 +420,7 @@ export class SurvivorsSystem {
     }
     if (pickedChoice) {
       const newLevel = id.startsWith("evo-") ? 1 : (this.upgradeLevels[id as UpgradeId] ?? oldLevel);
-      this.sys.telemetry.recordChoicePicked(pickedChoice, oldLevel, newLevel);
+      this.sys.telemetry?.recordChoicePicked(pickedChoice, oldLevel, newLevel);
     }
     // Every weapon re-applies its model on a tier change so the MAIN_WEAPON_TIER_VIEW_SCALE
     // growth (and any future per-tier art) lands; the per-frame TIER_GLOW tint tracks the
@@ -439,7 +439,7 @@ export class SurvivorsSystem {
     if (this.pendingLevels > 0) {
       this.rerolls = REROLLS_PER_LEVEL;
       this.rollChoices();
-      this.sys.telemetry.recordChoicesOffered("level_up");
+      this.sys.telemetry?.recordChoicesOffered("level_up");
       this.sys.hud.emit();
     } else {
       this.choices = [];
@@ -460,7 +460,7 @@ export class SurvivorsSystem {
 
   updateSurvivors(delta: number) {
     this.survClock += delta;
-    this.sys.telemetry.update();
+    this.sys.telemetry?.update();
     this.updateStructuredRun();
     if (this.ctx.status !== "playing") return;
     if (this.bastionTimer > 0) this.bastionTimer = Math.max(0, this.bastionTimer - delta);
@@ -534,7 +534,7 @@ export class SurvivorsSystem {
     this.ctx.statShield = Math.min(this.ctx.statShieldMax, this.ctx.statShield + 24);
     this.eliteTimer = Math.min(this.eliteTimer, chapter.eliteInterval);
     this.swellTimer = Math.min(this.swellTimer, chapter.swellInterval);
-    this.sys.telemetry.checkpoint("chapter_boundary");
+    this.sys.telemetry?.checkpoint("chapter_boundary");
     this.sys.hud.announce(`${index + 1}/${SURVIVOR_RUN_CHAPTERS.length} · ${chapter.name.toUpperCase()}`);
     audio.sfx("breach");
   }
@@ -561,7 +561,7 @@ export class SurvivorsSystem {
       projectileDamage: REAPER_PROJECTILE_DAMAGE,
       groundHeight: y,
     });
-    this.sys.telemetry.recordEnemySpawned(enemy, "reaper_spawn");
+    this.sys.telemetry?.recordEnemySpawned(enemy, "reaper_spawn");
     this.reaper = enemy;
     this.sys.pve.bossActive = true;
     this.sys.pve.bossEnemy = enemy;
@@ -654,14 +654,14 @@ export class SurvivorsSystem {
         groundHeight: y,
       });
       this.enemyXp.set(enemy, SURV_XP_ELITE_VALUE);
-      this.sys.telemetry.recordEnemySpawned(enemy, "elite_spawn");
+      this.sys.telemetry?.recordEnemySpawned(enemy, "elite_spawn");
       return;
     }
 
     const arch = this.rollArchetype();
     enemy.spawnAt(x, z, { ...this.swarmSpawnOptions(arch), groundHeight: y });
     this.enemyXp.set(enemy, arch.xp);
-    this.sys.telemetry.recordEnemySpawned(enemy);
+    this.sys.telemetry?.recordEnemySpawned(enemy);
   }
 
   /** Weighted archetype roll — fodder starts early, specials fold in as breach pressure rises. */
@@ -721,7 +721,7 @@ export class SurvivorsSystem {
       groundHeight: y,
     });
     this.enemyXp.set(enemy, eliteXpValue(arch.xp));
-    this.sys.telemetry.recordEnemySpawned(enemy, "elite_spawn");
+    this.sys.telemetry?.recordEnemySpawned(enemy, "elite_spawn");
   }
 
   /** Spend split budget for a dying splitting elite (capped per elite wave). */
@@ -739,7 +739,7 @@ export class SurvivorsSystem {
     const total = dmg * this.ctx.statDamageMul * this.ctx.warEffortDamageMul * this.statAmp * (crit ? 2 : 1);
     const healthBefore = enemy.health;
     const res = enemy.takeDamage(total, false);
-    this.sys.telemetry.recordOutgoingDamage(enemy, source, total, res.blocked, healthBefore);
+    this.sys.telemetry?.recordOutgoingDamage(enemy, source, total, res.blocked, healthBefore);
     if (res.blocked) {
       audio.sfx("shieldhit"); // elite overshield (or boss shield) ate the hit
       return;
@@ -765,7 +765,7 @@ export class SurvivorsSystem {
         const k = d > 0.001 ? 1 / d : 1;
         const healthBefore = enemy.health;
         const res = enemy.takeDamage(dmg, false, 4, dx * k, dz * k);
-        this.sys.telemetry.recordOutgoingDamage(enemy, "retaliation", dmg, res.blocked, healthBefore);
+        this.sys.telemetry?.recordOutgoingDamage(enemy, "retaliation", dmg, res.blocked, healthBefore);
         if (res.blocked) {
           audio.sfx("shieldhit"); // overshield ate the retaliation — no damage feedback
         } else {

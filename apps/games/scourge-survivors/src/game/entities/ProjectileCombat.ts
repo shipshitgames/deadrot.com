@@ -40,11 +40,12 @@ export class PlayerTargetCombat implements ProjectileCombat {
         owner?: { archetype?: string } | null;
         fromBoss?: boolean;
       };
-      this.sys.player.damagePlayer(
-        view.damage,
+      this.sys.telemetry?.recordIncomingPressure(
         meta.fromBoss ? "boss_projectile" : "projectile",
         meta.owner?.archetype ?? "unknown",
+        view.damage,
       );
+      this.sys.player.damagePlayer(view.damage);
       return true;
     }
     return false;

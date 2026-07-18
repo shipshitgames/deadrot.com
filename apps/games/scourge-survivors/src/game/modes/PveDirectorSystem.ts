@@ -208,7 +208,7 @@ export class PveDirectorSystem {
 
     if (this.ctx.survivors) {
       const isReaper = this.sys.survivors.isReaper(enemy);
-      this.sys.telemetry.recordEnemyKilled(
+      this.sys.telemetry?.recordEnemyKilled(
         enemy,
         isReaper ? 0 : (this.sys.survivors.enemyXp.get(enemy) ?? SURV_XP_GEM_VALUE),
       );
@@ -334,7 +334,7 @@ export class PveDirectorSystem {
       });
       if (this.ctx.survivors) {
         this.sys.survivors.enemyXp.set(child, 1);
-        this.sys.telemetry.recordEnemySpawned(child);
+        this.sys.telemetry?.recordEnemySpawned(child);
       }
     }
   }
@@ -350,11 +350,11 @@ export class PveDirectorSystem {
       );
       damageToPlayer += tick.melee;
       if (this.ctx.survivors && tick.melee > 0) {
-        this.sys.telemetry.recordIncomingPressure("melee", enemy.archetype, tick.melee);
+        this.sys.telemetry?.recordIncomingPressure("melee", enemy.archetype, tick.melee);
       }
       for (const shot of tick.shots) this.sys.projectiles.spawnProjectile(shot, enemy);
       this.sys.player.pushOutOfObstacles(enemy.position, enemy.radius);
     }
-    if (damageToPlayer > 0) this.sys.player.damagePlayer(damageToPlayer, "melee", "mixed");
+    if (damageToPlayer > 0) this.sys.player.damagePlayer(damageToPlayer);
   }
 }

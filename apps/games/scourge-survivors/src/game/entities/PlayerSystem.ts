@@ -215,17 +215,17 @@ export class PlayerSystem {
     }
   }
 
-  damagePlayer(amount: number, source = "unknown", sourceArchetype = "unknown") {
+  damagePlayer(amount: number) {
     let healthDamage = amount;
     if (this.ctx.survivors) {
       if (this.ctx.damageGraceTimer > 0) {
-        this.sys.telemetry.recordIncomingDamage(source, sourceArchetype, amount, 0, 0, amount);
+        this.sys.telemetry?.recordIncomingDamage("aggregate", "mixed", amount, 0, 0, amount);
         this.sys.fx.addShake(0.06);
         audio.sfx("shieldhit");
         return;
       }
       if (this.ctx.statDodge > 0 && Math.random() < this.ctx.statDodge) {
-        this.sys.telemetry.recordIncomingDamage(source, sourceArchetype, amount, 0, 0, amount);
+        this.sys.telemetry?.recordIncomingDamage("aggregate", "mixed", amount, 0, 0, amount);
         this.ctx.damageGraceTimer = Math.max(this.ctx.damageGraceTimer, 0.12);
         this.sys.fx.addShake(0.08);
         this.sys.hud.showToast("EVADE");
@@ -245,9 +245,9 @@ export class PlayerSystem {
     const healthBefore = this.ctx.health;
     this.ctx.health = Math.max(this.ctx.sandbox ? 1 : 0, this.ctx.health - healthDamage);
     if (this.ctx.survivors) {
-      this.sys.telemetry.recordIncomingDamage(
-        source,
-        sourceArchetype,
+      this.sys.telemetry?.recordIncomingDamage(
+        "aggregate",
+        "mixed",
         amount,
         Math.max(0, healthBefore - this.ctx.health),
         Math.max(0, amount - healthDamage),

@@ -20,7 +20,7 @@ export class GameOverSystem {
       this.sys.input.requestLock();
       return;
     }
-    this.sys.telemetry.endRun("restarted");
+    this.sys.telemetry?.endRun("restarted");
     this.sys.fx.clearTransientFx();
     if (this.ctx.sandbox) {
       this.sys.player.resetPlayer();
@@ -50,7 +50,7 @@ export class GameOverSystem {
 
   /** Return to the main menu (drops any mode, no auto-lock). */
   returnToMenu() {
-    this.sys.telemetry.endRun("abandoned");
+    this.sys.telemetry?.endRun("abandoned");
     this.sys.multiplayer.leaveMultiplayer(false);
     this.sys.mission.clearMissionState();
     this.ctx.sandbox = false;
@@ -67,7 +67,7 @@ export class GameOverSystem {
 
   gameOver(outcome: "win" | "dead") {
     if (this.ctx.status === "gameover") return;
-    this.sys.telemetry.endRun(outcome);
+    this.sys.telemetry?.endRun(outcome);
     this.ctx.status = "gameover";
     this.ctx.outcome = outcome;
     this.ctx.firing = false;

@@ -319,6 +319,8 @@ export class SurvivorsTelemetrySystem {
     };
     rollup.attempted += amount;
     this.incomingPressure.set(key, rollup);
+    this.lastIncomingSource = source;
+    this.lastIncomingArchetype = sourceArchetype;
   }
 
   recordIncomingDamage(
@@ -344,8 +346,10 @@ export class SurvivorsTelemetrySystem {
     rollup.mitigated += Math.max(0, mitigated);
     rollup.avoided += Math.max(0, avoided);
     this.incomingDamage.set(key, rollup);
-    this.lastIncomingSource = source;
-    this.lastIncomingArchetype = sourceArchetype;
+    if (source !== "aggregate") {
+      this.lastIncomingSource = source;
+      this.lastIncomingArchetype = sourceArchetype;
+    }
   }
 
   endRun(outcome: "win" | "dead" | "abandoned" | "restarted"): void {

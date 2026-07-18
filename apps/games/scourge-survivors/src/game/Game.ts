@@ -480,7 +480,7 @@ export class Game {
     cancelAnimationFrame(this.ctx.raf);
 
     this.sys.multiplayer.leaveMultiplayer(false);
-    this.sys.telemetry.endRun("abandoned");
+    this.sys.telemetry?.endRun("abandoned");
     this.sys.input.removeListeners();
 
     this.ctx.rig.dispose();
