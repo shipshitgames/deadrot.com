@@ -44,6 +44,7 @@ import { preloadCombatAssets } from "./spriteAssets";
 import type { GameSystems } from "./systems";
 import { HudSystem } from "./systems/HudSystem";
 import { InputSystem } from "./systems/InputSystem";
+import { SurvivorsTelemetrySystem } from "./systems/SurvivorsTelemetrySystem";
 import type { StateListener } from "./types";
 
 export type SandboxEnemyKind = "melee" | "ranged" | "flying" | "boss";
@@ -81,6 +82,7 @@ export class Game {
     sys.multiplayer = new MultiplayerSystem(ctx, sys);
     sys.input = new InputSystem(ctx, sys);
     sys.hud = new HudSystem(ctx, sys);
+    sys.telemetry = new SurvivorsTelemetrySystem(ctx, sys);
     sys.gameOver = new GameOverSystem(ctx, sys);
   }
 
@@ -478,6 +480,7 @@ export class Game {
     cancelAnimationFrame(this.ctx.raf);
 
     this.sys.multiplayer.leaveMultiplayer(false);
+    this.sys.telemetry.endRun("abandoned");
     this.sys.input.removeListeners();
 
     this.ctx.rig.dispose();

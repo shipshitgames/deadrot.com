@@ -36,7 +36,15 @@ export class PlayerTargetCombat implements ProjectileCombat {
   resolveHit(view: ProjectileView): boolean {
     // Full 3D distance to the eye point — enemy shots aim at this same point.
     if (view.position.distanceTo(this.ctx.body.position) < PROJECTILE_HIT_RADIUS) {
-      this.sys.player.damagePlayer(view.damage);
+      const meta = view.meta as {
+        owner?: { archetype?: string } | null;
+        fromBoss?: boolean;
+      };
+      this.sys.player.damagePlayer(
+        view.damage,
+        meta.fromBoss ? "boss_projectile" : "projectile",
+        meta.owner?.archetype ?? "unknown",
+      );
       return true;
     }
     return false;
