@@ -20,9 +20,9 @@ import { ARENA_HALF } from "../../src/game/constants";
 import {
   ARENA_BOUNDS_PARITY,
   type ArenaMap,
-  CAMPAIGN_ORDER,
   campaignSequence,
   DEFAULT_ARENA_BOUNDS,
+  DEFAULT_JOURNEY_MAP_IDS,
   DEFAULT_ARENA_MATERIALS,
   DEFAULT_MAP_ID,
   getMap,
@@ -35,7 +35,7 @@ import {
 
 describe("v1 maps normalize through the v2 adapter at registry load", () => {
   it("attaches a layout with the default bounds while map.bounds stays undefined", () => {
-    for (const mapId of CAMPAIGN_ORDER) {
+    for (const mapId of DEFAULT_JOURNEY_MAP_IDS) {
       const map = MAPS[mapId];
       expect(map.layout, `${mapId} layout`).toBeDefined();
       expect(map.bounds, `${mapId} keeps bounds undefined (world-bounds contract)`).toBeUndefined();
@@ -44,7 +44,7 @@ describe("v1 maps normalize through the v2 adapter at registry load", () => {
   });
 
   it("synthesizes exactly one whole-bounds root room aliasing the flat obstacles", () => {
-    for (const mapId of CAMPAIGN_ORDER) {
+    for (const mapId of DEFAULT_JOURNEY_MAP_IDS) {
       const map = MAPS[mapId];
       expect(map.layout.rooms, `${mapId} room count`).toHaveLength(1);
       expect(map.layout.rooms[0], `${mapId} root room`).toMatchObject({
@@ -57,7 +57,7 @@ describe("v1 maps normalize through the v2 adapter at registry load", () => {
   });
 
   it("flattenObstacles preserves count, order, and element identity vs the flat list", () => {
-    for (const mapId of CAMPAIGN_ORDER) {
+    for (const mapId of DEFAULT_JOURNEY_MAP_IDS) {
       const map = MAPS[mapId];
       const flat = flattenObstacles(map.layout);
       expect(flat, `${mapId} flattened count`).toHaveLength(map.obstacles.length);
@@ -68,11 +68,11 @@ describe("v1 maps normalize through the v2 adapter at registry load", () => {
   });
 
   it("keeps elevated (render-only) obstacles in the flattened list", () => {
-    const elevatedTotal = CAMPAIGN_ORDER.flatMap((id) =>
+    const elevatedTotal = DEFAULT_JOURNEY_MAP_IDS.flatMap((id) =>
       flattenObstacles(MAPS[id].layout).filter((o) => o.elevated),
     ).length;
     expect(elevatedTotal, "ashgate + perdition each ship one elevated crate").toBe(2);
-    for (const mapId of CAMPAIGN_ORDER) {
+    for (const mapId of DEFAULT_JOURNEY_MAP_IDS) {
       const map = MAPS[mapId];
       const flatElevated = flattenObstacles(map.layout).filter((o) => o.elevated);
       const srcElevated = map.obstacles.filter((o) => o.elevated);
@@ -81,7 +81,7 @@ describe("v1 maps normalize through the v2 adapter at registry load", () => {
   });
 
   it("synthesizes exactly the ground level and nothing else", () => {
-    for (const mapId of CAMPAIGN_ORDER) {
+    for (const mapId of DEFAULT_JOURNEY_MAP_IDS) {
       const map = MAPS[mapId];
       expect(map.layout.levels, `${mapId} levels`).toEqual([{ id: GROUND_LEVEL_ID, y: 0, name: "Ground" }]);
       expect(map.layout.ramps, `${mapId} ramps`).toEqual([]);
@@ -90,7 +90,7 @@ describe("v1 maps normalize through the v2 adapter at registry load", () => {
   });
 
   it("matches engine makeBounds numbers via boundsToRect (square parity)", () => {
-    for (const mapId of CAMPAIGN_ORDER) {
+    for (const mapId of DEFAULT_JOURNEY_MAP_IDS) {
       const map = MAPS[mapId];
       const engineBounds = makeBounds(map.bounds ?? DEFAULT_ARENA_BOUNDS);
       const rect = boundsToRect(map.layout.bounds);
@@ -114,7 +114,7 @@ describe("v1 maps normalize through the v2 adapter at registry load", () => {
   });
 
   it("is idempotent: re-normalizing a registry layout reproduces it exactly", () => {
-    for (const mapId of CAMPAIGN_ORDER) {
+    for (const mapId of DEFAULT_JOURNEY_MAP_IDS) {
       const map = MAPS[mapId];
       const again = normalizeArenaLayout<MapObstacle>(map.layout, { defaultBounds: DEFAULT_ARENA_BOUNDS });
       expect(again, `${mapId} idempotent`).toEqual(map.layout);
@@ -124,7 +124,7 @@ describe("v1 maps normalize through the v2 adapter at registry load", () => {
 
 describe("typed anchors", () => {
   it("lifts the v1 spawn into the single playerSpawn anchor", () => {
-    for (const mapId of CAMPAIGN_ORDER) {
+    for (const mapId of DEFAULT_JOURNEY_MAP_IDS) {
       const map = MAPS[mapId];
       expect(map.layout.anchors, `${mapId} anchors`).toEqual([
         {
@@ -142,7 +142,7 @@ describe("typed anchors", () => {
   });
 
   it("never invents breach/objective/extraction anchors (empty = procedural scatter)", () => {
-    for (const mapId of CAMPAIGN_ORDER) {
+    for (const mapId of DEFAULT_JOURNEY_MAP_IDS) {
       const map = MAPS[mapId];
       expect(anchorsOfKind(map.layout, "breachSpawn"), `${mapId} breachSpawn`).toEqual([]);
       expect(anchorsOfKind(map.layout, "objective"), `${mapId} objective`).toEqual([]);
@@ -154,9 +154,9 @@ describe("typed anchors", () => {
 
 describe("registry backward compatibility", () => {
   it("keeps the canonical campaign descent and default map", () => {
-    expect(CAMPAIGN_ORDER).toEqual(["ashgate", "hollowlanes", "maw", "perdition"]);
+    expect(DEFAULT_JOURNEY_MAP_IDS).toEqual(["ashgate", "hollowlanes", "maw", "perdition"]);
     expect(DEFAULT_MAP_ID).toBe("ashgate");
-    expect(Object.keys(MAPS)).toEqual(CAMPAIGN_ORDER);
+    expect(Object.keys(MAPS)).toEqual(DEFAULT_JOURNEY_MAP_IDS);
   });
 
   it("keeps the v1 defaults and every v1 field on the shipped maps, with no v2 authoring", () => {
@@ -167,7 +167,7 @@ describe("registry backward compatibility", () => {
       block: "arena-block",
       column: "arena-column",
     });
-    for (const mapId of CAMPAIGN_ORDER) {
+    for (const mapId of DEFAULT_JOURNEY_MAP_IDS) {
       const map = MAPS[mapId];
       expect(map.id, `${mapId} id`).toBe(mapId);
       for (const field of [
@@ -200,14 +200,14 @@ describe("registry backward compatibility", () => {
     expect(getMap("maw").layout).toBeDefined();
   });
 
-  it("campaignSequence wraps in canonical order with normalized maps by reference", () => {
+  it("campaignSequence follows the named journey toward Perdition without wrapping", () => {
     const fromMaw = campaignSequence("maw");
-    expect(fromMaw.map((m) => m.id)).toEqual(["maw", "perdition", "ashgate", "hollowlanes"]);
+    expect(fromMaw.map((m) => m.id)).toEqual(["maw", "perdition"]);
     for (const map of fromMaw) {
       expect(map, `${map.id} sequence entry is the registry object`).toBe(MAPS[map.id]);
       expect(map.layout, `${map.id} sequence entry normalized`).toBeDefined();
     }
-    expect(campaignSequence("unknown").map((m) => m.id)).toEqual(CAMPAIGN_ORDER);
+    expect(campaignSequence("unknown").map((m) => m.id)).toEqual(DEFAULT_JOURNEY_MAP_IDS);
   });
 
   it("keeps the campaign first in MAP_PICKER, followed by shipped Survivors variants", () => {
@@ -217,7 +217,9 @@ describe("registry backward compatibility", () => {
         return { id: map.id, name: map.name, subtitle: map.subtitle, icon: map.icon, accent: map.accent };
       }),
     );
-    expect(MAP_PICKER.slice(0, CAMPAIGN_ORDER.length).map((map) => map.id)).toEqual(CAMPAIGN_ORDER);
+    expect(MAP_PICKER.slice(0, DEFAULT_JOURNEY_MAP_IDS.length).map((map) => map.id)).toEqual(
+      DEFAULT_JOURNEY_MAP_IDS,
+    );
   });
 
   it("pins engine MapBounds ⇄ game-kit ArenaBounds mutual assignability", () => {

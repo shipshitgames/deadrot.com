@@ -9,7 +9,13 @@
 
 import { type BiomeId, isBiomeId, resolveBiomeTheme } from "@deadrot/game-kit/maps";
 import { describe, expect, it } from "vitest";
-import { CAMPAIGN_ORDER, campaignSequence, getMap, MAPS, type MapTheme } from "../../src/game/data/maps";
+import {
+  campaignSequence,
+  DEFAULT_JOURNEY_MAP_IDS,
+  getMap,
+  MAPS,
+  type MapTheme,
+} from "../../src/game/data/maps";
 
 /** The exact theme blocks the four maps authored inline before the biome
  *  refactor — the presets must reproduce them bit-identically. */
@@ -97,7 +103,7 @@ describe("biome theme presets (#80)", () => {
   });
 
   it("VISUAL PARITY: resolved themes are value-identical to the pre-refactor authored blocks", () => {
-    for (const mapId of CAMPAIGN_ORDER) {
+    for (const mapId of DEFAULT_JOURNEY_MAP_IDS) {
       expect(getMap(mapId).theme, `${mapId} pre-refactor parity`).toEqual(PRE_REFACTOR_THEMES[mapId]);
     }
   });
@@ -117,7 +123,7 @@ describe("biome theme presets (#80)", () => {
       expect(map.theme, `MAPS[${mapId}].theme`).toBeDefined();
       expect(getMap(mapId).theme, `getMap(${mapId}).theme`).toBeDefined();
     }
-    for (const startId of CAMPAIGN_ORDER) {
+    for (const startId of DEFAULT_JOURNEY_MAP_IDS) {
       for (const map of campaignSequence(startId)) {
         expect(map.theme, `campaignSequence(${startId}) → ${map.id}.theme`).toBeDefined();
       }

@@ -1,4 +1,3 @@
-import { STAGE_CLEAR_HEAL } from "../constants";
 import type { GameContext } from "../context";
 import { getMap } from "../data/maps";
 import {
@@ -64,7 +63,7 @@ export class MissionSystem {
     }
 
     this.ctx.campaignStage = this.ctx.mission.stageIndex;
-    this.ctx.health = Math.min(this.ctx.maxHealthValue, this.ctx.health + STAGE_CLEAR_HEAL);
+    this.ctx.health = Math.min(this.ctx.maxHealthValue, this.ctx.health + next.healOnEnter);
     this.sys.arena.buildArena(this.ctx.campaignMaps[this.ctx.campaignStage]);
     this.sys.fx.clearTransientFx();
     this.sys.arena.placeAtSpawn();

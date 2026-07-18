@@ -57,7 +57,7 @@ import {
 } from "@deadrot/game-kit/maps";
 import type { MapBounds } from "@shipshitgames/engine";
 import type { PixelIconId } from "../../assets/ui/pixelIcons";
-import { ARENA_HALF } from "../constants";
+import { ARENA_HALF, STAGE_CLEAR_HEAL, STAGE_DIFFICULTY_STEP } from "../constants";
 
 export type ObstacleMat = "crate" | "pillar" | "wall";
 export type ArenaMaterialRole = "floor" | "wall" | "block" | "column";
@@ -763,12 +763,68 @@ function normalizeMap(map: ArenaMap): NormalizedArenaMap {
 }
 
 /** All campaign maps, keyed by id. */
-export const MAPS: Record<string, NormalizedArenaMap> = {
+export const MAPS = {
   ashgate: normalizeMap(ASHGATE),
   hollowlanes: normalizeMap(HOLLOWLANES),
   maw: normalizeMap(MAW),
   perdition: normalizeMap(PERDITION),
-};
+} satisfies Record<string, NormalizedArenaMap>;
+
+export type CampaignMapId = keyof typeof MAPS;
+
+export interface JourneyStageDefinition {
+  mapId: CampaignMapId;
+  /** Authored health scalar for enemies and the breach boss at this depth. */
+  difficultyMultiplier: number;
+  /** Health restored when entering this stage after clearing the previous one. */
+  healOnEnter: number;
+}
+
+export interface JourneyDefinition {
+  id: string;
+  name: string;
+  description: string;
+  stages: readonly JourneyStageDefinition[];
+}
+
+/**
+ * Named structured-run journeys. This is the sole source of campaign order and
+ * stage escalation; future descents can add a definition without maintaining a
+ * parallel order array.
+ */
+export const JOURNEYS = {
+  "perdition-descent": {
+    id: "perdition-descent",
+    name: "The Perdition Descent",
+    description: "Push from Ashgate through the dead lanes and breach throat to Perdition.",
+    stages: [
+      { mapId: "ashgate", difficultyMultiplier: 1, healOnEnter: 0 },
+      {
+        mapId: "hollowlanes",
+        difficultyMultiplier: 1 + STAGE_DIFFICULTY_STEP,
+        healOnEnter: STAGE_CLEAR_HEAL,
+      },
+      {
+        mapId: "maw",
+        difficultyMultiplier: 1 + STAGE_DIFFICULTY_STEP * 2,
+        healOnEnter: STAGE_CLEAR_HEAL,
+      },
+      {
+        mapId: "perdition",
+        difficultyMultiplier: 1 + STAGE_DIFFICULTY_STEP * 3,
+        healOnEnter: STAGE_CLEAR_HEAL,
+      },
+    ],
+  },
+} as const satisfies Record<string, JourneyDefinition>;
+
+export type JourneyId = keyof typeof JOURNEYS;
+
+export const DEFAULT_JOURNEY_ID: JourneyId = "perdition-descent";
+export const DEFAULT_JOURNEY = JOURNEYS[DEFAULT_JOURNEY_ID];
+
+/** Derived map ids for registry checks and consumers that only need order. */
+export const DEFAULT_JOURNEY_MAP_IDS: CampaignMapId[] = DEFAULT_JOURNEY.stages.map((stage) => stage.mapId);
 
 /**
  * Shipped Survivors-selectable maps. Campaign maps stay in MAPS so the
@@ -782,7 +838,7 @@ export const SURVIVOR_MAPS: Record<string, NormalizedArenaMap> = {
 
 /**
  * Sandbox-only maps: dev/e2e-reachable demonstrators that are NOT part of the
- * campaign and NOT in MAPS (so CAMPAIGN_ORDER/MAPS invariants stay intact).
+ * campaign and NOT in MAPS (so journey/MAPS invariants stay intact).
  * getMap falls through to here, so startSandbox("gantry") resolves a real,
  * normalized map without polluting the campaign registry or its texture-preload
  * list (these reuse a campaign map's material ids — see GANTRY).
@@ -791,14 +847,12 @@ export const SANDBOX_MAPS: Record<string, NormalizedArenaMap> = {
   gantry: normalizeMap(GANTRY),
 };
 
-/**
- * Canonical campaign order — the canon descent into the breach:
- * Ashgate → The Hollow Lanes → The Maw → Perdition.
- */
-export const CAMPAIGN_ORDER: string[] = ["ashgate", "hollowlanes", "maw", "perdition"];
+const JOURNEY_MAP_ORDER = [
+  ...new Set(Object.values(JOURNEYS).flatMap((journey) => journey.stages.map((stage) => stage.mapId))),
+];
 
-/** Stable picker order: the canon campaign first, then optional breach arenas. */
-export const SURVIVOR_MAP_ORDER: string[] = [...CAMPAIGN_ORDER, "foundry-wards", "breach-primus"];
+/** Stable picker order: named-journey maps first, then optional breach arenas. */
+export const SURVIVOR_MAP_ORDER: string[] = [...JOURNEY_MAP_ORDER, "foundry-wards", "breach-primus"];
 
 /** Default arena for non-structured modes (Survivors / PvP preview / menu). */
 export const DEFAULT_MAP_ID = "ashgate";
@@ -812,14 +866,22 @@ export function normalizeMapId(id?: string | null): string {
   return id && SURVIVOR_MAPS[id] ? id : DEFAULT_MAP_ID;
 }
 
-/**
- * Build the campaign stage sequence starting from `startId`: that map first,
- * then the remaining maps in canonical order (wrapping around).
- */
-export function campaignSequence(startId: string): NormalizedArenaMap[] {
-  const start = CAMPAIGN_ORDER.indexOf(startId);
-  const order = start < 0 ? CAMPAIGN_ORDER : [...CAMPAIGN_ORDER.slice(start), ...CAMPAIGN_ORDER.slice(0, start)];
-  return order.map((id) => MAPS[id]);
+/** Build authored stage definitions from `startId` down to the journey's end. */
+export function journeyStageSequence(
+  startId: string,
+  journeyId: JourneyId = DEFAULT_JOURNEY_ID,
+): readonly JourneyStageDefinition[] {
+  const journey = JOURNEYS[journeyId];
+  const start = journey.stages.findIndex((stage) => stage.mapId === startId);
+  return start < 0 ? journey.stages : journey.stages.slice(start);
+}
+
+/** Build normalized campaign maps from a named journey's authored stages. */
+export function campaignSequence(
+  startId: string,
+  journeyId: JourneyId = DEFAULT_JOURNEY_ID,
+): NormalizedArenaMap[] {
+  return journeyStageSequence(startId, journeyId).map((stage) => MAPS[stage.mapId]);
 }
 
 /** Lightweight metadata for the picker UI (no THREE dependency). */

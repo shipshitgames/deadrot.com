@@ -32,6 +32,7 @@ import {
 import type { GameContext } from "../context";
 import { rollEliteSplitCount } from "../data/eliteWaves";
 import { campaignArchetypeForWave, ENEMY_ARCHETYPES, SCOURGE_THREAT_TIERS } from "../data/enemies";
+import { currentMissionStage } from "../data/missions";
 import { SURV_XP_GEM_VALUE } from "../data/survivors";
 import { Enemy } from "../entities/Enemy";
 import type { GameSystems } from "../systems";
@@ -97,7 +98,11 @@ export class PveDirectorSystem {
 
   /** Per-stage difficulty scalar for the structured descent (1.0 on stage 1, no effect elsewhere). */
   stageMul(): number {
-    return 1 + STAGE_DIFFICULTY_STEP * this.ctx.campaignStage;
+    if (!this.ctx.campaign) return 1;
+    return (
+      currentMissionStage(this.ctx.mission)?.difficultyMultiplier ??
+      1 + STAGE_DIFFICULTY_STEP * this.ctx.campaignStage
+    );
   }
 
   spawnWaveEnemy(descriptor: SpawnDescriptor<WaveConfig>) {
