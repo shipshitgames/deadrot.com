@@ -739,14 +739,15 @@ export class Enemy extends Agent {
     const archetype = ENEMY_ARCHETYPES[this.archetype];
     const baseStagger = (headshot ? 0.2 : 0.075) + Math.min(0.08, amount / 900);
     const bossMul = this.isBoss ? 0.3 : 1;
-    this.staggerTimer = Math.max(this.staggerTimer, baseStagger * archetype.staggerMul * bossMul);
+    const eliteMul = this.eliteAffix ? 0.65 : 1;
+    this.staggerTimer = Math.max(this.staggerTimer, baseStagger * archetype.staggerMul * bossMul * eliteMul);
     if (headshot && this.archetype === "charger") {
       this.chargeWindup = 0;
       this.chargeTimer *= 0.35;
     }
     if (knock > 0) {
       // heavier enemies barely budge; overwrite (not add) so multi-pellet hits don't launch
-      const mass = this.isBoss ? 7 : archetype.mass;
+      const mass = (this.isBoss ? 7 : archetype.mass) * (this.eliteAffix ? 1.4 : 1);
       const headshotBoost = headshot ? 1.45 : 1;
       this.knockX = kx * ((knock * headshotBoost) / mass);
       this.knockZ = kz * ((knock * headshotBoost) / mass);
