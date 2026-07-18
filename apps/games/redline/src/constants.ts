@@ -129,6 +129,11 @@ export const SCORE = {
 } as const;
 
 export const FEEDBACK = {
+  // Redline feedback uses hysteresis so a runner hovering around the threshold
+  // gets one clean ignition beat instead of a whoosh every other frame.
+  redlineExitFrac: 0.78,
+  redlineWhooshPitch: 0.88,
+  redlineShake: 0.18,
   // Land SFX/dust only fire on meaningful falls: impact fall speed (u/s,
   // negative = down) must be at least this fast. A full jump lands ~ -26;
   // a cut-jump hop lands ~ -12.
@@ -138,6 +143,7 @@ export const FEEDBACK = {
   jumpPitchJitter: 0.08, // subtle per-jump pitch variation
   // Particle bursts (consumed by the render system via game-kit ParticleBursts).
   emberBurst: { count: 12, speed: 6.5, life: 0.5, size: 0.17, upwardBias: 0.55 },
+  redlineBurst: { count: 18, speed: 8.5, life: 0.42, size: 0.13, upwardBias: 0.18 },
   dustBurst: { count: 10, speed: 3.4, life: 0.42, size: 0.15, gravity: 14, upwardBias: 0.6 },
   dustPuff: { count: 5, speed: 2.2, life: 0.32, size: 0.12, gravity: 10, upwardBias: 0.8 },
 } as const;
