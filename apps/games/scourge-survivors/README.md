@@ -46,7 +46,7 @@ draft decisions, enemy pressure, damage, boss phases, and run outcomes. Browser
 events are buffered under `deadrot:balance-telemetry:v1`; inspect them locally with:
 
 ```js
-JSON.parse(localStorage.getItem("deadrot:balance-telemetry:v1") ?? "[]")
+JSON.parse(localStorage.getItem("deadrot:balance-telemetry:v1") ?? "null")?.data ?? []
 ```
 
 When configured, the same events are sent to PostHog as

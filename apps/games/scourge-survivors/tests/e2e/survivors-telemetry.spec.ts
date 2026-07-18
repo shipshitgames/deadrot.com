@@ -18,7 +18,12 @@ type DevGame = {
 };
 
 async function balanceEvents(page: Page): Promise<BalanceEvent[]> {
-  return page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "[]") as BalanceEvent[], BALANCE_TELEMETRY_KEY);
+  return page.evaluate((key) => {
+    const stored = JSON.parse(localStorage.getItem(key) ?? "null") as {
+      data?: unknown;
+    } | null;
+    return Array.isArray(stored?.data) ? (stored.data as BalanceEvent[]) : [];
+  }, BALANCE_TELEMETRY_KEY);
 }
 
 test.describe("Survivors balance telemetry lifecycle", () => {
