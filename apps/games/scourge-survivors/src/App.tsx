@@ -3,6 +3,7 @@ import { GlobalMusicToggle, subscribeGlobalGameSettings } from "@shipshitgames/u
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { audio } from "./audio/AudioEngine";
 import { HUD } from "./components/HUD";
+import { CinematicOverlay } from "./components/hud/CinematicOverlay";
 import {
   MAGAZINE_SIZE,
   type PickupKind,
@@ -13,6 +14,14 @@ import {
   WEAPONS,
   type WeaponId,
 } from "./game/constants";
+import {
+  type CinematicBeat,
+  cinematicAssignmentFor,
+  cinematicForRunOutcome,
+  cinematicForRunProgress,
+  cinematicForRunStart,
+} from "./game/data/cinematics";
+import { DEFAULT_MAP_ID, normalizeMapId } from "./game/data/maps";
 import {
   type MainWeaponVisualTier,
   runBiomass,
@@ -165,6 +174,28 @@ export default function App() {
   const [hud, setHudState] = useState<HudState>(INITIAL_STATE);
   const [combatAssetLoading, setCombatAssetLoading] = useState(false);
   const [combatAssetError, setCombatAssetError] = useState<string>();
+  const [activeCinematic, setActiveCinematic] = useState<CinematicBeat | null>(null);
+  const activeArenaIdRef = useRef(DEFAULT_MAP_ID);
+  const cinematicChapterRef = useRef(INITIAL_STATE.survivorChapter);
+  const cinematicCompletionRef = useRef<() => void>(() => {});
+  const showCinematic = useCallback((beat: CinematicBeat | null, onComplete: () => void) => {
+    if (!beat) {
+      onComplete();
+      return;
+    }
+    cinematicCompletionRef.current = onComplete;
+    setActiveCinematic(beat);
+  }, []);
+  const completeCinematic = useCallback(() => {
+    const onComplete = cinematicCompletionRef.current;
+    cinematicCompletionRef.current = () => {};
+    setActiveCinematic(null);
+    onComplete();
+  }, []);
+  const clearCinematic = useCallback(() => {
+    cinematicCompletionRef.current = () => {};
+    setActiveCinematic(null);
+  }, []);
   const [scores, setScores] = useState<ScoreEntry[]>(() => loadScores());
   const [shop, setShop] = useState<ShopState>(() => loadShop());
   const lastRunGoldRef = useRef(0);
@@ -253,6 +284,7 @@ export default function App() {
         } else {
           lastRunGoldRef.current = 0;
         }
+        showCinematic(cinematicForRunOutcome(activeArenaIdRef.current, next.outcome), () => {});
       } else if (next.status !== "gameover") {
         if (previous.status === "gameover") runNonceRef.current = createRunNonce("scourge-survivors");
         savedRef.current = false;
@@ -260,7 +292,7 @@ export default function App() {
       }
       setHudState(next);
     },
-    [currentRunNonce],
+    [currentRunNonce, showCinematic],
   );
 
   const runCombatLaunch = useCallback(async (request: CombatLaunchRequest): Promise<void> => {
@@ -325,6 +357,25 @@ export default function App() {
     };
   }, [initialSandbox, runCombatLaunch, setHud, setSandboxInUrl]);
 
+  useEffect(() => {
+    if (!hud.survivors || hud.status === "gameover") {
+      cinematicChapterRef.current = hud.survivorChapter;
+      return;
+    }
+    if (hud.survivorChapter <= cinematicChapterRef.current) {
+      cinematicChapterRef.current = hud.survivorChapter;
+      return;
+    }
+
+    const progressIndex = hud.survivorChapter - 2;
+    cinematicChapterRef.current = hud.survivorChapter;
+    const stinger = cinematicForRunProgress(activeArenaIdRef.current, progressIndex);
+    if (!stinger || activeCinematic) return;
+
+    gameRef.current?.suspendForCinematic();
+    showCinematic(stinger, () => gameRef.current?.resumeFromCinematic());
+  }, [activeCinematic, hud.status, hud.survivorChapter, hud.survivors, showCinematic]);
+
   const handleLock = useCallback(() => {
     audio.unlock();
     gameRef.current?.requestLock();
@@ -335,9 +386,16 @@ export default function App() {
   const handleRestart = useCallback(() => {
     audio.unlock();
     const current = hudRef.current;
-    audio.setMusicMode(current.multiplayer ? "multiplayer" : current.survivors ? "survivors" : "campaign");
-    gameRef.current?.restart();
-  }, []);
+    const restart = () => {
+      audio.setMusicMode(current.multiplayer ? "multiplayer" : current.survivors ? "survivors" : "campaign");
+      gameRef.current?.restart();
+    };
+    if (current.multiplayer || current.sandbox) {
+      restart();
+      return;
+    }
+    showCinematic(cinematicForRunStart(activeArenaIdRef.current), restart);
+  }, [showCinematic]);
   const handleClearScores = useCallback(() => setScores(clearScores()), []);
   const handleStartMultiplayer = useCallback(
     async (name: string, room: string, avatar: PlayerAvatarId) => {
@@ -362,16 +420,18 @@ export default function App() {
   const handleStartSurvivors = useCallback(
     async (classId?: SurvivorClassId, mapId?: string) => {
       audio.unlock();
+      activeArenaIdRef.current = normalizeMapId(mapId);
       await runCombatLaunch({
         start: (game) => game.startSurvivors(classId, mapId),
         onSuccess: () => {
           audio.setMusicMode("survivors");
           setSandboxActive(false);
           setSandboxInUrl(false);
+          showCinematic(cinematicForRunStart(activeArenaIdRef.current), () => gameRef.current?.requestLock());
         },
       });
     },
-    [runCombatLaunch, setSandboxInUrl],
+    [runCombatLaunch, setSandboxInUrl, showCinematic],
   );
   const handleStartSandbox = useCallback(
     async (mapId?: string) => {
@@ -437,12 +497,13 @@ export default function App() {
     gameRef.current?.banishUpgrade(id);
   }, []);
   const handleMenu = useCallback(() => {
+    clearCinematic();
     setRoomInUrl("");
     audio.setMusicMode("menu");
     setSandboxActive(false);
     setSandboxInUrl(false);
     gameRef.current?.returnToMenu();
-  }, [setRoomInUrl, setSandboxInUrl]);
+  }, [clearCinematic, setRoomInUrl, setSandboxInUrl]);
   const handleBuyShop = useCallback((id: string) => {
     setShop((prev) => {
       const def = SHOP_BY_ID[id as ShopId];
@@ -484,6 +545,13 @@ export default function App() {
         suppressMenu={sandboxActive}
       />
       <WarEffortBadge gameRef={gameRef} />
+      {activeCinematic && (
+        <CinematicOverlay
+          beat={activeCinematic}
+          site={cinematicAssignmentFor(activeArenaIdRef.current).site}
+          onComplete={completeCinematic}
+        />
+      )}
       {sandboxActive && <GlobalMusicToggle className="ssg-music-toggle--corner" />}
       {SandboxPanel && sandboxActive && (
         <Suspense fallback={null}>
