@@ -120,7 +120,10 @@ export function survivorBuildTelemetry(
       evolved: id in evolved && evolved[id as WeaponUpgradeId],
     });
   }
-  for (const entries of Object.values(build)) entries.sort((a, b) => a.id.localeCompare(b.id));
+  const byId = (a: { id: string }, b: { id: string }) => a.id.localeCompare(b.id);
+  build.offensive.sort(byId);
+  build.defensive.sort(byId);
+  build.utility.sort(byId);
   return build;
 }
 
