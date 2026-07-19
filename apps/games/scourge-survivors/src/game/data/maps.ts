@@ -749,6 +749,200 @@ const BREACH_PRIMUS: ArenaMap = {
   ],
 };
 
+// ============================================================================
+// REACTOR VERGE — an Ashgate holdout variant at the edge of a live induction
+// stack. Four solid exchanger banks leave a cross-shaped hazard route through
+// the centre while split baffles force the horde around both flanks.
+//
+// `cinderwell` is the shared catalog's Reactor/hazard biome: induction stacks,
+// slag exchangers, machine oil, and disciplined hazard-yellow/alarm-red light.
+// Presentation reuses Ashgate's registered assets; only layout + palette data
+// differ from the canon campaign map.
+// ============================================================================
+const REACTOR_VERGE: ArenaMap = {
+  id: "reactor-verge",
+  loreId: "ashgate",
+  front: "holdout",
+  name: "Reactor Verge",
+  subtitle: "Ashgate induction stacks — hold the exchanger line",
+  icon: "foundry",
+  accent: "#d6a21f",
+  biomeId: "cinderwell",
+  materials: ASHGATE.materials,
+  environment: ASHGATE.environment,
+  spawn: { x: -32, z: 32 },
+  obstacles: [],
+  rooms: [
+    {
+      id: "exchanger-verge",
+      name: "Exchanger Verge",
+      bounds: DEFAULT_ARENA_BOUNDS,
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        // Four exchanger banks form a cross-shaped central hazard route.
+        { x: -6, z: -6, w: 6, h: 4, d: 6, mat: "wall" },
+        { x: 6, z: -6, w: 6, h: 4, d: 6, mat: "wall" },
+        { x: -6, z: 6, w: 6, h: 4, d: 6, mat: "wall" },
+        { x: 6, z: 6, w: 6, h: 4, d: 6, mat: "wall" },
+        // Split outer baffles preserve north/south traversal on both flanks.
+        { x: -20, z: -15, w: 2.4, h: 3, d: 16, mat: "wall" },
+        { x: -20, z: 15, w: 2.4, h: 3, d: 16, mat: "wall" },
+        { x: 20, z: -15, w: 2.4, h: 3, d: 16, mat: "wall" },
+        { x: 20, z: 15, w: 2.4, h: 3, d: 16, mat: "wall" },
+        { x: 0, z: -24, w: 3, h: 3, d: 3, mat: "crate" },
+        { x: 0, z: 24, w: 3, h: 3, d: 3, mat: "crate" },
+      ],
+    },
+  ],
+  anchors: [
+    {
+      kind: "playerSpawn",
+      id: "verge-spawn",
+      x: -32,
+      z: 32,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "exchanger-verge",
+    },
+    {
+      kind: "breachSpawn",
+      id: "reactor-east-breach",
+      x: 34,
+      z: -32,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "exchanger-verge",
+      laneId: "east",
+    },
+    {
+      kind: "breachSpawn",
+      id: "reactor-west-breach",
+      x: -34,
+      z: -32,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "exchanger-verge",
+      laneId: "west",
+    },
+    {
+      kind: "objective",
+      id: "exchanger-control",
+      x: 0,
+      z: 0,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "exchanger-verge",
+    },
+  ],
+};
+
+// ============================================================================
+// CHOIR NODE — a three-room route through Perdition's densest repeater-heart.
+// The operator enters through the pressure throat, crosses the signal nave,
+// and reaches the node chamber where the breach mouths converge.
+//
+// This is local sabotage inside the canon Choir Node, not a claim that the
+// wider Choir can be severed. Presentation reuses Perdition's registered
+// material/environment assets and its deep-breach biome.
+// ============================================================================
+const CHOIR_NODE: ArenaMap = {
+  id: "choir-node",
+  loreId: "perdition",
+  front: "breach",
+  name: "Choir Node",
+  subtitle: "Perdition repeater-heart — burn a wound and run",
+  icon: "fire",
+  accent: "#ff2a18",
+  biomeId: "perdition",
+  materials: PERDITION.materials,
+  environment: PERDITION.environment,
+  spawn: { x: 0, z: 34 },
+  obstacles: [],
+  rooms: [
+    {
+      id: "pressure-throat",
+      name: "Pressure Throat",
+      bounds: { kind: "rect", minX: -40, maxX: 40, minZ: 12, maxZ: 40 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        // Split ribs leave a 24m mouth into the signal nave.
+        { x: -24, z: 13, w: 24, h: 4, d: 2, mat: "wall" },
+        { x: 24, z: 13, w: 24, h: 4, d: 2, mat: "wall" },
+        { x: -20, z: 28, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: 20, z: 28, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: 0, z: 22, w: 8, h: 1.2, d: 2.4, mat: "wall" },
+      ],
+    },
+    {
+      id: "signal-nave",
+      name: "Signal Nave",
+      bounds: { kind: "rect", minX: -40, maxX: 40, minZ: -12, maxZ: 12 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        { x: -22, z: -5, w: 12, h: 3, d: 2.4, mat: "wall" },
+        { x: 22, z: 5, w: 12, h: 3, d: 2.4, mat: "wall" },
+        { x: -8, z: 6, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: 8, z: -6, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+      ],
+    },
+    {
+      id: "repeater-heart",
+      name: "Repeater Heart",
+      bounds: { kind: "rect", minX: -40, maxX: 40, minZ: -40, maxZ: -12 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        // A second split rib frames the chamber without sealing the route.
+        { x: -24, z: -13, w: 24, h: 4, d: 2, mat: "wall" },
+        { x: 24, z: -13, w: 24, h: 4, d: 2, mat: "wall" },
+        { x: -12, z: -25, w: 4, h: 4, d: 4, mat: "crate" },
+        { x: 12, z: -25, w: 4, h: 4, d: 4, mat: "crate" },
+        { x: 0, z: -34, w: 10, h: 1.2, d: 2.4, mat: "wall" },
+      ],
+    },
+  ],
+  anchors: [
+    {
+      kind: "playerSpawn",
+      id: "throat-spawn",
+      x: 0,
+      z: 34,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "pressure-throat",
+    },
+    {
+      kind: "breachSpawn",
+      id: "heart-breach",
+      x: 0,
+      z: -38,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "repeater-heart",
+      laneId: "north",
+    },
+    {
+      kind: "breachSpawn",
+      id: "nave-east-breach",
+      x: 34,
+      z: 0,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "signal-nave",
+      laneId: "east",
+    },
+    {
+      kind: "breachSpawn",
+      id: "nave-west-breach",
+      x: -34,
+      z: 0,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "signal-nave",
+      laneId: "west",
+    },
+    {
+      kind: "objective",
+      id: "choir-node",
+      x: 0,
+      z: -26,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "repeater-heart",
+    },
+  ],
+};
+
 // ----------------------------------------------------------------------------
 
 /** Registry normalization entry point: attaches the normalized structural
@@ -778,6 +972,8 @@ export const SURVIVOR_MAPS: Record<string, NormalizedArenaMap> = {
   ...MAPS,
   "foundry-wards": normalizeMap(FOUNDRY_WARDS),
   "breach-primus": normalizeMap(BREACH_PRIMUS),
+  "reactor-verge": normalizeMap(REACTOR_VERGE),
+  "choir-node": normalizeMap(CHOIR_NODE),
 };
 
 /**
@@ -798,7 +994,13 @@ export const SANDBOX_MAPS: Record<string, NormalizedArenaMap> = {
 export const CAMPAIGN_ORDER: string[] = ["ashgate", "hollowlanes", "maw", "perdition"];
 
 /** Stable picker order: the canon campaign first, then optional breach arenas. */
-export const SURVIVOR_MAP_ORDER: string[] = [...CAMPAIGN_ORDER, "foundry-wards", "breach-primus"];
+export const SURVIVOR_MAP_ORDER: string[] = [
+  ...CAMPAIGN_ORDER,
+  "foundry-wards",
+  "breach-primus",
+  "reactor-verge",
+  "choir-node",
+];
 
 /** Default arena for non-structured modes (Survivors / PvP preview / menu). */
 export const DEFAULT_MAP_ID = "ashgate";
