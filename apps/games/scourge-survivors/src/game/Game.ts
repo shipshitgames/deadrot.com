@@ -168,6 +168,14 @@ export class Game {
     this.sys.input.resumeFromPauseWithoutCapture();
   }
 
+  suspendForCinematic() {
+    this.sys.input.suspendForCinematic();
+  }
+
+  resumeFromCinematic() {
+    this.sys.input.resumeFromCinematic();
+  }
+
   async startCampaign(startMapId?: string): Promise<void> {
     await this.launchCombatRun(() => {
       this.ctx.sandbox = false;
