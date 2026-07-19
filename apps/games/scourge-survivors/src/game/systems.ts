@@ -16,6 +16,7 @@ import type { ArenaSystem } from "./render/ArenaSystem";
 import type { RenderSystem } from "./render/RenderSystem";
 import type { HudSystem } from "./systems/HudSystem";
 import type { InputSystem } from "./systems/InputSystem";
+import type { SurvivorsTelemetrySystem } from "./systems/SurvivorsTelemetrySystem";
 
 export interface GameSystems {
   render: RenderSystem;
@@ -31,5 +32,6 @@ export interface GameSystems {
   multiplayer: MultiplayerSystem;
   input: InputSystem;
   hud: HudSystem;
+  telemetry: SurvivorsTelemetrySystem;
   gameOver: GameOverSystem;
 }

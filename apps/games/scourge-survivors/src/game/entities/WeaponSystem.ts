@@ -307,7 +307,9 @@ export class WeaponSystem {
       if (d > 0.0001 && (ex * dirX + ez * dirZ) / d < MELEE_ARC_DOT) continue;
       const crit = this.ctx.statCrit > 0 && Math.random() < this.ctx.statCrit ? 2 : 1;
       const dmg = MELEE_DAMAGE * dmgMul * crit;
+      const healthBefore = enemy.health;
       const res = enemy.takeDamage(dmg, false, MELEE_KNOCKBACK * knockbackMul, dirX, dirZ);
+      this.sys.telemetry?.recordOutgoingDamage(enemy, "melee", dmg, res.blocked, healthBefore);
       hitAny = true;
       if (res.blocked) {
         audio.sfx("shieldhit"); // overshield ate the swing — no damage feedback
@@ -457,7 +459,9 @@ export class WeaponSystem {
             const headshot = ud.part === "head";
             const crit = this.ctx.statCrit > 0 && Math.random() < this.ctx.statCrit ? 2 : 1;
             const dmg = spec.damage * dmgMult * crit * (headshot ? headshotMultiplier : 1);
+            const healthBefore = ud.enemy.health;
             const res = ud.enemy.takeDamage(dmg, headshot, spec.knockback * knockbackMul, kx, kz);
+            this.sys.telemetry?.recordOutgoingDamage(ud.enemy, this.ctx.activeWeapon, dmg, res.blocked, healthBefore);
             endPoint = h.point.clone();
             if (!res.blocked) {
               this.sys.hud.addDamageNumber(h.point, dmg, headshot ? "head" : crit > 1 ? "crit" : "normal");
@@ -515,7 +519,9 @@ export class WeaponSystem {
       const falloff = 1 - d / CANNON_SPLASH_RADIUS;
       const dmg = CANNON_SPLASH_DAMAGE * dmgMult * falloff;
       const hk = d > 0.001 ? d : 1;
+      const healthBefore = enemy.health;
       const res = enemy.takeDamage(dmg, false, 10 * falloff, ex / hk, ez / hk);
+      this.sys.telemetry?.recordOutgoingDamage(enemy, "cannon_splash", dmg, res.blocked, healthBefore);
       if (!res.blocked) this.sys.hud.addDamageNumber(enemy.position.clone().setY(1.4), dmg, "normal");
       if (!res.blocked) this.sys.fx.spawnBloodHit(enemy.position.clone().setY(1.2), false);
       if (res.died) this.sys.pve.onEnemyDeath(enemy, false);
