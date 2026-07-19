@@ -5,8 +5,8 @@ import {
   cinematicForLevelOutcome,
   cinematicForLevelStart,
   cinematicSlotForOutcome,
-  resolveRothulkCinematic,
   ROTHULK_CINEMATICS,
+  resolveRothulkCinematic,
 } from "../../src/game/data/cinematics";
 import { LEVELS } from "../../src/game/levels";
 

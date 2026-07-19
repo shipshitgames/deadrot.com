@@ -225,9 +225,7 @@ export function AppShell({ createGame }: AppShellProps) {
         actions={pauseActions}
       />
 
-      {cinematic && (
-        <CinematicOverlay beat={cinematic.beat} site={cinematic.site} onComplete={cinematic.complete} />
-      )}
+      {cinematic && <CinematicOverlay beat={cinematic.beat} site={cinematic.site} onComplete={cinematic.complete} />}
 
       <div id="toast" className="toast" />
     </>
