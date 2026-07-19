@@ -110,6 +110,29 @@
   billboard body-part sprites while keeping the existing physics throw/bounce
   behavior.
 
+## 2026-07-16 - comic-ink arena surface pass
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Role: map-specific floor, wall, block, and column textures for Ashgate, the
+  Hollow Lanes, the Maw, and Perdition.
+- Tool: deterministic comic-ink texture generator plus lossless `cwebp`.
+- Plan: Codex local deterministic generation.
+- Kind: generated mathematically seamless 512x512 WebP tiling textures.
+- Source recipe:
+  `packages/assets/sources/generated/2026-07-16/scourge-survivors/arena-surfaces/generate-arena-textures.ts`.
+- Source note: generated from posterized periodic value noise, hard contour
+  bands, rivets, cracks, hatching, and map-specific glow marks whose periods
+  divide the 512px canvas; every output was reviewed as a 2x2 tile.
+- Final assets:
+  - `textures/arenas/ashgate/{floor,wall,block,column}.webp`
+  - `textures/arenas/hollowlanes/{floor,wall,block,column}.webp`
+  - `textures/arenas/maw/{floor,wall,block,column}.webp`
+  - `textures/arenas/perdition/{floor,wall,block,column}.webp`
+- Notes: Supersedes only the 16 core surface textures from the 2026-06-06
+  pass. Existing decals, prop plates, UV repeats, arena geometry, collision,
+  sky, fog, and non-colliding environment dressing are unchanged.
+
 ## 2026-06-06 - authored breach-arena texture sets
 
 - Status: promoted into runtime.
