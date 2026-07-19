@@ -20,7 +20,8 @@ import {
 } from "@shipshitgames/ui";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { objectiveForPhase } from "../game/coreLoop";
-import type { Game } from "../game/Game";
+import type { Game, RothulkCinematicRequest } from "../game/Game";
+import { CinematicOverlay } from "./CinematicOverlay";
 import { OperationBriefing } from "./OperationBriefing";
 
 interface AppShellProps {
@@ -36,6 +37,7 @@ export function AppShell({ createGame }: AppShellProps) {
   const [started, setStarted] = useState(false);
   const [paused, setPaused] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [cinematic, setCinematic] = useState<RothulkCinematicRequest | null>(null);
   const revealed = useEnterToReveal(!started);
   const pauseStatus = useMemo(
     () => (
@@ -73,8 +75,10 @@ export function AppShell({ createGame }: AppShellProps) {
     const game = createGame(canvas);
     gameRef.current = game;
     game.onPauseChange = setPaused;
+    game.onCinematicChange = setCinematic;
     return () => {
       game.onPauseChange = null;
+      game.onCinematicChange = null;
       game.dispose();
       if (gameRef.current === game) gameRef.current = null;
     };
@@ -220,6 +224,10 @@ export function AppShell({ createGame }: AppShellProps) {
         onResume={() => gameRef.current?.resume()}
         actions={pauseActions}
       />
+
+      {cinematic && (
+        <CinematicOverlay beat={cinematic.beat} site={cinematic.site} onComplete={cinematic.complete} />
+      )}
 
       <div id="toast" className="toast" />
     </>
