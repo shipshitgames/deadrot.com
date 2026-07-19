@@ -484,10 +484,14 @@ test.describe("dev sandbox smoke", () => {
     expect(assetLabels).toEqual(
       expect.arrayContaining([
         "Pistol",
+        "Pistol · dual",
         "SMG",
+        "SMG · dual",
         "Shotgun",
+        "Shotgun · dual",
         "Cannon",
         "Sniper",
+        "Sniper · dual",
         "Melee front",
         "Melee side",
         "Melee back",

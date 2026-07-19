@@ -28,8 +28,7 @@ export function mainWeaponTierViewScale(tier: MainWeaponVisualTier): number {
   return MAIN_WEAPON_TIER_VIEW_SCALE[tier];
 }
 
-/** A horizontal UV window into a tier sheet: `offset` is the left edge, `repeat` the width
- *  (signed — a negative width flips the cell horizontally). */
+/** A horizontal UV window into a tier sheet: `offset` is the left edge, `repeat` the width. */
 export type TierCellUv = { repeat: number; offset: number };
 
 /**
@@ -42,14 +41,12 @@ export function weaponTierCellUv(cell: number, cols: number): TierCellUv {
   return { repeat: 1 / cols, offset: cell / cols };
 }
 
-/**
- * UV window that samples the SAME cell horizontally MIRRORED — the akimbo read for the
- * dual-weapon pickup (#265). A negative `repeat` flips U so sampling u∈[0,1] maps to
- * `offset + u*repeat = (cell + 1 - u)/cols`: the cell's right edge at u=0 down to its left
- * edge at u=1. The traversed span is therefore the identical cell [cell/cols, (cell+1)/cols]
- * as {@link weaponTierCellUv}, only reflected — so the mirrored gun shows the same tier art
- * reversed, never a neighbouring cell.
- */
-export function weaponTierCellUvMirrored(cell: number, cols: number): TierCellUv {
-  return { repeat: -1 / cols, offset: (cell + 1) / cols };
+/** Dedicated dual art is visible only for a live compatible bonus outside ADS. */
+export function dualWeaponViewActive(
+  timer: number,
+  dualCompatible: boolean,
+  hasDualSprite: boolean,
+  adsActive = false,
+): boolean {
+  return timer > 0 && dualCompatible && hasDualSprite && !adsActive;
 }

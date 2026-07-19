@@ -174,6 +174,7 @@ export class AssetCatalog {
     if (!ref) throw new Error(`Unknown Scourge Survivors runtime weapons id: ${id}`);
     this.spriteEntry(ref.sprite);
     this.spriteEntry(ref.lootSprite);
+    if (ref.dualSprite) this.spriteEntry(ref.dualSprite);
     return ref;
   }
 

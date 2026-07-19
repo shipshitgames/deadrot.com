@@ -1,9 +1,17 @@
-import { anchorsOfKind, boundsToRect, flattenObstacles, GROUND_LEVEL_ID } from "@deadrot/game-kit/maps";
+import {
+  anchorsOfKind,
+  boundsToRect,
+  flattenObstacles,
+  GROUND_LEVEL_ID,
+  validateArenaLayout,
+} from "@deadrot/game-kit/maps";
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import {
+  campaignSequence,
   DEFAULT_JOURNEY_MAP_IDS,
   getMap,
+  MAP_PICKER,
   MAPS,
   type MapObstacle,
   type NormalizedArenaMap,
@@ -11,8 +19,10 @@ import {
   SURVIVOR_MAPS,
 } from "../../src/game/data/maps";
 import { walkableSurfaceHeight } from "../../src/game/entities/PlayerSystem";
+import { auditArenaReadability } from "../../src/game/render/readability";
 
-const VARIANT_IDS = ["foundry-wards", "breach-primus"] as const;
+const VARIANT_IDS = ["foundry-wards", "breach-primus", "reactor-verge", "choir-node"] as const;
+const ISSUE_505_VARIANT_IDS = ["reactor-verge", "choir-node"] as const;
 
 function overlaps(a: MapObstacle, b: MapObstacle): boolean {
   return Math.abs(a.x - b.x) < (a.w + b.w) / 2 && Math.abs(a.z - b.z) < (a.d + b.d) / 2;
@@ -87,12 +97,14 @@ function expectValidGeometry(map: NormalizedArenaMap) {
   }
 }
 
-describe("shipped Survivors arena variants (#503)", () => {
+describe("shipped Survivors arena variants (#503, #505)", () => {
   it("extends the Survivors registry without changing the canon campaign", () => {
     expect(DEFAULT_JOURNEY_MAP_IDS).toEqual(["ashgate", "hollowlanes", "maw", "perdition"]);
     expect(Object.keys(MAPS)).toEqual(DEFAULT_JOURNEY_MAP_IDS);
     expect(SURVIVOR_MAP_ORDER).toEqual([...DEFAULT_JOURNEY_MAP_IDS, ...VARIANT_IDS]);
     expect(Object.keys(SURVIVOR_MAPS)).toEqual(SURVIVOR_MAP_ORDER);
+    expect(MAP_PICKER.map((map) => map.id)).toEqual(SURVIVOR_MAP_ORDER);
+    expect(campaignSequence("ashgate").map((map) => map.id)).toEqual(DEFAULT_JOURNEY_MAP_IDS);
     for (const id of VARIANT_IDS) expect(getMap(id)).toBe(SURVIVOR_MAPS[id]);
   });
 
@@ -106,6 +118,16 @@ describe("shipped Survivors arena variants (#503)", () => {
     expect(primus).toMatchObject({ loreId: "maw", front: "breach", biomeId: "rot" });
     expect(primus.materials).toBe(MAPS.maw.materials);
     expect(primus.environment).toBe(MAPS.maw.environment);
+
+    const reactor = SURVIVOR_MAPS["reactor-verge"];
+    expect(reactor).toMatchObject({ loreId: "ashgate", front: "holdout", biomeId: "cinderwell" });
+    expect(reactor.materials).toBe(MAPS.ashgate.materials);
+    expect(reactor.environment).toBe(MAPS.ashgate.environment);
+
+    const choir = SURVIVOR_MAPS["choir-node"];
+    expect(choir).toMatchObject({ loreId: "perdition", front: "breach", biomeId: "perdition" });
+    expect(choir.materials).toBe(MAPS.perdition.materials);
+    expect(choir.environment).toBe(MAPS.perdition.environment);
   });
 
   it("authors Foundry Wards as two ground rooms with an open central traversal", () => {
@@ -152,9 +174,58 @@ describe("shipped Survivors arena variants (#503)", () => {
     expect(walkableSurfaceHeight(surfaces, 0, 0)).toBe(3.4);
   });
 
+  it("authors Reactor Verge as a single-room cross-route hazard layout", () => {
+    const reactor = SURVIVOR_MAPS["reactor-verge"];
+    expect(reactor.layout.rooms.map((room) => [room.id, room.name])).toEqual([["exchanger-verge", "Exchanger Verge"]]);
+    expect(reactor.layout.ramps).toEqual([]);
+    expect(reactor.layout.platforms).toEqual([]);
+
+    const exchangerBanks = flattenObstacles(reactor.layout).filter((obstacle) => obstacle.w === 6 && obstacle.d === 6);
+    expect(exchangerBanks.map(({ x, z }) => [x, z])).toEqual([
+      [-6, -6],
+      [6, -6],
+      [-6, 6],
+      [6, 6],
+    ]);
+    expect(anchorsOfKind(reactor.layout, "playerSpawn")).toHaveLength(1);
+    expect(anchorsOfKind(reactor.layout, "breachSpawn")).toHaveLength(2);
+    expect(anchorsOfKind(reactor.layout, "objective")[0]).toMatchObject({
+      id: "exchanger-control",
+      x: 0,
+      z: 0,
+    });
+  });
+
+  it("authors Choir Node as a named three-room route through Perdition", () => {
+    const choir = SURVIVOR_MAPS["choir-node"];
+    expect(choir.layout.rooms.map((room) => [room.id, room.name])).toEqual([
+      ["pressure-throat", "Pressure Throat"],
+      ["signal-nave", "Signal Nave"],
+      ["repeater-heart", "Repeater Heart"],
+    ]);
+    expect(choir.layout.rooms.every((room) => room.levelId === GROUND_LEVEL_ID)).toBe(true);
+
+    const throat = boundsToRect(choir.layout.rooms[0].bounds);
+    const nave = boundsToRect(choir.layout.rooms[1].bounds);
+    const heart = boundsToRect(choir.layout.rooms[2].bounds);
+    expect(throat.minZ).toBe(nave.maxZ);
+    expect(nave.minZ).toBe(heart.maxZ);
+    expect(anchorsOfKind(choir.layout, "playerSpawn")[0]?.roomId).toBe("pressure-throat");
+    expect(anchorsOfKind(choir.layout, "objective")[0]?.roomId).toBe("repeater-heart");
+    expect(anchorsOfKind(choir.layout, "breachSpawn")).toHaveLength(3);
+  });
+
   it("passes focused room, obstacle, anchor, and connector geometry contracts", () => {
     for (const id of VARIANT_IDS) {
       expectValidGeometry(SURVIVOR_MAPS[id]);
+    }
+  });
+
+  it("passes the shared validator and readability contracts for the final map slice", () => {
+    for (const id of ISSUE_505_VARIANT_IDS) {
+      const map = SURVIVOR_MAPS[id];
+      expect(validateArenaLayout(map.layout), id).toEqual({ ok: true, errors: [] });
+      expect(auditArenaReadability(map).violations, id).toEqual([]);
     }
   });
 });

@@ -290,3 +290,32 @@ reviewed outside runtime paths under `packages/assets/_archive/`.
   nearest-neighbor downscaled; alpha padded; encoded lossless WebP.
 - Notes: The pack establishes enemy readability lanes: blood-red heavy melee, chartreuse acid ranged, purple-wing lightweight flyer, and deep crimson-black massive boss.
 - Decision: keep as an animation asset pack and wire into the renderer in a follow-up implementation pass. First spitter walk frames and first winged fly frames were also promoted into the current runtime static sprites so the color lanes are immediately visible in-game.
+
+## 2026-07-17 - scourge-dual-held-weapons - v01
+
+- Status: promoted into runtime.
+- Game: [[Scourge-Survivors]].
+- Faction: [[Pyre]].
+- Character/role: purpose-built akimbo pistol, SMG, shotgun, and sniper
+  first-person view models.
+- View: five-cell horizontal tier sheets, base through evolved.
+- Tool: `gpt-image-2` via Codex built-in `image_gen`, followed by deterministic
+  local alpha cleanup and WebP promotion.
+- Source output:
+  `~/.codex/generated_images/019f6f5c-bac3-7ac0-8881-c7cb86fe01e7/`
+  (`call_azOfo1vi9G5CGlbYrWuqyOEu.png`,
+  `call_KmHRV7ExZz71dOLC1x3inS1a.png`,
+  `call_P08gr2NAJsBZbe2EcrjtoZpB.png`, and
+  `call_t0OguipFMmAzui2qGGFamph6.png`).
+- Workspace masters:
+  `packages/assets/_archive/raw-generator-cache/codex-generated-images/2026-07-17/raw/019f6f5c-bac3-7ac0-8881-c7cb86fe01e7/`.
+- Final asset:
+  `packages/assets/games/scourge-survivors/weapons/pyre/dual/{pistol,smg,shotgun,sniper}-dual-tiers.webp`.
+- Post-processing: flood-cleared the baked neutral checkerboard, normalized each
+  sheet to five exact 435px tier cells, and encoded high-quality WebP with exact
+  full-quality alpha.
+- Notes: every cell is a new uncrossed one-weapon-per-hand pose preserving the
+  approved Pyre gunmetal, bone, blood-hot, and hellfire tier progression. The
+  cannon remains single-held by design.
+- Decision: promoted as the only dual-bonus held-weapon art; the runtime no
+  longer duplicates and mirrors the centered two-handed primary sprite.

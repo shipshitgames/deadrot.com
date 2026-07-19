@@ -211,10 +211,15 @@ export class PveDirectorSystem {
     }
 
     if (this.ctx.survivors) {
+      const isReaper = this.sys.survivors.isReaper(enemy);
+      this.sys.telemetry?.recordEnemyKilled(
+        enemy,
+        isReaper ? 0 : (this.sys.survivors.enemyXp.get(enemy) ?? SURV_XP_GEM_VALUE),
+      );
       // The toll itself: killing it seals the breach and ends the run, so it skips
       // the elite drop/XP economy entirely — the victory IS the reward. Identity is
       // the director-held reference (Survivors elites also carry isBoss).
-      if (this.sys.survivors.isReaper(enemy)) {
+      if (isReaper) {
         this.ctx.score += REAPER_SCORE;
         this.bossActive = false;
         this.bossEnemy = null;
@@ -331,7 +336,10 @@ export class PveDirectorSystem {
         hoverHeight: childDef.hoverHeight,
         groundHeight: this.sys.player.walkableSurfaceHeight(x, z),
       });
-      if (this.ctx.survivors) this.sys.survivors.enemyXp.set(child, 1);
+      if (this.ctx.survivors) {
+        this.sys.survivors.enemyXp.set(child, 1);
+        this.sys.telemetry?.recordEnemySpawned(child);
+      }
     }
   }
 
@@ -345,6 +353,9 @@ export class PveDirectorSystem {
         this.sys.player.walkableSurfaceHeight(x, z),
       );
       damageToPlayer += tick.melee;
+      if (this.ctx.survivors && tick.melee > 0) {
+        this.sys.telemetry?.recordIncomingPressure("melee", enemy.archetype, tick.melee);
+      }
       for (const shot of tick.shots) this.sys.projectiles.spawnProjectile(shot, enemy);
       this.sys.player.pushOutOfObstacles(enemy.position, enemy.radius);
     }
