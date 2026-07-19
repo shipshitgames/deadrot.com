@@ -877,10 +877,7 @@ export function journeyStageSequence(
 }
 
 /** Build normalized campaign maps from a named journey's authored stages. */
-export function campaignSequence(
-  startId: string,
-  journeyId: JourneyId = DEFAULT_JOURNEY_ID,
-): NormalizedArenaMap[] {
+export function campaignSequence(startId: string, journeyId: JourneyId = DEFAULT_JOURNEY_ID): NormalizedArenaMap[] {
   return journeyStageSequence(startId, journeyId).map((stage) => MAPS[stage.mapId]);
 }
 

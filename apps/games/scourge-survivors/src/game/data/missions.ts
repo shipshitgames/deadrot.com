@@ -3,9 +3,9 @@ import {
   campaignSequence,
   DEFAULT_JOURNEY,
   DEFAULT_JOURNEY_ID,
+  JOURNEYS,
   type JourneyId,
   type JourneyStageDefinition,
-  JOURNEYS,
   journeyStageSequence,
 } from "./maps";
 

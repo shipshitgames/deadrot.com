@@ -9,13 +9,7 @@
 
 import { type BiomeId, isBiomeId, resolveBiomeTheme } from "@deadrot/game-kit/maps";
 import { describe, expect, it } from "vitest";
-import {
-  campaignSequence,
-  DEFAULT_JOURNEY_MAP_IDS,
-  getMap,
-  MAPS,
-  type MapTheme,
-} from "../../src/game/data/maps";
+import { campaignSequence, DEFAULT_JOURNEY_MAP_IDS, getMap, MAPS, type MapTheme } from "../../src/game/data/maps";
 
 /** The exact theme blocks the four maps authored inline before the biome
  *  refactor — the presets must reproduce them bit-identically. */

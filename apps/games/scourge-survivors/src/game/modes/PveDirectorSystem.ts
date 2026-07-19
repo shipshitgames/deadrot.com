@@ -100,8 +100,7 @@ export class PveDirectorSystem {
   stageMul(): number {
     if (!this.ctx.campaign) return 1;
     return (
-      currentMissionStage(this.ctx.mission)?.difficultyMultiplier ??
-      1 + STAGE_DIFFICULTY_STEP * this.ctx.campaignStage
+      currentMissionStage(this.ctx.mission)?.difficultyMultiplier ?? 1 + STAGE_DIFFICULTY_STEP * this.ctx.campaignStage
     );
   }
 

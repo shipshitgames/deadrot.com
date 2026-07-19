@@ -22,8 +22,8 @@ import {
   type ArenaMap,
   campaignSequence,
   DEFAULT_ARENA_BOUNDS,
-  DEFAULT_JOURNEY_MAP_IDS,
   DEFAULT_ARENA_MATERIALS,
+  DEFAULT_JOURNEY_MAP_IDS,
   DEFAULT_MAP_ID,
   getMap,
   MAP_PICKER,
@@ -217,9 +217,7 @@ describe("registry backward compatibility", () => {
         return { id: map.id, name: map.name, subtitle: map.subtitle, icon: map.icon, accent: map.accent };
       }),
     );
-    expect(MAP_PICKER.slice(0, DEFAULT_JOURNEY_MAP_IDS.length).map((map) => map.id)).toEqual(
-      DEFAULT_JOURNEY_MAP_IDS,
-    );
+    expect(MAP_PICKER.slice(0, DEFAULT_JOURNEY_MAP_IDS.length).map((map) => map.id)).toEqual(DEFAULT_JOURNEY_MAP_IDS);
   });
 
   it("pins engine MapBounds ⇄ game-kit ArenaBounds mutual assignability", () => {

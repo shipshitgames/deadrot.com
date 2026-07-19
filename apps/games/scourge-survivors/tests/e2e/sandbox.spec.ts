@@ -823,7 +823,7 @@ test.describe("dev sandbox smoke", () => {
       sandbox: false,
       survivors: false,
       campaignStage: 1,
-      campaignTotalStages: 4,
+      campaignTotalStages: 2,
       mapName: "The Maw",
       missionId: "ashgate-breach",
       missionTitle: "Ashgate Breach",

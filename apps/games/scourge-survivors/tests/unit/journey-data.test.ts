@@ -30,12 +30,7 @@ describe("structured-run journey data (#84)", () => {
       STAGE_CLEAR_HEAL,
       STAGE_CLEAR_HEAL,
     ]);
-    expect(campaignSequence("ashgate").map((map) => map.biomeId)).toEqual([
-      "foundry",
-      "bone",
-      "rot",
-      "perdition",
-    ]);
+    expect(campaignSequence("ashgate").map((map) => map.biomeId)).toEqual(["foundry", "bone", "rot", "perdition"]);
   });
 
   it("slices from an authored start without wrapping back toward the surface", () => {
@@ -54,8 +49,6 @@ describe("structured-run journey data (#84)", () => {
     expect(run.stages.map((stage) => stage.difficultyMultiplier)).toEqual(
       DEFAULT_JOURNEY.stages.slice(1).map((stage) => stage.difficultyMultiplier),
     );
-    expect(MAP_PICKER.slice(0, DEFAULT_JOURNEY_MAP_IDS.length).map((map) => map.id)).toEqual(
-      DEFAULT_JOURNEY_MAP_IDS,
-    );
+    expect(MAP_PICKER.slice(0, DEFAULT_JOURNEY_MAP_IDS.length).map((map) => map.id)).toEqual(DEFAULT_JOURNEY_MAP_IDS);
   });
 });
