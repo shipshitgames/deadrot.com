@@ -484,8 +484,8 @@ export class Game {
 
     for (const enemy of this.ctx.enemies) enemy.dispose();
     this.ctx.scene.traverse((obj) => {
-      if (obj instanceof THREE.Mesh) {
-        obj.geometry.dispose();
+      if (obj instanceof THREE.Mesh || obj instanceof THREE.Sprite) {
+        if (obj instanceof THREE.Mesh) obj.geometry.dispose();
         const mat = obj.material;
         if (Array.isArray(mat)) {
           mat.forEach((m) => {

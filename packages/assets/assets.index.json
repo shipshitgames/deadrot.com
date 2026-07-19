@@ -4,7 +4,7 @@
   "generator": "scripts/generate-asset-index.mjs",
   "note": "Generated — do not edit by hand. Run `bun run --cwd packages/assets assets:index`.",
   "cdnBase": "https://assets.deadrot.com",
-  "assetCount": 772,
+  "assetCount": 776,
   "assets": [
     {
       "id": "brand/mark",
@@ -8593,6 +8593,54 @@
       "sha256": "699108ef11267c994e4b833dc850f15296a5341b49bfe587caee9ac5345522be",
       "width": 2415,
       "height": 772
+    },
+    {
+      "id": "games/scourge-survivors/weapons/pyre/dual/pistol-dual-tiers",
+      "kind": "image",
+      "game": "scourge-survivors",
+      "path": "games/scourge-survivors/weapons/pyre/dual/pistol-dual-tiers.webp",
+      "cdnPath": "games/scourge-survivors/weapons/pyre/dual/pistol-dual-tiers.webp",
+      "mediaType": "image/webp",
+      "bytes": 143510,
+      "sha256": "3799244c6afe4047a3aa98b2b12ea8a1f193b08f086082cf41e36e1ff5566f03",
+      "width": 2175,
+      "height": 724
+    },
+    {
+      "id": "games/scourge-survivors/weapons/pyre/dual/shotgun-dual-tiers",
+      "kind": "image",
+      "game": "scourge-survivors",
+      "path": "games/scourge-survivors/weapons/pyre/dual/shotgun-dual-tiers.webp",
+      "cdnPath": "games/scourge-survivors/weapons/pyre/dual/shotgun-dual-tiers.webp",
+      "mediaType": "image/webp",
+      "bytes": 175944,
+      "sha256": "b17bffb0c442afa83b08ce3b9bbf7bbf63ff352efc28cf1f3543836262b73cf9",
+      "width": 2175,
+      "height": 724
+    },
+    {
+      "id": "games/scourge-survivors/weapons/pyre/dual/smg-dual-tiers",
+      "kind": "image",
+      "game": "scourge-survivors",
+      "path": "games/scourge-survivors/weapons/pyre/dual/smg-dual-tiers.webp",
+      "cdnPath": "games/scourge-survivors/weapons/pyre/dual/smg-dual-tiers.webp",
+      "mediaType": "image/webp",
+      "bytes": 163300,
+      "sha256": "b286897bcbc40b644450090b3a4f35049c890e4b4e54f3ad21f469c393405dd1",
+      "width": 2175,
+      "height": 724
+    },
+    {
+      "id": "games/scourge-survivors/weapons/pyre/dual/sniper-dual-tiers",
+      "kind": "image",
+      "game": "scourge-survivors",
+      "path": "games/scourge-survivors/weapons/pyre/dual/sniper-dual-tiers.webp",
+      "cdnPath": "games/scourge-survivors/weapons/pyre/dual/sniper-dual-tiers.webp",
+      "mediaType": "image/webp",
+      "bytes": 169578,
+      "sha256": "3cb41581e24998ec2bafbe478e47fe6265449fdec09c70bebeda62967c9ba316",
+      "width": 2175,
+      "height": 724
     },
     {
       "id": "games/scourge-survivors/weapons/pyre/pistol-loot",

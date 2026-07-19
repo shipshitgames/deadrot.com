@@ -38,6 +38,10 @@ export interface SpriteEntry {
   weapon?: {
     offset: Vec3;
     muzzle: Vec3;
+    muzzles?: {
+      left: Vec3;
+      right: Vec3;
+    };
     flashScale: number;
     flashRotation?: number;
   };
@@ -105,6 +109,7 @@ export interface RuntimeSpriteRef {
 
 export interface RuntimeWeaponRef extends RuntimeSpriteRef {
   lootSprite: string;
+  dualSprite?: string;
 }
 
 export interface RuntimeEnemyRef extends RuntimeSpriteRef {

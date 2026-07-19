@@ -140,7 +140,7 @@ test("swapping weapons in the panel updates the live HUD weapon", async ({ page 
   await expect.poll(() => field(page, "toastSeq")).toBeGreaterThan(beforeSeq);
 });
 
-test("the weapon view-model dials the evolved size back and mirrors the live akimbo cell", async ({
+test("the weapon view-model dials the evolved size back and selects the matching dual-wield tier", async ({
   page,
 }, testInfo) => {
   test.skip(!testInfo.project.name.startsWith("scourge-survivors:"), "Scourge-survivors-only sandbox deep slice.");
@@ -182,13 +182,13 @@ test("the weapon view-model dials the evolved size back and mirrors the live aki
   expect(read.baseScaleX).toBeGreaterThan(0);
   expect(read.evolvedScaleX / read.baseScaleX).toBeCloseTo(1.16, 4);
 
-  // The live akimbo texture mirrors the SAME tier cell: a flipped (negated) repeat and an
-  // offset shifted to the cell's right edge (offset + width) — never a neighbouring cell.
-  expect(read.dualRepeat).toBeCloseTo(-read.mainRepeat, 6);
-  expect(read.dualOffset).toBeCloseTo(read.mainOffset + read.mainRepeat, 6);
+  // The purpose-built dual-wield sheet selects the SAME tier cell as the primary sheet.
+  // Both repeats stay positive because the dual pose is authored directly, not mirrored.
+  expect(read.dualRepeat).toBeCloseTo(read.mainRepeat, 6);
+  expect(read.dualOffset).toBeCloseTo(read.mainOffset, 6);
 });
 
-test("the dual-weapon pickup reveals the mirrored akimbo gun only for dual-compatible weapons", async ({
+test("the dual-weapon pickup reveals the purpose-built dual view only for compatible weapons", async ({
   page,
 }, testInfo) => {
   test.skip(!testInfo.project.name.startsWith("scourge-survivors:"), "Scourge-survivors-only sandbox deep slice.");
@@ -227,7 +227,7 @@ test("the dual-weapon pickup reveals the mirrored akimbo gun only for dual-compa
     };
   });
 
-  // The mirrored second gun appears only while the pickup is live AND the weapon can akimbo.
+  // The purpose-built dual view appears only while the pickup is live AND the weapon can akimbo.
   expect(read.pistolNoPickup).toBe(false);
   expect(read.pistolPickup).toBe(true);
   expect(read.cannonPickup).toBe(false);
