@@ -1,13 +1,13 @@
 import { type MapBounds, makeBounds } from "@shipshitgames/engine";
 import { describe, expect, it } from "vitest";
 import { ARENA_HALF } from "../../src/game/constants";
-import { type ArenaMap, CAMPAIGN_ORDER, DEFAULT_ARENA_BOUNDS, MAPS } from "../../src/game/data/maps";
+import { type ArenaMap, DEFAULT_ARENA_BOUNDS, DEFAULT_JOURNEY_MAP_IDS, MAPS } from "../../src/game/data/maps";
 
 describe("world bounds", () => {
   it("keeps current campaign maps on the ARENA_HALF square default", () => {
     expect(DEFAULT_ARENA_BOUNDS).toEqual({ kind: "square", half: ARENA_HALF });
 
-    for (const mapId of CAMPAIGN_ORDER) {
+    for (const mapId of DEFAULT_JOURNEY_MAP_IDS) {
       const map = MAPS[mapId];
       const bounds = makeBounds(map.bounds ?? DEFAULT_ARENA_BOUNDS);
 

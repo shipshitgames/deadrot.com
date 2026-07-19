@@ -8,8 +8,8 @@ import {
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import {
-  CAMPAIGN_ORDER,
   campaignSequence,
+  DEFAULT_JOURNEY_MAP_IDS,
   getMap,
   MAP_PICKER,
   MAPS,
@@ -99,12 +99,12 @@ function expectValidGeometry(map: NormalizedArenaMap) {
 
 describe("shipped Survivors arena variants (#503, #505)", () => {
   it("extends the Survivors registry without changing the canon campaign", () => {
-    expect(CAMPAIGN_ORDER).toEqual(["ashgate", "hollowlanes", "maw", "perdition"]);
-    expect(Object.keys(MAPS)).toEqual(CAMPAIGN_ORDER);
-    expect(SURVIVOR_MAP_ORDER).toEqual([...CAMPAIGN_ORDER, ...VARIANT_IDS]);
+    expect(DEFAULT_JOURNEY_MAP_IDS).toEqual(["ashgate", "hollowlanes", "maw", "perdition"]);
+    expect(Object.keys(MAPS)).toEqual(DEFAULT_JOURNEY_MAP_IDS);
+    expect(SURVIVOR_MAP_ORDER).toEqual([...DEFAULT_JOURNEY_MAP_IDS, ...VARIANT_IDS]);
     expect(Object.keys(SURVIVOR_MAPS)).toEqual(SURVIVOR_MAP_ORDER);
     expect(MAP_PICKER.map((map) => map.id)).toEqual(SURVIVOR_MAP_ORDER);
-    expect(campaignSequence("ashgate").map((map) => map.id)).toEqual(CAMPAIGN_ORDER);
+    expect(campaignSequence("ashgate").map((map) => map.id)).toEqual(DEFAULT_JOURNEY_MAP_IDS);
     for (const id of VARIANT_IDS) expect(getMap(id)).toBe(SURVIVOR_MAPS[id]);
   });
 

@@ -6,7 +6,7 @@ import animationManifest from "@shipshitgames/assets/games/scourge-survivors/ani
 import manifest from "@shipshitgames/assets/games/scourge-survivors/assets.json";
 import { describe, expect, it } from "vitest";
 import { ASSET_CATALOG } from "../../src/assets/catalog";
-import { CAMPAIGN_ORDER, MAPS } from "../../src/game/data/maps";
+import { DEFAULT_JOURNEY_MAP_IDS, MAPS } from "../../src/game/data/maps";
 import { EVOLUTIONS, SHOP_UPGRADES, UPGRADES } from "../../src/game/data/survivors";
 
 type Manifest = typeof manifest;
@@ -363,7 +363,7 @@ describe("asset manifest", () => {
   it("keeps every campaign arena backed by authored materials and environment dressing", () => {
     const textureIds = new Set(Object.keys(manifest.textures));
 
-    for (const mapId of CAMPAIGN_ORDER) {
+    for (const mapId of DEFAULT_JOURNEY_MAP_IDS) {
       const map = MAPS[mapId];
       const materialIds = Object.values(map.materials);
 
@@ -395,7 +395,7 @@ describe("asset manifest", () => {
       column: [1, 3],
     } as const;
 
-    for (const mapId of CAMPAIGN_ORDER) {
+    for (const mapId of DEFAULT_JOURNEY_MAP_IDS) {
       const map = MAPS[mapId];
 
       for (const [role, id] of Object.entries(map.materials)) {
