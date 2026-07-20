@@ -102,12 +102,15 @@
       }
     },
     "breach-boss": {
+      "status": "placeholder-static",
+      "placeholder": true,
+      "placeholderReason": "Each action/view repeats the production comic/cel-ink static pose so the boss never morphs back into the obsolete humanoid sprite while authored action sheets are pending.",
       "frameDimensions": [
         128,
         180
       ],
-      "colorLane": "deep crimson-black boss mass, large bone skull plates, bright toxic green cores, orange hell-rim accents",
-      "physicsLane": "massive slow inertia, tendril lag, heavy torso compression",
+      "colorLane": "low-wide breach-engine mass, bone rib cage, black chitin, wet crimson tissue, toxic-green breach heart",
+      "physicsLane": "static production pose repeated across lurch, barrage, and death slots pending authored comic action sheets",
       "actions": {
         "lurch": {
           "loop": true,

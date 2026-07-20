@@ -70,7 +70,7 @@ describe("enemy death animation textures (#23 death FX)", () => {
         expect(frames.length, `${kind}/${view} death frame count`).toBe(FRAMES_PER_ACTION);
         for (const [frame, texture] of frames.entries()) {
           // Each frame is a real THREE.Texture instance with the catalog's
-          // nearest-filter pixel-art config applied at load time.
+          // per-entity manifest filter applied at load time.
           expect(texture, `${kind}/${view} death frame ${frame}`).toBeTruthy();
           expect(texture.isTexture, `${kind}/${view} death frame ${frame} is THREE.Texture`).toBe(true);
         }
@@ -100,6 +100,18 @@ describe("enemy death animation textures (#23 death FX)", () => {
     expect(last.userData.scourgeAnimation.frame).toBe(FRAMES_PER_ACTION - 1);
     expect(first.repeat.x).toBeLessThan(1);
     expect(first.repeat.y).toBeLessThan(1);
+  });
+
+  it("keeps rank-and-file atlas frames crisp while smoothing the comic Breach-Boss", () => {
+    const { ENEMY_SPRITE_ANIMATION_TEXTURES } = spriteAssets;
+    const grunt = ENEMY_SPRITE_ANIMATION_TEXTURES.melee.move.front[0];
+    const boss = ENEMY_SPRITE_ANIMATION_TEXTURES.boss.move.front[0];
+
+    expect(grunt.minFilter).toBe(THREE.NearestFilter);
+    expect(grunt.magFilter).toBe(THREE.NearestFilter);
+    expect(boss.minFilter).toBe(THREE.LinearFilter);
+    expect(boss.magFilter).toBe(THREE.LinearFilter);
+    expect(boss.source).toBe(grunt.source);
   });
 
   it("caches the completed combat preload", async () => {
@@ -183,8 +195,11 @@ describe("Enemy.deathFx() selection (#23 death FX)", () => {
   }
 
   it("reports the boss sprite kind for boss spawns", () => {
-    const fx = spawnKind({ isBoss: true }).deathFx();
+    const boss = spawnKind({ isBoss: true, scale: 2.6 });
+    const fx = boss.deathFx();
     expect(fx.kind).toBe("boss");
+    expect(boss.radius).toBeCloseTo(2.574);
+    expect(spawnKind({ isBoss: true, scale: 4.2 }).radius).toBe(3);
   });
 
   it("reports flying before ranged before melee", () => {

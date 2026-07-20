@@ -168,15 +168,13 @@ function liveRecord<K extends string, V>(keys: readonly K[], read: (key: K) => V
 
 const ANIMATION_BASE_TEXTURE_PROMISES = new Map<string, Promise<THREE.Texture>>();
 
-function animationBaseTexture(url: string, filter: THREE.MagnificationTextureFilter): Promise<THREE.Texture> {
+function animationBaseTexture(url: string): Promise<THREE.Texture> {
   const cached = ANIMATION_BASE_TEXTURE_PROMISES.get(url);
   if (cached) return cached;
   const promise = new THREE.TextureLoader()
     .loadAsync(url)
     .then((texture) => {
       texture.colorSpace = THREE.SRGBColorSpace;
-      texture.minFilter = filter;
-      texture.magFilter = filter;
       texture.generateMipmaps = false;
       texture.premultiplyAlpha = false;
       return texture;
@@ -190,6 +188,7 @@ function animationBaseTexture(url: string, filter: THREE.MagnificationTextureFil
 }
 
 async function loadEnemyAnimationTexture(
+  kind: EnemySpriteKind,
   entity: string,
   action: string,
   view: EnemySpriteView,
@@ -197,11 +196,14 @@ async function loadEnemyAnimationTexture(
 ): Promise<THREE.Texture> {
   const frameSource = await animationFrameSource(entity, action, view, frame);
   const sourceKind = frameSource.atlas ? "atlas" : "frame";
-  const base = await animationBaseTexture(
-    frameSource.url,
-    frameSource.atlas ? THREE.NearestFilter : THREE.LinearFilter,
-  );
+  const base = await animationBaseTexture(frameSource.url);
   const texture = base.clone();
+  // Clones share one decoded atlas source. Different filters intentionally
+  // create separate GPU textures (and duplicate the atlas upload) so the comic
+  // boss stays smooth without blurring the rank-and-file pixel-art lanes.
+  const filter = spriteEntry(enemySpriteAssetId(kind)).filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
+  texture.minFilter = filter;
+  texture.magFilter = filter;
   texture.userData.scourgeAnimation = { entity, action, view, frame, source: sourceKind };
   texture.name = `scourge-animation:${entity}/${action}/${view}/${frame}`;
 
@@ -228,7 +230,7 @@ async function loadEnemyAnimations(): Promise<EnemyAnimationTextureRecord> {
       return asyncRecord(ENEMY_SPRITE_VIEWS, (view) =>
         Promise.all(
           Array.from({ length: ANIMATION_MANIFEST.framesPerAction }, (_, frame) =>
-            loadEnemyAnimationTexture(entity, action, view, frame),
+            loadEnemyAnimationTexture(kind, entity, action, view, frame),
           ),
         ),
       );

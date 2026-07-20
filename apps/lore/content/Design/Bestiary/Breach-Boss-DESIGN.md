@@ -43,22 +43,25 @@ rib armor, projectile vents, and conduit tendrils.
 
 ## Locked Poses
 
-Status: candidate master attached. Do not treat current runtime animation
-frames as canon until regenerated from this sheet.
+Status: current-medium three-view runtime candidate promoted on 2026-07-17.
+The static front/side/back read follows this lock; authored action animation is
+still pending and the repeated runtime action slots are not additional canon.
 
 ![Breach Boss breach-engine master turnaround](/assets/lore/art-masters/scourge/breach-boss/breach-boss-breach-engine-master-turnaround.png)
 
 ![Breach Boss runtime placeholder](/assets/lore/art-masters/scourge/breach-boss/breach-boss-runtime-placeholder.webp)
 
-- Idle front:
-- Idle side:
-- Idle back:
+- Idle front: bone-caged breach heart and four planted anchor limbs.
+- Idle side: low artillery mass, forward core cage, dorsal barrage vents.
+- Idle back: conduit bundle, grafted armor, rear projectile organs.
 - Optional action/read pose: barrage wind-up with projectile vents visible.
 
 ## Art Master Attachments
 
 - Candidate master: `/assets/lore/art-masters/scourge/breach-boss/breach-boss-breach-engine-master-turnaround.png`
-- Generated source: `packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/breach-boss-breach-engine-master-turnaround.png`
+- Historical pixel source: `packages/assets/sources/generated/2026-06-11/lore/bestiary/scourge-foes/breach-boss-breach-engine-master-turnaround.png`
+- Current-medium generated source: `packages/assets/sources/generated/2026-07-17/scourge-survivors/enemies/breach-boss-comic-turnaround-source.png`
+- Runtime views: `packages/assets/games/scourge-survivors/enemies/scourge/breach-boss/{front,side,back}.webp`
 - Runtime placeholder: `/assets/lore/art-masters/scourge/breach-boss/breach-boss-runtime-placeholder.webp`
 
 ## Game Adaptations
@@ -69,8 +72,9 @@ frames as canon until regenerated from this sheet.
 
 ## Validation Checklist
 
-- [ ] Three idle poses approved.
+- [ ] Three idle poses approved by Vincent.
 - [x] Boss scale and core/head read approved.
 - [x] Source poses archived in `packages/assets/sources/generated`.
-- [ ] Runtime frames regenerated from approved pose lock.
-- [ ] No matte residue, stray pixels, or cropped limbs.
+- [x] Static runtime frames regenerated in the locked clean comic/cel-ink medium.
+- [x] No keyed matte rectangle or cropped runtime limbs.
+- [ ] Authored lurch, barrage, and death action sheets replace the repeated static poses.
