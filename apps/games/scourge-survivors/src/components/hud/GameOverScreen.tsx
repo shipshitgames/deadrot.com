@@ -123,7 +123,7 @@ function RunSummaryDetails({
               className={`scourge-run-chip ${b.evolved ? "scourge-run-chip--evolved" : ""}`}
               title={b.name}
             >
-              <PixelIcon id={b.icon} size={15} label={b.name} /> {b.level}
+              <PixelIcon id={b.icon} variant="bonus" size={15} label={b.name} /> {b.level}
             </span>
           ))}
         </div>

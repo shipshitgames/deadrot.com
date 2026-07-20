@@ -57,7 +57,7 @@ import {
 } from "@deadrot/game-kit/maps";
 import type { MapBounds } from "@shipshitgames/engine";
 import type { PixelIconId } from "../../assets/ui/pixelIcons";
-import { ARENA_HALF } from "../constants";
+import { ARENA_HALF, STAGE_CLEAR_HEAL, STAGE_DIFFICULTY_STEP } from "../constants";
 
 export type ObstacleMat = "crate" | "pillar" | "wall";
 export type ArenaMaterialRole = "floor" | "wall" | "block" | "column";
@@ -541,6 +541,408 @@ const GANTRY: ArenaMap = {
   ],
 };
 
+// ============================================================================
+// FOUNDRY WARDS — a selectable Survivors variant inside Ashgate's fabrication
+// yards. Two authored ground-level rooms are separated by a furnace bulkhead
+// with a wide traversal opening through the centre.
+//
+// Presentation deliberately reuses Ashgate's registered assets. The layout is
+// new runtime data, while loreId/front keep the arena joined to the canon place.
+// ============================================================================
+const FOUNDRY_WARDS: ArenaMap = {
+  id: "foundry-wards",
+  loreId: "ashgate",
+  front: "holdout",
+  name: "Foundry Wards",
+  subtitle: "Ashgate fabrication yards — furnace by furnace",
+  icon: "foundry",
+  accent: "#ff6a00",
+  biomeId: "foundry",
+  materials: ASHGATE.materials,
+  environment: ASHGATE.environment,
+  spawn: { x: -34, z: 0 },
+  obstacles: [],
+  rooms: [
+    {
+      id: "assembly-yard",
+      name: "Assembly Yard",
+      bounds: { kind: "rect", minX: -40, maxX: 0, minZ: -40, maxZ: 40 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        // The two bulkhead runs leave a 24m opening from z=-12..12.
+        { x: -1, z: -26, w: 2, h: 4, d: 28, mat: "wall" },
+        { x: -1, z: 26, w: 2, h: 4, d: 28, mat: "wall" },
+        { x: -26, z: 0, w: 10, h: 1.2, d: 2.4, mat: "wall" },
+        { x: -20, z: -18, w: 4, h: 3, d: 4, mat: "crate" },
+        { x: -18, z: 18, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+      ],
+    },
+    {
+      id: "furnace-yard",
+      name: "Furnace Yard",
+      bounds: { kind: "rect", minX: 0, maxX: 40, minZ: -40, maxZ: 40 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        { x: 26, z: 0, w: 10, h: 1.2, d: 2.4, mat: "wall" },
+        { x: 20, z: -16, w: 4, h: 3, d: 4, mat: "crate" },
+        { x: 18, z: 18, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: 29, z: 27, w: 3, h: 3, d: 3, mat: "crate" },
+      ],
+    },
+  ],
+  anchors: [
+    {
+      kind: "playerSpawn",
+      id: "assembly-spawn",
+      x: -34,
+      z: 0,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "assembly-yard",
+    },
+    {
+      kind: "breachSpawn",
+      id: "furnace-breach",
+      x: 34,
+      z: 0,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "furnace-yard",
+      laneId: "east",
+    },
+    {
+      kind: "breachSpawn",
+      id: "assembly-breach",
+      x: -34,
+      z: -28,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "assembly-yard",
+      laneId: "west",
+    },
+    {
+      kind: "objective",
+      id: "ward-furnace",
+      x: 30,
+      z: 8,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "furnace-yard",
+    },
+  ],
+};
+
+// ============================================================================
+// BREACH PRIMUS — the authored multi-level crossing at The Maw. Purgers enter
+// from the lower breach lip, climb the central ramp, then fight across a raised
+// span while the horde breaches from the far deck and both flanks.
+//
+// Like The Gantry demonstrator, this reuses The Maw's registered presentation;
+// unlike The Gantry, it is a shipped Survivors-selectable arena.
+// ============================================================================
+const BREACH_PRIMUS: ArenaMap = {
+  id: "breach-primus",
+  loreId: "maw",
+  front: "breach",
+  name: "Breach Primus",
+  subtitle: "Climb the throat-span while the Maw pours upward",
+  icon: "maw",
+  accent: "#6acf3c",
+  biomeId: "rot",
+  materials: MAW.materials,
+  environment: MAW.environment,
+  spawn: { x: 0, z: 32 },
+  obstacles: [],
+  levels: [{ id: "throat-span", y: 3, name: "Breach Primus Span" }],
+  rooms: [
+    {
+      id: "breach-lip",
+      name: "Breach Lip",
+      bounds: { kind: "rect", minX: -40, maxX: 40, minZ: 4, maxZ: 40 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        // Retaining walls leave the central 12m ramp mouth clear.
+        { x: -23, z: 4.75, w: 34, h: 3, d: 1.5, mat: "wall" },
+        { x: 23, z: 4.75, w: 34, h: 3, d: 1.5, mat: "wall" },
+        { x: -18, z: 22, w: 3, h: 3, d: 3, mat: "crate" },
+        { x: 18, z: 18, w: 3, h: 3, d: 3, mat: "crate" },
+        { x: 0, z: 25, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+      ],
+    },
+    {
+      id: "primus-span",
+      name: "Breach Primus Span",
+      bounds: { kind: "rect", minX: -40, maxX: 40, minZ: -40, maxZ: 4 },
+      levelId: "throat-span",
+      obstacles: [
+        { x: -20, z: -22, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: 20, z: -22, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: -11, z: -10, w: 9, h: 1.1, d: 2.4, mat: "wall" },
+        { x: 11, z: -10, w: 9, h: 1.1, d: 2.4, mat: "wall" },
+        { x: 0, z: -28, w: 4, h: 3, d: 4, mat: "crate" },
+      ],
+    },
+  ],
+  ramps: [
+    {
+      id: "primus-ramp",
+      kind: "ramp",
+      from: { x: 0, z: 10 },
+      to: { x: 0, z: 4 },
+      width: 6,
+      fromLevelId: GROUND_LEVEL_ID,
+      toLevelId: "throat-span",
+    },
+  ],
+  platforms: [
+    {
+      id: "throat-overlook",
+      x: 0,
+      z: -34,
+      w: 12,
+      d: 6,
+      y: 3.4,
+      thickness: 0.4,
+      levelId: "throat-span",
+    },
+  ],
+  anchors: [
+    {
+      kind: "playerSpawn",
+      id: "breach-lip-spawn",
+      x: 0,
+      z: 32,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "breach-lip",
+    },
+    {
+      kind: "breachSpawn",
+      id: "north-throat",
+      x: 10,
+      z: -36,
+      levelId: "throat-span",
+      roomId: "primus-span",
+      laneId: "north",
+    },
+    {
+      kind: "breachSpawn",
+      id: "east-throat",
+      x: 34,
+      z: -18,
+      levelId: "throat-span",
+      roomId: "primus-span",
+      laneId: "east",
+    },
+    {
+      kind: "breachSpawn",
+      id: "west-throat",
+      x: -34,
+      z: -18,
+      levelId: "throat-span",
+      roomId: "primus-span",
+      laneId: "west",
+    },
+    {
+      kind: "objective",
+      id: "primus-node",
+      x: 0,
+      z: -20,
+      levelId: "throat-span",
+      roomId: "primus-span",
+    },
+  ],
+};
+
+// ============================================================================
+// REACTOR VERGE — an Ashgate holdout variant at the edge of a live induction
+// stack. Four solid exchanger banks leave a cross-shaped hazard route through
+// the centre while split baffles force the horde around both flanks.
+//
+// `cinderwell` is the shared catalog's Reactor/hazard biome: induction stacks,
+// slag exchangers, machine oil, and disciplined hazard-yellow/alarm-red light.
+// Presentation reuses Ashgate's registered assets; only layout + palette data
+// differ from the canon campaign map.
+// ============================================================================
+const REACTOR_VERGE: ArenaMap = {
+  id: "reactor-verge",
+  loreId: "ashgate",
+  front: "holdout",
+  name: "Reactor Verge",
+  subtitle: "Ashgate induction stacks — hold the exchanger line",
+  icon: "foundry",
+  accent: "#d6a21f",
+  biomeId: "cinderwell",
+  materials: ASHGATE.materials,
+  environment: ASHGATE.environment,
+  spawn: { x: -32, z: 32 },
+  obstacles: [],
+  rooms: [
+    {
+      id: "exchanger-verge",
+      name: "Exchanger Verge",
+      bounds: DEFAULT_ARENA_BOUNDS,
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        // Four exchanger banks form a cross-shaped central hazard route.
+        { x: -6, z: -6, w: 6, h: 4, d: 6, mat: "wall" },
+        { x: 6, z: -6, w: 6, h: 4, d: 6, mat: "wall" },
+        { x: -6, z: 6, w: 6, h: 4, d: 6, mat: "wall" },
+        { x: 6, z: 6, w: 6, h: 4, d: 6, mat: "wall" },
+        // Split outer baffles preserve north/south traversal on both flanks.
+        { x: -20, z: -15, w: 2.4, h: 3, d: 16, mat: "wall" },
+        { x: -20, z: 15, w: 2.4, h: 3, d: 16, mat: "wall" },
+        { x: 20, z: -15, w: 2.4, h: 3, d: 16, mat: "wall" },
+        { x: 20, z: 15, w: 2.4, h: 3, d: 16, mat: "wall" },
+        { x: 0, z: -24, w: 3, h: 3, d: 3, mat: "crate" },
+        { x: 0, z: 24, w: 3, h: 3, d: 3, mat: "crate" },
+      ],
+    },
+  ],
+  anchors: [
+    {
+      kind: "playerSpawn",
+      id: "verge-spawn",
+      x: -32,
+      z: 32,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "exchanger-verge",
+    },
+    {
+      kind: "breachSpawn",
+      id: "reactor-east-breach",
+      x: 34,
+      z: -32,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "exchanger-verge",
+      laneId: "east",
+    },
+    {
+      kind: "breachSpawn",
+      id: "reactor-west-breach",
+      x: -34,
+      z: -32,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "exchanger-verge",
+      laneId: "west",
+    },
+    {
+      kind: "objective",
+      id: "exchanger-control",
+      x: 0,
+      z: 0,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "exchanger-verge",
+    },
+  ],
+};
+
+// ============================================================================
+// CHOIR NODE — a three-room route through Perdition's densest repeater-heart.
+// The operator enters through the pressure throat, crosses the signal nave,
+// and reaches the node chamber where the breach mouths converge.
+//
+// This is local sabotage inside the canon Choir Node, not a claim that the
+// wider Choir can be severed. Presentation reuses Perdition's registered
+// material/environment assets and its deep-breach biome.
+// ============================================================================
+const CHOIR_NODE: ArenaMap = {
+  id: "choir-node",
+  loreId: "perdition",
+  front: "breach",
+  name: "Choir Node",
+  subtitle: "Perdition repeater-heart — burn a wound and run",
+  icon: "fire",
+  accent: "#ff2a18",
+  biomeId: "perdition",
+  materials: PERDITION.materials,
+  environment: PERDITION.environment,
+  spawn: { x: 0, z: 34 },
+  obstacles: [],
+  rooms: [
+    {
+      id: "pressure-throat",
+      name: "Pressure Throat",
+      bounds: { kind: "rect", minX: -40, maxX: 40, minZ: 12, maxZ: 40 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        // Split ribs leave a 24m mouth into the signal nave.
+        { x: -24, z: 13, w: 24, h: 4, d: 2, mat: "wall" },
+        { x: 24, z: 13, w: 24, h: 4, d: 2, mat: "wall" },
+        { x: -20, z: 28, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: 20, z: 28, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: 0, z: 22, w: 8, h: 1.2, d: 2.4, mat: "wall" },
+      ],
+    },
+    {
+      id: "signal-nave",
+      name: "Signal Nave",
+      bounds: { kind: "rect", minX: -40, maxX: 40, minZ: -12, maxZ: 12 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        { x: -22, z: -5, w: 12, h: 3, d: 2.4, mat: "wall" },
+        { x: 22, z: 5, w: 12, h: 3, d: 2.4, mat: "wall" },
+        { x: -8, z: 6, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: 8, z: -6, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+      ],
+    },
+    {
+      id: "repeater-heart",
+      name: "Repeater Heart",
+      bounds: { kind: "rect", minX: -40, maxX: 40, minZ: -40, maxZ: -12 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        // A second split rib frames the chamber without sealing the route.
+        { x: -24, z: -13, w: 24, h: 4, d: 2, mat: "wall" },
+        { x: 24, z: -13, w: 24, h: 4, d: 2, mat: "wall" },
+        { x: -12, z: -25, w: 4, h: 4, d: 4, mat: "crate" },
+        { x: 12, z: -25, w: 4, h: 4, d: 4, mat: "crate" },
+        { x: 0, z: -34, w: 10, h: 1.2, d: 2.4, mat: "wall" },
+      ],
+    },
+  ],
+  anchors: [
+    {
+      kind: "playerSpawn",
+      id: "throat-spawn",
+      x: 0,
+      z: 34,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "pressure-throat",
+    },
+    {
+      kind: "breachSpawn",
+      id: "heart-breach",
+      x: 0,
+      z: -38,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "repeater-heart",
+      laneId: "north",
+    },
+    {
+      kind: "breachSpawn",
+      id: "nave-east-breach",
+      x: 34,
+      z: 0,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "signal-nave",
+      laneId: "east",
+    },
+    {
+      kind: "breachSpawn",
+      id: "nave-west-breach",
+      x: -34,
+      z: 0,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "signal-nave",
+      laneId: "west",
+    },
+    {
+      kind: "objective",
+      id: "choir-node",
+      x: 0,
+      z: -26,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "repeater-heart",
+    },
+  ],
+};
+
 // ----------------------------------------------------------------------------
 
 /** Registry normalization entry point: attaches the normalized structural
@@ -555,16 +957,84 @@ function normalizeMap(map: ArenaMap): NormalizedArenaMap {
 }
 
 /** All campaign maps, keyed by id. */
-export const MAPS: Record<string, NormalizedArenaMap> = {
+export const MAPS = {
   ashgate: normalizeMap(ASHGATE),
   hollowlanes: normalizeMap(HOLLOWLANES),
   maw: normalizeMap(MAW),
   perdition: normalizeMap(PERDITION),
+} satisfies Record<string, NormalizedArenaMap>;
+
+export type CampaignMapId = keyof typeof MAPS;
+
+export interface JourneyStageDefinition {
+  mapId: CampaignMapId;
+  /** Authored health scalar for enemies and the breach boss at this depth. */
+  difficultyMultiplier: number;
+  /** Health restored when entering this stage after clearing the previous one. */
+  healOnEnter: number;
+}
+
+export interface JourneyDefinition {
+  id: string;
+  name: string;
+  description: string;
+  stages: readonly JourneyStageDefinition[];
+}
+
+/**
+ * Named structured-run journeys. This is the sole source of campaign order and
+ * stage escalation; future descents can add a definition without maintaining a
+ * parallel order array.
+ */
+export const JOURNEYS = {
+  "perdition-descent": {
+    id: "perdition-descent",
+    name: "The Perdition Descent",
+    description: "Push from Ashgate through the dead lanes and breach throat to Perdition.",
+    stages: [
+      { mapId: "ashgate", difficultyMultiplier: 1, healOnEnter: 0 },
+      {
+        mapId: "hollowlanes",
+        difficultyMultiplier: 1 + STAGE_DIFFICULTY_STEP,
+        healOnEnter: STAGE_CLEAR_HEAL,
+      },
+      {
+        mapId: "maw",
+        difficultyMultiplier: 1 + STAGE_DIFFICULTY_STEP * 2,
+        healOnEnter: STAGE_CLEAR_HEAL,
+      },
+      {
+        mapId: "perdition",
+        difficultyMultiplier: 1 + STAGE_DIFFICULTY_STEP * 3,
+        healOnEnter: STAGE_CLEAR_HEAL,
+      },
+    ],
+  },
+} as const satisfies Record<string, JourneyDefinition>;
+
+export type JourneyId = keyof typeof JOURNEYS;
+
+export const DEFAULT_JOURNEY_ID: JourneyId = "perdition-descent";
+export const DEFAULT_JOURNEY = JOURNEYS[DEFAULT_JOURNEY_ID];
+
+/** Derived map ids for registry checks and consumers that only need order. */
+export const DEFAULT_JOURNEY_MAP_IDS: CampaignMapId[] = DEFAULT_JOURNEY.stages.map((stage) => stage.mapId);
+
+/**
+ * Shipped Survivors-selectable maps. Campaign maps stay in MAPS so the
+ * canonical four-stage sequence remains a separate, closed contract.
+ */
+export const SURVIVOR_MAPS: Record<string, NormalizedArenaMap> = {
+  ...MAPS,
+  "foundry-wards": normalizeMap(FOUNDRY_WARDS),
+  "breach-primus": normalizeMap(BREACH_PRIMUS),
+  "reactor-verge": normalizeMap(REACTOR_VERGE),
+  "choir-node": normalizeMap(CHOIR_NODE),
 };
 
 /**
  * Sandbox-only maps: dev/e2e-reachable demonstrators that are NOT part of the
- * campaign and NOT in MAPS (so CAMPAIGN_ORDER/MAPS invariants stay intact).
+ * campaign and NOT in MAPS (so journey/MAPS invariants stay intact).
  * getMap falls through to here, so startSandbox("gantry") resolves a real,
  * normalized map without polluting the campaign registry or its texture-preload
  * list (these reuse a campaign map's material ids — see GANTRY).
@@ -573,32 +1043,44 @@ export const SANDBOX_MAPS: Record<string, NormalizedArenaMap> = {
   gantry: normalizeMap(GANTRY),
 };
 
-/**
- * Canonical campaign order — the canon descent into the breach:
- * Ashgate → The Hollow Lanes → The Maw → Perdition.
- */
-export const CAMPAIGN_ORDER: string[] = ["ashgate", "hollowlanes", "maw", "perdition"];
+const JOURNEY_MAP_ORDER = [
+  ...new Set(Object.values(JOURNEYS).flatMap((journey) => journey.stages.map((stage) => stage.mapId))),
+];
+
+/** Stable picker order: named-journey maps first, then optional breach arenas. */
+export const SURVIVOR_MAP_ORDER: string[] = [
+  ...JOURNEY_MAP_ORDER,
+  "foundry-wards",
+  "breach-primus",
+  "reactor-verge",
+  "choir-node",
+];
 
 /** Default arena for non-structured modes (Survivors / PvP preview / menu). */
 export const DEFAULT_MAP_ID = "ashgate";
 
 export function getMap(id: string): NormalizedArenaMap {
-  return MAPS[id] ?? SANDBOX_MAPS[id] ?? MAPS[DEFAULT_MAP_ID];
+  return SURVIVOR_MAPS[id] ?? SANDBOX_MAPS[id] ?? MAPS[DEFAULT_MAP_ID];
 }
 
 /** Resolve a saved/requested map id to a real one, falling back to the default. */
 export function normalizeMapId(id?: string | null): string {
-  return id && MAPS[id] ? id : DEFAULT_MAP_ID;
+  return id && SURVIVOR_MAPS[id] ? id : DEFAULT_MAP_ID;
 }
 
-/**
- * Build the campaign stage sequence starting from `startId`: that map first,
- * then the remaining maps in canonical order (wrapping around).
- */
-export function campaignSequence(startId: string): NormalizedArenaMap[] {
-  const start = CAMPAIGN_ORDER.indexOf(startId);
-  const order = start < 0 ? CAMPAIGN_ORDER : [...CAMPAIGN_ORDER.slice(start), ...CAMPAIGN_ORDER.slice(0, start)];
-  return order.map((id) => MAPS[id]);
+/** Build authored stage definitions from `startId` down to the journey's end. */
+export function journeyStageSequence(
+  startId: string,
+  journeyId: JourneyId = DEFAULT_JOURNEY_ID,
+): readonly JourneyStageDefinition[] {
+  const journey = JOURNEYS[journeyId];
+  const start = journey.stages.findIndex((stage) => stage.mapId === startId);
+  return start < 0 ? journey.stages : journey.stages.slice(start);
+}
+
+/** Build normalized campaign maps from a named journey's authored stages. */
+export function campaignSequence(startId: string, journeyId: JourneyId = DEFAULT_JOURNEY_ID): NormalizedArenaMap[] {
+  return journeyStageSequence(startId, journeyId).map((stage) => MAPS[stage.mapId]);
 }
 
 /** Lightweight metadata for the picker UI (no THREE dependency). */
@@ -609,15 +1091,14 @@ export interface MapMeta {
   icon: PixelIconId;
   accent: string;
 }
-export const MAP_PICKER: MapMeta[] = CAMPAIGN_ORDER.map((id) => {
-  const m = MAPS[id];
+export const MAP_PICKER: MapMeta[] = SURVIVOR_MAP_ORDER.map((id) => {
+  const m = SURVIVOR_MAPS[id];
   return { id: m.id, name: m.name, subtitle: m.subtitle, icon: m.icon, accent: m.accent };
 });
 
 /** Picker list for the dev sandbox: the campaign maps plus the sandbox-only
- *  demonstrators (e.g. The Gantry). Used ONLY for the map-switch buttons —
- *  texture preload stays on MAP_PICKER so no `arena-gantry-*` assets are
- *  requested (sandbox maps reuse a campaign map's material ids). */
+ *  demonstrators (e.g. The Gantry). Used only for map-switch buttons; the
+ *  asset browser derives its registered ids from each map's presentation. */
 export const SANDBOX_MAP_PICKER: MapMeta[] = [
   ...MAP_PICKER,
   ...Object.values(SANDBOX_MAPS).map((m) => ({

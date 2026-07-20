@@ -25,9 +25,11 @@ export interface ReaperIdentity {
   tint: number;
 }
 
-// Game map ids and lore location slugs diverge for two maps — this mapping is
-// the explicit seam (game: data/maps.ts, lore: @shipshitgames/assets/lore).
-export const REAPER_LOCATION_SLUG_BY_MAP: Record<string, string> = {
+// Canon lore ids and generated lore location slugs diverge for two places —
+// this mapping is the explicit seam (game: data/maps.ts `loreId`, lore:
+// @shipshitgames/assets/lore). Arena variants share the same loreId and
+// therefore inherit the same named climax threat.
+export const REAPER_LOCATION_SLUG_BY_LORE_ID: Record<string, string> = {
   ashgate: "ashgate",
   hollowlanes: "the-hollow-lanes",
   maw: "the-maw",
@@ -44,9 +46,9 @@ export const REAPER_HOST_TINTS: Record<string, number> = {
   voidship: 0x7f6fe0, // void violet
 };
 
-/** Resolve the map's named boss from the lore data layer (generic Breach-Boss fallback). */
-export function reaperForMap(mapId: string): ReaperIdentity {
-  const slug = REAPER_LOCATION_SLUG_BY_MAP[mapId];
+/** Resolve a map loreId's named boss from the lore data layer (generic Breach-Boss fallback). */
+export function reaperForLoreId(loreId: string): ReaperIdentity {
+  const slug = REAPER_LOCATION_SLUG_BY_LORE_ID[loreId];
   const boss = slug ? getLocation(slug)?.boss : undefined;
   if (!boss) {
     return {

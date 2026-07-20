@@ -55,12 +55,17 @@ describe("asset catalog resolution (#76)", () => {
       const ref = ASSET_CATALOG.weapon("pistol");
       expect(ref.sprite).toBe("weapon-pistol");
       expect(ref.lootSprite).toBe("weapon-pistol-loot");
+      expect(ref.dualSprite).toBe("weapon-pistol-dual");
       const sprite = ASSET_CATALOG.spriteEntry(ref.sprite);
       expect(sprite.path).toMatch(/\.webp$/);
       expect(sprite.weapon?.muzzle).toHaveLength(3);
       const lootSprite = ASSET_CATALOG.spriteEntry(ref.lootSprite);
       expect(lootSprite.path).toMatch(/pistol-loot\.webp$/);
       expect(lootSprite.scale).toEqual([1.4, 1.4]);
+      const dualSprite = ASSET_CATALOG.spriteEntry(ref.dualSprite as string);
+      expect(dualSprite.path).toMatch(/pistol-dual-tiers\.webp$/);
+      expect(dualSprite.weapon?.muzzles?.left).toHaveLength(3);
+      expect(dualSprite.weapon?.muzzles?.right).toHaveLength(3);
     });
 
     it("resolves pickup and fx ids", () => {

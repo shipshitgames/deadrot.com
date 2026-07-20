@@ -86,7 +86,7 @@ function spritePath(id: string, view?: SpriteView): string {
 }
 
 type RuntimeDomain = keyof ScourgeSurvivorsAssetManifest["runtime"];
-type RuntimeSpriteDomain = Exclude<RuntimeDomain, "ui" | "enemies" | "weapons">;
+type RuntimeSpriteDomain = Exclude<RuntimeDomain, "ui" | "bonusIcons" | "enemies" | "weapons">;
 
 export class AssetCatalog {
   constructor(
@@ -174,6 +174,7 @@ export class AssetCatalog {
     if (!ref) throw new Error(`Unknown Scourge Survivors runtime weapons id: ${id}`);
     this.spriteEntry(ref.sprite);
     this.spriteEntry(ref.lootSprite);
+    if (ref.dualSprite) this.spriteEntry(ref.dualSprite);
     return ref;
   }
 

@@ -162,7 +162,7 @@ function SurvivorsHud({ state }: { state: HudState }) {
               }`}
               title={b.name}
             >
-              <PixelIcon id={b.icon} size={17} label={b.name} />
+              <PixelIcon id={b.icon} variant="bonus" size={17} label={b.name} />
               <b className="text-[11px] text-accent ml-[2px] align-super">{b.level}</b>
             </span>
           ))}

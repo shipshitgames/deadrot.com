@@ -125,6 +125,10 @@ export class Hud {
 
     // speed-lines intensify with velocity
     this.speedlines.style.opacity = String(Math.max(0, (opts.speedFrac - 0.25) * 1.25));
+    this.speedlines.style.setProperty(
+      "--speed-line-duration",
+      `${Math.max(0.18, 0.52 - opts.speedFrac * 0.34).toFixed(3)}s`,
+    );
   }
 
   /** Visual punch for a hazard hit. */
@@ -140,6 +144,20 @@ export class Hud {
         { opacity: 0 },
       ],
       { duration: 200, easing: "ease-out" },
+    );
+  }
+
+  /** Redline ignition flash: rear-biased hellfire, kept below hit-flash intensity. */
+  flashRedline() {
+    this.flash.animate(
+      [
+        {
+          opacity: 0.42,
+          background: "linear-gradient(90deg, rgba(255,42,24,0.52), rgba(255,106,0,0.18) 38%, transparent 72%)",
+        },
+        { opacity: 0 },
+      ],
+      { duration: 260, easing: "ease-out" },
     );
   }
 

@@ -10,11 +10,12 @@ import {
   REAPER_WARNING_LEAD,
 } from "../../src/game/constants";
 import { SCOURGE_THREAT_TIERS } from "../../src/game/data/enemies";
+import { SURVIVOR_MAP_ORDER, SURVIVOR_MAPS } from "../../src/game/data/maps";
 import {
   canResistReaper,
   REAPER_HOST_TINTS,
-  REAPER_LOCATION_SLUG_BY_MAP,
-  reaperForMap,
+  REAPER_LOCATION_SLUG_BY_LORE_ID,
+  reaperForLoreId,
   reaperTouchDamage,
   reaperWarningDue,
   shouldSpawnReaper,
@@ -34,38 +35,47 @@ function tiers(total: number, vigor: number): Record<string, number> {
 
 describe("reaper identity (lore data layer)", () => {
   it("resolves every run map to its canon named boss — never a hardcoded name", () => {
-    expect(reaperForMap("ashgate").name).toBe("Lane Tyrant");
-    expect(reaperForMap("hollowlanes").name).toBe("Junction Knell");
-    expect(reaperForMap("maw").name).toBe("Maw Shepherd");
-    expect(reaperForMap("perdition").name).toBe("The Choir Node");
+    expect(reaperForLoreId("ashgate").name).toBe("Lane Tyrant");
+    expect(reaperForLoreId("hollowlanes").name).toBe("Junction Knell");
+    expect(reaperForLoreId("maw").name).toBe("Maw Shepherd");
+    expect(reaperForLoreId("perdition").name).toBe("The Choir Node");
   });
 
-  it("keeps the map → lore-slug seam pointed at real lore locations with bosses (drift test)", () => {
-    for (const [mapId, slug] of Object.entries(REAPER_LOCATION_SLUG_BY_MAP)) {
+  it("keeps the loreId → lore-slug seam pointed at real lore locations with bosses (drift test)", () => {
+    for (const [loreId, slug] of Object.entries(REAPER_LOCATION_SLUG_BY_LORE_ID)) {
       const location = getLocation(slug);
-      expect(location, `${mapId} → ${slug}`).toBeDefined();
-      expect(location?.boss, `${mapId} → ${slug} must name a climax boss`).toBeTruthy();
+      expect(location, `${loreId} → ${slug}`).toBeDefined();
+      expect(location?.boss, `${loreId} → ${slug} must name a climax boss`).toBeTruthy();
 
-      const identity = reaperForMap(mapId);
+      const identity = reaperForLoreId(loreId);
       expect(identity.name).toBe(location?.boss?.name);
       expect(identity.entitySlug).toBe(location?.boss?.entitySlug);
       expect(identity.hostFamily).toBe(location?.boss?.hostFamily);
     }
   });
 
+  it("resolves every shipped Survivors arena through its canon loreId", () => {
+    for (const mapId of SURVIVOR_MAP_ORDER) {
+      const map = SURVIVOR_MAPS[mapId];
+      const slug = REAPER_LOCATION_SLUG_BY_LORE_ID[map.loreId];
+      expect(slug, `${mapId} loreId ${map.loreId}`).toBeTruthy();
+      expect(reaperForLoreId(map.loreId).name, mapId).toBe(getLocation(slug)?.boss?.name);
+    }
+  });
+
   it("defines a tint for every host family that appears on a run map", () => {
-    for (const slug of Object.values(REAPER_LOCATION_SLUG_BY_MAP)) {
+    for (const slug of Object.values(REAPER_LOCATION_SLUG_BY_LORE_ID)) {
       const family = getLocation(slug)?.boss?.hostFamily as string;
       expect(REAPER_HOST_TINTS[family], `tint for ${family}`).toBeTypeOf("number");
     }
-    for (const [mapId] of Object.entries(REAPER_LOCATION_SLUG_BY_MAP)) {
-      const identity = reaperForMap(mapId);
+    for (const [loreId] of Object.entries(REAPER_LOCATION_SLUG_BY_LORE_ID)) {
+      const identity = reaperForLoreId(loreId);
       expect(identity.tint).toBe(REAPER_HOST_TINTS[identity.hostFamily]);
     }
   });
 
   it("falls back to the generic Breach-Boss for unknown maps", () => {
-    expect(reaperForMap("not-a-map")).toEqual({
+    expect(reaperForLoreId("not-a-map")).toEqual({
       name: SCOURGE_THREAT_TIERS.breachBoss.label,
       entitySlug: "breach-boss",
       hostFamily: "rot-flesh",

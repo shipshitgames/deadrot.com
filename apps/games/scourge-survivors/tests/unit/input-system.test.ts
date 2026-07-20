@@ -118,6 +118,30 @@ describe("Scourge Survivors FPS input policy", () => {
     expect(sys.hud.emit).toHaveBeenCalledTimes(1);
   });
 
+  it("suspends live input for a cinematic and restores the capture boundary", () => {
+    const { ctx, sys } = makePointerLockHarness();
+    ctx.status = "playing";
+    ctx.firing = true;
+    ctx.move.forward = true;
+    ctx.wantsSprint = true;
+    ctx.wantsCrouch = true;
+
+    const input = new InputSystem(ctx, sys as unknown as GameSystems);
+    input.suspendForCinematic();
+
+    expect(ctx.status).toBe("paused");
+    expect(ctx.firing).toBe(false);
+    expect(ctx.move).toEqual({ forward: false, back: false, left: false, right: false });
+    expect(ctx.wantsSprint).toBe(false);
+    expect(ctx.wantsCrouch).toBe(false);
+    expect(sys.weapon.stopAds).toHaveBeenCalledTimes(1);
+
+    input.resumeFromCinematic();
+
+    expect(ctx.status).toBe("pointerlock-needed");
+    expect(sys.hud.emit).toHaveBeenCalledTimes(2);
+  });
+
   it("does not immediately resume pause from the same handled Escape keydown", () => {
     const { ctx, sys } = makePointerLockHarness();
     ctx.status = "paused";

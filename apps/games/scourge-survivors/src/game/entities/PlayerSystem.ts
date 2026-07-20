@@ -31,6 +31,16 @@ import type { MapObstacle } from "../data/maps";
 import type { GameSystems } from "../systems";
 import { createBreachSpawnProvider } from "./breachSpawn";
 
+export function walkableSurfaceHeight(surfaceBoxes: readonly THREE.Box3[], x: number, z: number): number {
+  let height = 0;
+  for (const box of surfaceBoxes) {
+    if (x >= box.min.x && x <= box.max.x && z >= box.min.z && z <= box.max.z) {
+      height = Math.max(height, box.max.y);
+    }
+  }
+  return height;
+}
+
 export class PlayerSystem {
   constructor(
     private ctx: GameContext,
@@ -165,6 +175,13 @@ export class PlayerSystem {
     return groundY;
   }
 
+  /** Highest authored walkable surface at an arbitrary arena point. Enemy
+   *  grounding uses this seam so raised rooms and ramp steps are playable by
+   *  the whole horde, without treating crates as navigable floors. */
+  walkableSurfaceHeight(x: number, z: number): number {
+    return walkableSurfaceHeight(this.ctx.surfaceBoxes, x, z);
+  }
+
   private pushPlayerOutOfObstacles(pos: THREE.Vector3, radius: number) {
     const footY = pos.y - this.ctx.stanceHeight;
     const headY = pos.y;
@@ -202,11 +219,13 @@ export class PlayerSystem {
     let healthDamage = amount;
     if (this.ctx.survivors) {
       if (this.ctx.damageGraceTimer > 0) {
+        this.sys.telemetry?.recordIncomingDamage("aggregate", "mixed", amount, 0, 0, amount);
         this.sys.fx.addShake(0.06);
         audio.sfx("shieldhit");
         return;
       }
       if (this.ctx.statDodge > 0 && Math.random() < this.ctx.statDodge) {
+        this.sys.telemetry?.recordIncomingDamage("aggregate", "mixed", amount, 0, 0, amount);
         this.ctx.damageGraceTimer = Math.max(this.ctx.damageGraceTimer, 0.12);
         this.sys.fx.addShake(0.08);
         this.sys.hud.showToast("EVADE");
@@ -223,7 +242,18 @@ export class PlayerSystem {
         healthDamage -= absorbed;
       }
     }
+    const healthBefore = this.ctx.health;
     this.ctx.health = Math.max(this.ctx.sandbox ? 1 : 0, this.ctx.health - healthDamage);
+    if (this.ctx.survivors) {
+      this.sys.telemetry?.recordIncomingDamage(
+        "aggregate",
+        "mixed",
+        amount,
+        Math.max(0, healthBefore - this.ctx.health),
+        Math.max(0, amount - healthDamage),
+        0,
+      );
+    }
     if (this.ctx.survivors) this.sys.survivors.onPlayerDamaged(amount, healthDamage);
     if (this.ctx.survivors && healthDamage > 0 && this.ctx.statGrace > 0) {
       this.ctx.damageGraceTimer = Math.max(this.ctx.damageGraceTimer, this.ctx.statGrace);

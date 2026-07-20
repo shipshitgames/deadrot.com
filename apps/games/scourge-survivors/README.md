@@ -39,6 +39,22 @@ server-owned run/wave state and remains tracked in
 The permanent gold-shop economy (income, costs, and the one-run-can't-buy-everything
 invariant) is tuned and documented in [ECONOMY.md](./ECONOMY.md).
 
+## Balance telemetry
+
+Survivors runs emit the shared `deadrot.balance.v1` event schema for progression,
+draft decisions, enemy pressure, damage, boss phases, and run outcomes. Browser
+events are buffered under `deadrot:balance-telemetry:v1`; inspect them locally with:
+
+```js
+JSON.parse(localStorage.getItem("deadrot:balance-telemetry:v1") ?? "null")?.data ?? []
+```
+
+When configured, the same events are sent to PostHog as
+`deadrot_balance_<event-name>`. Sentry receives the `run_end` and `boss_phase`
+events as `game.balance` breadcrumbs. Sampling, local buffering, release tags,
+and sink credentials remain controlled by the existing `VITE_BALANCE_TELEMETRY_*`,
+`VITE_POSTHOG_*`, and `VITE_SENTRY_*` environment settings.
+
 ## License
 
 MIT (code). Assets follow the studio style/lore canon.

@@ -35,6 +35,7 @@ export interface RingCastOptions {
   ttl: number;
   dmg: number;
   maxR: number;
+  source: WeaponUpgradeId | "bastion";
 }
 
 /**
@@ -54,7 +55,15 @@ export class SurvivorsAutoWeapons {
   orbitCd = new WeakMap<Enemy, number>();
   bolts: { mesh: THREE.Sprite; vel: THREE.Vector3; dmg: number; age: number; pierce: number }[] = [];
   boltTimer = 0;
-  novas: { mesh: THREE.Mesh; age: number; ttl: number; hit: Set<Enemy>; dmg: number; maxR: number }[] = [];
+  novas: {
+    mesh: THREE.Mesh;
+    age: number;
+    ttl: number;
+    hit: Set<Enemy>;
+    dmg: number;
+    maxR: number;
+    source: WeaponUpgradeId | "bastion";
+  }[] = [];
   novaTimer = NOVA_INTERVAL;
 
   private evolved: Record<WeaponUpgradeId, boolean> = { orbit: false, bolt: false, nova: false };
@@ -62,7 +71,7 @@ export class SurvivorsAutoWeapons {
 
   constructor(
     private ctx: GameContext,
-    private autoDamage: (enemy: Enemy, dmg: number) => void,
+    private autoDamage: (enemy: Enemy, dmg: number, source: WeaponUpgradeId | "bastion") => void,
   ) {}
 
   init() {
@@ -174,7 +183,7 @@ export class SurvivorsAutoWeapons {
       }
       if (near && (this.orbitCd.get(enemy) ?? 0) <= now) {
         this.orbitCd.set(enemy, now + ORBIT_HIT_CD);
-        this.autoDamage(enemy, dmg);
+        this.autoDamage(enemy, dmg, "orbit");
       }
     }
   }
@@ -219,7 +228,7 @@ export class SurvivorsAutoWeapons {
         }
       }
       if (hitEnemy) {
-        this.autoDamage(hitEnemy, b.dmg);
+        this.autoDamage(hitEnemy, b.dmg, "bolt");
         b.pierce -= 1;
         if (b.pierce < 0) {
           this.removeBolt(i);
@@ -289,7 +298,7 @@ export class SurvivorsAutoWeapons {
         const d = Math.hypot(enemy.position.x - nv.mesh.position.x, enemy.position.z - nv.mesh.position.z);
         if (d <= radius) {
           nv.hit.add(enemy);
-          this.autoDamage(enemy, nv.dmg);
+          this.autoDamage(enemy, nv.dmg, nv.source);
         }
       }
       if (nv.age >= nv.ttl) {
@@ -325,6 +334,7 @@ export class SurvivorsAutoWeapons {
       hit: new Set(),
       dmg: opts.dmg,
       maxR: opts.maxR,
+      source: opts.source,
     });
   }
 
@@ -340,6 +350,7 @@ export class SurvivorsAutoWeapons {
       ttl: 0.55,
       dmg: NOVA_DMG * (1 + 0.3 * (this.novaLevel - 1)) * (this.evolved.nova ? 1.4 : 1),
       maxR: NOVA_RADIUS * (1 + 0.12 * (this.novaLevel - 1)) * (this.evolved.nova ? 1.5 : 1),
+      source: "nova",
     });
     audio.sfx("boss");
   }

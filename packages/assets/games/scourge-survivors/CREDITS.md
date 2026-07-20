@@ -5,6 +5,28 @@
 > the current house style; new work follows the comic-ink lock in
 > `apps/lore/content/Universe/Style-Bible.md`.
 
+## 2026-07-17 - comic bonus and blade icon set
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Role: run upgrades, permanent shop bonuses, and Pyre blade/auto-weapon
+  choices.
+- Tool: `gpt-image-2` through Codex built-in `image_gen`, followed by Sharp
+  chroma cleanup, atlas slicing, alpha trim, and lossless WebP encoding.
+- Plan: Codex built-in.
+- Source atlas:
+  `sources/generated/2026-07-17/scourge-survivors/ui/bonus-icons-comic-atlas-source.png`.
+- Preserved raw output:
+  `_archive/raw-generator-cache/codex-generated-images/2026-07-17/raw/019f6da4-55d3-7d63-aa0b-e4d5c76d0385/exec-aedb1ce0-7a1f-460f-914b-ea126bf2ae4c.png`.
+- Final assets: `ui/icons/comic/*.webp`.
+- Prompt sources: `apps/lore/content/CANON.md`, `apps/lore/content/DESIGN.md`,
+  `apps/lore/content/Universe/Style-Bible.md`,
+  `apps/lore/content/Games/Scourge-Survivors.md`, and the locked comic HUD
+  master.
+- Notes: the 21 semantic icons form one canonical set shared by the level-up
+  draft and permanent-upgrade shop. Existing world pickup sprites remain the
+  package-owned runtime set referenced by `runtime.pickups`.
+
 ## 2026-06-24 - edge-quality rematte and weapon sheet padding
 
 - Status: promoted into runtime.
@@ -87,6 +109,29 @@
 - Notes: Replaces the rock-like procedural corpse chunk meshes with authored
   billboard body-part sprites while keeping the existing physics throw/bounce
   behavior.
+
+## 2026-07-16 - comic-ink arena surface pass
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Role: map-specific floor, wall, block, and column textures for Ashgate, the
+  Hollow Lanes, the Maw, and Perdition.
+- Tool: deterministic comic-ink texture generator plus lossless `cwebp`.
+- Plan: Codex local deterministic generation.
+- Kind: generated mathematically seamless 512x512 WebP tiling textures.
+- Source recipe:
+  `packages/assets/sources/generated/2026-07-16/scourge-survivors/arena-surfaces/generate-arena-textures.ts`.
+- Source note: generated from posterized periodic value noise, hard contour
+  bands, rivets, cracks, hatching, and map-specific glow marks whose periods
+  divide the 512px canvas; every output was reviewed as a 2x2 tile.
+- Final assets:
+  - `textures/arenas/ashgate/{floor,wall,block,column}.webp`
+  - `textures/arenas/hollowlanes/{floor,wall,block,column}.webp`
+  - `textures/arenas/maw/{floor,wall,block,column}.webp`
+  - `textures/arenas/perdition/{floor,wall,block,column}.webp`
+- Notes: Supersedes only the 16 core surface textures from the 2026-06-06
+  pass. Existing decals, prop plates, UV repeats, arena geometry, collision,
+  sky, fog, and non-colliding environment dressing are unchanged.
 
 ## 2026-06-06 - authored breach-arena texture sets
 
@@ -319,3 +364,27 @@
   rules. Historical provenance only.
 - Post-processing: generated on chroma-key background, removed with the bundled imagegen chroma-key helper, scaled to 256x256, then encoded to lossless WebP with `cwebp -lossless -exact`.
 - Notes: Replaces the prior flat square muzzle flash with a directional bone-white, blood-hot, and hellfire pixel-art burst.
+
+## 2026-07-17 - purpose-built dual held-weapon tier sheets
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Faction / role: Pyre pistol, SMG, shotgun, and sniper dual-wield view models.
+- Tool: `gpt-image-2` via Codex built-in `image_gen`, followed by deterministic
+  local alpha cleanup and WebP promotion.
+- Plan: Codex built-in, reference-anchored redraw from the approved Pyre
+  `weapons/pyre/{pistol,smg,shotgun,sniper}-tiers.webp` runtime sheets.
+- Source outputs:
+  - `~/.codex/generated_images/019f6f5c-bac3-7ac0-8881-c7cb86fe01e7/call_azOfo1vi9G5CGlbYrWuqyOEu.png`
+  - `~/.codex/generated_images/019f6f5c-bac3-7ac0-8881-c7cb86fe01e7/call_KmHRV7ExZz71dOLC1x3inS1a.png`
+  - `~/.codex/generated_images/019f6f5c-bac3-7ac0-8881-c7cb86fe01e7/call_P08gr2NAJsBZbe2EcrjtoZpB.png`
+  - `~/.codex/generated_images/019f6f5c-bac3-7ac0-8881-c7cb86fe01e7/call_t0OguipFMmAzui2qGGFamph6.png`
+- Preserved raw masters:
+  `packages/assets/_archive/raw-generator-cache/codex-generated-images/2026-07-17/raw/019f6f5c-bac3-7ac0-8881-c7cb86fe01e7/`.
+- Final assets: `weapons/pyre/dual/{pistol,smg,shotgun,sniper}-dual-tiers.webp`.
+- Generator: `packages/assets/scripts/generate-scourge-dual-weapons.mjs`.
+- Post-processing: flood-clears the baked neutral checkerboard, normalizes each
+  sheet to five exact 435px tier cells, and encodes high-quality WebP with exact
+  full-quality alpha.
+- Notes: every cell is a new uncrossed one-weapon-per-hand pose. The cannon is
+  excluded because it is not dual-compatible.

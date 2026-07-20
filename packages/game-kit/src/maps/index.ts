@@ -36,3 +36,13 @@ export {
   type NormalizeArenaLayoutOptions,
   normalizeArenaLayout,
 } from "./normalize";
+export {
+  ARENA_VALIDATION_DEFAULTS,
+  ArenaLayoutValidationError,
+  type ArenaValidationCode,
+  type ArenaValidationError,
+  type ArenaValidationOptions,
+  type ArenaValidationResult,
+  assertValidArenaLayout,
+  validateArenaLayout,
+} from "./validation";
