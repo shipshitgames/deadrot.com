@@ -161,7 +161,7 @@ test("AudioEngine enforces authored cue voice caps and minimum intervals", async
   FakeBufferSource.instances = [];
   globals.window = fakeWindow as unknown as Window;
   globals.Audio = FakeAudio as unknown as typeof Audio;
-  globals.fetch = (() => Promise.resolve({ arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)) })) as typeof fetch;
+  globals.fetch = (() => Promise.resolve(new Response(new Uint8Array(8)))) as typeof fetch;
 
   try {
     const engine = new AudioEngine<"cue", never>({
@@ -183,7 +183,9 @@ test("AudioEngine enforces authored cue voice caps and minimum intervals", async
     engine.sfx("cue");
     assert.equal(FakeBufferSource.instances.length, 1);
 
-    FakeBufferSource.instances[0].finish();
+    const firstVoice = FakeBufferSource.instances[0];
+    assert.ok(firstVoice);
+    firstVoice.finish();
     const context = (engine as unknown as { ctx: FakeAudioContext }).ctx;
     context.currentTime = 0.2;
     engine.sfx("cue");
