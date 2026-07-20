@@ -12,17 +12,18 @@ import {
   ringOffset,
 } from "./bossPatterns";
 import { COLORS, CONSTANTS, type EnemyType } from "./constants";
+import { type ImpactDirection, type MarqueeImpact, shakeFor } from "./feedback";
 import { clamp, TAU } from "./math";
 import type { Enemy } from "./types";
-
-const HIT_FLASH = 0.09;
 
 /** What the encounter needs from the Game: scaled spawns and run-state hooks. */
 export interface BossEncounterHost {
   ringPoint(): { x: number; y: number };
   spawnAt(type: EnemyType, x: number, y: number): void;
   /** Beam damage routes through the Game (it owns integrity + i-frames). */
-  hitPlayer(dmg: number): void;
+  hitPlayer(dmg: number, direction?: ImpactDirection): void;
+  /** Marquee feedback is centralized so hit-stop, shake, and flash align. */
+  impact(impact: MarqueeImpact, direction?: ImpactDirection): void;
   /** Run-state on defeat: count the kill, vacuum the field, enter victory. */
   onDefeated(): void;
 }
@@ -118,7 +119,7 @@ export class BossEncounter {
     this.ringT = b.ring.firstDelay;
     this.beamT = b.beam.firstDelay;
     audio.sfx("boss");
-    this.render.addShake(CONSTANTS.fx.shake.bossSpawn);
+    this.render.addShake(shakeFor("bossSpawn"));
     this.entities.pop(p.x, p.y, COLORS.toxicHot, 40);
   }
 
@@ -140,7 +141,7 @@ export class BossEncounter {
       this.phaseSeen = phase;
       audio.sfx("boss");
       audio.sfx("explosion", { pitch: 0.8 });
-      this.render.addShake(CONSTANTS.fx.shake.bossPhase);
+      this.host.impact("bossPhase");
       this.burst(boss.mesh.position.x, boss.mesh.position.y, COLORS.toxicHot, CONSTANTS.fx.burst.bossPhase);
     }
 
@@ -170,7 +171,7 @@ export class BossEncounter {
       boss.material.color.setHex(0xffffff).lerp(TOXIC_HOT, clamp(boss.telegraph, 0, 1) * blink);
       boss.material.opacity = 1;
     } else if (boss.flash > 0) {
-      const t = clamp(boss.flash / HIT_FLASH, 0, 1);
+      const t = clamp(boss.flash / CONSTANTS.fx.hitFlashDuration, 0, 1);
       boss.material.color.setHex(0xffffff).lerp(BONE, t);
     } else {
       const pulse = 0.5 + 0.5 * Math.sin(time * 2 + boss.phase);
@@ -182,7 +183,7 @@ export class BossEncounter {
     this.burstT -= dt;
     if (this.burstT <= 0) {
       this.burstT = b.burstEvery * (phase === 1 ? 1 : phase === 2 ? 0.75 : 0.55);
-      boss.flash = 0.12;
+      boss.flash = CONSTANTS.fx.bossAttackFlashDuration;
       const off = Math.random() * TAU;
       for (let i = 0; i < b.burstCount; i++) {
         const a = off + (i / b.burstCount) * TAU;
@@ -221,7 +222,7 @@ export class BossEncounter {
         // Travel just past the ship so the lunge actually crosses the hull.
         this.dashTime = Math.min(0.8, (dist + 4) / b.dashSpeed);
         this.dashT = b.dashEvery * (phase === 1 ? 1.6 : 1);
-        this.render.addShake(CONSTANTS.fx.shake.bossCharge);
+        this.render.addShake(shakeFor("bossCharge"), { x: this.dashX, y: this.dashY });
       }
     }
 
@@ -326,7 +327,10 @@ export class BossEncounter {
         this.beamState = "fire";
         this.beamTime = bm.duration;
         audio.sfx("laser", { pitch: 0.6 });
-        this.render.addShake(CONSTANTS.fx.shake.bossCharge);
+        this.render.addShake(shakeFor("bossCharge"), {
+          x: this.beamX2 - this.beamX1,
+          y: this.beamY2 - this.beamY1,
+        });
       }
       return;
     }
@@ -335,7 +339,12 @@ export class BossEncounter {
     const left = Math.max(0, this.beamTime) / bm.duration;
     this.entities.showBossBeamFire(this.beamX1, this.beamY1, this.beamX2, this.beamY2, bm.width, left);
     const d = pointSegDist(sx, sy, this.beamX1, this.beamY1, this.beamX2, this.beamY2);
-    if (d < bm.width / 2 + CONSTANTS.player.width * 0.5) this.host.hitPlayer(bm.damage);
+    if (d < bm.width / 2 + CONSTANTS.player.width * 0.5) {
+      this.host.hitPlayer(bm.damage, {
+        x: this.beamX2 - this.beamX1,
+        y: this.beamY2 - this.beamY1,
+      });
+    }
     if (this.beamTime <= 0) {
       this.beamState = "idle";
       this.entities.hideBossBeam();
@@ -357,10 +366,11 @@ export class BossEncounter {
     }
     this.burst(x, y, COLORS.hellfire, CONSTANTS.fx.burst.bossDeath);
     this.burst(x, y, COLORS.bone, CONSTANTS.fx.burst.bossPhase);
+    this.render.flashFrame(x, y, COLORS.bone, CONSTANTS.fx.flashSprite.bossDeath);
     this.entities.pop(x, y, COLORS.bloodHot, 30);
-    this.render.addShake(CONSTANTS.fx.shake.bossDeath);
     audio.sfx("explosion", { pitch: 0.7 });
     audio.sfx("victory");
+    this.host.impact("bossDeath");
     this.host.onDefeated();
   }
 

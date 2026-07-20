@@ -343,6 +343,186 @@ body {
   color: var(--toxic);
 }
 
+/* ------------------------------------------------------- CINEMATICS --- */
+.rothulk-cinematic {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: clamp(24px, 6vw, 84px);
+  background: rgba(3, 3, 4, 0.92);
+  cursor: pointer;
+  isolation: isolate;
+}
+
+.rothulk-cinematic__wash {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  background:
+    radial-gradient(circle at 72% 42%, rgba(193, 18, 31, 0.28), transparent 34%),
+    repeating-linear-gradient(0deg, transparent 0 3px, rgba(233, 227, 214, 0.025) 3px 4px),
+    linear-gradient(110deg, #09090a 0 44%, #180a08 72%, #050506 100%);
+  animation: rothulk-cinematic-pulse 1.6s steps(2, end) infinite;
+}
+
+.rothulk-cinematic--victory .rothulk-cinematic__wash {
+  background:
+    radial-gradient(circle at 72% 42%, rgba(139, 220, 31, 0.18), transparent 34%),
+    repeating-linear-gradient(0deg, transparent 0 3px, rgba(233, 227, 214, 0.025) 3px 4px),
+    linear-gradient(110deg, #09090a 0 44%, #111608 72%, #050506 100%);
+}
+
+.rothulk-cinematic__gash {
+  position: absolute;
+  right: -8vw;
+  z-index: -2;
+  width: 70vw;
+  height: 20vh;
+  background: linear-gradient(90deg, transparent, rgba(255, 42, 24, 0.5));
+  transform: rotate(-8deg) skewX(-18deg);
+  filter: blur(1px);
+}
+
+.rothulk-cinematic__gash--top {
+  top: -8vh;
+}
+
+.rothulk-cinematic__gash--bottom {
+  right: auto;
+  bottom: -11vh;
+  left: -12vw;
+  transform: rotate(-8deg) skewX(-18deg) scaleX(-1);
+}
+
+.rothulk-cinematic__frame {
+  width: min(820px, 100%);
+  padding: clamp(24px, 5vw, 58px);
+  border: 1px solid var(--gunmetal);
+  border-left: 5px solid var(--hellfire);
+  background: rgba(10, 10, 10, 0.88);
+  box-shadow:
+    -16px 0 0 rgba(193, 18, 31, 0.16),
+    0 28px 80px rgba(0, 0, 0, 0.75);
+  clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 28px 100%, 0 calc(100% - 28px));
+}
+
+.rothulk-cinematic--victory .rothulk-cinematic__frame {
+  border-left-color: var(--toxic);
+  box-shadow:
+    -16px 0 0 rgba(139, 220, 31, 0.12),
+    0 28px 80px rgba(0, 0, 0, 0.75);
+}
+
+.rothulk-cinematic__site,
+.rothulk-cinematic__kicker,
+.rothulk-cinematic__signal {
+  font-family: var(--mono);
+  text-transform: uppercase;
+}
+
+.rothulk-cinematic__site {
+  margin-bottom: clamp(28px, 6vh, 64px);
+  color: var(--ash);
+  font-size: clamp(9px, 1.2vw, 12px);
+  letter-spacing: 0.22em;
+}
+
+.rothulk-cinematic__kicker {
+  margin-bottom: 14px;
+  color: var(--hellfire);
+  font-size: clamp(10px, 1.4vw, 14px);
+  letter-spacing: 0.16em;
+}
+
+.rothulk-cinematic--victory .rothulk-cinematic__kicker,
+.rothulk-cinematic--victory .rothulk-cinematic__signal {
+  color: var(--toxic);
+}
+
+.rothulk-cinematic h2 {
+  max-width: 18ch;
+  color: var(--bone);
+  font-size: clamp(24px, 4.8vw, 58px);
+  line-height: 1.12;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.rothulk-cinematic p {
+  max-width: 68ch;
+  margin-top: clamp(18px, 3vh, 30px);
+  color: var(--ash);
+  font-family: var(--mono);
+  font-size: clamp(11px, 1.4vw, 15px);
+  line-height: 1.65;
+}
+
+.rothulk-cinematic__signal {
+  margin-top: 24px;
+  color: var(--blood-hot);
+  font-size: clamp(9px, 1.2vw, 12px);
+  letter-spacing: 0.14em;
+}
+
+.rothulk-cinematic button {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: clamp(28px, 5vh, 48px);
+  padding: 12px 15px;
+  border: 1px solid var(--hellfire);
+  color: var(--bone);
+  background: rgba(255, 106, 0, 0.12);
+  font: inherit;
+  font-size: 11px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.rothulk-cinematic button span {
+  color: var(--ash);
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+.rothulk-cinematic__timer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--iron);
+}
+
+.rothulk-cinematic__timer i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: left center;
+  background: var(--hellfire);
+  animation: rothulk-cinematic-timer linear forwards;
+}
+
+.rothulk-cinematic--victory .rothulk-cinematic__timer i {
+  background: var(--toxic);
+}
+
+@keyframes rothulk-cinematic-pulse {
+  50% {
+    filter: brightness(1.12);
+  }
+}
+
+@keyframes rothulk-cinematic-timer {
+  to {
+    transform: scaleX(0);
+  }
+}
+
 @media (max-width: 720px) {
   .hud-right,
   .hud-grow {
@@ -361,5 +541,21 @@ body {
   }
   .op-briefing-beat-detail {
     display: none;
+  }
+  .rothulk-cinematic {
+    padding: 16px;
+  }
+  .rothulk-cinematic__frame {
+    padding: 24px 20px;
+  }
+  .rothulk-cinematic__site {
+    margin-bottom: 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rothulk-cinematic__wash,
+  .rothulk-cinematic__timer i {
+    animation: none;
   }
 }

@@ -9,6 +9,7 @@ import {
 import { JUMP_VELOCITY, WEAPON_ORDER, type WeaponId } from "../constants";
 import type { GameContext } from "../context";
 import type { GameSystems } from "../systems";
+import type { GameStatus } from "../types";
 
 export type FpsAction = "reload" | "melee" | "weapon1" | "weapon2" | "weapon3" | "weapon4" | "weapon5";
 
@@ -150,6 +151,7 @@ export class PointerLockRig implements CaptureRig {
 export class InputSystem {
   private binder: InputBinder<FpsAction> | null = null;
   private captureRig: PointerLockRig | null = null;
+  private cinematicReturnStatus: GameStatus | null = null;
 
   constructor(
     private ctx: GameContext,
@@ -177,6 +179,7 @@ export class InputSystem {
     window.removeEventListener("wheel", this.onWheel);
     this.captureRig?.unbind();
     this.captureRig = null;
+    this.cinematicReturnStatus = null;
   }
 
   /** The FPS half of input handed to the engine binder. */
@@ -293,6 +296,33 @@ export class InputSystem {
     clearMoveIntent(this.ctx.move);
     this.clearLocomotionModifiers();
     this.captureRig?.cancelLockRetry();
+    this.sys.hud.emit();
+  }
+
+  suspendForCinematic(): void {
+    if (this.cinematicReturnStatus !== null) return;
+    this.cinematicReturnStatus = this.ctx.status;
+    if (this.ctx.status !== "playing") return;
+    this.ctx.status = "paused";
+    this.ctx.firing = false;
+    this.sys.weapon.stopAds();
+    clearMoveIntent(this.ctx.move);
+    this.clearLocomotionModifiers();
+    this.captureRig?.releaseCapture(true);
+    this.sys.hud.emit();
+  }
+
+  resumeFromCinematic(): void {
+    const returnStatus = this.cinematicReturnStatus;
+    this.cinematicReturnStatus = null;
+    if (returnStatus === null) return;
+    if (returnStatus === "playing") {
+      this.ctx.status = "pointerlock-needed";
+      this.sys.hud.emit();
+      this.requestLock();
+      return;
+    }
+    this.ctx.status = returnStatus;
     this.sys.hud.emit();
   }
 

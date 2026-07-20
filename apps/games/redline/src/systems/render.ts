@@ -437,11 +437,13 @@ export class Render {
     this.elapsed += dt;
     const frac = runner.speedFrac;
 
-    // runner mesh position + crouch squash/stretch
+    // Runner mesh position + directional speed stretch. Keep collision in the
+    // Runner entity authoritative; this is a restrained side-on visual read.
     this.runnerMesh.position.set(runner.x, runner.y, 0);
-    const stretchY = runner.crouch * (1 + frac * 0.12); // slight vertical stretch at speed
-    const squashX = 1 + (1 - runner.crouch) * 0.6 + frac * 0.08;
-    this.runnerMesh.scale.set(squashX, stretchY, 1);
+    const crouchWidth = 1 + (1 - runner.crouch) * 0.6;
+    const stretchX = crouchWidth * (1 + frac * 0.14);
+    const compressY = runner.crouch * (1 - frac * 0.06);
+    this.runnerMesh.scale.set(stretchX, compressY, 1);
     // lean forward into the run
     this.runnerMesh.rotation.z = -frac * 0.12 - (runner.dashing ? 0.18 : 0);
 
@@ -475,6 +477,22 @@ export class Render {
       position: { x, y, z: 0.4 },
       color: COLORS.hellfire,
       ...FEEDBACK.emberBurst,
+    });
+  }
+
+  /** Redline ignition: a short rear-raking hellfire/blood-hot burst. */
+  emitRedlineBurst(x: number, y: number) {
+    this.bursts.spawn({
+      position: { x: x - RUNNER.radius, y, z: 0.25 },
+      color: COLORS.bloodHot,
+      ...FEEDBACK.redlineBurst,
+    });
+    this.bursts.spawn({
+      position: { x: x - RUNNER.radius * 1.4, y, z: 0.15 },
+      color: COLORS.hellfire,
+      ...FEEDBACK.redlineBurst,
+      count: Math.ceil(FEEDBACK.redlineBurst.count * 0.6),
+      size: FEEDBACK.redlineBurst.size * 0.72,
     });
   }
 
@@ -518,7 +536,7 @@ export class Render {
       mat.opacity = t * 0.4 * (0.4 + frac);
       mat.color.setHex(frac > RUNNER.redlineFrac ? COLORS.bloodHot : COLORS.hellfire);
       const s = 0.5 + t * 0.5;
-      gh.mesh.scale.set(s, s * runner.crouch, 1);
+      gh.mesh.scale.set(s * (1 + frac * 1.6), s * runner.crouch * (1 - frac * 0.16), 1);
     }
   }
 

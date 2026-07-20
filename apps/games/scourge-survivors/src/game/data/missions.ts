@@ -1,4 +1,13 @@
-import { type ArenaMap, CAMPAIGN_ORDER, campaignSequence } from "./maps";
+import {
+  type ArenaMap,
+  campaignSequence,
+  DEFAULT_JOURNEY,
+  DEFAULT_JOURNEY_ID,
+  JOURNEYS,
+  type JourneyId,
+  type JourneyStageDefinition,
+  journeyStageSequence,
+} from "./maps";
 
 export type MissionPhase = "idle" | "active" | "complete";
 
@@ -32,6 +41,8 @@ export interface MissionStageState {
   index: number;
   mapId: string;
   mapName: string;
+  difficultyMultiplier: number;
+  healOnEnter: number;
   checkpoint: MissionCheckpoint;
   encounter: MissionEncounter;
   objective: MissionObjective;
@@ -41,6 +52,8 @@ export interface MissionStageState {
 export interface MissionRunState {
   missionId: string | null;
   missionTitle: string;
+  journeyId: JourneyId | null;
+  journeyName: string;
   startMapId: string | null;
   phase: MissionPhase;
   stageIndex: number;
@@ -59,6 +72,8 @@ export function createIdleMissionState(): MissionRunState {
   return {
     missionId: null,
     missionTitle: "",
+    journeyId: null,
+    journeyName: "",
     startMapId: null,
     phase: "idle",
     stageIndex: 0,
@@ -71,14 +86,21 @@ export function createIdleMissionState(): MissionRunState {
   };
 }
 
-export function createMissionRun(startMapId: string = CAMPAIGN_ORDER[0]): MissionRunState {
-  const maps = campaignSequence(startMapId);
-  const stages = maps.map((map, index) => createMissionStage(map, index, maps.length));
+export function createMissionRun(
+  startMapId: string = DEFAULT_JOURNEY.stages[0].mapId,
+  journeyId: JourneyId = DEFAULT_JOURNEY_ID,
+): MissionRunState {
+  const journey = JOURNEYS[journeyId];
+  const maps = campaignSequence(startMapId, journeyId);
+  const definitions = journeyStageSequence(startMapId, journeyId);
+  const stages = maps.map((map, index) => createMissionStage(map, definitions[index], index, maps.length));
   const first = stages[0];
 
   return {
     missionId: ASHGATE_BREACH_MISSION_ID,
     missionTitle: ASHGATE_BREACH_MISSION_TITLE,
+    journeyId,
+    journeyName: journey.name,
     startMapId: first.mapId,
     phase: "active",
     stageIndex: 0,
@@ -146,12 +168,19 @@ export function advanceMissionAfterBoss(run: MissionRunState): MissionRunState {
   };
 }
 
-function createMissionStage(map: ArenaMap, index: number, totalStages: number): MissionStageState {
+function createMissionStage(
+  map: ArenaMap,
+  definition: JourneyStageDefinition,
+  index: number,
+  totalStages: number,
+): MissionStageState {
   const stageNumber = index + 1;
   return {
     index,
     mapId: map.id,
     mapName: map.name,
+    difficultyMultiplier: definition.difficultyMultiplier,
+    healOnEnter: definition.healOnEnter,
     checkpoint: {
       id: `${map.id}-breachhead`,
       mapId: map.id,

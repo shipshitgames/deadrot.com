@@ -9,6 +9,7 @@ import { clearPauseActions, emitRunEnd, setPauseActions, subscribeDrydockTiers }
 import { BossEncounter } from "./BossEncounter";
 import { COLORS, CONSTANTS, type EnemyType, WORLD } from "./constants";
 import type { ShopTiers } from "./drydock";
+import { HitStopController, type ImpactDirection, type MarqueeImpact, shakeFor } from "./feedback";
 import { clamp, TAU } from "./math";
 import type { DraftCard, Enemy, GamePhase, HudState } from "./types";
 import { ALL_UPGRADES, computeStats, defOf, maxLevelOf, type Stats, type UpgradeId, xpForLevel } from "./upgrades";
@@ -54,12 +55,14 @@ export class Game {
   // --- audio / juice throttles --------------------------------------------
   private laserT = 0;
   private laserQueued = false;
+  private muzzleT = 0;
   private explosionT = 0;
   private gemSfxT = 0;
   private gemStreak = 0;
   private lastGemAt = -999;
   private lowHealthT = 0;
   private bossHitFxT = 0;
+  private readonly hitStop = new HitStopController();
 
   private raf = 0;
   private prev = 0;
@@ -75,14 +78,16 @@ export class Game {
     // Weapon fire is voiced once per frame at most, throttled in simulate().
     this.weapons.onFire = () => {
       this.laserQueued = true;
+      this.weaponFireFeedback();
     };
     this.bossEncounter = new BossEncounter(this.entities, this.render, {
       ringPoint: () => this.ringPoint(),
       spawnAt: (type, x, y) => this.spawnAt(type, x, y),
       // The beam re-checks every frame; the ship's i-frames gate repeat ticks.
-      hitPlayer: (dmg) => {
-        if (this.invuln <= 0) this.hitPlayer(dmg);
+      hitPlayer: (dmg, direction) => {
+        if (this.invuln <= 0) this.hitPlayer(dmg, direction);
       },
+      impact: (impact, direction) => this.triggerImpact(impact, direction),
       onDefeated: () => {
         this.kills++;
         this.vacuum = true;
@@ -182,12 +187,14 @@ export class Game {
   private resetFeedback() {
     this.laserT = 0;
     this.laserQueued = false;
+    this.muzzleT = 0;
     this.explosionT = 0;
     this.gemSfxT = 0;
     this.gemStreak = 0;
     this.lastGemAt = -999;
     this.lowHealthT = 0;
     this.bossHitFxT = 0;
+    this.hitStop.reset();
   }
 
   private pauseRun() {
@@ -243,12 +250,19 @@ export class Game {
       else if (this.phase === "paused") this.resumeRun();
     }
 
-    if (this.phase === "playing") this.simulate(dt);
+    const simulationDt = this.phase === "playing" ? this.hitStop.scaleDelta(dt) : 0;
+    if (this.phase === "playing") this.simulate(simulationDt);
 
     // Camera follows the ship (also keeps the menu backdrop alive). Kill-pop
     // bursts only advance while simulating — same gate as the legacy particle
     // sim in simulate() — so all FX freeze together on pause / level-up.
-    this.render.update(dt, this.entities.ship.position.x, this.entities.ship.position.y, this.phase === "playing");
+    this.render.update(
+      dt,
+      this.entities.ship.position.x,
+      this.entities.ship.position.y,
+      this.phase === "playing",
+      simulationDt,
+    );
     this.render.render();
     this.emitHud();
 
@@ -276,6 +290,7 @@ export class Game {
     this.clock += dt;
     if (this.invuln > 0) this.invuln = Math.max(0, this.invuln - dt);
     this.laserT = Math.max(0, this.laserT - dt);
+    this.muzzleT = Math.max(0, this.muzzleT - dt);
     this.explosionT = Math.max(0, this.explosionT - dt);
     this.gemSfxT = Math.max(0, this.gemSfxT - dt);
     this.bossHitFxT = Math.max(0, this.bossHitFxT - dt);
@@ -332,6 +347,19 @@ export class Game {
     audio.sfx("laser", { pitch: a.laserPitchLo + Math.random() * (a.laserPitchHi - a.laserPitchLo) });
   }
 
+  /** Visual recoil has its own cadence so audio throttling cannot desync it. */
+  private weaponFireFeedback() {
+    if (this.muzzleT > 0) return;
+    this.muzzleT = CONSTANTS.audio.muzzleMinInterval;
+    const ship = this.entities.ship;
+    this.burst(ship.position.x, ship.position.y, COLORS.hellfire, CONSTANTS.fx.burst.muzzle);
+    const heading = ship.rotation.z + Math.PI / 2;
+    this.render.addDirectionalKick(shakeFor("weaponFire"), {
+      x: -Math.cos(heading),
+      y: -Math.sin(heading),
+    });
+  }
+
   /** Periodic warning ping while integrity sits under the danger threshold. */
   private updateLowHealthWarning(dt: number) {
     const a = CONSTANTS.audio;
@@ -340,6 +368,7 @@ export class Game {
       if (this.lowHealthT <= 0) {
         this.lowHealthT = a.lowHealthEvery;
         audio.sfx("lowhealth");
+        this.render.addShake(shakeFor("lowIntegrityPulse"));
       }
     } else {
       this.lowHealthT = 0; // re-crossing the threshold pings immediately
@@ -377,7 +406,7 @@ export class Game {
       this.eliteT = d.eliteEvery;
       const p = this.ringPoint();
       this.entities.pop(p.x, p.y, COLORS.toxicHot, 16); // spawn flare
-      this.render.addShake(CONSTANTS.fx.shake.eliteSpawn);
+      this.render.addShake(shakeFor("eliteSpawn"));
       this.spawnAt("elite", p.x, p.y);
     }
   }
@@ -476,15 +505,18 @@ export class Game {
       // BLIGHT-BOIL elites blow big: a fat toxic burst plus a hellfire core.
       this.burst(x, y, COLORS.toxicHot, CONSTANTS.fx.burst.elite);
       this.burst(x, y, COLORS.hellfire, CONSTANTS.fx.burst.enemy);
+      // Chained kills share one synchronized marquee beat instead of stacking
+      // audio and full-screen flashes within the same 100ms window.
       if (this.explosionT <= 0) {
         this.explosionT = CONSTANTS.audio.explosionMinInterval;
+        this.render.flashFrame(x, y, COLORS.bone, CONSTANTS.fx.flashSprite.eliteKill);
         audio.sfx("explosion");
+        this.triggerImpact("eliteKill");
       }
-      this.render.addShake(CONSTANTS.fx.shake.eliteKill);
     } else {
       this.entities.spawnGem(x, y, e.gemValue);
       this.burst(x, y, COLORS.toxic, CONSTANTS.fx.burst.enemy); // ichor pop
-      this.render.addShake(CONSTANTS.fx.shake.gruntKill);
+      this.render.addShake(shakeFor("gruntKill"));
     }
     this.entities.killEnemy(e);
   }
@@ -522,7 +554,7 @@ export class Game {
       const dy = b.mesh.position.y - sy;
       if (dx * dx + dy * dy < rr) {
         b.dead = true;
-        this.hitPlayer(b.damage);
+        this.hitPlayer(b.damage, { x: b.vx, y: b.vy });
         return;
       }
     }
@@ -539,18 +571,25 @@ export class Game {
       const dy = e.mesh.position.y - sy;
       const rr = e.radius + shipR;
       if (dx * dx + dy * dy < rr * rr) {
-        this.hitPlayer(e.contactDmg);
+        this.hitPlayer(e.contactDmg, { x: -dx, y: -dy });
         return;
       }
     }
   }
 
-  private hitPlayer(dmg: number) {
+  private hitPlayer(dmg: number, direction?: ImpactDirection) {
     this.integrity -= dmg;
     this.invuln = CONSTANTS.player.invulnTime;
     this.entities.pop(this.entities.ship.position.x, this.entities.ship.position.y, COLORS.blood, 18);
-    this.render.addShake(CONSTANTS.fx.shake.playerHit);
     audio.sfx("hurt");
+    this.triggerImpact("playerHit", direction);
+  }
+
+  /** Synchronizes time scaling, camera impact, and flash on the same event. */
+  private triggerImpact(impact: MarqueeImpact, direction?: ImpactDirection) {
+    this.hitStop.trigger(CONSTANTS.fx.hitStop[impact]);
+    this.render.addShake(shakeFor(impact), direction);
+    this.hud.pulseImpact(impact);
   }
 
   // --- XP + draft --------------------------------------------------------

@@ -75,6 +75,7 @@ export class GameContext {
 
   // --- muzzle flash (armed by WeaponSystem.shoot, decayed by FxSystem.updateEffects) ---
   muzzleFlash!: THREE.Sprite;
+  dualMuzzleFlash!: THREE.Sprite;
   muzzleLight!: THREE.PointLight;
   muzzleTimer = 0;
 

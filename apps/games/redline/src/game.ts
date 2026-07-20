@@ -25,6 +25,7 @@ import { Input } from "./systems/input";
 import { Physics } from "./systems/physics";
 import { Render } from "./systems/render";
 import { detectNearMisses, ScoreSystem } from "./systems/score";
+import { nextRedlineTransition } from "./systems/speedFeedback";
 import type { Course, Phase } from "./types";
 import { overlayController } from "./ui/overlayController";
 
@@ -63,6 +64,7 @@ export class Game {
   // them once per frame (after the step loop) instead of per step.
   private frameMinVy = 0; // fastest fall speed seen this frame (for landing weight)
   private emberChainQueue: number[] = []; // chain value at each pickup this frame
+  private redlineActive = false;
 
   constructor(canvas: HTMLCanvasElement) {
     this.input = new Input(canvas);
@@ -164,6 +166,7 @@ export class Game {
     this.time = 0;
     this.frameMinVy = 0;
     this.emberChainQueue.length = 0;
+    this.redlineActive = false;
     this.phase = "running";
     this.hud.hideOverlay();
   }
@@ -310,6 +313,18 @@ export class Game {
     for (const chain of this.emberChainQueue) {
       play("gem", 1 + (chain - 1) * FEEDBACK.gemChainPitchStep);
     }
+
+    const redline = nextRedlineTransition(this.redlineActive, this.runner.speedFrac);
+    this.redlineActive = redline.active;
+    if (redline.entered) {
+      // Dash already carries the same whoosh body, so do not double-trigger it
+      // when a hot roll crosses the redline on this frame.
+      if (!this.runner.justDashed) play("dash", FEEDBACK.redlineWhooshPitch);
+      this.render.emitRedlineBurst(this.runner.x, this.runner.y);
+      this.render.kickShake(FEEDBACK.redlineShake);
+      this.hud.flashRedline();
+    }
+
     this.emberChainQueue.length = 0;
     if (this.runner.onGround || this.runner.justLanded) this.frameMinVy = 0;
   }
