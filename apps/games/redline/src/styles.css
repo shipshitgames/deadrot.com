@@ -422,6 +422,165 @@ kbd {
   color: var(--hellfire);
 }
 
+/* ==========================================================================
+   COURIER-RUN CINEMATICS
+   ========================================================================== */
+
+.redline-cinematic {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: clamp(18px, 5vw, 72px);
+  cursor: pointer;
+  isolation: isolate;
+  background: rgba(3, 3, 4, 0.92);
+}
+
+.redline-cinematic--flow-safe {
+  background: linear-gradient(90deg, rgba(3, 3, 4, 0.9), rgba(3, 3, 4, 0.68) 62%, rgba(3, 3, 4, 0.18));
+}
+
+.redline-cinematic__speed {
+  position: absolute;
+  inset: -12%;
+  z-index: -2;
+  background:
+    linear-gradient(96deg, transparent 5%, rgba(255, 106, 0, 0.16) 38%, transparent 62%) 0 18% / 36vw 2px repeat-x,
+    linear-gradient(96deg, transparent 4%, rgba(255, 42, 24, 0.22) 42%, transparent 70%) 10vw 48% / 48vw 3px repeat-x,
+    linear-gradient(96deg, transparent 8%, rgba(233, 227, 214, 0.09) 52%, transparent 76%) 4vw 76% / 31vw 2px repeat-x,
+    radial-gradient(circle at 78% 50%, rgba(193, 18, 31, 0.24), transparent 34%);
+  animation: redline-cinematic-speed 0.55s linear infinite;
+}
+
+.redline-cinematic--delivery .redline-cinematic__speed {
+  background:
+    linear-gradient(96deg, transparent 5%, rgba(255, 106, 0, 0.2) 38%, transparent 62%) 0 22% / 36vw 2px repeat-x,
+    radial-gradient(circle at 78% 50%, rgba(255, 106, 0, 0.24), transparent 36%);
+}
+
+.redline-cinematic__frame {
+  width: min(780px, 100%);
+  padding: clamp(24px, 5vw, 54px);
+  border: 1px solid var(--gunmetal);
+  border-left: 5px solid var(--hellfire);
+  background: rgba(10, 10, 10, 0.88);
+  box-shadow:
+    -16px 0 0 rgba(193, 18, 31, 0.16),
+    0 28px 80px rgba(0, 0, 0, 0.76);
+  clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 28px 100%, 0 calc(100% - 28px));
+}
+
+.redline-cinematic--scourge .redline-cinematic__frame {
+  border-left-color: var(--blood-hot);
+}
+
+.redline-cinematic__site,
+.redline-cinematic__kicker,
+.redline-cinematic__signal {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+.redline-cinematic__site {
+  margin-bottom: clamp(30px, 8vh, 76px);
+  color: var(--ash);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+}
+
+.redline-cinematic__kicker {
+  margin-bottom: 14px;
+  color: var(--hellfire);
+  font-size: clamp(10px, 1.4vw, 14px);
+  letter-spacing: 0.16em;
+}
+
+.redline-cinematic--scourge .redline-cinematic__kicker,
+.redline-cinematic--scourge .redline-cinematic__signal {
+  color: var(--blood-hot);
+}
+
+.redline-cinematic h2 {
+  max-width: 18ch;
+  color: var(--bone);
+  font-size: clamp(24px, 4.8vw, 58px);
+  line-height: 1.12;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.redline-cinematic p {
+  max-width: 66ch;
+  margin-top: clamp(18px, 3vh, 30px);
+  color: var(--ash);
+  font-family: var(--font-mono);
+  font-size: clamp(11px, 1.4vw, 15px);
+  line-height: 1.65;
+}
+
+.redline-cinematic__signal {
+  margin-top: 24px;
+  color: var(--hellfire);
+  font-size: clamp(9px, 1.2vw, 12px);
+  letter-spacing: 0.14em;
+}
+
+.redline-cinematic button {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: clamp(26px, 5vh, 46px);
+  padding: 12px 15px;
+  border: 1px solid var(--hellfire);
+  border-radius: 2px;
+  color: var(--bone);
+  background: rgba(255, 106, 0, 0.12);
+  font: inherit;
+  font-size: 11px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.redline-cinematic button span {
+  color: var(--ash);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+.redline-cinematic__timer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--iron);
+}
+
+.redline-cinematic__timer i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: left center;
+  background: var(--hellfire);
+  animation: redline-cinematic-timer linear forwards;
+}
+
+@keyframes redline-cinematic-speed {
+  to {
+    transform: translateX(-36vw);
+  }
+}
+
+@keyframes redline-cinematic-timer {
+  to {
+    transform: scaleX(0);
+  }
+}
+
 /* Letter grade on the win screen (S hottest -> C coldest, DOOM palette only) */
 #overlay-grade {
   display: flex;
@@ -465,5 +624,30 @@ kbd {
   }
   #overlay-controls {
     grid-template-columns: 1fr;
+  }
+
+  .redline-cinematic {
+    padding: 14px;
+  }
+
+  .redline-cinematic__frame {
+    padding: 24px 20px;
+  }
+
+  .redline-cinematic__site {
+    margin-bottom: 30px;
+  }
+
+  .redline-cinematic button {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .redline-cinematic__speed,
+  .redline-cinematic__timer i {
+    animation: none;
   }
 }

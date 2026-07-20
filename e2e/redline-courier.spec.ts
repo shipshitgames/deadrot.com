@@ -33,6 +33,16 @@ test("ignite starts a live courier run and the HUD ticks", async ({ page }, test
   await expect(page.locator("#overlay")).toHaveClass(/is-hidden/);
   await expect.poll(() => phase(page)).toBe("running");
 
+  // The take-message intro overlays a run that is already live. Time advances
+  // underneath it, then one explicit input dismisses it before acceleration.
+  await expect(page.getByTestId("cinematic-intro")).toBeVisible();
+  await expect.poll(() => page.locator("#hud-time").textContent()).not.toBe("0.00");
+  await page
+    .getByTestId("cinematic-intro")
+    .getByRole("button", { name: /^Run the lane/ })
+    .click();
+  await expect(page.getByTestId("cinematic-intro")).toHaveCount(0);
+
   // Hold accelerate: vx climbs off baseSpeed (6) toward topSpeed (34) and the
   // HUD speed readout follows it — proves the input → runner → HUD chain.
   await page.keyboard.down("ArrowRight");
@@ -65,6 +75,13 @@ test("reaching the beacon completes the delivery and shows a graded win", async 
   expect(bx).toBe(BEACON_X);
   await setRunnerX(page, bx + 1);
   await expect.poll(() => phase(page)).toBe("won");
+
+  // Outcome is selected directly from the run result before the grade card.
+  await expect(page.getByTestId("cinematic-delivered")).toContainText("The lane still talks.");
+  await page
+    .getByTestId("cinematic-delivered")
+    .getByRole("button", { name: /^Continue/ })
+    .click();
 
   // showWin re-shows the overlay as a graded delivery summary.
   await expect(page.locator("#overlay")).not.toHaveClass(/is-hidden/);
@@ -132,6 +149,12 @@ test("falling into the rot loses the run with the cargo-lost message", async ({ 
   expect(pitFound).toBe(true);
   await expect.poll(() => phase(page)).toBe("dead");
 
+  await expect(page.getByTestId("cinematic-caught")).toContainText("The Choir reached the message.");
+  await page
+    .getByTestId("cinematic-caught")
+    .getByRole("button", { name: /^Continue/ })
+    .click();
+
   // showDead carries the verbatim die() reason (the only die() call in game.ts).
   await expect(page.locator("#overlay-kicker")).toHaveText("Run Failed");
   await expect(page.locator("#overlay-body")).toHaveText("Cargo lost to the rot below. The lane swallowed the run.");
@@ -151,18 +174,27 @@ test("retry from a finished run re-arms a fresh courier run", async ({ page }, t
   // Finish the run via a beacon win, then re-deploy from the win card.
   await setRunnerX(page, (await beaconX(page)) + 1);
   await expect.poll(() => phase(page)).toBe("won");
+  await page
+    .getByTestId("cinematic-delivered")
+    .getByRole("button", { name: /^Continue/ })
+    .click();
 
   // RUN AGAIN routes through startRun(): resets the runner/course/score, flips
   // phase back to running, and hides the overlay (mirrors pactfall's redeploy).
   await page.getByRole("button", { name: "RUN AGAIN" }).click();
   await expect.poll(() => phase(page)).toBe("running");
   await expect(page.locator("#overlay")).toHaveClass(/is-hidden/);
+  await expect(page.getByTestId("cinematic-intro")).toBeVisible();
+  await expect.poll(async () => Number(await page.locator("#hud-time").textContent())).toBeLessThan(2);
+  await page
+    .getByTestId("cinematic-intro")
+    .getByRole("button", { name: /^Run the lane/ })
+    .click();
 
   // runner.reset() put us back at the spawn (WORLD.startX=4) at baseSpeed (6),
-  // and the fresh run timer is back near zero — not the finished-run time.
+  // and the fresh run timer reset inside the live intro window.
   await expect.poll(() => runnerField(page, "x")).toBeLessThan(10);
   await expect.poll(() => runnerField(page, "vx")).toBeCloseTo(BASE_SPEED, 0);
-  await expect.poll(async () => Number(await page.locator("#hud-time").textContent())).toBeLessThan(0.5);
 
   expectNoErrors(errors);
 });

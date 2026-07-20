@@ -90,6 +90,11 @@ const gameSpecs: Record<GameSlug, GameSpec> = {
     async exercise(page) {
       await page.getByRole("button", { name: "IGNITE" }).click();
       await expect(page.locator("#overlay")).toHaveClass(/is-hidden/);
+      await expect(page.getByTestId("cinematic-intro")).toBeVisible();
+      await page
+        .getByTestId("cinematic-intro")
+        .getByRole("button", { name: /^Run the lane/ })
+        .click();
       await page.keyboard.down("ArrowRight");
       await page.waitForTimeout(250);
       await page.keyboard.up("ArrowRight");

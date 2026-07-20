@@ -17,7 +17,13 @@
 import { createFixedLoop, type FixedLoop } from "@deadrot/game-kit";
 import { completeRun, createRunNonce } from "@deadrot/game-kit/warline";
 import { audio } from "./audio";
-import { CAMERA, FEEDBACK, RUNNER } from "./constants";
+import {
+  cinematicAssignmentForRoute,
+  cinematicForRunOutcome,
+  cinematicForRunStart,
+  type RedlineCinematicBeat,
+} from "./cinematics";
+import { CAMERA, COURSE, FEEDBACK, RUNNER } from "./constants";
 import { generateCourse } from "./course";
 import { Runner } from "./entities/runner";
 import { Hud } from "./systems/hud";
@@ -46,6 +52,8 @@ export class Game {
   private time = 0; // run timer (s)
   private score = new ScoreSystem();
   private runNonce = createRunNonce("redline");
+  private activeCinematicId: string | null = null;
+  private cinematicToken = 0;
 
   // Kit defaults match the old hand-rolled loop: 1/120 fixed dt, 0.1s max frame.
   private loop: FixedLoop = createFixedLoop({
@@ -92,6 +100,7 @@ export class Game {
 
   dispose() {
     this.loop.stop();
+    this.clearCinematic();
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("keydown", this.onKeyDown);
     this.input.dispose();
@@ -134,6 +143,7 @@ export class Game {
   /** Drop the live run and return to the title menu. */
   private exitToTitle() {
     this.resume();
+    this.clearCinematic();
     audio.sfx("uiSelect");
     this.phase = "ready";
     this.showTitle();
@@ -156,6 +166,7 @@ export class Game {
   // ---------------------------------------------------------------------------
 
   private startRun() {
+    this.clearCinematic();
     this.runNonce = createRunNonce("redline");
     audio.unlock(); // start screens are reached via gesture; arm music + cues
     audio.sfx("uiSelect");
@@ -169,6 +180,9 @@ export class Game {
     this.redlineActive = false;
     this.phase = "running";
     this.hud.hideOverlay();
+    // The run is already live before this brief appears: base-speed motion
+    // starts immediately, so the intro never stalls Redline's flow.
+    this.playCinematic(cinematicForRunStart(COURSE.loreId));
   }
 
   private win() {
@@ -182,7 +196,9 @@ export class Game {
       score: summary.total,
       nonce: this.runNonce,
     });
-    this.hud.showWin(summary, records, () => this.startRun());
+    this.playCinematic(cinematicForRunOutcome(COURSE.loreId, "delivered"), () => {
+      this.hud.showWin(summary, records, () => this.startRun());
+    });
   }
 
   private die(reason: string) {
@@ -192,7 +208,9 @@ export class Game {
     completeRun("redline", { outcome: "defeat", nonce: this.runNonce });
     this.render.kickShake(0.8);
     this.hud.flashHit();
-    this.hud.showDead(reason, () => this.startRun());
+    this.playCinematic(cinematicForRunOutcome(COURSE.loreId, "caught"), () => {
+      this.hud.showDead(reason, () => this.startRun());
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -343,8 +361,47 @@ export class Game {
     });
   }
 
+  private clearCinematic() {
+    this.cinematicToken += 1;
+    this.activeCinematicId = null;
+    overlayController.clearCinematic();
+  }
+
+  private playCinematic(beat: RedlineCinematicBeat | null, onComplete: () => void = () => {}) {
+    if (!beat) {
+      onComplete();
+      return;
+    }
+
+    const token = ++this.cinematicToken;
+    this.activeCinematicId = beat.id;
+    let completed = false;
+    const complete = () => {
+      if (completed || token !== this.cinematicToken) return;
+      completed = true;
+      this.activeCinematicId = null;
+      overlayController.clearCinematic();
+      onComplete();
+    };
+
+    try {
+      overlayController.showCinematic({
+        beat,
+        site: cinematicAssignmentForRoute(COURSE.loreId).site,
+        complete,
+      });
+    } catch {
+      complete();
+    }
+  }
+
   // expose for debugging in console if needed
   get debug() {
-    return { runner: this.runner, course: this.course, cameraLead: CAMERA.lead };
+    return {
+      runner: this.runner,
+      course: this.course,
+      cameraLead: CAMERA.lead,
+      cinematicId: this.activeCinematicId,
+    };
   }
 }
