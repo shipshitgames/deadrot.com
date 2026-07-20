@@ -820,6 +820,8 @@ test.describe("dev sandbox smoke", () => {
 
     await expectHudLayoutFits(page, { width: 390, height: 780 });
     await expectHudLayoutFits(page, { width: 720, height: 390 });
+    await expectHudLayoutFits(page, { width: 844, height: 390 });
+    await expectHudLayoutFits(page, { width: 1280, height: 480 });
   });
 
   test("starts campaign through the mission system instead of the main menu state", async ({ page }) => {

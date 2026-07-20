@@ -1669,7 +1669,7 @@
 /* Short landscape play needs a shallower center stack than portrait mobile.
    Keep the transparent combat lanes above the bottom-corner vitals so the
    build, bonus, and weapon surfaces never converge over the play field. */
-@media (max-width: 720px) and (max-height: 520px) {
+@media (max-height: 520px) {
   .game-root .ssg-survivor-runline,
   .game-root .ssg-survivor-xp {
     width: min(480px, calc(100vw - 180px));
