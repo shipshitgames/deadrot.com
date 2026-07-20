@@ -112,5 +112,273 @@
         "scope": "Starblight runtime"
       }
     }
+  },
+  "audio": {
+    "weapon-kinetic": {
+      "type": "audio",
+      "path": "games/starblight/audio/sfx/weapon-kinetic.webm",
+      "category": "sfx",
+      "duration": 0.168,
+      "volume": 0.42,
+      "loop": false,
+      "bus": "sfx",
+      "pitchVariance": 0.045,
+      "maxVoices": 2,
+      "minIntervalMs": 120,
+      "license": {
+        "tool": "Local PCM synthesis + FFmpeg Opus",
+        "plan": "project-owned",
+        "date": "2026-07-20",
+        "kind": "Deterministic studio-generated kinetic weapon SFX",
+        "scope": "Deadrot embedded game use"
+      }
+    },
+    "weapon-drone": {
+      "type": "audio",
+      "path": "games/starblight/audio/sfx/weapon-drone.webm",
+      "category": "sfx",
+      "duration": 0.208,
+      "volume": 0.34,
+      "loop": false,
+      "bus": "sfx",
+      "pitchVariance": 0.05,
+      "maxVoices": 2,
+      "minIntervalMs": 180,
+      "license": {
+        "tool": "Local PCM synthesis + FFmpeg Opus",
+        "plan": "project-owned",
+        "date": "2026-07-20",
+        "kind": "Deterministic studio-generated drone weapon SFX",
+        "scope": "Deadrot embedded game use"
+      }
+    },
+    "weapon-ordnance": {
+      "type": "audio",
+      "path": "games/starblight/audio/sfx/weapon-ordnance.webm",
+      "category": "sfx",
+      "duration": 0.488,
+      "volume": 0.52,
+      "loop": false,
+      "bus": "sfx",
+      "pitchVariance": 0.025,
+      "maxVoices": 2,
+      "minIntervalMs": 250,
+      "license": {
+        "tool": "Local PCM synthesis + FFmpeg Opus",
+        "plan": "project-owned",
+        "date": "2026-07-20",
+        "kind": "Deterministic studio-generated ordnance weapon SFX",
+        "scope": "Deadrot embedded game use"
+      }
+    },
+    "weapon-beam": {
+      "type": "audio",
+      "path": "games/starblight/audio/sfx/weapon-beam.webm",
+      "category": "sfx",
+      "duration": 0.348,
+      "volume": 0.3,
+      "loop": false,
+      "bus": "sfx",
+      "pitchVariance": 0.02,
+      "maxVoices": 1,
+      "minIntervalMs": 420,
+      "license": {
+        "tool": "Local PCM synthesis + FFmpeg Opus",
+        "plan": "project-owned",
+        "date": "2026-07-20",
+        "kind": "Deterministic studio-generated beam weapon SFX",
+        "scope": "Deadrot embedded game use"
+      }
+    },
+    "weapon-mine": {
+      "type": "audio",
+      "path": "games/starblight/audio/sfx/weapon-mine.webm",
+      "category": "sfx",
+      "duration": 0.428,
+      "volume": 0.5,
+      "loop": false,
+      "bus": "sfx",
+      "pitchVariance": 0.035,
+      "maxVoices": 2,
+      "minIntervalMs": 180,
+      "license": {
+        "tool": "Local PCM synthesis + FFmpeg Opus",
+        "plan": "project-owned",
+        "date": "2026-07-20",
+        "kind": "Deterministic studio-generated mine weapon SFX",
+        "scope": "Deadrot embedded game use"
+      }
+    },
+    "weapon-wing": {
+      "type": "audio",
+      "path": "games/starblight/audio/sfx/weapon-wing.webm",
+      "category": "sfx",
+      "duration": 0.248,
+      "volume": 0.32,
+      "loop": false,
+      "bus": "sfx",
+      "pitchVariance": 0.055,
+      "maxVoices": 2,
+      "minIntervalMs": 140,
+      "license": {
+        "tool": "Local PCM synthesis + FFmpeg Opus",
+        "plan": "project-owned",
+        "date": "2026-07-20",
+        "kind": "Deterministic studio-generated wingmate weapon SFX",
+        "scope": "Deadrot embedded game use"
+      }
+    },
+    "enemy-hit": {
+      "type": "audio",
+      "path": "games/starblight/audio/sfx/enemy-hit.webm",
+      "category": "sfx",
+      "duration": 0.158,
+      "volume": 0.24,
+      "loop": false,
+      "bus": "sfx",
+      "pitchVariance": 0.08,
+      "maxVoices": 3,
+      "minIntervalMs": 45,
+      "license": {
+        "tool": "Local PCM synthesis + FFmpeg Opus",
+        "plan": "project-owned",
+        "date": "2026-07-20",
+        "kind": "Deterministic studio-generated Scourge hit SFX",
+        "scope": "Deadrot embedded game use"
+      }
+    },
+    "enemy-kill": {
+      "type": "audio",
+      "path": "games/starblight/audio/sfx/enemy-kill.webm",
+      "category": "sfx",
+      "duration": 0.278,
+      "volume": 0.34,
+      "loop": false,
+      "bus": "sfx",
+      "pitchVariance": 0.07,
+      "maxVoices": 3,
+      "minIntervalMs": 70,
+      "license": {
+        "tool": "Local PCM synthesis + FFmpeg Opus",
+        "plan": "project-owned",
+        "date": "2026-07-20",
+        "kind": "Deterministic studio-generated Scourge kill SFX",
+        "scope": "Deadrot embedded game use"
+      }
+    },
+    "elite-kill": {
+      "type": "audio",
+      "path": "games/starblight/audio/sfx/elite-kill.webm",
+      "category": "sfx",
+      "duration": 0.588,
+      "volume": 0.58,
+      "loop": false,
+      "bus": "sfx",
+      "pitchVariance": 0.025,
+      "maxVoices": 2,
+      "minIntervalMs": 100,
+      "license": {
+        "tool": "Local PCM synthesis + FFmpeg Opus",
+        "plan": "project-owned",
+        "date": "2026-07-20",
+        "kind": "Deterministic studio-generated elite kill SFX",
+        "scope": "Deadrot embedded game use"
+      }
+    },
+    "salvage-pickup": {
+      "type": "audio",
+      "path": "games/starblight/audio/sfx/salvage-pickup.webm",
+      "category": "sfx",
+      "duration": 0.208,
+      "volume": 0.3,
+      "loop": false,
+      "bus": "sfx",
+      "pitchVariance": 0.025,
+      "maxVoices": 2,
+      "minIntervalMs": 65,
+      "license": {
+        "tool": "Local PCM synthesis + FFmpeg Opus",
+        "plan": "project-owned",
+        "date": "2026-07-20",
+        "kind": "Deterministic studio-generated salvage pickup SFX",
+        "scope": "Deadrot embedded game use"
+      }
+    },
+    "level-up": {
+      "type": "audio",
+      "path": "games/starblight/audio/sfx/level-up.webm",
+      "category": "sfx",
+      "duration": 0.728,
+      "volume": 0.52,
+      "loop": false,
+      "bus": "ui",
+      "pitchVariance": 0,
+      "maxVoices": 1,
+      "minIntervalMs": 300,
+      "license": {
+        "tool": "Local PCM synthesis + FFmpeg Opus",
+        "plan": "project-owned",
+        "date": "2026-07-20",
+        "kind": "Deterministic studio-generated level-up sting",
+        "scope": "Deadrot embedded game use"
+      }
+    },
+    "card-select": {
+      "type": "audio",
+      "path": "games/starblight/audio/sfx/card-select.webm",
+      "category": "sfx",
+      "duration": 0.258,
+      "volume": 0.44,
+      "loop": false,
+      "bus": "ui",
+      "pitchVariance": 0.015,
+      "maxVoices": 2,
+      "minIntervalMs": 90,
+      "license": {
+        "tool": "Local PCM synthesis + FFmpeg Opus",
+        "plan": "project-owned",
+        "date": "2026-07-20",
+        "kind": "Deterministic studio-generated upgrade confirm SFX",
+        "scope": "Deadrot embedded game use"
+      }
+    },
+    "player-hit": {
+      "type": "audio",
+      "path": "games/starblight/audio/sfx/player-hit.webm",
+      "category": "sfx",
+      "duration": 0.368,
+      "volume": 0.56,
+      "loop": false,
+      "bus": "sfx",
+      "pitchVariance": 0.025,
+      "maxVoices": 1,
+      "minIntervalMs": 120,
+      "license": {
+        "tool": "Local PCM synthesis + FFmpeg Opus",
+        "plan": "project-owned",
+        "date": "2026-07-20",
+        "kind": "Deterministic studio-generated integrity loss SFX",
+        "scope": "Deadrot embedded game use"
+      }
+    },
+    "low-integrity": {
+      "type": "audio",
+      "path": "games/starblight/audio/sfx/low-integrity.webm",
+      "category": "sfx",
+      "duration": 0.628,
+      "volume": 0.42,
+      "loop": false,
+      "bus": "sfx",
+      "pitchVariance": 0,
+      "maxVoices": 1,
+      "minIntervalMs": 2000,
+      "license": {
+        "tool": "Local PCM synthesis + FFmpeg Opus",
+        "plan": "project-owned",
+        "date": "2026-07-20",
+        "kind": "Deterministic studio-generated low-integrity warning SFX",
+        "scope": "Deadrot embedded game use"
+      }
+    }
   }
 }

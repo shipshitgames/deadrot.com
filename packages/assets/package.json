@@ -19,6 +19,10 @@
       "types": "./src/scourge-survivors.ts",
       "default": "./src/scourge-survivors.ts"
     },
+    "./starblight": {
+      "types": "./src/starblight.ts",
+      "default": "./src/starblight.ts"
+    },
     "./brawl": {
       "types": "./src/brawl.ts",
       "default": "./src/brawl.ts"
