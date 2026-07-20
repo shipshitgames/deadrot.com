@@ -1707,6 +1707,10 @@
     padding: 5px 9px 6px;
   }
 
+  .game-root:has(.scourge-top-stats) .scourge-berserk-meter {
+    top: 92px;
+  }
+
   .game-root .scourge-build-strip {
     top: 58px;
     width: min(520px, calc(100vw - 180px));
