@@ -90,7 +90,7 @@ export class Gems {
       if (dist < xp.pickupDist) {
         collected += g.value;
         g.dead = true;
-        this.particles.pop(g.mesh.position.x, g.mesh.position.y, COLORS.ember, 4);
+        this.particles.pop(g.mesh.position.x, g.mesh.position.y, COLORS.ember, CONSTANTS.fx.gemSparkCount);
         continue;
       }
       // Lifetime + blink warning.

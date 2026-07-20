@@ -57,29 +57,41 @@ body {
 
 /* ---- Speed-lines: streaks that intensify with velocity --------------------- */
 #speedlines {
+  --speed-line-duration: 0.52s;
   position: absolute;
   inset: 0;
   pointer-events: none;
   opacity: 0;
   mix-blend-mode: screen;
   background:
-    repeating-linear-gradient(
-      90deg,
-      transparent 0px,
-      transparent 22px,
-      rgba(255, 106, 0, 0.16) 22px,
-      rgba(255, 106, 0, 0.16) 24px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent 0px,
-      transparent 60px,
-      rgba(233, 227, 214, 0.08) 60px,
-      rgba(233, 227, 214, 0.08) 62px
-    );
+    linear-gradient(90deg, transparent 0%, rgba(255, 106, 0, 0.04) 12%, rgba(255, 106, 0, 0.22) 52%, transparent 100%) 0
+    18% / 260px 2px repeat-x,
+    linear-gradient(90deg, transparent 0%, rgba(255, 42, 24, 0.2) 44%, rgba(233, 227, 214, 0.11) 70%, transparent 100%)
+    80px 43% / 340px 3px repeat-x,
+    linear-gradient(90deg, transparent 0%, rgba(255, 106, 0, 0.16) 55%, transparent 100%) 20px 68% / 220px 2px repeat-x,
+    linear-gradient(90deg, transparent 0%, rgba(233, 227, 214, 0.1) 62%, transparent 100%) 140px 84% / 390px 2px
+    repeat-x;
   -webkit-mask-image: radial-gradient(ellipse 60% 90% at 50% 50%, transparent 28%, #000 78%);
   mask-image: radial-gradient(ellipse 60% 90% at 50% 50%, transparent 28%, #000 78%);
   transition: opacity 0.12s linear;
+  animation: redline-speed-streaks var(--speed-line-duration) linear infinite;
+  will-change: background-position;
+}
+
+@keyframes redline-speed-streaks {
+  to {
+    background-position:
+      -260px 18%,
+      -260px 43%,
+      -200px 68%,
+      -250px 84%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #speedlines {
+    animation: none;
+  }
 }
 
 /* ---- Stagger / boost full-screen flash ------------------------------------- */

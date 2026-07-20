@@ -14,6 +14,13 @@ import {
   shouldCompleteEscape,
   shouldIgniteCore,
 } from "./coreLoop";
+import {
+  cinematicAssignmentForHulk,
+  cinematicForCoreIgnite,
+  cinematicForLevelOutcome,
+  cinematicForLevelStart,
+  type RothulkCinematicBeat,
+} from "./data/cinematics";
 import { globLaunchVelocity, updateCharger, updateSpitter } from "./enemies";
 import { Hud } from "./hud";
 import { buildLevelAt, LEVELS } from "./levels";
@@ -45,6 +52,12 @@ function makeGlobPool(): ToxicGlob[] {
     life: 0,
     active: false,
   }));
+}
+
+export interface RothulkCinematicRequest {
+  beat: RothulkCinematicBeat;
+  site: string;
+  complete: () => void;
 }
 
 // The thin owner of shared state + systems. Runs the rAF loop with a clamped
@@ -108,9 +121,12 @@ export class Game {
   private paused = false;
   private raf = 0;
   private disposed = false;
+  private activeCinematicId: string | null = null;
+  private cinematicToken = 0;
 
   // React bridge: fired whenever the paused flag flips so the UI can mirror it.
   onPauseChange: ((paused: boolean) => void) | null = null;
+  onCinematicChange: ((request: RothulkCinematicRequest | null) => void) | null = null;
 
   constructor(canvas: HTMLCanvasElement) {
     activateAudio();
@@ -144,6 +160,9 @@ export class Game {
     this.running = false;
     cancelAnimationFrame(this.raf);
     this.onPauseChange = null;
+    this.onCinematicChange = null;
+    this.activeCinematicId = null;
+    this.cinematicToken += 1;
     this.input.dispose();
     this.bursts.dispose();
     this.flash.dispose();
@@ -156,6 +175,7 @@ export class Game {
     audio.unlock(); // user gesture — safe to start the bed + cues
     this.resetRun();
     this.mode = "playing";
+    this.playLevelIntro();
   }
 
   // --- Pause control -------------------------------------------------------
@@ -186,10 +206,12 @@ export class Game {
     this.resetRun();
     this.mode = "playing";
     this.resume();
+    this.playLevelIntro();
   }
 
   // Full reset (new run from the title or after win/gameover via R).
   private resetRun() {
+    this.clearCinematic();
     this.runNonce = createRunNonce("rothulk");
     this.lives = CONSTANTS.START_LIVES;
     this.hp = CONSTANTS.MAX_HP;
@@ -239,6 +261,7 @@ export class Game {
       phase: this.coreLoop.phase,
       level: this.levelIndex + 1,
       levelName: this.level.name,
+      cinematicId: this.activeCinematicId,
       coreIgnited: this.coreLoop.phase !== "infiltrate",
       scourgeSevered: this.coreLoop.phase !== "infiltrate",
       exitReached: this.coreLoop.phase === "won",
@@ -307,6 +330,15 @@ export class Game {
       return;
     }
 
+    // Cinematics own the frame while visible. Keeping simulation, animation,
+    // input, and HUD timers frozen prevents skips from desynchronizing gameplay.
+    if (this.activeCinematicId) {
+      this.lastTime = now;
+      this.renderer.render();
+      this.scheduleNextFrame();
+      return;
+    }
+
     let dt = (now - this.lastTime) / 1000;
     this.lastTime = now;
     if (dt > CONSTANTS.MAX_DELTA) dt = CONSTANTS.MAX_DELTA; // clamp stutters
@@ -316,6 +348,7 @@ export class Game {
     if (this.input.isHeld("restart") && this.mode !== "title") {
       this.resetRun();
       this.mode = "playing";
+      this.playLevelIntro();
     }
 
     if (this.mode === "playing") {
@@ -361,7 +394,9 @@ export class Game {
         this.mode = "gameover";
         completeRun("rothulk", { ...this.warResult("defeat"), nonce: this.runNonce });
         this.playSfx("defeat");
-        this.hud.showBigToast("gameover");
+        this.playCinematic(cinematicForLevelOutcome(this.currentLevelId(), "caught"), () => {
+          this.hud.showBigToast("gameover");
+        });
       } else {
         this.respawnHero();
         this.mode = "playing";
@@ -765,7 +800,9 @@ export class Game {
     this.coreLoop = igniteBreachCore(this.coreLoop);
     this.playSfx("explosion"); // core ignition
     this.shake.kick(CONSTANTS.SHAKE_IGNITE);
-    this.armFeralEscape();
+    this.playCinematic(cinematicForCoreIgnite(this.currentLevelId()), () => {
+      this.armFeralEscape();
+    });
   }
 
   private checkExit() {
@@ -782,6 +819,7 @@ export class Game {
       this.loadLevel(this.levelIndex + 1);
       this.hud.flashToast(`NODE SEVERED // ${this.level.name.toUpperCase()}`, 2);
       this.refreshHud();
+      this.playLevelIntro();
       return;
     }
 
@@ -790,7 +828,57 @@ export class Game {
     this.playSfx("victory");
     this.renderer.setExitArmed(false);
     this.hud.setProgress(1);
-    this.hud.showBigToast("won");
+    this.playCinematic(cinematicForLevelOutcome(this.currentLevelId(), "escape"), () => {
+      this.hud.showBigToast("won");
+    });
+  }
+
+  private currentLevelId(): string {
+    return LEVELS[this.levelIndex]?.id ?? "rothulk";
+  }
+
+  private clearCinematic() {
+    this.cinematicToken += 1;
+    this.activeCinematicId = null;
+    this.onCinematicChange?.(null);
+  }
+
+  private playLevelIntro() {
+    this.playCinematic(cinematicForLevelStart(this.currentLevelId()));
+  }
+
+  private playCinematic(beat: RothulkCinematicBeat | null, onComplete: () => void = () => {}) {
+    if (!beat) {
+      onComplete();
+      return;
+    }
+
+    const bridge = this.onCinematicChange;
+    if (!bridge) {
+      onComplete();
+      return;
+    }
+
+    const token = ++this.cinematicToken;
+    this.activeCinematicId = beat.id;
+    let completed = false;
+    const complete = () => {
+      if (completed || token !== this.cinematicToken) return;
+      completed = true;
+      this.activeCinematicId = null;
+      bridge(null);
+      onComplete();
+    };
+
+    try {
+      bridge({
+        beat,
+        site: cinematicAssignmentForHulk(this.currentLevelId()).site,
+        complete,
+      });
+    } catch {
+      complete();
+    }
   }
 
   private armFeralEscape() {

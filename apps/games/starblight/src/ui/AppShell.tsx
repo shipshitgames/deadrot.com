@@ -182,7 +182,7 @@ export function AppShell() {
                 type="button"
                 variant="settings"
                 label="Settings"
-                meta="Audio"
+                meta="Effects"
                 onClick={() => setSettingsOpen(true)}
               />
               <MainMenuAction variant="dev" label="Sandbox" meta="Orbit lab" disabled />
@@ -219,6 +219,7 @@ export function AppShell() {
             slug={GAME_SLUG}
             onClose={() => setSettingsOpen(false)}
             backgroundImage={menuHero}
+            sliderKeys={["music", "sound", "particles", "flash", "shake"]}
           />
         )}
         {codexOpen && (

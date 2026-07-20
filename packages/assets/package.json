@@ -28,6 +28,7 @@
       "default": "./src/lore.ts"
     },
     "./lore/*": "./lore/*",
+    "./models/*": "./models/*",
     "./brand/*": "./brand/*",
     "./concepts/*": "./concepts/*",
     "./entities/*": "./entities/*",
@@ -47,13 +48,14 @@
     "entities",
     "games",
     "lore",
+    "models",
     "shared",
     "src",
     "tokens",
     "universe"
   ],
   "scripts": {
-    "assets:check": "node ../../scripts/check-assets.mjs && node scripts/check-assets.mjs && node scripts/check-asset-formats.mjs && node scripts/generate-asset-index.mjs --check && node scripts/generate-lore-art-map.mjs --check && node scripts/asset-budgets.mjs --check",
+    "assets:check": "node ../../scripts/check-assets.mjs && node scripts/check-assets.mjs && node scripts/check-asset-formats.mjs && node scripts/check-models.mjs && node scripts/generate-asset-index.mjs --check && node scripts/generate-lore-art-map.mjs --check && node scripts/asset-budgets.mjs --check",
     "assets:budgets": "node scripts/asset-budgets.mjs",
     "assets:index": "node scripts/generate-asset-index.mjs && node scripts/generate-lore-art-map.mjs",
     "assets:index:check": "node scripts/generate-asset-index.mjs --check && node scripts/generate-lore-art-map.mjs --check",

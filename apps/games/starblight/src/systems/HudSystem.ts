@@ -1,3 +1,6 @@
+import { subscribeGlobalGameSettings } from "@shipshitgames/ui";
+import { CONSTANTS } from "../game/constants";
+import type { MarqueeImpact } from "../game/feedback";
 import type { HudState } from "../game/types";
 import type { UpgradeId } from "../game/upgrades";
 import { publishPause } from "../ui/gameBridge";
@@ -32,6 +35,8 @@ export class HudSystem {
   private lastPhase = "";
   private lastLevel = 1;
   private pauseStatsText = "0:00 - LVL 1 - 0 kills";
+  private flashLevel = 1;
+  private unsubscribeSettings: () => void = () => {};
 
   private readonly onBtnClick = () => this.onStart();
   private readonly onPauseClick = () => this.onPause();
@@ -45,11 +50,15 @@ export class HudSystem {
   ) {
     this.bannerBtn.addEventListener("click", this.onBtnClick);
     this.pauseBtn.addEventListener("click", this.onPauseClick);
+    this.unsubscribeSettings = subscribeGlobalGameSettings((settings) => {
+      this.flashLevel = settings.effectLevels.flash;
+    });
   }
 
   dispose() {
     this.bannerBtn.removeEventListener("click", this.onBtnClick);
     this.pauseBtn.removeEventListener("click", this.onPauseClick);
+    this.unsubscribeSettings();
     if (this.flashTimer) window.clearTimeout(this.flashTimer);
   }
 
@@ -59,7 +68,7 @@ export class HudSystem {
     this.intFill.style.width = `${Math.round((s.integrity / Math.max(1, s.maxIntegrity)) * 100)}%`;
 
     // Level-up flash when the level number ticks up mid-run.
-    if (s.level > this.lastLevel && s.phase !== "title") this.pulseFlash();
+    if (s.level > this.lastLevel && s.phase !== "title") this.pulseFlash(CONSTANTS.fx.flash.levelUp);
     this.lastLevel = s.level;
 
     // Discrete stats (dirty-checked to avoid layout churn).
@@ -180,10 +189,16 @@ export class HudSystem {
   }
 
   private flashTimer = 0;
-  private pulseFlash() {
+  pulseImpact(impact: MarqueeImpact) {
+    this.pulseFlash(CONSTANTS.fx.flash[impact]);
+  }
+
+  private pulseFlash(preset: { durationMs: number; opacity: number }) {
+    if (this.flashLevel <= 0) return;
+    this.flash.style.setProperty("--flash-opacity", String(preset.opacity * this.flashLevel));
     this.flash.classList.add("show");
     if (this.flashTimer) window.clearTimeout(this.flashTimer);
-    this.flashTimer = window.setTimeout(() => this.flash.classList.remove("show"), 180);
+    this.flashTimer = window.setTimeout(() => this.flash.classList.remove("show"), preset.durationMs);
   }
 }
 

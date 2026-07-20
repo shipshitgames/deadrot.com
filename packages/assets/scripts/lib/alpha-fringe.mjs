@@ -12,16 +12,15 @@ export const DEFAULT_MAGENTA_FRINGE = {
   alphaMin: 1,
   alphaMax: 249,
   blueMin: 45,
-  dominantBlueMin: 110,
-  dominantChannelDeltaMax: 125,
+  dominantBlueMin: 90,
   dominantContrastMin: 55,
   dominantGreenMax: 110,
-  dominantRedMin: 110,
+  dominantRedMin: 90,
   redMin: 35,
   opaqueAlphaMin: 250,
-  opaqueBlueMin: 110,
+  opaqueBlueMin: 90,
   opaqueGreenMax: 70,
-  opaqueRedMin: 110,
+  opaqueRedMin: 90,
   maxRadius: 16,
 };
 
@@ -66,21 +65,18 @@ export function isMagentaDominantPixel(r, g, b, a, opts = {}) {
     r >= cfg.dominantRedMin &&
     b >= cfg.dominantBlueMin &&
     g <= cfg.dominantGreenMax &&
-    Math.abs(r - b) <= cfg.dominantChannelDeltaMax &&
     (r + b) / 2 - g >= cfg.dominantContrastMin
   );
 }
 
 export function isOpaqueMagentaFringePixel(r, g, b, a, opts = {}) {
   const cfg = { ...DEFAULT_MAGENTA_FRINGE, ...opts };
-  if (a < cfg.opaqueAlphaMin) return false;
-  return (
-    r >= cfg.opaqueRedMin &&
-    b >= cfg.opaqueBlueMin &&
-    g <= cfg.opaqueGreenMax &&
-    Math.abs(r - b) <= 125 &&
-    (r + b) / 2 - g >= 55
-  );
+  return isMagentaDominantPixel(r, g, b, a, {
+    ...cfg,
+    dominantBlueMin: cfg.opaqueBlueMin,
+    dominantGreenMax: cfg.opaqueGreenMax,
+    dominantRedMin: cfg.opaqueRedMin,
+  });
 }
 
 export function isSubjectReplacementPixel(r, g, b, a, opts = {}) {

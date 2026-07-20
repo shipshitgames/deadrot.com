@@ -27,6 +27,7 @@ const ENEMY_SPRITE_KINDS = ["melee", "ranged", "flying", "hound", "boss"] as con
 const ENEMY_SPRITE_VIEWS = ["front", "side", "back"] as const;
 const ENEMY_ANIMATION_STATES = ["move", "attack", "death"] as const;
 const WEAPON_IDS = ["pistol", "smg", "shotgun", "cannon", "sniper"] as const satisfies readonly WeaponId[];
+const DUAL_WEAPON_IDS = ["pistol", "smg", "shotgun", "sniper"] as const satisfies readonly WeaponId[];
 
 type EnemyTextureRecord = Record<EnemySpriteKind, Record<EnemySpriteView, THREE.Texture>>;
 type EnemyAnimationTextureRecord = Record<
@@ -38,6 +39,7 @@ interface CombatAssetSnapshot {
   enemyTextures: EnemyTextureRecord;
   enemyAnimations: EnemyAnimationTextureRecord;
   weaponTextures: Record<WeaponId, THREE.Texture>;
+  weaponDualTextures: Partial<Record<WeaponId, THREE.Texture>>;
   weaponAdsTextures: Partial<Record<WeaponId, THREE.Texture>>;
   weaponLootTextures: Record<WeaponId, THREE.Texture>;
   muzzleFlashTexture: THREE.Texture;
@@ -62,6 +64,10 @@ export function playerAvatarSpriteAssetId(id: PlayerAvatarId): string {
 
 export function weaponSpriteAssetId(id: WeaponId): string {
   return ASSET_CATALOG.weapon(id).sprite;
+}
+
+export function weaponDualSpriteAssetId(id: WeaponId): string | undefined {
+  return ASSET_CATALOG.weapon(id).dualSprite;
 }
 
 function weaponLootSpriteAssetId(id: WeaponId): string {
@@ -249,11 +255,21 @@ async function loadWeaponTexture(id: WeaponId): Promise<THREE.Texture> {
   return texture;
 }
 
+async function loadDualWeaponTexture(id: WeaponId): Promise<THREE.Texture> {
+  const spriteId = weaponDualSpriteAssetId(id);
+  if (!spriteId) throw new Error(`Dual-compatible weapon ${id} is missing its dedicated dual sprite`);
+  const texture = await loadSpriteTexture(spriteId);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.needsUpdate = true;
+  return texture;
+}
+
 async function buildCombatAssetSnapshot(): Promise<CombatAssetSnapshot> {
   const [
     enemyTextures,
     enemyAnimations,
     weaponTextures,
+    weaponDualTextures,
     weaponLootTextures,
     muzzleFlashTexture,
     projectileTextures,
@@ -269,6 +285,7 @@ async function buildCombatAssetSnapshot(): Promise<CombatAssetSnapshot> {
     ),
     loadEnemyAnimations(),
     asyncRecord(WEAPON_IDS, loadWeaponTexture),
+    asyncRecord(DUAL_WEAPON_IDS, loadDualWeaponTexture),
     asyncRecord(WEAPON_IDS, (id) => loadSpriteTexture(weaponLootSpriteAssetId(id))),
     loadSpriteTexture(fxSpriteAssetId("muzzleFlash")),
     asyncRecord(["enemy", "boss", "bolt", "orb"] as const, (id) => loadSpriteTexture(projectileSpriteAssetId(id))),
@@ -289,6 +306,7 @@ async function buildCombatAssetSnapshot(): Promise<CombatAssetSnapshot> {
     enemyTextures,
     enemyAnimations,
     weaponTextures,
+    weaponDualTextures,
     weaponAdsTextures: { sniper: sniperAdsTexture },
     weaponLootTextures,
     muzzleFlashTexture,
@@ -361,6 +379,11 @@ export const WEAPON_SPRITE_TEXTURES: Record<WeaponId, THREE.Texture> = liveRecor
   (id) => requireCombatAssets().weaponTextures[id],
 );
 
+export const WEAPON_DUAL_SPRITE_TEXTURES: Partial<Record<WeaponId, THREE.Texture>> = liveRecord(
+  DUAL_WEAPON_IDS,
+  (id) => requireCombatAssets().weaponDualTextures[id] as THREE.Texture,
+);
+
 export const WEAPON_ADS_SPRITE_TEXTURES: Partial<Record<WeaponId, THREE.Texture>> = liveRecord(
   ["sniper"] as const,
   (id) => requireCombatAssets().weaponAdsTextures[id] as THREE.Texture,
@@ -400,6 +423,23 @@ export const WEAPON_ADS_SPRITE_CONFIG: Partial<Record<WeaponId, (typeof WEAPON_S
   sniper: adsWeaponConfig("sniper"),
 };
 
+export interface DualWeaponSpriteConfig {
+  scale: [number, number];
+  offset: [number, number, number];
+  muzzles: {
+    left: [number, number, number];
+    right: [number, number, number];
+  };
+  flashScale: number;
+}
+
+export const WEAPON_DUAL_SPRITE_CONFIG: Partial<Record<WeaponId, DualWeaponSpriteConfig>> = {
+  pistol: dualWeaponConfig("pistol"),
+  smg: dualWeaponConfig("smg"),
+  shotgun: dualWeaponConfig("shotgun"),
+  sniper: dualWeaponConfig("sniper"),
+};
+
 export function weaponSpriteTexture(id: WeaponId): THREE.Texture {
   return WEAPON_SPRITE_TEXTURES[id];
 }
@@ -408,8 +448,18 @@ export function weaponAdsSpriteTexture(id: WeaponId): THREE.Texture {
   return WEAPON_ADS_SPRITE_TEXTURES[id] ?? WEAPON_SPRITE_TEXTURES[id];
 }
 
+export function weaponDualSpriteTexture(id: WeaponId): THREE.Texture {
+  const texture = WEAPON_DUAL_SPRITE_TEXTURES[id];
+  if (!texture) throw new Error(`Weapon ${id} has no dedicated dual sprite texture`);
+  return texture;
+}
+
 export function weaponHasAdsSprite(id: WeaponId): boolean {
   return WEAPON_ADS_SPRITE_CONFIG[id] !== undefined;
+}
+
+export function weaponHasDualSprite(id: WeaponId): boolean {
+  return WEAPON_DUAL_SPRITE_CONFIG[id] !== undefined;
 }
 
 export function weaponSpriteConfig(id: WeaponId) {
@@ -418,6 +468,12 @@ export function weaponSpriteConfig(id: WeaponId) {
 
 export function weaponAdsSpriteConfig(id: WeaponId) {
   return WEAPON_ADS_SPRITE_CONFIG[id] ?? WEAPON_SPRITE_CONFIG[id];
+}
+
+export function weaponDualSpriteConfig(id: WeaponId): DualWeaponSpriteConfig {
+  const config = WEAPON_DUAL_SPRITE_CONFIG[id];
+  if (!config) throw new Error(`Weapon ${id} has no dedicated dual sprite config`);
+  return config;
 }
 
 export let MUZZLE_FLASH_TEXTURE: THREE.Texture;
@@ -565,6 +621,21 @@ function adsWeaponConfig(id: WeaponId) {
     muzzle: ads.muzzle ?? base.muzzle,
     flashScale: ads.flashScale ?? base.flashScale,
     flashRotation: ads.flashRotation ?? base.flashRotation,
+  };
+}
+
+function dualWeaponConfig(id: WeaponId): DualWeaponSpriteConfig {
+  const spriteId = weaponDualSpriteAssetId(id);
+  if (!spriteId) throw new Error(`Dual-compatible weapon ${id} is missing its dedicated dual sprite`);
+  const entry = spriteEntry(spriteId);
+  if (!entry.scale || !entry.weapon?.muzzles) {
+    throw new Error(`Dual weapon sprite ${spriteId} is missing placement or per-hand muzzle metadata`);
+  }
+  return {
+    scale: entry.scale,
+    offset: entry.weapon.offset,
+    muzzles: entry.weapon.muzzles,
+    flashScale: entry.weapon.flashScale,
   };
 }
 

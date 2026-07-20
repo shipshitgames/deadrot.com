@@ -22,7 +22,7 @@ import {
 const repoRoot = resolve(fileURLToPath(new URL("../../..", import.meta.url)));
 const marker = Buffer.from("ENDHDR\n");
 const mode = process.argv.includes("--check") ? "check" : "fix";
-const affectedEntities = ["breach-boss", "host-grunt", "spitter-host"];
+const affectedEntities = ["breach-boss", "host-grunt", "spitter-host", "winged-host", "wound-hound"];
 const staticRoot = resolve(repoRoot, "packages/assets/games/scourge-survivors/enemies/scourge");
 const animationRoot = resolve(repoRoot, "packages/assets/games/scourge-survivors/animations/scourge");
 const atlasPath = join(animationRoot, "scourge.atlas0.webp");

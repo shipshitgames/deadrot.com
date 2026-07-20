@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PLAYER_MAX_HEALTH } from "../../src/game/constants";
+import { PLAYER_MAX_HEALTH, STAGE_CLEAR_HEAL, STAGE_DIFFICULTY_STEP } from "../../src/game/constants";
 import type { GameContext } from "../../src/game/context";
 import { type ArenaMap, getMap } from "../../src/game/data/maps";
 import {
@@ -69,12 +69,19 @@ describe("mission campaign architecture", () => {
     expect(run).toMatchObject({
       missionId: "ashgate-breach",
       missionTitle: "Ashgate Breach",
+      journeyId: "perdition-descent",
+      journeyName: "The Perdition Descent",
       phase: "active",
       stageIndex: 0,
       extractionReady: false,
       completed: false,
     });
-    expect(run.stages.map((stage) => stage.mapId)).toEqual(["maw", "perdition", "ashgate", "hollowlanes"]);
+    expect(run.stages.map((stage) => stage.mapId)).toEqual(["maw", "perdition"]);
+    expect(run.stages.map((stage) => stage.difficultyMultiplier)).toEqual([
+      1 + STAGE_DIFFICULTY_STEP * 2,
+      1 + STAGE_DIFFICULTY_STEP * 3,
+    ]);
+    expect(run.stages.map((stage) => stage.healOnEnter)).toEqual([STAGE_CLEAR_HEAL, STAGE_CLEAR_HEAL]);
     expect(currentMissionStage(run)?.mapName).toBe("The Maw");
     expect(currentMissionObjective(run)).toMatchObject({
       kind: "sever-repeater",
@@ -116,7 +123,7 @@ describe("mission campaign architecture", () => {
     expect(ctx.survivors).toBe(false);
     expect(ctx.status).toBe("pointerlock-needed");
     expect(ctx.campaignStage).toBe(0);
-    expect(ctx.campaignMaps.map((map) => map.id)).toEqual(["maw", "perdition", "ashgate", "hollowlanes"]);
+    expect(ctx.campaignMaps.map((map) => map.id)).toEqual(["maw", "perdition"]);
     expect(currentMissionObjective(ctx.mission)?.label).toBe("Sever the local Choir relay inside The Maw");
     expect(calls).toEqual(
       expect.arrayContaining([
@@ -140,8 +147,6 @@ describe("mission campaign architecture", () => {
     expect(calls).toEqual(expect.arrayContaining(["arena:build:perdition", "arena:spawn", "pve:start"]));
 
     calls.length = 0;
-    system.onBossDefeated();
-    system.onBossDefeated();
     system.onBossDefeated();
 
     expect(ctx.mission.completed).toBe(true);

@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_ARENA_MATERIALS, MAPS, SANDBOX_MAPS } from "../../src/game/data/maps";
 
 // Sibling coverage to assets-manifest.test.ts's campaign material/dressing test:
-// that test already validates CAMPAIGN_ORDER maps' material ids, decal/prop
+// that test already validates default-journey maps' material ids, decal/prop
 // texture existence and the minimum dressing counts. This file fills the gaps it
 // leaves — the SANDBOX_MAPS demonstrators (e.g. The Gantry), the
 // DEFAULT_ARENA_MATERIALS fallback set, and the numeric validity of every map's

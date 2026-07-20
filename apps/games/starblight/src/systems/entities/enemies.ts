@@ -8,8 +8,6 @@ import type { Projectiles } from "./projectiles";
 import { ENEMY_SPRITES, type SpriteTextures, spriteMaterial, spritePlane } from "./sprites";
 import { sweep } from "./sweep";
 
-const HIT_FLASH = 0.09;
-
 interface EnemySlot {
   mesh: THREE.Mesh;
   mat: THREE.MeshBasicMaterial;
@@ -175,7 +173,7 @@ export class Enemies {
       e.mesh.rotation.z = Math.atan2(uy, ux) + Math.PI / 2;
       if (e.flash > 0) {
         e.flash = Math.max(0, e.flash - dt);
-        const t = clamp(e.flash / HIT_FLASH, 0, 1);
+        const t = clamp(e.flash / CONSTANTS.fx.hitFlashDuration, 0, 1);
         e.material.color.setHex(0xffffff).lerp(BONE, t);
       } else {
         const pulse = 0.5 + 0.5 * Math.sin(time * 3 + e.phase);
@@ -186,7 +184,7 @@ export class Enemies {
   }
 
   hitFlash(e: Enemy) {
-    e.flash = HIT_FLASH;
+    e.flash = CONSTANTS.fx.hitFlashDuration;
   }
 
   knockback(e: Enemy, fromX: number, fromY: number, force: number) {

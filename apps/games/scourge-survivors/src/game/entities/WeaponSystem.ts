@@ -22,13 +22,16 @@ import {
 import type { GameContext } from "../context";
 import { WEAPON_VIEW_X, WEAPON_VIEW_Y, WEAPON_VIEW_Z } from "../data/internalTypes";
 import { type MainWeaponVisualTier, mainWeaponTierDamageMul } from "../data/survivors";
-import { mainWeaponTierViewScale, weaponTierCellUv, weaponTierCellUvMirrored } from "../data/weaponView";
+import { dualWeaponViewActive, mainWeaponTierViewScale, weaponTierCellUv } from "../data/weaponView";
 import {
   MUZZLE_FLASH_TEXTURE,
   WEAPON_SPRITE_TEXTURES,
   weaponAdsSpriteConfig,
   weaponAdsSpriteTexture,
+  weaponDualSpriteConfig,
+  weaponDualSpriteTexture,
   weaponHasAdsSprite,
+  weaponHasDualSprite,
   weaponSheetColumns,
   weaponSpriteConfig,
   weaponSpriteTexture,
@@ -66,11 +69,9 @@ export class WeaponSystem {
   magazine!: THREE.Mesh;
   weaponSprite!: THREE.Sprite;
   weaponSpriteMat!: THREE.SpriteMaterial;
-  // Mirrored second view-model shown only while the dual-weapon pickup bonus is active.
+  // Purpose-built dual-composite view-model shown only while the pickup is active.
   weaponSpriteDual!: THREE.Sprite;
   weaponSpriteDualMat!: THREE.SpriteMaterial;
-  // Horizontally-flipped texture clone for the mirrored gun (Sprite scale can't flip UVs).
-  private dualMapClone: THREE.Texture | null = null;
   weaponRecoil = 0;
   bobTime = 0;
   readonly magBaseY = -0.17;
@@ -125,7 +126,7 @@ export class WeaponSystem {
     this.weaponSprite.renderOrder = 20;
     this.weapon.add(this.weaponSprite);
 
-    // Second, mirrored view-model — hidden until the dual-weapon bonus is active.
+    // Dedicated dual-composite view-model — hidden until the bonus is active.
     this.weaponSpriteDualMat = new THREE.SpriteMaterial({
       map: WEAPON_SPRITE_TEXTURES[this.ctx.activeWeapon],
       color: 0xffffff,
@@ -157,6 +158,12 @@ export class WeaponSystem {
     this.ctx.muzzleFlash.renderOrder = 21;
     this.ctx.muzzleFlash.visible = false;
     this.weapon.add(this.ctx.muzzleFlash);
+
+    this.ctx.dualMuzzleFlash = new THREE.Sprite(this.ctx.muzzleFlash.material.clone());
+    this.ctx.dualMuzzleFlash.center.set(1 - this.ctx.muzzleFlash.center.x, this.ctx.muzzleFlash.center.y);
+    this.ctx.dualMuzzleFlash.renderOrder = 21;
+    this.ctx.dualMuzzleFlash.visible = false;
+    this.weapon.add(this.ctx.dualMuzzleFlash);
 
     this.ctx.muzzleLight = new THREE.PointLight(0xffcc66, 0, 12, 2);
     this.ctx.muzzleLight.castShadow = false;
@@ -193,21 +200,21 @@ export class WeaponSystem {
     this.weaponSpriteMat.needsUpdate = true;
     this.weaponSprite.scale.set(sprite.scale[0] * tierScale, sprite.scale[1] * tierScale, 1);
     this.weaponSprite.position.set(sprite.offset[0], sprite.offset[1], sprite.offset[2]);
-    // Mirror the same cell to the opposite side for the dual-weapon bonus (akimbo read).
-    // Sprite scale can't flip UVs, so use a horizontally-flipped clone of the same cell.
-    this.dualMapClone?.dispose();
-    const mirrorUv = weaponTierCellUvMirrored(cell, cols);
-    const flipped = tex.clone();
-    flipped.wrapS = THREE.RepeatWrapping;
-    flipped.repeat.x = mirrorUv.repeat;
-    flipped.offset.x = mirrorUv.offset;
-    flipped.needsUpdate = true;
-    this.dualMapClone = flipped;
-    this.weaponSpriteDualMat.map = flipped;
-    this.weaponSpriteDualMat.needsUpdate = true;
-    this.weaponSpriteDual.scale.set(sprite.scale[0] * tierScale, sprite.scale[1] * tierScale, 1);
-    this.weaponSpriteDual.position.set(-sprite.offset[0], sprite.offset[1], sprite.offset[2]);
+    if (weaponHasDualSprite(id)) {
+      const dualTexture = weaponDualSpriteTexture(id);
+      dualTexture.wrapS = THREE.RepeatWrapping;
+      dualTexture.repeat.x = cellUv.repeat;
+      dualTexture.offset.x = cellUv.offset;
+      const dualSprite = weaponDualSpriteConfig(id);
+      this.weaponSpriteDualMat.map = dualTexture;
+      this.weaponSpriteDualMat.needsUpdate = true;
+      this.weaponSpriteDual.scale.set(dualSprite.scale[0] * tierScale, dualSprite.scale[1] * tierScale, 1);
+      this.weaponSpriteDual.position.set(dualSprite.offset[0], dualSprite.offset[1], dualSprite.offset[2]);
+    } else {
+      this.weaponSpriteDual.visible = false;
+    }
     this.ctx.muzzleFlash.position.set(sprite.muzzle[0], sprite.muzzle[1], sprite.muzzle[2]);
+    this.ctx.dualMuzzleFlash.visible = false;
     this.ctx.muzzleFlash.scale.setScalar(sprite.flashScale);
     this.muzzleFlashBaseRotation = sprite.flashRotation ?? 0;
     this.ctx.muzzleFlash.material.rotation = this.muzzleFlashBaseRotation;
@@ -300,7 +307,9 @@ export class WeaponSystem {
       if (d > 0.0001 && (ex * dirX + ez * dirZ) / d < MELEE_ARC_DOT) continue;
       const crit = this.ctx.statCrit > 0 && Math.random() < this.ctx.statCrit ? 2 : 1;
       const dmg = MELEE_DAMAGE * dmgMul * crit;
+      const healthBefore = enemy.health;
       const res = enemy.takeDamage(dmg, false, MELEE_KNOCKBACK * knockbackMul, dirX, dirZ);
+      this.sys.telemetry?.recordOutgoingDamage(enemy, "melee", dmg, res.blocked, healthBefore);
       hitAny = true;
       if (res.blocked) {
         audio.sfx("shieldhit"); // overshield ate the swing — no damage feedback
@@ -333,6 +342,13 @@ export class WeaponSystem {
   shoot() {
     const spec = WEAPONS[this.ctx.activeWeapon];
     const berserkActive = this.ctx.damageBoostTimer > 0;
+    const dualBonusActive = this.ctx.dualWeaponTimer > 0 && spec.dualCompatible;
+    const dualVisualActive = dualWeaponViewActive(
+      this.ctx.dualWeaponTimer,
+      spec.dualCompatible,
+      weaponHasDualSprite(this.ctx.activeWeapon),
+      this.weaponAdsSpriteActive,
+    );
     this.ctx.ammo--; // magazine depletes in every mode (Survivors has infinite reserve, not infinite mag)
     const fireRateMul = this.ctx.statFireRateMul * (berserkActive ? BERSERK_FIRE_RATE_MULT : 1);
     this.ctx.fireCooldown = spec.fireInterval / fireRateMul;
@@ -346,11 +362,27 @@ export class WeaponSystem {
 
     this.ctx.muzzleTimer = 0.05;
     this.ctx.muzzleFlash.visible = true;
-    this.ctx.muzzleFlash.material.rotation = this.muzzleFlashBaseRotation + (Math.random() - 0.5) * 0.18;
+    this.ctx.dualMuzzleFlash.visible = dualVisualActive;
+    const flashRotation = this.muzzleFlashBaseRotation + (Math.random() - 0.5) * 0.18;
+    this.ctx.muzzleFlash.material.rotation = flashRotation;
+    this.ctx.dualMuzzleFlash.material.rotation = -flashRotation;
     this.ctx.muzzleFlash.material.color.setHex(berserkActive ? 0xff2a18 : 0xffffff);
-    this.ctx.muzzleFlash.scale.setScalar(
-      weaponSpriteConfig(this.ctx.activeWeapon).flashScale * (berserkActive ? 1.22 : 1),
-    );
+    this.ctx.dualMuzzleFlash.material.color.copy(this.ctx.muzzleFlash.material.color);
+    const primaryConfig = this.weaponAdsSpriteActive
+      ? weaponAdsSpriteConfig(this.ctx.activeWeapon)
+      : weaponSpriteConfig(this.ctx.activeWeapon);
+    if (dualVisualActive) {
+      const dualConfig = weaponDualSpriteConfig(this.ctx.activeWeapon);
+      this.ctx.muzzleFlash.position.fromArray(dualConfig.muzzles.left);
+      this.ctx.dualMuzzleFlash.position.fromArray(dualConfig.muzzles.right);
+      this.ctx.muzzleFlash.scale.setScalar(dualConfig.flashScale * (berserkActive ? 1.22 : 1));
+      this.ctx.dualMuzzleFlash.scale.copy(this.ctx.muzzleFlash.scale);
+      this.ctx.muzzleLight.position.set(0, dualConfig.muzzles.left[1], dualConfig.muzzles.left[2]);
+    } else {
+      this.ctx.muzzleFlash.position.fromArray(primaryConfig.muzzle);
+      this.ctx.muzzleFlash.scale.setScalar(primaryConfig.flashScale * (berserkActive ? 1.22 : 1));
+      this.ctx.muzzleLight.position.fromArray(primaryConfig.muzzle);
+    }
     this.ctx.muzzleLight.color.setHex(berserkActive ? 0xff2a18 : 0xffcc66);
     this.ctx.muzzleLight.intensity = berserkActive ? 13 : 8;
 
@@ -372,23 +404,21 @@ export class WeaponSystem {
     const knockbackMul = berserkActive ? BERSERK_KNOCKBACK_MULT : 1;
     const headshotMultiplier = spec.headshotMultiplier ?? HEADSHOT_MULTIPLIER;
     const muzzleWorld = this.ctx.muzzleFlash.getWorldPosition(new THREE.Vector3());
+    const dualMuzzleWorld = dualVisualActive
+      ? this.ctx.dualMuzzleFlash.getWorldPosition(new THREE.Vector3())
+      : muzzleWorld;
     const pellets = spec.pellets + (this.ctx.survivors ? this.ctx.statMultishot : 0);
     const baseSpread = pellets > 1 ? Math.max(spec.spread, 0.03) : spec.spread;
     const adsSpreadMul = 1 + (spec.adsSpreadMul - 1) * this.ctx.adsT;
     const spread = baseSpread * adsSpreadMul;
     const isCannon = this.ctx.activeWeapon === "cannon";
-    const dualShots = this.ctx.dualWeaponTimer > 0 && spec.dualCompatible ? 2 : 1;
+    const dualShots = dualBonusActive ? 2 : 1;
     let cannonCenter: THREE.Vector3 | null = null;
 
     for (let shot = 0; shot < dualShots; shot++) {
-      const side = shot === 0 ? 0 : -1;
       const rayOrigin = this.ctx._origin.clone();
-      const tracerOrigin = muzzleWorld.clone();
-      if (side !== 0) {
-        rayOrigin.addScaledVector(this.ctx._right, side * 0.22);
-        tracerOrigin.addScaledVector(this.ctx._right, side * 0.38);
-        tracerOrigin.addScaledVector(this.ctx._up, -0.04);
-      }
+      const tracerOrigin = (shot === 0 ? muzzleWorld : dualMuzzleWorld).clone();
+      if (dualBonusActive) rayOrigin.addScaledVector(this.ctx._right, shot === 0 ? -0.11 : 0.11);
 
       for (let p = 0; p < pellets; p++) {
         const dir = this.ctx._fwd.clone();
@@ -429,7 +459,9 @@ export class WeaponSystem {
             const headshot = ud.part === "head";
             const crit = this.ctx.statCrit > 0 && Math.random() < this.ctx.statCrit ? 2 : 1;
             const dmg = spec.damage * dmgMult * crit * (headshot ? headshotMultiplier : 1);
+            const healthBefore = ud.enemy.health;
             const res = ud.enemy.takeDamage(dmg, headshot, spec.knockback * knockbackMul, kx, kz);
+            this.sys.telemetry?.recordOutgoingDamage(ud.enemy, this.ctx.activeWeapon, dmg, res.blocked, healthBefore);
             endPoint = h.point.clone();
             if (!res.blocked) {
               this.sys.hud.addDamageNumber(h.point, dmg, headshot ? "head" : crit > 1 ? "crit" : "normal");
@@ -487,7 +519,9 @@ export class WeaponSystem {
       const falloff = 1 - d / CANNON_SPLASH_RADIUS;
       const dmg = CANNON_SPLASH_DAMAGE * dmgMult * falloff;
       const hk = d > 0.001 ? d : 1;
+      const healthBefore = enemy.health;
       const res = enemy.takeDamage(dmg, false, 10 * falloff, ex / hk, ez / hk);
+      this.sys.telemetry?.recordOutgoingDamage(enemy, "cannon_splash", dmg, res.blocked, healthBefore);
       if (!res.blocked) this.sys.hud.addDamageNumber(enemy.position.clone().setY(1.4), dmg, "normal");
       if (!res.blocked) this.sys.fx.spawnBloodHit(enemy.position.clone().setY(1.2), false);
       if (res.died) this.sys.pve.onEnemyDeath(enemy, false);
@@ -560,6 +594,19 @@ export class WeaponSystem {
     if (shouldUseAdsSprite !== this.weaponAdsSpriteActive)
       this.applyWeaponModel(this.ctx.activeWeapon, shouldUseAdsSprite);
 
+    const dualActive = dualWeaponViewActive(
+      this.ctx.dualWeaponTimer,
+      WEAPONS[this.ctx.activeWeapon].dualCompatible,
+      weaponHasDualSprite(this.ctx.activeWeapon),
+      this.weaponAdsSpriteActive,
+    );
+    this.weaponSprite.visible = !dualActive;
+    this.weaponSpriteDual.visible = dualActive;
+    if (dualActive) {
+      this.weaponSpriteDualMat.opacity = this.weaponSpriteMat.opacity;
+      this.weaponSpriteDualMat.color.copy(this.weaponSpriteMat.color);
+    }
+
     if (this.meleeAnim > 0) {
       // quick cleaver swipe (takes priority over reload/idle pose)
       const t = 1 - this.meleeAnim / 0.22;
@@ -571,6 +618,7 @@ export class WeaponSystem {
       );
       this.weapon.rotation.set(-slash * 0.5, slash * 0.7, -slash * 0.9);
       this.weaponSpriteMat.opacity = 1;
+      this.weaponSpriteDualMat.opacity = 1;
       return;
     }
     if (this.ctx.reloading) {
@@ -581,6 +629,7 @@ export class WeaponSystem {
       const magOut = p < 0.5 ? p * 2 : (1 - p) * 2;
       this.magazine.position.y = this.magBaseY - magOut * 0.28;
       this.weaponSpriteMat.opacity = 0.72 + (1 - dip) * 0.28;
+      this.weaponSpriteDualMat.opacity = this.weaponSpriteMat.opacity;
       this.weaponRecoil = 0;
       return;
     }
@@ -591,15 +640,9 @@ export class WeaponSystem {
     const berserkActive = this.ctx.damageBoostTimer > 0;
     // Visible weapon "power-up": tint the gun hotter as the run's damage build climbs (all weapons).
     this.weaponSpriteMat.color.setHex(berserkActive ? 0xffd1c2 : TIER_GLOW[this.activeWeaponVisualTier()]);
+    this.weaponSpriteDualMat.color.copy(this.weaponSpriteMat.color);
     this.ctx.muzzleFlash.material.color.setHex(berserkActive ? 0xff2a18 : 0xffffff);
-
-    // Dual-weapon pickup: reveal the mirrored second gun (akimbo) while the bonus is live.
-    const dualActive = this.ctx.dualWeaponTimer > 0 && WEAPONS[this.ctx.activeWeapon].dualCompatible;
-    this.weaponSpriteDual.visible = dualActive;
-    if (dualActive) {
-      this.weaponSpriteDualMat.opacity = this.weaponSpriteMat.opacity;
-      this.weaponSpriteDualMat.color.copy(this.weaponSpriteMat.color);
-    }
+    this.ctx.dualMuzzleFlash.material.color.copy(this.ctx.muzzleFlash.material.color);
 
     const moving =
       (this.ctx.move.forward || this.ctx.move.back || this.ctx.move.left || this.ctx.move.right) && this.ctx.canJump;

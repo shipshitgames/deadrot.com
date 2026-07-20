@@ -32,6 +32,7 @@ import {
 import type { GameContext } from "../context";
 import { rollEliteSplitCount } from "../data/eliteWaves";
 import { campaignArchetypeForWave, ENEMY_ARCHETYPES, SCOURGE_THREAT_TIERS } from "../data/enemies";
+import { currentMissionStage } from "../data/missions";
 import { SURV_XP_GEM_VALUE } from "../data/survivors";
 import { Enemy } from "../entities/Enemy";
 import type { GameSystems } from "../systems";
@@ -97,13 +98,17 @@ export class PveDirectorSystem {
 
   /** Per-stage difficulty scalar for the structured descent (1.0 on stage 1, no effect elsewhere). */
   stageMul(): number {
-    return 1 + STAGE_DIFFICULTY_STEP * this.ctx.campaignStage;
+    if (!this.ctx.campaign) return 1;
+    return (
+      currentMissionStage(this.ctx.mission)?.difficultyMultiplier ?? 1 + STAGE_DIFFICULTY_STEP * this.ctx.campaignStage
+    );
   }
 
   spawnWaveEnemy(descriptor: SpawnDescriptor<WaveConfig>) {
     const wave = descriptor.plan.meta;
     const enemy = this.getFreeEnemy();
     const pt = this.sys.player.randomSpawnPoint();
+    const groundHeight = this.sys.player.walkableSurfaceHeight(pt.x, pt.z);
     const arch = campaignArchetypeForWave(descriptor.waveIndex, descriptor.ordinal, this.ctx.campaignStage);
     enemy.spawnAt(pt.x, pt.z, {
       maxHealth: ENEMY_MAX_HEALTH * wave.healthMul * this.stageMul() * arch.hpMul,
@@ -114,6 +119,7 @@ export class PveDirectorSystem {
       ranged: arch.ranged,
       flying: arch.flying,
       hoverHeight: arch.hoverHeight,
+      groundHeight,
       attackDamage: arch.attackDamage,
       projectileDamage: arch.projectileDamage ?? ENEMY_PROJECTILE_DAMAGE,
       projectileSpeed: ENEMY_PROJECTILE_SPEED,
@@ -123,6 +129,7 @@ export class PveDirectorSystem {
   spawnBoss() {
     const enemy = this.getFreeEnemy();
     const pt = this.sys.player.randomSpawnPoint();
+    const groundHeight = this.sys.player.walkableSurfaceHeight(pt.x, pt.z);
     const bossHp = BOSS_HEALTH * this.stageMul();
     enemy.spawnAt(pt.x, pt.z, {
       maxHealth: bossHp,
@@ -137,6 +144,7 @@ export class PveDirectorSystem {
       attackRange: BOSS_ATTACK_RANGE,
       projectileDamage: BOSS_PROJECTILE_DAMAGE,
       projectileSpeed: BOSS_PROJECTILE_SPEED,
+      groundHeight,
     });
     this.bossEnemy = enemy;
     this.bossMaxHealth = bossHp;
@@ -203,10 +211,15 @@ export class PveDirectorSystem {
     }
 
     if (this.ctx.survivors) {
+      const isReaper = this.sys.survivors.isReaper(enemy);
+      this.sys.telemetry?.recordEnemyKilled(
+        enemy,
+        isReaper ? 0 : (this.sys.survivors.enemyXp.get(enemy) ?? SURV_XP_GEM_VALUE),
+      );
       // The toll itself: killing it seals the breach and ends the run, so it skips
       // the elite drop/XP economy entirely — the victory IS the reward. Identity is
       // the director-held reference (Survivors elites also carry isBoss).
-      if (this.sys.survivors.isReaper(enemy)) {
+      if (isReaper) {
         this.ctx.score += REAPER_SCORE;
         this.bossActive = false;
         this.bossEnemy = null;
@@ -310,21 +323,23 @@ export class PveDirectorSystem {
       const child = this.getFreeEnemy();
       const a = (i / count) * Math.PI * 2 + Math.random() * 0.45;
       const r = 0.8 + Math.random() * 0.9;
-      child.spawnAt(
-        Math.max(this.ctx.bounds.minX + 1.5, Math.min(this.ctx.bounds.maxX - 1.5, pos.x + Math.cos(a) * r)),
-        Math.max(this.ctx.bounds.minZ + 1.5, Math.min(this.ctx.bounds.maxZ - 1.5, pos.z + Math.sin(a) * r)),
-        {
-          maxHealth: Math.max(10, parent.maxHealth * 0.18),
-          speed: Math.max(parent.speed * 1.35, 3.2),
-          archetype: childDef.id,
-          color: childDef.color,
-          scale: 0.7,
-          attackDamage: Math.max(4, childDef.attackDamage - 1),
-          flying: childDef.flying,
-          hoverHeight: childDef.hoverHeight,
-        },
-      );
-      if (this.ctx.survivors) this.sys.survivors.enemyXp.set(child, 1);
+      const x = Math.max(this.ctx.bounds.minX + 1.5, Math.min(this.ctx.bounds.maxX - 1.5, pos.x + Math.cos(a) * r));
+      const z = Math.max(this.ctx.bounds.minZ + 1.5, Math.min(this.ctx.bounds.maxZ - 1.5, pos.z + Math.sin(a) * r));
+      child.spawnAt(x, z, {
+        maxHealth: Math.max(10, parent.maxHealth * 0.18),
+        speed: Math.max(parent.speed * 1.35, 3.2),
+        archetype: childDef.id,
+        color: childDef.color,
+        scale: 0.7,
+        attackDamage: Math.max(4, childDef.attackDamage - 1),
+        flying: childDef.flying,
+        hoverHeight: childDef.hoverHeight,
+        groundHeight: this.sys.player.walkableSurfaceHeight(x, z),
+      });
+      if (this.ctx.survivors) {
+        this.sys.survivors.enemyXp.set(child, 1);
+        this.sys.telemetry?.recordEnemySpawned(child);
+      }
     }
   }
 
@@ -334,8 +349,13 @@ export class PveDirectorSystem {
     const billboardQuat = this.ctx.camera.quaternion;
     for (const enemy of this.ctx.enemies) {
       if (!enemy.alive) continue;
-      const tick = enemy.update(delta, elapsed, playerPos, this.ctx.enemies, billboardQuat, this.ctx.bounds);
+      const tick = enemy.update(delta, elapsed, playerPos, this.ctx.enemies, billboardQuat, this.ctx.bounds, (x, z) =>
+        this.sys.player.walkableSurfaceHeight(x, z),
+      );
       damageToPlayer += tick.melee;
+      if (this.ctx.survivors && tick.melee > 0) {
+        this.sys.telemetry?.recordIncomingPressure("melee", enemy.archetype, tick.melee);
+      }
       for (const shot of tick.shots) this.sys.projectiles.spawnProjectile(shot, enemy);
       this.sys.player.pushOutOfObstacles(enemy.position, enemy.radius);
     }
