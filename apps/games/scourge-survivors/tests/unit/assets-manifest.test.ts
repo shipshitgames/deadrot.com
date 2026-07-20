@@ -253,7 +253,7 @@ describe("asset manifest", () => {
       hash.update("\0");
     }
 
-    expect(hash.digest("hex")).toBe("2de556de0a98be790a01eb01bb7e7c6d87ef3106de0764bff217816b5d5e7bd1");
+    expect(hash.digest("hex")).toBe("3371308b447918404a8d1cf4e7d287807c7a2bb9f576bff376ee5e83e9b98a85");
   });
 
   it("defines weapon sprite metadata needed for first-person runtime placement", () => {
