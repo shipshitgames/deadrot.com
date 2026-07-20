@@ -44,6 +44,7 @@ type AnimationSample = {
     spriteIsHitTarget: boolean;
   };
   hoverHeight: number;
+  screen: { x: number; y: number; z: number };
   src: string;
   state: string;
   sprite: {
@@ -931,6 +932,13 @@ test.describe("dev sandbox smoke", () => {
     await expect(page.getByTestId("combat-asset-loading")).toHaveCount(0);
 
     const result = await page.evaluate(async () => {
+      type DevVector = {
+        x: number;
+        y: number;
+        z: number;
+        clone: () => DevVector;
+        project: (camera: unknown) => DevVector;
+      };
       type DevHitMesh = {
         geometry: {
           boundingBox: {
@@ -947,11 +955,7 @@ test.describe("dev sandbox smoke", () => {
         alive: boolean;
         flying: boolean;
         group: {
-          position: {
-            x: number;
-            y: number;
-            z: number;
-          };
+          position: DevVector;
         };
         hitMeshes: DevHitMesh[];
         hoverHeight: number;
@@ -993,6 +997,7 @@ test.describe("dev sandbox smoke", () => {
               z: number;
             };
           };
+          camera: unknown;
           enemies: DevEnemy[];
           status: string;
         };
@@ -1038,6 +1043,7 @@ test.describe("dev sandbox smoke", () => {
               groupY: enemy.group.position.y,
               hitbox: hitboxSample(enemy),
               hoverHeight: enemy.hoverHeight,
+              screen: enemy.group.position.clone().project(game.ctx.camera),
               src: image?.currentSrc || image?.src || "",
               state: enemy.spriteAnimationState,
               sprite: {
@@ -1059,12 +1065,22 @@ test.describe("dev sandbox smoke", () => {
       for (const kind of ["melee", "ranged", "flying", "boss"] as const) {
         game.spawnSandboxEnemy(kind, 1);
       }
-      game.ctx.enemies
-        .filter((enemy) => enemy.alive)
-        .forEach((enemy, index) => {
-          enemy.group.position.x = game.ctx.body.position.x + (index - 1.5) * 7;
-          enemy.group.position.z = game.ctx.body.position.z - 30;
-        });
+      const enemies = game.ctx.enemies.filter((enemy) => enemy.alive);
+      const forwardAnchor = enemies.find((enemy) => !enemy.isBoss) ?? enemies[0];
+      if (!forwardAnchor) throw new Error("Sandbox lineup did not spawn an enemy");
+      const forwardX = forwardAnchor.group.position.x - game.ctx.body.position.x;
+      const forwardZ = forwardAnchor.group.position.z - game.ctx.body.position.z;
+      const forwardLength = Math.hypot(forwardX, forwardZ);
+      if (forwardLength < 0.001) throw new Error("Sandbox lineup has no camera-forward vector");
+      const unitForwardX = forwardX / forwardLength;
+      const unitForwardZ = forwardZ / forwardLength;
+      const rightX = unitForwardZ;
+      const rightZ = -unitForwardX;
+      enemies.forEach((enemy, index) => {
+        const offset = (index - (enemies.length - 1) / 2) * 4.5;
+        enemy.group.position.x = game.ctx.body.position.x + unitForwardX * 18 + rightX * offset;
+        enemy.group.position.z = game.ctx.body.position.z + unitForwardZ * 18 + rightZ * offset;
+      });
       game.ctx.status = "playing";
 
       await wait(240);
@@ -1080,10 +1096,23 @@ test.describe("dev sandbox smoke", () => {
       }
       await wait(320);
       const attacking = sample();
+      game.ctx.status = "paused";
 
       return { moveA, moveB, moveSamples, attacking };
     });
 
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) => {
+          const root = document.querySelector(".game-root");
+          for (const child of Array.from(root?.children ?? [])) {
+            if (!(child instanceof HTMLCanvasElement)) {
+              (child as HTMLElement).style.visibility = "hidden";
+            }
+          }
+          window.requestAnimationFrame(() => resolve());
+        }),
+    );
     const lineupScreenshot = await page.getByTestId("game-canvas").screenshot();
     expect(lineupScreenshot.byteLength).toBeGreaterThan(20_000);
     await testInfo.attach("scourge-enemy-sandbox-lineup", {
@@ -1101,6 +1130,12 @@ test.describe("dev sandbox smoke", () => {
       expect(sample.sprite.imageHeight).toBeGreaterThan(0);
       expect(sample.sprite.width).toBeGreaterThan(0);
       expect(sample.sprite.height).toBeGreaterThan(0);
+      expect(sample.screen.x).toBeGreaterThan(-0.95);
+      expect(sample.screen.x).toBeLessThan(0.95);
+      expect(sample.screen.y).toBeGreaterThan(-0.95);
+      expect(sample.screen.y).toBeLessThan(0.95);
+      expect(sample.screen.z).toBeGreaterThan(-1);
+      expect(sample.screen.z).toBeLessThan(1);
       expect(sample.animation?.source).toBe("atlas");
       expect(sample.animation?.frame).toBe(sample.frame);
       expect(["front", "side", "back"]).toContain(sample.animation?.view);
