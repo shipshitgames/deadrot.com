@@ -89,8 +89,8 @@
         },
         "path": {
           "type": "string",
-          "pattern": "^models/.+\\.(glb|gltf)$",
-          "description": "Package-relative path to the LFS-tracked file."
+          "pattern": "^models/(?!\\.\\.?/)(?!.*\\/\\.\\.?/)(?!.*//)[^\\\\]+\\.(glb|gltf)$",
+          "description": "Safe package-relative path to the LFS-tracked file; dot segments and backslashes are forbidden."
         },
         "bytes": {
           "type": "integer",

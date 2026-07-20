@@ -143,3 +143,62 @@ test("checkModels verifies bytes/sha against an LFS pointer file", () => {
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("checkModels rejects path traversal and enum drift", () => {
+  const root = mkdtempSync(join(tmpdir(), "models-invalid-"));
+  try {
+    mkdirSync(join(root, "models"), { recursive: true });
+    const manifest = {
+      version: "1",
+      cdnBase: "https://assets.deadrot.com",
+      models: [
+        {
+          id: "unsafe",
+          name: "Unsafe",
+          format: "glb",
+          pbr: false,
+          source: { provider: "test", model: "test" },
+          defaultVariant: "static",
+          variants: [
+            {
+              key: "static",
+              pose: "idle",
+              optimization: "optimized",
+              path: "models/../../outside.glb",
+              bytes: 1,
+              sha256: "0".repeat(64),
+            },
+          ],
+        },
+      ],
+    };
+    writeFileSync(join(root, "models/models.manifest.json"), JSON.stringify(manifest));
+
+    const result = checkModels(root);
+    assert.equal(result.ok, false);
+    assert.ok(result.errors.some((error) => error.includes('pose must be "static" or "animated"')));
+    assert.ok(result.errors.some((error) => error.includes('optimization must be "master" or "runtime"')));
+    assert.ok(result.errors.some((error) => error.includes("path must be a safe")));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("checkModels rejects model files missing from the manifest", () => {
+  const root = mkdtempSync(join(tmpdir(), "models-orphan-"));
+  try {
+    const orphan = join(root, "models/orphan/orphan.glb");
+    mkdirSync(dirname(orphan), { recursive: true });
+    writeFileSync(orphan, "untracked model bytes");
+    writeFileSync(
+      join(root, "models/models.manifest.json"),
+      JSON.stringify({ version: "1", cdnBase: "https://assets.deadrot.com", models: [] }),
+    );
+
+    const result = checkModels(root);
+    assert.equal(result.ok, false);
+    assert.ok(result.errors.includes("unmanifested model file: models/orphan/orphan.glb"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});

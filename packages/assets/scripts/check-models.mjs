@@ -15,12 +15,37 @@
 // Usage: node scripts/check-models.mjs [--root <dir>]
 
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const defaultRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const MANIFEST_FILENAME = "models/models.manifest.json";
+const MODEL_PATH_RE = /^models\/.+\.(glb|gltf)$/;
+
+function isSafeModelPath(path) {
+  if (typeof path !== "string" || !MODEL_PATH_RE.test(path) || path.includes("\\")) return false;
+  return path.split("/").every((segment) => segment !== "" && segment !== "." && segment !== "..");
+}
+
+function modelFiles(root) {
+  const modelsRoot = join(root, "models");
+  if (!existsSync(modelsRoot)) return [];
+
+  const files = [];
+  const visit = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const abs = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        visit(abs);
+      } else if (entry.isFile() && /\.(glb|gltf)$/.test(entry.name)) {
+        files.push(relative(root, abs).split(sep).join("/"));
+      }
+    }
+  };
+  visit(modelsRoot);
+  return files.sort();
+}
 
 /** Parse a Git LFS pointer file's oid + size, or null if it isn't a pointer. */
 export function parseLfsPointer(text) {
@@ -69,6 +94,7 @@ export function checkModels(root = defaultRoot) {
   }
 
   const seenIds = new Set();
+  const manifestPaths = new Set();
   for (const model of manifest.models) {
     const id = model?.id;
     const label = typeof id === "string" ? id : "<no id>";
@@ -102,12 +128,26 @@ export function checkModels(root = defaultRoot) {
       if (variantKeys.has(key)) errors.push(`${label}: duplicate variant key "${key}"`);
       variantKeys.add(key);
 
-      if (typeof variant.path !== "string" || !/^models\/.+\.(glb|gltf)$/.test(variant.path)) {
-        errors.push(`${vlabel}: path must be a models/…(.glb|.gltf) string`);
+      if (variant.pose !== "static" && variant.pose !== "animated") {
+        errors.push(`${vlabel}: pose must be "static" or "animated"`);
+      }
+      if (variant.optimization !== "master" && variant.optimization !== "runtime") {
+        errors.push(`${vlabel}: optimization must be "master" or "runtime"`);
+      }
+
+      if (!isSafeModelPath(variant.path)) {
+        errors.push(`${vlabel}: path must be a safe models/…(.glb|.gltf) path without dot segments`);
         continue;
       }
-      if (typeof variant.bytes !== "number" || !/^[0-9a-f]{64}$/.test(String(variant.sha256))) {
-        errors.push(`${vlabel}: bytes (number) and sha256 (64 hex) are required`);
+      manifestPaths.add(variant.path);
+
+      const validBytes = Number.isInteger(variant.bytes) && variant.bytes >= 0;
+      const validSha256 = /^[0-9a-f]{64}$/.test(String(variant.sha256));
+      if (!validBytes) {
+        errors.push(`${vlabel}: bytes must be a non-negative integer`);
+      }
+      if (!validSha256) {
+        errors.push(`${vlabel}: sha256 must be 64 lowercase hex characters`);
       }
 
       const abs = join(root, variant.path);
@@ -116,16 +156,27 @@ export function checkModels(root = defaultRoot) {
         continue;
       }
       const actual = integrityOf(abs);
-      if (actual.bytes !== variant.bytes) {
+      if (validBytes && actual.bytes !== variant.bytes) {
         errors.push(`${vlabel}: bytes drift — manifest ${variant.bytes}, ${actual.kind} ${actual.bytes}`);
       }
-      if (actual.sha256 !== variant.sha256) {
+      if (validSha256 && actual.sha256 !== variant.sha256) {
         errors.push(`${vlabel}: sha256 drift — manifest ${variant.sha256}, ${actual.kind} ${actual.sha256}`);
       }
     }
 
     if (typeof model.defaultVariant !== "string" || !variantKeys.has(model.defaultVariant)) {
       errors.push(`${label}: defaultVariant "${model.defaultVariant}" is not one of [${[...variantKeys].join(", ")}]`);
+    }
+    for (const variant of model.variants) {
+      if (variant.derivedFrom !== undefined && !variantKeys.has(variant.derivedFrom)) {
+        errors.push(`${label}[${variant.key ?? "?"}]: derivedFrom "${variant.derivedFrom}" is not a variant key`);
+      }
+    }
+  }
+
+  for (const path of modelFiles(root)) {
+    if (!manifestPaths.has(path)) {
+      errors.push(`unmanifested model file: ${path}`);
     }
   }
 
