@@ -55,6 +55,35 @@ reviewed outside runtime paths under `packages/assets/_archive/`.
 - Notes: Replaces the tall humanoid melee-boss silhouette with the locked low-wide breach engine: planted anchor limbs, bone-caged toxic heart, barrage vents, black chitin, wet crimson tissue, and rusted machine grafts. The current action slots repeat the production static pose to prevent a style/silhouette morph until authored comic action sheets land.
 - Decision: promote as the production static runtime read; keep true lurch/barrage/death animation as a follow-up art pass.
 
+## 2026-07-17 - scourge-survivors-comic-bonus-icons - v01
+
+- Status: promoted into runtime.
+- Game: [[Scourge-Survivors]].
+- Faction: [[The-Pyre]].
+- Character/role: level-up bonuses, permanent shop upgrades, and the Cautery
+  Ring blade choice.
+- View: transparent 128x128 comic/cel UI glyphs.
+- Tool: `gpt-image-2` via Codex built-in `image_gen`.
+- Plan: Codex built-in.
+- Kind: ai-2d-comic-ui-icon-atlas.
+- Source output:
+  `packages/assets/_archive/raw-generator-cache/codex-generated-images/2026-07-17/raw/019f6da4-55d3-7d63-aa0b-e4d5c76d0385/exec-aedb1ce0-7a1f-460f-914b-ea126bf2ae4c.png`.
+- Workspace draft:
+  `packages/assets/sources/generated/2026-07-17/scourge-survivors/ui/bonus-icons-comic-atlas-source.png`.
+- Final asset: `packages/assets/games/scourge-survivors/ui/icons/comic/*.webp`.
+- Prompt source: [[CANON]], [[DESIGN]], [[Universe/Style-Bible]],
+  [[Games/Scourge-Survivors]], the locked comic HUD master, and the legacy
+  icon atlas as a semantic-reference-only ordering guide.
+- Post-processing: sampled green chroma removal and despill with Sharp; split
+  the exact 7x3 atlas; removed disconnected matte fragments; alpha-trimmed,
+  padded, and encoded each glyph as lossless WebP.
+- Notes: exact semantic order is orbit, bolt, nova, fire, battery, lightning,
+  trident, target, boot, heart, medic-cross, armor, shield, spikes, bloodtap,
+  bastion, dodge, grace, magnet, chart, gold. The runtime manifest owns this
+  list so the HUD draft and permanent shop cannot drift onto different art.
+- Decision: promoted as the canonical bonus icon family; retain the legacy
+  pixel atlas only for non-bonus shell controls.
+
 ## 2026-06-17 - comic-book-master-atlas - v01
 
 - Status: exploratory masters attached to lore.
@@ -280,3 +309,32 @@ reviewed outside runtime paths under `packages/assets/_archive/`.
   nearest-neighbor downscaled; alpha padded; encoded lossless WebP.
 - Notes: The pack establishes enemy readability lanes: blood-red heavy melee, chartreuse acid ranged, purple-wing lightweight flyer, and deep crimson-black massive boss.
 - Decision: keep as an animation asset pack and wire into the renderer in a follow-up implementation pass. First spitter walk frames and first winged fly frames were also promoted into the current runtime static sprites so the color lanes are immediately visible in-game.
+
+## 2026-07-17 - scourge-dual-held-weapons - v01
+
+- Status: promoted into runtime.
+- Game: [[Scourge-Survivors]].
+- Faction: [[Pyre]].
+- Character/role: purpose-built akimbo pistol, SMG, shotgun, and sniper
+  first-person view models.
+- View: five-cell horizontal tier sheets, base through evolved.
+- Tool: `gpt-image-2` via Codex built-in `image_gen`, followed by deterministic
+  local alpha cleanup and WebP promotion.
+- Source output:
+  `~/.codex/generated_images/019f6f5c-bac3-7ac0-8881-c7cb86fe01e7/`
+  (`call_azOfo1vi9G5CGlbYrWuqyOEu.png`,
+  `call_KmHRV7ExZz71dOLC1x3inS1a.png`,
+  `call_P08gr2NAJsBZbe2EcrjtoZpB.png`, and
+  `call_t0OguipFMmAzui2qGGFamph6.png`).
+- Workspace masters:
+  `packages/assets/_archive/raw-generator-cache/codex-generated-images/2026-07-17/raw/019f6f5c-bac3-7ac0-8881-c7cb86fe01e7/`.
+- Final asset:
+  `packages/assets/games/scourge-survivors/weapons/pyre/dual/{pistol,smg,shotgun,sniper}-dual-tiers.webp`.
+- Post-processing: flood-cleared the baked neutral checkerboard, normalized each
+  sheet to five exact 435px tier cells, and encoded high-quality WebP with exact
+  full-quality alpha.
+- Notes: every cell is a new uncrossed one-weapon-per-hand pose preserving the
+  approved Pyre gunmetal, bone, blood-hot, and hellfire tier progression. The
+  cannon remains single-held by design.
+- Decision: promoted as the only dual-bonus held-weapon art; the runtime no
+  longer duplicates and mirrors the centered two-handed primary sprite.

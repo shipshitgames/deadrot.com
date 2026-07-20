@@ -120,7 +120,7 @@ export function Shop({ shop, onBuy }: { shop: ShopState; onBuy: (id: string) => 
               className={`flex items-center gap-3 bg-black/30 border-white/10 rounded-[9px] px-3 py-2.5 text-left${maxed ? " opacity-70" : ""}`}
             >
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[6px] border border-white/10 bg-black/30">
-                <PixelIcon id={u.icon} size={34} label={u.name} />
+                <PixelIcon id={u.icon} variant="bonus" size={34} label={u.name} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-[15px] font-bold">
@@ -367,7 +367,7 @@ function MapSelectPanel({
 
   return (
     <div className="pointer-events-auto w-[min(940px,92vw)]">
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         {MAP_PICKER.map((m) => {
           const active = m.id === selected.id;
           return (

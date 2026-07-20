@@ -7,12 +7,34 @@ import comicAnimationManifest from "@shipshitgames/assets/games/scourge-survivor
 import manifest from "@shipshitgames/assets/games/scourge-survivors/assets.json";
 import { describe, expect, it } from "vitest";
 import { ASSET_CATALOG } from "../../src/assets/catalog";
-import { CAMPAIGN_ORDER, MAPS } from "../../src/game/data/maps";
+import { DEFAULT_JOURNEY_MAP_IDS, MAPS } from "../../src/game/data/maps";
+import { EVOLUTIONS, SHOP_UPGRADES, UPGRADES } from "../../src/game/data/survivors";
 
 type Manifest = typeof manifest;
 type SpriteEntry = Manifest["sprites"][keyof Manifest["sprites"]];
+type WeaponSpriteEntry = {
+  path: string;
+  tierSheet?: {
+    columns: number;
+    tiers: string[];
+  };
+  weapon?: {
+    flashScale: number;
+    muzzles?: {
+      left: [number, number, number];
+      right: [number, number, number];
+    };
+  };
+};
 type AudioEntry = Manifest["audio"][keyof Manifest["audio"]];
 type UiEntry = Manifest["ui"][keyof Manifest["ui"]];
+type ArenaSurfaceEntry = {
+  path: string;
+  dimensions: readonly number[];
+  colorSpace: string;
+  wrap: string;
+  repeat: readonly number[];
+};
 
 const assetsRoot = fileURLToPath(new URL("../../../../../packages/assets/", import.meta.url));
 
@@ -55,6 +77,8 @@ function scourgeEnemySpritePaths() {
     }
   }
 
+  for (const page of animationManifest.runtimeAtlas.pages) paths.push(page.path);
+
   return paths.sort();
 }
 
@@ -94,6 +118,10 @@ describe("asset manifest", () => {
       "menuHero",
       "menuTitle",
     ]);
+    const usedBonusIcons = [
+      ...new Set([...UPGRADES, ...SHOP_UPGRADES, ...Object.values(EVOLUTIONS)].map(({ icon }) => icon)),
+    ].sort();
+    expect(Object.keys(manifest.runtime.bonusIcons).sort()).toEqual(usedBonusIcons);
   });
 
   it("resolves runtime catalog aliases to real manifest entries", () => {
@@ -133,6 +161,45 @@ describe("asset manifest", () => {
       // the only allowed non-WebP runtime raster and is not part of runtime.ui.
       expect(ASSET_CATALOG.runtimeUiUrl(id), `ui.${id} URL`).toMatch(/\.webp(\?|$)/);
     }
+
+    for (const [id, ref] of Object.entries(manifest.runtime.bonusIcons)) {
+      const entry = manifest.ui[ref.asset as keyof typeof manifest.ui];
+      expect(entry, `bonusIcons.${id}`).toMatchObject({
+        role: "bonus-icon",
+        path: expect.stringMatching(/\.webp$/),
+        dimensions: [128, 128],
+      });
+    }
+  });
+
+  it("covers every dual-compatible firearm with dedicated tier art and per-hand muzzle metadata", () => {
+    const dualCompatible = ["pistol", "smg", "shotgun", "sniper"] as const;
+
+    for (const id of dualCompatible) {
+      const ref = manifest.runtime.weapons[id];
+      expect(ref.dualSprite, `weapons.${id} dedicated dual sprite`).toBe(`weapon-${id}-dual`);
+      const dual = manifest.sprites[ref.dualSprite as keyof typeof manifest.sprites] as WeaponSpriteEntry;
+      const primary = manifest.sprites[ref.sprite as keyof typeof manifest.sprites] as WeaponSpriteEntry;
+      expect(dual.path, `${id} dual path`).toMatch(/\/dual\/.+-dual-tiers\.webp$/);
+      expect(dual.path, `${id} dedicated runtime path`).not.toBe(primary.path);
+      expect(dual.tierSheet, `${id} dual tier coverage`).toEqual(primary.tierSheet);
+      expect(dual.weapon?.muzzles?.left, `${id} left muzzle`).toHaveLength(3);
+      expect(dual.weapon?.muzzles?.right, `${id} right muzzle`).toHaveLength(3);
+      expect(dual.weapon?.muzzles?.left[0], `${id} left/right separation`).toBeLessThan(
+        dual.weapon?.muzzles?.right[0] ?? 0,
+      );
+      expect(dual.weapon?.flashScale, `${id} flash scale`).toBeGreaterThan(0);
+    }
+
+    expect(manifest.runtime.weapons.cannon).not.toHaveProperty("dualSprite");
+    expect(manifest.sprites).not.toHaveProperty("weapon-cannon-dual");
+  });
+
+  it("promotes purpose-built raw dual masters without a mirror-composite fallback", () => {
+    const generatorPath = join(assetsRoot, "scripts/generate-scourge-dual-weapons.mjs");
+    const generator = readFileSync(generatorPath, "utf8");
+    expect(generator).toContain("_archive/raw-generator-cache/codex-generated-images/2026-07-17");
+    expect(generator).not.toMatch(/compositeHand|flop|mirrorUv|weaponTierCellUvMirrored/);
   });
 
   it("keeps enemies and player avatars covered by front, side, and back views", () => {
@@ -211,7 +278,7 @@ describe("asset manifest", () => {
     const hash = createHash("sha256");
     const paths = scourgeEnemySpritePaths();
 
-    expect(paths).toHaveLength(285);
+    expect(paths).toHaveLength(286);
 
     for (const path of paths) {
       hash.update(path);
@@ -220,7 +287,7 @@ describe("asset manifest", () => {
       hash.update("\0");
     }
 
-    expect(hash.digest("hex")).toBe("dd4e0385ed41f42e0dda65cced7170e99476dca5289e2fb9495e96d5a65c12f7");
+    expect(hash.digest("hex")).toBe("8b88f51140887b56bfffd5d26576c5b63964ce595138d300b84dc0705360565f");
   });
 
   it("defines weapon sprite metadata needed for first-person runtime placement", () => {
@@ -332,7 +399,7 @@ describe("asset manifest", () => {
   it("keeps every campaign arena backed by authored materials and environment dressing", () => {
     const textureIds = new Set(Object.keys(manifest.textures));
 
-    for (const mapId of CAMPAIGN_ORDER) {
+    for (const mapId of DEFAULT_JOURNEY_MAP_IDS) {
       const map = MAPS[mapId];
       const materialIds = Object.values(map.materials);
 
@@ -352,6 +419,31 @@ describe("asset manifest", () => {
       for (const prop of map.environment.props) {
         expect(textureIds.has(prop.texture), `${mapId} prop ${prop.texture}`).toBe(true);
         expectExistingAsset(manifest.textures[prop.texture as keyof typeof manifest.textures].path);
+      }
+    }
+  });
+
+  it("keeps campaign surfaces wired to production dimensions and UV repeats", () => {
+    const expectedRepeats = {
+      floor: [11.5, 11.5],
+      wall: [16, 1],
+      block: [1, 1],
+      column: [1, 3],
+    } as const;
+
+    for (const mapId of DEFAULT_JOURNEY_MAP_IDS) {
+      const map = MAPS[mapId];
+
+      for (const [role, id] of Object.entries(map.materials)) {
+        const entry = manifest.textures[id as keyof typeof manifest.textures] as ArenaSurfaceEntry;
+
+        expect(entry.path, `${mapId} ${role} path`).toBe(
+          `games/scourge-survivors/textures/arenas/${mapId}/${role}.webp`,
+        );
+        expect(entry.dimensions, `${mapId} ${role} dimensions`).toEqual([512, 512]);
+        expect(entry.colorSpace, `${mapId} ${role} color space`).toBe("srgb");
+        expect(entry.wrap, `${mapId} ${role} wrap`).toBe("repeat");
+        expect(entry.repeat, `${mapId} ${role} repeat`).toEqual(expectedRepeats[role as keyof typeof expectedRepeats]);
       }
     }
   });

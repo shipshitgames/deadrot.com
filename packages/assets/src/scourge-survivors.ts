@@ -38,6 +38,10 @@ export interface SpriteEntry {
   weapon?: {
     offset: Vec3;
     muzzle: Vec3;
+    muzzles?: {
+      left: Vec3;
+      right: Vec3;
+    };
     flashScale: number;
     flashRotation?: number;
   };
@@ -105,6 +109,7 @@ export interface RuntimeSpriteRef {
 
 export interface RuntimeWeaponRef extends RuntimeSpriteRef {
   lootSprite: string;
+  dualSprite?: string;
 }
 
 export interface RuntimeEnemyRef extends RuntimeSpriteRef {
@@ -123,6 +128,7 @@ export interface ScourgeSurvivorsRuntimeManifest {
   projectiles: Record<string, RuntimeSpriteRef>;
   fx: Record<string, RuntimeSpriteRef>;
   ui: Record<string, RuntimeUiRef>;
+  bonusIcons: Record<string, RuntimeUiRef>;
 }
 
 export interface ScourgeSurvivorsAssetManifest {
@@ -552,6 +558,22 @@ export async function scourgeSurvivorsAnimationFrameUrl(
 ): Promise<string> {
   return (await scourgeSurvivorsAnimationFrameSource(entity, action, view, frame)).url;
 }
+
+export const SCOURGE_SURVIVORS_BONUS_ICON_IDS = Object.keys(manifestData.runtime.bonusIcons) as Array<
+  keyof typeof manifestData.runtime.bonusIcons
+>;
+
+export type ScourgeSurvivorsBonusIconId = (typeof SCOURGE_SURVIVORS_BONUS_ICON_IDS)[number];
+
+export function scourgeSurvivorsBonusIconUrl(id: ScourgeSurvivorsBonusIconId): string {
+  const ref = SCOURGE_SURVIVORS_ASSET_MANIFEST.runtime.bonusIcons[id];
+  if (!ref) throw new Error(`Unknown Scourge Survivors bonus icon: ${id}`);
+  return scourgeSurvivorsUiUrl(ref.asset);
+}
+
+export const SCOURGE_SURVIVORS_BONUS_ICON_URLS = Object.fromEntries(
+  SCOURGE_SURVIVORS_BONUS_ICON_IDS.map((id) => [id, scourgeSurvivorsBonusIconUrl(id)]),
+) as Record<ScourgeSurvivorsBonusIconId, string>;
 
 export const SCOURGE_SURVIVORS_PIXEL_ICON_IDS = [
   "link",

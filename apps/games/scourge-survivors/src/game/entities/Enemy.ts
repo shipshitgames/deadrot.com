@@ -73,6 +73,8 @@ export interface SpawnConfig {
   ranged?: boolean;
   flying?: boolean;
   hoverHeight?: number;
+  /** Authored walkable surface beneath this spawn (zero for flat arenas). */
+  groundHeight?: number;
   splitCount?: number;
   /** Elite wave affix: tints the sprite and drives affix behaviour (Survivors). */
   eliteAffix?: EliteAffixId | null;
@@ -103,6 +105,7 @@ export class Enemy extends Agent {
   ranged = false;
   flying = false;
   hoverHeight = 0;
+  private groundHeight = 0;
   archetype: EnemyArchetypeId = "grunt";
   splitCount = 0;
   /** Elite wave affix (left intact through kill() so death handlers can read it). */
@@ -277,6 +280,7 @@ export class Enemy extends Agent {
     this.ranged = cfg.ranged ?? archetype.ranged ?? false;
     this.flying = cfg.flying ?? archetype.flying ?? false;
     this.hoverHeight = this.flying ? (cfg.hoverHeight ?? archetype.hoverHeight ?? 2.05) : 0;
+    this.groundHeight = cfg.groundHeight ?? 0;
     this.splitCount = cfg.splitCount ?? archetype.splitCount ?? 0;
     this.baseSpeed = cfg.speed ?? ENEMY_SPEED_MIN + Math.random() * (ENEMY_SPEED_MAX - ENEMY_SPEED_MIN);
     this.speed = this.baseSpeed;
@@ -332,7 +336,7 @@ export class Enemy extends Agent {
 
     this.applyStyle(cfg.color ?? 0xff5a3c);
     this.applySprite();
-    this.group.position.set(x, this.hoverHeight, z);
+    this.group.position.set(x, this.groundHeight + this.hoverHeight, z);
     this.group.visible = true;
     this.updateHealthBar();
   }
@@ -486,6 +490,7 @@ export class Enemy extends Agent {
     peers: Enemy[],
     cameraQuat: THREE.Quaternion,
     bounds: WorldBounds,
+    groundHeightAt?: (x: number, z: number) => number,
   ): EnemyTick {
     const tick: EnemyTick = { melee: 0, shots: [] };
     if (!this.alive) return tick;
@@ -571,11 +576,14 @@ export class Enemy extends Agent {
     }
 
     bounds.clampXZ(pos, 1.5);
+    if (groundHeightAt) this.groundHeight = groundHeightAt(pos.x, pos.z);
 
     this.group.rotation.y = Math.atan2(dirX, dirZ);
-    pos.y = this.flying
-      ? this.hoverHeight + Math.sin(elapsed * (this.speed * 1.25) + this.bobPhase) * 0.18
-      : Math.abs(Math.sin(elapsed * (this.speed * 1.6) + this.bobPhase)) * 0.07;
+    pos.y =
+      this.groundHeight +
+      (this.flying
+        ? this.hoverHeight + Math.sin(elapsed * (this.speed * 1.25) + this.bobPhase) * 0.18
+        : Math.abs(Math.sin(elapsed * (this.speed * 1.6) + this.bobPhase)) * 0.07);
     const frame = this.chooseSpriteFrame(move.x, move.z, dirX, dirZ);
     this.applySprite(frame.view, frame.flip, elapsed, Math.hypot(move.x, move.z) > 0.05, delta);
     this.healthBarGroup.quaternion.copy(cameraQuat);
@@ -740,14 +748,15 @@ export class Enemy extends Agent {
     const archetype = ENEMY_ARCHETYPES[this.archetype];
     const baseStagger = (headshot ? 0.2 : 0.075) + Math.min(0.08, amount / 900);
     const bossMul = this.isBoss ? 0.3 : 1;
-    this.staggerTimer = Math.max(this.staggerTimer, baseStagger * archetype.staggerMul * bossMul);
+    const eliteMul = this.eliteAffix ? 0.65 : 1;
+    this.staggerTimer = Math.max(this.staggerTimer, baseStagger * archetype.staggerMul * bossMul * eliteMul);
     if (headshot && this.archetype === "charger") {
       this.chargeWindup = 0;
       this.chargeTimer *= 0.35;
     }
     if (knock > 0) {
       // heavier enemies barely budge; overwrite (not add) so multi-pellet hits don't launch
-      const mass = this.isBoss ? 7 : archetype.mass;
+      const mass = (this.isBoss ? 7 : archetype.mass) * (this.eliteAffix ? 1.4 : 1);
       const headshotBoost = headshot ? 1.45 : 1;
       this.knockX = kx * ((knock * headshotBoost) / mass);
       this.knockZ = kz * ((knock * headshotBoost) / mass);

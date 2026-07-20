@@ -111,6 +111,65 @@ bun run --cwd packages/assets assets:check
 
 Scourge Survivors is the migrated reference implementation.
 
+## 3D model assets
+
+3D models (GLB/glTF) live in a dedicated tree, separate from the 2D sprite/atlas
+trees, and are version-controlled with **Git LFS** (deadrot.com#493 — the start
+of the pixel→3D migration).
+
+```txt
+models/<entity>/<name>.glb            # LFS-tracked master(s)
+models/models.manifest.json           # curated manifest (schema alongside it)
+models/models.manifest.schema.json
+```
+
+**Git LFS.** `*.glb`, `*.gltf`, and `*.bin` are tracked via the repo-root
+`.gitattributes` (`filter=lfs diff=lfs merge=lfs -text`). A raw ~45MB master is
+the source-of-truth; optimized runtime GLBs (Draco/WebP via `assetgen`) are
+derived and also LFS-tracked. Clone + fetch the binaries with:
+
+```sh
+git lfs install        # once per machine
+git lfs pull           # fetch the actual GLBs (a bare clone has pointer files)
+git lfs ls-files       # list LFS-tracked files
+```
+
+> **CI / Vercel caveat:** the models manifest and its checks are LFS-safe — they
+> validate against the on-disk LFS pointer (`oid`/`size`) when the real blob is
+> not present, so `assets:check` and `bun test` pass without an LFS checkout. A
+> build that actually needs to *read* GLB bytes must run `git lfs pull` first;
+> on Vercel, enable **Git LFS** for the project (Settings → Git) so deploys
+> hydrate the binaries.
+
+**Manifest.** Unlike the 2D `assets.index.json` (machine-generated), the model
+manifest is **hand-authored** because its provenance metadata (source prediction
+id, provider model, PBR, face count, license) cannot be derived from bytes. It
+is validated — not regenerated — by `scripts/check-models.mjs`, wired into
+`assets:check`. Each model has a stable `id` and one or more `variants`
+(`static`, `animated`, later an optimized `runtime`); every variant records its
+package-relative `path`, `bytes`, and `sha256`.
+
+**Resolve by id** the same way sprites resolve, through the typed front door in
+[`src/models.ts`](./src/models.ts):
+
+```ts
+import { getModel, resolveModelPath, resolveModelUrl } from "@shipshitgames/assets";
+
+resolveModelPath("scourge-host");                       // -> "models/scourge-host/scourge-host.glb" (defaultVariant)
+resolveModelPath("scourge-host", { variant: "animated" }); // -> "models/scourge-host/scourge-host-animated.glb"
+resolveModelUrl("scourge-host");                        // -> "https://assets.deadrot.com/models/scourge-host/scourge-host.glb"
+getModel("scourge-host")?.faceCount;                    // 120000
+```
+
+Raw file paths are also exported via the `./models/*` subpath for build tooling
+that imports the GLB URL directly (e.g. Vite).
+
+The seed entry is `scourge-host`: the Hunyuan3D-3.1 (`tencent/hunyuan-3d-3.1`,
+PBR, 120k faces) master plus a procedurally-animated derivative. Adding a model:
+drop the GLB under `models/<entity>/`, add a manifest entry with its `bytes` +
+`sha256` (`shasum -a 256 <file>`) and source/license, then run
+`bun run --cwd packages/assets assets:check`.
+
 ## Source material
 
 Runtime packs should only commit files that games load at build time or runtime.
@@ -171,6 +230,14 @@ Run the package boundary check before merging asset changes:
 
 ```bash
 bun run --cwd packages/assets assets:check
+```
+
+Audit or repair the default Scourge enemy pack's chroma-key edge residue
+(static sprites, split animation frames, and the runtime atlas):
+
+```bash
+bun run --cwd packages/assets assets:check-enemy-alpha
+bun run --cwd packages/assets assets:fix-enemy-alpha
 ```
 
 Refresh the lore-to-art coverage map after adding or promoting lore art:

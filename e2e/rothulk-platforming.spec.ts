@@ -57,6 +57,9 @@ async function boot(page: Page) {
   await expect(page.getByText("ROTHULK")).toBeVisible();
   await page.getByText("Press Enter to continue").click();
   await page.getByRole("button", { name: /^Breach\b/i }).click();
+  await expect(page.getByTestId("cinematic-intro")).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect(page.getByTestId("cinematic-intro")).toBeHidden();
   await page.waitForFunction(() => {
     const game = (window as unknown as { __rothulkGame?: { debugSnapshot: () => RothulkSnapshot } }).__rothulkGame;
     return game?.debugSnapshot().mode === "playing";

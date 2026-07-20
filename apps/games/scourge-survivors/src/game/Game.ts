@@ -44,6 +44,7 @@ import { preloadCombatAssets } from "./spriteAssets";
 import type { GameSystems } from "./systems";
 import { HudSystem } from "./systems/HudSystem";
 import { InputSystem } from "./systems/InputSystem";
+import { SurvivorsTelemetrySystem } from "./systems/SurvivorsTelemetrySystem";
 import type { StateListener } from "./types";
 
 export type SandboxEnemyKind = "melee" | "ranged" | "flying" | "boss";
@@ -81,6 +82,7 @@ export class Game {
     sys.multiplayer = new MultiplayerSystem(ctx, sys);
     sys.input = new InputSystem(ctx, sys);
     sys.hud = new HudSystem(ctx, sys);
+    sys.telemetry = new SurvivorsTelemetrySystem(ctx, sys);
     sys.gameOver = new GameOverSystem(ctx, sys);
   }
 
@@ -164,6 +166,14 @@ export class Game {
 
   resumeFromPauseWithoutCapture() {
     this.sys.input.resumeFromPauseWithoutCapture();
+  }
+
+  suspendForCinematic() {
+    this.sys.input.suspendForCinematic();
+  }
+
+  resumeFromCinematic() {
+    this.sys.input.resumeFromCinematic();
   }
 
   async startCampaign(startMapId?: string): Promise<void> {
@@ -478,14 +488,15 @@ export class Game {
     cancelAnimationFrame(this.ctx.raf);
 
     this.sys.multiplayer.leaveMultiplayer(false);
+    this.sys.telemetry?.endRun("abandoned");
     this.sys.input.removeListeners();
 
     this.ctx.rig.dispose();
 
     for (const enemy of this.ctx.enemies) enemy.dispose();
     this.ctx.scene.traverse((obj) => {
-      if (obj instanceof THREE.Mesh) {
-        obj.geometry.dispose();
+      if (obj instanceof THREE.Mesh || obj instanceof THREE.Sprite) {
+        if (obj instanceof THREE.Mesh) obj.geometry.dispose();
         const mat = obj.material;
         if (Array.isArray(mat)) {
           mat.forEach((m) => {

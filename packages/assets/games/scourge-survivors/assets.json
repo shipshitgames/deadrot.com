@@ -441,6 +441,242 @@
         "scope": "Scourge Survivors runtime"
       }
     },
+    "weapon-pistol-dual": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/dual/pistol-dual-tiers.webp",
+      "dimensions": [
+        2175,
+        724
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.564,
+        0.94
+      ],
+      "weapon": {
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "muzzle": [
+          -0.15,
+          0.25,
+          -0.1
+        ],
+        "muzzles": {
+          "left": [
+            -0.15,
+            0.25,
+            -0.1
+          ],
+          "right": [
+            0.15,
+            0.25,
+            -0.1
+          ]
+        },
+        "flashScale": 0.24
+      },
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; deterministic alpha/WebP promotion",
+        "plan": "Codex reference-anchored dual-wield redraw from the approved Pyre pistol tier sheet",
+        "date": "2026-07-17",
+        "kind": "purpose-built dual-wield first-person tier sheet",
+        "scope": "Scourge Survivors dual-weapon runtime"
+      }
+    },
+    "weapon-smg-dual": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/dual/smg-dual-tiers.webp",
+      "dimensions": [
+        2175,
+        724
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.582,
+        0.97
+      ],
+      "weapon": {
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "muzzle": [
+          -0.16,
+          0.23,
+          -0.1
+        ],
+        "muzzles": {
+          "left": [
+            -0.16,
+            0.23,
+            -0.1
+          ],
+          "right": [
+            0.16,
+            0.23,
+            -0.1
+          ]
+        },
+        "flashScale": 0.2
+      },
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; deterministic alpha/WebP promotion",
+        "plan": "Codex reference-anchored dual-wield redraw from the approved Pyre SMG tier sheet",
+        "date": "2026-07-17",
+        "kind": "purpose-built dual-wield first-person tier sheet",
+        "scope": "Scourge Survivors dual-weapon runtime"
+      }
+    },
+    "weapon-shotgun-dual": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/dual/shotgun-dual-tiers.webp",
+      "dimensions": [
+        2175,
+        724
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.618,
+        1.03
+      ],
+      "weapon": {
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "muzzle": [
+          -0.14,
+          0.25,
+          -0.1
+        ],
+        "muzzles": {
+          "left": [
+            -0.14,
+            0.25,
+            -0.1
+          ],
+          "right": [
+            0.14,
+            0.25,
+            -0.1
+          ]
+        },
+        "flashScale": 0.42
+      },
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; deterministic alpha/WebP promotion",
+        "plan": "Codex reference-anchored dual-wield redraw from the approved Pyre shotgun tier sheet",
+        "date": "2026-07-17",
+        "kind": "purpose-built dual-wield first-person tier sheet",
+        "scope": "Scourge Survivors dual-weapon runtime"
+      }
+    },
+    "weapon-sniper-dual": {
+      "type": "sprite",
+      "path": "games/scourge-survivors/weapons/pyre/dual/sniper-dual-tiers.webp",
+      "dimensions": [
+        2175,
+        724
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filter": "nearest",
+      "scale": [
+        0.6,
+        1
+      ],
+      "weapon": {
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "muzzle": [
+          -0.13,
+          0.31,
+          -0.1
+        ],
+        "muzzles": {
+          "left": [
+            -0.13,
+            0.31,
+            -0.1
+          ],
+          "right": [
+            0.13,
+            0.31,
+            -0.1
+          ]
+        },
+        "flashScale": 0.32
+      },
+      "tierSheet": {
+        "columns": 5,
+        "tiers": [
+          "base",
+          "tier-2",
+          "tier-3",
+          "tier-4",
+          "evolved"
+        ]
+      },
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; deterministic alpha/WebP promotion",
+        "plan": "Codex reference-anchored dual-wield redraw from the approved Pyre sniper tier sheet",
+        "date": "2026-07-17",
+        "kind": "purpose-built dual-wield first-person tier sheet",
+        "scope": "Scourge Survivors dual-weapon runtime"
+      }
+    },
     "muzzle-flash-pyre": {
       "type": "sprite",
       "path": "games/scourge-survivors/fx/pyre/muzzle-flash.webp",
@@ -1559,10 +1795,10 @@
         11.5
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling floor texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific floor texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1580,10 +1816,10 @@
         1
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling wall texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific wall texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1601,10 +1837,10 @@
         1
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling block texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific block texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1622,10 +1858,10 @@
         3
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling column texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific column texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1664,10 +1900,10 @@
         11.5
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling floor texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific floor texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1685,10 +1921,10 @@
         1
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling wall texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific wall texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1706,10 +1942,10 @@
         1
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling block texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific block texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1727,10 +1963,10 @@
         3
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling column texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific column texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1769,10 +2005,10 @@
         11.5
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling floor texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific floor texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1790,10 +2026,10 @@
         1
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling wall texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific wall texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1811,10 +2047,10 @@
         1
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling block texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific block texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1832,10 +2068,10 @@
         3
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling column texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific column texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1874,10 +2110,10 @@
         11.5
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling floor texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific floor texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1895,10 +2131,10 @@
         1
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling wall texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific wall texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1916,10 +2152,10 @@
         1
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling block texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific block texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -1937,10 +2173,10 @@
         3
       ],
       "license": {
-        "tool": "procedural texture generator",
+        "tool": "deterministic comic-ink texture generator + cwebp lossless",
         "plan": "Codex local deterministic generation",
-        "date": "2026-06-06",
-        "kind": "generated map-specific tiling column texture",
+        "date": "2026-07-16",
+        "kind": "generated seamless comic-ink map-specific column texture",
         "scope": "Scourge Survivors runtime"
       }
     },
@@ -2254,6 +2490,279 @@
         "kind": "codex card illustration",
         "scope": "Scourge Survivors runtime UI"
       }
+    },
+    "ui-bonus-icon-orbit": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/orbit.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-bolt": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/bolt.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-nova": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/nova.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-fire": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/fire.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-battery": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/battery.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-lightning": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/lightning.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-trident": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/trident.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-target": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/target.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-boot": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/boot.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-heart": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/heart.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-medic-cross": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/medic-cross.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-armor": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/armor.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-shield": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/shield.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-spikes": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/spikes.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-bloodtap": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/bloodtap.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-bastion": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/bastion.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-dodge": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/dodge.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-grace": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/grace.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-magnet": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/magnet.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-chart": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/chart.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
+    },
+    "ui-bonus-icon-gold": {
+      "type": "ui",
+      "path": "games/scourge-survivors/ui/icons/comic/gold.webp",
+      "role": "bonus-icon",
+      "dimensions": [128, 128],
+      "license": {
+        "tool": "gpt-image-2 via Codex built-in image_gen; Sharp chroma cleanup and lossless WebP",
+        "plan": "Codex built-in",
+        "date": "2026-07-17",
+        "kind": "comic/cel Pyre upgrade icon",
+        "scope": "Scourge Survivors runtime UI"
+      }
     }
   },
   "runtime": {
@@ -2331,15 +2840,18 @@
     "weapons": {
       "pistol": {
         "sprite": "weapon-pistol",
-        "lootSprite": "weapon-pistol-loot"
+        "lootSprite": "weapon-pistol-loot",
+        "dualSprite": "weapon-pistol-dual"
       },
       "smg": {
         "sprite": "weapon-smg",
-        "lootSprite": "weapon-smg-loot"
+        "lootSprite": "weapon-smg-loot",
+        "dualSprite": "weapon-smg-dual"
       },
       "shotgun": {
         "sprite": "weapon-shotgun",
-        "lootSprite": "weapon-shotgun-loot"
+        "lootSprite": "weapon-shotgun-loot",
+        "dualSprite": "weapon-shotgun-dual"
       },
       "cannon": {
         "sprite": "weapon-cannon",
@@ -2347,7 +2859,8 @@
       },
       "sniper": {
         "sprite": "weapon-sniper",
-        "lootSprite": "weapon-sniper-loot"
+        "lootSprite": "weapon-sniper-loot",
+        "dualSprite": "weapon-sniper-dual"
       }
     },
     "pickups": {
@@ -2402,6 +2915,29 @@
       "cardFleshworks": {
         "asset": "ui-card-fleshworks"
       }
+    },
+    "bonusIcons": {
+      "orbit": { "asset": "ui-bonus-icon-orbit" },
+      "bolt": { "asset": "ui-bonus-icon-bolt" },
+      "nova": { "asset": "ui-bonus-icon-nova" },
+      "fire": { "asset": "ui-bonus-icon-fire" },
+      "battery": { "asset": "ui-bonus-icon-battery" },
+      "lightning": { "asset": "ui-bonus-icon-lightning" },
+      "trident": { "asset": "ui-bonus-icon-trident" },
+      "target": { "asset": "ui-bonus-icon-target" },
+      "boot": { "asset": "ui-bonus-icon-boot" },
+      "heart": { "asset": "ui-bonus-icon-heart" },
+      "medic-cross": { "asset": "ui-bonus-icon-medic-cross" },
+      "armor": { "asset": "ui-bonus-icon-armor" },
+      "shield": { "asset": "ui-bonus-icon-shield" },
+      "spikes": { "asset": "ui-bonus-icon-spikes" },
+      "bloodtap": { "asset": "ui-bonus-icon-bloodtap" },
+      "bastion": { "asset": "ui-bonus-icon-bastion" },
+      "dodge": { "asset": "ui-bonus-icon-dodge" },
+      "grace": { "asset": "ui-bonus-icon-grace" },
+      "magnet": { "asset": "ui-bonus-icon-magnet" },
+      "chart": { "asset": "ui-bonus-icon-chart" },
+      "gold": { "asset": "ui-bonus-icon-gold" }
     }
   }
 }

@@ -38,6 +38,7 @@
     },
     "scourge-survivors": {
       "category": "3d-arena",
+      "maxTotalBytes": 33554432,
       "maxBootResourceRequests": 36,
       "maxBootWebpRequests": 22,
       "maxBootDecodedBodyBytes": 2621440,

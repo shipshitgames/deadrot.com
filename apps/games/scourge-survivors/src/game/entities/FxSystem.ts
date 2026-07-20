@@ -577,6 +577,7 @@ export class FxSystem {
       this.ctx.muzzleLight.intensity = Math.max(0, this.ctx.muzzleLight.intensity - delta * 160);
       if (this.ctx.muzzleTimer <= 0) {
         this.ctx.muzzleFlash.visible = false;
+        this.ctx.dualMuzzleFlash.visible = false;
         this.ctx.muzzleLight.intensity = 0;
       }
     }

@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { CAMPAIGN_ORDER, DEFAULT_MAP_ID, getMap, MAP_PICKER, MAPS, normalizeMapId } from "../../src/game/data/maps";
+import {
+  DEFAULT_MAP_ID,
+  getMap,
+  MAP_PICKER,
+  MAPS,
+  normalizeMapId,
+  SURVIVOR_MAP_ORDER,
+  SURVIVOR_MAPS,
+} from "../../src/game/data/maps";
 import {
   SURVIVOR_RUN_CHAPTERS,
   SURVIVOR_RUN_GOAL_TIME,
@@ -13,8 +21,8 @@ import {
 // (c) run chapters are pure pacing data with no map binding left.
 describe("survivor map select (#276)", () => {
   it("offers every shipped map in the picker, each resolving to itself", () => {
-    expect(MAP_PICKER.map((m) => m.id)).toEqual(CAMPAIGN_ORDER);
-    expect(new Set(MAP_PICKER.map((m) => m.id))).toEqual(new Set(Object.keys(MAPS)));
+    expect(MAP_PICKER.map((m) => m.id)).toEqual(SURVIVOR_MAP_ORDER);
+    expect(new Set(MAP_PICKER.map((m) => m.id))).toEqual(new Set(Object.keys(SURVIVOR_MAPS)));
     for (const meta of MAP_PICKER) {
       expect(getMap(meta.id).id, meta.id).toBe(meta.id);
       expect(meta.name, meta.id).toBeTruthy();
@@ -23,7 +31,7 @@ describe("survivor map select (#276)", () => {
   });
 
   it("normalizes valid stored map ids to themselves", () => {
-    for (const id of CAMPAIGN_ORDER) {
+    for (const id of SURVIVOR_MAP_ORDER) {
       expect(normalizeMapId(id), id).toBe(id);
     }
   });

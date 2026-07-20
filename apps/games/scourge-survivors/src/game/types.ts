@@ -1,5 +1,5 @@
 import type { FloatNumber, HudCore, HudListener } from "@deadrot/game-kit/hud";
-import type { PixelIconId } from "../assets/ui/pixelIcons";
+import type { BonusIconId, PixelIconId } from "../assets/ui/pixelIcons";
 import type { MainWeaponVisualTier } from "./data/survivors";
 
 export type GameStatus =
@@ -15,7 +15,7 @@ export interface UpgradeChoice {
   id: string;
   name: string;
   desc: string;
-  icon: PixelIconId;
+  icon: BonusIconId;
   level: number; // current level (0 if new)
   max: number;
   /** Evolution card — a golden, run-defining transform (id is `evo-<weapon>`). */
@@ -25,7 +25,7 @@ export interface UpgradeChoice {
 export interface BuildEntry {
   id: string;
   name: string;
-  icon: PixelIconId;
+  icon: BonusIconId;
   level: number;
   max: number;
   evolved?: boolean;
