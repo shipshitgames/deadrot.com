@@ -35,7 +35,6 @@ type HudSnapshot = {
 
 type AnimationSample = {
   kind: "boss" | "flying" | "melee" | "ranged";
-  frame: number;
   groupY: number;
   hitbox: {
     bounds: { minX: number; maxX: number; minY: number; maxY: number };
@@ -1029,7 +1028,6 @@ test.describe("dev sandbox smoke", () => {
           scale: { x: number; y: number };
           visible: boolean;
         };
-        spriteAnimationFrame: number;
         spriteAnimationState: string;
         spriteMat: {
           map?: {
@@ -1102,7 +1100,6 @@ test.describe("dev sandbox smoke", () => {
             const image = enemy.spriteMat.map?.image;
             return {
               kind: enemy.isBoss ? "boss" : enemy.flying ? "flying" : enemy.ranged ? "ranged" : "melee",
-              frame: enemy.spriteAnimationFrame,
               groupY: enemy.group.position.y,
               hitbox: hitboxSample(enemy),
               hoverHeight: enemy.hoverHeight,
@@ -1200,7 +1197,8 @@ test.describe("dev sandbox smoke", () => {
       expect(sample.screen.z).toBeGreaterThan(-1);
       expect(sample.screen.z).toBeLessThan(1);
       expect(sample.animation?.source).toBe("atlas");
-      expect(sample.animation?.frame).toBe(sample.frame);
+      expect(sample.animation?.frame).toBeGreaterThanOrEqual(0);
+      expect(sample.animation?.frame).toBeLessThan(6);
       expect(["front", "side", "back"]).toContain(sample.animation?.view);
 
       expect(sample.hitbox.count).toBe(3);
@@ -1237,7 +1235,7 @@ test.describe("dev sandbox smoke", () => {
     for (const kind of ["boss", "flying", "melee", "ranged"] as const) {
       const kindSamples = result.moveSamples.flat().filter((sample) => sample.kind === kind);
       expect(kindSamples.some((sample) => sample.state === "move")).toBe(true);
-      const frames = new Set(kindSamples.map((sample) => sample.frame));
+      const frames = new Set(kindSamples.map((sample) => sample.animation?.frame));
       expect(frames.size).toBeGreaterThan(1);
     }
 
