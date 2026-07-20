@@ -47,6 +47,7 @@ reviewed outside runtime paths under `packages/assets/_archive/`.
 - Plan: Codex built-in.
 - Kind: AI-generated clean comic/cel-ink three-view runtime sprite sheet.
 - Source output: `~/.codex/generated_images/019f6d37-6091-7b10-bee9-e73808d06dd9/exec-e67e84c7-331f-4797-bd72-98eca1efd933.png`.
+- Preserved raw output: `packages/assets/_archive/raw-generator-cache/codex-generated-images/2026-07-16/raw/019f6d37-6091-7b10-bee9-e73808d06dd9/exec-e67e84c7-331f-4797-bd72-98eca1efd933.png` (generated July 16, promoted July 17).
 - Workspace source: `packages/assets/sources/generated/2026-07-17/scourge-survivors/enemies/breach-boss-comic-turnaround-source.png` plus the three keyed cutouts beside it.
 - Final asset: `packages/assets/games/scourge-survivors/enemies/scourge/breach-boss/{front,side,back}.webp`, mirrored into the comic lane, the shared `entities/breach-boss/scourge-survivors.webp` variant, and the boss animation slots.
 - Prompt source: [[Design/Bestiary/Breach-Boss-DESIGN]], [[Bestiary/Bosses/Breach-Boss]], [[Universe/Style-Bible]], [[DESIGN]], and `CANON.md`.

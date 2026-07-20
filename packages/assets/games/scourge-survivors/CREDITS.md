@@ -14,6 +14,7 @@
 - Plan: Codex built-in image generation.
 - Kind: clean comic/cel-ink three-view billboard sprite sheet.
 - Source output: `~/.codex/generated_images/019f6d37-6091-7b10-bee9-e73808d06dd9/exec-e67e84c7-331f-4797-bd72-98eca1efd933.png`.
+- Preserved raw output: `packages/assets/_archive/raw-generator-cache/codex-generated-images/2026-07-16/raw/019f6d37-6091-7b10-bee9-e73808d06dd9/exec-e67e84c7-331f-4797-bd72-98eca1efd933.png` (generated July 16, promoted July 17).
 - Preserved source: `packages/assets/sources/generated/2026-07-17/scourge-survivors/enemies/breach-boss-comic-turnaround-source.png` and keyed front/side/back cutouts.
 - Final assets: `enemies/scourge/breach-boss/{front,side,back}.webp`, the matching `enemies/scourge-comic` views, shared entity preview, split action slots, and the patched default runtime atlas.
 - Post-processing: removed only border-connected green screen pixels, preserved the enclosed toxic-green organs, trimmed and padded each view to `128x180`, and encoded lossless alpha WebP. Current action slots intentionally repeat the static production pose until authored action sheets are available.
