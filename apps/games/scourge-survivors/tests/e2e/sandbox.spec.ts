@@ -36,8 +36,25 @@ type HudSnapshot = {
 type AnimationSample = {
   kind: "boss" | "flying" | "melee" | "ranged";
   frame: number;
+  groupY: number;
+  hitbox: {
+    bounds: { minX: number; maxX: number; minY: number; maxY: number };
+    count: number;
+    parts: string[];
+    spriteIsHitTarget: boolean;
+  };
+  hoverHeight: number;
+  screen: { x: number; y: number; z: number };
   src: string;
   state: string;
+  sprite: {
+    height: number;
+    imageHeight: number;
+    imageWidth: number;
+    positionY: number;
+    visible: boolean;
+    width: number;
+  };
   animation?: {
     entity: string;
     action: string;
@@ -901,29 +918,65 @@ test.describe("dev sandbox smoke", () => {
     await expect.poll(() => snapshot(page).then((state) => state.berserk)).toBe(0);
   });
 
-  test("cycles generated enemy movement and attack frames", async ({ page }) => {
+  test("cycles readable enemy frames with loaded art and aligned hitboxes", async ({ page }, testInfo) => {
+    const consoleErrors: string[] = [];
+    page.on("console", (msg) => {
+      if (msg.type() === "error" && !msg.text().includes("PointerLockControls: Unable to use Pointer Lock API")) {
+        consoleErrors.push(msg.text());
+      }
+    });
+    page.on("pageerror", (error) => consoleErrors.push(String(error)));
+
     await page.goto("/?sandbox=1");
     await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
+    await expect(page.getByTestId("combat-asset-loading")).toHaveCount(0);
 
     const result = await page.evaluate(async () => {
+      type DevVector = {
+        x: number;
+        y: number;
+        z: number;
+        clone: () => DevVector;
+        project: (camera: unknown) => DevVector;
+      };
+      type DevHitMesh = {
+        geometry: {
+          boundingBox: {
+            min: { x: number; y: number };
+            max: { x: number; y: number };
+          } | null;
+          computeBoundingBox: () => void;
+        };
+        position: { x: number; y: number };
+        scale: { x: number; y: number };
+        userData: { part?: string };
+      };
       type DevEnemy = {
         alive: boolean;
         flying: boolean;
         group: {
-          position: {
-            x: number;
-            z: number;
-          };
+          position: DevVector;
         };
+        hitMeshes: DevHitMesh[];
+        hoverHeight: number;
         isBoss: boolean;
         ranged: boolean;
+        sprite: {
+          position: { y: number };
+          scale: { x: number; y: number };
+          visible: boolean;
+        };
         spriteAnimationFrame: number;
         spriteAnimationState: string;
         spriteMat: {
           map?: {
             image?: {
               currentSrc?: string;
+              height?: number;
+              naturalHeight?: number;
+              naturalWidth?: number;
               src?: string;
+              width?: number;
             };
             userData?: {
               scourgeAnimation?: AnimationSample["animation"];
@@ -944,6 +997,7 @@ test.describe("dev sandbox smoke", () => {
               z: number;
             };
           };
+          camera: unknown;
           enemies: DevEnemy[];
           status: string;
         };
@@ -951,16 +1005,58 @@ test.describe("dev sandbox smoke", () => {
 
       const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
       const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+      const hitboxSample = (enemy: DevEnemy) => {
+        const bounds = {
+          minX: Number.POSITIVE_INFINITY,
+          maxX: Number.NEGATIVE_INFINITY,
+          minY: Number.POSITIVE_INFINITY,
+          maxY: Number.NEGATIVE_INFINITY,
+        };
+        for (const mesh of enemy.hitMeshes) {
+          mesh.geometry.computeBoundingBox();
+          const box = mesh.geometry.boundingBox;
+          if (!box) continue;
+          const x0 = mesh.position.x + box.min.x * mesh.scale.x;
+          const x1 = mesh.position.x + box.max.x * mesh.scale.x;
+          const y0 = mesh.position.y + box.min.y * mesh.scale.y;
+          const y1 = mesh.position.y + box.max.y * mesh.scale.y;
+          bounds.minX = Math.min(bounds.minX, x0, x1);
+          bounds.maxX = Math.max(bounds.maxX, x0, x1);
+          bounds.minY = Math.min(bounds.minY, y0, y1);
+          bounds.maxY = Math.max(bounds.maxY, y0, y1);
+        }
+        return {
+          bounds,
+          count: enemy.hitMeshes.length,
+          parts: enemy.hitMeshes.map((mesh) => mesh.userData.part ?? ""),
+          spriteIsHitTarget: enemy.hitMeshes.includes(enemy.sprite as unknown as DevHitMesh),
+        };
+      };
       const sample = (): AnimationSample[] =>
         game.ctx.enemies
           .filter((enemy) => enemy.alive)
-          .map((enemy) => ({
-            kind: enemy.isBoss ? "boss" : enemy.flying ? "flying" : enemy.ranged ? "ranged" : "melee",
-            frame: enemy.spriteAnimationFrame,
-            src: enemy.spriteMat.map?.image?.currentSrc || enemy.spriteMat.map?.image?.src || "",
-            state: enemy.spriteAnimationState,
-            animation: enemy.spriteMat.map?.userData?.scourgeAnimation,
-          }))
+          .map((enemy) => {
+            const image = enemy.spriteMat.map?.image;
+            return {
+              kind: enemy.isBoss ? "boss" : enemy.flying ? "flying" : enemy.ranged ? "ranged" : "melee",
+              frame: enemy.spriteAnimationFrame,
+              groupY: enemy.group.position.y,
+              hitbox: hitboxSample(enemy),
+              hoverHeight: enemy.hoverHeight,
+              screen: enemy.group.position.clone().project(game.ctx.camera),
+              src: image?.currentSrc || image?.src || "",
+              state: enemy.spriteAnimationState,
+              sprite: {
+                height: Math.abs(enemy.sprite.scale.y),
+                imageHeight: image?.naturalHeight || image?.height || 0,
+                imageWidth: image?.naturalWidth || image?.width || 0,
+                positionY: enemy.sprite.position.y,
+                visible: enemy.sprite.visible,
+                width: Math.abs(enemy.sprite.scale.x),
+              },
+              animation: enemy.spriteMat.map?.userData?.scourgeAnimation,
+            };
+          })
           .sort((a, b) => a.kind.localeCompare(b.kind));
 
       await game.startSandbox();
@@ -969,12 +1065,22 @@ test.describe("dev sandbox smoke", () => {
       for (const kind of ["melee", "ranged", "flying", "boss"] as const) {
         game.spawnSandboxEnemy(kind, 1);
       }
-      game.ctx.enemies
-        .filter((enemy) => enemy.alive)
-        .forEach((enemy, index) => {
-          enemy.group.position.x = game.ctx.body.position.x + (index - 1.5) * 7;
-          enemy.group.position.z = game.ctx.body.position.z - 30;
-        });
+      const enemies = game.ctx.enemies.filter((enemy) => enemy.alive);
+      const forwardAnchor = enemies.find((enemy) => !enemy.isBoss) ?? enemies[0];
+      if (!forwardAnchor) throw new Error("Sandbox lineup did not spawn an enemy");
+      const forwardX = forwardAnchor.group.position.x - game.ctx.body.position.x;
+      const forwardZ = forwardAnchor.group.position.z - game.ctx.body.position.z;
+      const forwardLength = Math.hypot(forwardX, forwardZ);
+      if (forwardLength < 0.001) throw new Error("Sandbox lineup has no camera-forward vector");
+      const unitForwardX = forwardX / forwardLength;
+      const unitForwardZ = forwardZ / forwardLength;
+      const rightX = unitForwardZ;
+      const rightZ = -unitForwardX;
+      enemies.forEach((enemy, index) => {
+        const offset = (index - (enemies.length - 1) / 2) * 4.5;
+        enemy.group.position.x = game.ctx.body.position.x + unitForwardX * 18 + rightX * offset;
+        enemy.group.position.z = game.ctx.body.position.z + unitForwardZ * 18 + rightZ * offset;
+      });
       game.ctx.status = "playing";
 
       await wait(240);
@@ -990,8 +1096,28 @@ test.describe("dev sandbox smoke", () => {
       }
       await wait(320);
       const attacking = sample();
+      game.ctx.status = "paused";
 
       return { moveA, moveB, moveSamples, attacking };
+    });
+
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) => {
+          const root = document.querySelector(".game-root");
+          for (const child of Array.from(root?.children ?? [])) {
+            if (!(child instanceof HTMLCanvasElement)) {
+              (child as HTMLElement).style.visibility = "hidden";
+            }
+          }
+          window.requestAnimationFrame(() => resolve());
+        }),
+    );
+    const lineupScreenshot = await page.getByTestId("game-canvas").screenshot();
+    expect(lineupScreenshot.byteLength).toBeGreaterThan(20_000);
+    await testInfo.attach("scourge-enemy-sandbox-lineup", {
+      body: lineupScreenshot,
+      contentType: "image/png",
     });
 
     expect(result.moveA.map((sample) => sample.kind)).toEqual(["boss", "flying", "melee", "ranged"]);
@@ -999,10 +1125,45 @@ test.describe("dev sandbox smoke", () => {
 
     for (const sample of result.moveB) {
       expect(sample.src).toContain("/animations/scourge/scourge.atlas0.webp");
+      expect(sample.sprite.visible).toBe(true);
+      expect(sample.sprite.imageWidth).toBeGreaterThan(0);
+      expect(sample.sprite.imageHeight).toBeGreaterThan(0);
+      expect(sample.sprite.width).toBeGreaterThan(0);
+      expect(sample.sprite.height).toBeGreaterThan(0);
+      expect(sample.screen.x).toBeGreaterThan(-0.95);
+      expect(sample.screen.x).toBeLessThan(0.95);
+      expect(sample.screen.y).toBeGreaterThan(-0.95);
+      expect(sample.screen.y).toBeLessThan(0.95);
+      expect(sample.screen.z).toBeGreaterThan(-1);
+      expect(sample.screen.z).toBeLessThan(1);
       expect(sample.animation?.source).toBe("atlas");
       expect(sample.animation?.frame).toBe(sample.frame);
       expect(["front", "side", "back"]).toContain(sample.animation?.view);
+
+      expect(sample.hitbox.count).toBe(3);
+      expect(sample.hitbox.parts).toEqual(["body", "body", "head"]);
+      expect(sample.hitbox.spriteIsHitTarget).toBe(false);
+      const spriteLeft = -sample.sprite.width / 2;
+      const spriteRight = sample.sprite.width / 2;
+      const spriteBottom = sample.sprite.positionY;
+      const spriteTop = sample.sprite.positionY + sample.sprite.height;
+      expect(sample.hitbox.bounds.minX).toBeGreaterThanOrEqual(spriteLeft - 0.05);
+      expect(sample.hitbox.bounds.maxX).toBeLessThanOrEqual(spriteRight + 0.05);
+      expect(sample.hitbox.bounds.minY).toBeGreaterThanOrEqual(spriteBottom - 0.05);
+      expect(sample.hitbox.bounds.maxY).toBeLessThanOrEqual(spriteTop + 0.05);
     }
+
+    const samplesByKind = Object.fromEntries(result.moveB.map((sample) => [sample.kind, sample])) as Record<
+      AnimationSample["kind"],
+      AnimationSample
+    >;
+    expect(samplesByKind.flying.hoverHeight).toBeGreaterThan(1.5);
+    expect(samplesByKind.flying.groupY).toBeGreaterThan(1.5);
+    for (const kind of ["boss", "melee", "ranged"] as const) {
+      expect(samplesByKind[kind].hoverHeight).toBe(0);
+      expect(samplesByKind[kind].groupY).toBeLessThan(0.25);
+    }
+    expect(samplesByKind.boss.sprite.height).toBeGreaterThan(samplesByKind.melee.sprite.height);
 
     expect(Object.fromEntries(result.moveB.map((sample) => [sample.kind, sample.animation?.entity]))).toMatchObject({
       boss: "breach-boss",
@@ -1043,6 +1204,7 @@ test.describe("dev sandbox smoke", () => {
     expect(result.attacking.every((sample) => sample.src.includes("/animations/scourge/scourge.atlas0.webp"))).toBe(
       true,
     );
+    expect(consoleErrors).toEqual([]);
   });
 
   test("uses death animation frames and sprite gibs for enemy kills", async ({ page }) => {
