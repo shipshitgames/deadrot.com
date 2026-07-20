@@ -168,7 +168,7 @@ test("cleanMagentaFringe remats purple alpha and opaque magenta edges without ch
   assert.deepEqual(data, once);
 });
 
-test("nonMagentaReplacementColorNear widens past a magenta average", () => {
+test("nonMagentaReplacementColorNear rejects a magenta average and falls back to subject color", () => {
   const data = image(
     5,
     5,
@@ -181,7 +181,7 @@ test("nonMagentaReplacementColorNear widens past a magenta average", () => {
   set(3, 2, [28, 35, 205, 255]);
   set(2, 0, [235, 220, 190, 255]);
 
-  assert.deepEqual(nonMagentaReplacementColorNear(data, 5, 5, 2, 2), [156, 97, 141]);
+  assert.deepEqual(nonMagentaReplacementColorNear(data, 5, 5, 2, 2), [205, 35, 28]);
 });
 
 test("nonMagentaReplacementColorNear falls back to the closest subject color when averages stay magenta", () => {
