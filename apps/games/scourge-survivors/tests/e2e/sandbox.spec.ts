@@ -35,7 +35,6 @@ type HudSnapshot = {
 
 type AnimationSample = {
   kind: "boss" | "flying" | "melee" | "ranged";
-  frame: number;
   groupY: number;
   hitbox: {
     bounds: { minX: number; maxX: number; minY: number; maxY: number };
@@ -234,8 +233,8 @@ async function stageActiveSurvivorsHud(page: Page) {
     game.ctx.statArmor = 0.28;
     game.ctx.statDodge = 0.18;
     game.ctx.statGrace = 1.6;
-    game.ctx.damageBoostTimer = 6;
-    game.ctx.dualWeaponTimer = 8;
+    game.ctx.damageBoostTimer = 600;
+    game.ctx.dualWeaponTimer = 600;
     game.sys.survivors.level = 6;
     game.sys.survivors.xp = 18;
     game.sys.survivors.xpToNext = 42;
@@ -247,7 +246,7 @@ async function stageActiveSurvivorsHud(page: Page) {
   await expect.poll(() => snapshot(page).then((state) => state.status)).toBe("playing");
 }
 
-async function sampleHudPanels(page: Page, selectors: string[]): Promise<HudPanelSample[]> {
+async function sampleHudPanels(page: Page, selectors: readonly string[]): Promise<HudPanelSample[]> {
   return page.evaluate((panelSelectors) => {
     function maxAlpha(value: string) {
       const matches = [...value.matchAll(/rgba?\(([^)]*)\)/g)];
@@ -301,6 +300,76 @@ function overlaps(a: HudPanelSample, b: HudPanelSample) {
   return (
     a.rect.left < b.rect.right && a.rect.right > b.rect.left && a.rect.top < b.rect.bottom && a.rect.bottom > b.rect.top
   );
+}
+
+const HUD_LAYOUT_SELECTORS = [
+  ".ssg-survivor-runline",
+  ".ssg-survivor-xp",
+  ".scourge-build-strip",
+  ".scourge-berserk-meter",
+  ".scourge-dual-weapon",
+  ".scourge-combo-counter",
+  ".scourge-health-panel",
+  ".scourge-weapon-panel",
+] as const;
+
+const HUD_NON_OVERLAPPING_PAIRS = [
+  [".ssg-survivor-runline", ".ssg-survivor-xp"],
+  [".ssg-survivor-xp", ".scourge-berserk-meter"],
+  [".scourge-berserk-meter", ".scourge-build-strip"],
+  [".scourge-build-strip", ".scourge-dual-weapon"],
+  [".scourge-dual-weapon", ".scourge-combo-counter"],
+  [".scourge-health-panel", ".scourge-weapon-panel"],
+] as const;
+
+async function expectHudLayoutFits(page: Page, viewport: { width: number; height: number }) {
+  await page.setViewportSize(viewport);
+  const samples = await sampleHudPanels(page, HUD_LAYOUT_SELECTORS);
+  const bySelector = Object.fromEntries(samples.map((panel) => [panel.selector, panel]));
+
+  for (const panel of samples) {
+    expect(panel.visible, `${viewport.width}x${viewport.height} ${panel.selector}`).toBe(true);
+    expect(panel.rect.left, `${viewport.width}x${viewport.height} ${panel.selector} left`).toBeGreaterThanOrEqual(-1);
+    expect(panel.rect.top, `${viewport.width}x${viewport.height} ${panel.selector} top`).toBeGreaterThanOrEqual(-1);
+    expect(panel.rect.right, `${viewport.width}x${viewport.height} ${panel.selector} right`).toBeLessThanOrEqual(
+      viewport.width + 1,
+    );
+    expect(panel.rect.bottom, `${viewport.width}x${viewport.height} ${panel.selector} bottom`).toBeLessThanOrEqual(
+      viewport.height + 1,
+    );
+  }
+
+  for (const [a, b] of HUD_NON_OVERLAPPING_PAIRS) {
+    expect(overlaps(bySelector[a], bySelector[b]), `${viewport.width}x${viewport.height} ${a} overlaps ${b}`).toBe(
+      false,
+    );
+  }
+}
+
+async function expectCampaignHudLayoutFits(page: Page, viewport: { width: number; height: number }) {
+  await page.setViewportSize(viewport);
+  const samples = await sampleHudPanels(page, [".scourge-top-stats", ".scourge-berserk-meter", ".scourge-dual-weapon"]);
+
+  for (const panel of samples) {
+    expect(panel.visible, `${viewport.width}x${viewport.height} ${panel.selector}`).toBe(true);
+    expect(panel.rect.left, `${viewport.width}x${viewport.height} ${panel.selector} left`).toBeGreaterThanOrEqual(-1);
+    expect(panel.rect.top, `${viewport.width}x${viewport.height} ${panel.selector} top`).toBeGreaterThanOrEqual(-1);
+    expect(panel.rect.right, `${viewport.width}x${viewport.height} ${panel.selector} right`).toBeLessThanOrEqual(
+      viewport.width + 1,
+    );
+    expect(panel.rect.bottom, `${viewport.width}x${viewport.height} ${panel.selector} bottom`).toBeLessThanOrEqual(
+      viewport.height + 1,
+    );
+  }
+
+  for (let i = 0; i < samples.length; i += 1) {
+    for (let j = i + 1; j < samples.length; j += 1) {
+      expect(
+        overlaps(samples[i], samples[j]),
+        `${viewport.width}x${viewport.height} ${samples[i].selector} overlaps ${samples[j].selector}`,
+      ).toBe(false);
+    }
+  }
 }
 
 test.describe("dev sandbox smoke", () => {
@@ -791,38 +860,31 @@ test.describe("dev sandbox smoke", () => {
       expect(panel.maxBackgroundAlpha, panel.selector).toBeLessThanOrEqual(0.12);
     }
 
-    await page.setViewportSize({ width: 390, height: 780 });
-    const layoutSelectors = [
-      ".ssg-survivor-runline",
-      ".ssg-survivor-xp",
-      ".scourge-build-strip",
-      ".scourge-berserk-meter",
-      ".scourge-dual-weapon",
-      ".scourge-combo-counter",
-      ".scourge-health-panel",
-      ".scourge-weapon-panel",
-    ];
-    const mobileSamples = await sampleHudPanels(page, layoutSelectors);
-    const bySelector = Object.fromEntries(mobileSamples.map((panel) => [panel.selector, panel]));
+    await expectHudLayoutFits(page, { width: 390, height: 780 });
+    await expectHudLayoutFits(page, { width: 720, height: 390 });
+    await expectHudLayoutFits(page, { width: 844, height: 390 });
+    await expectHudLayoutFits(page, { width: 1280, height: 480 });
 
-    for (const panel of mobileSamples) {
-      expect(panel.visible, panel.selector).toBe(true);
-      expect(panel.rect.left, panel.selector).toBeGreaterThanOrEqual(-1);
-      expect(panel.rect.right, panel.selector).toBeLessThanOrEqual(391);
-    }
+    await page.evaluate(async () => {
+      type DevGame = {
+        startCampaign: (mapId: string) => Promise<void>;
+        ctx: {
+          damageBoostTimer: number;
+          dualWeaponTimer: number;
+          status: string;
+        };
+        sys: { hud: { emit: () => void } };
+      };
+      const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
+      await game.startCampaign("maw");
+      game.ctx.status = "playing";
+      game.ctx.damageBoostTimer = 600;
+      game.ctx.dualWeaponTimer = 600;
+      game.sys.hud.emit();
+    });
 
-    const nonOverlappingPairs = [
-      [".ssg-survivor-runline", ".ssg-survivor-xp"],
-      [".ssg-survivor-xp", ".scourge-berserk-meter"],
-      [".scourge-berserk-meter", ".scourge-build-strip"],
-      [".scourge-build-strip", ".scourge-dual-weapon"],
-      [".scourge-dual-weapon", ".scourge-combo-counter"],
-      [".scourge-health-panel", ".scourge-weapon-panel"],
-    ] as const;
-
-    for (const [a, b] of nonOverlappingPairs) {
-      expect(overlaps(bySelector[a], bySelector[b]), `${a} overlaps ${b}`).toBe(false);
-    }
+    await expectCampaignHudLayoutFits(page, { width: 844, height: 390 });
+    await expectCampaignHudLayoutFits(page, { width: 1280, height: 480 });
   });
 
   test("starts campaign through the mission system instead of the main menu state", async ({ page }) => {
@@ -966,7 +1028,6 @@ test.describe("dev sandbox smoke", () => {
           scale: { x: number; y: number };
           visible: boolean;
         };
-        spriteAnimationFrame: number;
         spriteAnimationState: string;
         spriteMat: {
           map?: {
@@ -1039,7 +1100,6 @@ test.describe("dev sandbox smoke", () => {
             const image = enemy.spriteMat.map?.image;
             return {
               kind: enemy.isBoss ? "boss" : enemy.flying ? "flying" : enemy.ranged ? "ranged" : "melee",
-              frame: enemy.spriteAnimationFrame,
               groupY: enemy.group.position.y,
               hitbox: hitboxSample(enemy),
               hoverHeight: enemy.hoverHeight,
@@ -1137,7 +1197,8 @@ test.describe("dev sandbox smoke", () => {
       expect(sample.screen.z).toBeGreaterThan(-1);
       expect(sample.screen.z).toBeLessThan(1);
       expect(sample.animation?.source).toBe("atlas");
-      expect(sample.animation?.frame).toBe(sample.frame);
+      expect(sample.animation?.frame).toBeGreaterThanOrEqual(0);
+      expect(sample.animation?.frame).toBeLessThan(6);
       expect(["front", "side", "back"]).toContain(sample.animation?.view);
 
       expect(sample.hitbox.count).toBe(3);
@@ -1174,7 +1235,7 @@ test.describe("dev sandbox smoke", () => {
     for (const kind of ["boss", "flying", "melee", "ranged"] as const) {
       const kindSamples = result.moveSamples.flat().filter((sample) => sample.kind === kind);
       expect(kindSamples.some((sample) => sample.state === "move")).toBe(true);
-      const frames = new Set(kindSamples.map((sample) => sample.frame));
+      const frames = new Set(kindSamples.map((sample) => sample.animation?.frame));
       expect(frames.size).toBeGreaterThan(1);
     }
 

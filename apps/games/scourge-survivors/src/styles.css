@@ -1666,6 +1666,79 @@
   }
 }
 
+/* Short landscape play needs a shallower center stack than portrait mobile.
+   Keep the transparent combat lanes above the bottom-corner vitals so the
+   build, bonus, and weapon surfaces never converge over the play field. */
+@media (max-height: 520px) {
+  .game-root .scourge-top-stats {
+    top: 8px;
+    width: min(560px, calc(100vw - 20px));
+    gap: 6px 12px;
+  }
+
+  .game-root .scourge-top-stats .ssg-stat-label {
+    font-size: 8px;
+  }
+
+  .game-root .scourge-top-stats .ssg-stat-value {
+    font-size: 16px;
+  }
+
+  .game-root .scourge-top-stats > div:first-child .ssg-stat-value {
+    font-size: 22px;
+  }
+
+  .game-root .ssg-survivor-runline,
+  .game-root .ssg-survivor-xp {
+    width: min(480px, calc(100vw - 180px));
+  }
+
+  .game-root .ssg-survivor-runline {
+    top: 8px;
+  }
+
+  .game-root .ssg-survivor-xp {
+    top: 36px;
+  }
+
+  .game-root .scourge-berserk-meter {
+    top: 58px;
+    width: min(320px, calc(100vw - 220px));
+    padding: 5px 9px 6px;
+  }
+
+  .game-root:has(.scourge-top-stats) .scourge-berserk-meter {
+    top: 92px;
+  }
+
+  .game-root .scourge-build-strip {
+    top: 58px;
+    width: min(520px, calc(100vw - 180px));
+    max-width: calc(100vw - 180px);
+  }
+
+  .game-root .scourge-build-strip.is-berserk-offset {
+    top: 108px;
+  }
+
+  .game-root .scourge-dual-weapon {
+    top: 88px;
+  }
+
+  .game-root .scourge-dual-weapon.is-berserk-offset {
+    top: 138px;
+  }
+
+  .game-root .scourge-combo-counter {
+    top: 49%;
+  }
+
+  .game-root .scourge-health-panel,
+  .game-root .scourge-weapon-panel {
+    bottom: 8px;
+  }
+}
+
 .game-root .ssg-hud-corner {
   border: 0;
   border-radius: 0;
