@@ -4,7 +4,7 @@
 
 ## Related issue
 
-<!-- Use `Closes #123` when this PR fully resolves tracked work. Use `Refs #123` for context only. If no tracking issue exists, write `No-Issue` and explain why. Repositories may require a closing keyword for feat/fix PRs. -->
+<!-- Use `Closes #123` when this PR fully resolves tracked work. Use `Refs #123` for context only. If no tracking issue exists, write `No-Issue` and explain why. Repositories may require a closing keyword for feat/fix PRs. A closing keyword takes effect only when the PR merges into the repository's default branch. -->
 
 ## Scope
 

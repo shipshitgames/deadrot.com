@@ -311,3 +311,7 @@ export * as scourgeSurvivors from "./scourge-survivors";
 // Canonical asset index resolver (deadrot.com#343): local path + CDN URL
 // resolution over the generated `assets.index.json`.
 export * from "./asset-index";
+
+// 3D model manifest resolver (deadrot.com#493): resolve LFS-tracked GLB/glTF
+// masters by stable id, the same way sprites resolve.
+export * from "./models";

@@ -1,0 +1,7 @@
+# Git LFS — 3D model masters and their binary buffers (deadrot.com#493).
+# The scourge-host Hunyuan3D-3.1 GLBs (~45MB each) and future 3D assets are
+# version-controlled through LFS so the git history stays lean. See
+# packages/assets/README.md ("3D model assets") and packages/assets/models/.
+*.glb  filter=lfs diff=lfs merge=lfs -text
+*.gltf filter=lfs diff=lfs merge=lfs -text
+*.bin  filter=lfs diff=lfs merge=lfs -text

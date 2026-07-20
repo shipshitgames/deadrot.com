@@ -85,6 +85,8 @@ export const ARENA_CINEMATICS: Record<string, ArenaCinematicAssignment> = {
   perdition: { ...DEFAULT_ASSIGNMENT, site: "Perdition" },
   "foundry-wards": { ...DEFAULT_ASSIGNMENT, site: "Foundry Wards" },
   "breach-primus": { ...DEFAULT_ASSIGNMENT, site: "Breach Primus" },
+  "reactor-verge": { ...DEFAULT_ASSIGNMENT, site: "Reactor Verge" },
+  "choir-node": { ...DEFAULT_ASSIGNMENT, site: "Choir Node" },
 };
 
 export function resolveCinematicBeat(id: string | null | undefined): CinematicBeat | null {
