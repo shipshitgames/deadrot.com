@@ -1,0 +1,47 @@
+{
+  "$schema": "./models.manifest.schema.json",
+  "version": "1",
+  "note": "Curated 3D model manifest (deadrot.com#493). GLB/glTF masters live under models/<entity>/ and are Git LFS-tracked. Hand-edited; validated by scripts/check-models.mjs via `assets:check`. Resolve entries with the typed front door in src/models.ts.",
+  "cdnBase": "https://assets.deadrot.com",
+  "models": [
+    {
+      "id": "scourge-host",
+      "entity": "scourge-host",
+      "name": "Scourge Host",
+      "faction": "scourge",
+      "format": "glb",
+      "pbr": true,
+      "faceCount": 120000,
+      "source": {
+        "provider": "replicate",
+        "model": "tencent/hunyuan-3d-3.1",
+        "predictionId": "8tx0svhhahrmt0cz8xhvpf3nhc",
+        "generatedAt": "2026-07-09",
+        "url": "https://replicate.com/p/8tx0svhhahrmt0cz8xhvpf3nhc"
+      },
+      "license": "Deadrot-proprietary universe asset. Generated via Replicate tencent/hunyuan-3d-3.1 from a Deadrot-owned scourge-host concept reference; internal use within shipshitgames/deadrot.com only.",
+      "provenance": "Hunyuan3D-3.1 image-to-3D (PBR, 120k faces) from the scourge-host front reference (prediction 8tx0svhhahrmt0cz8xhvpf3nhc, 2026-07-09). The animated variant is derived from the static master by @shipshitgames/assetgen animate-root-glb, which adds procedural idle/lunge translation+scale channels.",
+      "defaultVariant": "static",
+      "variants": [
+        {
+          "key": "static",
+          "pose": "static",
+          "optimization": "master",
+          "path": "models/scourge-host/scourge-host.glb",
+          "bytes": 46464888,
+          "sha256": "378a8662d9584937ecbea4b1b768ebede15d31816e208309d7842793ccca596a"
+        },
+        {
+          "key": "animated",
+          "pose": "animated",
+          "optimization": "master",
+          "path": "models/scourge-host/scourge-host-animated.glb",
+          "bytes": 46466028,
+          "sha256": "34bc52a3d723bedf626522c92dc79a100ac518735fa394da0f3a9ae1a12f1179",
+          "derivedFrom": "static",
+          "tool": "@shipshitgames/assetgen animate-root-glb"
+        }
+      ]
+    }
+  ]
+}
