@@ -1670,6 +1670,24 @@
    Keep the transparent combat lanes above the bottom-corner vitals so the
    build, bonus, and weapon surfaces never converge over the play field. */
 @media (max-height: 520px) {
+  .game-root .scourge-top-stats {
+    top: 8px;
+    width: min(560px, calc(100vw - 20px));
+    gap: 6px 12px;
+  }
+
+  .game-root .scourge-top-stats .ssg-stat-label {
+    font-size: 8px;
+  }
+
+  .game-root .scourge-top-stats .ssg-stat-value {
+    font-size: 16px;
+  }
+
+  .game-root .scourge-top-stats > div:first-child .ssg-stat-value {
+    font-size: 22px;
+  }
+
   .game-root .ssg-survivor-runline,
   .game-root .ssg-survivor-xp {
     width: min(480px, calc(100vw - 180px));

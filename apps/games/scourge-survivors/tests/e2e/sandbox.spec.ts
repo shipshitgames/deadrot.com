@@ -234,8 +234,8 @@ async function stageActiveSurvivorsHud(page: Page) {
     game.ctx.statArmor = 0.28;
     game.ctx.statDodge = 0.18;
     game.ctx.statGrace = 1.6;
-    game.ctx.damageBoostTimer = 6;
-    game.ctx.dualWeaponTimer = 8;
+    game.ctx.damageBoostTimer = 600;
+    game.ctx.dualWeaponTimer = 600;
     game.sys.survivors.level = 6;
     game.sys.survivors.xp = 18;
     game.sys.survivors.xpToNext = 42;
@@ -344,6 +344,32 @@ async function expectHudLayoutFits(page: Page, viewport: { width: number; height
     expect(overlaps(bySelector[a], bySelector[b]), `${viewport.width}x${viewport.height} ${a} overlaps ${b}`).toBe(
       false,
     );
+  }
+}
+
+async function expectCampaignHudLayoutFits(page: Page, viewport: { width: number; height: number }) {
+  await page.setViewportSize(viewport);
+  const samples = await sampleHudPanels(page, [".scourge-top-stats", ".scourge-berserk-meter", ".scourge-dual-weapon"]);
+
+  for (const panel of samples) {
+    expect(panel.visible, `${viewport.width}x${viewport.height} ${panel.selector}`).toBe(true);
+    expect(panel.rect.left, `${viewport.width}x${viewport.height} ${panel.selector} left`).toBeGreaterThanOrEqual(-1);
+    expect(panel.rect.top, `${viewport.width}x${viewport.height} ${panel.selector} top`).toBeGreaterThanOrEqual(-1);
+    expect(panel.rect.right, `${viewport.width}x${viewport.height} ${panel.selector} right`).toBeLessThanOrEqual(
+      viewport.width + 1,
+    );
+    expect(panel.rect.bottom, `${viewport.width}x${viewport.height} ${panel.selector} bottom`).toBeLessThanOrEqual(
+      viewport.height + 1,
+    );
+  }
+
+  for (let i = 0; i < samples.length; i += 1) {
+    for (let j = i + 1; j < samples.length; j += 1) {
+      expect(
+        overlaps(samples[i], samples[j]),
+        `${viewport.width}x${viewport.height} ${samples[i].selector} overlaps ${samples[j].selector}`,
+      ).toBe(false);
+    }
   }
 }
 
@@ -839,6 +865,27 @@ test.describe("dev sandbox smoke", () => {
     await expectHudLayoutFits(page, { width: 720, height: 390 });
     await expectHudLayoutFits(page, { width: 844, height: 390 });
     await expectHudLayoutFits(page, { width: 1280, height: 480 });
+
+    await page.evaluate(async () => {
+      type DevGame = {
+        startCampaign: (mapId: string) => Promise<void>;
+        ctx: {
+          damageBoostTimer: number;
+          dualWeaponTimer: number;
+          status: string;
+        };
+        sys: { hud: { emit: () => void } };
+      };
+      const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
+      await game.startCampaign("maw");
+      game.ctx.status = "playing";
+      game.ctx.damageBoostTimer = 600;
+      game.ctx.dualWeaponTimer = 600;
+      game.sys.hud.emit();
+    });
+
+    await expectCampaignHudLayoutFits(page, { width: 844, height: 390 });
+    await expectCampaignHudLayoutFits(page, { width: 1280, height: 480 });
   });
 
   test("starts campaign through the mission system instead of the main menu state", async ({ page }) => {
