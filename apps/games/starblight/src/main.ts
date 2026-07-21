@@ -4,7 +4,7 @@ import "./styles.css";
 import { createElement } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
-import { Game } from "./game/Game";
+import { Game, type StarblightDevHandle } from "./game/Game";
 import { AppShell } from "./ui/AppShell";
 
 void initDeadrotBrowserTelemetry({ game: "starblight", env: import.meta.env });
@@ -26,13 +26,35 @@ if (!canvas) {
   throw new Error("#scene canvas not found");
 }
 
-const game = new Game(canvas);
+const debugRequested = new URLSearchParams(window.location.search).has("debug");
+const game = new Game(canvas, { devMode: import.meta.env.DEV, profiler: debugRequested });
 game.start();
+
+let removeDebugControls = () => {};
+if (import.meta.env.DEV) {
+  const devHandle = game.createDevHandle();
+  window.__game = devHandle;
+  const onDebugToggle = (event: KeyboardEvent) => {
+    if (event.key === "`" && !event.metaKey && !event.ctrlKey && !event.altKey) devHandle.toggleProfiler();
+  };
+  window.addEventListener("keydown", onDebugToggle);
+  removeDebugControls = () => {
+    window.removeEventListener("keydown", onDebugToggle);
+    delete window.__game;
+  };
+}
 
 // Clean up the loop + listeners on HMR / unload so dev reloads stay tidy.
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
+    removeDebugControls();
     game.dispose();
     root.unmount();
   });
+}
+
+declare global {
+  interface Window {
+    __game?: StarblightDevHandle;
+  }
 }
