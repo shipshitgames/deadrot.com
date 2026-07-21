@@ -9,11 +9,12 @@
 
 import { COURSE, EMBER, RUNNER, WORLD } from "../constants";
 import type { Runner } from "../entities/runner";
-import type { Course } from "../types";
+import type { Course, CourseCheckpoint } from "../types";
 
 export interface StepResult {
   collectedEmbers: number; // count grabbed this step (for juice)
   hitHazard: boolean; // a fresh hazard hit landed this step
+  reachedCheckpoint: CourseCheckpoint | null;
   reachedBeacon: boolean;
   fellInPit: boolean;
 }
@@ -38,6 +39,7 @@ export class Physics {
     const result: StepResult = {
       collectedEmbers: 0,
       hitHazard: false,
+      reachedCheckpoint: null,
       reachedBeacon: false,
       fellInPit: false,
     };
@@ -121,6 +123,14 @@ export class Physics {
         e.collected = true;
         runner.collectEmber(EMBER.speedBonus);
         result.collectedEmbers++;
+      }
+    }
+
+    // --- Racing splits ------------------------------------------------------
+    for (const checkpoint of course.checkpoints) {
+      if (!checkpoint.reached && runner.x >= checkpoint.x) {
+        result.reachedCheckpoint = checkpoint;
+        break;
       }
     }
 
