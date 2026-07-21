@@ -153,7 +153,12 @@ describe("course generation — deterministic & well-formed", () => {
     const c = generateCourse(1337);
     expect(c.checkpoints).toHaveLength(1);
     const checkpoint = c.checkpoints[0];
-    expect(checkpoint).toMatchObject({ id: "junction-split", label: "JUNCTION SPLIT", reached: false, splitTime: null });
+    expect(checkpoint).toMatchObject({
+      id: "junction-split",
+      label: "JUNCTION SPLIT",
+      reached: false,
+      splitTime: null,
+    });
     expect(checkpoint.x).toBeGreaterThan(c.beaconX * 0.35);
     expect(checkpoint.x).toBeLessThan(c.beaconX * 0.65);
     expect(c.platforms.some((platform) => checkpoint.x >= platform.x0 && checkpoint.x <= platform.x1)).toBe(true);
@@ -637,9 +642,7 @@ describe("physics — surface resolution, hazards, embers, beacon", () => {
   test("crossing an unreached checkpoint reports one racing split", () => {
     const phys = new Physics();
     const course = flatCourse();
-    course.checkpoints = [
-      { id: "mid", label: "MID-LANE", x: 40, reached: false, splitTime: null },
-    ];
+    course.checkpoints = [{ id: "mid", label: "MID-LANE", x: 40, reached: false, splitTime: null }];
     const r = new Runner();
     r.x = 40;
 

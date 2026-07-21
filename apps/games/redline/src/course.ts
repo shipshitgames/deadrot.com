@@ -9,16 +9,7 @@
  */
 
 import { COURSE, RUNNER, WORLD } from "./constants";
-import type {
-  Course,
-  CourseSegment,
-  CourseSegmentKind,
-  Ember,
-  Hazard,
-  HazardKind,
-  Platform,
-  Ramp,
-} from "./types";
+import type { Course, CourseSegment, CourseSegmentKind, Ember, Hazard, HazardKind, Platform, Ramp } from "./types";
 
 /** Tiny mulberry32 PRNG — fast, deterministic, good enough for layout. */
 function mulberry32(seed: number): () => number {
@@ -35,10 +26,7 @@ function mulberry32(seed: number): () => number {
 type CourseSegmentSpec = {
   id: string;
   checkpoint?: { id: string; label: string };
-} & (
-  | { kind: "hazard"; hazardKind: HazardKind }
-  | { kind: Exclude<CourseSegmentKind, "hazard"> }
-);
+} & ({ kind: "hazard"; hazardKind: HazardKind } | { kind: Exclude<CourseSegmentKind, "hazard"> });
 
 /**
  * The authored route vocabulary. Seeds tune spacing and pit widths, but never
@@ -91,9 +79,7 @@ export function generateCourse(seed = COURSE.seed): Course {
   const hazards: Hazard[] = [];
   const embers: Ember[] = [];
   const ramps: Ramp[] = [];
-  const segments: CourseSegment[] = [
-    { id: "opening-runway", kind: "flat", x0: 0, x1: COURSE.firstObstacleX },
-  ];
+  const segments: CourseSegment[] = [{ id: "opening-runway", kind: "flat", x0: 0, x1: COURSE.firstObstacleX }];
   const checkpoints: Course["checkpoints"] = [];
 
   const groundY = WORLD.groundY;
