@@ -50,6 +50,13 @@ export const CONSTANTS = {
   // --- Loop -------------------------------------------------------------
   maxDelta: 1 / 30, // clamp dt so a stutter never teleports entities
 
+  // --- Collision broad phase -------------------------------------------
+  spatial: {
+    // Near the common nova/drone/mine query radius: large enough to keep the
+    // grid compact, small enough that local effects avoid scanning the swarm.
+    cellSize: 8,
+  },
+
   // --- Player interceptor (mouse-follow thrust) -------------------------
   player: {
     accel: 90, // base thrust (world-units / sec²), scaled by ION THRUSTERS

@@ -63,6 +63,7 @@ export class Game {
   private lowHealthT = 0;
   private bossHitFxT = 0;
   private readonly hitStop = new HitStopController();
+  private readonly collisionCandidates: Enemy[] = [];
 
   private raf = 0;
   private prev = 0;
@@ -304,6 +305,7 @@ export class Game {
     this.director(dt);
     this.entities.updateEnemies(dt, this.clock, this.bossEncounter.enemy());
     this.bossEncounter.update(dt, this.clock);
+    this.entities.rebuildEnemyGrid();
 
     // 4. weapons fire / deal damage
     this.weapons.update(dt, this.clock);
@@ -526,7 +528,13 @@ export class Game {
   private resolveBolts() {
     for (const b of this.entities.bullets) {
       if (b.dead) continue;
-      for (const e of this.entities.enemies) {
+      const candidates = this.entities.queryEnemies(
+        b.mesh.position.x,
+        b.mesh.position.y,
+        0.6,
+        this.collisionCandidates,
+      );
+      for (const e of candidates) {
         if (e.dead || b.hit.includes(e)) continue;
         const dx = b.mesh.position.x - e.mesh.position.x;
         const dy = b.mesh.position.y - e.mesh.position.y;
@@ -565,7 +573,7 @@ export class Game {
     const sx = this.entities.ship.position.x;
     const sy = this.entities.ship.position.y;
     const shipR = CONSTANTS.player.width * 0.5;
-    for (const e of this.entities.enemies) {
+    for (const e of this.entities.queryEnemies(sx, sy, shipR, this.collisionCandidates)) {
       if (e.dead) continue;
       const dx = e.mesh.position.x - sx;
       const dy = e.mesh.position.y - sy;

@@ -65,6 +65,7 @@ export class WeaponSystem {
 
   // mines
   private mines: Mine[] = [];
+  private readonly collisionCandidates: Enemy[] = [];
 
   // shared assets
   private droneGeom = new THREE.SphereGeometry(0.5, 12, 10);
@@ -182,19 +183,9 @@ export class WeaponSystem {
   }
 
   private nearestExcluding(x: number, y: number, exclude: Enemy[]): Enemy | null {
-    let best: Enemy | null = null;
-    let bestD = Infinity;
-    for (const e of this.entities.enemies) {
-      if (e.dead || exclude.includes(e)) continue;
-      const d = (e.mesh.position.x - x) ** 2 + (e.mesh.position.y - y) ** 2;
-      if (d < bestD) {
-        bestD = d;
-        best = e;
-      }
-    }
     // Null when every live enemy is already picked — callers must NOT re-target
     // an already-chosen enemy (a spare bolt fires straight; a spare beam hides).
-    return best;
+    return this.entities.nearestEnemy(x, y, Infinity, exclude);
   }
 
   // --- PHALANX DRONES ----------------------------------------------------
@@ -231,7 +222,7 @@ export class WeaponSystem {
       this.drones[i].position.set(dx, dy, 0);
       const wx = sx + dx;
       const wy = sy + dy;
-      for (const e of this.entities.enemies) {
+      for (const e of this.entities.queryEnemies(wx, wy, hitR, this.collisionCandidates)) {
         if (e.dead) continue;
         const dd = (e.mesh.position.x - wx) ** 2 + (e.mesh.position.y - wy) ** 2;
         const rr = hitR + e.radius;
@@ -312,7 +303,7 @@ export class WeaponSystem {
       nv.mesh.position.set(sx, sy, -0.4); // ride the hull
       nv.mesh.scale.setScalar(Math.max(0.001, r));
       (nv.mesh.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 0.6 * (1 - t));
-      for (const e of this.entities.enemies) {
+      for (const e of this.entities.queryEnemies(sx, sy, r, this.collisionCandidates, false)) {
         if (e.dead || nv.hit.has(e)) continue;
         const d = Math.hypot(e.mesh.position.x - sx, e.mesh.position.y - sy);
         if (d <= r) {
@@ -333,7 +324,7 @@ export class WeaponSystem {
       s.age += dt;
       s.mesh.position.set(sx, sy, -0.45);
       s.mesh.scale.setScalar(s.r);
-      for (const e of this.entities.enemies) {
+      for (const e of this.entities.queryEnemies(sx, sy, s.r, this.collisionCandidates, false)) {
         if (e.dead) continue;
         const d = Math.hypot(e.mesh.position.x - sx, e.mesh.position.y - sy);
         if (d <= s.r) this.damageEnemy(e, s.dps * dt, false);
@@ -408,7 +399,8 @@ export class WeaponSystem {
       beam.rotation.z = ang;
       beam.scale.set(length, width, 1);
       // damage all enemies along the segment
-      for (const e of this.entities.enemies) {
+      const queryRadius = length / 2 + width / 2 + this.entities.maxEnemyRadius;
+      for (const e of this.entities.queryEnemies((sx + ex) / 2, (sy + ey) / 2, queryRadius, this.collisionCandidates, false)) {
         if (e.dead) continue;
         const d = pointSegDist(e.mesh.position.x, e.mesh.position.y, sx, sy, ex, ey);
         if (d < width / 2 + e.radius) this.damageEnemy(e, dps * dt, false);
@@ -444,7 +436,12 @@ export class WeaponSystem {
       // proximity trigger
       let trigger = m.life <= 0;
       if (armed && !trigger) {
-        for (const e of this.entities.enemies) {
+        for (const e of this.entities.queryEnemies(
+          m.mesh.position.x,
+          m.mesh.position.y,
+          m.blast * 0.55,
+          this.collisionCandidates,
+        )) {
           if (e.dead) continue;
           const dd = Math.hypot(e.mesh.position.x - m.mesh.position.x, e.mesh.position.y - m.mesh.position.y);
           if (dd < m.blast * 0.55 + e.radius) {
@@ -489,7 +486,7 @@ export class WeaponSystem {
   private detonateMine(m: Mine, chain: boolean) {
     const mx = m.mesh.position.x;
     const my = m.mesh.position.y;
-    for (const e of this.entities.enemies) {
+    for (const e of this.entities.queryEnemies(mx, my, m.blast, this.collisionCandidates)) {
       if (e.dead) continue;
       const d = Math.hypot(e.mesh.position.x - mx, e.mesh.position.y - my);
       if (d < m.blast + e.radius) {
