@@ -157,8 +157,7 @@ export class SpatialGrid<T extends SpatialTarget> {
     maxRow: number,
   ): number {
     const left = minColumn > 0 ? x - (-this.width / 2 + minColumn * this.cellSize) : Infinity;
-    const right =
-      maxColumn < this.columns - 1 ? -this.width / 2 + (maxColumn + 1) * this.cellSize - x : Infinity;
+    const right = maxColumn < this.columns - 1 ? -this.width / 2 + (maxColumn + 1) * this.cellSize - x : Infinity;
     const bottom = minRow > 0 ? y - (-this.height / 2 + minRow * this.cellSize) : Infinity;
     const top = maxRow < this.rows - 1 ? -this.height / 2 + (maxRow + 1) * this.cellSize - y : Infinity;
     return Math.max(0, Math.min(left, right, bottom, top));

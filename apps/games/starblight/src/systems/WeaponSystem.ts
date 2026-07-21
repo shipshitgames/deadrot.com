@@ -400,7 +400,13 @@ export class WeaponSystem {
       beam.scale.set(length, width, 1);
       // damage all enemies along the segment
       const queryRadius = length / 2 + width / 2 + this.entities.maxEnemyRadius;
-      for (const e of this.entities.queryEnemies((sx + ex) / 2, (sy + ey) / 2, queryRadius, this.collisionCandidates, false)) {
+      for (const e of this.entities.queryEnemies(
+        (sx + ex) / 2,
+        (sy + ey) / 2,
+        queryRadius,
+        this.collisionCandidates,
+        false,
+      )) {
         if (e.dead) continue;
         const d = pointSegDist(e.mesh.position.x, e.mesh.position.y, sx, sy, ex, ey);
         if (d < width / 2 + e.radius) this.damageEnemy(e, dps * dt, false);
