@@ -9,7 +9,9 @@ import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import {
   campaignSequence,
+  DEFAULT_ARENA_BOUNDS,
   DEFAULT_JOURNEY_MAP_IDS,
+  FOUNDRY_WARDS_BOUNDS,
   getMap,
   MAP_PICKER,
   MAPS,
@@ -22,7 +24,6 @@ import { walkableSurfaceHeight } from "../../src/game/entities/PlayerSystem";
 import { auditArenaReadability } from "../../src/game/render/readability";
 
 const VARIANT_IDS = ["foundry-wards", "breach-primus", "reactor-verge", "choir-node"] as const;
-const ISSUE_505_VARIANT_IDS = ["reactor-verge", "choir-node"] as const;
 
 function overlaps(a: MapObstacle, b: MapObstacle): boolean {
   return Math.abs(a.x - b.x) < (a.w + b.w) / 2 && Math.abs(a.z - b.z) < (a.d + b.d) / 2;
@@ -112,7 +113,13 @@ describe("shipped Survivors arena variants (#503, #505)", () => {
     const foundry = SURVIVOR_MAPS["foundry-wards"];
     expect(foundry).toMatchObject({ loreId: "ashgate", front: "holdout", biomeId: "foundry" });
     expect(foundry.materials).toBe(MAPS.ashgate.materials);
-    expect(foundry.environment).toBe(MAPS.ashgate.environment);
+    expect(foundry.environment).not.toBe(MAPS.ashgate.environment);
+    expect(foundry.environment.decals.map((decal) => decal.texture)).toEqual(
+      MAPS.ashgate.environment.decals.map((decal) => decal.texture),
+    );
+    expect(foundry.environment.props.map((prop) => prop.texture)).toEqual(
+      MAPS.ashgate.environment.props.map((prop) => prop.texture),
+    );
 
     const primus = SURVIVOR_MAPS["breach-primus"];
     expect(primus).toMatchObject({ loreId: "maw", front: "breach", biomeId: "rot" });
@@ -132,6 +139,13 @@ describe("shipped Survivors arena variants (#503, #505)", () => {
 
   it("authors Foundry Wards as two ground rooms with an open central traversal", () => {
     const foundry = SURVIVOR_MAPS["foundry-wards"];
+    expect(foundry.bounds).toEqual(FOUNDRY_WARDS_BOUNDS);
+    expect(boundsToRect(foundry.layout.bounds)).toEqual({ minX: -72, maxX: 72, minZ: -56, maxZ: 56 });
+    const defaultRect = boundsToRect(DEFAULT_ARENA_BOUNDS);
+    const defaultArea = (defaultRect.maxX - defaultRect.minX) * (defaultRect.maxZ - defaultRect.minZ);
+    const foundryRect = boundsToRect(foundry.layout.bounds);
+    const foundryArea = (foundryRect.maxX - foundryRect.minX) * (foundryRect.maxZ - foundryRect.minZ);
+    expect(foundryArea / defaultArea).toBeCloseTo(2.52, 2);
     expect(foundry.layout.rooms.map((room) => room.id)).toEqual(["assembly-yard", "furnace-yard"]);
     expect(foundry.layout.rooms.every((room) => room.levelId === GROUND_LEVEL_ID)).toBe(true);
     expect(foundry.layout.ramps).toEqual([]);
@@ -139,10 +153,11 @@ describe("shipped Survivors arena variants (#503, #505)", () => {
 
     const bulkheads = flattenObstacles(foundry.layout).filter((obstacle) => obstacle.x === -1);
     expect(bulkheads).toHaveLength(2);
-    expect(bulkheads.every((wall) => Math.abs(wall.z) - wall.d / 2 === 12)).toBe(true);
-    expect(bulkheads.every((wall) => Math.abs(wall.z) + wall.d / 2 === 40)).toBe(true);
+    expect(bulkheads.every((wall) => Math.abs(wall.z) - wall.d / 2 === 20)).toBe(true);
+    expect(bulkheads.every((wall) => Math.abs(wall.z) + wall.d / 2 === 56)).toBe(true);
     expect(anchorsOfKind(foundry.layout, "playerSpawn")).toHaveLength(1);
     expect(anchorsOfKind(foundry.layout, "breachSpawn")).toHaveLength(2);
+    expect(anchorsOfKind(foundry.layout, "playerSpawn")[0]).toMatchObject({ x: -62, z: 0 });
   });
 
   it("authors Breach Primus as a connected ground-to-span layout", () => {
@@ -221,8 +236,8 @@ describe("shipped Survivors arena variants (#503, #505)", () => {
     }
   });
 
-  it("passes the shared validator and readability contracts for the final map slice", () => {
-    for (const id of ISSUE_505_VARIANT_IDS) {
+  it("passes the shared validator and readability contracts for every shipped variant", () => {
+    for (const id of VARIANT_IDS) {
       const map = SURVIVOR_MAPS[id];
       expect(validateArenaLayout(map.layout), id).toEqual({ ok: true, errors: [] });
       expect(auditArenaReadability(map).violations, id).toEqual([]);
