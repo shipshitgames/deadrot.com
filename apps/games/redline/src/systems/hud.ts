@@ -213,10 +213,11 @@ export class Hud {
       </nav>
     `;
     this.wireOverlayButton(opts.onIgnite);
-    // Settings is only present on the start card; { once: true } preserves the
-    // current behavior exactly (do not fix the settings re-open quirk here).
+    // The button node only lives for this start card and is replaced whenever
+    // another overlay is rendered, so the listener can remain active for every
+    // Settings round-trip without accumulating across cards.
     const settingsBtn = document.getElementById("overlay-settings-btn");
-    if (settingsBtn) settingsBtn.addEventListener("click", opts.onSettings, { once: true });
+    if (settingsBtn) settingsBtn.addEventListener("click", opts.onSettings);
   }
 
   showWin(summary: RunSummary, records: RunRecords, onAgain: () => void) {
