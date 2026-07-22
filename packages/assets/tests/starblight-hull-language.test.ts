@@ -17,7 +17,7 @@ test("Starblight locks four faction-readable hull bodies", () => {
   for (const id of ["pyre-razor", "pyre-furnace", "warden-bastion", "warden-shepherd"]) {
     assert.ok(design.includes(`\`${id}\``), `missing hull body ${id}`);
   }
-  assert.match(design, /2\.6` world units tall in a `48` world-unit-high view/);
+  assert.match(design, /gameplayScale: "2\.6 world units tall inside the locked 48-world-unit camera view"/);
   assert.match(design, /pure-black test/);
 });
 
