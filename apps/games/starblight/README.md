@@ -16,6 +16,9 @@ Vite + TypeScript + React UI overlays + Three.js primitives with emissive materi
 The aesthetic is the studio's DOOM language: black void, blood red, hellfire orange, gunmetal,
 bone text — and toxic green is the Scourge's color alone.
 
+The locked player hull proportions, faction reads, glow rules, and production
+path live in [DESIGN.md](./DESIGN.md).
+
 ## Controls
 
 | Input | Action |

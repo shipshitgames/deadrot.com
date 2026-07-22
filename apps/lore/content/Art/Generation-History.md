@@ -338,3 +338,33 @@ reviewed outside runtime paths under `packages/assets/_archive/`.
   cannon remains single-held by design.
 - Decision: promoted as the only dual-bonus held-weapon art; the runtime no
   longer duplicates and mirrors the centered two-handed primary sprite.
+
+## 2026-07-22 - starblight-hull-silhouettes - v01
+
+- Status: approved design master; not wired into runtime.
+- Game: [[Starblight]].
+- Faction: [[Pyre]] and [[Wardens]].
+- Character/role: four starter player hull bodies — Razor, Furnace, Bastion,
+  and Shepherd.
+- View: strict top-down orthographic material row plus pure-black silhouette
+  proof row.
+- Tool: built-in `image_gen` / `gpt-image-2`.
+- Plan: Codex built-in.
+- Kind: ai-2d-sprite concept and silhouette lock.
+- Source output:
+  `~/.codex/generated_images/019f88e6-8adb-7a72-8fd2-422f7f9281aa/exec-533f65f9-dbbf-4f44-ae99-ba8abac2136d.png`.
+- Workspace source:
+  `packages/assets/sources/generated/2026-07-22/games/starblight/hull-silhouettes/hull-silhouette-sheet-v01.png`.
+- Approved master:
+  `packages/assets/masters/sprites/starblight/hull-language-v01/hull-silhouette-sheet-v01.png`.
+- Prompt source:
+  `Art/Prompt-Batches/2026-07-22-starblight-hull-silhouettes.md`.
+- Post-processing: source and full-sheet master are byte-identical. A 1920×1080
+  gameplay-scale proof was deterministically cropped and reduced from the
+  pure-black row with FFmpeg, targeting the locked `2.6 / 48 × 1080 ≈ 58 px`
+  player height.
+- Notes: The lower row proves four distinct pure-black reads. Human emission is
+  blood/hellfire or hazard-yellow/ember; toxic green remains Scourge-only.
+- Decision: lock the visual grammar and primitive-first production approach in
+  `apps/games/starblight/DESIGN.md`; defer runtime body mechanics and WebP
+  promotion to a separately scoped implementation.
