@@ -103,7 +103,6 @@ export class Game {
       },
     });
     this.hud = new HudSystem(
-      () => this.startRun(),
       (id) => this.pickById(id),
       () => this.pauseRun(),
     );
