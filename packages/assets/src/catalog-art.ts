@@ -1,13 +1,28 @@
 /** Runtime-safe catalog helpers for lore and web surfaces. */
 
-import { PLAYABLE_GAME_SLUGS } from "@deadrot/catalog";
+import { PLAYABLE_GAME_SLUGS, type PlayableGameSlug } from "@deadrot/catalog";
 import catalogJson from "../assets-catalog.json" with { type: "json" };
-import type { AssetCatalog, EntityAsset, GameSlug } from "./index";
 
-export type { GameSlug } from "./index";
+export type GameSlug = PlayableGameSlug;
+
+type CatalogArtVariant =
+  | string
+  | { type: "alias"; sourceGame: GameSlug }
+  | { type: "placeholder"; note: string }
+  | null;
+
+export interface CatalogArtEntity {
+  id: string;
+  name: string;
+  variants: Record<GameSlug, CatalogArtVariant>;
+}
+
+interface CatalogArtCatalog {
+  entities: CatalogArtEntity[];
+}
 
 /** The canon asset catalog without loading renderer-specific package exports. */
-export const catalog = catalogJson as unknown as AssetCatalog;
+export const catalog = catalogJson as unknown as CatalogArtCatalog;
 
 /** A concrete per-game render, including the source behind an alias. */
 export interface ResolvedEntityVariant {
@@ -29,7 +44,7 @@ function slugifyEntity(value: string): string {
 }
 
 /** Resolve a local or aliased variant and retain the alias source. */
-export function resolveEntityVariant(entity: EntityAsset, game: GameSlug): ResolvedEntityVariant | null {
+export function resolveEntityVariant(entity: CatalogArtEntity, game: GameSlug): ResolvedEntityVariant | null {
   let currentGame = game;
   const visited = new Set<GameSlug>();
 
@@ -47,7 +62,7 @@ export function resolveEntityVariant(entity: EntityAsset, game: GameSlug): Resol
 }
 
 /** Match a lore character to its canonical catalog row. */
-export function findEntityForLoreEntry(entry: { slug: string; name: string }): EntityAsset | undefined {
+export function findEntityForLoreEntry(entry: { slug: string; name: string }): CatalogArtEntity | undefined {
   const slug = slugifyEntity(entry.slug);
   const direct = catalog.entities.find((entity) => slugifyEntity(entity.id) === slug);
   if (direct) return direct;
@@ -58,7 +73,7 @@ export function findEntityForLoreEntry(entry: { slug: string; name: string }): E
 }
 
 /** Every concrete local or aliased render for an entity, in roster order. */
-export function resolvedEntityVariants(entity: EntityAsset): ResolvedEntityVariant[] {
+export function resolvedEntityVariants(entity: CatalogArtEntity): ResolvedEntityVariant[] {
   return PLAYABLE_GAME_SLUGS.flatMap((game) => {
     const variant = resolveEntityVariant(entity, game);
     return variant ? [variant] : [];
