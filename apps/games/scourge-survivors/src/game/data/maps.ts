@@ -624,7 +624,7 @@ const FOUNDRY_WARDS: ArenaMap = {
     accentB: { x: 50, z: 38 },
   },
   materials: ASHGATE.materials,
-  environment: scaleEnvironmentFootprint(ASHGATE.environment, 1.8, 1.4),
+  environment: scaleEnvironmentFootprint(resolveArenaEnvironment(ASHGATE.environment), 1.8, 1.4),
   spawn: { x: -62, z: 0 },
   obstacles: [],
   rooms: [
