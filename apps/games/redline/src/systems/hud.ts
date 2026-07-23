@@ -39,6 +39,7 @@ export class Hud {
 
   private speedlines = document.getElementById("speedlines")!;
   private flash = document.getElementById("flash")!;
+  private statusOverride: { text: string; until: number } | null = null;
 
   private overlay = document.getElementById("overlay")!;
   private overlayCard = document.getElementById("overlay-card")!;
@@ -120,8 +121,14 @@ export class Hud {
       dash: "s-dash",
       hit: "s-hit",
     };
-    this.elStatus.textContent = words[opts.state];
-    this.elStatus.className = cls[opts.state];
+    if (opts.state !== "hit" && this.statusOverride && performance.now() < this.statusOverride.until) {
+      this.elStatus.textContent = this.statusOverride.text;
+      this.elStatus.className = "s-dash";
+    } else {
+      this.statusOverride = null;
+      this.elStatus.textContent = words[opts.state];
+      this.elStatus.className = cls[opts.state];
+    }
 
     // speed-lines intensify with velocity
     this.speedlines.style.opacity = String(Math.max(0, (opts.speedFrac - 0.25) * 1.25));
@@ -158,6 +165,21 @@ export class Hud {
         { opacity: 0 },
       ],
       { duration: 260, easing: "ease-out" },
+    );
+  }
+
+  flashCheckpoint(label: string, splitTime: number) {
+    this.statusOverride = { text: `${label} · ${fmtTime(splitTime)}`, until: performance.now() + 1600 };
+    this.elStatus.animate([{ transform: "scale(1.16)" }, { transform: "scale(1)" }], {
+      duration: 260,
+      easing: "ease-out",
+    });
+    this.flash.animate(
+      [
+        { opacity: 0.34, background: "linear-gradient(90deg, transparent, rgba(255,106,0,0.42), transparent)" },
+        { opacity: 0 },
+      ],
+      { duration: 320, easing: "ease-out" },
     );
   }
 
@@ -285,6 +307,7 @@ export class Hud {
   }
 
   hideOverlay() {
+    this.statusOverride = null;
     this.overlay.classList.add("is-hidden");
   }
 
