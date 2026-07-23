@@ -259,23 +259,6 @@ function arenaMaterials(mapId: string): ArenaMaterialSet {
   };
 }
 
-/** Spread registered dressing across a larger footprint without duplicating
- *  assets or hand-authoring a second presentation pack. Sizes stay unchanged;
- *  only world placement expands, preserving prop/decal readability budgets. */
-function scaleEnvironmentFootprint(environment: ArenaEnvironment, scaleX: number, scaleZ: number): ArenaEnvironment {
-  const scalePosition = <T extends { x: number; z: number }>(entry: T): T => ({
-    ...entry,
-    x: entry.x * scaleX,
-    z: entry.z * scaleZ,
-  });
-  return {
-    ...environment,
-    silhouettes: environment.silhouettes.map(scalePosition),
-    decals: environment.decals.map(scalePosition),
-    props: environment.props.map(scalePosition),
-  };
-}
-
 // ============================================================================
 // ASHGATE — the eastern foundry-wall holdout where the Purgers drop in.
 // Gunmetal + hellfire-orange: heavy pillars + blocky, broken crate cover.
@@ -624,7 +607,9 @@ const FOUNDRY_WARDS: ArenaMap = {
     accentB: { x: 50, z: 38 },
   },
   materials: ASHGATE.materials,
-  environment: scaleEnvironmentFootprint(resolveArenaEnvironment(ASHGATE.environment), 1.8, 1.4),
+  // Omit environment: this fallback variant uses DEFAULT_ARENA_ENVIRONMENT
+  // (a fresh clone via normalizeMap), sharing Ashgate's registered dressing
+  // textures without aliasing Ashgate's environment identity.
   spawn: { x: -62, z: 0 },
   obstacles: [],
   rooms: [
