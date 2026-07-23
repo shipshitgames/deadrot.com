@@ -4,7 +4,7 @@ import "./styles.css";
 import { createElement } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
-import { Game } from "./game/Game";
+import { Game, type StarblightDevHandle } from "./game/Game";
 import { AppShell } from "./ui/AppShell";
 
 void initDeadrotBrowserTelemetry({ game: "starblight", env: import.meta.env });
@@ -26,9 +26,15 @@ if (!canvas) {
   throw new Error("#scene canvas not found");
 }
 
-const game = new Game(canvas);
+const debugRequested = new URLSearchParams(window.location.search).has("debug");
+const game = new Game(canvas, { devMode: import.meta.env.DEV, profiler: debugRequested });
 game.start();
 
+// Frame-budget profiler dev handle (`window.__game`, ` backtick toggle).
+let removeDebugControls = () => {};
+
+// Serialized E2E debug hook (`window.__starblight`). It exposes only
+// snapshots and bounded actions, never the running Game instance.
 interface StarblightDebugHook {
   snapshot: () => ReturnType<Game["debugSnapshot"]>;
   startRun: () => void;
@@ -44,9 +50,19 @@ const debugWindow = window as unknown as { __starblight?: StarblightDebugHook };
 let debugActive = false;
 let debugHook: StarblightDebugHook | undefined;
 
-// The adapter is deliberately absent from production builds. It exposes only
-// serialized snapshots and bounded actions, never the running Game instance.
+// Both dev surfaces are deliberately absent from production builds.
 if (import.meta.env.DEV) {
+  const devHandle = game.createDevHandle();
+  window.__game = devHandle;
+  const onDebugToggle = (event: KeyboardEvent) => {
+    if (event.key === "`" && !event.metaKey && !event.ctrlKey && !event.altKey) devHandle.toggleProfiler();
+  };
+  window.addEventListener("keydown", onDebugToggle);
+  removeDebugControls = () => {
+    window.removeEventListener("keydown", onDebugToggle);
+    delete window.__game;
+  };
+
   debugActive = true;
   const assertDebugActive = () => {
     if (!debugActive) throw new Error("Starblight debug handle is disposed");
@@ -91,9 +107,16 @@ if (import.meta.env.DEV) {
 // Clean up the loop + listeners on HMR / unload so dev reloads stay tidy.
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
+    removeDebugControls();
     debugActive = false;
     if (debugHook && debugWindow.__starblight === debugHook) delete debugWindow.__starblight;
     game.dispose();
     root.unmount();
   });
+}
+
+declare global {
+  interface Window {
+    __game?: StarblightDevHandle;
+  }
 }

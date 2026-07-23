@@ -99,6 +99,11 @@ export class BossEncounter {
     if (!this.triggered && clock >= CONSTANTS.boss.spawnAt) this.spawn();
   }
 
+  /** Dev stress harness: force the encounter without waiting for the run clock. */
+  forceSpawn() {
+    if (!this.isActive()) this.spawn();
+  }
+
   /** Is this enemy the boss? (damage path routes its death here) */
   owns(e: Enemy): boolean {
     return e === this.boss;

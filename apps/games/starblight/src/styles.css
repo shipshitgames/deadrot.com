@@ -488,6 +488,24 @@ body {
   }
 }
 
+/* Dev-only rolling frame budget, injected by FrameBudgetProfiler. */
+#frame-budget-profiler {
+  position: fixed;
+  z-index: 10000;
+  top: 10px;
+  left: 10px;
+  min-width: 260px;
+  margin: 0;
+  padding: 10px 12px;
+  color: var(--bone);
+  font: 11px / 1.45 var(--mono);
+  background: rgba(8, 8, 10, 0.92);
+  border: 1px solid var(--gunmetal);
+  border-left: 3px solid var(--hellfire);
+  pointer-events: none;
+  white-space: pre;
+}
+
 /* tiny watermark — studio attribution, stays out of the way */
 #app::after {
   content: "SHIP SHIT GAMES";

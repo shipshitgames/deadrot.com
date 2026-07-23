@@ -10,6 +10,7 @@ import { BossEncounter } from "./BossEncounter";
 import { COLORS, CONSTANTS, type EnemyType, WORLD } from "./constants";
 import type { ShopTiers } from "./drydock";
 import { HitStopController, type ImpactDirection, type MarqueeImpact, shakeFor } from "./feedback";
+import { FrameBudgetProfiler, HudEmitGate } from "./frameProfiler";
 import { clamp, TAU } from "./math";
 import type { DraftCard, Enemy, GamePhase, HudState } from "./types";
 import { ALL_UPGRADES, computeStats, defOf, maxLevelOf, type Stats, type UpgradeId, xpForLevel } from "./upgrades";
@@ -23,6 +24,10 @@ export class Game {
   private entities: EntitySystem;
   private weapons: WeaponSystem;
   private hud: HudSystem;
+  private readonly devMode: boolean;
+  private readonly profiler: FrameBudgetProfiler;
+  private readonly hudEmitGate = new HudEmitGate();
+  private hudEmitCount = 0;
 
   // --- run-state ---------------------------------------------------------
   private phase: GamePhase = "title";
@@ -70,7 +75,9 @@ export class Game {
   private disposed = false;
   private runNonce = createRunNonce("starblight");
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, options: { devMode?: boolean; profiler?: boolean } = {}) {
+    this.devMode = options.devMode ?? false;
+    this.profiler = new FrameBudgetProfiler(this.devMode, options.profiler);
     this.render = new RenderSystem(canvas);
     this.input = new InputSystem(canvas);
     this.entities = new EntitySystem(this.render);
@@ -219,6 +226,7 @@ export class Game {
     this.unsubTiers();
     clearPauseActions();
     this.input.dispose();
+    this.profiler.dispose();
     this.weapons.dispose();
     this.bossEncounter.dispose(); // bespoke boss mesh, before the entity pools
     this.entities.dispose();
@@ -277,6 +285,7 @@ export class Game {
     this.spawnT = playing ? 0.6 : 0;
     this.eliteT = playing ? CONSTANTS.director.eliteEvery : 0;
     this.resetFeedback();
+    this.hudEmitGate.reset();
 
     audio.unlock(); // started from a click/keypress — the gesture allows audio
     this.emitHud();
@@ -337,12 +346,18 @@ export class Game {
 
   // --- main loop ---------------------------------------------------------
 
+  // Frame-budget contract: 16.6ms at 60Hz. In a dev build, `?debug` (or `)
+  // displays the measured rolling breakdown for flight, director+AI, weapons,
+  // collisions, gems/FX, and render. `window.__game.stress()` fills the 160-host
+  // alive cap and forces the Blight-Maw so performance work shares one baseline.
+
   private loop = (now: number) => {
     if (this.disposed) return;
     this.raf = requestAnimationFrame(this.loop);
 
     const dt = Math.min((now - this.prev) / 1000, CONSTANTS.maxDelta);
     this.prev = now;
+    this.profiler.beginFrame(now, this.hudEmitCount);
 
     if (this.input.consumePause()) {
       if (this.phase === "playing") this.pauseRun();
@@ -355,6 +370,7 @@ export class Game {
     // Camera follows the ship (also keeps the menu backdrop alive). Kill-pop
     // bursts only advance while simulating — same gate as the legacy particle
     // sim in simulate() — so all FX freeze together on pause / level-up.
+    const renderStartedAt = this.profiler.beginPhase();
     this.render.update(
       dt,
       this.entities.ship.position.x,
@@ -363,7 +379,9 @@ export class Game {
       simulationDt,
     );
     this.render.render();
-    this.emitHud();
+    this.profiler.endPhase("render", renderStartedAt);
+    if (this.hudEmitGate.advance(dt)) this.emitHud(false);
+    this.profiler.endFrame(performance.now(), this.render.renderer.info.render, this.hudEmitCount);
 
     // Menu confirm starts / restarts, or resumes from pause.
     if (this.phase === "paused" && this.input.consumeConfirm()) {
@@ -395,21 +413,28 @@ export class Game {
     this.bossHitFxT = Math.max(0, this.bossHitFxT - dt);
 
     // 1. flight
+    let phaseStartedAt = this.profiler.beginPhase();
     const aim = this.render.screenToWorld(this.input.ndcX, this.input.ndcY);
     const key = this.input.keyAxis();
     this.entities.moveShip(aim.x, aim.y, key.x, key.y, dt, this.stats.moveMul, this.stats.accelMul);
+    this.profiler.endPhase("flight", phaseStartedAt);
 
     // 2. director + 3. enemy AI
+    phaseStartedAt = this.profiler.beginPhase();
     this.director(dt);
     this.entities.updateEnemies(dt, this.clock, this.bossEncounter.enemy());
     this.bossEncounter.update(dt, this.clock);
     this.entities.rebuildEnemyGrid();
+    this.profiler.endPhase("directorAi", phaseStartedAt);
 
     // 4. weapons fire / deal damage
+    phaseStartedAt = this.profiler.beginPhase();
     this.weapons.update(dt, this.clock);
     this.voiceWeaponFire();
+    this.profiler.endPhase("weapons", phaseStartedAt);
 
     // 5. player bolts vs enemies
+    phaseStartedAt = this.profiler.beginPhase();
     this.entities.updateBullets(dt);
     this.resolveBolts();
 
@@ -417,8 +442,10 @@ export class Game {
     this.entities.updateEnemyBullets(dt);
     this.resolveEnemyBullets();
     this.resolveContact();
+    this.profiler.endPhase("collisions", phaseStartedAt);
 
     // 8. salvage magnet + XP
+    phaseStartedAt = this.profiler.beginPhase();
     const raw = this.entities.updateGems(dt, this.stats.magnetRadius, this.vacuum);
     this.vacuum = false;
     if (raw > 0) this.gainXp(raw);
@@ -426,6 +453,7 @@ export class Game {
     this.entities.updateParticles(dt);
     this.entities.sweepEnemies();
     this.updateLowHealthWarning(dt);
+    this.profiler.endPhase("gems", phaseStartedAt);
 
     if (this.integrity <= 0 && this.phase === "playing") {
       this.integrity = 0;
@@ -790,7 +818,9 @@ export class Game {
 
   // --- HUD bridge --------------------------------------------------------
 
-  private emitHud() {
+  private emitHud(immediate = true) {
+    if (immediate) this.hudEmitGate.reset();
+    this.hudEmitCount++;
     const build = this.buildChips();
     const need = xpForLevel(this.level);
     const state: HudState = {
@@ -808,6 +838,47 @@ export class Game {
       lowIntegrity: this.integrity > 0 && this.integrity < this.stats.maxIntegrity * 0.25,
     };
     this.hud.update(state);
+  }
+
+  /** Dev-only surface used by Playwright and manual frame-budget profiling. */
+  createDevHandle(): StarblightDevHandle {
+    if (!this.devMode) throw new Error("Starblight dev handle is unavailable in production builds");
+    return {
+      start: () => this.startRun(),
+      stress: () => this.debugStress(),
+      snapshot: () => this.debugProfilerSnapshot(),
+      setProfiler: (enabled) => this.profiler.setEnabled(enabled),
+      toggleProfiler: () => this.profiler.toggle(),
+    };
+  }
+
+  private debugStress(): StarblightDebugSnapshot {
+    this.startRun();
+    this.clock = CONSTANTS.director.aliveRampTime;
+    this.bossEncounter.forceSpawn();
+    const enemyTypes: readonly EnemyType[] = ["grunt", "swarmling", "weaver", "spitter"];
+    let enemyCount = 0;
+    while (enemyCount < CONSTANTS.director.aliveMax) {
+      const index = this.entities.enemies.length;
+      const point = this.ringPoint();
+      this.spawnAt(enemyTypes[index % enemyTypes.length], point.x, point.y);
+      enemyCount++;
+    }
+    this.emitHud();
+    return this.debugProfilerSnapshot();
+  }
+
+  /** Profiler-focused dev snapshot exposed through the `window.__game` dev handle. */
+  private debugProfilerSnapshot(): StarblightDebugSnapshot {
+    return {
+      phase: this.phase,
+      clock: this.clock,
+      enemies: this.entities.enemies.filter((enemy) => !enemy.dead && !enemy.boss).length,
+      bossActive: this.bossEncounter.isActive(),
+      hudEmits: this.hudEmitCount,
+      profilerEnabled: this.profiler.isEnabled,
+      profile: this.profiler.snapshot(),
+    };
   }
 
   private soundDistance(x: number, y: number): number {
@@ -833,4 +904,22 @@ export class Game {
     out.sort((a, b) => (a.kind === b.kind ? 0 : a.kind === "weapon" ? -1 : 1));
     return out;
   }
+}
+
+export interface StarblightDebugSnapshot {
+  phase: GamePhase;
+  clock: number;
+  enemies: number;
+  bossActive: boolean;
+  hudEmits: number;
+  profilerEnabled: boolean;
+  profile: ReturnType<FrameBudgetProfiler["snapshot"]>;
+}
+
+export interface StarblightDevHandle {
+  start(): void;
+  stress(): StarblightDebugSnapshot;
+  snapshot(): StarblightDebugSnapshot;
+  setProfiler(enabled: boolean): boolean;
+  toggleProfiler(): boolean;
 }
