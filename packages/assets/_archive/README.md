@@ -3,6 +3,10 @@
 This folder is package-local review custody for raw, rejected, banned-provider,
 or otherwise unpromoted asset material.
 
+The canonical keep/promote/quarantine/delete decision matrix lives in
+[`docs/generated-asset-custody-policy.md`](../docs/generated-asset-custody-policy.md).
+This file documents the local mechanics of the quarantine branch of that policy.
+
 Files here are not runtime assets, are not exported by `@shipshitgames/assets`,
 and must not be referenced by manifests, apps, or CDN sync jobs. Keep review
 batches here when they still need human triage and would otherwise be lost from
