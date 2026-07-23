@@ -298,8 +298,10 @@ function SurvivorsPanel({ onNext, onBack }: { onNext: (classId: SurvivorClassId)
             <button
               key={id}
               type="button"
+              data-testid={`survivor-class-card-${id}`}
+              data-starting-weapon={cls.startingWeapon}
               title={`${cls.desc}\n\nStarting weapon — ${weapon.displayName}: ${weapon.role}`}
-              className={`pointer-events-auto cursor-pointer min-h-[188px] rounded-lg border bg-black/30 px-3 py-3 text-left transition-[border-color,background,transform,box-shadow] hover:-translate-y-px ${
+              className={`pointer-events-auto cursor-pointer min-h-[260px] rounded-lg border bg-black/30 px-3 py-3 text-left transition-[border-color,background,transform,box-shadow] hover:-translate-y-px ${
                 active
                   ? "border-accent bg-accent/12 shadow-[0_0_0_1px_rgba(255,106,0,0.22),0_18px_44px_-28px_rgba(255,106,0,0.9)]"
                   : "border-white/15 hover:bg-white/10"
@@ -323,17 +325,28 @@ function SurvivorsPanel({ onNext, onBack }: { onNext: (classId: SurvivorClassId)
                 <PixelIcon id={cls.icon} size={20} label={cls.name} />
               </span>
               <span className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[#ffb56b]">{cls.role}</span>
+              <span className="mt-2 block text-[10px] font-bold uppercase tracking-[0.08em] text-[#9fd0ff]">
+                Starting weapon · {weapon.displayName}
+              </span>
+              <span className="mt-1.5 block text-[11px] leading-snug opacity-70 normal-case">
+                <span className="font-bold text-[#ffd166]">Signature · </span>
+                {cls.desc}
+              </span>
             </button>
           );
         })}
       </div>
-      <div className="mt-4 rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-left">
+      <div
+        data-testid="selected-survivor-class"
+        className="mt-4 rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-left"
+      >
         <div className="text-[12px] uppercase tracking-[0.12em] text-[#ffb56b]">Selected</div>
         <div className="text-[22px] font-black tracking-[0.03em]">{selected.name}</div>
         <div className="text-[12px] opacity-65">
-          {selectedWeapon.callsign} · {Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}:
+          {selectedWeapon.displayName} · {selectedWeapon.callsign} · {Math.floor(SURVIVOR_RUN_GOAL_TIME / 60)}:
           {(SURVIVOR_RUN_GOAL_TIME % 60).toString().padStart(2, "0")} breach descent
         </div>
+        <div className="mt-1.5 text-[12px] leading-snug opacity-75 normal-case">{selected.desc}</div>
       </div>
       <div className="mt-4 flex items-stretch gap-3">
         <Button type="button" variant="back" onClick={onBack}>
