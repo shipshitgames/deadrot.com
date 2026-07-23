@@ -5,6 +5,32 @@
 > the current house style; new work follows the comic-ink lock in
 > `apps/lore/content/Universe/Style-Bible.md`.
 
+## 2026-07-21 - Pyre player production turnarounds
+
+- Status: promoted into runtime.
+- Game: Scourge Survivors.
+- Faction / roles: Pyre Ranger, Bulwark, Vector, and Patch player avatars.
+- Tool: `gpt-image-2` through Codex built-in `image_gen`, followed by measured
+  per-view crops, FFmpeg chroma-key/despill cleanup, and quality-90 alpha WebP
+  encoding.
+- Plan: Codex built-in image generation.
+- Kind: clean comic/cel-ink front, side, and back billboard turnarounds.
+- Source outputs: `~/.codex/generated_images/019f8208-25a7-7343-a721-fe937ff111e7/`.
+- Preserved raw outputs:
+  `_archive/raw-generator-cache/codex-generated-images/2026-07-21/raw/019f8208-25a7-7343-a721-fe937ff111e7/`.
+- Preserved sources:
+  `sources/generated/2026-07-21/scourge-survivors/players/pyre/*-turnaround-source.png`.
+- Final assets:
+  `players/pyre/{ranger,bulwark,vector,patch}/{front,side,back}.webp`, plus
+  refreshed lore review previews under `lore/asset-status/previews/characters/`.
+- Prompt sources: the existing per-character v01 masters,
+  `apps/lore/content/CANON.md`, `apps/lore/content/DESIGN.md`,
+  `apps/lore/content/Universe/Style-Bible.md`, and
+  `apps/lore/content/Games/Scourge-Survivors.md`.
+- Notes: replaces the clean-white/cool-blue prototype sprites while preserving
+  the stable manifest IDs and world-space scales used by sandbox previews and
+  remote player avatars.
+
 ## 2026-07-17 - Breach-Boss production comic runtime
 
 - Status: promoted into runtime.

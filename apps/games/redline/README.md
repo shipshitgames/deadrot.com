@@ -40,7 +40,8 @@ On touch: hold anywhere to accelerate, tap the **upper** screen to jump, hold th
    bleeds, the screen shakes, and you get short i-frames.
 5. **Embers** — hellfire pickups give an instant speed boost. They bait the optimal
    jump/ramp lines.
-6. **Beacon** — reach the hellfire pillar at the end as fast as possible. Beat your best.
+6. **Checkpoint** — cross the mid-lane Pyre pylon to bank a visible racing split.
+7. **Beacon** — reach the hellfire pillar at the end as fast as possible. Beat your best.
 
 ## Look (DOOM aesthetic — `apps/lore/content/DESIGN.md`)
 
@@ -78,7 +79,7 @@ src/
   game.ts               # thin Game: shared state + fixed-step loop
   constants.ts          # all tunables (feel) + DOOM palette
   types.ts              # shared types
-  course.ts             # seeded, deterministic course generator
+  course.ts             # authored chunk sequence + seeded spacing/checkpoint layout
   styles.css            # DOOM HUD + juice overlays
   entities/
     runner.ts           # momentum / jump / dash / stagger physics

@@ -39,17 +39,17 @@ Generated coverage board for lore entries and their package-owned generated art.
 | [[Swarm-Spitter|Swarm Spitter]] | bestiary | runtime-linked | scourge-survivors, deadlane, rothulk | 2/3 | 6 | 2 | 5 | 3 | No | Review against locked reference, then promote/lock or regenerate. |
 | [[Trucebreaker|Trucebreaker]] | bestiary | in-progress | pactfall | 1/1 | 0 | 1 | 3 | 3 | No | Replace with final Pactfall boss render. |
 | [[Wound-Hound|Wound-Hound]] | bestiary | in-progress | scourge-survivors, deadlane, redline | none | 3 | 0 | 0 | 0 | - | - |
-| [[Bulwark|Bulwark]] | character | runtime-linked | scourge-survivors | 1/1 | 3 | 2 | 1 | 1 | No | Regenerate as locked comic/cel-ink production turnaround. |
+| [[Bulwark|Bulwark]] | character | runtime-linked | scourge-survivors | 1/1 | 3 | 2 | 1 | 2 | No | Preserve the production turnaround; author animation separately. |
 | [[Field-Engineer|Field Engineer]] | character | in-progress | deadlane | 1/1 | 0 | 2 | 0 | 0 | No | Replace catalog plate with final Deadlane camera render. |
 | [[Lane-Gunner|Lane Gunner]] | character | in-progress | deadlane | 1/1 | 0 | 2 | 1 | 1 | No | Replace catalog plate with final Deadlane camera render. |
-| [[Patch|Patch]] | character | runtime-linked | scourge-survivors | 1/1 | 3 | 2 | 1 | 1 | No | Regenerate as locked comic/cel-ink production turnaround. |
+| [[Patch|Patch]] | character | runtime-linked | scourge-survivors | 1/1 | 3 | 2 | 1 | 2 | No | Preserve the production turnaround; author animation separately. |
 | [[Pyre-Cauterizer|Pyre Cauterizer]] | character | in-progress | pactfall | 1/1 | 0 | 1 | 0 | 0 | No | Replace catalog plate with final Pactfall arena render. |
 | [[Pyre-Courier|Pyre Courier]] | character | in-progress | redline | none | 0 | 1 | 0 | 0 | No | Add shared catalog/runtime render. |
 | [[Pyre-Duelist|Pyre Duelist]] | character | in-progress | pactfall | 1/1 | 0 | 1 | 0 | 0 | No | Replace catalog plate with final Pactfall arena render. |
 | [[Pyre-Interceptor-Pilot|Pyre Interceptor Pilot]] | character | in-progress | starblight | 1/1 | 0 | 1 | 0 | 0 | No | Decide whether this is pilot portrait, cockpit sprite, or both. |
 | [[Pyre-Saboteur|Pyre Saboteur]] | character | in-progress | rothulk | none | 0 | 1 | 0 | 0 | No | Add shared catalog/runtime render. |
-| [[Ranger|Ranger]] | character | runtime-linked | scourge-survivors | 1/1 | 3 | 2 | 1 | 1 | No | Regenerate as locked comic/cel-ink production turnaround. |
-| [[Vector|Vector]] | character | runtime-linked | scourge-survivors | 1/1 | 3 | 2 | 1 | 1 | No | Regenerate as locked comic/cel-ink production turnaround. |
+| [[Ranger|Ranger]] | character | runtime-linked | scourge-survivors | 1/1 | 3 | 2 | 1 | 2 | No | Preserve the production turnaround; author animation separately. |
+| [[Vector|Vector]] | character | runtime-linked | scourge-survivors | 1/1 | 3 | 2 | 1 | 2 | No | Preserve the production turnaround; author animation separately. |
 | [[Wallwright|Wallwright]] | character | in-progress | deadlane | 1/1 | 0 | 2 | 0 | 0 | No | Replace catalog plate with final Deadlane camera render. |
 | [[Warden-Artillerist|Warden Artillerist]] | character | in-progress | pactfall | 1/1 | 0 | 1 | 0 | 0 | No | Replace catalog plate with final Pactfall arena render. |
 | [[Warden-Bastion|Warden Bastion]] | character | in-progress | pactfall | 1/1 | 0 | 1 | 1 | 1 | No | Replace catalog plate with final Pactfall arena render. |
@@ -256,7 +256,7 @@ Generated coverage board for lore entries and their package-owned generated art.
 - Package asset paths: `packages/assets/entities/pyre-bulwark/pactfall.webp`<br>`packages/assets/entities/pyre-bulwark/scourge-survivors.webp`
 - Preview paths: `packages/assets/lore/asset-status/previews/characters/bulwark.webp`
 - Master paths: `packages/assets/masters/art/characters/v01/bulwark-master-v01.png`
-- Generated source paths: `packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/bulwark-master-v01.png`
+- Generated source paths: `packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/bulwark-master-v01.png`<br>`packages/assets/sources/generated/2026-07-21/scourge-survivors/players/pyre/bulwark-turnaround-source.png`
 
 ### Field Engineer
 
@@ -298,7 +298,7 @@ Generated coverage board for lore entries and their package-owned generated art.
 - Package asset paths: `packages/assets/entities/pyre-patch/pactfall.webp`<br>`packages/assets/entities/pyre-patch/scourge-survivors.webp`
 - Preview paths: `packages/assets/lore/asset-status/previews/characters/patch.webp`
 - Master paths: `packages/assets/masters/art/characters/v01/patch-master-v01.png`
-- Generated source paths: `packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/patch-master-v01.png`
+- Generated source paths: `packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/patch-master-v01.png`<br>`packages/assets/sources/generated/2026-07-21/scourge-survivors/players/pyre/patch-turnaround-source.png`
 
 ### Pyre Cauterizer
 
@@ -382,7 +382,7 @@ Generated coverage board for lore entries and their package-owned generated art.
 - Package asset paths: `packages/assets/entities/pyre-ranger/pactfall.webp`<br>`packages/assets/entities/pyre-ranger/scourge-survivors.webp`
 - Preview paths: `packages/assets/lore/asset-status/previews/characters/ranger.webp`
 - Master paths: `packages/assets/masters/art/characters/v01/ranger-master-v01.png`
-- Generated source paths: `packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/ranger-master-v01.png`
+- Generated source paths: `packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/ranger-master-v01.png`<br>`packages/assets/sources/generated/2026-07-21/scourge-survivors/players/pyre/ranger-turnaround-source.png`
 
 ### Vector
 
@@ -396,7 +396,7 @@ Generated coverage board for lore entries and their package-owned generated art.
 - Package asset paths: `packages/assets/entities/pyre-vector/pactfall.webp`<br>`packages/assets/entities/pyre-vector/scourge-survivors.webp`
 - Preview paths: `packages/assets/lore/asset-status/previews/characters/vector.webp`
 - Master paths: `packages/assets/masters/art/characters/v01/vector-master-v01.png`
-- Generated source paths: `packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/vector-master-v01.png`
+- Generated source paths: `packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/vector-master-v01.png`<br>`packages/assets/sources/generated/2026-07-21/scourge-survivors/players/pyre/vector-turnaround-source.png`
 
 ### Wallwright
 

@@ -35,10 +35,12 @@ function asInput(input: TestInput): Input {
 
 function flatCourse(overrides: Partial<Course> = {}): Course {
   return {
+    segments: [],
     platforms: [{ x0: 0, x1: 200, topY: WORLD.groundY }],
     hazards: [],
     embers: [],
     ramps: [],
+    checkpoints: [],
     beaconX: 120,
     ...overrides,
   };

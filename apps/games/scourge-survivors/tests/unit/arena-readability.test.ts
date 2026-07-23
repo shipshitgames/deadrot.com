@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type ArenaMap, MAPS, SANDBOX_MAPS } from "../../src/game/data/maps";
+import { type ArenaMap, MAPS, SANDBOX_MAPS, SURVIVOR_MAPS } from "../../src/game/data/maps";
 import {
   auditArenaReadability,
   boxOverlapsPlayArea,
@@ -19,14 +19,14 @@ import {
 // debugSnapshot().readability) by the arena-environments test in
 // tests/e2e/sandbox.spec.ts.
 
-const allMaps = { ...MAPS, ...SANDBOX_MAPS };
+const allMaps = { ...SURVIVOR_MAPS, ...SANDBOX_MAPS };
 
 describe("arena combat readability (#35)", () => {
   it("freezes the readability budget so the contract can't drift at runtime", () => {
     expect(Object.isFrozen(READABILITY_BUDGET)).toBe(true);
   });
 
-  it("passes every campaign + sandbox map against the readability budget", () => {
+  it("passes every shipped Survivors + sandbox map against the readability budget", () => {
     for (const [mapId, map] of Object.entries(allMaps)) {
       const audit = auditArenaReadability(map);
       // Surface the offending rules in the failure message, not just "false".

@@ -63,6 +63,9 @@ deploys.
   materials in the studio palette. No external art.
 - React UI shell via `@shipshitgames/ui`; gameplay still runs in the Three.js loop.
 
+The game-local [visual contract](./DESIGN.md) defines Pactfall's camera,
+faction silhouettes, scale hierarchy, and semantic production-asset paths.
+
 ## Architecture
 
 A thin `Game` class owns shared state and four systems, driven by a single

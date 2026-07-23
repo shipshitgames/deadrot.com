@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import { audio } from "../audio";
 import type { EntitySystem } from "../systems/EntitySystem";
 import type { RenderSystem } from "../systems/RenderSystem";
+import { audio } from "./audio";
 import {
   type BossPhase,
   beamPlan,
