@@ -5,7 +5,15 @@ import { notFound } from "next/navigation";
 import { GameCard } from "@/components/game/game-card";
 import { Backdrop } from "@/components/site/atmosphere";
 import { Eyebrow } from "@/components/site/eyebrow";
-import { accentVars, characterGames, characters, getCharacter, getFaction, spriteUrl } from "@/lib/content";
+import {
+  accentVars,
+  characterArtUrl,
+  characterArtVariants,
+  characterGames,
+  characters,
+  getCharacter,
+  getFaction,
+} from "@/lib/content";
 import { createEntitySocialMetadata } from "@/lib/social";
 
 export function generateStaticParams() {
@@ -29,7 +37,8 @@ export default async function CharacterPage({ params }: { params: Promise<{ slug
   const character = getCharacter(slug);
   if (!character) notFound();
 
-  const sprite = spriteUrl(character.spriteBase);
+  const sprite = characterArtUrl(character);
+  const artVariants = characterArtVariants(character);
   const faction = getFaction(character.factionSlug);
   const cgames = characterGames(character);
 
@@ -134,6 +143,50 @@ export default async function CharacterPage({ params }: { params: Promise<{ slug
           </div>
         </div>
       </section>
+
+      {/* ── FIELD VARIANTS ──────────────────────────────────────────────── */}
+      {artVariants.length ? (
+        <section className="relative border-t border-gunmetal/40 px-6 py-20 sm:py-24">
+          <div className="mx-auto max-w-7xl">
+            <Eyebrow>Canonical Package Art</Eyebrow>
+            <h2 className="mt-3 font-display text-4xl font-bold uppercase tracking-tight text-bone sm:text-5xl">
+              Field Variants
+            </h2>
+            <p className="mt-4 max-w-2xl leading-relaxed text-ash">
+              One operator, re-framed for each front. Every plate resolves from the shared Deadrot asset catalog.
+            </p>
+            <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {artVariants.map((variant) => (
+                <figure
+                  key={variant.game}
+                  className="overflow-hidden rounded-md border border-gunmetal bg-coal transition-colors hover:border-[var(--page-accent)]"
+                >
+                  <div className="relative aspect-square bg-[radial-gradient(70%_60%_at_50%_25%,color-mix(in_srgb,var(--page-accent)_20%,transparent),transparent_72%)]">
+                    <Image
+                      src={variant.url}
+                      alt={`${character.name} — ${variant.gameTitle} field variant`}
+                      fill
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-contain p-6 drop-shadow-[0_14px_40px_color-mix(in_srgb,var(--page-accent)_45%,transparent)]"
+                    />
+                    <div className="vignette absolute inset-0" aria-hidden />
+                  </div>
+                  <figcaption className="border-t border-gunmetal px-4 py-3">
+                    <strong className="block font-display text-lg uppercase tracking-tight text-bone">
+                      {variant.gameTitle}
+                    </strong>
+                    {variant.sourceGame !== variant.game ? (
+                      <span className="text-xs uppercase tracking-wider text-ash">
+                        Reuses {variant.sourceGameTitle} plate
+                      </span>
+                    ) : null}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {/* ── APPEARS IN ───────────────────────────────────────────────────── */}
       {cgames.length ? (

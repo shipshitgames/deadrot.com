@@ -20,11 +20,24 @@ import { withSentryConfig } from "@sentry/nextjs";
 // the game servers down).
 const useLocalGames = process.env.NODE_ENV !== "production" && process.env.DEADROT_PROXY_PROD !== "1";
 
+const configuredAssetOrigin = process.env.NEXT_PUBLIC_DEADROT_ASSET_ORIGIN?.trim();
+const assetRemotePatterns = [];
+if (configuredAssetOrigin?.startsWith("http://") || configuredAssetOrigin?.startsWith("https://")) {
+  const assetOrigin = new URL(configuredAssetOrigin);
+  assetRemotePatterns.push({
+    protocol: assetOrigin.protocol.slice(0, -1),
+    hostname: assetOrigin.hostname,
+    port: assetOrigin.port,
+    pathname: `${assetOrigin.pathname.replace(/\/+$/, "") || ""}/**`,
+  });
+}
+
 const nextConfig = {
   reactStrictMode: true,
   trailingSlash: true,
   // The lore data layer (@shipshitgames/assets/lore) ships as workspace TS source.
   transpilePackages: ["@shipshitgames/assets"],
+  images: { remotePatterns: assetRemotePatterns },
   async rewrites() {
     if (useLocalGames) return [];
     return Object.entries(GAME_DEPLOYS).flatMap(([slug, url]) => [

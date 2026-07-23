@@ -1,4 +1,5 @@
 import { CONCEPTS, GAME_APPS, gameRoute } from "@deadrot/catalog";
+import { findEntityForLoreEntry, type GameSlug, resolvedEntityVariants } from "@shipshitgames/assets/catalog-art";
 import {
   type Accent,
   bestiary,
@@ -143,3 +144,44 @@ export const spriteUrl = (base: string | null) => {
   const path = SPRITE_BASE_PATHS[base] ?? base;
   return assetUrl(path.startsWith("/") ? path : `/${path}`);
 };
+
+export interface CharacterArtVariant {
+  entityId: string;
+  game: GameSlug;
+  gameTitle: string;
+  path: string;
+  sourceGame: GameSlug;
+  sourceGameTitle: string;
+  url: string;
+}
+
+/** All catalog-backed illustrations for a lore character, including aliases. */
+export function characterArtVariants(character: Character): CharacterArtVariant[] {
+  const entity = findEntityForLoreEntry(character);
+  if (!entity) return [];
+
+  return resolvedEntityVariants(entity).map(({ game, path, sourceGame }) => ({
+    entityId: entity.id,
+    game,
+    gameTitle: getGame(game)?.title ?? game,
+    path,
+    sourceGame,
+    sourceGameTitle: getGame(sourceGame)?.title ?? sourceGame,
+    url: assetUrl(path),
+  }));
+}
+
+/** Prefer the current game render, then the character's canon appearances. */
+export function characterArtUrl(character: Character, game?: string): string | null {
+  const variants = characterArtVariants(character);
+  const variantByGame = new Map<string, CharacterArtVariant>(variants.map((variant) => [variant.game, variant]));
+  const requested = game ? variantByGame.get(game) : undefined;
+  if (requested) return requested.url;
+
+  for (const appearance of character.appearsIn) {
+    const variant = variantByGame.get(appearance);
+    if (variant) return variant.url;
+  }
+
+  return variants[0]?.url ?? spriteUrl(character.spriteBase);
+}

@@ -9,7 +9,16 @@ import { Backdrop } from "@/components/site/atmosphere";
 import { Eyebrow } from "@/components/site/eyebrow";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { accentVars, gameCharacters, gameCoverUrl, gameCreatures, games, getFaction, getGame } from "@/lib/content";
+import {
+  accentVars,
+  characterArtUrl,
+  gameCharacters,
+  gameCoverUrl,
+  gameCreatures,
+  games,
+  getFaction,
+  getGame,
+} from "@/lib/content";
 import { createSocialMetadata, SITE_URL } from "@/lib/social";
 
 export function generateStaticParams() {
@@ -190,7 +199,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
                   kicker={c.role}
                   tag={c.factionName}
                   accent={c.accent}
-                  spriteBase={c.spriteBase}
+                  imageUrl={characterArtUrl(c, game.slug)}
                 />
               ))}
             </div>
