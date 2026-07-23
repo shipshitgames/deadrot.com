@@ -150,6 +150,12 @@ export interface ArenaEnvironment {
  * Safe presentation used when a map only authors structure. It deliberately
  * uses Ashgate's non-Scourge foundry palette: no toxic-green environment
  * lighting, non-empty distant silhouettes, and registered dressing textures.
+ *
+ * This one constant is cloned for EVERY fallback map, so its distant silhouettes
+ * must clear the LARGEST arena that omits an environment — currently Foundry
+ * Wards ({@link FOUNDRY_WARDS_BOUNDS}, ±72×±56). The readability audit (#35)
+ * fails any silhouette whose AABB overlaps the play area, so the ring is placed
+ * just beyond that widest footprint rather than the default ±40 outer ring.
  */
 export const DEFAULT_ARENA_ENVIRONMENT: ArenaEnvironment = {
   skyTop: 0x090505,
@@ -157,10 +163,10 @@ export const DEFAULT_ARENA_ENVIRONMENT: ArenaEnvironment = {
   horizonHaze: 0xff6a00,
   horizonOpacity: 0.16,
   silhouettes: [
-    { x: -58, z: -18, w: 5, h: 26, d: 5, color: 0x241713, emissive: 0x3a1507, opacity: 0.88 },
-    { x: -66, z: 22, w: 8, h: 18, d: 6, color: 0x1b1513, emissive: 0x281006, opacity: 0.9 },
-    { x: 61, z: -28, w: 7, h: 22, d: 5, color: 0x201614, emissive: 0x351307, opacity: 0.88 },
-    { x: 52, z: 34, w: 16, h: 10, d: 5, color: 0x241610, emissive: 0x4a1b08, opacity: 0.84 },
+    { x: -82, z: -24, w: 5, h: 26, d: 5, color: 0x241713, emissive: 0x3a1507, opacity: 0.88 },
+    { x: -84, z: 26, w: 8, h: 18, d: 6, color: 0x1b1513, emissive: 0x281006, opacity: 0.9 },
+    { x: 82, z: -30, w: 7, h: 22, d: 5, color: 0x201614, emissive: 0x351307, opacity: 0.88 },
+    { x: 82, z: 34, w: 16, h: 10, d: 5, color: 0x241610, emissive: 0x4a1b08, opacity: 0.84 },
     { x: 0, z: 66, w: 36, h: 8, d: 5, color: 0x1d1310, emissive: 0x2a0f06, opacity: 0.82 },
   ],
   decals: [
