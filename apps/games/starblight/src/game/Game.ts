@@ -125,6 +125,94 @@ export class Game {
     this.raf = requestAnimationFrame(this.loop);
   }
 
+  /** Serializable, read-only state for the dev/E2E harness. */
+  debugSnapshot() {
+    return {
+      phase: this.phase,
+      timeSec: this.clock,
+      level: this.level,
+      integrity: Math.max(0, this.integrity),
+      maxIntegrity: this.stats.maxIntegrity,
+      kills: this.kills,
+      salvage: this.salvage,
+      aliveEnemies: this.entities.enemies.filter((enemy) => !enemy.dead).length,
+      bossHp01: this.bossEncounter.hp01(),
+      ship: {
+        x: this.entities.ship.position.x,
+        y: this.entities.ship.position.y,
+      },
+      draft: this.draft?.map((card) => ({ ...card })) ?? null,
+      build: this.buildChips().map((chip) => ({ ...chip })),
+    };
+  }
+
+  /** Dev/E2E driver: start a clean sortie through the production reset path. */
+  debugStartRun() {
+    this.assertDebugActive();
+    this.startRun();
+  }
+
+  /** Dev/E2E driver: replay the production simulation at a fixed 60 Hz. */
+  debugAdvance(seconds: number) {
+    this.assertDebugActive();
+    if (!Number.isFinite(seconds) || seconds < 0 || seconds > 300) {
+      throw new Error("Starblight debug advance requires 0..300 finite seconds");
+    }
+    const fixedDt = 1 / 60;
+    const steps = Math.ceil(seconds / fixedDt);
+    for (let i = 0; i < steps && this.phase === "playing"; i++) {
+      this.simulate(this.hitStop.scaleDelta(fixedDt));
+    }
+    this.emitHud();
+  }
+
+  /** Dev/E2E fixture: put one fragile, stationary Scourge inside seeker range. */
+  debugSpawnTarget() {
+    this.assertDebugPlaying();
+    const ship = this.entities.ship.position;
+    const direction = ship.x > WORLD.halfW - 12 ? -1 : 1;
+    const enemy = this.entities.spawnEnemy("grunt", ship.x + direction * 8, ship.y, 1, 1);
+    enemy.health = 1;
+    enemy.maxHealth = 1;
+    enemy.speed = 0;
+    enemy.contactDmg = 0;
+    this.emitHud();
+  }
+
+  /** Dev/E2E driver: enter one deterministic three-card draft. */
+  debugForceLevelUp() {
+    this.assertDebugPlaying();
+    this.level++;
+    this.currentXP = 0;
+    this.pendingLevels++;
+    this.triggerLevelUp();
+  }
+
+  /** Dev/E2E driver: choose a currently offered card by stable upgrade id. */
+  debugPickDraftCard(id: UpgradeId) {
+    this.assertDebugActive();
+    if (this.phase !== "levelup" || !this.draft?.some((card) => card.id === id)) {
+      throw new Error(`Starblight debug draft does not offer "${id}"`);
+    }
+    this.pickById(id);
+  }
+
+  /** Dev/E2E driver: trigger the production boss encounter immediately. */
+  debugForceBoss() {
+    this.assertDebugPlaying();
+    this.bossEncounter.maybeTrigger(CONSTANTS.boss.spawnAt);
+    this.emitHud();
+  }
+
+  /** Dev/E2E driver: set live boss health so HUD binding can be asserted. */
+  debugSetBossHp01(hp01: number) {
+    this.assertDebugPlaying();
+    const boss = this.bossEncounter.enemy();
+    if (!boss || boss.dead) throw new Error("Starblight debug boss is not active");
+    boss.health = boss.maxHealth * clamp(hp01, 0.01, 1);
+    this.emitHud();
+  }
+
   dispose() {
     this.disposed = true;
     cancelAnimationFrame(this.raf);
@@ -136,6 +224,17 @@ export class Game {
     this.entities.dispose();
     this.hud.dispose();
     this.render.dispose();
+  }
+
+  private assertDebugActive() {
+    if (this.disposed) throw new Error("Starblight debug handle is disposed");
+  }
+
+  private assertDebugPlaying() {
+    this.assertDebugActive();
+    if (this.phase !== "playing") {
+      throw new Error(`Starblight debug action requires playing phase, received "${this.phase}"`);
+    }
   }
 
   // --- run lifecycle -----------------------------------------------------
