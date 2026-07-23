@@ -7,6 +7,7 @@ import { PLAYABLE_GAME_SLUGS } from "@deadrot/catalog";
 
 import catalog from "../assets-catalog.json" with { type: "json" };
 import schema from "../assets-catalog.schema.json" with { type: "json" };
+import { findEntityForLoreEntry, resolvedEntityVariants } from "../src/catalog-art";
 
 const PACKAGE_ROOT = resolve(import.meta.dirname, "..");
 const BRAWL_ALIAS_ENTITIES = new Set(["pyre-duelist", "warden-bastion", "scourge-elite", "trucebreaker"]);
@@ -124,4 +125,21 @@ test("the ten pre-existing Pactfall paths are now marked as intended", () => {
     assert.ok(entity.games.includes("pactfall"), `${id}: Pactfall is intended`);
     assert.equal(typeof entity.variants.pactfall, "string", `${id}: Pactfall render path exists`);
   }
+});
+
+test("lore entries resolve to canonical catalog rows with explicit aliases", () => {
+  const ranger = findEntityForLoreEntry({ slug: "ranger", name: "Ranger" });
+  assert.equal(ranger?.id, "pyre-ranger");
+
+  const duelist = findEntityForLoreEntry({
+    slug: "pyre-duelist",
+    name: "Pyre Duelist",
+  });
+  assert.ok(duelist);
+  const brawl = resolvedEntityVariants(duelist).find((variant) => variant.game === "brawl");
+  assert.deepEqual(brawl, {
+    game: "brawl",
+    path: "entities/pyre-duelist/pactfall.webp",
+    sourceGame: "pactfall",
+  });
 });

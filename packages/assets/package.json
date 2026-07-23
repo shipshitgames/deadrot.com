@@ -15,6 +15,10 @@
       "types": "./src/asset-index.ts",
       "default": "./src/asset-index.ts"
     },
+    "./catalog-art": {
+      "types": "./src/catalog-art.ts",
+      "default": "./src/catalog-art.ts"
+    },
     "./scourge-survivors": {
       "types": "./src/scourge-survivors.ts",
       "default": "./src/scourge-survivors.ts"

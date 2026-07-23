@@ -3,7 +3,7 @@ import { FactionCardGrid } from "@/components/faction/faction-card-grid";
 import { EntityCard } from "@/components/roster/entity-card";
 import { Backdrop } from "@/components/site/atmosphere";
 import { Eyebrow } from "@/components/site/eyebrow";
-import { accentVars, bestiary, characters, universe } from "@/lib/content";
+import { accentVars, bestiary, characterArtUrl, characters, universe } from "@/lib/content";
 import { createSocialMetadata } from "@/lib/social";
 
 export const metadata: Metadata = createSocialMetadata({
@@ -111,7 +111,7 @@ export default function UniversePage() {
                 kicker={c.role}
                 tag={c.factionName}
                 accent={c.accent}
-                spriteBase={c.spriteBase}
+                imageUrl={characterArtUrl(c)}
               />
             ))}
           </div>

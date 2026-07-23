@@ -11,6 +11,7 @@ export function EntityCard({
   kicker,
   tag,
   accent,
+  imageUrl,
   spriteBase,
   className,
 }: {
@@ -19,10 +20,11 @@ export function EntityCard({
   kicker?: string;
   tag?: string;
   accent: Accent;
-  spriteBase: string | null;
+  imageUrl?: string | null;
+  spriteBase?: string | null;
   className?: string;
 }) {
-  const sprite = spriteUrl(spriteBase);
+  const sprite = imageUrl ?? spriteUrl(spriteBase ?? null);
   return (
     <Link
       href={href}

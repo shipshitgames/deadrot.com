@@ -308,6 +308,44 @@
       }
     },
     {
+      "id": "pyre-courier",
+      "kind": "entity",
+      "name": "Pyre Courier",
+      "faction": "pyre",
+      "hostFamily": null,
+      "canon": "Pyre runner who carries burn orders through severed lanes faster than the Choir can close around the route.",
+      "promptBase": "Pyre courier, stripped scorched plate, ash-cloth streamers, furnace visor, hellfire message canister, forward-leaning runner silhouette, blood-hot heat lines, rust and road grime",
+      "games": ["redline"],
+      "variants": {
+        "scourge-survivors": null,
+        "deadlane": null,
+        "pactfall": null,
+        "brawl": null,
+        "starblight": null,
+        "redline": "entities/pyre-courier/redline.webp",
+        "rothulk": null
+      }
+    },
+    {
+      "id": "pyre-saboteur",
+      "kind": "entity",
+      "name": "Pyre Saboteur",
+      "faction": "pyre",
+      "hostFamily": null,
+      "canon": "Pyre climber who enters a grounded rothulk, reaches its breach-core, and severs the living ship with a hellfire charge.",
+      "promptBase": "Pyre saboteur, stripped dark infiltration rig, dim furnace visor, hellfire ignition charge, bone-ceramic grips, agile climber silhouette, blood-hot scars, rust and gore",
+      "games": ["rothulk"],
+      "variants": {
+        "scourge-survivors": null,
+        "deadlane": null,
+        "pactfall": null,
+        "brawl": null,
+        "starblight": null,
+        "redline": null,
+        "rothulk": "entities/pyre-saboteur/rothulk.webp"
+      }
+    },
+    {
       "id": "warden-field-engineer",
       "kind": "entity",
       "name": "Field Engineer",
@@ -418,6 +456,25 @@
         "brawl": null,
         "starblight": "entities/warden-defense-pilot/starblight.webp",
         "redline": null,
+        "rothulk": null
+      }
+    },
+    {
+      "id": "warden-courier",
+      "kind": "entity",
+      "name": "Warden Courier",
+      "faction": "wardens",
+      "hostFamily": null,
+      "canon": "Warden runner who carries hold orders between cut-off defenses in a reinforced rig built to survive contact.",
+      "promptBase": "Warden courier, reinforced gunmetal road armor, sealed message case, boxy courier harness, industrial-yellow stripes, ember rangefinder lamps, worn steel and weld scars",
+      "games": ["redline"],
+      "variants": {
+        "scourge-survivors": null,
+        "deadlane": null,
+        "pactfall": null,
+        "brawl": null,
+        "starblight": null,
+        "redline": "entities/warden-courier/redline.webp",
         "rothulk": null
       }
     }

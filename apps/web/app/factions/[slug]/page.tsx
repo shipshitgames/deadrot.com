@@ -6,7 +6,7 @@ import { GameCard } from "@/components/game/game-card";
 import { EntityCard } from "@/components/roster/entity-card";
 import { Backdrop } from "@/components/site/atmosphere";
 import { Eyebrow } from "@/components/site/eyebrow";
-import { accentVars, charactersByFaction, factionGames, factions, getFaction } from "@/lib/content";
+import { accentVars, characterArtUrl, charactersByFaction, factionGames, factions, getFaction } from "@/lib/content";
 import { createEntitySocialMetadata } from "@/lib/social";
 
 export function generateStaticParams() {
@@ -113,7 +113,7 @@ export default async function FactionPage({ params }: { params: Promise<{ slug: 
                   kicker={c.role}
                   tag={c.factionName}
                   accent={c.accent}
-                  spriteBase={c.spriteBase}
+                  imageUrl={characterArtUrl(c)}
                 />
               ))}
             </div>
