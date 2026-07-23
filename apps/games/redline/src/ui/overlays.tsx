@@ -11,6 +11,7 @@
 import menuHero from "@shipshitgames/assets/games/redline/ui/menu/title.webp";
 import { GameAudioSettingsScreen, GamePauseMenu } from "@shipshitgames/ui";
 import { useSyncExternalStore } from "react";
+import { CinematicOverlay } from "./CinematicOverlay";
 import { overlayController } from "./overlayController";
 
 const GAME_SLUG = "redline";
@@ -35,6 +36,14 @@ export function GameOverlays() {
         onResume={overlayController.onResume}
         actions={overlayController.pauseActions}
       />
+
+      {state.cinematic && (
+        <CinematicOverlay
+          beat={state.cinematic.beat}
+          site={state.cinematic.site}
+          onComplete={state.cinematic.complete}
+        />
+      )}
     </>
   );
 }
