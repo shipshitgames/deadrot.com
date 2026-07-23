@@ -143,9 +143,9 @@ describe("Blight-Maw phase gates", () => {
 });
 
 describe("audio cue throttles", () => {
-  test("the weapon-fire laser cue is capped at ~6 plays per second", () => {
-    expect(1 / CONSTANTS.audio.laserMinInterval).toBeLessThanOrEqual(6.001);
-    expect(CONSTANTS.audio.laserPitchHi).toBeGreaterThan(CONSTANTS.audio.laserPitchLo);
+  test("the aggregate weapon-fire mix is capped at ~6 plays per second", () => {
+    expect(1 / CONSTANTS.audio.weaponMinInterval).toBeLessThanOrEqual(6.001);
+    expect(CONSTANTS.audio.weaponPitchHi).toBeGreaterThan(CONSTANTS.audio.weaponPitchLo);
   });
 
   test("gem pickup pitch rises with the streak and caps", () => {

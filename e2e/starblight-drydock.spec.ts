@@ -4,15 +4,9 @@ import { expect, type Page, test } from "@playwright/test";
 // the Drydock once + ENGAGE + 3 HUD asserts; this file exercises the FULL
 // menu -> drydock -> run -> pause -> resume -> exit-to-title -> re-engage loop.
 //
-// starblight has NO `window` debug hook (unlike rothulk's __rothulkGame or
-// brawl's __brawlSnapshot — confirmed: main.ts never assigns the Game to
-// window), so we CANNOT force enemy spawns / kills / level-ups / boss / game
-// over deterministically. Every assertion below reads DOM state written by
-// HudSystem (apps/games/starblight/src/systems/HudSystem.ts) and the shared
-// React PauseMenu — all reachable via deterministic DOM clicks, no real-time
-// rAF/RNG gameplay. We deliberately never assert kills>0, level>1, the #draft
-// overlay, #boss-bar, or "OVERRUN"/"FRONT HELD": those need real gameplay and
-// would be flaky.
+// This lifecycle suite deliberately stays black-box and reads DOM state written
+// by HudSystem plus the shared React PauseMenu. Deterministic combat, draft, and
+// boss coverage belongs to starblight-headless.spec.ts and its dev-only adapter.
 
 // starblight does not connect to PartyKit/WebSocket (unlike warline), so the
 // console should be entirely clean — keep the ignore list empty.

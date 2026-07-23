@@ -128,6 +128,42 @@ describe("course generation — deterministic & well-formed", () => {
     expect(c.beaconX).toBe(WORLD.levelLength);
   });
 
+  test("the authored route is a stable sequence of flat, ramp, gap, and hazard chunks", () => {
+    const c = generateCourse(1337);
+    expect(c.segments[0]).toMatchObject({ id: "opening-runway", kind: "flat", x0: 0 });
+    expect(c.segments.at(-1)).toMatchObject({ id: "final-approach", kind: "flat", x1: c.beaconX });
+    expect(new Set(c.segments.map((segment) => segment.kind))).toEqual(new Set(["flat", "ramp", "gap", "hazard"]));
+    for (let i = 1; i < c.segments.length; i++) {
+      expect(c.segments[i].x0).toBe(c.segments[i - 1].x1);
+      expect(c.segments[i].x1).toBeGreaterThan(c.segments[i].x0);
+    }
+  });
+
+  test("the authored plan fills the playable route across representative seeds", () => {
+    for (const seed of [0, 1, 2, 1337, 0xffffffff]) {
+      const c = generateCourse(seed);
+      const finalApproach = c.segments.at(-1);
+      expect(finalApproach).toMatchObject({ id: "final-approach", kind: "flat", x1: c.beaconX });
+      expect(finalApproach?.x0).toBeLessThan(c.beaconX);
+      expect(c.segments.at(-2)?.x1).toBeGreaterThan(c.beaconX - 48);
+    }
+  });
+
+  test("ships one safe mid-course checkpoint before the delivery beacon", () => {
+    const c = generateCourse(1337);
+    expect(c.checkpoints).toHaveLength(1);
+    const checkpoint = c.checkpoints[0];
+    expect(checkpoint).toMatchObject({
+      id: "junction-split",
+      label: "JUNCTION SPLIT",
+      reached: false,
+      splitTime: null,
+    });
+    expect(checkpoint.x).toBeGreaterThan(c.beaconX * 0.35);
+    expect(checkpoint.x).toBeLessThan(c.beaconX * 0.65);
+    expect(c.platforms.some((platform) => checkpoint.x >= platform.x0 && checkpoint.x <= platform.x1)).toBe(true);
+  });
+
   test("a safe runway precedes the first hazard", () => {
     const c = generateCourse(1337);
     for (const h of c.hazards) {
@@ -402,10 +438,12 @@ describe("physics — surface resolution, hazards, embers, beacon", () => {
   // A minimal flat course with a single platform under the runner.
   function flatCourse(): Course {
     return {
+      segments: [],
       platforms: [{ x0: 0, x1: 100, topY: WORLD.groundY }],
       hazards: [],
       embers: [],
       ramps: [],
+      checkpoints: [],
       beaconX: 90,
     };
   }
@@ -424,6 +462,7 @@ describe("physics — surface resolution, hazards, embers, beacon", () => {
   test("over a pit there is no floor: the runner falls", () => {
     const phys = new Physics();
     const course: Course = {
+      segments: [],
       platforms: [
         { x0: 0, x1: 20, topY: WORLD.groundY },
         { x0: 30, x1: 100, topY: WORLD.groundY },
@@ -431,6 +470,7 @@ describe("physics — surface resolution, hazards, embers, beacon", () => {
       hazards: [],
       embers: [],
       ramps: [],
+      checkpoints: [],
       beaconX: 90,
     };
     const r = new Runner();
@@ -444,10 +484,12 @@ describe("physics — surface resolution, hazards, embers, beacon", () => {
   test("falling far below the world reports fellInPit (a lost run)", () => {
     const phys = new Physics();
     const course: Course = {
+      segments: [],
       platforms: [{ x0: 0, x1: 20, topY: WORLD.groundY }],
       hazards: [],
       embers: [],
       ramps: [],
+      checkpoints: [],
       beaconX: 90,
     };
     const r = new Runner();
@@ -597,13 +639,30 @@ describe("physics — surface resolution, hazards, embers, beacon", () => {
     expect(res.reachedBeacon).toBe(true);
   });
 
+  test("crossing an unreached checkpoint reports one racing split", () => {
+    const phys = new Physics();
+    const course = flatCourse();
+    course.checkpoints = [{ id: "mid", label: "MID-LANE", x: 40, reached: false, splitTime: null }];
+    const r = new Runner();
+    r.x = 40;
+
+    const first = phys.step(1 / 120, r, course);
+    expect(first.reachedCheckpoint).toBe(course.checkpoints[0]);
+
+    course.checkpoints[0].reached = true;
+    const second = phys.step(1 / 120, r, course);
+    expect(second.reachedCheckpoint).toBeNull();
+  });
+
   test("a ramp launches the runner upward at its top", () => {
     const phys = new Physics();
     const course: Course = {
+      segments: [],
       platforms: [{ x0: 0, x1: 100, topY: WORLD.groundY }],
       hazards: [],
       embers: [],
       ramps: [{ x0: 5, x1: 10, baseY: WORLD.groundY, rise: COURSE.rampRise }],
+      checkpoints: [],
       beaconX: 90,
     };
     const r = new Runner();
@@ -620,10 +679,12 @@ describe("physics — surface resolution, hazards, embers, beacon", () => {
 describe("physics — progress & distance math", () => {
   const phys = new Physics();
   const course: Course = {
+    segments: [],
     platforms: [{ x0: 0, x1: 600, topY: WORLD.groundY }],
     hazards: [],
     embers: [],
     ramps: [],
+    checkpoints: [],
     beaconX: WORLD.levelLength,
   };
 

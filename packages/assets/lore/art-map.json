@@ -1409,11 +1409,11 @@
             "keyPath": "player-heavy.views.back",
             "path": "games/scourge-survivors/players/pyre/bulwark/back.webp",
             "license": {
-              "tool": "legacy repository asset",
-              "plan": "prototype",
-              "date": "2026-06-02",
-              "kind": "generated 2D player sprite",
-              "scope": "project prototype"
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-07-21",
+              "kind": "AI-generated comic/cel-ink Pyre Bulwark turnaround",
+              "scope": "Scourge Survivors runtime"
             },
             "exists": true,
             "generated": true
@@ -1425,11 +1425,11 @@
             "keyPath": "player-heavy.views.front",
             "path": "games/scourge-survivors/players/pyre/bulwark/front.webp",
             "license": {
-              "tool": "legacy repository asset",
-              "plan": "prototype",
-              "date": "2026-06-02",
-              "kind": "generated 2D player sprite",
-              "scope": "project prototype"
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-07-21",
+              "kind": "AI-generated comic/cel-ink Pyre Bulwark turnaround",
+              "scope": "Scourge Survivors runtime"
             },
             "exists": true,
             "generated": true
@@ -1441,11 +1441,11 @@
             "keyPath": "player-heavy.views.side",
             "path": "games/scourge-survivors/players/pyre/bulwark/side.webp",
             "license": {
-              "tool": "legacy repository asset",
-              "plan": "prototype",
-              "date": "2026-06-02",
-              "kind": "generated 2D player sprite",
-              "scope": "project prototype"
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-07-21",
+              "kind": "AI-generated comic/cel-ink Pyre Bulwark turnaround",
+              "scope": "Scourge Survivors runtime"
             },
             "exists": true,
             "generated": true
@@ -1472,17 +1472,18 @@
         ]
       },
       "sources": {
-        "count": 1,
+        "count": 2,
         "paths": [
-          "packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/bulwark-master-v01.png"
+          "packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/bulwark-master-v01.png",
+          "packages/assets/sources/generated/2026-07-21/scourge-survivors/players/pyre/bulwark-turnaround-source.png"
         ]
       },
       "manual": {
         "note": "Bulwark",
-        "good": "Review",
+        "good": "Good",
         "locked": "No",
         "source": "`packages/assets/games/scourge-survivors/players/pyre/bulwark/{front,side,back}.webp`",
-        "nextAction": "Regenerate as locked comic/cel-ink production turnaround."
+        "nextAction": "Preserve the production turnaround; author animation separately."
       },
       "status": "runtime-linked"
     },
@@ -1646,11 +1647,11 @@
             "keyPath": "player-medic.views.back",
             "path": "games/scourge-survivors/players/pyre/patch/back.webp",
             "license": {
-              "tool": "legacy repository asset",
-              "plan": "prototype",
-              "date": "2026-06-02",
-              "kind": "generated 2D player sprite",
-              "scope": "project prototype"
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-07-21",
+              "kind": "AI-generated comic/cel-ink Pyre Patch turnaround",
+              "scope": "Scourge Survivors runtime"
             },
             "exists": true,
             "generated": true
@@ -1662,11 +1663,11 @@
             "keyPath": "player-medic.views.front",
             "path": "games/scourge-survivors/players/pyre/patch/front.webp",
             "license": {
-              "tool": "legacy repository asset",
-              "plan": "prototype",
-              "date": "2026-06-02",
-              "kind": "generated 2D player sprite",
-              "scope": "project prototype"
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-07-21",
+              "kind": "AI-generated comic/cel-ink Pyre Patch turnaround",
+              "scope": "Scourge Survivors runtime"
             },
             "exists": true,
             "generated": true
@@ -1678,11 +1679,11 @@
             "keyPath": "player-medic.views.side",
             "path": "games/scourge-survivors/players/pyre/patch/side.webp",
             "license": {
-              "tool": "legacy repository asset",
-              "plan": "prototype",
-              "date": "2026-06-02",
-              "kind": "generated 2D player sprite",
-              "scope": "project prototype"
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-07-21",
+              "kind": "AI-generated comic/cel-ink Pyre Patch turnaround",
+              "scope": "Scourge Survivors runtime"
             },
             "exists": true,
             "generated": true
@@ -1709,17 +1710,18 @@
         ]
       },
       "sources": {
-        "count": 1,
+        "count": 2,
         "paths": [
-          "packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/patch-master-v01.png"
+          "packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/patch-master-v01.png",
+          "packages/assets/sources/generated/2026-07-21/scourge-survivors/players/pyre/patch-turnaround-source.png"
         ]
       },
       "manual": {
         "note": "Patch",
-        "good": "Review",
+        "good": "Good",
         "locked": "No",
         "source": "`packages/assets/games/scourge-survivors/players/pyre/patch/{front,side,back}.webp`",
-        "nextAction": "Regenerate as locked comic/cel-ink production turnaround."
+        "nextAction": "Preserve the production turnaround; author animation separately."
       },
       "status": "runtime-linked"
     },
@@ -2054,11 +2056,11 @@
             "keyPath": "player-ranger.views.back",
             "path": "games/scourge-survivors/players/pyre/ranger/back.webp",
             "license": {
-              "tool": "legacy repository asset",
-              "plan": "prototype",
-              "date": "2026-06-02",
-              "kind": "generated 2D player sprite",
-              "scope": "project prototype"
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-07-21",
+              "kind": "AI-generated comic/cel-ink Pyre Ranger turnaround",
+              "scope": "Scourge Survivors runtime"
             },
             "exists": true,
             "generated": true
@@ -2070,11 +2072,11 @@
             "keyPath": "player-ranger.views.front",
             "path": "games/scourge-survivors/players/pyre/ranger/front.webp",
             "license": {
-              "tool": "legacy repository asset",
-              "plan": "prototype",
-              "date": "2026-06-02",
-              "kind": "generated 2D player sprite",
-              "scope": "project prototype"
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-07-21",
+              "kind": "AI-generated comic/cel-ink Pyre Ranger turnaround",
+              "scope": "Scourge Survivors runtime"
             },
             "exists": true,
             "generated": true
@@ -2086,11 +2088,11 @@
             "keyPath": "player-ranger.views.side",
             "path": "games/scourge-survivors/players/pyre/ranger/side.webp",
             "license": {
-              "tool": "legacy repository asset",
-              "plan": "prototype",
-              "date": "2026-06-02",
-              "kind": "generated 2D player sprite",
-              "scope": "project prototype"
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-07-21",
+              "kind": "AI-generated comic/cel-ink Pyre Ranger turnaround",
+              "scope": "Scourge Survivors runtime"
             },
             "exists": true,
             "generated": true
@@ -2117,17 +2119,18 @@
         ]
       },
       "sources": {
-        "count": 1,
+        "count": 2,
         "paths": [
-          "packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/ranger-master-v01.png"
+          "packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/ranger-master-v01.png",
+          "packages/assets/sources/generated/2026-07-21/scourge-survivors/players/pyre/ranger-turnaround-source.png"
         ]
       },
       "manual": {
         "note": "Ranger",
-        "good": "Review",
+        "good": "Good",
         "locked": "No",
         "source": "`packages/assets/games/scourge-survivors/players/pyre/ranger/{front,side,back}.webp`",
-        "nextAction": "Regenerate as locked comic/cel-ink production turnaround."
+        "nextAction": "Preserve the production turnaround; author animation separately."
       },
       "status": "runtime-linked"
     },
@@ -2167,11 +2170,11 @@
             "keyPath": "player-scout.views.back",
             "path": "games/scourge-survivors/players/pyre/vector/back.webp",
             "license": {
-              "tool": "legacy repository asset",
-              "plan": "prototype",
-              "date": "2026-06-02",
-              "kind": "generated 2D player sprite",
-              "scope": "project prototype"
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-07-21",
+              "kind": "AI-generated comic/cel-ink Pyre Vector turnaround",
+              "scope": "Scourge Survivors runtime"
             },
             "exists": true,
             "generated": true
@@ -2183,11 +2186,11 @@
             "keyPath": "player-scout.views.front",
             "path": "games/scourge-survivors/players/pyre/vector/front.webp",
             "license": {
-              "tool": "legacy repository asset",
-              "plan": "prototype",
-              "date": "2026-06-02",
-              "kind": "generated 2D player sprite",
-              "scope": "project prototype"
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-07-21",
+              "kind": "AI-generated comic/cel-ink Pyre Vector turnaround",
+              "scope": "Scourge Survivors runtime"
             },
             "exists": true,
             "generated": true
@@ -2199,11 +2202,11 @@
             "keyPath": "player-scout.views.side",
             "path": "games/scourge-survivors/players/pyre/vector/side.webp",
             "license": {
-              "tool": "legacy repository asset",
-              "plan": "prototype",
-              "date": "2026-06-02",
-              "kind": "generated 2D player sprite",
-              "scope": "project prototype"
+              "tool": "gpt-image-2",
+              "plan": "built-in image_gen",
+              "date": "2026-07-21",
+              "kind": "AI-generated comic/cel-ink Pyre Vector turnaround",
+              "scope": "Scourge Survivors runtime"
             },
             "exists": true,
             "generated": true
@@ -2230,17 +2233,18 @@
         ]
       },
       "sources": {
-        "count": 1,
+        "count": 2,
         "paths": [
-          "packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/vector-master-v01.png"
+          "packages/assets/sources/generated/2026-06-16/lore/characters/master-candidates/vector-master-v01.png",
+          "packages/assets/sources/generated/2026-07-21/scourge-survivors/players/pyre/vector-turnaround-source.png"
         ]
       },
       "manual": {
         "note": "Vector",
-        "good": "Review",
+        "good": "Good",
         "locked": "No",
         "source": "`packages/assets/games/scourge-survivors/players/pyre/vector/{front,side,back}.webp`",
-        "nextAction": "Regenerate as locked comic/cel-ink production turnaround."
+        "nextAction": "Preserve the production turnaround; author animation separately."
       },
       "status": "runtime-linked"
     },

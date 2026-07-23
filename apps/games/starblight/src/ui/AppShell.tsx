@@ -1,44 +1,30 @@
 import { codexEntriesForGame } from "@deadrot/game-kit";
 import menuHero from "@shipshitgames/assets/games/starblight/ui/menu/title.webp";
-import {
-  CodexScreen,
-  GameAudioSettingsScreen,
-  GameJumpMenu,
-  GameMenuTitle,
-  GamePauseMenu,
-  GlobalMusicToggle,
-  gameMenuConfig,
-  goToWarlineLobby,
-  MainMenuAction,
-  MainMenuCopy,
-  MainMenuEnterPrompt,
-  MainMenuLayout,
-  MainMenuNav,
-  MainMenuScreen,
-  MainMenuStatus,
-  MainMenuTopBar,
-  MenuKicker,
-  MenuPanel,
-  useEnterToReveal,
-} from "@shipshitgames/ui";
+import { CodexScreen, GameAudioSettingsScreen, gameMenuConfig, goToWarlineLobby, MenuPanel } from "@shipshitgames/ui";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { applyBuy, loadDrydock, type ShopId, saveDrydock } from "../game/drydock";
 import { DrydockScreen } from "./DrydockScreen";
-import { getPauseActions, getPauseSnapshot, pushDrydockTiers, setRunEndHandler, subscribePause } from "./gameBridge";
+import { getMenuSnapshot, getPauseActions, pushDrydockTiers, setRunEndHandler, subscribeMenu } from "./gameBridge";
+import { MetaScreen, PauseScreen, RunSummaryScreen, TitleScreen } from "./MenuScreens";
 
 const GAME_SLUG = "starblight";
 const menu = gameMenuConfig(GAME_SLUG);
+type SecondaryScreen = "settings" | "codex" | "drydock" | "meta";
 
 export function AppShell() {
-  // Pause state lives in the imperative Game engine; mirror it here via the
-  // bridge so the shared React PauseMenu can render over the canvas.
-  const pause = useSyncExternalStore(subscribePause, getPauseSnapshot, getPauseSnapshot);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [codexOpen, setCodexOpen] = useState(false);
+  const menuState = useSyncExternalStore(subscribeMenu, getMenuSnapshot, getMenuSnapshot);
+  const [secondary, setSecondary] = useState<{
+    phase: typeof menuState.phase;
+    screen: SecondaryScreen | null;
+    returnTo: SecondaryScreen | null;
+  }>({ phase: menuState.phase, screen: null, returnTo: null });
+  if (secondary.phase !== menuState.phase) {
+    setSecondary({ phase: menuState.phase, screen: null, returnTo: null });
+  }
+  const secondaryScreen = secondary.phase === menuState.phase ? secondary.screen : null;
   // No discovery wiring in starblight: every dossier ships unlocked.
   const codexEntries = useMemo(() => codexEntriesForGame("starblight"), []);
   const [drydock, setDrydock] = useState(() => loadDrydock());
-  const [drydockOpen, setDrydockOpen] = useState(false);
   // The run-end banking handler registers once; read live tiers through a ref so
   // the Salvage Tithe multiplier reflects purchases made after mount.
   const drydockRef = useRef(drydock);
@@ -65,21 +51,31 @@ export function AppShell() {
       return next;
     });
   }, []);
-  // The #banner screen is reused for the title, game-over, and victory states
-  // (the engine writes #banner-title/#banner-sub for the latter two). Gate the
-  // splash/menu behaviour on the title phase so the hero copy hides once the
-  // menu is revealed, but stays visible for the engine-written result banners.
-  const onTitle = pause.phase === "title";
-  const revealed = useEnterToReveal(onTitle);
-  const onSplash = onTitle && !revealed;
-  const pauseStatus = useMemo(() => <span>{pause.stats}</span>, [pause.stats]);
-  const pauseActions = useMemo(
-    () => [
-      { id: "restart", label: "Restart run", meta: "New sortie", onSelect: () => getPauseActions().restart() },
-      { id: "title", label: "Main menu", meta: "Exit to title", onSelect: () => getPauseActions().title() },
-    ],
-    [],
+  const onTitle = menuState.phase === "title";
+  const runEnded = menuState.phase === "gameover" || menuState.phase === "victory";
+  const closeSecondaryScreens = useCallback(() => {
+    setSecondary({ phase: menuState.phase, screen: null, returnTo: null });
+  }, [menuState.phase]);
+  const closeSecondaryScreen = useCallback(() => {
+    setSecondary((current) => ({
+      phase: menuState.phase,
+      screen: current.phase === menuState.phase ? current.returnTo : null,
+      returnTo: null,
+    }));
+  }, [menuState.phase]);
+  const openSecondaryScreen = useCallback(
+    (screen: SecondaryScreen, returnTo: SecondaryScreen | null = null) =>
+      setSecondary({ phase: menuState.phase, screen, returnTo }),
+    [menuState.phase],
   );
+  const handleRestart = useCallback(() => {
+    closeSecondaryScreens();
+    getPauseActions().restart();
+  }, [closeSecondaryScreens]);
+  const handleTitle = useCallback(() => {
+    closeSecondaryScreens();
+    getPauseActions().title();
+  }, [closeSecondaryScreens]);
 
   return (
     <>
@@ -135,106 +131,65 @@ export function AppShell() {
           <div id="build-tray" />
         </div>
 
-        <MainMenuScreen id="banner" className="banner" backgroundImage={menuHero}>
-          <MainMenuTopBar mark="SSG" meta="0 salvage" aria-hidden>
-            {menu.topBar}
-          </MainMenuTopBar>
-          <MainMenuLayout className="ssg-main-menu-layout--menu">
-            {/* Hidden once the title menu is revealed, but shown again for the
-                engine-written game-over / victory banner (phase leaves "title"). */}
-            <MainMenuCopy hidden={onTitle && revealed}>
-              <MenuKicker>{menu.titleKicker}</MenuKicker>
-              <GameMenuTitle config={menu} id="banner-title" />
-              <p className="ssg-main-menu-subtitle" id="banner-sub">
-                {menu.titleSubtitle}
-              </p>
-              <p className="ssg-main-menu-subtitle" id="banner-hint">
-                MOVE WITH THE MOUSE - weapons auto-fire - collect gems, draft upgrades, stack combos
-              </p>
-              <MainMenuStatus>
-                {menu.titleStatus.map((item) => (
-                  <span key={item}>{item}</span>
-                ))}
-              </MainMenuStatus>
-            </MainMenuCopy>
-            {/* Nav stays mounted (engine grabs #banner-btn at boot). Hidden only
-                on the title splash; shown for the menu and the engine's game-over
-                banner (which un-hides #banner-btn as "Re-engage"). */}
-            <MainMenuNav aria-label="Main menu" hidden={onSplash}>
-              <MainMenuAction id="banner-btn" variant="primary" label="Engage" meta="Start sortie" />
-              <MainMenuAction
-                type="button"
-                variant="shop"
-                label="Upgrades"
-                meta="Drydock"
-                onClick={() => setDrydockOpen(true)}
-              />
-              <MainMenuAction variant="coop" label="Co-op" meta="Solo sortie" disabled />
-              <MainMenuAction variant="records" label="Leaderboard" meta="No records" disabled />
-              <MainMenuAction
-                type="button"
-                variant="default"
-                label="Codex"
-                meta="War dossiers"
-                onClick={() => setCodexOpen(true)}
-              />
-              <MainMenuAction
-                type="button"
-                variant="settings"
-                label="Settings"
-                meta="Effects"
-                onClick={() => setSettingsOpen(true)}
-              />
-              <MainMenuAction variant="dev" label="Sandbox" meta="Orbit lab" disabled />
-              <MainMenuAction
-                type="button"
-                variant="default"
-                label={menu.backToWarlineLabel}
-                meta={menu.backToWarlineMeta}
-                onClick={() => goToWarlineLobby()}
-              />
-              <GameJumpMenu currentSlug={GAME_SLUG} label={menu.fastTravelLabel} />
-            </MainMenuNav>
-            {onSplash && (
-              <>
-                <MainMenuEnterPrompt />
-                <GameJumpMenu currentSlug={GAME_SLUG} label={menu.fastTravelLabel} className="ssg-game-jump--splash" />
-              </>
-            )}
-          </MainMenuLayout>
-          <GlobalMusicToggle className="ssg-music-toggle--corner" />
-        </MainMenuScreen>
-
-        <GamePauseMenu
-          slug={GAME_SLUG}
-          open={pause.open}
-          status={pauseStatus}
-          onResume={() => getPauseActions().resume()}
-          actions={pauseActions}
+        <TitleScreen
+          menu={menu}
+          open={onTitle}
+          wreckage={drydock.wreckage}
+          onEngage={handleRestart}
+          onDrydock={() => openSecondaryScreen("drydock")}
+          onCodex={() => openSecondaryScreen("codex")}
+          onSettings={() => openSecondaryScreen("settings")}
+          onWarline={() => goToWarlineLobby()}
         />
 
-        {settingsOpen && (
+        <RunSummaryScreen
+          snapshot={menuState}
+          open={runEnded && secondaryScreen === null}
+          onRestart={handleRestart}
+          onMeta={() => openSecondaryScreen("meta")}
+          onTitle={handleTitle}
+        />
+
+        <MetaScreen
+          open={runEnded && secondaryScreen === "meta"}
+          wreckage={drydock.wreckage}
+          onDrydock={() => openSecondaryScreen("drydock", "meta")}
+          onCodex={() => openSecondaryScreen("codex", "meta")}
+          onBack={closeSecondaryScreens}
+          onTitle={handleTitle}
+        />
+
+        <PauseScreen
+          snapshot={menuState}
+          open={menuState.phase === "paused" && secondaryScreen !== "settings"}
+          onResume={() => getPauseActions().resume()}
+          onRestart={handleRestart}
+          onSettings={() => openSecondaryScreen("settings")}
+          onTitle={handleTitle}
+        />
+
+        {secondaryScreen === "settings" && (onTitle || menuState.phase === "paused") && (
           <GameAudioSettingsScreen
             open
             slug={GAME_SLUG}
-            onClose={() => setSettingsOpen(false)}
+            onClose={closeSecondaryScreen}
             backgroundImage={menuHero}
             sliderKeys={["music", "sound", "particles", "flash", "shake"]}
           />
         )}
-        {codexOpen && (
+        {secondaryScreen === "codex" && (onTitle || runEnded) && (
           <CodexScreen
             open
-            onClose={() => setCodexOpen(false)}
+            onClose={closeSecondaryScreen}
             kicker={menu.codexKicker}
             backgroundImage={menuHero}
             entries={codexEntries}
           />
         )}
-        {drydockOpen && (
+        {secondaryScreen === "drydock" && (onTitle || runEnded) && (
           <DrydockScreen
             open
-            onClose={() => setDrydockOpen(false)}
+            onClose={closeSecondaryScreen}
             backgroundImage={menuHero}
             state={drydock}
             onBuy={handleBuy}

@@ -3,6 +3,7 @@ import type { GameContext } from "../context";
 import type { Pop, Tracer } from "../data/internalTypes";
 import {
   CORPSE_PART_SPRITES,
+  type CorpsePartSpriteId,
   ENEMY_SPRITE_ANIMATION_TEXTURES,
   ENEMY_SPRITE_SCALES,
   type EnemySpriteKind,
@@ -21,6 +22,15 @@ const DEATH_SPRITE_PLAYBACK_SECONDS = 0.16;
 const DEATH_SPRITE_FADE_SECONDS = 0.12;
 type DeathSpriteKind = EnemySpriteKind;
 type DeathSpriteView = EnemySpriteView;
+
+/** Semantic debris profiles keep each host family readable after the kill. */
+export const CORPSE_PART_IDS_BY_ENEMY_KIND = {
+  melee: ["gib-meat-chunk", "gib-skull-shard", "gib-bone-blade"],
+  ranged: ["gib-meat-chunk", "gib-skull-shard", "gib-acid-sac"],
+  flying: ["gib-meat-chunk", "gib-claw-limb", "gib-acid-sac", "gib-wing-membrane"],
+  hound: ["gib-meat-chunk", "gib-bone-blade", "gib-claw-limb"],
+  boss: ["gib-skull-shard", "gib-bone-blade", "gib-claw-limb"],
+} as const satisfies Record<EnemySpriteKind, readonly CorpsePartSpriteId[]>;
 
 interface CorpsePart {
   mesh: THREE.Mesh | THREE.Sprite;
@@ -157,7 +167,12 @@ export class FxSystem {
       elite: opts.elite,
     });
     this.spawnDeathPop(pos, color, opts.elite ? scale * 1.15 : scale);
-    this.spawnCorpseParts(pos, { headshot: opts.headshot, elite: opts.elite, scale });
+    this.spawnCorpseParts(pos, {
+      headshot: opts.headshot,
+      elite: opts.elite,
+      scale,
+      spriteKind: opts.spriteKind,
+    });
 
     const count = opts.elite ? 28 : opts.headshot ? 18 : 11;
     const origin = pos.clone();
@@ -304,7 +319,10 @@ export class FxSystem {
     }
   }
 
-  private spawnCorpseParts(pos: THREE.Vector3, opts: { headshot?: boolean; elite?: boolean; scale: number }) {
+  private spawnCorpseParts(
+    pos: THREE.Vector3,
+    opts: { headshot?: boolean; elite?: boolean; scale: number; spriteKind?: DeathSpriteKind },
+  ) {
     const scale = Math.max(0.72, opts.scale);
     const count = opts.elite ? 14 : opts.headshot ? 6 : 4;
     const originY = opts.headshot ? 1.45 * scale : 1.05 * scale;
@@ -352,11 +370,19 @@ export class FxSystem {
     this.enforceCorpsePartBudget();
   }
 
-  private pickCorpsePartSprite(opts: { headshot?: boolean; elite?: boolean }, index: number) {
-    if (opts.headshot && index === 0) return CORPSE_PART_SPRITES[1];
-    if (opts.elite && index % 5 === 0) return CORPSE_PART_SPRITES[3];
-    if (opts.elite && index % 7 === 0) return CORPSE_PART_SPRITES[5];
-    return CORPSE_PART_SPRITES[Math.floor(Math.random() * CORPSE_PART_SPRITES.length)];
+  private pickCorpsePartSprite(
+    opts: { headshot?: boolean; elite?: boolean; spriteKind?: DeathSpriteKind },
+    index: number,
+  ) {
+    const kind = opts.spriteKind ?? (opts.elite ? "boss" : "melee");
+    const profile = CORPSE_PART_IDS_BY_ENEMY_KIND[kind];
+    const id =
+      opts.headshot && index === 0
+        ? "gib-skull-shard"
+        : profile[opts.elite ? index % profile.length : Math.floor(Math.random() * profile.length)];
+    const sprite = CORPSE_PART_SPRITES.find((part) => part.id === id);
+    if (!sprite) throw new Error(`Missing corpse-part sprite ${id} for ${kind} death FX`);
+    return sprite;
   }
 
   private spawnEnemyDeathSprite(

@@ -50,11 +50,32 @@ export interface Ramp {
   rise: number;
 }
 
+export type CourseSegmentKind = "flat" | "ramp" | "gap" | "hazard";
+
+/** Authored chunk after it has been laid out in world space. */
+export interface CourseSegment {
+  id: string;
+  kind: CourseSegmentKind;
+  x0: number;
+  x1: number;
+}
+
+/** A racing split: crossing it records progress without changing the run. */
+export interface CourseCheckpoint {
+  id: string;
+  label: string;
+  x: number;
+  reached: boolean;
+  splitTime: number | null;
+}
+
 /** The full, generated course. */
 export interface Course {
+  segments: CourseSegment[];
   platforms: Platform[];
   hazards: Hazard[];
   embers: Ember[];
   ramps: Ramp[];
+  checkpoints: CourseCheckpoint[];
   beaconX: number;
 }

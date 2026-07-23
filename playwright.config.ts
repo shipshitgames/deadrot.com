@@ -70,6 +70,7 @@ export default defineConfig({
         /scourge-survivors-sandbox\.spec\.ts/,
         /redline-courier\.spec\.ts/,
         /starblight-drydock\.spec\.ts/,
+        /starblight-headless\.spec\.ts/,
         /deadlane-defense\.spec\.ts/,
         /game-lifecycle\.spec\.ts/,
         /warline-front\.spec\.ts/,
