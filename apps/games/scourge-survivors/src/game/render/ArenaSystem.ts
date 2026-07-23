@@ -11,7 +11,6 @@ import * as THREE from "three";
 import { PLAYER_HEIGHT, PLAYER_STEP_HEIGHT, WALL_HEIGHT, WALL_THICKNESS } from "../constants";
 import type { GameContext } from "../context";
 import {
-  type ArenaMap,
   DEFAULT_ARENA_BOUNDS,
   DEFAULT_ARENA_MATERIALS,
   type MapObstacle,
@@ -462,7 +461,7 @@ export class ArenaSystem {
     });
   }
 
-  private buildDistantEnvironment(map: ArenaMap) {
+  private buildDistantEnvironment(map: NormalizedArenaMap) {
     const env = map.environment;
     const bounds = this.ctx.bounds;
     const visualRadius = Math.max(bounds.maxX - bounds.minX, bounds.maxZ - bounds.minZ) / 2;
@@ -529,7 +528,7 @@ export class ArenaSystem {
     }
   }
 
-  private buildFloorDecals(map: ArenaMap) {
+  private buildFloorDecals(map: NormalizedArenaMap) {
     for (const decal of map.environment.decals) {
       const mat = new THREE.MeshBasicMaterial({
         map: this.makeTexture(decal.texture),
@@ -554,7 +553,7 @@ export class ArenaSystem {
     }
   }
 
-  private buildArenaProps(map: ArenaMap) {
+  private buildArenaProps(map: NormalizedArenaMap) {
     const ext = playAreaExtents(map.bounds);
     for (const prop of map.environment.props) {
       const mat = new THREE.SpriteMaterial({

@@ -3,7 +3,14 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import manifest from "@shipshitgames/assets/games/scourge-survivors/assets.json";
 import { describe, expect, it } from "vitest";
-import { DEFAULT_ARENA_MATERIALS, MAPS, SANDBOX_MAPS } from "../../src/game/data/maps";
+import {
+  DEFAULT_ARENA_ENVIRONMENT,
+  DEFAULT_ARENA_MATERIALS,
+  MAPS,
+  resolveArenaEnvironment,
+  SANDBOX_MAPS,
+  SURVIVOR_MAPS,
+} from "../../src/game/data/maps";
 
 // Sibling coverage to assets-manifest.test.ts's campaign material/dressing test:
 // that test already validates default-journey maps' material ids, decal/prop
@@ -35,9 +42,53 @@ function expectUnitInterval(value: number, label: string) {
   expect(value, `${label} <= 1`).toBeLessThanOrEqual(1);
 }
 
+function isGreenDominant(color: number): boolean {
+  const r = (color >> 16) & 0xff;
+  const g = (color >> 8) & 0xff;
+  const b = color & 0xff;
+  return g > 1.2 * r && g > 1.2 * b;
+}
+
 const allMaps = { ...MAPS, ...SANDBOX_MAPS };
 
 describe("arena environment integrity", () => {
+  it("resolves omitted presentation to a fresh, non-toxic fallback", () => {
+    const first = resolveArenaEnvironment();
+    const second = resolveArenaEnvironment();
+
+    expect(first).toEqual(DEFAULT_ARENA_ENVIRONMENT);
+    expect(first).not.toBe(DEFAULT_ARENA_ENVIRONMENT);
+    expect(second).not.toBe(first);
+    expect(second.silhouettes).not.toBe(first.silhouettes);
+    expect(second.decals).not.toBe(first.decals);
+    expect(second.props).not.toBe(first.props);
+    expect(first.silhouettes.length).toBeGreaterThan(0);
+    expect(first.decals.length).toBeGreaterThan(0);
+    expect(first.props.length).toBeGreaterThan(0);
+
+    const colors = [
+      first.skyTop,
+      first.skyHorizon,
+      first.horizonHaze,
+      ...first.silhouettes.flatMap((entry) => [entry.color, ...(entry.emissive === undefined ? [] : [entry.emissive])]),
+      ...first.decals.flatMap((entry) => (entry.color === undefined ? [] : [entry.color])),
+      ...first.props.flatMap((entry) => (entry.color === undefined ? [] : [entry.color])),
+    ];
+    expect(colors.every((color) => !isGreenDominant(color))).toBe(true);
+  });
+
+  it("preserves explicit presentation identity while isolating fallback maps", () => {
+    const explicit = MAPS.maw.environment;
+    const resolved = resolveArenaEnvironment(explicit);
+
+    expect(resolved).toBe(explicit);
+
+    const fallbackMap = SURVIVOR_MAPS["foundry-wards"];
+    expect(fallbackMap.biomeId).toBe("foundry");
+    expect(fallbackMap.environment).toEqual(DEFAULT_ARENA_ENVIRONMENT);
+    expect(fallbackMap.environment).not.toBe(MAPS.ashgate.environment);
+  });
+
   it("backs every sandbox map's materials and dressing with real textures on disk", () => {
     // SANDBOX_MAPS (e.g. The Gantry) are reachable via startSandbox() but skipped
     // by the campaign-only test; they reuse a campaign map's texture ids, so a

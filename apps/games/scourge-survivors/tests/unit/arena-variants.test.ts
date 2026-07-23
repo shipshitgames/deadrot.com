@@ -112,7 +112,8 @@ describe("shipped Survivors arena variants (#503, #505)", () => {
     const foundry = SURVIVOR_MAPS["foundry-wards"];
     expect(foundry).toMatchObject({ loreId: "ashgate", front: "holdout", biomeId: "foundry" });
     expect(foundry.materials).toBe(MAPS.ashgate.materials);
-    expect(foundry.environment).toBe(MAPS.ashgate.environment);
+    expect(foundry.environment).toEqual(MAPS.ashgate.environment);
+    expect(foundry.environment).not.toBe(MAPS.ashgate.environment);
 
     const primus = SURVIVOR_MAPS["breach-primus"];
     expect(primus).toMatchObject({ loreId: "maw", front: "breach", biomeId: "rot" });

@@ -20,7 +20,7 @@
 
 import type { MapBounds } from "@shipshitgames/engine";
 import { ARENA_HALF } from "../constants";
-import type { ArenaMap } from "../data/maps";
+import { type ArenaMap, resolveArenaEnvironment } from "../data/maps";
 
 /** Axis-aligned XZ play-area extents, in metres. */
 export interface PlayAreaExtents {
@@ -153,7 +153,7 @@ const DEFAULT_PROP_OPACITY = 0.86;
 export function auditArenaReadability(map: ArenaMap): ReadabilityAudit {
   const b = READABILITY_BUDGET;
   const ext = playAreaExtents(map.bounds);
-  const env = map.environment;
+  const env = resolveArenaEnvironment(map.environment);
   const violations: ReadabilityViolation[] = [];
 
   // --- floor decals: opacity ceiling + total floor coverage ---
