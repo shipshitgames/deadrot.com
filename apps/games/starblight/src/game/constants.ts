@@ -229,12 +229,12 @@ export const CONSTANTS = {
     trailLife: 0.34, // thruster-trail quad lifetime
   },
 
-  // --- Audio cue shaping (throttles + pitch ramps; cues are game-kit's) --
+  // --- Audio cue shaping (authored-sample throttles + pickup pitch ramp) --
   audio: {
-    laserMinInterval: 1 / 6, // cap weapon-fire cues at ~6 plays/sec
+    weaponMinInterval: 1 / 6, // cap the aggregate weapon mix at ~6 starts/sec
     muzzleMinInterval: 1 / 12, // visual recoil stays responsive without per-projectile spam
-    laserPitchLo: 0.92, // fire-cue pitch jitter range
-    laserPitchHi: 1.12,
+    weaponPitchLo: 0.96, // extra fire-cue pitch jitter layered over manifest variance
+    weaponPitchHi: 1.04,
     explosionMinInterval: 0.1, // coalesce chained elite kills into one marquee beat
     gemMinInterval: 0.07, // a vacuum pulls many gems/frame — space the dings
     gemStreakWindow: 1.5, // pickups inside this window keep raising the pitch

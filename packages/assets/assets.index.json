@@ -4,7 +4,7 @@
   "generator": "scripts/generate-asset-index.mjs",
   "note": "Generated — do not edit by hand. Run `bun run --cwd packages/assets assets:index`.",
   "cdnBase": "https://assets.deadrot.com",
-  "assetCount": 776,
+  "assetCount": 790,
   "assets": [
     {
       "id": "brand/mark",
@@ -8749,6 +8749,146 @@
       "sha256": "7f4698326c11ccb3cc1c289705091511d48b4986fcd993c49d2063696291376b",
       "width": 2172,
       "height": 724
+    },
+    {
+      "id": "games/starblight/audio/sfx/card-select",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/card-select.webm",
+      "cdnPath": "games/starblight/audio/sfx/card-select.webm",
+      "mediaType": "video/webm",
+      "bytes": 4770,
+      "sha256": "7503cafbfbb4b2dfc4f38c0b9ff8dd7e6f93b8d88092ab1d1da46cb85b4c84ef"
+    },
+    {
+      "id": "games/starblight/audio/sfx/elite-kill",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/elite-kill.webm",
+      "cdnPath": "games/starblight/audio/sfx/elite-kill.webm",
+      "mediaType": "video/webm",
+      "bytes": 9078,
+      "sha256": "6d5c4768a0c4cafbc8ff32267c2e98bbd811f4946c80c0d64d35bbe6af7a606f"
+    },
+    {
+      "id": "games/starblight/audio/sfx/enemy-hit",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/enemy-hit.webm",
+      "cdnPath": "games/starblight/audio/sfx/enemy-hit.webm",
+      "mediaType": "video/webm",
+      "bytes": 3226,
+      "sha256": "3c43ddc25bf023ea663165f329c00d529ce99ec301fba8ee2b8d8eca9036ff02"
+    },
+    {
+      "id": "games/starblight/audio/sfx/enemy-kill",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/enemy-kill.webm",
+      "cdnPath": "games/starblight/audio/sfx/enemy-kill.webm",
+      "mediaType": "video/webm",
+      "bytes": 4966,
+      "sha256": "d8e6e5f576e7e50f33db87f09cc86f2b4fe679089ec7db671e356fd29cda4c60"
+    },
+    {
+      "id": "games/starblight/audio/sfx/level-up",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/level-up.webm",
+      "cdnPath": "games/starblight/audio/sfx/level-up.webm",
+      "mediaType": "video/webm",
+      "bytes": 12302,
+      "sha256": "de56bf016916fba266b94233b51d7d79d45f546658c6d06d2984fbac69db6b31"
+    },
+    {
+      "id": "games/starblight/audio/sfx/low-integrity",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/low-integrity.webm",
+      "cdnPath": "games/starblight/audio/sfx/low-integrity.webm",
+      "mediaType": "video/webm",
+      "bytes": 7946,
+      "sha256": "84e89143174d834abc4c93cb56950a9d85801c8383887874ce0b653b06301d48"
+    },
+    {
+      "id": "games/starblight/audio/sfx/player-hit",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/player-hit.webm",
+      "cdnPath": "games/starblight/audio/sfx/player-hit.webm",
+      "mediaType": "video/webm",
+      "bytes": 6455,
+      "sha256": "350da8aa384ed108302d4b9872ab7e32f066399194d0a63374c326dc50561164"
+    },
+    {
+      "id": "games/starblight/audio/sfx/salvage-pickup",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/salvage-pickup.webm",
+      "cdnPath": "games/starblight/audio/sfx/salvage-pickup.webm",
+      "mediaType": "video/webm",
+      "bytes": 4038,
+      "sha256": "7b9a877d887388b78632dcce47e1bb2bdaf710b205fc8e78b59ce9f7bd7c09ea"
+    },
+    {
+      "id": "games/starblight/audio/sfx/weapon-beam",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/weapon-beam.webm",
+      "cdnPath": "games/starblight/audio/sfx/weapon-beam.webm",
+      "mediaType": "video/webm",
+      "bytes": 5178,
+      "sha256": "c8924e9d57e880c7410555baa14a6658aa6bf235ea021cdec6ef78b6d00894c8"
+    },
+    {
+      "id": "games/starblight/audio/sfx/weapon-drone",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/weapon-drone.webm",
+      "cdnPath": "games/starblight/audio/sfx/weapon-drone.webm",
+      "mediaType": "video/webm",
+      "bytes": 4584,
+      "sha256": "2629099227c932f70346321dbb21eccff1c21bf53faec551e498947b4c04846e"
+    },
+    {
+      "id": "games/starblight/audio/sfx/weapon-kinetic",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/weapon-kinetic.webm",
+      "cdnPath": "games/starblight/audio/sfx/weapon-kinetic.webm",
+      "mediaType": "video/webm",
+      "bytes": 3767,
+      "sha256": "6eefb606ea358b2df92e7a899f0b1491a795c9dbe5a114b4e0471ffb4b54ee7d"
+    },
+    {
+      "id": "games/starblight/audio/sfx/weapon-mine",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/weapon-mine.webm",
+      "cdnPath": "games/starblight/audio/sfx/weapon-mine.webm",
+      "mediaType": "video/webm",
+      "bytes": 7069,
+      "sha256": "9294f3a121aa3b4b625da5ebffb6137b2a4ae7339cf90d10d2be098db0987316"
+    },
+    {
+      "id": "games/starblight/audio/sfx/weapon-ordnance",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/weapon-ordnance.webm",
+      "cdnPath": "games/starblight/audio/sfx/weapon-ordnance.webm",
+      "mediaType": "video/webm",
+      "bytes": 8054,
+      "sha256": "d76a082b96a8e59e7f7e34830238c06eb7d0da74b41ecc0f0c06fc82f9e1f35e"
+    },
+    {
+      "id": "games/starblight/audio/sfx/weapon-wing",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/weapon-wing.webm",
+      "cdnPath": "games/starblight/audio/sfx/weapon-wing.webm",
+      "mediaType": "video/webm",
+      "bytes": 4376,
+      "sha256": "97b5499adaf326a96261071f56261559b4a827b4e5771ade6432da621c6ca6d3"
     },
     {
       "id": "games/starblight/enemies/scourge/orbital-breach-carrier",

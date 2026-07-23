@@ -6,6 +6,8 @@
 
 import { DEADROT_SFX_PALETTE, type DeadrotSfx, type SfxCue, type Synth } from "./sfxPalette";
 
+export type AudioBus = "sfx" | "ui";
+
 /** A playable asset reference: URL plus the authored gain/loop from its manifest. */
 export interface AudioSource {
   url: string;
@@ -13,6 +15,14 @@ export interface AudioSource {
   volume?: number;
   /** Music beds default to looping. */
   loop?: boolean;
+  /** One-shot routing. UI cues still follow the global sound level. */
+  bus?: AudioBus;
+  /** Symmetric random playback-rate variance around 1 (for example 0.04). */
+  pitchVariance?: number;
+  /** Maximum simultaneously playing voices for this cue. */
+  maxVoices?: number;
+  /** Minimum time between starts of this cue. */
+  minIntervalMs?: number;
 }
 
 export interface AudioEngineConfig<Sfx extends string, Track extends string> {
@@ -23,6 +33,8 @@ export interface AudioEngineConfig<Sfx extends string, Track extends string> {
   defaultTrack?: Track;
   /** Authored one-shot samples (decoded once); unlisted cues stay procedural. */
   sfxSamples?: Partial<Record<Sfx, AudioSource>>;
+  /** Optional aggregate voice caps. */
+  maxVoices?: Partial<Record<AudioBus, number>>;
 }
 
 const MUSIC_BASE_GAIN = 0.2;
@@ -33,6 +45,7 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
   private master: GainNode | null = null;
   private musicBus: GainNode | null = null;
   private sfxBus: GainNode | null = null;
+  private uiBus: GainNode | null = null;
 
   private musicEnabled = true;
   private sfxEnabled = true;
@@ -55,9 +68,10 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
 
   // authored SFX sample buffers (decoded once; procedural synth is the fallback)
   private sampleBuffers = new Map<Sfx, AudioBuffer>();
-  // Per-cue gain from each sample's manifest `volume` — lets us balance loudness
-  // in the manifest without re-rendering audio.
-  private sampleVolumes = new Map<Sfx, number>();
+  private sampleSources = new Map<Sfx, AudioSource>();
+  private activeCueVoices = new Map<Sfx, number>();
+  private activeBusVoices: Record<AudioBus, number> = { sfx: 0, ui: 0 };
+  private lastCueStarts = new Map<Sfx, number>();
   private samplesRequested = false;
 
   private readonly synth: Synth = {
@@ -95,6 +109,9 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
       this.sfxBus = this.ctx.createGain();
       this.sfxBus.gain.value = SFX_BUS_BASE_GAIN * this.sfxLevel;
       this.sfxBus.connect(this.master);
+      this.uiBus = this.ctx.createGain();
+      this.uiBus.gain.value = SFX_BUS_BASE_GAIN * this.sfxLevel;
+      this.uiBus.connect(this.master);
       if (!this.connectMusicElement()) return false;
       this.loadSamples();
       return true;
@@ -154,6 +171,7 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
   setSfxLevel(level: number) {
     this.sfxLevel = Math.max(0, Math.min(1, level));
     if (this.sfxBus) this.sfxBus.gain.value = SFX_BUS_BASE_GAIN * this.sfxLevel;
+    if (this.uiBus) this.uiBus.gain.value = SFX_BUS_BASE_GAIN * this.sfxLevel;
   }
 
   /** Honor the global music-mute flag — forces the music bus to silence. */
@@ -313,7 +331,7 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
     if (!samples) return;
     for (const [name, entry] of Object.entries(samples) as [Sfx, AudioSource | undefined][]) {
       if (!entry) continue;
-      this.sampleVolumes.set(name, entry.volume ?? 1);
+      this.sampleSources.set(name, entry);
       fetch(entry.url)
         .then((r) => r.arrayBuffer())
         .then((b) => this.ctx?.decodeAudioData(b))
@@ -324,35 +342,58 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
     }
   }
 
-  /** Play an authored one-shot sample through the sfx bus; false if none is loaded. */
-  private playSample(name: Sfx, pitch: number): boolean {
+  /** Play an authored one-shot sample, or report why the procedural fallback should not run. */
+  private playSample(
+    name: Sfx,
+    pitch: number,
+    opts: { gain?: number; bus?: AudioBus },
+  ): "played" | "limited" | "unavailable" {
     const buf = this.sampleBuffers.get(name);
-    if (!buf || !this.ctx || !this.sfxBus) return false;
+    const entry = this.sampleSources.get(name);
+    if (!buf || !entry || !this.ctx || !this.sfxBus || !this.uiBus) return "unavailable";
+    const busName = opts.bus ?? entry.bus ?? "sfx";
+    const cueCap = Math.max(1, Math.floor(entry.maxVoices ?? Number.POSITIVE_INFINITY));
+    const busCap = Math.max(1, Math.floor(this.config.maxVoices?.[busName] ?? Number.POSITIVE_INFINITY));
+    if ((this.activeCueVoices.get(name) ?? 0) >= cueCap || this.activeBusVoices[busName] >= busCap) {
+      return "limited";
+    }
+    const now = this.ctx.currentTime;
+    const minInterval = Math.max(0, entry.minIntervalMs ?? 0) / 1000;
+    if (now - (this.lastCueStarts.get(name) ?? Number.NEGATIVE_INFINITY) < minInterval) return "limited";
+
     const src = this.ctx.createBufferSource();
     src.buffer = buf;
     src.playbackRate.value = pitch;
-    const vol = this.sampleVolumes.get(name) ?? 1;
-    if (vol !== 1) {
-      // Per-cue level from the manifest (config-only loudness balance).
-      const gain = this.ctx.createGain();
-      gain.gain.value = vol;
-      src.connect(gain);
-      gain.connect(this.sfxBus);
-    } else {
-      src.connect(this.sfxBus);
-    }
+    const gain = this.ctx.createGain();
+    gain.gain.value = Math.max(0, Math.min(1, (entry.volume ?? 1) * (opts.gain ?? 1)));
+    src.connect(gain);
+    gain.connect(busName === "ui" ? this.uiBus : this.sfxBus);
+
+    this.lastCueStarts.set(name, now);
+    this.activeCueVoices.set(name, (this.activeCueVoices.get(name) ?? 0) + 1);
+    this.activeBusVoices[busName]++;
+    src.onended = () => {
+      this.activeCueVoices.set(name, Math.max(0, (this.activeCueVoices.get(name) ?? 1) - 1));
+      this.activeBusVoices[busName] = Math.max(0, this.activeBusVoices[busName] - 1);
+      src.disconnect();
+      gain.disconnect();
+    };
     src.start();
-    return true;
+    return "played";
   }
 
-  sfx(name: Sfx, opts?: { pitch?: number }) {
+  sfx(name: Sfx, opts: { pitch?: number; gain?: number; bus?: AudioBus } = {}) {
     if (!this.sfxEnabled || !this.ensure() || !this.ctx) return;
     if (this.ctx.state === "suspended") void this.ctx.resume();
-    // Authored sample if loaded (slight pitch jitter so rapid fire isn't a flat repeat); else synth.
-    if (this.playSample(name, opts?.pitch ?? 0.97 + Math.random() * 0.06)) return;
+    const entry = this.sampleSources.get(name);
+    const variance = Math.max(0, entry?.pitchVariance ?? 0.03);
+    const pitch = opts.pitch ?? 1 + (Math.random() * 2 - 1) * variance;
+    // A capped sample stays silent instead of falling through to an uncapped synth.
+    const sampleResult = this.playSample(name, pitch, opts);
+    if (sampleResult !== "unavailable") return;
     const cue = this.config.palette[name];
     if (!cue) return;
-    cue(this.synth, this.ctx.currentTime, opts?.pitch ?? 1);
+    cue(this.synth, this.ctx.currentTime, opts.pitch ?? 1);
   }
 
   private zap(t: number, type: OscillatorType, f0: number, f1: number, dur: number, gain: number) {
@@ -421,6 +462,7 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
     this.musicSrcNode?.disconnect();
     this.musicBus?.disconnect();
     this.sfxBus?.disconnect();
+    this.uiBus?.disconnect();
     this.master?.disconnect();
 
     const ctx = this.ctx;
@@ -430,12 +472,16 @@ export class AudioEngine<Sfx extends string = DeadrotSfx, Track extends string =
     this.musicSrcNode = null;
     this.musicBus = null;
     this.sfxBus = null;
+    this.uiBus = null;
     this.master = null;
     this.ctx = null;
     this.currentTrack = null;
     this.loadedTrack = null;
     this.sampleBuffers.clear();
-    this.sampleVolumes.clear();
+    this.sampleSources.clear();
+    this.activeCueVoices.clear();
+    this.activeBusVoices = { sfx: 0, ui: 0 };
+    this.lastCueStarts.clear();
   }
 }
 

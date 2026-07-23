@@ -1,11 +1,11 @@
 import { completeRun, createRunNonce } from "@deadrot/game-kit/warline";
-import { audio } from "../audio";
 import { EntitySystem } from "../systems/EntitySystem";
 import { HudSystem } from "../systems/HudSystem";
 import { InputSystem } from "../systems/InputSystem";
 import { RenderSystem } from "../systems/RenderSystem";
 import { WeaponSystem } from "../systems/WeaponSystem";
 import { clearPauseActions, emitRunEnd, setPauseActions, subscribeDrydockTiers } from "../ui/gameBridge";
+import { audio, type WeaponAudioFamily } from "./audio";
 import { BossEncounter } from "./BossEncounter";
 import { COLORS, CONSTANTS, type EnemyType, WORLD } from "./constants";
 import type { ShopTiers } from "./drydock";
@@ -53,8 +53,8 @@ export class Game {
   private bossEncounter: BossEncounter;
 
   // --- audio / juice throttles --------------------------------------------
-  private laserT = 0;
-  private laserQueued = false;
+  private weaponAudioT = 0;
+  private weaponCueQueued: { family: WeaponAudioFamily; distance: number } | null = null;
   private muzzleT = 0;
   private explosionT = 0;
   private gemSfxT = 0;
@@ -77,8 +77,8 @@ export class Game {
     this.weapons = new WeaponSystem(this.render, this.entities);
     this.weapons.damageEnemy = (e, dmg, allowCrit) => this.damageEnemy(e, dmg, allowCrit);
     // Weapon fire is voiced once per frame at most, throttled in simulate().
-    this.weapons.onFire = () => {
-      this.laserQueued = true;
+    this.weapons.onFire = (family, x, y) => {
+      this.weaponCueQueued ??= { family, distance: this.soundDistance(x, y) };
       this.weaponFireFeedback();
     };
     this.bossEncounter = new BossEncounter(this.entities, this.render, {
@@ -186,8 +186,8 @@ export class Game {
 
   /** Reset the audio/juice throttles so a fresh run starts quiet. */
   private resetFeedback() {
-    this.laserT = 0;
-    this.laserQueued = false;
+    this.weaponAudioT = 0;
+    this.weaponCueQueued = null;
     this.muzzleT = 0;
     this.explosionT = 0;
     this.gemSfxT = 0;
@@ -290,7 +290,7 @@ export class Game {
   private simulate(dt: number) {
     this.clock += dt;
     if (this.invuln > 0) this.invuln = Math.max(0, this.invuln - dt);
-    this.laserT = Math.max(0, this.laserT - dt);
+    this.weaponAudioT = Math.max(0, this.weaponAudioT - dt);
     this.muzzleT = Math.max(0, this.muzzleT - dt);
     this.explosionT = Math.max(0, this.explosionT - dt);
     this.gemSfxT = Math.max(0, this.gemSfxT - dt);
@@ -339,14 +339,18 @@ export class Game {
     }
   }
 
-  /** Throttled weapon-fire cue: at most 1/laserMinInterval plays per second. */
+  /** Throttled weapon-fire cue: at most 1/weaponMinInterval plays per second. */
   private voiceWeaponFire() {
-    if (!this.laserQueued) return;
-    this.laserQueued = false;
-    if (this.laserT > 0) return;
+    const queued = this.weaponCueQueued;
+    if (!queued) return;
+    this.weaponCueQueued = null;
+    if (this.weaponAudioT > 0) return;
     const a = CONSTANTS.audio;
-    this.laserT = a.laserMinInterval;
-    audio.sfx("laser", { pitch: a.laserPitchLo + Math.random() * (a.laserPitchHi - a.laserPitchLo) });
+    this.weaponAudioT = a.weaponMinInterval;
+    audio.play(`weapon-${queued.family}`, {
+      pitch: a.weaponPitchLo + Math.random() * (a.weaponPitchHi - a.weaponPitchLo),
+      distance: queued.distance,
+    });
   }
 
   /** Visual recoil has its own cadence so audio throttling cannot desync it. */
@@ -369,7 +373,7 @@ export class Game {
       this.lowHealthT -= dt;
       if (this.lowHealthT <= 0) {
         this.lowHealthT = a.lowHealthEvery;
-        audio.sfx("lowhealth");
+        audio.play("low-integrity");
         this.render.addShake(shakeFor("lowIntegrityPulse"));
       }
     } else {
@@ -470,6 +474,10 @@ export class Game {
     const dmg = baseDmg * this.stats.damageMul * (crit ? 2 : 1);
     e.health -= dmg;
     this.entities.hitFlash(e);
+    audio.play("enemy-hit", {
+      distance: this.soundDistance(e.mesh.position.x, e.mesh.position.y),
+      pitch: e.type === "elite" ? 0.86 : undefined,
+    });
     // Boss-hit sparks, throttled — continuous beams hit every frame.
     if (e.boss && this.bossHitFxT <= 0) {
       this.bossHitFxT = CONSTANTS.fx.burst.bossHit.every;
@@ -512,13 +520,14 @@ export class Game {
       if (this.explosionT <= 0) {
         this.explosionT = CONSTANTS.audio.explosionMinInterval;
         this.render.flashFrame(x, y, COLORS.bone, CONSTANTS.fx.flashSprite.eliteKill);
-        audio.sfx("explosion");
+        audio.play("elite-kill", { distance: this.soundDistance(x, y) });
         this.triggerImpact("eliteKill");
       }
     } else {
       this.entities.spawnGem(x, y, e.gemValue);
       this.burst(x, y, COLORS.toxic, CONSTANTS.fx.burst.enemy); // ichor pop
       this.render.addShake(shakeFor("gruntKill"));
+      audio.play("enemy-kill", { distance: this.soundDistance(x, y) });
     }
     this.entities.killEnemy(e);
   }
@@ -589,7 +598,7 @@ export class Game {
     this.integrity -= dmg;
     this.invuln = CONSTANTS.player.invulnTime;
     this.entities.pop(this.entities.ship.position.x, this.entities.ship.position.y, COLORS.blood, 18);
-    audio.sfx("hurt");
+    audio.play("player-hit");
     this.triggerImpact("playerHit", direction);
   }
 
@@ -611,7 +620,9 @@ export class Game {
     this.lastGemAt = this.clock;
     if (this.gemSfxT <= 0) {
       this.gemSfxT = a.gemMinInterval;
-      audio.sfx("gem", { pitch: Math.min(a.gemPitchMax, 1 + this.gemStreak * a.gemPitchStep) });
+      audio.play("salvage-pickup", {
+        pitch: Math.min(a.gemPitchMax, 1 + this.gemStreak * a.gemPitchStep),
+      });
     }
     this.currentXP += raw * this.stats.xpGainMul;
     let leveled = false;
@@ -627,7 +638,7 @@ export class Game {
   private triggerLevelUp() {
     this.phase = "levelup";
     this.vacuum = true; // salvage pulse: vacuum the field
-    audio.sfx("levelup");
+    audio.play("level-up");
     this.rollDraft();
     this.emitHud();
   }
@@ -665,7 +676,7 @@ export class Game {
     if (!this.draft.some((c) => c.id === id)) return;
     const prev = this.levels.get(id) ?? 0;
     this.levels.set(id, prev + 1);
-    audio.sfx(defOf(id).kind === "passive" ? "powerup" : "uiSelect");
+    audio.play("card-select", { pitch: defOf(id).kind === "passive" ? 0.94 : 1.04 });
     this.recomputeStats();
     if (id === "hull") this.integrity = this.stats.maxIntegrity; // full repair
     this.pendingLevels = Math.max(0, this.pendingLevels - 1);
@@ -699,6 +710,11 @@ export class Game {
       lowIntegrity: this.integrity > 0 && this.integrity < this.stats.maxIntegrity * 0.25,
     };
     this.hud.update(state);
+  }
+
+  private soundDistance(x: number, y: number): number {
+    const ship = this.entities.ship.position;
+    return Math.hypot(x - ship.x, y - ship.y);
   }
 
   private buildChips() {
