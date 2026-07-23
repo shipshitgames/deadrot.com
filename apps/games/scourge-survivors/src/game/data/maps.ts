@@ -51,6 +51,7 @@ import {
   type BiomeId,
   type BiomeTheme,
   type BiomeThemeOverrides,
+  DEFAULT_BIOME_ID,
   GROUND_LEVEL_ID,
   normalizeArenaLayout,
   resolveBiomeTheme,
@@ -145,6 +146,59 @@ export interface ArenaEnvironment {
   props: ArenaProp[];
 }
 
+/**
+ * Safe presentation used when a map only authors structure. It deliberately
+ * uses Ashgate's non-Scourge foundry palette: no toxic-green environment
+ * lighting, non-empty distant silhouettes, and registered dressing textures.
+ *
+ * This one constant is cloned for EVERY fallback map, so its distant silhouettes
+ * must clear the LARGEST arena that omits an environment — currently Foundry
+ * Wards ({@link FOUNDRY_WARDS_BOUNDS}, ±72×±56). The readability audit (#35)
+ * fails any silhouette whose AABB overlaps the play area, so the ring is placed
+ * just beyond that widest footprint rather than the default ±40 outer ring.
+ */
+export const DEFAULT_ARENA_ENVIRONMENT: ArenaEnvironment = {
+  skyTop: 0x090505,
+  skyHorizon: 0x261109,
+  horizonHaze: 0xff6a00,
+  horizonOpacity: 0.16,
+  silhouettes: [
+    { x: -82, z: -24, w: 5, h: 26, d: 5, color: 0x241713, emissive: 0x3a1507, opacity: 0.88 },
+    { x: -84, z: 26, w: 8, h: 18, d: 6, color: 0x1b1513, emissive: 0x281006, opacity: 0.9 },
+    { x: 82, z: -30, w: 7, h: 22, d: 5, color: 0x201614, emissive: 0x351307, opacity: 0.88 },
+    { x: 82, z: 34, w: 16, h: 10, d: 5, color: 0x241610, emissive: 0x4a1b08, opacity: 0.84 },
+    { x: 0, z: 66, w: 36, h: 8, d: 5, color: 0x1d1310, emissive: 0x2a0f06, opacity: 0.82 },
+  ],
+  decals: [
+    { x: -20, z: 15, w: 8, d: 8, texture: "arena-ashgate-decal", color: 0xff8a3c, opacity: 0.28, rotation: 0.35 },
+    { x: 18, z: -18, w: 9, d: 7, texture: "arena-ashgate-decal", color: 0xff6a00, opacity: 0.24, rotation: -0.2 },
+    { x: 3, z: 3, w: 12, d: 12, texture: "arena-ashgate-decal", color: 0xb89274, opacity: 0.18, rotation: 0.78 },
+    { x: -28, z: -25, w: 7, d: 10, texture: "arena-ashgate-decal", color: 0xc1121f, opacity: 0.16, rotation: -0.55 },
+  ],
+  props: [
+    { x: -30, z: -20, w: 5.2, h: 8.4, texture: "arena-ashgate-prop", color: 0xff8a3c, opacity: 0.85 },
+    { x: 30, z: 20, w: 5.2, h: 8.4, texture: "arena-ashgate-prop", color: 0xff6a00, opacity: 0.85 },
+    { x: -6, z: 26, w: 4.3, h: 7, texture: "arena-ashgate-prop", color: 0xb89274, opacity: 0.78 },
+    { x: 32, z: -7, w: 4.1, h: 6.8, texture: "arena-ashgate-prop", color: 0xff8a3c, opacity: 0.74 },
+  ],
+};
+
+/**
+ * Resolve optional environment authoring into a runtime value. Explicit
+ * presentations preserve their identity so variants can intentionally share
+ * one registered environment; the fallback is cloned so no map aliases the
+ * default authoring constant.
+ */
+export function resolveArenaEnvironment(environment?: ArenaEnvironment): ArenaEnvironment {
+  if (environment) return environment;
+  return {
+    ...DEFAULT_ARENA_ENVIRONMENT,
+    silhouettes: DEFAULT_ARENA_ENVIRONMENT.silhouettes.map((silhouette) => ({ ...silhouette })),
+    decals: DEFAULT_ARENA_ENVIRONMENT.decals.map((decal) => ({ ...decal })),
+    props: DEFAULT_ARENA_ENVIRONMENT.props.map((prop) => ({ ...prop })),
+  };
+}
+
 export interface ArenaMap {
   id: string;
   loreId: string; // canonical lore note id (see apps/lore/content/Locations + apps/lore/content/Maps.md)
@@ -157,7 +211,8 @@ export interface ArenaMap {
   /** Biome preset id the registry resolves into `theme` at module load (see
    *  `@deadrot/game-kit/maps`). Presentation-only — it does NOT replace the
    *  `loreId`/`front` lore-registry join keys. */
-  biomeId: BiomeId;
+  /** Omit to use the non-toxic foundry presentation fallback. */
+  biomeId?: BiomeId;
   /** Optional per-map adjustments layered over the biome preset by
    *  `resolveBiomeTheme` (scalars replace; accent overrides merge per-field). */
   themeOverrides?: BiomeThemeOverrides;
@@ -166,7 +221,8 @@ export interface ArenaMap {
    *  MAPS/getMap/campaignSequence. Do not author directly. */
   theme?: MapTheme;
   materials: ArenaMaterialSet;
-  environment: ArenaEnvironment;
+  /** Omit to use DEFAULT_ARENA_ENVIRONMENT during registry normalization. */
+  environment?: ArenaEnvironment;
   spawn: { x: number; z: number }; // player start (faces the arena centre)
   obstacles: MapObstacle[];
   // --- v2 structural authoring (all optional; v1 maps author none of them) ---
@@ -192,8 +248,13 @@ export interface ArenaMap {
   layout?: ArenaLayout<MapObstacle>;
 }
 
-/** An ArenaMap whose layout + theme have been populated — what the registry hands out. */
-export type NormalizedArenaMap = ArenaMap & { layout: ArenaLayout<MapObstacle>; theme: MapTheme };
+/** An ArenaMap whose presentation + layout have been populated — what the registry hands out. */
+export type NormalizedArenaMap = Omit<ArenaMap, "biomeId" | "environment" | "layout" | "theme"> & {
+  biomeId: BiomeId;
+  environment: ArenaEnvironment;
+  layout: ArenaLayout<MapObstacle>;
+  theme: MapTheme;
+};
 
 function arenaMaterials(mapId: string): ArenaMaterialSet {
   return {
@@ -201,23 +262,6 @@ function arenaMaterials(mapId: string): ArenaMaterialSet {
     wall: `arena-${mapId}-wall`,
     block: `arena-${mapId}-block`,
     column: `arena-${mapId}-column`,
-  };
-}
-
-/** Spread registered dressing across a larger footprint without duplicating
- *  assets or hand-authoring a second presentation pack. Sizes stay unchanged;
- *  only world placement expands, preserving prop/decal readability budgets. */
-function scaleEnvironmentFootprint(environment: ArenaEnvironment, scaleX: number, scaleZ: number): ArenaEnvironment {
-  const scalePosition = <T extends { x: number; z: number }>(entry: T): T => ({
-    ...entry,
-    x: entry.x * scaleX,
-    z: entry.z * scaleZ,
-  });
-  return {
-    ...environment,
-    silhouettes: environment.silhouettes.map(scalePosition),
-    decals: environment.decals.map(scalePosition),
-    props: environment.props.map(scalePosition),
   };
 }
 
@@ -235,33 +279,7 @@ const ASHGATE: ArenaMap = {
   accent: "#ff6a00",
   biomeId: "foundry",
   materials: arenaMaterials("ashgate"),
-  environment: {
-    skyTop: 0x090505,
-    skyHorizon: 0x261109,
-    horizonHaze: 0xff6a00,
-    horizonOpacity: 0.16,
-    silhouettes: [
-      { x: -58, z: -18, w: 5, h: 26, d: 5, color: 0x241713, emissive: 0x3a1507, opacity: 0.88 },
-      { x: -66, z: 22, w: 8, h: 18, d: 6, color: 0x1b1513, emissive: 0x281006, opacity: 0.9 },
-      { x: 61, z: -28, w: 7, h: 22, d: 5, color: 0x201614, emissive: 0x351307, opacity: 0.88 },
-      { x: 52, z: 34, w: 16, h: 10, d: 5, color: 0x241610, emissive: 0x4a1b08, opacity: 0.84 },
-      { x: 0, z: 66, w: 36, h: 8, d: 5, color: 0x1d1310, emissive: 0x2a0f06, opacity: 0.82 },
-    ],
-    decals: [
-      { x: -20, z: 15, w: 8, d: 8, texture: "arena-ashgate-decal", color: 0xff8a3c, opacity: 0.28, rotation: 0.35 },
-      { x: 18, z: -18, w: 9, d: 7, texture: "arena-ashgate-decal", color: 0xff6a00, opacity: 0.24, rotation: -0.2 },
-      { x: 3, z: 3, w: 12, d: 12, texture: "arena-ashgate-decal", color: 0xb89274, opacity: 0.18, rotation: 0.78 },
-      { x: -28, z: -25, w: 7, d: 10, texture: "arena-ashgate-decal", color: 0xc1121f, opacity: 0.16, rotation: -0.55 },
-    ],
-    props: [
-      // In-core props capped at the readability budget's 0.85 so a Scourge
-      // sprite is never fully hidden behind them at gameplay distance (#35).
-      { x: -30, z: -20, w: 5.2, h: 8.4, texture: "arena-ashgate-prop", color: 0xff8a3c, opacity: 0.85 },
-      { x: 30, z: 20, w: 5.2, h: 8.4, texture: "arena-ashgate-prop", color: 0xff6a00, opacity: 0.85 },
-      { x: -6, z: 26, w: 4.3, h: 7, texture: "arena-ashgate-prop", color: 0xb89274, opacity: 0.78 },
-      { x: 32, z: -7, w: 4.1, h: 6.8, texture: "arena-ashgate-prop", color: 0xff8a3c, opacity: 0.74 },
-    ],
-  },
+  environment: DEFAULT_ARENA_ENVIRONMENT,
   spawn: { x: -26, z: 28 },
   obstacles: [
     { x: 0, z: 0, w: 2.2, h: 6, d: 2.2, mat: "pillar" },
@@ -595,7 +613,9 @@ const FOUNDRY_WARDS: ArenaMap = {
     accentB: { x: 50, z: 38 },
   },
   materials: ASHGATE.materials,
-  environment: scaleEnvironmentFootprint(ASHGATE.environment, 1.8, 1.4),
+  // Omit environment: this fallback variant uses DEFAULT_ARENA_ENVIRONMENT
+  // (a fresh clone via normalizeMap), sharing Ashgate's registered dressing
+  // textures without aliasing Ashgate's environment identity.
   spawn: { x: -62, z: 0 },
   obstacles: [],
   rooms: [
@@ -984,13 +1004,16 @@ const CHOIR_NODE: ArenaMap = {
 // ----------------------------------------------------------------------------
 
 /** Registry normalization entry point: attaches the normalized structural
- *  layout AND resolves the presentation theme from `biomeId` + the optional
- *  per-map `themeOverrides` (issue #80). */
+ *  layout and resolves optional environment/biome authoring into a complete,
+ *  non-empty presentation contract. */
 function normalizeMap(map: ArenaMap): NormalizedArenaMap {
+  const biomeId = map.biomeId ?? DEFAULT_BIOME_ID;
   return {
     ...map,
+    biomeId,
+    environment: resolveArenaEnvironment(map.environment),
     layout: normalizeArenaLayout<MapObstacle>(map, { defaultBounds: DEFAULT_ARENA_BOUNDS }),
-    theme: resolveBiomeTheme(map.biomeId, map.themeOverrides),
+    theme: resolveBiomeTheme(biomeId, map.themeOverrides),
   };
 }
 
