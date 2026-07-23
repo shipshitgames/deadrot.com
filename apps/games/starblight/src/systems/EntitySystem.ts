@@ -1,5 +1,5 @@
 import type * as THREE from "three";
-import type { EnemyType } from "../game/constants";
+import { CONSTANTS, type EnemyType, WORLD } from "../game/constants";
 import type { Bullet, Enemy, EnemyBullet, Gem, Particle } from "../game/types";
 import { BossBeam } from "./entities/bossBeam";
 import { Enemies } from "./entities/enemies";
@@ -7,6 +7,7 @@ import { Gems } from "./entities/gems";
 import { Particles } from "./entities/particles";
 import { Projectiles } from "./entities/projectiles";
 import { ShipController } from "./entities/ship";
+import { SpatialGrid } from "./entities/spatialGrid";
 import { createSpriteTextures } from "./entities/sprites";
 import type { RenderSystem } from "./RenderSystem";
 
@@ -16,6 +17,7 @@ import type { RenderSystem } from "./RenderSystem";
 // particles/trail. The Game orchestrates damage + the survivors loop;
 // WeaponSystem owns the auto-weapons; BossEncounter owns the boss.
 export class EntitySystem {
+  private readonly enemyGrid = new SpatialGrid<Enemy>(WORLD.width, WORLD.height, CONSTANTS.spatial.cellSize);
   private readonly textures = createSpriteTextures();
   private readonly particlesSys: Particles;
   private readonly shipSys: ShipController;
@@ -70,6 +72,11 @@ export class EntitySystem {
     this.enemiesSys.update(dt, time, skip);
   }
 
+  /** Refresh once after every enemy/boss movement pass and before queries. */
+  rebuildEnemyGrid() {
+    this.enemyGrid.rebuild(this.enemies);
+  }
+
   hitFlash(e: Enemy) {
     this.enemiesSys.hitFlash(e);
   }
@@ -90,8 +97,16 @@ export class EntitySystem {
     this.enemiesSys.clear();
   }
 
-  nearestEnemy(x: number, y: number, maxRange = Infinity): Enemy | null {
-    return this.enemiesSys.nearest(x, y, maxRange);
+  queryEnemies(x: number, y: number, radius: number, out: Enemy[], includeEnemyRadius = true): Enemy[] {
+    return this.enemyGrid.queryCircle(x, y, radius, out, includeEnemyRadius);
+  }
+
+  nearestEnemy(x: number, y: number, maxRange = Infinity, exclude?: readonly Enemy[]): Enemy | null {
+    return this.enemyGrid.nearest(x, y, maxRange, exclude);
+  }
+
+  get maxEnemyRadius(): number {
+    return this.enemyGrid.maxRadius;
   }
 
   // --- projectiles -----------------------------------------------------------

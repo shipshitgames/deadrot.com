@@ -216,20 +216,6 @@ export class Enemies {
     this.enemies.length = 0;
   }
 
-  nearest(x: number, y: number, maxRange = Infinity): Enemy | null {
-    let best: Enemy | null = null;
-    let bestD = maxRange * maxRange;
-    for (const e of this.enemies) {
-      if (e.dead) continue;
-      const d = (e.mesh.position.x - x) ** 2 + (e.mesh.position.y - y) ** 2;
-      if (d < bestD) {
-        bestD = d;
-        best = e;
-      }
-    }
-    return best;
-  }
-
   dispose() {
     // Every pooled slot ever created (active + free): remove + per-instance material.
     for (const s of this.all) {
