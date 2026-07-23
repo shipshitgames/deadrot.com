@@ -39,6 +39,11 @@ server-owned run/wave state and remains tracked in
 The permanent gold-shop economy (income, costs, and the one-run-can't-buy-everything
 invariant) is tuned and documented in [ECONOMY.md](./ECONOMY.md).
 
+Arena authors should use the data-driven workflow in
+[MAP-AUTHORING.md](./MAP-AUTHORING.md): author v2 layout data, preview it in
+the sandbox, pass the shared geometry/readability gates, then add it to the
+appropriate shipped registry.
+
 ## Balance telemetry
 
 Survivors runs emit the shared `deadrot.balance.v1` event schema for progression,

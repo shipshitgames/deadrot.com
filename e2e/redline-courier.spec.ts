@@ -21,6 +21,38 @@ const BEACON_X = 520; // WORLD.levelLength === course.beaconX
 const PIT_Y = -20; // below WORLD.groundY - 8 (= -8) → physics flags fellInPit
 const BASE_SPEED = 6; // RUN.baseSpeed; vx at rest / after reset
 
+test("title menu can reopen Settings and links back to Warline", async ({ page }, testInfo) => {
+  test.skip(!testInfo.project.name.startsWith("redline:"), "Redline-only title-menu regression.");
+
+  const errors = collectErrors(page);
+  await boot(page);
+
+  const warlineLink = page.getByRole("link", { name: /Back to Warline/i });
+  await expect(warlineLink).toBeVisible();
+  const warlineHref = await warlineLink.getAttribute("href");
+  const linksToWarline =
+    warlineHref === "/warline/" ||
+    (warlineHref !== null &&
+      new URL(warlineHref, page.url()).hostname === "127.0.0.1" &&
+      new URL(warlineHref).port === "5180");
+  expect(linksToWarline).toBe(true);
+
+  const settingsButton = page.getByRole("button", { name: /^Settings\b/i });
+  const settingsDialog = page.getByRole("dialog", { name: "Settings" });
+
+  await settingsButton.click();
+  await expect(settingsDialog).toBeVisible();
+  await settingsDialog.getByRole("button", { name: /^Back\b/i }).click();
+  await expect(settingsDialog).toBeHidden();
+
+  // The title card remains mounted after closing Settings. Its imperative
+  // listener must still be live so a second click can reopen the React island.
+  await settingsButton.click();
+  await expect(settingsDialog).toBeVisible();
+
+  expectNoErrors(errors);
+});
+
 test("ignite starts a live courier run and the HUD ticks", async ({ page }, testInfo) => {
   test.skip(!testInfo.project.name.startsWith("redline:"), "Redline-only courier-run regression.");
 
@@ -92,6 +124,37 @@ test("reaching the beacon completes the delivery and shows a graded win", async 
 
   // submitRun banked a best, so the HUD best readout is no longer the empty "--.--".
   await expect(page.locator("#hud-best")).not.toHaveText("--.--");
+
+  expectNoErrors(errors);
+});
+
+test("crossing the mid-lane checkpoint records one visible racing split", async ({ page }, testInfo) => {
+  test.skip(!testInfo.project.name.startsWith("redline:"), "Redline-only courier-run regression.");
+
+  const errors = collectErrors(page);
+  await boot(page);
+  await page.getByRole("button", { name: "IGNITE" }).click();
+  await expect.poll(() => phase(page)).toBe("running");
+
+  const before = await checkpointSnapshot(page);
+  expect(before).toMatchObject({ id: "junction-split", label: "JUNCTION SPLIT", reached: false, splitTime: null });
+  expect(before.x).toBeGreaterThan(BEACON_X * 0.35);
+  expect(before.x).toBeLessThan(BEACON_X * 0.65);
+
+  await setRunnerX(page, before.x);
+  await expect.poll(async () => (await checkpointSnapshot(page)).reached).toBe(true);
+  await expect(page.locator("#hud-status")).toContainText("JUNCTION SPLIT");
+
+  const split = (await checkpointSnapshot(page)).splitTime;
+  expect(split).not.toBeNull();
+  await setRunnerX(page, before.x + 2);
+  await expect.poll(async () => (await checkpointSnapshot(page)).splitTime).toBe(split);
+
+  await setRunnerX(page, (await beaconX(page)) + 1);
+  await expect.poll(() => phase(page)).toBe("won");
+  await page.getByRole("button", { name: "RUN AGAIN" }).click();
+  await expect.poll(() => phase(page)).toBe("running");
+  await expect.poll(() => checkpointSnapshot(page)).toMatchObject({ reached: false, splitTime: null });
 
   expectNoErrors(errors);
 });
@@ -238,6 +301,33 @@ async function beaconX(page: Page): Promise<number> {
     () =>
       (window as unknown as { __REDLINE__: { debug: { course: { beaconX: number } } } }).__REDLINE__.debug.course
         .beaconX,
+  );
+}
+
+async function checkpointSnapshot(page: Page): Promise<{
+  id: string;
+  label: string;
+  x: number;
+  reached: boolean;
+  splitTime: number | null;
+}> {
+  return page.evaluate(
+    () =>
+      (
+        window as unknown as {
+          __REDLINE__: {
+            debug: {
+              checkpoints: {
+                id: string;
+                label: string;
+                x: number;
+                reached: boolean;
+                splitTime: number | null;
+              }[];
+            };
+          };
+        }
+      ).__REDLINE__.debug.checkpoints[0],
   );
 }
 

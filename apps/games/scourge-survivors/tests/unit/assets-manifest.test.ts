@@ -227,6 +227,19 @@ describe("asset manifest", () => {
     }
   });
 
+  it("ships the Pyre player roster as current comic-ink production assets", () => {
+    const playerSpriteIds = ["player-ranger", "player-heavy", "player-scout", "player-medic"] as const;
+
+    for (const id of playerSpriteIds) {
+      const entry = manifest.sprites[id];
+      expect(entry.license.tool, `${id} source tool`).toBe("gpt-image-2");
+      expect(entry.license.plan, `${id} generation plan`).toBe("built-in image_gen");
+      expect(entry.license.date, `${id} promotion date`).toBe("2026-07-21");
+      expect(entry.license.kind, `${id} house style`).toContain("comic/cel-ink Pyre");
+      expect(entry.license.scope, `${id} runtime scope`).toBe("Scourge Survivors runtime");
+    }
+  });
+
   it("keeps legacy rank-and-file sprites low-resolution and nearest-filtered", () => {
     const enemySpriteIds = ["enemy-melee", "enemy-ranged", "enemy-flying", "enemy-hound"] as const;
 

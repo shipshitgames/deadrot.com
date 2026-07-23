@@ -2,7 +2,7 @@
 type: art-master-index
 status: active
 scope: characters
-updated: 2026-06-16
+updated: 2026-07-21
 ---
 # Character Art Masters
 
@@ -19,6 +19,19 @@ are derivatives; they do not define canon.
 | [[Patch]] | v01 candidate master attached | `/assets/masters/art/characters/v01/patch-master-v01.png` |
 | [[Lane-Gunner]] | v01 candidate master attached | `/assets/masters/art/characters/v01/lane-gunner-master-v01.png` |
 | [[Warden-Bastion]] | v01 candidate master attached | `/assets/masters/art/characters/v01/warden-bastion-master-v01.png` |
+
+## Scourge Survivors Runtime Derivatives
+
+The 2026-07-21 Pyre player pass derives front, side, and back comic-ink
+billboards from the four v01 character masters without replacing those canon
+attachments. Preserved generation sources live at
+`/assets/sources/generated/2026-07-21/scourge-survivors/players/pyre/`; the
+runtime views live at `/assets/games/scourge-survivors/players/pyre/`.
+
+- Ranger: `ranger-turnaround-source.png` -> `ranger/{front,side,back}.webp`
+- Bulwark: `bulwark-turnaround-source.png` -> `bulwark/{front,side,back}.webp`
+- Vector: `vector-turnaround-source.png` -> `vector/{front,side,back}.webp`
+- Patch: `patch-turnaround-source.png` -> `patch/{front,side,back}.webp`
 
 ## Character v01 Master Batch
 

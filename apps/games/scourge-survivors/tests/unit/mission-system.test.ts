@@ -10,6 +10,10 @@ import {
   currentMissionEncounter,
   currentMissionObjective,
   currentMissionStage,
+  missionEncounterById,
+  missionObjectiveById,
+  missionSegmentById,
+  missionStageReferenceErrors,
 } from "../../src/game/data/missions";
 import { MissionSystem } from "../../src/game/modes/MissionSystem";
 import type { GameSystems } from "../../src/game/systems";
@@ -94,6 +98,62 @@ describe("mission campaign architecture", () => {
       hasBoss: true,
       choirOutcome: "sever-local-node",
     });
+  });
+
+  it("authors Ashgate as a branching mission graph", () => {
+    const stage = createMissionRun("ashgate").stages[0];
+
+    expect(stage.checkpoint.spawn).toEqual({ x: -26, z: 28 });
+    expect(stage).toMatchObject({
+      entrySegmentId: "ashgate-drop-yard",
+      initialObjectiveId: "ashgate-secure-breachhead",
+      initialEncounterId: "ashgate-entry-skirmish",
+    });
+    expect(stage.segments.map((segment) => segment.id)).toEqual([
+      "ashgate-drop-yard",
+      "ashgate-furnace-approach",
+      "ashgate-foundry-floor",
+      "ashgate-service-bypass",
+      "ashgate-biomass-vault",
+      "ashgate-source-chamber",
+      "ashgate-extraction",
+    ]);
+    expect(missionSegmentById(stage, "ashgate-furnace-approach")?.next).toEqual([
+      { segmentId: "ashgate-foundry-floor", gateId: "ashgate-foundry-route" },
+      { segmentId: "ashgate-service-bypass", gateId: "ashgate-bypass-route" },
+    ]);
+    expect(stage.encounters.map((encounter) => encounter.pattern)).toEqual([
+      "entry-skirmish",
+      "corridor-ambush",
+      "holdout",
+      "elite-reveal",
+      "boss-finale",
+    ]);
+    expect(missionEncounterById(stage, "ashgate-choir-guard")).toMatchObject({
+      pattern: "boss-finale",
+      hasBoss: true,
+      setPiece: {
+        kind: "breach-host-boss",
+        enemy: "breach-boss",
+      },
+    });
+    expect(missionObjectiveById(stage, "ashgate-destroy-biomass")).toMatchObject({
+      completion: "interacted",
+      completionTargetId: "ashgate-burn-biomass-trigger",
+      nextObjectiveIds: ["ashgate-sever-repeater"],
+    });
+    expect(stage.setPieces.map((setPiece) => setPiece.kind)).toEqual([
+      "biomass-organ",
+      "choir-repeater",
+      "breach-host-boss",
+    ]);
+    expect(new Set(stage.pickups.map((pickup) => pickup.kind))).toEqual(new Set(["ammo", "health"]));
+  });
+
+  it("keeps authored mission references internally consistent", () => {
+    const run = createMissionRun("ashgate");
+
+    expect(run.stages.map(missionStageReferenceErrors)).toEqual(run.stages.map(() => []));
   });
 
   it("advances stages independently from the Survivors economy", () => {

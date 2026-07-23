@@ -35,6 +35,10 @@ export class Render {
   private trailTimer = 0;
 
   private emberMeshes: THREE.Mesh[] = [];
+  private checkpointMaterials = new Map<
+    string,
+    { pylon: THREE.MeshStandardMaterial; core: THREE.MeshStandardMaterial }
+  >();
   private beacon!: THREE.Group;
   private beaconLight!: THREE.PointLight;
 
@@ -91,12 +95,14 @@ export class Render {
     // wipe everything except lights/camera-independent state
     this.clearGroup();
     this.emberMeshes = [];
+    this.checkpointMaterials.clear();
     this.trail = [];
 
     this.buildPlatforms(course);
     this.buildRamps(course);
     this.buildHazards(course);
     this.buildEmbers(course);
+    this.buildCheckpoints(course);
     this.buildBeacon(course);
     this.buildBackdrop(course);
     this.buildRunner(runner);
@@ -323,6 +329,46 @@ export class Render {
       this.emberMeshes.push(m);
       this.track(m);
     }
+  }
+
+  private buildCheckpoints(course: Course) {
+    for (const checkpoint of course.checkpoints) {
+      const group = new THREE.Group();
+      const pylonMat = new THREE.MeshStandardMaterial({
+        color: COLORS.bone,
+        emissive: COLORS.iron,
+        emissiveIntensity: 0.2,
+        roughness: 0.55,
+        metalness: 0.45,
+      });
+      const coreMat = new THREE.MeshStandardMaterial({
+        color: COLORS.hellfire,
+        emissive: COLORS.hellfire,
+        emissiveIntensity: 0.55,
+      });
+      const pylon = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.32, 3.2, 6), pylonMat);
+      pylon.position.y = WORLD.groundY + 1.6;
+      group.add(pylon);
+
+      const core = new THREE.Mesh(new THREE.OctahedronGeometry(0.42, 0), coreMat);
+      core.position.y = WORLD.groundY + 3.45;
+      group.add(core);
+
+      group.position.x = checkpoint.x;
+      this.checkpointMaterials.set(checkpoint.id, { pylon: pylonMat, core: coreMat });
+      this.track(group);
+    }
+  }
+
+  setCheckpointReached(id: string) {
+    const materials = this.checkpointMaterials.get(id);
+    if (!materials) return;
+    materials.pylon.color.setHex(COLORS.bloodHot);
+    materials.pylon.emissive.setHex(COLORS.blood);
+    materials.pylon.emissiveIntensity = 0.85;
+    materials.core.color.setHex(COLORS.bone);
+    materials.core.emissive.setHex(COLORS.hellfire);
+    materials.core.emissiveIntensity = 1.2;
   }
 
   private buildBeacon(course: Course) {

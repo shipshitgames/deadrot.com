@@ -280,6 +280,13 @@ export class Game {
       this.hud.flashEmber();
       this.render.emitEmberBurst(this.runner.x, this.runner.y);
     }
+    if (res.reachedCheckpoint) {
+      res.reachedCheckpoint.reached = true;
+      res.reachedCheckpoint.splitTime = this.time;
+      this.render.setCheckpointReached(res.reachedCheckpoint.id);
+      this.hud.flashCheckpoint(res.reachedCheckpoint.label, this.time);
+      audio.sfx("gem", { pitch: 1.35 });
+    }
 
     // --- style: hazards skimmed cleanly this step ---------------------------
     this.score.addNearMisses(
@@ -400,6 +407,8 @@ export class Game {
     return {
       runner: this.runner,
       course: this.course,
+      segments: this.course.segments,
+      checkpoints: this.course.checkpoints,
       cameraLead: CAMERA.lead,
       cinematicId: this.activeCinematicId,
     };

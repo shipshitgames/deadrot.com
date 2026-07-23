@@ -1,4 +1,5 @@
 export {
+  type AudioBus,
   AudioEngine,
   type AudioEngineConfig,
   type AudioSource,

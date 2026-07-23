@@ -36,6 +36,33 @@ reviewed outside runtime paths under `packages/assets/_archive/`.
 - Decision:
 ```
 
+## 2026-07-20 - starblight-reference-moodboard - v01
+
+- Status: approved visual-direction reference; not a runtime asset.
+- Game: [[Starblight]].
+- Faction: [[The-Pyre]], [[The-Wardens]], and [[Scourge]].
+- Character/role: momentum flight, bullet-heaven readability, and player hull
+  identity.
+- View: three-panel top-down / slight-oblique arcade reference board.
+- Tool: built-in `image_gen` / `gpt-image-2`.
+- Plan: Codex built-in.
+- Kind: AI-generated clean comic/cel-ink visual-development triptych.
+- Source output:
+  `packages/assets/_archive/raw-generator-cache/codex-generated-images/2026-07-20/raw/019f812b-f202-7060-ae41-f33dd4556e01/exec-9c5f98ed-295b-49c0-9715-c2cd65718969.png`.
+- Workspace draft:
+  `packages/assets/sources/generated/2026-07-20/starblight/moodboard/starblight-reference-triptych-source.png`.
+- Final asset: `packages/assets/masters/art/starblight/moodboard-v01/`.
+- Prompt source: [[CANON]], [[DESIGN]], [[Universe/Style-Bible]],
+  [[Games/Starblight]], the current Starblight title art/runtime contact sheet,
+  and the locked comic master.
+- Post-processing: cropped the three panels with FFmpeg; the hull panel removes
+  the inter-panel seam and pads the crop back to 724x724. No color edits.
+- Notes: the named Nova Drift, Geometry Wars, and Brotato touchstones supplied
+  interaction/readability goals only. The image is original Deadrot reference
+  art and copies no characters, UI, assets, or exact compositions.
+- Decision: use as the M0 reference board for momentum, hull identity, swarm
+  readability, and bullet-heaven legibility; keep out of runtime manifests.
+
 ## 2026-07-17 - breach-boss-comic-runtime - v01
 
 - Status: promoted into the Scourge Survivors runtime pack.
