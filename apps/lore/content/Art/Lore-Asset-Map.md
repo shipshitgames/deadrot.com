@@ -16,7 +16,7 @@ Generated coverage board for lore entries and their package-owned generated art.
 - In progress: 20
 - Drafted only: 0
 - Missing: 1
-- Catalog-linked: 22
+- Catalog-linked: 25
 - Runtime manifest-linked: 10
 - Package asset-linked: 26
 - Has masters: 15
@@ -44,16 +44,16 @@ Generated coverage board for lore entries and their package-owned generated art.
 | [[Lane-Gunner|Lane Gunner]] | character | in-progress | deadlane | 1/1 | 0 | 2 | 1 | 1 | No | Replace catalog plate with final Deadlane camera render. |
 | [[Patch|Patch]] | character | runtime-linked | scourge-survivors | 1/1 | 3 | 2 | 1 | 1 | No | Regenerate as locked comic/cel-ink production turnaround. |
 | [[Pyre-Cauterizer|Pyre Cauterizer]] | character | in-progress | pactfall | 1/1 | 0 | 1 | 0 | 0 | No | Replace catalog plate with final Pactfall arena render. |
-| [[Pyre-Courier|Pyre Courier]] | character | in-progress | redline | none | 0 | 1 | 0 | 0 | No | Add shared catalog/runtime render. |
+| [[Pyre-Courier|Pyre Courier]] | character | in-progress | redline | 1/1 | 0 | 1 | 0 | 0 | No | Add shared catalog/runtime render. |
 | [[Pyre-Duelist|Pyre Duelist]] | character | in-progress | pactfall | 1/1 | 0 | 1 | 0 | 0 | No | Replace catalog plate with final Pactfall arena render. |
 | [[Pyre-Interceptor-Pilot|Pyre Interceptor Pilot]] | character | in-progress | starblight | 1/1 | 0 | 1 | 0 | 0 | No | Decide whether this is pilot portrait, cockpit sprite, or both. |
-| [[Pyre-Saboteur|Pyre Saboteur]] | character | in-progress | rothulk | none | 0 | 1 | 0 | 0 | No | Add shared catalog/runtime render. |
+| [[Pyre-Saboteur|Pyre Saboteur]] | character | in-progress | rothulk | 1/1 | 0 | 1 | 0 | 0 | No | Add shared catalog/runtime render. |
 | [[Ranger|Ranger]] | character | runtime-linked | scourge-survivors | 1/1 | 3 | 2 | 1 | 1 | No | Regenerate as locked comic/cel-ink production turnaround. |
 | [[Vector|Vector]] | character | runtime-linked | scourge-survivors | 1/1 | 3 | 2 | 1 | 1 | No | Regenerate as locked comic/cel-ink production turnaround. |
 | [[Wallwright|Wallwright]] | character | in-progress | deadlane | 1/1 | 0 | 2 | 0 | 0 | No | Replace catalog plate with final Deadlane camera render. |
 | [[Warden-Artillerist|Warden Artillerist]] | character | in-progress | pactfall | 1/1 | 0 | 1 | 0 | 0 | No | Replace catalog plate with final Pactfall arena render. |
 | [[Warden-Bastion|Warden Bastion]] | character | in-progress | pactfall | 1/1 | 0 | 1 | 1 | 1 | No | Replace catalog plate with final Pactfall arena render. |
-| [[Warden-Courier|Warden Courier]] | character | in-progress | redline | none | 0 | 1 | 0 | 0 | No | Add shared catalog/runtime render. |
+| [[Warden-Courier|Warden Courier]] | character | in-progress | redline | 1/1 | 0 | 1 | 0 | 0 | No | Add shared catalog/runtime render. |
 | [[Warden-Defense-Pilot|Warden Defense Pilot]] | character | in-progress | starblight | 1/1 | 0 | 1 | 0 | 0 | No | Decide whether this is pilot portrait, cockpit sprite, or both. |
 
 ## Missing Or Draft Only
@@ -320,8 +320,8 @@ Generated coverage board for lore entries and their package-owned generated art.
 - Status: in-progress
 - Note: `Characters/Couriers/Pyre-Courier.md`
 - Sprite base: `portrait-pyre-courier`
-- Catalog entities: none
-- Catalog variants: none
+- Catalog entities: `pyre-courier`
+- Catalog variants: 1/1
 - Runtime records: 0
 - Package asset paths: `packages/assets/entities/pyre-courier/redline.webp`
 - Preview paths: `packages/assets/lore/asset-status/previews/characters/pyre-courier.webp`
@@ -362,8 +362,8 @@ Generated coverage board for lore entries and their package-owned generated art.
 - Status: in-progress
 - Note: `Characters/Pyre/Pyre-Saboteur.md`
 - Sprite base: `portrait-pyre-saboteur`
-- Catalog entities: none
-- Catalog variants: none
+- Catalog entities: `pyre-saboteur`
+- Catalog variants: 1/1
 - Runtime records: 0
 - Package asset paths: `packages/assets/entities/pyre-saboteur/rothulk.webp`
 - Preview paths: `packages/assets/lore/asset-status/previews/characters/pyre-saboteur.webp`
@@ -446,8 +446,8 @@ Generated coverage board for lore entries and their package-owned generated art.
 - Status: in-progress
 - Note: `Characters/Couriers/Warden-Courier.md`
 - Sprite base: `portrait-warden-courier`
-- Catalog entities: none
-- Catalog variants: none
+- Catalog entities: `warden-courier`
+- Catalog variants: 1/1
 - Runtime records: 0
 - Package asset paths: `packages/assets/entities/warden-courier/redline.webp`
 - Preview paths: `packages/assets/lore/asset-status/previews/characters/warden-courier.webp`

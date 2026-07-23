@@ -8,7 +8,7 @@
     "inProgress": 20,
     "drafted": 0,
     "missing": 1,
-    "catalogLinked": 22,
+    "catalogLinked": 25,
     "runtimeManifestLinked": 10,
     "packageLinked": 26,
     "hasMasters": 15,
@@ -1791,12 +1791,21 @@
         "redline"
       ],
       "spriteBase": "portrait-pyre-courier",
-      "catalogEntities": [],
+      "catalogEntities": [
+        "pyre-courier"
+      ],
       "catalog": {
-        "expected": 0,
-        "existing": 0,
+        "expected": 1,
+        "existing": 1,
         "missing": 0,
-        "variants": []
+        "variants": [
+          {
+            "entityId": "pyre-courier",
+            "game": "redline",
+            "path": "entities/pyre-courier/redline.webp",
+            "exists": true
+          }
+        ]
       },
       "runtime": {
         "existing": 0,
@@ -1959,12 +1968,21 @@
         "rothulk"
       ],
       "spriteBase": "portrait-pyre-saboteur",
-      "catalogEntities": [],
+      "catalogEntities": [
+        "pyre-saboteur"
+      ],
       "catalog": {
-        "expected": 0,
-        "existing": 0,
+        "expected": 1,
+        "existing": 1,
         "missing": 0,
-        "variants": []
+        "variants": [
+          {
+            "entityId": "pyre-saboteur",
+            "game": "rothulk",
+            "path": "entities/pyre-saboteur/rothulk.webp",
+            "exists": true
+          }
+        ]
       },
       "runtime": {
         "existing": 0,
@@ -2417,12 +2435,21 @@
         "redline"
       ],
       "spriteBase": "portrait-warden-courier",
-      "catalogEntities": [],
+      "catalogEntities": [
+        "warden-courier"
+      ],
       "catalog": {
-        "expected": 0,
-        "existing": 0,
+        "expected": 1,
+        "existing": 1,
         "missing": 0,
-        "variants": []
+        "variants": [
+          {
+            "entityId": "warden-courier",
+            "game": "redline",
+            "path": "entities/warden-courier/redline.webp",
+            "exists": true
+          }
+        ]
       },
       "runtime": {
         "existing": 0,
