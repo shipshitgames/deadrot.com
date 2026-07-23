@@ -3,7 +3,8 @@ import { CONSTANTS } from "../game/constants";
 import type { MarqueeImpact } from "../game/feedback";
 import type { HudState } from "../game/types";
 import type { UpgradeId } from "../game/upgrades";
-import { publishPause } from "../ui/gameBridge";
+import { publishMenu } from "../ui/gameBridge";
+import { menuSnapshotFromHud } from "../ui/menuState";
 
 // Binds the React-rendered HUD shell to game state with cached element refs and
 // dirty-checked writes. Draft cards and build tray still update imperatively.
@@ -19,11 +20,6 @@ export class HudSystem {
   private intText = byId("int-text");
   private buildTray = byId("build-tray");
   private pauseBtn = byId("pause-btn") as HTMLButtonElement;
-  private banner = byId("banner");
-  private bannerTitle = byId("banner-title");
-  private bannerSub = byId("banner-sub");
-  private bannerHint = byId("banner-hint");
-  private bannerBtn = byId("banner-btn") as HTMLButtonElement;
   private draft = byId("draft");
   private draftCards = byId("draft-cards");
   private flash = byId("flash");
@@ -32,23 +28,18 @@ export class HudSystem {
   private lastStat = "";
   private lastBuild = "";
   private lastDraft = "";
-  private lastPhase = "";
   private lastLevel = 1;
-  private pauseStatsText = "0:00 - LVL 1 - 0 kills";
   private flashLevel = 1;
   private unsubscribeSettings: () => void = () => {};
 
-  private readonly onBtnClick = () => this.onStart();
   private readonly onPauseClick = () => this.onPause();
 
   // The pause overlay (Resume / Restart / Main Menu) is the shared React
   // PauseMenu now — those callbacks reach it through the gameBridge instead.
   constructor(
-    private readonly onStart: () => void,
     private readonly onPick: (id: UpgradeId) => void,
     private readonly onPause: () => void,
   ) {
-    this.bannerBtn.addEventListener("click", this.onBtnClick);
     this.pauseBtn.addEventListener("click", this.onPauseClick);
     this.unsubscribeSettings = subscribeGlobalGameSettings((settings) => {
       this.flashLevel = settings.effectLevels.flash;
@@ -56,7 +47,6 @@ export class HudSystem {
   }
 
   dispose() {
-    this.bannerBtn.removeEventListener("click", this.onBtnClick);
     this.pauseBtn.removeEventListener("click", this.onPauseClick);
     this.unsubscribeSettings();
     if (this.flashTimer) window.clearTimeout(this.flashTimer);
@@ -80,9 +70,6 @@ export class HudSystem {
       this.salvageEl.textContent = s.gems.toLocaleString();
       this.killsEl.textContent = `${s.kills} kills`;
       this.intText.textContent = `${s.integrity}/${s.maxIntegrity}`;
-      this.pauseStatsText = `${fmtTime(s.timeSec)} - LVL ${s.level} - ${s.kills} kills`;
-      // Keep the (open) overlay's status line live as the run clock ticks.
-      if (s.phase === "paused") publishPause({ open: true, stats: this.pauseStatsText, phase: s.phase });
       if (s.bossHp01 == null) {
         this.bossBar.classList.add("hidden");
       } else {
@@ -101,12 +88,11 @@ export class HudSystem {
       this.renderBuild(s);
     }
 
-    // Phase-driven overlays.
-    if (s.phase !== this.lastPhase) {
-      this.lastPhase = s.phase;
-      this.renderBanner(s);
-      this.renderPause(s);
-    }
+    // React owns title / pause / results / meta. The bridge discards duplicate
+    // live-play snapshots, so this remains cheap when update() runs each frame.
+    publishMenu(menuSnapshotFromHud(s));
+    this.pauseBtn.classList.toggle("hidden", s.phase !== "playing");
+    if (s.phase !== "levelup") this.draft.classList.add("hidden");
 
     // Draft overlay.
     const draftKey = s.draft ? s.draft.map((c) => `${c.id}${c.level}`).join(",") : "";
@@ -150,42 +136,6 @@ export class HudSystem {
       card.addEventListener("click", () => this.onPick(c.id));
       this.draftCards.appendChild(card);
     });
-  }
-
-  private renderBanner(s: HudState) {
-    const showDraft = s.phase === "levelup";
-    if (!showDraft) this.draft.classList.add("hidden");
-
-    if (s.phase === "title") {
-      this.banner.classList.remove("hidden");
-      this.bannerBtn.classList.remove("hidden");
-    } else if (s.phase === "gameover") {
-      this.banner.classList.remove("hidden");
-      this.bannerTitle.textContent = "OVERRUN";
-      this.bannerSub.textContent = `t=${fmtTime(s.timeSec)} · LVL ${s.level} · ${s.kills} burned`;
-      this.bannerHint.innerHTML = "The Scourge breached the line.";
-      this.setBannerButton("Re-engage", "Retry run");
-      this.bannerBtn.classList.remove("hidden");
-    } else if (s.phase === "victory") {
-      this.banner.classList.remove("hidden");
-      this.bannerTitle.textContent = "FRONT HELD";
-      this.bannerSub.textContent = `The Blight-Maw is burned · t=${fmtTime(s.timeSec)} · LVL ${s.level}`;
-      this.bannerHint.innerHTML = "The orbital front holds — for now.";
-      this.setBannerButton("Fly again", "Launch again");
-      this.bannerBtn.classList.remove("hidden");
-    } else {
-      this.banner.classList.add("hidden");
-    }
-  }
-
-  private setBannerButton(label: string, meta: string) {
-    this.bannerBtn.innerHTML = `<span class="ssg-main-menu-action__label"><span>${label}</span></span><span class="ssg-main-menu-action__meta">${meta}</span>`;
-  }
-
-  private renderPause(s: HudState) {
-    this.pauseBtn.classList.toggle("hidden", s.phase !== "playing");
-    // The pause overlay itself is the shared React PauseMenu, driven via the bridge.
-    publishPause({ open: s.phase === "paused", stats: this.pauseStatsText, phase: s.phase });
   }
 
   private flashTimer = 0;

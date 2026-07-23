@@ -30,7 +30,9 @@ This file applies the shared [Deadrot design contract](../../lore/content/DESIGN
 and [Style Bible](../../lore/content/Universe/Style-Bible.md) to Starblight's
 top-down arcade camera. It is the game-local authority for player hull shape,
 materials, glow, and production. Canon remains in
-[Games/Starblight](../../lore/content/Games/Starblight.md).
+[Games/Starblight](../../lore/content/Games/Starblight.md). The annotated
+reference board, touchstones, and adopt/reject review live in the
+[Starblight Reference Moodboard v01](../../lore/content/Art/Starblight-Reference-Moodboard-v01.md).
 
 ## Ship & Hull Language
 

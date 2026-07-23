@@ -48,6 +48,14 @@ async function gameTime(page: Page): Promise<number> {
   return page.evaluate(() => (window as unknown as { __fpsGame: { ctx: { time: number } } }).__fpsGame.ctx.time);
 }
 
+async function playerPosition(page: Page): Promise<{ x: number; z: number }> {
+  return page.evaluate(() => {
+    const position = (window as unknown as { __fpsGame: { ctx: { body: { position: { x: number; z: number } } } } })
+      .__fpsGame.ctx.body.position;
+    return { x: position.x, z: position.z };
+  });
+}
+
 test.describe("arena v2 map layouts", () => {
   test("boots every campaign map through the v2 normalize adapter into a playing run", async ({ page }) => {
     const consoleErrors: string[] = [];
@@ -183,6 +191,52 @@ test.describe("arena v2 map layouts", () => {
     // All geometry is still shootable.
     expect(result.raycastTargets).toBe(result.solidMeshes);
 
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test("boots the oversized Foundry Wards beyond the legacy 80x80 clamp", async ({ page }) => {
+    const consoleErrors: string[] = [];
+    page.on("console", (msg) => {
+      if (msg.type() === "error") consoleErrors.push(msg.text());
+    });
+    page.on("pageerror", (error) => consoleErrors.push(String(error)));
+
+    await page.goto("/?sandbox=1");
+    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
+    await expect(page.getByTestId("game-canvas")).toBeVisible();
+
+    await page.evaluate(() => {
+      (window as unknown as { __fpsGame: { startSandbox: (mapId: string) => void } }).__fpsGame.startSandbox(
+        "foundry-wards",
+      );
+    });
+
+    await expect.poll(() => arenaSnapshot(page).then((state) => state.mapId)).toBe("foundry-wards");
+    await expect.poll(() => snapshot(page).then((state) => state.mapName)).toBe("Foundry Wards");
+    expect((await arenaSnapshot(page)).bounds).toEqual({ minX: -72, maxX: 72, minZ: -56, maxZ: 56 });
+
+    await page.evaluate(() => {
+      type DevGame = { ctx: { status: string }; sys: { hud: { emit: () => void } } };
+      const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
+      game.ctx.status = "playing";
+      game.sys.hud.emit();
+    });
+    await expect.poll(() => gameTime(page)).toBeGreaterThan(0);
+
+    // The authored spawn is 22m beyond the old -40 wall. A hardcoded legacy
+    // clamp would snap it back on the first simulation tick.
+    await expect.poll(() => playerPosition(page).then((position) => position.x)).toBeLessThan(-55);
+    await expect.poll(() => playerPosition(page).then((position) => Math.abs(position.z))).toBeLessThan(0.5);
+
+    const result = await arenaSnapshot(page);
+    expect(result.layout).toEqual({
+      rooms: 2,
+      levels: 1,
+      ramps: 0,
+      platforms: 0,
+      flattenedObstacles: 11,
+      anchors: { playerSpawn: 1, breachSpawn: 2, objective: 1, extraction: 0 },
+    });
     expect(consoleErrors).toEqual([]);
   });
 });

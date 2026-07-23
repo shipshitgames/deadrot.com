@@ -179,6 +179,10 @@ generated, reviewed, promoted, or replaced. That archive is not part of
 `package.json#files`, should never be imported by apps or manifests, and should
 not be mirrored to the asset CDN.
 
+The canonical keep/promote/quarantine/delete decision matrix and its enforced
+manifest boundary live in
+[`docs/generated-asset-custody-policy.md`](./docs/generated-asset-custody-policy.md).
+
 Keep rejected outputs, banned-provider outputs, temporary drafts, and exploratory
 source folders out of `sources/generated`; use `packages/assets/_archive/` for
 package-local review material that still needs durable custody. Only leave files

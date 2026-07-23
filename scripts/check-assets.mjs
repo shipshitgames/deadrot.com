@@ -3,10 +3,13 @@ import { dirname, join, normalize, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   animationPlaceholderReason,
+  collectManifestPathFields,
   contentHash,
   duplicatePathGroups,
+  findBannedGeneratorReferences,
   hasMultipleUniqueFrames,
   isAppSourceRuntimeRasterPath,
+  manifestPathCustodyViolation,
   pathGroupKey,
 } from "./lib/asset-validation.mjs";
 
@@ -57,6 +60,17 @@ function assertAssetPath(relPath, source) {
   checkedFiles += 1;
 }
 
+function assertRuntimeAssetPath(relPath, source) {
+  if (typeof relPath === "string") {
+    const violation = manifestPathCustodyViolation(relPath);
+    if (violation) {
+      fail(`${source}: runtime manifest path ${violation} (${relPath})`);
+      return;
+    }
+  }
+  assertAssetPath(relPath, source);
+}
+
 function walkFiles(root, predicate, out = []) {
   if (!existsSync(root)) return out;
   for (const entry of readdirSync(root, { withFileTypes: true })) {
@@ -67,19 +81,12 @@ function walkFiles(root, predicate, out = []) {
   return out;
 }
 
-function checkPathFields(value, source) {
-  if (!value || typeof value !== "object") return;
-  if (Array.isArray(value)) {
-    value.forEach((item, index) => {
-      checkPathFields(item, `${source}[${index}]`);
-    });
-    return;
+function checkPromotedManifest(manifest, source) {
+  for (const entry of collectManifestPathFields(manifest)) {
+    assertRuntimeAssetPath(entry.path, `${source}${entry.pointer.slice(1)}`);
   }
-
-  for (const [key, child] of Object.entries(value)) {
-    const childSource = `${source}.${key}`;
-    if (key === "path") assertAssetPath(child, childSource);
-    else checkPathFields(child, childSource);
+  for (const pointer of findBannedGeneratorReferences(manifest)) {
+    fail(`${source}${pointer.slice(1)}: promoted manifest contains banned generator provenance`);
   }
 }
 
@@ -128,6 +135,9 @@ function checkCanonCatalog() {
   const catalogPath = join(assetsRoot, "assets-catalog.json");
   const catalog = readJson(catalogPath);
   if (!catalog) return;
+  for (const pointer of findBannedGeneratorReferences(catalog)) {
+    fail(`assets-catalog.json${pointer.slice(1)}: promoted manifest contains banned generator provenance`);
+  }
 
   for (const entity of catalog.entities ?? []) {
     const id = entity.id ?? "<unknown>";
@@ -148,12 +158,12 @@ function checkCanonCatalog() {
         fail(`${source}: alias resolves without an asset path`);
         continue;
       }
-      if (relPath !== null) assertAssetPath(relPath, source);
+      if (relPath !== null) assertRuntimeAssetPath(relPath, source);
     }
   }
 
   for (const shared of catalog.shared ?? []) {
-    assertAssetPath(shared.path, `assets-catalog shared ${shared.id ?? "<unknown>"}.path`);
+    assertRuntimeAssetPath(shared.path, `assets-catalog shared ${shared.id ?? "<unknown>"}.path`);
   }
 }
 
@@ -163,7 +173,7 @@ function checkGameAssetManifests() {
   for (const manifestPath of manifestPaths) {
     const manifest = readJson(manifestPath);
     if (!manifest) continue;
-    checkPathFields(manifest, relative(repoRoot, manifestPath));
+    checkPromotedManifest(manifest, relative(repoRoot, manifestPath));
   }
 }
 
@@ -173,6 +183,11 @@ function checkAnimationPacks() {
   for (const packPath of packPaths) {
     const pack = readJson(packPath);
     if (!pack) continue;
+    for (const pointer of findBannedGeneratorReferences(pack)) {
+      fail(
+        `${relative(repoRoot, packPath)}${pointer.slice(1)}: promoted manifest contains banned generator provenance`,
+      );
+    }
 
     const parts = relative(assetsRoot, packPath).split(sep);
     const game = parts[1];
@@ -202,7 +217,10 @@ function checkAnimationPacks() {
           for (let frame = 0; frame < framesPerAction; frame += 1) {
             const frameId = String(frame).padStart(2, "0");
             const relPath = `${gamePrefix}/${action.pathTemplate.replace("{view}", view).replace("{frame}", frameId)}`;
-            assertAssetPath(relPath, `${relative(repoRoot, packPath)} ${entityId}/${actionId}/${view}/${frameId}`);
+            assertRuntimeAssetPath(
+              relPath,
+              `${relative(repoRoot, packPath)} ${entityId}/${actionId}/${view}/${frameId}`,
+            );
             const fullPath = resolve(assetsRoot, relPath);
             if (existsSync(fullPath) && statSync(fullPath).isFile()) {
               frameHashes.push(contentHash(readFileSync(fullPath)));
@@ -269,6 +287,7 @@ function checkDuplicatePlaceholderGroups() {
   const placeholderPath = join(assetsRoot, "asset-placeholders.json");
   const placeholderManifest = readJson(placeholderPath);
   if (!placeholderManifest) return;
+  checkPromotedManifest(placeholderManifest, relative(repoRoot, placeholderPath));
 
   const declaredKeys = new Set();
   for (const group of placeholderManifest.duplicateGroups ?? []) {
@@ -287,7 +306,7 @@ function checkDuplicatePlaceholderGroups() {
 
     const hashes = [];
     for (const path of paths) {
-      assertAssetPath(path, source);
+      assertRuntimeAssetPath(path, source);
       const fullPath = resolve(assetsRoot, path);
       if (existsSync(fullPath) && statSync(fullPath).isFile()) hashes.push(contentHash(readFileSync(fullPath)));
     }
@@ -316,12 +335,20 @@ function checkDuplicatePlaceholderGroups() {
   }
 }
 
+function checkModelManifestCustody() {
+  const manifestPath = join(assetsRoot, "models/models.manifest.json");
+  const manifest = readJson(manifestPath);
+  if (!manifest) return;
+  checkPromotedManifest(manifest, relative(repoRoot, manifestPath));
+}
+
 checkCanonCatalog();
 checkGameAssetManifests();
 checkAnimationPacks();
 checkAppSourceRasterCustody();
 checkFaviconCustody();
 checkDuplicatePlaceholderGroups();
+checkModelManifestCustody();
 
 if (failures.length > 0) {
   console.error(`Asset check failed with ${failures.length} issue(s):`);
