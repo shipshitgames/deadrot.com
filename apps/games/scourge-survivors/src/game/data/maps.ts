@@ -9,9 +9,9 @@
 // through the dead Hollow Lanes between holdouts, crosses The Maw spanning the
 // breach throat, and ends at Perdition where the source pulses — few walk out.
 //
-// Current maps share the default 80x80 footprint (ARENA_HALF = 40) and the four
-// boundary walls. Future maps may override `bounds` while keeping the same
-// runtime clamp/cull/spawn seam.
+// The canon campaign maps share the default 80x80 footprint (ARENA_HALF = 40)
+// and the four boundary walls. Survivors variants may override `bounds`; the
+// runtime clamp, floor, wall, cull, and spawn seams all consume live map bounds.
 //
 // v2 structural layer: the game-agnostic schema (rooms, floor levels, ramps,
 // platforms, typed anchors) lives in `@deadrot/game-kit/maps`. The MAPS
@@ -65,6 +65,16 @@ export type ArenaMaterialRole = "floor" | "wall" | "block" | "column";
 export type ArenaMaterialSet = Record<ArenaMaterialRole, string>;
 
 export const DEFAULT_ARENA_BOUNDS: MapBounds = { kind: "square", half: ARENA_HALF };
+
+/** First oversized shipped test zone (#329): 144x112m, 2.52x the default
+ *  floor area. Exported so authoring and runtime tests lock the same contract. */
+export const FOUNDRY_WARDS_BOUNDS: MapBounds = {
+  kind: "rect",
+  minX: -72,
+  maxX: 72,
+  minZ: -56,
+  maxZ: 56,
+};
 
 export const DEFAULT_ARENA_MATERIALS: ArenaMaterialSet = {
   floor: "arena-floor",
@@ -246,6 +256,23 @@ function arenaMaterials(mapId: string): ArenaMaterialSet {
     wall: `arena-${mapId}-wall`,
     block: `arena-${mapId}-block`,
     column: `arena-${mapId}-column`,
+  };
+}
+
+/** Spread registered dressing across a larger footprint without duplicating
+ *  assets or hand-authoring a second presentation pack. Sizes stay unchanged;
+ *  only world placement expands, preserving prop/decal readability budgets. */
+function scaleEnvironmentFootprint(environment: ArenaEnvironment, scaleX: number, scaleZ: number): ArenaEnvironment {
+  const scalePosition = <T extends { x: number; z: number }>(entry: T): T => ({
+    ...entry,
+    x: entry.x * scaleX,
+    z: entry.z * scaleZ,
+  });
+  return {
+    ...environment,
+    silhouettes: environment.silhouettes.map(scalePosition),
+    decals: environment.decals.map(scalePosition),
+    props: environment.props.map(scalePosition),
   };
 }
 
@@ -572,8 +599,9 @@ const GANTRY: ArenaMap = {
 
 // ============================================================================
 // FOUNDRY WARDS — a selectable Survivors variant inside Ashgate's fabrication
-// yards. Two authored ground-level rooms are separated by a furnace bulkhead
-// with a wide traversal opening through the centre.
+// yards and the first oversized-zone proof (#329). Its 144x112 footprint is
+// 2.52x the default arena area. Two authored ground-level rooms are separated
+// by a furnace bulkhead with a wide traversal opening through the centre.
 //
 // Presentation deliberately reuses Ashgate's registered assets. The layout is
 // new runtime data, while loreId/front keep the arena joined to the canon place.
@@ -586,34 +614,46 @@ const FOUNDRY_WARDS: ArenaMap = {
   subtitle: "Ashgate fabrication yards — furnace by furnace",
   icon: "foundry",
   accent: "#ff6a00",
+  biomeId: "foundry",
+  bounds: FOUNDRY_WARDS_BOUNDS,
+  themeOverrides: {
+    // The 182.5m corner-to-corner sightline must remain inside the fog falloff.
+    fogFar: 210,
+    // Pull the existing foundry rim lights out with the larger combat floor.
+    accentA: { x: -50, z: -38 },
+    accentB: { x: 50, z: 38 },
+  },
   materials: ASHGATE.materials,
-  spawn: { x: -34, z: 0 },
+  environment: scaleEnvironmentFootprint(ASHGATE.environment, 1.8, 1.4),
+  spawn: { x: -62, z: 0 },
   obstacles: [],
   rooms: [
     {
       id: "assembly-yard",
       name: "Assembly Yard",
-      bounds: { kind: "rect", minX: -40, maxX: 0, minZ: -40, maxZ: 40 },
+      bounds: { kind: "rect", minX: -72, maxX: 0, minZ: -56, maxZ: 56 },
       levelId: GROUND_LEVEL_ID,
       obstacles: [
-        // The two bulkhead runs leave a 24m opening from z=-12..12.
-        { x: -1, z: -26, w: 2, h: 4, d: 28, mat: "wall" },
-        { x: -1, z: 26, w: 2, h: 4, d: 28, mat: "wall" },
-        { x: -26, z: 0, w: 10, h: 1.2, d: 2.4, mat: "wall" },
-        { x: -20, z: -18, w: 4, h: 3, d: 4, mat: "crate" },
-        { x: -18, z: 18, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        // The two bulkhead runs leave a 40m opening from z=-20..20.
+        { x: -1, z: -38, w: 2, h: 4, d: 36, mat: "wall" },
+        { x: -1, z: 38, w: 2, h: 4, d: 36, mat: "wall" },
+        { x: -48, z: 0, w: 14, h: 1.2, d: 2.4, mat: "wall" },
+        { x: -38, z: -26, w: 4, h: 3, d: 4, mat: "crate" },
+        { x: -34, z: 28, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: -56, z: 38, w: 5, h: 3, d: 5, mat: "crate" },
       ],
     },
     {
       id: "furnace-yard",
       name: "Furnace Yard",
-      bounds: { kind: "rect", minX: 0, maxX: 40, minZ: -40, maxZ: 40 },
+      bounds: { kind: "rect", minX: 0, maxX: 72, minZ: -56, maxZ: 56 },
       levelId: GROUND_LEVEL_ID,
       obstacles: [
-        { x: 26, z: 0, w: 10, h: 1.2, d: 2.4, mat: "wall" },
-        { x: 20, z: -16, w: 4, h: 3, d: 4, mat: "crate" },
-        { x: 18, z: 18, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
-        { x: 29, z: 27, w: 3, h: 3, d: 3, mat: "crate" },
+        { x: 48, z: 0, w: 14, h: 1.2, d: 2.4, mat: "wall" },
+        { x: 38, z: -24, w: 4, h: 3, d: 4, mat: "crate" },
+        { x: 34, z: 28, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: 54, z: 40, w: 4, h: 3, d: 4, mat: "crate" },
+        { x: 56, z: -38, w: 5, h: 3, d: 5, mat: "crate" },
       ],
     },
   ],
@@ -621,7 +661,7 @@ const FOUNDRY_WARDS: ArenaMap = {
     {
       kind: "playerSpawn",
       id: "assembly-spawn",
-      x: -34,
+      x: -62,
       z: 0,
       levelId: GROUND_LEVEL_ID,
       roomId: "assembly-yard",
@@ -629,7 +669,7 @@ const FOUNDRY_WARDS: ArenaMap = {
     {
       kind: "breachSpawn",
       id: "furnace-breach",
-      x: 34,
+      x: 62,
       z: 0,
       levelId: GROUND_LEVEL_ID,
       roomId: "furnace-yard",
@@ -638,8 +678,8 @@ const FOUNDRY_WARDS: ArenaMap = {
     {
       kind: "breachSpawn",
       id: "assembly-breach",
-      x: -34,
-      z: -28,
+      x: -62,
+      z: -42,
       levelId: GROUND_LEVEL_ID,
       roomId: "assembly-yard",
       laneId: "west",
@@ -647,8 +687,8 @@ const FOUNDRY_WARDS: ArenaMap = {
     {
       kind: "objective",
       id: "ward-furnace",
-      x: 30,
-      z: 8,
+      x: 54,
+      z: 10,
       levelId: GROUND_LEVEL_ID,
       roomId: "furnace-yard",
     },

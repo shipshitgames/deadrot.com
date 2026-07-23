@@ -42,6 +42,39 @@ describe("survivors progression data", () => {
     }
   });
 
+  it("keeps four meaningfully distinct survivor openings (#67)", () => {
+    expect(SURVIVOR_CLASS_IDS).toEqual(["ranger", "heavy", "scout", "medic"]);
+    expect(new Set(SURVIVOR_CLASS_IDS.map((id) => SURVIVOR_CLASSES[id].startingWeapon)).size).toBe(4);
+
+    expect(SURVIVOR_CLASSES.ranger).toMatchObject({
+      startingWeapon: "pistol",
+      startingUpgrades: { bolt: 1 },
+      damageMul: 1.08,
+      fireRateMul: 1.06,
+    });
+    expect(SURVIVOR_CLASSES.heavy).toMatchObject({
+      startingWeapon: "shotgun",
+      startingUpgrades: { orbit: 1, armor: 1 },
+      moveMul: 0.9,
+      maxHpBonus: 45,
+      armor: 0.12,
+    });
+    expect(SURVIVOR_CLASSES.scout).toMatchObject({
+      startingWeapon: "smg",
+      startingUpgrades: { speed: 1 },
+      moveMul: 1.2,
+      maxHpBonus: -15,
+      crit: 0.08,
+    });
+    expect(SURVIVOR_CLASSES.medic).toMatchObject({
+      startingWeapon: "sniper",
+      startingUpgrades: { regen: 1, ward: 1 },
+      regen: 0.8,
+      shieldMax: 24,
+      killHeal: 0.5,
+    });
+  });
+
   it("keeps the default non-class fallback on the sidearm", () => {
     expect(STARTING_WEAPON).toBe("pistol");
     expect(survivorStartingWeapon("not-a-class")).toBe(STARTING_WEAPON);

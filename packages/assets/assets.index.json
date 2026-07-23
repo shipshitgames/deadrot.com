@@ -4,7 +4,7 @@
   "generator": "scripts/generate-asset-index.mjs",
   "note": "Generated — do not edit by hand. Run `bun run --cwd packages/assets assets:index`.",
   "cdnBase": "https://assets.deadrot.com",
-  "assetCount": 776,
+  "assetCount": 790,
   "assets": [
     {
       "id": "brand/mark",
@@ -7089,10 +7089,10 @@
       "path": "games/scourge-survivors/players/pyre/bulwark/back.webp",
       "cdnPath": "games/scourge-survivors/players/pyre/bulwark/back.webp",
       "mediaType": "image/webp",
-      "bytes": 66358,
-      "sha256": "0ffb876408556b3da90eedf4e47c9bd55549ac1c5b1e700a6094497244c61e6b",
-      "width": 435,
-      "height": 704
+      "bytes": 139236,
+      "sha256": "7afcb57d8424f7522dc6f986f21e5d50a00ea03a2c626e818d35fdc01aa78780",
+      "width": 536,
+      "height": 941
     },
     {
       "id": "games/scourge-survivors/players/pyre/bulwark/front",
@@ -7101,10 +7101,10 @@
       "path": "games/scourge-survivors/players/pyre/bulwark/front.webp",
       "cdnPath": "games/scourge-survivors/players/pyre/bulwark/front.webp",
       "mediaType": "image/webp",
-      "bytes": 58994,
-      "sha256": "d2a6cd45f3122a848f654727fe333a3285b86ff40621026798b02a4a3ada7c83",
-      "width": 422,
-      "height": 704
+      "bytes": 153636,
+      "sha256": "fff54ee89014c25f88aab8806651173e38589d2905dbd14aac98c254221d7f24",
+      "width": 589,
+      "height": 941
     },
     {
       "id": "games/scourge-survivors/players/pyre/bulwark/side",
@@ -7113,10 +7113,10 @@
       "path": "games/scourge-survivors/players/pyre/bulwark/side.webp",
       "cdnPath": "games/scourge-survivors/players/pyre/bulwark/side.webp",
       "mediaType": "image/webp",
-      "bytes": 59640,
-      "sha256": "c930b1b5dc86fb704d1054b6d46545c2c0f741543161ee955da6eb664f57746b",
-      "width": 542,
-      "height": 704
+      "bytes": 98614,
+      "sha256": "be45009bee78b7bb0269fca4ad916ecb05f4867d21d2e8bdf990ff55df1fc0fa",
+      "width": 462,
+      "height": 941
     },
     {
       "id": "games/scourge-survivors/players/pyre/patch/back",
@@ -7125,10 +7125,10 @@
       "path": "games/scourge-survivors/players/pyre/patch/back.webp",
       "cdnPath": "games/scourge-survivors/players/pyre/patch/back.webp",
       "mediaType": "image/webp",
-      "bytes": 45154,
-      "sha256": "744f058f6b12799f10533e174226a65fc6dd785807f9a8ef337515ea8fa40146",
-      "width": 354,
-      "height": 640
+      "bytes": 103786,
+      "sha256": "36f29d12376a5a57633a34834012a499bbcd9358a659298a0fb9544531b53909",
+      "width": 469,
+      "height": 941
     },
     {
       "id": "games/scourge-survivors/players/pyre/patch/front",
@@ -7137,10 +7137,10 @@
       "path": "games/scourge-survivors/players/pyre/patch/front.webp",
       "cdnPath": "games/scourge-survivors/players/pyre/patch/front.webp",
       "mediaType": "image/webp",
-      "bytes": 43008,
-      "sha256": "3b7074f862657c78909779858c411f992f2c379c02975a5a9d520b20fe378b34",
-      "width": 281,
-      "height": 640
+      "bytes": 116116,
+      "sha256": "ce5922b597ce83d99f6e697eca2fc0963ced005605d7f657424d10303511dd81",
+      "width": 496,
+      "height": 941
     },
     {
       "id": "games/scourge-survivors/players/pyre/patch/side",
@@ -7149,10 +7149,10 @@
       "path": "games/scourge-survivors/players/pyre/patch/side.webp",
       "cdnPath": "games/scourge-survivors/players/pyre/patch/side.webp",
       "mediaType": "image/webp",
-      "bytes": 51160,
-      "sha256": "17a84de7080d88bc8588ff662ffceb3b32814aa56c03a154b9601a03d96a0a38",
-      "width": 471,
-      "height": 640
+      "bytes": 82084,
+      "sha256": "42e31258e4b8db0fcc7051d91b48fd701a60df63fe3e949aa75e064c96f0279d",
+      "width": 373,
+      "height": 941
     },
     {
       "id": "games/scourge-survivors/players/pyre/ranger/back",
@@ -7161,10 +7161,10 @@
       "path": "games/scourge-survivors/players/pyre/ranger/back.webp",
       "cdnPath": "games/scourge-survivors/players/pyre/ranger/back.webp",
       "mediaType": "image/webp",
-      "bytes": 42664,
-      "sha256": "13d23628899b0eba74d021d9fa3243a86c7e44e5c4542bdb52db0f750c6434ca",
-      "width": 339,
-      "height": 640
+      "bytes": 86894,
+      "sha256": "2b310b6a10bcb3731b014b6d8dc9d39f9796bbb5b65f15ba80452413d0a865de",
+      "width": 429,
+      "height": 941
     },
     {
       "id": "games/scourge-survivors/players/pyre/ranger/front",
@@ -7173,10 +7173,10 @@
       "path": "games/scourge-survivors/players/pyre/ranger/front.webp",
       "cdnPath": "games/scourge-survivors/players/pyre/ranger/front.webp",
       "mediaType": "image/webp",
-      "bytes": 46884,
-      "sha256": "72da72361a79bec8c117d90c3357f6dcdb37537b5a73babcd4dfd920d5e46bfa",
-      "width": 329,
-      "height": 640
+      "bytes": 103022,
+      "sha256": "6ccae7c0f093746b993979773485501b2a93c45b57cb2a0240c55eb478d93ce1",
+      "width": 476,
+      "height": 941
     },
     {
       "id": "games/scourge-survivors/players/pyre/ranger/side",
@@ -7185,10 +7185,10 @@
       "path": "games/scourge-survivors/players/pyre/ranger/side.webp",
       "cdnPath": "games/scourge-survivors/players/pyre/ranger/side.webp",
       "mediaType": "image/webp",
-      "bytes": 156208,
-      "sha256": "1e57cf7c46d50ff20bc58fe4ba76b5ef8bbdd284805e560130595a217103c064",
-      "width": 420,
-      "height": 640
+      "bytes": 69346,
+      "sha256": "1eea75227f3465a0948a9ded14aa645f3202f64f0fde02a658f5ba639777f72f",
+      "width": 419,
+      "height": 941
     },
     {
       "id": "games/scourge-survivors/players/pyre/vector/back",
@@ -7197,10 +7197,10 @@
       "path": "games/scourge-survivors/players/pyre/vector/back.webp",
       "cdnPath": "games/scourge-survivors/players/pyre/vector/back.webp",
       "mediaType": "image/webp",
-      "bytes": 44266,
-      "sha256": "7c3257ae6851d2582699090e23dadb73d9b97c1fe37b09b8d4f798ffd964651b",
-      "width": 309,
-      "height": 640
+      "bytes": 82142,
+      "sha256": "060610296598bab83e440f062498bbb83fa7cd3368b2394ec9568d4f187ec557",
+      "width": 392,
+      "height": 941
     },
     {
       "id": "games/scourge-survivors/players/pyre/vector/front",
@@ -7209,10 +7209,10 @@
       "path": "games/scourge-survivors/players/pyre/vector/front.webp",
       "cdnPath": "games/scourge-survivors/players/pyre/vector/front.webp",
       "mediaType": "image/webp",
-      "bytes": 36788,
-      "sha256": "53b8cad76dd2c85cc3fdb03f9222321f4fc1b44abb98b46c436bfef60ccbf2f1",
-      "width": 281,
-      "height": 640
+      "bytes": 89454,
+      "sha256": "b5ec740ab56418d08f817e540409414cf267579cb582bbf7fff1c9ef8197dff0",
+      "width": 400,
+      "height": 941
     },
     {
       "id": "games/scourge-survivors/players/pyre/vector/side",
@@ -7221,10 +7221,10 @@
       "path": "games/scourge-survivors/players/pyre/vector/side.webp",
       "cdnPath": "games/scourge-survivors/players/pyre/vector/side.webp",
       "mediaType": "image/webp",
-      "bytes": 160054,
-      "sha256": "8994f8af8d67b5a546f4450d1d38fa949911673742a98588d5c6032efe211c7d",
-      "width": 511,
-      "height": 640
+      "bytes": 58774,
+      "sha256": "e82613c18b716513779d4965190232273bb7a6047b62e5dcb53eebae8c3d7870",
+      "width": 261,
+      "height": 941
     },
     {
       "id": "games/scourge-survivors/projectiles/scourge/boss-barrage",
@@ -8749,6 +8749,146 @@
       "sha256": "7f4698326c11ccb3cc1c289705091511d48b4986fcd993c49d2063696291376b",
       "width": 2172,
       "height": 724
+    },
+    {
+      "id": "games/starblight/audio/sfx/card-select",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/card-select.webm",
+      "cdnPath": "games/starblight/audio/sfx/card-select.webm",
+      "mediaType": "video/webm",
+      "bytes": 4770,
+      "sha256": "7503cafbfbb4b2dfc4f38c0b9ff8dd7e6f93b8d88092ab1d1da46cb85b4c84ef"
+    },
+    {
+      "id": "games/starblight/audio/sfx/elite-kill",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/elite-kill.webm",
+      "cdnPath": "games/starblight/audio/sfx/elite-kill.webm",
+      "mediaType": "video/webm",
+      "bytes": 9078,
+      "sha256": "6d5c4768a0c4cafbc8ff32267c2e98bbd811f4946c80c0d64d35bbe6af7a606f"
+    },
+    {
+      "id": "games/starblight/audio/sfx/enemy-hit",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/enemy-hit.webm",
+      "cdnPath": "games/starblight/audio/sfx/enemy-hit.webm",
+      "mediaType": "video/webm",
+      "bytes": 3226,
+      "sha256": "3c43ddc25bf023ea663165f329c00d529ce99ec301fba8ee2b8d8eca9036ff02"
+    },
+    {
+      "id": "games/starblight/audio/sfx/enemy-kill",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/enemy-kill.webm",
+      "cdnPath": "games/starblight/audio/sfx/enemy-kill.webm",
+      "mediaType": "video/webm",
+      "bytes": 4966,
+      "sha256": "d8e6e5f576e7e50f33db87f09cc86f2b4fe679089ec7db671e356fd29cda4c60"
+    },
+    {
+      "id": "games/starblight/audio/sfx/level-up",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/level-up.webm",
+      "cdnPath": "games/starblight/audio/sfx/level-up.webm",
+      "mediaType": "video/webm",
+      "bytes": 12302,
+      "sha256": "de56bf016916fba266b94233b51d7d79d45f546658c6d06d2984fbac69db6b31"
+    },
+    {
+      "id": "games/starblight/audio/sfx/low-integrity",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/low-integrity.webm",
+      "cdnPath": "games/starblight/audio/sfx/low-integrity.webm",
+      "mediaType": "video/webm",
+      "bytes": 7946,
+      "sha256": "84e89143174d834abc4c93cb56950a9d85801c8383887874ce0b653b06301d48"
+    },
+    {
+      "id": "games/starblight/audio/sfx/player-hit",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/player-hit.webm",
+      "cdnPath": "games/starblight/audio/sfx/player-hit.webm",
+      "mediaType": "video/webm",
+      "bytes": 6455,
+      "sha256": "350da8aa384ed108302d4b9872ab7e32f066399194d0a63374c326dc50561164"
+    },
+    {
+      "id": "games/starblight/audio/sfx/salvage-pickup",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/salvage-pickup.webm",
+      "cdnPath": "games/starblight/audio/sfx/salvage-pickup.webm",
+      "mediaType": "video/webm",
+      "bytes": 4038,
+      "sha256": "7b9a877d887388b78632dcce47e1bb2bdaf710b205fc8e78b59ce9f7bd7c09ea"
+    },
+    {
+      "id": "games/starblight/audio/sfx/weapon-beam",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/weapon-beam.webm",
+      "cdnPath": "games/starblight/audio/sfx/weapon-beam.webm",
+      "mediaType": "video/webm",
+      "bytes": 5178,
+      "sha256": "c8924e9d57e880c7410555baa14a6658aa6bf235ea021cdec6ef78b6d00894c8"
+    },
+    {
+      "id": "games/starblight/audio/sfx/weapon-drone",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/weapon-drone.webm",
+      "cdnPath": "games/starblight/audio/sfx/weapon-drone.webm",
+      "mediaType": "video/webm",
+      "bytes": 4584,
+      "sha256": "2629099227c932f70346321dbb21eccff1c21bf53faec551e498947b4c04846e"
+    },
+    {
+      "id": "games/starblight/audio/sfx/weapon-kinetic",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/weapon-kinetic.webm",
+      "cdnPath": "games/starblight/audio/sfx/weapon-kinetic.webm",
+      "mediaType": "video/webm",
+      "bytes": 3767,
+      "sha256": "6eefb606ea358b2df92e7a899f0b1491a795c9dbe5a114b4e0471ffb4b54ee7d"
+    },
+    {
+      "id": "games/starblight/audio/sfx/weapon-mine",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/weapon-mine.webm",
+      "cdnPath": "games/starblight/audio/sfx/weapon-mine.webm",
+      "mediaType": "video/webm",
+      "bytes": 7069,
+      "sha256": "9294f3a121aa3b4b625da5ebffb6137b2a4ae7339cf90d10d2be098db0987316"
+    },
+    {
+      "id": "games/starblight/audio/sfx/weapon-ordnance",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/weapon-ordnance.webm",
+      "cdnPath": "games/starblight/audio/sfx/weapon-ordnance.webm",
+      "mediaType": "video/webm",
+      "bytes": 8054,
+      "sha256": "d76a082b96a8e59e7f7e34830238c06eb7d0da74b41ecc0f0c06fc82f9e1f35e"
+    },
+    {
+      "id": "games/starblight/audio/sfx/weapon-wing",
+      "kind": "audio",
+      "game": "starblight",
+      "path": "games/starblight/audio/sfx/weapon-wing.webm",
+      "cdnPath": "games/starblight/audio/sfx/weapon-wing.webm",
+      "mediaType": "video/webm",
+      "bytes": 4376,
+      "sha256": "97b5499adaf326a96261071f56261559b4a827b4e5771ade6432da621c6ca6d3"
     },
     {
       "id": "games/starblight/enemies/scourge/orbital-breach-carrier",

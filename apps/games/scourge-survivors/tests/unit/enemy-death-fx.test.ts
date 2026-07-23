@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { beforeAll, describe, expect, it, vi } from "vitest";
+import { CORPSE_PART_IDS_BY_ENEMY_KIND } from "../../src/game/entities/FxSystem";
 
 /**
  * HUD cleanup + death FX (#23). The integrity/shield math lives in HUD.tsx (JSX),
@@ -183,6 +184,22 @@ describe("corpse gib sprites (#23 death FX)", () => {
       const [width, height] = part.scale;
       expect(width, `${part.id} scale width`).toBeGreaterThan(0);
       expect(height, `${part.id} scale height`).toBeGreaterThan(0);
+    }
+  });
+
+  it("assigns a distinct, host-readable debris profile to every enemy kind (#22)", () => {
+    expect(CORPSE_PART_IDS_BY_ENEMY_KIND).toEqual({
+      melee: ["gib-meat-chunk", "gib-skull-shard", "gib-bone-blade"],
+      ranged: ["gib-meat-chunk", "gib-skull-shard", "gib-acid-sac"],
+      flying: ["gib-meat-chunk", "gib-claw-limb", "gib-acid-sac", "gib-wing-membrane"],
+      hound: ["gib-meat-chunk", "gib-bone-blade", "gib-claw-limb"],
+      boss: ["gib-skull-shard", "gib-bone-blade", "gib-claw-limb"],
+    });
+
+    const profiles = Object.values(CORPSE_PART_IDS_BY_ENEMY_KIND);
+    expect(new Set(profiles.map((ids) => ids.join("|"))).size).toBe(ENEMY_SPRITE_KINDS.length);
+    for (const ids of profiles) {
+      for (const id of ids) expect(EXPECTED_GIB_IDS).toContain(id);
     }
   });
 });
