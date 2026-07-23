@@ -1,9 +1,7 @@
 ---
-version: "0.1.0"
+version: "1.0.0"
 name: "Starblight"
-description: >-
-  Game-local application of Deadrot's comic-ink visual contract to the
-  top-down momentum-flight pilot front.
+description: "Locked top-down hull language for the orbital-front arcade pilot."
 colors:
   void: "#0a0a0a"
   coal: "#121214"
@@ -11,85 +9,110 @@ colors:
   blood: "#c1121f"
   bloodHot: "#ff2a18"
   hellfire: "#ff6a00"
+  ember: "#ffb02e"
   bone: "#e9e3d6"
   ash: "#9b958a"
   toxic: "#8bdc1f"
 artDirection:
   medium: "clean comic-book / cel-shaded ink"
-  camera: "top-down / slight-oblique arcade field"
-  northStar: "momentum-flight pilot fantasy with hull-defined build identity"
-  palette: "blood on gunmetal; bone identification; hellfire propulsion; toxic only on Scourge parasite organs"
-  exclusions: "neon, cyan/magenta, pixel grids, halftone, stipple, clean vector abstraction, smooth 3D, photorealism"
-readability:
-  playerFire: "hard hellfire spear"
-  enemyFire: "wet toxic organ/glob"
-  salvage: "bone-and-ember diamond"
-  safeSpace: "low-noise void lane"
+  rendering: "bold black contours, flat shadow shapes, readable value blocks, controlled grime"
+  exclusions: "pixel art, halftone, stipple, noisy speckles, smooth 3D, photorealism"
+gameArtDirection:
+  camera: "strict top-down orthographic; every player hull points along its travel heading"
+  gameplayScale: "2.6 world units tall inside the locked 48-world-unit camera view"
+  paletteBias: "human gunmetal and bone; Pyre blood/hellfire; Warden hazard-yellow/ember"
+  glowRule: "hard compact human engine rims only; toxic green belongs exclusively to the Scourge"
 ---
 
-# STARBLIGHT // VISUAL DIRECTION
+# Starblight Design
 
-This file applies the shared [Deadrot design](../../lore/content/DESIGN.md) and
-[Style Bible](../../lore/content/Universe/Style-Bible.md) locks to Starblight.
-The review board and full adopt/reject annotations live in the
+This file applies the shared [Deadrot design contract](../../lore/content/DESIGN.md)
+and [Style Bible](../../lore/content/Universe/Style-Bible.md) to Starblight's
+top-down arcade camera. It is the game-local authority for player hull shape,
+materials, glow, and production. Canon remains in
+[Games/Starblight](../../lore/content/Games/Starblight.md). The annotated
+reference board, touchstones, and adopt/reject review live in the
 [Starblight Reference Moodboard v01](../../lore/content/Art/Starblight-Reference-Moodboard-v01.md).
 
-## Direction in one page
+## Ship & Hull Language
 
-Starblight is a top-down arcade **pilot** game with committed thrust, drift, and
-afterburner movement. Nova Drift is the north star for momentum and hull-defined
-build identity. Geometry Wars is the pressure test for swarm and projectile
-readability. Brotato is the pressure test for visible weapon-family buildcraft.
-Those are interaction touchstones, not an art style.
+### Camera and readability lock
 
-Deadrot owns the look: clean comic-book / cel-shaded ink, bold black contours,
-graphic flat shadows, hard value blocks, controlled grime, and a strict
-blood-on-gunmetal grade. Player hulls use scorched gunmetal, bone ceramic,
-blood markings, and hellfire engines. Scourge voidship hosts use infected
-wreckage, black chitin, ruptured tissue, invasive tendrils, and constrained
-toxic-green breach organs.
+- Read every player hull in strict orthographic top-down view. The nose points
+  along travel; banking may compress the plane but must not replace the outline.
+- The current player plane is `2.6` world units tall in a `48` world-unit-high
+  view. A hull therefore occupies `5.4167%` of viewport height: about `58 px` on
+  a 1080 px canvas and `39 px` on a 720 px canvas.
+- Judge the outer contour before panel detail. At gameplay scale, the player
+  must remain identifiable as one of the four bodies below when filled solid
+  black and surrounded by Scourge shapes.
+- Keep the nose, shoulders, waist, and engine termination clear. Antennae,
+  barrels, and surface decals never carry the body identity by themselves.
 
-**We are not neon.** No cyan/magenta, rainbow trails, clean vector abstraction,
-generic glowing geometry, or toxic-green player technology.
+### Shared construction grammar
 
-## Locked camera
+Human hulls are repaired war machines, not clean aerospace products. Use a
+coal/gunmetal structural core, bone heat shields and repair plates, hard black
+contours, flat shadow groups, and restrained wear. Large value blocks must
+survive reduction; small panel seams are secondary.
 
-Use a top-down / slight-oblique arcade field. It must expose heading, drift arc,
-projectile ownership, safe gaps, and the build silhouette simultaneously. A
-closer chase view may be used for a short cinematic, but gameplay returns to the
-locked field view.
+Proportion bodies by four silhouette landmarks:
 
-## Four reads every frame must preserve
+1. **Nose** — one decisive leading shape; never a round saucer.
+2. **Shoulders** — the widest faction-defining mass.
+3. **Waist** — negative space that separates wings, armor, or outriggers.
+4. **Engine termination** — compact hot hardware, distinct from the body mass.
 
-1. **Momentum:** the wake shows the ship's previous motion and intended vector.
-2. **Hull identity:** the silhouette and mounts reveal the build before the HUD.
-3. **Swarm readability:** enemy roles remain separable at peak density.
-4. **Bullet-heaven legibility:** player fire, enemy fire, salvage, and safe
-   space never share the same shape-and-color channel.
+### Starter hull bodies
 
-## Channel contract
+| Body | Faction | Pure-silhouette read | Material and glow read | Future play identity |
+| --- | --- | --- | --- | --- |
+| `pyre-razor` | Pyre | Long spearhead triangle, clipped swept wings, narrow waist | Blood panels and a compact hellfire furnace at the tail | Nimble interceptor |
+| `pyre-furnace` | Pyre | Split-prong nose, forward weapon shoulders, short heavy tail | Scorched gunmetal, blood shoulder plates, clustered hellfire exhaust | Aggressive gunship |
+| `warden-bastion` | Wardens | Broad square shoulders, central shield spine, planted block mass | Bone armor blocks, sparse hazard yellow, ember hardware | Defensive bulwark |
+| `warden-shepherd` | Wardens | Long rectangular carrier body, separated protective outriggers | Gunmetal slab body, bone repair plates, hazard-yellow marks, ember launch bay | Escort/carrier frame |
 
-| Channel | Shape | Color / material |
-| --- | --- | --- |
-| Player hull | one strong body silhouette with legible mounts | gunmetal, bone, blood marks, hellfire engine |
-| Player fire | hard spear, wedge, beam, or disciplined arc | hellfire orange to blood-hot red |
-| Scourge craft | infected host silhouette; chitin and tendrils interrupt hull | black/rusted wreckage with toxic organs |
-| Scourge fire | wet glob, sac, spore, or rupturing membrane | toxic green inside biological material |
-| Salvage | compact diamond/shard | bone edge with ember core |
-| Safe lane | calm negative space | low-noise void, no decorative glow |
+Pyre is triangular, forward-loaded, cut away at the waist, and visibly burner
+driven. Warden is square, planted, buttressed, and built around protected volume.
+Do not trade these reads between factions merely to vary a skin.
 
-## Hull identity
+### Player glow language
 
-The starting grammar supports four bodies: nimble interceptor, heavy gunship,
-Warden shield frame, and escort/carrier frame. Each must survive a pure-black
-silhouette test at real gameplay scale and carry a distinct weapon-family
-mounting footprint. Stats and behavior belong to later mechanics work; the
-visual promise is already binding.
+Player emission is mechanical and local: hard-edged blood-hot/hellfire furnace
+rims on Pyre; small hazard-yellow/ember status blocks and exhaust apertures on
+Wardens. It does not bloom across the hull or outline the entire ship.
 
-## Production proof
+`#8bdc1f` toxic green and its hot variant are forbidden on every human hull,
+cockpit, engine, shield, pickup indicator, and player trail. Toxic light means
+Scourge infection; preserving that monopoly is a combat-readability rule.
 
-![Starblight reference triptych](/assets/masters/art/starblight/moodboard-v01/starblight-reference-triptych-v01.png)
+### Locked reference sheet
 
-The source, crops, annotations, touchstone links, and provenance live in the
-[Starblight Reference Moodboard v01](../../lore/content/Art/Starblight-Reference-Moodboard-v01.md)
-and [Generation History](../../lore/content/Art/Generation-History.md).
+![Four Starblight hull bodies with pure-black gameplay-scale proofs](../../../packages/assets/masters/sprites/starblight/hull-language-v01/hull-silhouette-sheet-v01.png)
+
+The upper row is the material/faction reference. The lower row is the required
+pure-black test. The companion plate below places the same four black reads at
+approximately `58 px` ship height on a 1920×1080 viewport: the real scale from
+`2.6 / 48 × 1080`. The sheet is a design master, not a runtime sprite atlas.
+
+![The four pure-black hulls at the locked 1080p gameplay scale](../../../packages/assets/masters/sprites/starblight/hull-language-v01/hull-silhouette-gameplay-scale-1080p-v01.png)
+
+## Asset-production decision
+
+M0 locks silhouettes without replacing the current `player-interceptor.webp`.
+Production should proceed in two stages:
+
+1. Prototype each body as an imperative Three.js composite built from a small
+   shared vocabulary of flat planes/prisms. This keeps silhouette and handling
+   iteration cheap and matches Starblight's current imperative frame loop.
+2. Once body mechanics are approved, author clean comic-ink top-down sprite or
+   low-poly masters from the locked composites. Promote only reviewed runtime
+   WebP files through `@shipshitgames/assets`; do not import from game-local
+   raster folders.
+
+Every promoted body must receive a stable kebab-case ID matching the table,
+an `assets.json` sprite record with intrinsic dimensions, anchor, filtering,
+license/provenance, and an explicit import in the Starblight sprite registry.
+Primitive prototypes must use the same IDs in code so promotion does not change
+save data or loadout references. Generated PNGs stay in `sources/generated` and
+approved lossless masters stay under `masters`; runtime rasters are WebP only.

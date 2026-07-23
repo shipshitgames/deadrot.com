@@ -16,8 +16,8 @@ Vite + TypeScript + React UI overlays + Three.js primitives with emissive materi
 The aesthetic is the studio's DOOM language: black void, blood red, hellfire orange, gunmetal,
 bone text — and toxic green is the Scourge's color alone.
 
-The locked game-local visual direction and annotated reference board live in
-[DESIGN.md](./DESIGN.md) and
+The locked player hull proportions, faction reads, glow rules, and production
+path live in [DESIGN.md](./DESIGN.md); the annotated reference board lives in
 [Starblight Reference Moodboard v01](../../lore/content/Art/Starblight-Reference-Moodboard-v01.md).
 
 ## Controls
