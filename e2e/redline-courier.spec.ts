@@ -21,6 +21,38 @@ const BEACON_X = 520; // WORLD.levelLength === course.beaconX
 const PIT_Y = -20; // below WORLD.groundY - 8 (= -8) → physics flags fellInPit
 const BASE_SPEED = 6; // RUN.baseSpeed; vx at rest / after reset
 
+test("title menu can reopen Settings and links back to Warline", async ({ page }, testInfo) => {
+  test.skip(!testInfo.project.name.startsWith("redline:"), "Redline-only title-menu regression.");
+
+  const errors = collectErrors(page);
+  await boot(page);
+
+  const warlineLink = page.getByRole("link", { name: /Back to Warline/i });
+  await expect(warlineLink).toBeVisible();
+  const warlineHref = await warlineLink.getAttribute("href");
+  const linksToWarline =
+    warlineHref === "/warline/" ||
+    (warlineHref !== null &&
+      new URL(warlineHref, page.url()).hostname === "127.0.0.1" &&
+      new URL(warlineHref).port === "5180");
+  expect(linksToWarline).toBe(true);
+
+  const settingsButton = page.getByRole("button", { name: /^Settings\b/i });
+  const settingsDialog = page.getByRole("dialog", { name: "Settings" });
+
+  await settingsButton.click();
+  await expect(settingsDialog).toBeVisible();
+  await settingsDialog.getByRole("button", { name: /^Back\b/i }).click();
+  await expect(settingsDialog).toBeHidden();
+
+  // The title card remains mounted after closing Settings. Its imperative
+  // listener must still be live so a second click can reopen the React island.
+  await settingsButton.click();
+  await expect(settingsDialog).toBeVisible();
+
+  expectNoErrors(errors);
+});
+
 test("ignite starts a live courier run and the HUD ticks", async ({ page }, testInfo) => {
   test.skip(!testInfo.project.name.startsWith("redline:"), "Redline-only courier-run regression.");
 
