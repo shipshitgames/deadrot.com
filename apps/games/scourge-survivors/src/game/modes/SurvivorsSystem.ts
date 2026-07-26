@@ -8,6 +8,7 @@ import {
   ELITE_SHIELD_HP,
   ELITE_SPLIT_CAP_PER_WAVE,
   type EliteAffixDef,
+  PICKUP_VERTICAL_REACH,
   REAPER_ATTACK_INTERVAL,
   REAPER_ATTACK_RANGE,
   REAPER_HEALTH,
@@ -85,6 +86,8 @@ const DEFENSIVE_UPGRADES: UpgradeId[] = [
 
 /** How far an XP gem floats above the surface it dropped on. */
 const GEM_HOVER = 0.65;
+/** Horizontal reach at which a gem is absorbed. */
+const GEM_PICKUP_RADIUS = 1.6;
 
 export class SurvivorsSystem {
   level = 1;
@@ -872,7 +875,11 @@ export class SurvivorsSystem {
       const baseScale = (g.sprite.userData.baseScale as number | undefined) ?? XP_BLOOD_SCALE[0];
       g.sprite.scale.set(baseScale * pulse, baseScale * pulse, 1);
       const d = Math.hypot(g.sprite.position.x - px, g.sprite.position.z - pz);
-      if (d < this.ctx.statMagnet) {
+      // Vertical reach as well as horizontal, matching the drop pickups: on a flat
+      // arena both feet share a plane and this never fires, but once buildings stack
+      // storeys a gem one floor up must not be vacuumed through the ceiling.
+      const withinReach = Math.abs(g.sprite.position.y - pFootY) < PICKUP_VERTICAL_REACH;
+      if (withinReach && d < this.ctx.statMagnet) {
         // Magnet pull, in all three axes. Horizontal alone would drag a gem sitting on
         // a building's upper storey to the player's XZ and hand it over through the
         // floor; pulling the hover height too makes it visibly fly down to the boots.
@@ -883,7 +890,7 @@ export class SurvivorsSystem {
         const settle = Math.min(1, pull * delta * 0.35);
         g.sprite.userData.baseY = baseY + (targetY - baseY) * settle;
       }
-      if (d < 1.6) {
+      if (withinReach && d < GEM_PICKUP_RADIUS) {
         this.gainXp(g.value);
         this.ctx.scene.remove(g.sprite);
         g.sprite.material.dispose();
