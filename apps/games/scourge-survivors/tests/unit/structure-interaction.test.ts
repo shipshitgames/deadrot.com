@@ -100,7 +100,25 @@ describe("StructureSystem — interact focus", () => {
 
     // The old ctx._fwd read would have scored every leaf at dot 0 here.
     expect(ctx._fwd.lengthSq()).toBe(0);
-    expect(system.prompt()).toBe("[E] OPEN DOOR");
+    expect(system.prompt()).toBe("OPEN DOOR");
+  });
+
+  it("names no input device in any of its prompts", () => {
+    // The prompt reaches TouchPad's interact button verbatim, and a phone player
+    // has no `E` to press — the key hint is the keyboard overlay's own affordance.
+    const prompts: string[] = [];
+    for (const leaf of [doorLeaf(), windowLeaf(), doorLeaf({ state: "locked" })]) {
+      const { system } = harness();
+      system.build([leaf], doorMaterial());
+      system.update(1 / 60);
+      prompts.push(system.prompt());
+      system.interact(); // and again on the far side of the toggle
+      system.update(1 / 60);
+      prompts.push(system.prompt());
+    }
+
+    expect(prompts).toEqual(["OPEN DOOR", "CLOSE DOOR", "OPEN WINDOW", "CLOSE WINDOW", "DOOR LOCKED", "DOOR LOCKED"]);
+    for (const prompt of prompts) expect(prompt).not.toMatch(/\[E\]|press|key|tap/i);
   });
 
   it("drops the focus when the player looks away from the door", () => {
@@ -145,7 +163,7 @@ describe("StructureSystem — interact focus", () => {
     system.update(LEAF_TRAVEL_TIME);
 
     expect(sfxLog.at(-1)).toBe("doorOpen");
-    expect(system.prompt()).toBe("[E] CLOSE DOOR");
+    expect(system.prompt()).toBe("CLOSE DOOR");
     // Exactly one leaf moved: the inner door is still shut and still blocking.
     expect(ctx.obstacleBoxes).toHaveLength(1);
     expect(ctx.obstacleBoxes[0].containsPoint(new THREE.Vector3(0, 1.05, 4))).toBe(true);
@@ -182,7 +200,7 @@ describe("StructureSystem — the doorway actually opens", () => {
 
     // Open: nothing left in the player's push-out set, and the prompt has flipped.
     expect(ctx.obstacleBoxes).toHaveLength(0);
-    expect(system.prompt()).toBe("[E] CLOSE DOOR");
+    expect(system.prompt()).toBe("CLOSE DOOR");
   });
 
   it("re-blocks the cut when the door is closed again", () => {
@@ -209,7 +227,7 @@ describe("StructureSystem — the doorway actually opens", () => {
     system.update(1 / 60);
 
     expect(ctx.obstacleBoxes).toHaveLength(0);
-    expect(system.prompt()).toBe("[E] CLOSE DOOR");
+    expect(system.prompt()).toBe("CLOSE DOOR");
   });
 });
 

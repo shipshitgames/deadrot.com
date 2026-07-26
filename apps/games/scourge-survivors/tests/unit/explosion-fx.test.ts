@@ -228,3 +228,64 @@ describe("FxSystem.spawnExplosion — lifetime", () => {
     for (const dispose of disposals) expect(dispose).toHaveBeenCalled();
   });
 });
+
+// Buildings gave the game a second storey, and the shockwave ring is the one
+// piece of FX that makes a gameplay promise — so a blast on a first floor has to
+// draw its footprint on THAT slab. Every offset in spawnExplosion is measured
+// from `groundY`, and the embers' settle clamp reads it back, so a detonation
+// upstairs neither paints its ring at the arena plane nor rains debris through
+// the floor it went off on.
+describe("FxSystem.spawnExplosion — the blast belongs to the floor it went off on", () => {
+  /** Slab height of a hab's first floor. */
+  const FLOOR = 4;
+
+  it("lays the shockwave ring on the deck it was given, not on the arena plane", () => {
+    const { fx } = harness();
+    fx.spawnExplosion(new THREE.Vector3(3, FLOOR, -7), { radius: 4, groundY: FLOOR });
+
+    const ring = ringOf(fx);
+    expect(ring.position.y).toBeCloseTo(FLOOR + 0.09, 5);
+
+    // Still flush with the slab at full extent — it grows outward, not upward.
+    fx.updateEffects(0.399);
+    expect(ring.scale.x).toBeCloseTo(4, 1);
+    expect(ring.position.y).toBeCloseTo(FLOOR + 0.09, 5);
+  });
+
+  it("lifts the fireball and its smoke plume clear of the upper deck", () => {
+    const ground = harness();
+    ground.fx.spawnExplosion(new THREE.Vector3(3, 0, -7), { radius: 4 });
+    const groundYs = ground.fx.pops.map((p) => p.mesh.position.y);
+
+    const upper = harness();
+    upper.fx.spawnExplosion(new THREE.Vector3(3, FLOOR, -7), { radius: 4, groundY: FLOOR });
+    const upperYs = upper.fx.pops.map((p) => p.mesh.position.y);
+
+    // Same blast, translated by exactly one storey: nothing is left behind and
+    // nothing is double-counted. Smoke is randomised in Y, so compare the floor
+    // of each layer set rather than element-by-element.
+    expect(upperYs).toHaveLength(groundYs.length);
+    expect(Math.min(...upperYs)).toBeCloseTo(Math.min(...groundYs) + FLOOR, 5);
+    for (const y of upperYs) expect(y).toBeGreaterThan(FLOOR);
+  });
+
+  it("settles its embers on the upper deck instead of dropping them through it", () => {
+    const { fx } = harness();
+    fx.spawnExplosion(new THREE.Vector3(3, FLOOR, -7), { radius: 4, groundY: FLOOR });
+
+    // Long enough for every ember to arc, land, and be pinned by the clamp
+    // (ttl runs to 0.9s, so sample before the layer retires itself).
+    for (let frame = 0; frame < 48; frame++) fx.updateEffects(1 / 60);
+
+    const live = fx.pops.filter((p) => p.vel);
+    expect(live.length).toBeGreaterThan(0);
+    for (const pop of live) expect(pop.mesh.position.y).toBeGreaterThanOrEqual(FLOOR + 0.04 - 1e-6);
+  });
+
+  it("treats the arena plane as floor 0 when no deck is named", () => {
+    const { fx } = harness();
+    fx.spawnExplosion(new THREE.Vector3(3, 0, -7), { radius: 4 });
+
+    expect(ringOf(fx).position.y).toBeCloseTo(0.09, 5);
+  });
+});

@@ -89,11 +89,15 @@ export class ProjectilesSystem {
       }
       let blocked = false;
       for (const box of this.ctx.obstacleBoxes) {
+        // Both vertical bounds matter: testing only `max.y` treats every collider
+        // as reaching down to the floor, so a shot aimed through a doorway dies on
+        // the lintel it was passing safely underneath.
         if (
           p.x > box.min.x - 0.1 &&
           p.x < box.max.x + 0.1 &&
           p.z > box.min.z - 0.1 &&
           p.z < box.max.z + 0.1 &&
+          p.y > box.min.y - 0.1 &&
           p.y < box.max.y + 0.1
         ) {
           blocked = true;

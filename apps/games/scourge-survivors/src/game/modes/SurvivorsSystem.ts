@@ -83,6 +83,9 @@ const DEFENSIVE_UPGRADES: UpgradeId[] = [
   "grace",
 ];
 
+/** How far an XP gem floats above the surface it dropped on. */
+const GEM_HOVER = 0.65;
+
 export class SurvivorsSystem {
   level = 1;
   xp = 0;
@@ -574,7 +577,13 @@ export class SurvivorsSystem {
     audio.sfx("boss"); // announce() only auto-plays this for "BOSS" banners; lore names aren't
     this.sys.fx.addShake(0.5);
     this.sys.fx.hitstop(0.06);
-    this.sys.fx.spawnEnemyDeath(new THREE.Vector3(x, y, z), { scale: REAPER_SCALE, color: identity.tint });
+    // Arrival burst, not a kill: no corpse snapshot exists, so hand it the deck the
+    // reaper is standing on (`y` is the same value fed to `groundHeight` above).
+    this.sys.fx.spawnEnemyDeath(new THREE.Vector3(x, y, z), {
+      scale: REAPER_SCALE,
+      color: identity.tint,
+      groundY: y,
+    });
   }
 
   /** Reaper checks key off the director-held reference (elites also carry isBoss);
@@ -738,14 +747,17 @@ export class SurvivorsSystem {
     // statAmp (Cauterizer Feed) + crit make a passive build empower the auto-weapons.
     const total = dmg * this.ctx.statDamageMul * this.ctx.warEffortDamageMul * this.statAmp * (crit ? 2 : 1);
     const healthBefore = enemy.health;
+    // Captured before the hit lands: a lethal one parks the body underground.
+    const numberAt = enemy.bodyPoint(1.6);
+    const bloodAt = enemy.bodyPoint(1.35);
     const res = enemy.takeDamage(total, false);
     this.sys.telemetry?.recordOutgoingDamage(enemy, source, total, res.blocked, healthBefore);
     if (res.blocked) {
       audio.sfx("shieldhit"); // elite overshield (or boss shield) ate the hit
       return;
     }
-    this.sys.hud.addDamageNumber(enemy.position.clone().setY(1.6), total, crit ? "crit" : "normal");
-    this.sys.fx.spawnBloodHit(enemy.position.clone().setY(1.35), crit);
+    this.sys.hud.addDamageNumber(numberAt, total, crit ? "crit" : "normal");
+    this.sys.fx.spawnBloodHit(bloodAt, crit);
     if (res.died) this.sys.pve.onEnemyDeath(enemy, false);
   }
 
@@ -764,13 +776,16 @@ export class SurvivorsSystem {
         if (d > radius + enemy.radius) continue;
         const k = d > 0.001 ? 1 / d : 1;
         const healthBefore = enemy.health;
+        // Captured before the hit lands: a lethal one parks the body underground.
+        const numberAt = enemy.bodyPoint(1.5);
         const res = enemy.takeDamage(dmg, false, 4, dx * k, dz * k);
         this.sys.telemetry?.recordOutgoingDamage(enemy, "retaliation", dmg, res.blocked, healthBefore);
         if (res.blocked) {
           audio.sfx("shieldhit"); // overshield ate the retaliation — no damage feedback
         } else {
-          this.sys.hud.addDamageNumber(enemy.position.clone().setY(1.5), dmg, "normal");
+          this.sys.hud.addDamageNumber(numberAt, dmg, "normal");
         }
+
         if (res.died) this.sys.pve.onEnemyDeath(enemy, false);
       }
     }
@@ -814,13 +829,16 @@ export class SurvivorsSystem {
     this.sys.fx.addShake(0.24);
   }
 
-  /** Elites ("bosses") drop survival rewards on top of their big XP gem. */
-  onEliteKilled(pos: THREE.Vector3) {
-    this.sys.pickups.spawnPickup("health", pos.x + 1.2, pos.z);
-    this.sys.pickups.spawnPickup("damage", pos.x - 1.2, pos.z);
+  /** Elites ("bosses") drop survival rewards on top of their big XP gem.
+   *  `groundY` is the floor the elite died on, so rewards land on that storey. */
+  onEliteKilled(pos: THREE.Vector3, groundY = 0) {
+    this.sys.pickups.spawnPickup("health", pos.x + 1.2, pos.z, groundY);
+    this.sys.pickups.spawnPickup("damage", pos.x - 1.2, pos.z, groundY);
   }
 
-  dropXpGem(pos: THREE.Vector3, value: number) {
+  /** `groundY` is the surface the gem rests on — a kill on a building's upper
+   *  storey leaves its gem up there rather than embedded in the ground floor. */
+  dropXpGem(pos: THREE.Vector3, value: number, groundY = 0) {
     const big = value > 1;
     const mat = new THREE.SpriteMaterial({
       map: XP_BLOOD_TEXTURE,
@@ -833,8 +851,8 @@ export class SurvivorsSystem {
     const sprite = new THREE.Sprite(mat);
     const scale = big ? XP_BLOOD_SCALE[0] * 1.35 : XP_BLOOD_SCALE[0];
     sprite.scale.set(scale, scale, 1);
-    sprite.position.set(pos.x, 0.65, pos.z);
-    sprite.userData = { baseScale: scale, baseY: 0.65 };
+    sprite.position.set(pos.x, groundY + GEM_HOVER, pos.z);
+    sprite.userData = { baseScale: scale, baseY: groundY + GEM_HOVER };
     this.ctx.scene.add(sprite);
     this.xpGems.push({ sprite, value, age: 0 });
   }
@@ -842,20 +860,28 @@ export class SurvivorsSystem {
   updateXpGems(delta: number) {
     const px = this.ctx.body.position.x;
     const pz = this.ctx.body.position.z;
+    // Foot, not eye: the gem should end up at the player's boots, and `body` is the camera.
+    const pFootY = this.ctx.body.position.y - this.ctx.stanceHeight;
     for (let i = this.xpGems.length - 1; i >= 0; i--) {
       const g = this.xpGems[i];
       g.age += delta;
       g.sprite.material.rotation += delta * 2.5;
-      g.sprite.position.y = 0.65 + Math.sin(g.age * 4) * 0.1;
+      const baseY = (g.sprite.userData.baseY as number | undefined) ?? GEM_HOVER;
+      g.sprite.position.y = baseY + Math.sin(g.age * 4) * 0.1;
       const pulse = 1 + Math.sin(g.age * 6) * 0.07;
       const baseScale = (g.sprite.userData.baseScale as number | undefined) ?? XP_BLOOD_SCALE[0];
       g.sprite.scale.set(baseScale * pulse, baseScale * pulse, 1);
       const d = Math.hypot(g.sprite.position.x - px, g.sprite.position.z - pz);
       if (d < this.ctx.statMagnet) {
-        // magnet pull
+        // Magnet pull, in all three axes. Horizontal alone would drag a gem sitting on
+        // a building's upper storey to the player's XZ and hand it over through the
+        // floor; pulling the hover height too makes it visibly fly down to the boots.
         const pull = (1 - d / this.ctx.statMagnet) * 38 + 7;
         g.sprite.position.x += ((px - g.sprite.position.x) / (d || 1)) * pull * delta;
         g.sprite.position.z += ((pz - g.sprite.position.z) / (d || 1)) * pull * delta;
+        const targetY = pFootY + GEM_HOVER;
+        const settle = Math.min(1, pull * delta * 0.35);
+        g.sprite.userData.baseY = baseY + (targetY - baseY) * settle;
       }
       if (d < 1.6) {
         this.gainXp(g.value);

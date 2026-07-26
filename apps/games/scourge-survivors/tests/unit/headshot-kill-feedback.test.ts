@@ -37,17 +37,37 @@ type Mode = "sandbox" | "survivors" | "campaign";
 /** Real PveDirectorSystem over plain-object fakes; fx records call order + opts. */
 function directorHarness(mode: Mode) {
   const calls: string[] = [];
-  const headshotKillCalls: { x: number; z: number; scale?: number; boss?: boolean }[] = [];
-  const explosionCalls: { radius?: number; shake?: number; hitstop?: number }[] = [];
-  const spawnDeathCalls: { headshot?: boolean; elite?: boolean; scale?: number }[] = [];
+  const headshotKillCalls: { x: number; y: number; z: number; scale?: number; boss?: boolean; groundY?: number }[] = [];
+  const explosionCalls: { radius?: number; shake?: number; hitstop?: number; groundY?: number }[] = [];
+  const spawnDeathCalls: {
+    x: number;
+    y: number;
+    z: number;
+    headshot?: boolean;
+    elite?: boolean;
+    scale?: number;
+    groundY?: number;
+  }[] = [];
+  /** Ground floor every secondary drop was told to sit on, in call order. */
+  const dropGroundYs: number[] = [];
+  /** Every split child's spawn: where it was put and which storey it inherited. */
+  const splitSpawns: { x: number; z: number; groundHeight?: number }[] = [];
+  /** `fromY` each surface resolve was asked to search from — the parent's floor. */
+  const surfaceQueries: number[] = [];
   const survivors = {
     reaper: null as Enemy | null,
     isReaper(enemy: Enemy) {
       return this.reaper !== null && enemy === this.reaper;
     },
     enemyXp: new WeakMap<Enemy, number>(),
-    dropXpGem: () => calls.push("survivors:dropXpGem"),
-    onEliteKilled: () => calls.push("survivors:onEliteKilled"),
+    dropXpGem: (_pos: THREE.Vector3, _value: number, groundY = 0) => {
+      calls.push("survivors:dropXpGem");
+      dropGroundYs.push(groundY);
+    },
+    onEliteKilled: (_pos: THREE.Vector3, groundY = 0) => {
+      calls.push("survivors:onEliteKilled");
+      dropGroundYs.push(groundY);
+    },
     onEnemyKilled: () => calls.push("survivors:onEnemyKilled"),
     takeEliteSplitAllowance: () => 0,
   };
@@ -72,17 +92,27 @@ function directorHarness(mode: Mode) {
       registerKill: () => 1,
       addShake: () => calls.push("fx:shake"),
       hitstop: () => calls.push("fx:hitstop"),
-      spawnEnemyDeath: (_pos: THREE.Vector3, opts: (typeof spawnDeathCalls)[number]) => {
+      spawnEnemyDeath: (
+        pos: THREE.Vector3,
+        opts: { headshot?: boolean; elite?: boolean; scale?: number; groundY?: number },
+      ) => {
         calls.push("fx:spawnEnemyDeath");
-        spawnDeathCalls.push(opts);
+        spawnDeathCalls.push({ ...opts, x: pos.x, y: pos.y, z: pos.z });
       },
-      spawnHeadshotKillFx: (pos: THREE.Vector3, opts: { scale?: number; boss?: boolean } = {}) => {
+      spawnHeadshotKillFx: (pos: THREE.Vector3, opts: { scale?: number; boss?: boolean; groundY?: number } = {}) => {
         calls.push("fx:headshotKill");
-        headshotKillCalls.push({ x: pos.x, z: pos.z, scale: opts.scale, boss: opts.boss });
+        headshotKillCalls.push({
+          x: pos.x,
+          y: pos.y,
+          z: pos.z,
+          scale: opts.scale,
+          boss: opts.boss,
+          groundY: opts.groundY,
+        });
       },
       spawnExplosion: (_pos: THREE.Vector3, opts: (typeof explosionCalls)[number] = {}) => {
         calls.push("fx:spawnExplosion");
-        explosionCalls.push({ radius: opts.radius, shake: opts.shake, hitstop: opts.hitstop });
+        explosionCalls.push({ radius: opts.radius, shake: opts.shake, hitstop: opts.hitstop, groundY: opts.groundY });
       },
     },
     hud: {
@@ -91,15 +121,63 @@ function directorHarness(mode: Mode) {
       showToast: (text: string) => calls.push(`hud:toast:${text}`),
     },
     gameOver: { gameOver: (outcome: "win" | "dead") => calls.push(`gameover:${outcome}`) },
-    pickups: { spawnPickup: () => calls.push("pickups:spawn"), maybeDropPickup: () => calls.push("pickups:maybe") },
+    pickups: {
+      spawnPickup: () => calls.push("pickups:spawn"),
+      maybeDropPickup: (_pos: THREE.Vector3, groundY = 0) => {
+        calls.push("pickups:maybe");
+        dropGroundYs.push(groundY);
+      },
+    },
     mission: { onBossDefeated: () => calls.push("mission:onBossDefeated") },
+    player: {
+      // The real resolve picks the deck under (x, z) reachable from `fromY`. Here
+      // it just echoes the storey back so the test can assert what was asked for.
+      walkableSurfaceHeightNear: (_x: number, _z: number, fromY: number) => {
+        surfaceQueries.push(fromY);
+        return fromY;
+      },
+    },
   };
   const director = new PveDirectorSystem(ctx as unknown as GameContext, sys as unknown as GameSystems);
-  return { calls, explosionCalls, headshotKillCalls, spawnDeathCalls, ctx, sys, survivors, director };
+  /** Seed the enemy pool so split children come from fakes, not real Enemy rigs. */
+  const seedPool = (count: number) => {
+    for (let i = 0; i < count; i++) {
+      ctx.enemies.push({
+        alive: false,
+        spawnAt: (x: number, z: number, cfg: { groundHeight?: number } = {}) => {
+          splitSpawns.push({ x, z, groundHeight: cfg.groundHeight });
+        },
+      } as unknown as Enemy);
+    }
+  };
+  return {
+    calls,
+    explosionCalls,
+    headshotKillCalls,
+    spawnDeathCalls,
+    dropGroundYs,
+    splitSpawns,
+    surfaceQueries,
+    seedPool,
+    ctx,
+    sys,
+    survivors,
+    director,
+  };
+}
+
+/**
+ * The pre-kill snapshot `deathFx()` hands back. `kill()` has already parked the
+ * live group at y = -100 by the time `onEnemyDeath` runs, so this is the *only*
+ * record of where the body actually fell — which is why the fakes below keep the
+ * two apart.
+ */
+function corpseAt(kind: string, groundY: number, hover = 0) {
+  return { kind, x: 3, y: groundY + hover, z: -4, groundY, yaw: 0, scale: 1, palette: {} };
 }
 
 /** A dying standard foe exactly as onEnemyDeath sees it (kill() already ran: y=-100). */
-function fakeDeadGrunt(): Enemy {
+function fakeDeadGrunt(groundY = 0): Enemy {
   return {
     isBoss: false,
     alive: false,
@@ -109,11 +187,11 @@ function fakeDeadGrunt(): Enemy {
     splitCount: 0,
     archetype: "grunt",
     eliteAffix: null,
-    deathFx: () => ({ kind: "melee", view: "front", flip: 1 }),
+    deathFx: () => ({ kind: "melee", corpse: corpseAt("melee", groundY) }),
   } as unknown as Enemy;
 }
 
-function fakeDeadBoss(): Enemy {
+function fakeDeadBoss(groundY = 0): Enemy {
   return {
     isBoss: true,
     alive: false,
@@ -123,7 +201,39 @@ function fakeDeadBoss(): Enemy {
     splitCount: 0,
     archetype: "tank",
     eliteAffix: null,
-    deathFx: () => ({ kind: "boss", view: "front", flip: 1 }),
+    deathFx: () => ({ kind: "boss", corpse: corpseAt("boss", groundY) }),
+  } as unknown as Enemy;
+}
+
+/** A splitter, whose brood has to inherit the storey the parent died on. */
+function fakeDeadSplitter(groundY = 0): Enemy {
+  return {
+    isBoss: false,
+    alive: false,
+    position: new THREE.Vector3(3, -100, -4),
+    group: { scale: { x: 1 } },
+    radius: 0.6,
+    splitCount: 2,
+    maxHealth: 60,
+    speed: 3,
+    archetype: "splitter",
+    eliteAffix: null,
+    deathFx: () => ({ kind: "melee", corpse: corpseAt("melee", groundY) }),
+  } as unknown as Enemy;
+}
+
+/** A flyer dies in the air: its body falls from `y`, its drops land on `groundY`. */
+function fakeDeadFlyer(groundY = 0, hover = 2.5): Enemy {
+  return {
+    isBoss: false,
+    alive: false,
+    position: new THREE.Vector3(3, -100, -4),
+    group: { scale: { x: 1 } },
+    radius: 0.6,
+    splitCount: 0,
+    archetype: "flyer",
+    eliteAffix: null,
+    deathFx: () => ({ kind: "flyer", corpse: corpseAt("flyer", groundY, hover) }),
   } as unknown as Enemy;
 }
 
@@ -173,14 +283,14 @@ describe("onEnemyDeath headshot-kill hook", () => {
 
     h.director.onEnemyDeath(boss, true);
 
-    expect(h.headshotKillCalls).toEqual([{ x: 3, z: -4, scale: 2.4, boss: true }]);
+    expect(h.headshotKillCalls).toEqual([{ x: 3, y: 0, z: -4, scale: 2.4, boss: true, groundY: 0 }]);
     // boss extras stay authoritative: shake + hitstop + explosion + defeat flow.
     // The camera juice now rides in on the blast's own options rather than two
     // separate fx calls — spawnExplosion applies both, so the kick a boss death
     // gives the camera is unchanged, it just arrives through one verb.
     expect(sfxLog).toContain("explosion");
     // the blast is sized off the corpse, so a bigger boss detonates bigger
-    expect(h.explosionCalls).toEqual([{ radius: 2.6 * 2.4, shake: 0.45, hitstop: 0.06 }]);
+    expect(h.explosionCalls).toEqual([{ radius: 2.6 * 2.4, shake: 0.45, hitstop: 0.06, groundY: 0 }]);
     expect(h.calls).toContain("mission:onBossDefeated");
     expect(h.director.bossActive).toBe(false);
     expect(h.director.bossEnemy).toBeNull();
@@ -198,6 +308,90 @@ describe("onEnemyDeath headshot-kill hook", () => {
     expect(h.calls.filter((c) => c === "fx:headshotKill")).toHaveLength(1);
     expect(h.calls).toContain("gameover:win");
     expect(h.calls.indexOf("fx:headshotKill")).toBeLessThan(h.calls.indexOf("gameover:win"));
+  });
+});
+
+// Buildings gave the arena a second storey, and onEnemyDeath is the single place
+// every kill funnels through — so it is the single place a kill's whole aftermath
+// either follows the body upstairs or gets left on the arena plane. The snapshot
+// carries two distinct heights and both matter: `y` is where the body fell (air,
+// for a flyer) and `groundY` is the deck under it, which is where splats, gems,
+// drops and settling gibs belong.
+describe("onEnemyDeath on an upper storey", () => {
+  /** Slab height of a hab's first floor. */
+  const FLOOR = 4;
+
+  it("puts a campaign kill's whole aftermath on the floor it died on", () => {
+    const h = directorHarness("campaign");
+
+    h.director.onEnemyDeath(fakeDeadGrunt(FLOOR), true);
+
+    // The body: at the snapshot's position, never at the y = -100 park.
+    expect(h.spawnDeathCalls[0]).toMatchObject({ x: 3, y: FLOOR, z: -4, groundY: FLOOR });
+    // The beat and the drop roll: both told the same floor.
+    expect(h.headshotKillCalls[0]).toMatchObject({ y: FLOOR, groundY: FLOOR });
+    expect(h.calls).toContain("pickups:maybe");
+    expect(h.dropGroundYs).toEqual([FLOOR]);
+  });
+
+  it("keeps a Survivors gem on the upstairs deck rather than dropping it through the slab", () => {
+    const h = directorHarness("survivors");
+
+    h.director.onEnemyDeath(fakeDeadGrunt(FLOOR), false);
+
+    expect(h.calls).toContain("survivors:dropXpGem");
+    expect(h.dropGroundYs).toEqual([FLOOR]);
+    expect(h.spawnDeathCalls[0]).toMatchObject({ groundY: FLOOR });
+  });
+
+  it("detonates an upstairs boss on its own floor, and drops its elite spoils there", () => {
+    const h = directorHarness("survivors");
+    const boss = fakeDeadBoss(FLOOR);
+    h.director.bossActive = true;
+    h.director.bossEnemy = boss;
+
+    h.director.onEnemyDeath(boss, true);
+
+    expect(h.explosionCalls).toEqual([{ radius: 2.6 * 2.4, shake: 0.45, hitstop: 0.06, groundY: FLOOR }]);
+    expect(h.headshotKillCalls[0]).toMatchObject({ groundY: FLOOR, boss: true });
+    // gem then elite spoils, both on the same deck
+    expect(h.dropGroundYs).toEqual([FLOOR, FLOOR]);
+  });
+
+  it("hands a splitter's brood the storey its parent died on", () => {
+    const h = directorHarness("survivors");
+    h.seedPool(4);
+
+    h.director.onEnemyDeath(fakeDeadSplitter(FLOOR), false);
+
+    expect(h.splitSpawns).toHaveLength(2);
+    // The resolve is asked to search from the parent's floor, not from 0 — a swarm
+    // bursting out of a corpse upstairs must not fall to the arena plane.
+    expect(h.surfaceQueries).toEqual([FLOOR, FLOOR]);
+    for (const spawn of h.splitSpawns) expect(spawn.groundHeight).toBe(FLOOR);
+    expect(h.calls).toContain("hud:toast:SPLITTER BROOD");
+  });
+
+  it("separates where a flyer died from the floor its remains belong on", () => {
+    const h = directorHarness("survivors");
+    const hover = 2.5;
+
+    h.director.onEnemyDeath(fakeDeadFlyer(FLOOR, hover), false);
+
+    // The corpse starts in the air it was shot down in…
+    expect(h.spawnDeathCalls[0]).toMatchObject({ y: FLOOR + hover });
+    // …and falls to the deck, not through it.
+    expect(h.spawnDeathCalls[0].groundY).toBe(FLOOR);
+    expect(h.dropGroundYs).toEqual([FLOOR]);
+  });
+
+  it("still treats the arena plane as floor 0 when nothing is elevated", () => {
+    const h = directorHarness("campaign");
+
+    h.director.onEnemyDeath(fakeDeadGrunt(), true);
+
+    expect(h.spawnDeathCalls[0]).toMatchObject({ y: 0, groundY: 0 });
+    expect(h.dropGroundYs).toEqual([0]);
   });
 });
 

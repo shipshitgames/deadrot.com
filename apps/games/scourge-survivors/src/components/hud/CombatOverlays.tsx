@@ -1,4 +1,5 @@
 import { SCOURGE_THREAT_TIERS } from "../../game/data/enemies";
+import { isCoarsePointer } from "../../game/touchControls";
 import type { HudState } from "../../game/types";
 import { PixelIcon } from "../PixelIcon";
 import {
@@ -258,7 +259,9 @@ export function CombatOverlays({ state }: { state: HudState }) {
           data-testid="interact-prompt"
           aria-hidden
         >
-          {interactPrompt}
+          {/* The key hint belongs to the keyboard only: a phone player interacts
+              through TouchPad's own button and has no `E` to press. */}
+          {isCoarsePointer() || interactPrompt.includes("LOCKED") ? interactPrompt : `[E] ${interactPrompt}`}
         </div>
       )}
       {playing && (

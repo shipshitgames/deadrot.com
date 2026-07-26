@@ -220,7 +220,12 @@ function fakeDeadBoss(): Enemy {
     splitCount: 0,
     archetype: "tank",
     eliteAffix: null,
-    deathFx: () => ({ kind: "boss", view: "front", flip: false }),
+    // `kill()` parks the live group underground, so the snapshot is the only
+    // record of where the reaper actually fell.
+    deathFx: () => ({
+      kind: "boss",
+      corpse: { kind: "boss", x: 3, y: 0, z: -4, groundY: 0, yaw: 0, scale: REAPER_SCALE, palette: {} },
+    }),
   } as unknown as Enemy;
 }
 

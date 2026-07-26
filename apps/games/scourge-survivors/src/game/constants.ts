@@ -278,6 +278,12 @@ export const WEAPON_ORDER: WeaponId[] = ["pistol", "smg", "shotgun", "cannon", "
 export type PickupKind = "health" | "ammo" | "damage" | "dual" | WeaponId;
 export const PICKUP_DROP_CHANCE = 0.5; // chance a normal kill drops something
 export const PICKUP_RADIUS = 1.7; // walk within this to collect
+/**
+ * How far above or below the player's feet a drop can still be reached. Generous
+ * enough to cover a stair tread or the lip of a ramp, tight enough that a drop on
+ * a building's upper storey cannot be collected from the floor below it.
+ */
+export const PICKUP_VERTICAL_REACH = 1.6;
 export const PICKUP_TTL = 16; // seconds before a drop despawns
 export const HEALTH_PICKUP_AMOUNT = 35;
 const BERSERK_DAMAGE_MULT = 2;

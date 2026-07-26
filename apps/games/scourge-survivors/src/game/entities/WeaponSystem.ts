@@ -273,14 +273,17 @@ export class WeaponSystem {
       const crit = this.ctx.statCrit > 0 && Math.random() < this.ctx.statCrit ? 2 : 1;
       const dmg = MELEE_DAMAGE * dmgMul * crit;
       const healthBefore = enemy.health;
+      // Captured before the hit lands: a lethal one parks the body underground.
+      const numberAt = enemy.bodyPoint(1.6);
+      const bloodAt = enemy.bodyPoint(1.45);
       const res = enemy.takeDamage(dmg, false, MELEE_KNOCKBACK * knockbackMul, dirX, dirZ);
       this.sys.telemetry?.recordOutgoingDamage(enemy, "melee", dmg, res.blocked, healthBefore);
       hitAny = true;
       if (res.blocked) {
         audio.sfx("shieldhit"); // overshield ate the swing — no damage feedback
       } else {
-        this.sys.hud.addDamageNumber(enemy.position.clone().setY(1.6), dmg, crit > 1 ? "crit" : "normal");
-        this.sys.fx.spawnBloodHit(enemy.position.clone().setY(1.45), false);
+        this.sys.hud.addDamageNumber(numberAt, dmg, crit > 1 ? "crit" : "normal");
+        this.sys.fx.spawnBloodHit(bloodAt, false);
       }
       if (res.died) this.sys.pve.onEnemyDeath(enemy, false);
     }
@@ -498,16 +501,26 @@ export class WeaponSystem {
       const dmg = CANNON_SPLASH_DAMAGE * dmgMult * falloff;
       const hk = d > 0.001 ? d : 1;
       const healthBefore = enemy.health;
+      // Captured before the hit lands: a lethal one parks the body underground.
+      const numberAt = enemy.bodyPoint(1.4);
+      const bloodAt = enemy.bodyPoint(1.2);
       const res = enemy.takeDamage(dmg, false, 10 * falloff, ex / hk, ez / hk);
       this.sys.telemetry?.recordOutgoingDamage(enemy, "cannon_splash", dmg, res.blocked, healthBefore);
-      if (!res.blocked) this.sys.hud.addDamageNumber(enemy.position.clone().setY(1.4), dmg, "normal");
-      if (!res.blocked) this.sys.fx.spawnBloodHit(enemy.position.clone().setY(1.2), false);
+      if (!res.blocked) this.sys.hud.addDamageNumber(numberAt, dmg, "normal");
+      if (!res.blocked) this.sys.fx.spawnBloodHit(bloodAt, false);
       if (res.died) this.sys.pve.onEnemyDeath(enemy, false);
     }
     // The blast is drawn at the same radius the damage loop above used, so the
     // shockwave ring lands exactly on the edge of what it hurt — the player
     // learns the cannon's footprint by watching it, not by dying to it.
-    this.sys.fx.spawnExplosion(center, { radius: CANNON_SPLASH_RADIUS, shake: 0.5, hitstop: 0.07 });
+    // `center` is the raycast hit point, which can be metres up a wall or a storey
+    // above the terrain — the shockwave ring belongs on whatever deck is under it.
+    this.sys.fx.spawnExplosion(center, {
+      radius: CANNON_SPLASH_RADIUS,
+      shake: 0.5,
+      hitstop: 0.07,
+      groundY: this.sys.player.walkableSurfaceHeightNear(center.x, center.z, center.y),
+    });
     audio.sfx("explosion");
   }
 

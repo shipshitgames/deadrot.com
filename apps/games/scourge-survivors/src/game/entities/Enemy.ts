@@ -52,6 +52,11 @@ const BOSS_SHIELD_RADIUS = 1.5;
 const ANIMATION_CROSSFADE_DURATION = 0.12;
 const ATTACK_ANIMATION_DURATION = 0.72;
 const HIT_ANIMATION_DURATION = 0.24;
+/** Written and consumed inside one synchronous spawnAt, so one is safe. */
+const BODY_BOUNDS = new THREE.Box3();
+/** Floor on the measured body height — a rig that somehow measures flat still
+ *  has to collide as a body, not as a puddle. */
+const MIN_BODY_HEIGHT = 0.6;
 
 export interface DamageResult {
   died: boolean;
@@ -134,6 +139,18 @@ export interface SpawnConfig {
 export class Enemy extends Agent {
   readonly group = new THREE.Group();
   readonly hitMeshes: THREE.Mesh[] = [];
+
+  /**
+   * Standing height of the configured rig above {@link position}, in world units
+   * with scale already applied. Collision needs this: without a vertical extent
+   * every obstacle is an infinite column, and the lintel over a doorway shoves
+   * the horde back out of the building (see `PlayerSystem.pushOutOfObstacles`).
+   *
+   * Measured off the rig's own hit meshes at spawn rather than declared as a
+   * constant, so each kind — and the boss's much taller silhouette — reports the
+   * body a bullet can actually hit, and no number drifts from the models.
+   */
+  bodyHeight = MIN_BODY_HEIGHT;
 
   maxHealth = ENEMY_MAX_HEALTH;
   health = ENEMY_MAX_HEALTH;
@@ -345,7 +362,21 @@ export class Enemy extends Agent {
     copyEnemyPose(this.currentPose, this.transitionPose);
     applyEnemyRigPose(this.rig, this.currentPose);
     this.rig.muzzle.getWorldPosition(this.muzzle);
+    this.measureBodyHeight();
     this.updateHealthBar();
+  }
+
+  /** Refresh {@link bodyHeight} from the posed rig. Only the hit meshes are
+   *  measured: the health bar floats above the head and the telegraph ring flares
+   *  wider than the body, and neither is something the world should collide with.
+   *  Spawn-time only — a pose swing moves limbs, not the silhouette collision
+   *  cares about. */
+  private measureBodyHeight() {
+    this.group.updateMatrixWorld(true);
+    BODY_BOUNDS.makeEmpty();
+    for (const mesh of this.rig.hitMeshes) BODY_BOUNDS.expandByObject(mesh);
+    const measured = BODY_BOUNDS.isEmpty() ? 0 : BODY_BOUNDS.max.y - this.group.position.y;
+    this.bodyHeight = Math.max(MIN_BODY_HEIGHT, measured);
   }
 
   private enemyKind(): EnemyRigKind {
@@ -808,6 +839,21 @@ export class Enemy extends Agent {
 
   get position(): THREE.Vector3 {
     return this.group.position;
+  }
+
+  /**
+   * A fresh world point `height` above this enemy's feet — where hit feedback
+   * (damage numbers, blood, impact sparks) belongs.
+   *
+   * Two reasons this exists rather than `enemy.position.clone().setY(1.4)`:
+   * `position.y` is the deck the enemy stands on (plus any hover), so an absolute
+   * Y drags a second-storey hit's feedback down to the arena plane; and a lethal
+   * hit has already run {@link kill}, which parks the group at y = -100 (see
+   * {@link EnemyDeathSnapshot}), so callers must read this *before* calling
+   * {@link takeDamage} and the returned vector has to be a detached copy.
+   */
+  bodyPoint(height: number): THREE.Vector3 {
+    return new THREE.Vector3(this.group.position.x, this.group.position.y + height, this.group.position.z);
   }
 
   private updateHealthBar() {

@@ -67,6 +67,8 @@ interface CorpsePart {
   vel: THREE.Vector3;
   spin: THREE.Vector3;
   baseOpacity: number;
+  /** Surface this gib comes to rest on. See `Pop.groundY`. */
+  groundY: number;
 }
 
 interface CorpseRig {
@@ -120,7 +122,9 @@ export class FxSystem {
     this.tracers.push({ line, age: 0, ttl: 0.07 });
   }
 
-  spawnDeathPop(pos: THREE.Vector3, color: number, scale: number) {
+  /** `groundY` is the surface underneath the kill; the burst sits a body-height
+   *  above it. Defaults to the arena floor. */
+  spawnDeathPop(pos: THREE.Vector3, color: number, scale: number, groundY = 0) {
     const mesh = new THREE.Mesh(
       new THREE.SphereGeometry(0.5 * scale, 12, 12),
       new THREE.MeshBasicMaterial({
@@ -132,9 +136,9 @@ export class FxSystem {
       }),
     );
     mesh.position.copy(pos);
-    mesh.position.y = 1.0 * scale;
+    mesh.position.y = groundY + 1.0 * scale;
     this.ctx.scene.add(mesh);
-    this.pops.push({ mesh, age: 0, ttl: 0.35 });
+    this.pops.push({ mesh, age: 0, ttl: 0.35, groundY });
 
     // A fast, bright outward gut-burst ring for a punchier "splat" read.
     const ring = new THREE.Mesh(
@@ -149,7 +153,7 @@ export class FxSystem {
     );
     ring.position.copy(mesh.position);
     this.ctx.scene.add(ring);
-    this.pops.push({ mesh: ring, age: 0, ttl: 0.18 });
+    this.pops.push({ mesh: ring, age: 0, ttl: 0.18, groundY });
   }
 
   /** Brief blood spurt for a non-lethal hit. Headshots throw a brighter, taller burst. */
@@ -190,22 +194,28 @@ export class FxSystem {
       color?: number;
       spriteKind?: EnemySpriteKind;
       corpse?: EnemyDeathSnapshot;
+      /** Surface under the kill. Every offset below is measured from it, so a kill
+       *  on a building's upper storey splatters that deck instead of the ground
+       *  floor. Defaults to the arena plane; `corpse.groundY` is the real source. */
+      groundY?: number;
     } = {},
   ) {
     const scale = opts.scale ?? (opts.elite ? 1.8 : 1);
     const color = opts.color ?? (opts.elite ? 0xff2d55 : 0xc1121f);
+    const groundY = opts.groundY ?? opts.corpse?.groundY ?? 0;
     if (opts.corpse) this.spawnEnemyCorpse(opts.corpse);
-    this.spawnDeathPop(pos, color, opts.elite ? scale * 1.15 : scale);
+    this.spawnDeathPop(pos, color, opts.elite ? scale * 1.15 : scale, groundY);
     this.spawnCorpseParts(pos, {
       headshot: opts.headshot,
       elite: opts.elite,
       scale,
       spriteKind: opts.spriteKind,
+      groundY,
     });
 
     const count = opts.elite ? 28 : opts.headshot ? 18 : 11;
     const origin = pos.clone();
-    origin.y = opts.headshot ? 1.75 * scale : 1.05 * scale;
+    origin.y = groundY + (opts.headshot ? 1.75 * scale : 1.05 * scale);
     for (let i = 0; i < count; i++) {
       const mesh = new THREE.Mesh(
         new THREE.SphereGeometry((0.055 + Math.random() * 0.055) * (opts.elite ? 1.2 : 1), 6, 4),
@@ -233,6 +243,7 @@ export class FxSystem {
         ),
         baseScale: 0.75,
         growth: opts.elite ? 1.0 : 0.55,
+        groundY,
       });
     }
 
@@ -252,7 +263,7 @@ export class FxSystem {
       mesh.rotation.z = Math.random() * Math.PI;
       mesh.position.set(
         pos.x + (Math.random() * 2 - 1) * 0.7 * scale,
-        0.025,
+        groundY + 0.025,
         pos.z + (Math.random() * 2 - 1) * 0.7 * scale,
       );
       mesh.scale.setScalar(0.001);
@@ -271,15 +282,19 @@ export class FxSystem {
   /** Lethal-headshot kill beat: white skull-pop core + expanding crimson shell +
    *  vertical bone/blood fountain at head height, layered on the normal death FX.
    *  World-space only (no full-screen flash — photosensitivity) and fire-and-forget
-   *  on cloned scalars: never holds an Enemy (pooled) and never reads pos.y (the
-   *  group is parked at y=-100 by kill() before this runs — Y derives from scale,
-   *  matching every other death FX in this file). Camera juice is suppressed for
+   *  on cloned scalars: never holds an Enemy, which the pool reuses on the next
+   *  spawn. `pos` must therefore come from the death snapshot rather than the live
+   *  transform — `kill()` has already parked the group at y = -100 (see
+   *  `EnemyDeathSnapshot`) — and `opts.groundY` is the deck the kill happened on, so
+   *  the fountain erupts from the head on that storey. Camera juice is suppressed for
    *  bosses so their bigger death beat (0.45 shake / 0.06 hitstop) stays authoritative. */
-  spawnHeadshotKillFx(pos: THREE.Vector3, opts: { scale?: number; boss?: boolean } = {}) {
+  spawnHeadshotKillFx(pos: THREE.Vector3, opts: { scale?: number; boss?: boolean; groundY?: number } = {}) {
     const scale = Math.max(0.8, opts.scale ?? 1);
     this.headshotKillSeq++;
     this.lastHeadshotKill = { x: pos.x, z: pos.z, scale, boss: !!opts.boss, at: this.ctx.time };
-    const headY = 1.75 * scale; // same head origin as the existing headshot particle burst (spawnEnemyDeath)
+    const groundY = opts.groundY ?? 0;
+    // Same head origin as the headshot particle burst in spawnEnemyDeath.
+    const headY = groundY + 1.75 * scale;
 
     // 1) White-hot core flash — the instantaneous "skull-pop" read.
     const core = new THREE.Mesh(
@@ -294,7 +309,7 @@ export class FxSystem {
     );
     core.position.set(pos.x, headY, pos.z);
     this.ctx.scene.add(core);
-    this.pops.push({ mesh: core, age: 0, ttl: 0.12, baseScale: 0.5, growth: 2.2 });
+    this.pops.push({ mesh: core, age: 0, ttl: 0.12, baseScale: 0.5, growth: 2.2, groundY });
 
     // 2) Expanding crimson shell — clean contour that reads from any camera angle.
     const shell = new THREE.Mesh(
@@ -309,7 +324,7 @@ export class FxSystem {
     );
     shell.position.set(pos.x, headY, pos.z);
     this.ctx.scene.add(shell);
-    this.pops.push({ mesh: shell, age: 0, ttl: 0.22, baseScale: 0.6, growth: 3.2 });
+    this.pops.push({ mesh: shell, age: 0, ttl: 0.22, baseScale: 0.6, growth: 3.2, groundY });
 
     // 3) Vertical bone/blood fountain off the head — the tall geyser is what
     //    distinguishes a head kill from a body kill at FPS combat distance.
@@ -339,6 +354,7 @@ export class FxSystem {
         vel: new THREE.Vector3(Math.cos(a) * lateral, 4.5 + Math.random() * 3.0, Math.sin(a) * lateral),
         baseScale: 0.7,
         growth: 0.5,
+        groundY,
       });
     }
 
@@ -350,11 +366,19 @@ export class FxSystem {
 
   private spawnCorpseParts(
     pos: THREE.Vector3,
-    opts: { headshot?: boolean; elite?: boolean; scale: number; spriteKind?: EnemySpriteKind },
+    opts: {
+      headshot?: boolean;
+      elite?: boolean;
+      scale: number;
+      spriteKind?: EnemySpriteKind;
+      /** Deck the kill happened on; gibs launch from it and settle back onto it. */
+      groundY?: number;
+    },
   ) {
     const scale = Math.max(0.72, opts.scale);
     const count = opts.elite ? 14 : opts.headshot ? 6 : 4;
-    const originY = opts.headshot ? 1.45 * scale : 1.05 * scale;
+    const groundY = opts.groundY ?? 0;
+    const originY = groundY + (opts.headshot ? 1.45 * scale : 1.05 * scale);
 
     for (let i = 0; i < count; i++) {
       const spriteDef = this.pickCorpsePartSprite(opts, i);
@@ -393,6 +417,7 @@ export class FxSystem {
         ),
         spin: new THREE.Vector3((Math.random() * 2 - 1) * 9, (Math.random() * 2 - 1) * 9, (Math.random() * 2 - 1) * 9),
         baseOpacity: opts.elite ? 0.94 : 0.86,
+        groundY,
       });
     }
 
@@ -629,6 +654,11 @@ export class FxSystem {
       color?: number;
       shake?: number;
       hitstop?: number;
+      /** Deck under the blast. The fireball's rise and the shockwave ring are both
+       *  measured from it, so a detonation on a building's upper storey scorches
+       *  that floor instead of drawing its ring down at the arena plane. Defaults
+       *  to the arena floor. */
+      groundY?: number;
     } = {},
   ) {
     const radius = Math.max(0.6, opts.radius ?? 4);
@@ -636,7 +666,8 @@ export class FxSystem {
     // Shed particles, never structure: the first three layers are the silhouette.
     const crowding = Math.max(0, this.pops.length - EXPLOSION_POP_BUDGET) / EXPLOSION_POP_BUDGET;
     const detail = Math.max(EXPLOSION_MIN_DETAIL, 1 - crowding);
-    const originY = Math.min(1.1, 0.35 + radius * 0.16);
+    const groundY = opts.groundY ?? 0;
+    const originY = groundY + Math.min(1.1, 0.35 + radius * 0.16);
 
     // 1) White-hot core. Brief and small — the flash frame, not the fireball.
     const core = new THREE.Mesh(
@@ -651,7 +682,7 @@ export class FxSystem {
     );
     core.position.set(pos.x, originY, pos.z);
     this.ctx.scene.add(core);
-    this.pops.push({ mesh: core, age: 0, ttl: 0.14, baseScale: 0.35, growth: 1.5 });
+    this.pops.push({ mesh: core, age: 0, ttl: 0.14, baseScale: 0.35, growth: 1.5, groundY });
 
     // 2) Fire shell, outliving the core so the blast has a falling-off tail.
     const shell = new THREE.Mesh(
@@ -666,7 +697,7 @@ export class FxSystem {
     );
     shell.position.set(pos.x, originY, pos.z);
     this.ctx.scene.add(shell);
-    this.pops.push({ mesh: shell, age: 0, ttl: 0.34, baseScale: 0.5, growth: 2.1 });
+    this.pops.push({ mesh: shell, age: 0, ttl: 0.34, baseScale: 0.5, growth: 2.1, groundY });
 
     // 3) Ground shockwave. Unit-radius geometry scaled straight to `radius`, so
     //    the ring stops exactly where the damage does.
@@ -682,10 +713,10 @@ export class FxSystem {
       }),
     );
     ring.rotation.x = -Math.PI / 2;
-    ring.position.set(pos.x, 0.09, pos.z);
+    ring.position.set(pos.x, groundY + 0.09, pos.z);
     ring.scale.setScalar(0.001);
     this.ctx.scene.add(ring);
-    this.pops.push({ mesh: ring, age: 0, ttl: 0.4, baseScale: 0.001, growth: radius, peakOpacity: 0.7 });
+    this.pops.push({ mesh: ring, age: 0, ttl: 0.4, baseScale: 0.001, growth: radius, peakOpacity: 0.7, groundY });
 
     // 4) Embers, thrown along the ground plane so they rake outward instead of
     //    fountaining straight up like a gib burst.
@@ -712,6 +743,7 @@ export class FxSystem {
         vel: new THREE.Vector3(Math.cos(a) * speed, 2.2 + Math.random() * 4.4, Math.sin(a) * speed),
         baseScale: 0.8,
         growth: 0.4,
+        groundY,
       });
     }
 
@@ -745,6 +777,7 @@ export class FxSystem {
         baseScale: 0.5,
         growth: 1.0,
         peakOpacity: 0.45,
+        groundY,
       });
     }
 
@@ -755,6 +788,10 @@ export class FxSystem {
   /** Blood-rage pickup hit: screen shake plus a hot ring and short-lived spray around the player. */
   triggerBerserkBurst() {
     const center = this.ctx.body.position.clone();
+    // `body` is the camera, so its Y is the eye. The ring lies on the floor the
+    // player is standing on — which is a storey up when they grab the pickup
+    // inside a building, not the arena plane.
+    const groundY = center.y - this.ctx.stanceHeight;
     const ring = new THREE.Mesh(
       new THREE.RingGeometry(0.7, 1.08, 56),
       new THREE.MeshBasicMaterial({
@@ -767,10 +804,10 @@ export class FxSystem {
       }),
     );
     ring.rotation.x = -Math.PI / 2;
-    ring.position.set(center.x, 0.13, center.z);
+    ring.position.set(center.x, groundY + 0.13, center.z);
     ring.scale.setScalar(0.001);
     this.ctx.scene.add(ring);
-    this.pops.push({ mesh: ring, age: 0, ttl: 0.46, baseScale: 0.18, growth: 11.5, peakOpacity: 0.38 });
+    this.pops.push({ mesh: ring, age: 0, ttl: 0.46, baseScale: 0.18, growth: 11.5, peakOpacity: 0.38, groundY });
 
     for (let i = 0; i < 22; i++) {
       const mesh = new THREE.Mesh(
@@ -785,7 +822,7 @@ export class FxSystem {
       );
       const a = Math.random() * Math.PI * 2;
       const r = 0.35 + Math.random() * 0.4;
-      mesh.position.set(center.x + Math.cos(a) * r, 0.75 + Math.random() * 1.0, center.z + Math.sin(a) * r);
+      mesh.position.set(center.x + Math.cos(a) * r, groundY + 0.75 + Math.random() * 1.0, center.z + Math.sin(a) * r);
       this.ctx.scene.add(mesh);
       const speed = 3.8 + Math.random() * 4.6;
       this.pops.push({
@@ -795,6 +832,7 @@ export class FxSystem {
         vel: new THREE.Vector3(Math.cos(a) * speed, 2.8 + Math.random() * 3.4, Math.sin(a) * speed),
         baseScale: 0.72,
         growth: 0.9,
+        groundY,
       });
     }
 
@@ -901,8 +939,9 @@ export class FxSystem {
       if (p.vel) {
         p.mesh.position.addScaledVector(p.vel, delta);
         p.vel.y -= 12 * delta;
-        if (p.mesh.position.y < 0.04) {
-          p.mesh.position.y = 0.04;
+        const rest = (p.groundY ?? 0) + 0.04;
+        if (p.mesh.position.y < rest) {
+          p.mesh.position.y = rest;
           p.vel.multiplyScalar(0.35);
           p.vel.y = 0;
         }
@@ -928,8 +967,9 @@ export class FxSystem {
       part.mesh.position.addScaledVector(part.vel, delta);
       part.vel.y -= CORPSE_PART_GRAVITY * delta;
 
-      if (part.mesh.position.y <= 0.075) {
-        part.mesh.position.y = 0.075;
+      const partRest = part.groundY + 0.075;
+      if (part.mesh.position.y <= partRest) {
+        part.mesh.position.y = partRest;
         if (Math.abs(part.vel.y) > 1.1) part.vel.y *= -0.14;
         else part.vel.y = 0;
         const drag = Math.max(0, 1 - delta * 5.6);

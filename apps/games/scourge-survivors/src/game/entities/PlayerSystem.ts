@@ -223,16 +223,26 @@ export class PlayerSystem {
   }
 
   private pushPlayerOutOfObstacles(pos: THREE.Vector3, radius: number) {
-    const footY = pos.y - this.ctx.stanceHeight;
-    const headY = pos.y;
-    for (const box of this.ctx.obstacleBoxes) {
-      if (footY >= box.max.y - 0.12 || headY <= box.min.y + 0.05) continue;
-      this.pushOutOfBoxXZ(pos, box, radius);
-    }
+    // `pos` is the camera/eye, so the head is at pos.y and the feet a stance below.
+    this.pushOutOfObstaclesInRange(pos, radius, pos.y - this.ctx.stanceHeight, pos.y);
   }
 
-  pushOutOfObstacles(pos: THREE.Vector3, radius: number) {
+  /**
+   * Push-out for the horde. `pos` is an actor's foot and `height` its standing
+   * extent — both are required because an obstacle only blocks a body it actually
+   * overlaps vertically. Flattening every collider into an infinite column is what
+   * makes a doorway impassable: the lintel above the opening still overlaps the
+   * enemy in X/Z, so the walker is shoved back out of the building it was walking
+   * into. With the extent, the enemy passes under the lintel and over the sill.
+   */
+  pushOutOfObstacles(pos: THREE.Vector3, radius: number, height: number) {
+    this.pushOutOfObstaclesInRange(pos, radius, pos.y, pos.y + height);
+  }
+
+  private pushOutOfObstaclesInRange(pos: THREE.Vector3, radius: number, footY: number, headY: number) {
     for (const box of this.ctx.obstacleBoxes) {
+      // Standing on top of it, or entirely underneath it: not a wall to this body.
+      if (footY >= box.max.y - 0.12 || headY <= box.min.y + 0.05) continue;
       this.pushOutOfBoxXZ(pos, box, radius);
     }
   }

@@ -1,5 +1,6 @@
 import { type SpawnDescriptor, WaveDirector } from "@deadrot/game-kit/modes";
-import type * as THREE from "three";
+// Value import: the death path constructs a Vector3 from the corpse snapshot.
+import * as THREE from "three";
 import { audio } from "../../audio/AudioEngine";
 import {
   BOSS_ATTACK_DAMAGE,
@@ -164,9 +165,19 @@ export class PveDirectorSystem {
 
   onEnemyDeath(enemy: Enemy, headshot: boolean) {
     const wasBoss = enemy.isBoss;
-    const deathPos = enemy.position.clone();
     const deathScale = enemy.isBoss ? 2.4 : Math.max(0.8, enemy.group.scale.x);
     const deathFx = enemy.deathFx();
+    // Read the death location from the snapshot, never from `enemy.position`:
+    // `takeDamage` has already run `kill()`, which parks the group at y = -100 so
+    // the pooled body stops catching bullets (see `EnemyDeathSnapshot`). Cloning
+    // the live transform here yields a corpse 100m under the map — invisible while
+    // the arena was flat and every consumer overrode Y with a constant, and wrong
+    // the moment buildings gave the game a second storey.
+    const corpse = deathFx.corpse;
+    const deathPos = new THREE.Vector3(corpse.x, corpse.y, corpse.z);
+    // The floor it died on. Distinct from `deathPos.y`, which for a flyer sits a
+    // hover above the deck: splats, gems and drops belong on the surface.
+    const deathGroundY = corpse.groundY;
     const spec = WEAPONS[this.ctx.activeWeapon];
     this.ctx.kills++;
     // a dead mob's in-flight projectiles should fizzle out
@@ -184,14 +195,20 @@ export class PveDirectorSystem {
       // A boss death has always played the explosion cue with nothing on screen
       // to match it. The blast is scaled off the corpse rather than fixed, so a
       // bigger boss detonates bigger.
-      this.sys.fx.spawnExplosion(deathPos, { radius: 2.6 * deathScale, shake: 0.45, hitstop: 0.06 });
+      this.sys.fx.spawnExplosion(deathPos, {
+        radius: 2.6 * deathScale,
+        shake: 0.45,
+        hitstop: 0.06,
+        groundY: deathGroundY,
+      });
       audio.sfx("explosion");
     }
 
     // Lethal-headshot kill beat: every kill source funnels through onEnemyDeath,
     // so this one hook covers hitscan, sandbox damage, and all mode branches.
     // FX-only — counters/score/audio at the call sites are untouched.
-    if (headshot) this.sys.fx.spawnHeadshotKillFx(deathPos, { scale: deathScale, boss: wasBoss });
+    if (headshot)
+      this.sys.fx.spawnHeadshotKillFx(deathPos, { scale: deathScale, boss: wasBoss, groundY: deathGroundY });
 
     if (this.ctx.sandbox) {
       this.sys.hud.killSeq++;
@@ -203,6 +220,7 @@ export class PveDirectorSystem {
         color: wasBoss ? 0xff2d55 : 0xc1121f,
         spriteKind: deathFx.kind,
         corpse: deathFx.corpse,
+        groundY: deathGroundY,
       });
       if (wasBoss) {
         this.bossActive = false;
@@ -233,6 +251,7 @@ export class PveDirectorSystem {
           color: 0xff2d55,
           spriteKind: deathFx.kind,
           corpse: deathFx.corpse,
+          groundY: deathGroundY,
         });
         // Player-death-first ordering: if the run already ended this frame the
         // victory beat must not fire over the death screen.
@@ -251,12 +270,17 @@ export class PveDirectorSystem {
         color: wasBoss ? 0xff2d55 : enemy.eliteAffix ? ELITE_AFFIXES[enemy.eliteAffix].tint : 0xc1121f,
         spriteKind: deathFx.kind,
         corpse: deathFx.corpse,
+        groundY: deathGroundY,
       });
-      this.sys.survivors.dropXpGem(deathPos.clone(), this.sys.survivors.enemyXp.get(enemy) ?? SURV_XP_GEM_VALUE);
-      if (wasBoss) this.sys.survivors.onEliteKilled(deathPos.clone()); // Scourge elites also drop health + damage
+      this.sys.survivors.dropXpGem(
+        deathPos.clone(),
+        this.sys.survivors.enemyXp.get(enemy) ?? SURV_XP_GEM_VALUE,
+        deathGroundY,
+      );
+      if (wasBoss) this.sys.survivors.onEliteKilled(deathPos.clone(), deathGroundY); // Scourge elites also drop health + damage
       this.sys.survivors.onEnemyKilled(enemy, wasBoss);
-      if (enemy.eliteAffix === "splitting") this.spawnEliteSplitChildren(enemy, deathPos);
-      else this.spawnSplitterChildren(enemy, deathPos);
+      if (enemy.eliteAffix === "splitting") this.spawnEliteSplitChildren(enemy, deathPos, deathGroundY);
+      else this.spawnSplitterChildren(enemy, deathPos, deathGroundY);
       // NOTE: no ammo on kill in Survivors — the sidearm is meant to run dry.
       return;
     }
@@ -272,6 +296,7 @@ export class PveDirectorSystem {
         color: 0xff2d55,
         spriteKind: deathFx.kind,
         corpse: deathFx.corpse,
+        groundY: deathGroundY,
       });
       this.bossActive = false;
       this.bossEnemy = null;
@@ -285,28 +310,29 @@ export class PveDirectorSystem {
         color: headshot ? 0xff415f : 0xc1121f,
         spriteKind: deathFx.kind,
         corpse: deathFx.corpse,
+        groundY: deathGroundY,
       });
       // a campaign kill counts toward clearing the active wave
       this.director.notifyProgress();
-      this.sys.pickups.maybeDropPickup(enemy.position);
-      this.spawnSplitterChildren(enemy, deathPos);
+      this.sys.pickups.maybeDropPickup(deathPos, deathGroundY);
+      this.spawnSplitterChildren(enemy, deathPos, deathGroundY);
     }
   }
 
-  private spawnSplitterChildren(parent: Enemy, pos: THREE.Vector3) {
+  private spawnSplitterChildren(parent: Enemy, pos: THREE.Vector3, groundY: number) {
     if (parent.isBoss || parent.archetype !== "splitter" || parent.splitCount <= 0) return;
     const count = Math.min(parent.splitCount, this.splitChildHeadroom());
     if (count <= 0) return;
-    this.spawnSplitChildren(parent, pos, count);
+    this.spawnSplitChildren(parent, pos, groundY, count);
     this.sys.hud.showToast("SPLITTER BROOD");
   }
 
   /** A dying "splitting" elite sheds standard enemies, capped per elite wave to avoid runaway. */
-  private spawnEliteSplitChildren(parent: Enemy, pos: THREE.Vector3) {
+  private spawnEliteSplitChildren(parent: Enemy, pos: THREE.Vector3, groundY: number) {
     const desired = Math.min(rollEliteSplitCount(Math.random), this.splitChildHeadroom());
     const count = this.sys.survivors.takeEliteSplitAllowance(desired);
     if (count <= 0) return;
-    this.spawnSplitChildren(parent, pos, count);
+    this.spawnSplitChildren(parent, pos, groundY, count);
     this.sys.hud.showToast("ELITE BROOD");
   }
 
@@ -314,7 +340,7 @@ export class PveDirectorSystem {
     return this.ctx.survivors ? Math.max(0, 72 - this.ctx.aliveCount) : 4;
   }
 
-  private spawnSplitChildren(parent: Enemy, pos: THREE.Vector3, count: number) {
+  private spawnSplitChildren(parent: Enemy, pos: THREE.Vector3, groundY: number, count: number) {
     const childDef = ENEMY_ARCHETYPES.swarmling;
     for (let i = 0; i < count; i++) {
       const child = this.getFreeEnemy();
@@ -333,7 +359,7 @@ export class PveDirectorSystem {
         hoverHeight: childDef.hoverHeight,
         // Splits inherit the parent's storey: resolve against where it died so a
         // swarm bursting out of a corpse on a building's first floor stays there.
-        groundHeight: this.sys.player.walkableSurfaceHeightNear(x, z, parent.position.y),
+        groundHeight: this.sys.player.walkableSurfaceHeightNear(x, z, groundY),
       });
       if (this.ctx.survivors) {
         this.sys.survivors.enemyXp.set(child, 1);
@@ -362,7 +388,7 @@ export class PveDirectorSystem {
         this.sys.telemetry?.recordIncomingPressure("melee", enemy.archetype, tick.melee);
       }
       for (const shot of tick.shots) this.sys.projectiles.spawnProjectile(shot, enemy);
-      this.sys.player.pushOutOfObstacles(enemy.position, enemy.radius);
+      this.sys.player.pushOutOfObstacles(enemy.position, enemy.radius, enemy.bodyHeight);
     }
     if (damageToPlayer > 0) this.sys.player.damagePlayer(damageToPlayer);
   }

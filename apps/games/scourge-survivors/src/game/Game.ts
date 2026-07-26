@@ -347,7 +347,7 @@ export class Game {
         });
       }
       this.ctx.bounds.clampXZ(enemy.position, 1.5);
-      this.sys.player.pushOutOfObstacles(enemy.position, enemy.radius);
+      this.sys.player.pushOutOfObstacles(enemy.position, enemy.radius, enemy.bodyHeight);
     }
     this.sys.hud.showToast(`LAB SPAWN: ${kind.toUpperCase()} ×${n}`);
     this.sys.hud.emit();
@@ -365,17 +365,13 @@ export class Game {
       const dz = enemy.position.z - player.z;
       const len = Math.hypot(dx, dz) || 1;
       const dmg = amount < 0 ? enemy.health + 1 : amount;
+      // Captured before the hit lands: a lethal one parks the body underground.
+      const numberAt = enemy.bodyPoint(headshot ? 1.85 : 1.35);
+      const sparkAt = enemy.bodyPoint(headshot ? 1.8 : 1.25);
       const res = enemy.takeDamage(dmg, headshot, 6, dx / len, dz / len);
       if (!res.blocked) {
-        this.sys.hud.addDamageNumber(
-          enemy.position.clone().setY(headshot ? 1.85 : 1.35),
-          dmg,
-          headshot ? "head" : "normal",
-        );
-        this.sys.fx.spawnImpactSpark(
-          enemy.position.clone().setY(headshot ? 1.8 : 1.25),
-          headshot ? 0xffffff : 0xffd166,
-        );
+        this.sys.hud.addDamageNumber(numberAt, dmg, headshot ? "head" : "normal");
+        this.sys.fx.spawnImpactSpark(sparkAt, headshot ? 0xffffff : 0xffd166);
       }
       if (res.died) {
         if (headshot) this.ctx.headshots++;

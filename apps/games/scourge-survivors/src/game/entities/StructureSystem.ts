@@ -169,14 +169,15 @@ export class StructureSystem {
   }
 
   /** Interact prompt for the leaf under the crosshair, or "" when nothing is in
-   *  reach. Polled by the HUD each frame; the leading key hint matches the
-   *  `interact` binding in `fpsActionMap`. */
+   *  reach. Polled by the HUD each frame. Deliberately device-neutral — a phone
+   *  player has no `E` to press, so the key hint is a render-time affordance the
+   *  keyboard overlay adds and the touch button omits. */
   prompt(): string {
     const instance = this.focused;
     if (instance === null) return "";
     const noun = instance.leaf.kind === "window" ? "WINDOW" : "DOOR";
     if (instance.locked) return `${noun} LOCKED`;
-    return `[E] ${instance.target < 0.5 ? "OPEN" : "CLOSE"} ${noun}`;
+    return `${instance.target < 0.5 ? "OPEN" : "CLOSE"} ${noun}`;
   }
 
   /** Toggle the focused leaf. Bound to the interact key; a no-op when nothing is
