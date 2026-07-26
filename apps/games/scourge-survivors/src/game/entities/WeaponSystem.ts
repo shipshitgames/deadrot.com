@@ -21,22 +21,16 @@ import {
 } from "../constants";
 import type { GameContext } from "../context";
 import { WEAPON_VIEW_X, WEAPON_VIEW_Y, WEAPON_VIEW_Z } from "../data/internalTypes";
-import { type MainWeaponVisualTier, mainWeaponTierDamageMul } from "../data/survivors";
-import { dualWeaponViewActive, mainWeaponTierViewScale, weaponTierCellUv } from "../data/weaponView";
+import { type MainWeaponVisualTier, mainWeaponTierDamageMul, mainWeaponTierIndex } from "../data/survivors";
+import { dualWeaponViewActive } from "../data/weaponView";
 import {
-  MUZZLE_FLASH_TEXTURE,
-  WEAPON_SPRITE_TEXTURES,
-  weaponAdsSpriteConfig,
-  weaponAdsSpriteTexture,
-  weaponDualSpriteConfig,
-  weaponDualSpriteTexture,
-  weaponHasAdsSprite,
-  weaponHasDualSprite,
-  weaponSheetColumns,
-  weaponSpriteConfig,
-  weaponSpriteTexture,
-  weaponTierCellIndex,
-} from "../spriteAssets";
+  createWeaponPose,
+  evaluateWeaponPose,
+  type WeaponAnimInput,
+  type WeaponPose,
+} from "../render/models/weaponAnimation";
+import { buildWeaponViewModel, disposeWeaponViewModel, type WeaponViewModel } from "../render/models/weaponModels";
+import { MUZZLE_FLASH_TEXTURE } from "../spriteAssets";
 import type { GameSystems } from "../systems";
 import type { Enemy } from "./Enemy";
 
@@ -49,37 +43,63 @@ const SHOOT_SFX: Record<WeaponId, "shoot" | "shootSmg" | "shootSniper" | "shootS
   sniper: "shootSniper",
 };
 
-/** Every weapon ships ONE view-model image and visibly "powers up" as the run's damage
- *  build climbs, via FX rather than per-tier art: a hellfire tint ramp (TIER_GLOW) plus
- *  a slight size growth (MAIN_WEAPON_TIER_VIEW_SCALE, in ../data/weaponView) so each tier
- *  reads as a bigger, hotter gun. */
-const TIER_GLOW: Record<MainWeaponVisualTier, number> = {
-  base: 0xffffff,
-  "tier-2": 0xffe0b0,
-  "tier-3": 0xffbb6e,
-  "tier-4": 0xff8f3a,
-  evolved: 0xffd24d,
-};
-
 export class WeaponSystem {
-  // Weapon view model
-  weapon!: THREE.Group;
-  weaponBarrel!: THREE.Mesh;
-  weaponAccentMat!: THREE.MeshStandardMaterial;
-  magazine!: THREE.Mesh;
-  weaponSprite!: THREE.Sprite;
-  weaponSpriteMat!: THREE.SpriteMaterial;
-  // Purpose-built dual-composite view-model shown only while the pickup is active.
-  weaponSpriteDual!: THREE.Sprite;
-  weaponSpriteDualMat!: THREE.SpriteMaterial;
-  weaponRecoil = 0;
-  bobTime = 0;
-  readonly magBaseY = -0.17;
+  // Camera-local container: procedural models are rebuilt beneath it while FX
+  // sprites remain stable context-owned objects.
+  weapon = new THREE.Group();
+  private primaryModel: WeaponViewModel | null = null;
+  private dualModel: WeaponViewModel | null = null;
+  private currentModelWeapon: WeaponId | null = null;
+  private currentModelTier: MainWeaponVisualTier | null = null;
+  private readonly primarySlideRest = new THREE.Vector3();
+  private readonly primaryMagazineRest = new THREE.Vector3();
+  private readonly dualSlideRest = new THREE.Vector3();
+  private readonly dualMagazineRest = new THREE.Vector3();
+  private readonly muzzleWorld = new THREE.Vector3();
+  private readonly dualMuzzleWorld = new THREE.Vector3();
+  private readonly ejectWorld = new THREE.Vector3();
+  /** Scratch for turning a raycast face normal into world space, per hit. */
+  private readonly hitNormalMatrix = new THREE.Matrix3();
+  private readonly hitNormal = new THREE.Vector3();
+  private readonly lookEuler = new THREE.Euler(0, 0, 0, "YXZ");
+  private previousYaw = 0;
+  private previousPitch = 0;
+  private lookInitialized = false;
+  private previousGrounded = true;
+  private previousVerticalVelocity = 0;
+  private landingVelocity = 0;
+  private landingAge = 999;
+  private shotCounter = 0;
+  private fireAge = 999;
+  private baseFov = CAMERA_BASE_FOV;
+  private readonly pose: WeaponPose = createWeaponPose();
+  private readonly animInput: WeaponAnimInput = {
+    time: 0,
+    dt: 0,
+    moveSpeed: 0,
+    sprinting: false,
+    firing: false,
+    fireAge: 999,
+    shotCounter: 0,
+    recoilStrength: 0,
+    reloading: false,
+    reloadElapsed: 0,
+    reloadDuration: RELOAD_TIME,
+    verticalVelocity: 0,
+    grounded: true,
+    landingVelocity: 0,
+    landingAge: 999,
+    ads: 0,
+    yawDelta: 0,
+    pitchDelta: 0,
+    sprintBlend: 0,
+    lookYaw: 0,
+    lookPitch: 0,
+  };
   meleeCd = 0;
   meleeAnim = 0;
   private muzzleFlashBaseRotation = 0;
   private currentFov = CAMERA_BASE_FOV;
-  private weaponAdsSpriteActive = false;
 
   constructor(
     private ctx: GameContext,
@@ -88,58 +108,7 @@ export class WeaponSystem {
 
   buildWeapon() {
     this.weapon = new THREE.Group();
-    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x23262e, roughness: 0.5, metalness: 0.7 });
-    this.weaponAccentMat = new THREE.MeshStandardMaterial({
-      color: 0x00d8ff,
-      emissive: 0x00aacc,
-      emissiveIntensity: 1.2,
-    });
-
-    const body = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 0.5), bodyMat);
-    body.position.set(0, 0, -0.1);
-    this.weaponBarrel = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, 0.45), bodyMat);
-    const grip = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.22, 0.14), bodyMat);
-    grip.position.set(0, -0.16, 0.04);
-    grip.rotation.x = 0.25;
-    const sight = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.06, 0.2), this.weaponAccentMat);
-    sight.position.set(0, 0.12, -0.1);
-
-    this.magazine = new THREE.Mesh(
-      new THREE.BoxGeometry(0.1, 0.2, 0.1),
-      new THREE.MeshStandardMaterial({ color: 0x14161b, roughness: 0.5, metalness: 0.6 }),
-    );
-    this.magazine.position.set(0, this.magBaseY, -0.04);
-
-    for (const part of [body, this.weaponBarrel, grip, sight, this.magazine]) part.visible = false;
-    this.weapon.add(body, this.weaponBarrel, grip, sight, this.magazine);
-
-    this.weaponSpriteMat = new THREE.SpriteMaterial({
-      map: WEAPON_SPRITE_TEXTURES[this.ctx.activeWeapon],
-      color: 0xffffff,
-      transparent: true,
-      alphaTest: 0.04,
-      depthTest: false,
-      depthWrite: false,
-      toneMapped: false,
-    });
-    this.weaponSprite = new THREE.Sprite(this.weaponSpriteMat);
-    this.weaponSprite.renderOrder = 20;
-    this.weapon.add(this.weaponSprite);
-
-    // Dedicated dual-composite view-model — hidden until the bonus is active.
-    this.weaponSpriteDualMat = new THREE.SpriteMaterial({
-      map: WEAPON_SPRITE_TEXTURES[this.ctx.activeWeapon],
-      color: 0xffffff,
-      transparent: true,
-      alphaTest: 0.04,
-      depthTest: false,
-      depthWrite: false,
-      toneMapped: false,
-    });
-    this.weaponSpriteDual = new THREE.Sprite(this.weaponSpriteDualMat);
-    this.weaponSpriteDual.renderOrder = 19;
-    this.weaponSpriteDual.visible = false;
-    this.weapon.add(this.weaponSpriteDual);
+    this.weapon.name = "first-person-weapon";
 
     this.ctx.muzzleFlash = new THREE.Sprite(
       new THREE.SpriteMaterial({
@@ -174,51 +143,46 @@ export class WeaponSystem {
     this.applyWeaponModel(this.ctx.activeWeapon);
   }
 
-  applyWeaponModel(id: WeaponId, adsSprite = this.weaponAdsSpriteActive) {
-    const spec = WEAPONS[id];
-    this.weaponAccentMat.color.setHex(spec.accent);
-    this.weaponAccentMat.emissive.setHex(spec.accent);
-    // anchor the barrel at the front of the body and extend it forward by barrelLen
-    this.weaponBarrel.scale.z = spec.barrelLen / 0.45;
-    this.weaponBarrel.position.set(0, 0.02, -0.2 - spec.barrelLen / 2);
-
+  /**
+   * Rebuild the active procedural rig. Game/mode reset seams already call this
+   * method, while updateWeapon additionally catches live survivor tier changes.
+   */
+  applyWeaponModel(id: WeaponId, _legacyAdsSprite = false) {
     const tier = this.activeWeaponVisualTier(id);
-    const useAdsSprite = adsSprite && weaponHasAdsSprite(id);
-    this.weaponAdsSpriteActive = useAdsSprite;
-    const sprite = useAdsSprite ? weaponAdsSpriteConfig(id) : weaponSpriteConfig(id);
-    const tierScale = mainWeaponTierViewScale(tier);
-    // The view-model texture is a horizontal tier SHEET; select this tier's cell by UV
-    // offset (columns=1 for a single-image weapon, so this is a no-op there).
-    const cols = weaponSheetColumns(id);
-    const cell = weaponTierCellIndex(id, tier);
-    const cellUv = weaponTierCellUv(cell, cols);
-    const tex = useAdsSprite ? weaponAdsSpriteTexture(id) : weaponSpriteTexture(id);
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.repeat.x = cellUv.repeat;
-    tex.offset.x = cellUv.offset;
-    this.weaponSpriteMat.map = tex;
-    this.weaponSpriteMat.needsUpdate = true;
-    this.weaponSprite.scale.set(sprite.scale[0] * tierScale, sprite.scale[1] * tierScale, 1);
-    this.weaponSprite.position.set(sprite.offset[0], sprite.offset[1], sprite.offset[2]);
-    if (weaponHasDualSprite(id)) {
-      const dualTexture = weaponDualSpriteTexture(id);
-      dualTexture.wrapS = THREE.RepeatWrapping;
-      dualTexture.repeat.x = cellUv.repeat;
-      dualTexture.offset.x = cellUv.offset;
-      const dualSprite = weaponDualSpriteConfig(id);
-      this.weaponSpriteDualMat.map = dualTexture;
-      this.weaponSpriteDualMat.needsUpdate = true;
-      this.weaponSpriteDual.scale.set(dualSprite.scale[0] * tierScale, dualSprite.scale[1] * tierScale, 1);
-      this.weaponSpriteDual.position.set(dualSprite.offset[0], dualSprite.offset[1], dualSprite.offset[2]);
+    if (this.currentModelWeapon === id && this.currentModelTier === tier && this.primaryModel) return;
+
+    this.weapon.add(this.ctx.muzzleFlash, this.ctx.dualMuzzleFlash, this.ctx.muzzleLight);
+    if (this.primaryModel) disposeWeaponViewModel(this.primaryModel);
+    if (this.dualModel) disposeWeaponViewModel(this.dualModel);
+
+    this.primaryModel = buildWeaponViewModel(id, tier);
+    this.dualModel = WEAPONS[id].dualCompatible ? buildWeaponViewModel(id, tier) : null;
+    this.weapon.add(this.primaryModel.group);
+    this.primarySlideRest.copy(this.primaryModel.slide.position);
+    this.primaryMagazineRest.copy(this.primaryModel.magazine.position);
+    this.primaryModel.muzzle.add(this.ctx.muzzleFlash, this.ctx.muzzleLight);
+    if (this.dualModel) {
+      this.weapon.add(this.dualModel.group);
+      this.dualSlideRest.copy(this.dualModel.slide.position);
+      this.dualMagazineRest.copy(this.dualModel.magazine.position);
+      this.dualModel.muzzle.add(this.ctx.dualMuzzleFlash);
     } else {
-      this.weaponSpriteDual.visible = false;
+      this.weapon.add(this.ctx.dualMuzzleFlash);
     }
-    this.ctx.muzzleFlash.position.set(sprite.muzzle[0], sprite.muzzle[1], sprite.muzzle[2]);
+
+    const flashScale = 0.16 + WEAPONS[id].barrelLen * 0.22;
+    this.ctx.muzzleFlash.position.set(0, 0, 0);
+    this.ctx.dualMuzzleFlash.position.set(0, 0, 0);
+    this.ctx.muzzleLight.position.set(0, 0, 0);
+    this.ctx.muzzleFlash.scale.setScalar(flashScale);
+    this.ctx.dualMuzzleFlash.scale.setScalar(flashScale);
+    this.muzzleFlashBaseRotation = 0;
+    this.ctx.muzzleFlash.material.rotation = 0;
     this.ctx.dualMuzzleFlash.visible = false;
-    this.ctx.muzzleFlash.scale.setScalar(sprite.flashScale);
-    this.muzzleFlashBaseRotation = sprite.flashRotation ?? 0;
-    this.ctx.muzzleFlash.material.rotation = this.muzzleFlashBaseRotation;
-    this.ctx.muzzleLight.position.set(sprite.muzzle[0], sprite.muzzle[1], sprite.muzzle[2]);
+    this.currentModelWeapon = id;
+    this.currentModelTier = tier;
+    this.setDualModelActive(false);
+    this.resetPartTransforms();
   }
 
   unlockWeapon(id: WeaponId) {
@@ -343,19 +307,12 @@ export class WeaponSystem {
     const spec = WEAPONS[this.ctx.activeWeapon];
     const berserkActive = this.ctx.damageBoostTimer > 0;
     const dualBonusActive = this.ctx.dualWeaponTimer > 0 && spec.dualCompatible;
-    const dualVisualActive = dualWeaponViewActive(
-      this.ctx.dualWeaponTimer,
-      spec.dualCompatible,
-      weaponHasDualSprite(this.ctx.activeWeapon),
-      this.weaponAdsSpriteActive,
-    );
+    const dualVisualActive = this.dualVisualActive();
     this.ctx.ammo--; // magazine depletes in every mode (Survivors has infinite reserve, not infinite mag)
     const fireRateMul = this.ctx.statFireRateMul * (berserkActive ? BERSERK_FIRE_RATE_MULT : 1);
     this.ctx.fireCooldown = spec.fireInterval / fireRateMul;
-    this.weaponRecoil = Math.min(
-      berserkActive ? 0.2 : 0.16,
-      this.weaponRecoil + (spec.pellets > 1 ? 0.12 : 0.05) * (berserkActive ? 1.18 : 1),
-    );
+    this.shotCounter++;
+    this.fireAge = 0;
     audio.sfx(SHOOT_SFX[this.ctx.activeWeapon]);
     this.sys.fx.addShake(spec.shake * (berserkActive ? 1.38 : 1));
     this.sys.fx.addRecoil(spec.kick);
@@ -368,21 +325,9 @@ export class WeaponSystem {
     this.ctx.dualMuzzleFlash.material.rotation = -flashRotation;
     this.ctx.muzzleFlash.material.color.setHex(berserkActive ? 0xff2a18 : 0xffffff);
     this.ctx.dualMuzzleFlash.material.color.copy(this.ctx.muzzleFlash.material.color);
-    const primaryConfig = this.weaponAdsSpriteActive
-      ? weaponAdsSpriteConfig(this.ctx.activeWeapon)
-      : weaponSpriteConfig(this.ctx.activeWeapon);
-    if (dualVisualActive) {
-      const dualConfig = weaponDualSpriteConfig(this.ctx.activeWeapon);
-      this.ctx.muzzleFlash.position.fromArray(dualConfig.muzzles.left);
-      this.ctx.dualMuzzleFlash.position.fromArray(dualConfig.muzzles.right);
-      this.ctx.muzzleFlash.scale.setScalar(dualConfig.flashScale * (berserkActive ? 1.22 : 1));
-      this.ctx.dualMuzzleFlash.scale.copy(this.ctx.muzzleFlash.scale);
-      this.ctx.muzzleLight.position.set(0, dualConfig.muzzles.left[1], dualConfig.muzzles.left[2]);
-    } else {
-      this.ctx.muzzleFlash.position.fromArray(primaryConfig.muzzle);
-      this.ctx.muzzleFlash.scale.setScalar(primaryConfig.flashScale * (berserkActive ? 1.22 : 1));
-      this.ctx.muzzleLight.position.fromArray(primaryConfig.muzzle);
-    }
+    const flashScale = (0.16 + spec.barrelLen * 0.22) * (berserkActive ? 1.22 : 1);
+    this.ctx.muzzleFlash.scale.setScalar(flashScale);
+    this.ctx.dualMuzzleFlash.scale.setScalar(flashScale);
     this.ctx.muzzleLight.color.setHex(berserkActive ? 0xff2a18 : 0xffcc66);
     this.ctx.muzzleLight.intensity = berserkActive ? 13 : 8;
 
@@ -403,9 +348,9 @@ export class WeaponSystem {
       mainWeaponTierDamageMul(this.activeWeaponVisualTier());
     const knockbackMul = berserkActive ? BERSERK_KNOCKBACK_MULT : 1;
     const headshotMultiplier = spec.headshotMultiplier ?? HEADSHOT_MULTIPLIER;
-    const muzzleWorld = this.ctx.muzzleFlash.getWorldPosition(new THREE.Vector3());
+    const muzzleWorld = this.ctx.muzzleFlash.getWorldPosition(this.muzzleWorld);
     const dualMuzzleWorld = dualVisualActive
-      ? this.ctx.dualMuzzleFlash.getWorldPosition(new THREE.Vector3())
+      ? this.ctx.dualMuzzleFlash.getWorldPosition(this.dualMuzzleWorld)
       : muzzleWorld;
     const pellets = spec.pellets + (this.ctx.survivors ? this.ctx.statMultishot : 0);
     const baseSpread = pellets > 1 ? Math.max(spec.spread, 0.03) : spec.spread;
@@ -419,6 +364,15 @@ export class WeaponSystem {
       const rayOrigin = this.ctx._origin.clone();
       const tracerOrigin = (shot === 0 ? muzzleWorld : dualMuzzleWorld).clone();
       if (dualBonusActive) rayOrigin.addScaledVector(this.ctx._right, shot === 0 ? -0.11 : 0.11);
+
+      // Brass, once per trigger pull rather than per pellet — a shotgun throws
+      // one hull, not eight. The cannon's drum has no case to throw.
+      if (!isCannon) {
+        const model = shot === 0 ? this.primaryModel : (this.dualModel ?? this.primaryModel);
+        if (model) {
+          this.sys.fx.spawnCasing(model.eject.getWorldPosition(this.ejectWorld), this.ctx._right, this.ctx._up);
+        }
+      }
 
       for (let p = 0; p < pellets; p++) {
         const dir = this.ctx._fwd.clone();
@@ -437,7 +391,13 @@ export class WeaponSystem {
 
         let endPoint: THREE.Vector3 | null = null;
         for (const h of hits) {
-          const ud = h.object.userData as { enemy?: Enemy; part?: string; solid?: boolean; remoteId?: string };
+          const ud = h.object.userData as {
+            enemy?: Enemy;
+            part?: string;
+            solid?: boolean;
+            pane?: boolean;
+            remoteId?: string;
+          };
           if (ud.remoteId) {
             // PvP claim: the server validates it and owns remote health/frags.
             const headshot = ud.part === "head";
@@ -491,8 +451,25 @@ export class WeaponSystem {
             }
             break;
           } else if (ud.solid) {
+            // Window glass shatters and lets the round carry on to whatever was
+            // behind it; every other solid stops the shot here.
+            if (ud.pane && this.sys.structures.shatter(h.object)) continue;
             endPoint = h.point.clone();
-            this.sys.fx.spawnImpactSpark(h.point, 0xffd9a0);
+            // Face normals come out of the raycast in object space; the impact
+            // wants world space so its spark cone opens off the real wall. A hit
+            // with no face (a Sprite, a Line) just gets the undirected blip.
+            let normal: THREE.Vector3 | undefined;
+            if (h.face) {
+              normal = this.hitNormal
+                .copy(h.face.normal)
+                .applyMatrix3(this.hitNormalMatrix.getNormalMatrix(h.object.matrixWorld))
+                .normalize();
+              // Double-sided geometry (interior walls seen from inside a
+              // building) hands back a normal pointing away from the shooter.
+              // Flip it so the sparks always come back out at the player.
+              if (normal.dot(this.ctx.raycaster.ray.direction) > 0) normal.negate();
+            }
+            this.sys.fx.spawnImpactSpark(h.point, 0xffd9a0, normal);
             break;
           }
         }
@@ -526,10 +503,11 @@ export class WeaponSystem {
       if (!res.blocked) this.sys.fx.spawnBloodHit(enemy.position.clone().setY(1.2), false);
       if (res.died) this.sys.pve.onEnemyDeath(enemy, false);
     }
-    this.sys.fx.spawnDeathPop(center.clone(), 0xff8a3b, 2.8);
-    this.sys.fx.spawnImpactSpark(center.clone(), 0xffe0a0);
-    this.sys.fx.addShake(0.5);
-    this.sys.fx.hitstop(0.07);
+    // The blast is drawn at the same radius the damage loop above used, so the
+    // shockwave ring lands exactly on the edge of what it hurt — the player
+    // learns the cannon's footprint by watching it, not by dying to it.
+    this.sys.fx.spawnExplosion(center, { radius: CANNON_SPLASH_RADIUS, shake: 0.5, hitstop: 0.07 });
+    audio.sfx("explosion");
   }
 
   startReload() {
@@ -555,8 +533,7 @@ export class WeaponSystem {
       this.ctx.reserve -= taken;
     }
     this.ctx.reloading = false;
-    this.magazine.position.y = this.magBaseY;
-    this.weapon.rotation.set(0, 0, 0);
+    this.resetPartTransforms();
     this.sys.hud.emit();
   }
 
@@ -586,29 +563,50 @@ export class WeaponSystem {
 
   updateWeapon(delta: number) {
     this.updateAds(delta);
-    const shouldUseAdsSprite =
-      this.ctx.status === "playing" &&
-      this.ctx.aimingDownSights &&
-      this.ctx.adsT > 0.45 &&
-      weaponHasAdsSprite(this.ctx.activeWeapon);
-    if (shouldUseAdsSprite !== this.weaponAdsSpriteActive)
-      this.applyWeaponModel(this.ctx.activeWeapon, shouldUseAdsSprite);
-
-    const dualActive = dualWeaponViewActive(
-      this.ctx.dualWeaponTimer,
-      WEAPONS[this.ctx.activeWeapon].dualCompatible,
-      weaponHasDualSprite(this.ctx.activeWeapon),
-      this.weaponAdsSpriteActive,
-    );
-    this.weaponSprite.visible = !dualActive;
-    this.weaponSpriteDual.visible = dualActive;
-    if (dualActive) {
-      this.weaponSpriteDualMat.opacity = this.weaponSpriteMat.opacity;
-      this.weaponSpriteDualMat.color.copy(this.weaponSpriteMat.color);
+    const tier = this.activeWeaponVisualTier();
+    if (this.currentModelWeapon !== this.ctx.activeWeapon || this.currentModelTier !== tier) {
+      this.applyWeaponModel(this.ctx.activeWeapon);
     }
 
+    const dualActive = this.dualVisualActive();
+    this.setDualModelActive(dualActive);
+    this.updateLanding(delta);
+    this.updateLookDelta();
+    this.fireAge = Math.min(999, this.fireAge + Math.max(0, delta));
+
+    const moving =
+      (this.ctx.move.forward || this.ctx.move.back || this.ctx.move.left || this.ctx.move.right) && this.ctx.canJump;
+    const crouched = this.ctx.wantsCrouch || this.ctx.stanceHeight < PLAYER_HEIGHT - 0.08;
+    const input = this.animInput;
+    input.time = this.ctx.time;
+    input.dt = delta;
+    input.moveSpeed = Math.hypot(this.ctx.velocity.x, this.ctx.velocity.z);
+    input.sprinting = moving && this.ctx.wantsSprint && !crouched;
+    input.firing = this.ctx.firing;
+    input.fireAge = this.fireAge;
+    input.shotCounter = this.shotCounter;
+    input.recoilStrength = WEAPONS[this.ctx.activeWeapon].kick;
+    input.reloading = this.ctx.reloading;
+    input.reloadElapsed = this.ctx.reloading ? RELOAD_TIME - this.ctx.reloadTimer : 0;
+    input.reloadDuration = RELOAD_TIME;
+    input.verticalVelocity = this.ctx.velocity.y;
+    input.grounded = this.ctx.canJump;
+    input.landingVelocity = this.landingVelocity;
+    input.landingAge = this.landingAge;
+    input.ads = this.ctx.adsT;
+    evaluateWeaponPose(input, this.pose);
+    input.sprintBlend = this.pose.sprintBlend;
+    input.lookYaw = this.pose.lookYaw;
+    input.lookPitch = this.pose.lookPitch;
+    this.applyPose(this.pose);
+
+    const berserkActive = this.ctx.damageBoostTimer > 0;
+    this.updateAccentMaterials(berserkActive);
+    this.ctx.muzzleFlash.material.color.setHex(berserkActive ? 0xff2a18 : 0xffffff);
+    this.ctx.dualMuzzleFlash.material.color.copy(this.ctx.muzzleFlash.material.color);
+
     if (this.meleeAnim > 0) {
-      // quick cleaver swipe (takes priority over reload/idle pose)
+      // The cleaver remains a short priority override over the additive firearm pose.
       const t = 1 - this.meleeAnim / 0.22;
       const slash = Math.sin(Math.min(1, t) * Math.PI);
       this.weapon.position.set(
@@ -617,79 +615,146 @@ export class WeaponSystem {
         WEAPON_VIEW_Z - slash * 0.18,
       );
       this.weapon.rotation.set(-slash * 0.5, slash * 0.7, -slash * 0.9);
-      this.weaponSpriteMat.opacity = 1;
-      this.weaponSpriteDualMat.opacity = 1;
-      return;
-    }
-    if (this.ctx.reloading) {
-      const p = 1 - this.ctx.reloadTimer / RELOAD_TIME;
-      const dip = Math.sin(Math.min(1, p) * Math.PI);
-      this.weapon.position.set(WEAPON_VIEW_X + dip * 0.03, WEAPON_VIEW_Y - dip * 0.22, WEAPON_VIEW_Z + dip * 0.08);
-      this.weapon.rotation.set(-dip * 0.45, dip * 0.24, dip * 0.2);
-      const magOut = p < 0.5 ? p * 2 : (1 - p) * 2;
-      this.magazine.position.y = this.magBaseY - magOut * 0.28;
-      this.weaponSpriteMat.opacity = 0.72 + (1 - dip) * 0.28;
-      this.weaponSpriteDualMat.opacity = this.weaponSpriteMat.opacity;
-      this.weaponRecoil = 0;
-      return;
     }
 
-    this.weaponRecoil = Math.max(0, this.weaponRecoil - delta * 0.5);
-    this.magazine.position.y = this.magBaseY;
-    this.weaponSpriteMat.opacity = 1;
-    const berserkActive = this.ctx.damageBoostTimer > 0;
-    // Visible weapon "power-up": tint the gun hotter as the run's damage build climbs (all weapons).
-    this.weaponSpriteMat.color.setHex(berserkActive ? 0xffd1c2 : TIER_GLOW[this.activeWeaponVisualTier()]);
-    this.weaponSpriteDualMat.color.copy(this.weaponSpriteMat.color);
-    this.ctx.muzzleFlash.material.color.setHex(berserkActive ? 0xff2a18 : 0xffffff);
-    this.ctx.dualMuzzleFlash.material.color.copy(this.ctx.muzzleFlash.material.color);
-
-    const moving =
-      (this.ctx.move.forward || this.ctx.move.back || this.ctx.move.left || this.ctx.move.right) && this.ctx.canJump;
-    const crouched = this.ctx.wantsCrouch || this.ctx.stanceHeight < PLAYER_HEIGHT - 0.08;
-    const sprinting = moving && this.ctx.wantsSprint && !crouched;
-    const bobRate = sprinting ? 13 : crouched ? 5.5 : 9;
-    const bobScale = sprinting ? 1.45 : crouched ? 0.45 : 1;
-    if (moving) this.bobTime += delta * bobRate;
-    const bobX = moving ? Math.cos(this.bobTime) * 0.008 * bobScale : 0;
-    const bobY = moving ? Math.abs(Math.sin(this.bobTime)) * 0.01 * bobScale : 0;
-    const stanceDip = (PLAYER_HEIGHT - this.ctx.stanceHeight) * 0.12;
-    const ads = this.ctx.adsT;
-    const adsX = WEAPON_VIEW_X * (1 - 0.72 * ads);
-    const adsY = WEAPON_VIEW_Y + 0.08 * ads;
-    const adsZ = WEAPON_VIEW_Z - 0.04 * ads;
-    this.weapon.position.set(
-      adsX + bobX * (1 - ads * 0.8) + (berserkActive ? Math.sin(this.bobTime * 2.7) * 0.012 : 0),
-      adsY + bobY * (1 - ads * 0.8) - stanceDip + (berserkActive ? Math.cos(this.bobTime * 3.1) * 0.008 : 0),
-      adsZ + this.weaponRecoil * (0.65 - ads * 0.28),
-    );
-    this.weapon.rotation.set(
-      -this.weaponRecoil * (1.45 - ads * 0.55),
-      berserkActive ? Math.sin(this.bobTime * 2.2) * 0.035 : 0,
-      this.weaponRecoil * 0.25 + (berserkActive ? Math.cos(this.bobTime * 2.6) * 0.025 : 0),
-    );
+    const targetFov = this.baseFov + this.pose.fovNudge;
+    if (Math.abs(this.currentFov - targetFov) > 0.02) {
+      this.currentFov = targetFov;
+      this.ctx.rig.setFov(targetFov);
+    }
   }
 
   private updateAds(delta: number) {
     const spec = WEAPONS[this.ctx.activeWeapon];
     const target = this.ctx.aimingDownSights && this.ctx.status === "playing" ? 1 : 0;
-    const k = Math.min(1, ADS_LERP * delta);
+    const k = 1 - Math.exp(-ADS_LERP * Math.max(0, Math.min(delta, 0.25)));
     this.ctx.adsT += (target - this.ctx.adsT) * k;
     if (Math.abs(this.ctx.adsT - target) < 0.001) this.ctx.adsT = target;
 
     const zoomIndex = Math.min(this.ctx.adsZoomIndex, Math.max(0, spec.adsFovs.length - 1));
     if (zoomIndex !== this.ctx.adsZoomIndex) this.ctx.adsZoomIndex = zoomIndex;
     const targetFov = spec.adsFovs[zoomIndex] ?? CAMERA_BASE_FOV;
-    const fov = CAMERA_BASE_FOV + (targetFov - CAMERA_BASE_FOV) * this.ctx.adsT;
-    if (Math.abs(this.currentFov - fov) > 0.02) {
-      this.currentFov = fov;
-      this.ctx.rig.setFov(fov);
+    this.baseFov = CAMERA_BASE_FOV + (targetFov - CAMERA_BASE_FOV) * this.ctx.adsT;
+  }
+
+  private dualVisualActive(): boolean {
+    const spec = WEAPONS[this.ctx.activeWeapon];
+    return dualWeaponViewActive(
+      this.ctx.dualWeaponTimer,
+      spec.dualCompatible,
+      this.dualModel !== null,
+      this.ctx.adsT > 0.45,
+    );
+  }
+
+  private setDualModelActive(active: boolean): void {
+    const primary = this.primaryModel;
+    if (!primary) return;
+    primary.group.position.set(active ? -0.23 : 0, active ? -0.015 : 0, 0);
+    primary.group.rotation.set(0, active ? -0.035 : 0, active ? -0.035 : 0);
+    if (!this.dualModel) return;
+    this.dualModel.group.visible = active;
+    this.dualModel.group.position.set(0.31, -0.025, 0.015);
+    this.dualModel.group.rotation.set(0, 0.045, 0.045);
+  }
+
+  private resetPartTransforms(): void {
+    if (this.primaryModel) {
+      this.primaryModel.slide.position.copy(this.primarySlideRest);
+      this.primaryModel.magazine.position.copy(this.primaryMagazineRest);
+    }
+    if (this.dualModel) {
+      this.dualModel.slide.position.copy(this.dualSlideRest);
+      this.dualModel.magazine.position.copy(this.dualMagazineRest);
+    }
+  }
+
+  private applyPose(pose: WeaponPose): void {
+    const stanceDip = (PLAYER_HEIGHT - this.ctx.stanceHeight) * 0.12;
+    this.weapon.position.set(
+      WEAPON_VIEW_X + pose.position.x,
+      WEAPON_VIEW_Y + pose.position.y - stanceDip,
+      WEAPON_VIEW_Z + pose.position.z,
+    );
+    this.weapon.rotation.set(pose.rotation.x, pose.rotation.y, pose.rotation.z);
+
+    if (this.primaryModel) {
+      this.primaryModel.slide.position.set(
+        this.primarySlideRest.x,
+        this.primarySlideRest.y,
+        this.primarySlideRest.z + pose.slideOffset,
+      );
+      this.primaryModel.magazine.position.set(
+        this.primaryMagazineRest.x + pose.magazineOffset.x,
+        this.primaryMagazineRest.y + pose.magazineOffset.y,
+        this.primaryMagazineRest.z + pose.magazineOffset.z,
+      );
+    }
+    if (this.dualModel) {
+      this.dualModel.slide.position.set(
+        this.dualSlideRest.x,
+        this.dualSlideRest.y,
+        this.dualSlideRest.z + pose.slideOffset,
+      );
+      this.dualModel.magazine.position.set(
+        this.dualMagazineRest.x + pose.magazineOffset.x,
+        this.dualMagazineRest.y + pose.magazineOffset.y,
+        this.dualMagazineRest.z + pose.magazineOffset.z,
+      );
+    }
+  }
+
+  private updateLanding(delta: number): void {
+    const grounded = this.ctx.canJump;
+    if (!this.previousGrounded && grounded && this.previousVerticalVelocity < -0.5) {
+      this.landingVelocity = this.previousVerticalVelocity;
+      this.landingAge = 0;
+    } else {
+      this.landingAge = Math.min(999, this.landingAge + Math.max(0, delta));
+    }
+    if (!grounded) this.previousVerticalVelocity = this.ctx.velocity.y;
+    else if (this.previousGrounded) this.previousVerticalVelocity = 0;
+    this.previousGrounded = grounded;
+  }
+
+  private updateLookDelta(): void {
+    this.lookEuler.setFromQuaternion(this.ctx.rig.facing, "YXZ");
+    const yaw = this.lookEuler.y;
+    const pitch = this.lookEuler.x;
+    if (!this.lookInitialized) {
+      this.previousYaw = yaw;
+      this.previousPitch = pitch;
+      this.lookInitialized = true;
+      this.animInput.yawDelta = 0;
+      this.animInput.pitchDelta = 0;
+      return;
+    }
+    this.animInput.yawDelta = this.wrappedAngleDelta(yaw, this.previousYaw);
+    this.animInput.pitchDelta = pitch - this.previousPitch;
+    this.previousYaw = yaw;
+    this.previousPitch = pitch;
+  }
+
+  private wrappedAngleDelta(current: number, previous: number): number {
+    let delta = current - previous;
+    if (delta > Math.PI) delta -= Math.PI * 2;
+    else if (delta < -Math.PI) delta += Math.PI * 2;
+    return delta;
+  }
+
+  private updateAccentMaterials(berserkActive: boolean): void {
+    const intensity = berserkActive ? 2.5 : 1.1 + mainWeaponTierIndex(this.activeWeaponVisualTier()) * 0.22;
+    if (this.primaryModel) {
+      for (const material of this.primaryModel.accentMaterials) material.emissiveIntensity = intensity;
+    }
+    if (this.dualModel) {
+      for (const material of this.dualModel.accentMaterials) material.emissiveIntensity = intensity;
     }
   }
 
   private activeWeaponVisualTier(id: WeaponId = this.ctx.activeWeapon): MainWeaponVisualTier {
-    // The visual tier (a build-power score) drives every weapon's glow, size bump, and
-    // UV-selected tier-sheet cell (see applyWeaponModel).
+    // The same build-power score drives damage, overall scale, tier hardware,
+    // and emissive heat so visual progression remains mechanically grounded.
     void id;
     if (this.ctx.survivors) return this.sys.survivors.mainWeaponVisualTier();
     // Sandbox mirrors the game's tier rendering via a settable override (parity for testing).
@@ -701,15 +766,24 @@ export class WeaponSystem {
     if (this.weapon) {
       this.weapon.position.set(WEAPON_VIEW_X, WEAPON_VIEW_Y, WEAPON_VIEW_Z);
       this.weapon.rotation.set(0, 0, 0);
-      this.weaponSpriteMat.opacity = 1;
-      this.weaponSpriteMat.color.setHex(0xffffff);
-      this.magazine.position.y = this.magBaseY;
       this.ctx.aimingDownSights = false;
       this.ctx.adsT = 0;
       this.ctx.adsZoomIndex = 0;
+      this.animInput.sprintBlend = 0;
+      this.animInput.lookYaw = 0;
+      this.animInput.lookPitch = 0;
+      this.fireAge = 999;
+      this.shotCounter = 0;
+      this.landingAge = 999;
+      this.landingVelocity = 0;
+      this.previousGrounded = this.ctx.canJump;
+      this.previousVerticalVelocity = 0;
+      this.lookInitialized = false;
+      this.baseFov = CAMERA_BASE_FOV;
       this.currentFov = CAMERA_BASE_FOV;
       this.ctx.rig.setFov(CAMERA_BASE_FOV);
       this.applyWeaponModel(this.ctx.activeWeapon);
+      this.resetPartTransforms();
     }
   }
 }

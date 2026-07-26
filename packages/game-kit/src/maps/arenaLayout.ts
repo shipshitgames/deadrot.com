@@ -22,6 +22,8 @@
 // Co-op caveat: multiplayer spawns are server-authoritative (NetClient
 // onWelcome/respawn) — anchors do NOT propagate to the partykit server.
 
+import type { ArenaStructure } from "./structures";
+
 /** Serialisable XZ play-area bounds. Structural twin of @shipshitgames/engine
  *  MapBounds — mutually assignable; duplicated so game-kit stays engine-free
  *  until this module graduates upstream. Drift gates: ARENA_BOUNDS_PARITY in
@@ -182,8 +184,9 @@ export interface ArenaAnchor extends ArenaPoint {
  *  Invariants: bounds resolved (never undefined); rooms never empty (v1 maps:
  *  exactly [the whole-bounds root room]); levels always contain
  *  GROUND_LEVEL_ID; v1 maps have exactly one playerSpawn anchor (= the v1
- *  `spawn`) and nothing else; ramps/platforms default to []. Consumers (#81
- *  validator, #82 ArenaSystem) read THIS, never the raw authoring fields.
+ *  `spawn`) and nothing else; ramps/platforms/structures default to [].
+ *  Consumers (#81 validator, #82 ArenaSystem) read THIS, never the raw
+ *  authoring fields.
  *  Treat as immutable — element objects may be shared with the source. */
 export interface ArenaLayout<TObstacle extends ArenaVolume = ArenaObstacle> {
   bounds: ArenaBounds;
@@ -192,6 +195,10 @@ export interface ArenaLayout<TObstacle extends ArenaVolume = ArenaObstacle> {
   ramps: ArenaRamp[];
   platforms: ArenaPlatform[];
   anchors: ArenaAnchor[];
+  /** Enterable buildings placed inside the room network (see ./structures.ts).
+   *  Geometry only — a structure is never a room, so adding one never changes
+   *  room connectivity. */
+  structures: ArenaStructure[];
 }
 
 /** Resolve declarative bounds to plain numbers. Pure-math twin of engine

@@ -20,6 +20,25 @@ const CORPSE_PART_GRAVITY = 18;
 // burst carry the "explosion" punch once the corpse sprite is gone.
 const DEATH_SPRITE_PLAYBACK_SECONDS = 0.16;
 const DEATH_SPRITE_FADE_SECONDS = 0.12;
+// Live pops an explosion is willing to add detail on top of. Past this the
+// ember/smoke counts scale down rather than the whole effect being dropped: a
+// detonation the player cannot see is worse than a cheap one, so the core
+// fireball and the radius ring always spawn.
+const EXPLOSION_POP_BUDGET = 150;
+/** Floor on that scaling — a crowded frame still gets a quarter of the debris. */
+const EXPLOSION_MIN_DETAIL = 0.25;
+/** Sparks thrown off a surface hit. Small: this fires on every wall shot. */
+const IMPACT_SPARKS = 4;
+/** Past this many live pops, brass is skipped. Well under the explosion budget —
+ *  a detonation is worth crowding the pool for, an ejected case is not. */
+const CASING_POP_BUDGET = 90;
+// Scratch vectors for the impact tangent basis. Written and consumed inside one
+// synchronous spawnImpactSpark call, so a single shared set is safe.
+const IMPACT_NORMAL = new THREE.Vector3();
+const IMPACT_T1 = new THREE.Vector3();
+const IMPACT_T2 = new THREE.Vector3();
+const IMPACT_AXIS_X = new THREE.Vector3(1, 0, 0);
+const IMPACT_AXIS_Y = new THREE.Vector3(0, 1, 0);
 type DeathSpriteKind = EnemySpriteKind;
 type DeathSpriteView = EnemySpriteView;
 
@@ -234,7 +253,7 @@ export class FxSystem {
         ttl: 5.5 + Math.random() * 2.5,
         baseScale: 0.08,
         growth: opts.elite ? 2.4 : 1.35,
-        floor: true,
+        peakOpacity: 0.38,
       });
     }
   }
@@ -459,8 +478,17 @@ export class FxSystem {
     this.corpseParts.splice(index, 1);
   }
 
-  /** Tiny bright spark at a bullet impact point (enemy or wall). Cheap, per-hit. */
-  spawnImpactSpark(pos: THREE.Vector3, color: number) {
+  /**
+   * Bullet impact. The bright core blip is unconditional and cheap — it fires on
+   * every hit, flesh or wall.
+   *
+   * Pass `normal` (world-space, pointing out of the surface) for a hit on
+   * geometry and the impact also throws a spark cone and a dust puff back along
+   * it. That directionality is the whole point: a flat blip tells the player
+   * something was hit, sparks coming off the *face* tell them which way the wall
+   * is, which is what makes a corner peek readable.
+   */
+  spawnImpactSpark(pos: THREE.Vector3, color: number, normal?: THREE.Vector3) {
     const mesh = new THREE.Mesh(
       new THREE.SphereGeometry(0.13, 8, 6),
       new THREE.MeshBasicMaterial({
@@ -474,6 +502,240 @@ export class FxSystem {
     mesh.position.copy(pos);
     this.ctx.scene.add(mesh);
     this.pops.push({ mesh, age: 0, ttl: 0.12 });
+
+    if (!normal) return;
+    // Tangent basis on the surface, so the cone opens across the face rather
+    // than along an arbitrary world axis. The seed axis is swapped near the
+    // poles, where the cross product would collapse.
+    const n = IMPACT_NORMAL.copy(normal).normalize();
+    const seed = Math.abs(n.y) > 0.9 ? IMPACT_AXIS_X : IMPACT_AXIS_Y;
+    const t1 = IMPACT_T1.crossVectors(n, seed).normalize();
+    const t2 = IMPACT_T2.crossVectors(n, t1).normalize();
+
+    for (let i = 0; i < IMPACT_SPARKS; i++) {
+      const spark = new THREE.Mesh(
+        new THREE.SphereGeometry(0.045, 6, 4),
+        new THREE.MeshBasicMaterial({
+          color,
+          transparent: true,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        }),
+      );
+      spark.position.copy(pos);
+      const a = Math.random() * Math.PI * 2;
+      const spread = 0.55 + Math.random() * 0.5;
+      const speed = 2.4 + Math.random() * 3.2;
+      const vel = new THREE.Vector3()
+        .addScaledVector(n, 1)
+        .addScaledVector(t1, Math.cos(a) * spread)
+        .addScaledVector(t2, Math.sin(a) * spread)
+        .multiplyScalar(speed);
+      this.ctx.scene.add(spark);
+      this.pops.push({
+        mesh: spark,
+        age: 0,
+        ttl: 0.16 + Math.random() * 0.14,
+        vel,
+        baseScale: 1,
+        growth: -0.6, // tapers to a streak-end rather than blooming like an ember
+      });
+    }
+
+    // Knocked-loose material: dim, non-additive, sat just off the surface so it
+    // does not z-fight the wall it came out of.
+    const dust = new THREE.Mesh(
+      new THREE.SphereGeometry(0.11, 6, 5),
+      new THREE.MeshBasicMaterial({ color: 0x6b6259, transparent: true, opacity: 0.3, depthWrite: false }),
+    );
+    dust.position.copy(pos).addScaledVector(n, 0.05);
+    this.ctx.scene.add(dust);
+    this.pops.push({
+      mesh: dust,
+      age: 0,
+      ttl: 0.34,
+      vel: new THREE.Vector3().addScaledVector(n, 0.9),
+      baseScale: 0.6,
+      growth: 1.3,
+      peakOpacity: 0.3,
+    });
+  }
+
+  /**
+   * Ejected brass. Lit rather than additive on purpose — a casing is the one
+   * particle in the game meant to catch the muzzle light and read as metal, and
+   * the tumble comes free from the pop pump's gravity and ground bounce.
+   *
+   * First thing dropped when the frame is busy: nobody misses brass in a fight,
+   * and an SMG at full rate is the exact moment the pool is under pressure.
+   */
+  spawnCasing(origin: THREE.Vector3, right: THREE.Vector3, up: THREE.Vector3, scale = 1) {
+    if (this.pops.length > CASING_POP_BUDGET) return;
+    const mesh = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.013 * scale, 0.013 * scale, 0.05 * scale, 6),
+      new THREE.MeshStandardMaterial({
+        color: 0xc9a227,
+        metalness: 0.85,
+        roughness: 0.34,
+        transparent: true,
+      }),
+    );
+    mesh.position.copy(origin);
+    mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+    this.ctx.scene.add(mesh);
+    this.pops.push({
+      mesh,
+      age: 0,
+      ttl: 0.9 + Math.random() * 0.4,
+      vel: new THREE.Vector3()
+        .addScaledVector(right, 2.1 + Math.random() * 1.1)
+        .addScaledVector(up, 1.7 + Math.random() * 0.9),
+      spin: new THREE.Vector3((Math.random() - 0.5) * 26, (Math.random() - 0.5) * 26, (Math.random() - 0.5) * 26),
+      // Constant size: the pump's default ramp would balloon it into a barrel.
+      baseScale: 1,
+      growth: 0,
+      peakOpacity: 1,
+    });
+  }
+
+  /** A detonation: cannon splash, boss death, anything that should read as a
+   *  blast rather than a hit. Five layers, front to back — white-hot core, fire
+   *  shell, a ground ring that ends at exactly `radius` so the player can read
+   *  the damage footprint off the FX, ballistic embers, and rising smoke.
+   *
+   *  Everything goes through `pops`, so updateEffects drives the fade and
+   *  clearTransientFx drains it on run teardown; nothing here needs its own
+   *  pump. The caller passes the gameplay radius it actually used, which is what
+   *  keeps the ring honest when a weapon's splash is retuned. */
+  spawnExplosion(
+    pos: THREE.Vector3,
+    opts: {
+      radius?: number;
+      /** Fire tint. The core is always white-hot; this colours the shell and embers. */
+      color?: number;
+      shake?: number;
+      hitstop?: number;
+    } = {},
+  ) {
+    const radius = Math.max(0.6, opts.radius ?? 4);
+    const color = opts.color ?? 0xff8a3b;
+    // Shed particles, never structure: the first three layers are the silhouette.
+    const crowding = Math.max(0, this.pops.length - EXPLOSION_POP_BUDGET) / EXPLOSION_POP_BUDGET;
+    const detail = Math.max(EXPLOSION_MIN_DETAIL, 1 - crowding);
+    const originY = Math.min(1.1, 0.35 + radius * 0.16);
+
+    // 1) White-hot core. Brief and small — the flash frame, not the fireball.
+    const core = new THREE.Mesh(
+      new THREE.SphereGeometry(0.22 * radius, 12, 10),
+      new THREE.MeshBasicMaterial({
+        color: 0xfff4d2,
+        transparent: true,
+        opacity: 0.95,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      }),
+    );
+    core.position.set(pos.x, originY, pos.z);
+    this.ctx.scene.add(core);
+    this.pops.push({ mesh: core, age: 0, ttl: 0.14, baseScale: 0.35, growth: 1.5 });
+
+    // 2) Fire shell, outliving the core so the blast has a falling-off tail.
+    const shell = new THREE.Mesh(
+      new THREE.SphereGeometry(0.3 * radius, 14, 10),
+      new THREE.MeshBasicMaterial({
+        color,
+        transparent: true,
+        opacity: 0.9,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      }),
+    );
+    shell.position.set(pos.x, originY, pos.z);
+    this.ctx.scene.add(shell);
+    this.pops.push({ mesh: shell, age: 0, ttl: 0.34, baseScale: 0.5, growth: 2.1 });
+
+    // 3) Ground shockwave. Unit-radius geometry scaled straight to `radius`, so
+    //    the ring stops exactly where the damage does.
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(0.82, 1, 48),
+      new THREE.MeshBasicMaterial({
+        color,
+        transparent: true,
+        opacity: 0.7,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      }),
+    );
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.set(pos.x, 0.09, pos.z);
+    ring.scale.setScalar(0.001);
+    this.ctx.scene.add(ring);
+    this.pops.push({ mesh: ring, age: 0, ttl: 0.4, baseScale: 0.001, growth: radius, peakOpacity: 0.7 });
+
+    // 4) Embers, thrown along the ground plane so they rake outward instead of
+    //    fountaining straight up like a gib burst.
+    const embers = Math.round(16 * detail);
+    for (let i = 0; i < embers; i++) {
+      const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(0.05 + Math.random() * 0.06, 6, 4),
+        new THREE.MeshBasicMaterial({
+          color: i % 3 === 0 ? 0xfff0b8 : color,
+          transparent: true,
+          opacity: 0.92,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        }),
+      );
+      const a = Math.random() * Math.PI * 2;
+      mesh.position.set(pos.x + Math.cos(a) * 0.3, originY, pos.z + Math.sin(a) * 0.3);
+      this.ctx.scene.add(mesh);
+      const speed = radius * (1.6 + Math.random() * 1.5);
+      this.pops.push({
+        mesh,
+        age: 0,
+        ttl: 0.5 + Math.random() * 0.4,
+        vel: new THREE.Vector3(Math.cos(a) * speed, 2.2 + Math.random() * 4.4, Math.sin(a) * speed),
+        baseScale: 0.8,
+        growth: 0.4,
+      });
+    }
+
+    // 5) Smoke. The one non-additive layer in this file, on purpose: additive
+    //    can only brighten, and the blast needs something that dims the ground
+    //    behind it once the fire is gone. Half-alpha and deliberately smaller
+    //    than the fireball — a plume the player can see the arena through, not a
+    //    grey wall dropped over the fight.
+    const puffs = Math.round(7 * detail);
+    for (let i = 0; i < puffs; i++) {
+      const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(0.24 * radius, 8, 6),
+        new THREE.MeshBasicMaterial({
+          color: 0x2b2320,
+          transparent: true,
+          opacity: 0.45,
+          depthWrite: false,
+        }),
+      );
+      const a = Math.random() * Math.PI * 2;
+      const r = Math.random() * radius * 0.4;
+      mesh.position.set(pos.x + Math.cos(a) * r, originY + Math.random() * 0.5, pos.z + Math.sin(a) * r);
+      this.ctx.scene.add(mesh);
+      this.pops.push({
+        mesh,
+        age: 0,
+        ttl: 0.8 + Math.random() * 0.5,
+        // Drifts up and out slowly; updateEffects' gravity pulls it back down,
+        // which is what gives the plume its roll.
+        vel: new THREE.Vector3(Math.cos(a) * 0.9, 2.6 + Math.random() * 1.4, Math.sin(a) * 0.9),
+        baseScale: 0.5,
+        growth: 1.0,
+        peakOpacity: 0.45,
+      });
+    }
+
+    if (opts.shake) this.addShake(opts.shake);
+    if (opts.hitstop) this.hitstop(opts.hitstop);
   }
 
   /** Blood-rage pickup hit: screen shake plus a hot ring and short-lived spray around the player. */
@@ -494,7 +756,7 @@ export class FxSystem {
     ring.position.set(center.x, 0.13, center.z);
     ring.scale.setScalar(0.001);
     this.ctx.scene.add(ring);
-    this.pops.push({ mesh: ring, age: 0, ttl: 0.46, baseScale: 0.18, growth: 11.5, floor: true });
+    this.pops.push({ mesh: ring, age: 0, ttl: 0.46, baseScale: 0.18, growth: 11.5, peakOpacity: 0.38 });
 
     for (let i = 0; i < 22; i++) {
       const mesh = new THREE.Mesh(
@@ -638,7 +900,7 @@ export class FxSystem {
       }
       const k = p.age / p.ttl;
       p.mesh.scale.setScalar((p.baseScale ?? 0.4) + k * (p.growth ?? 3.0));
-      (p.mesh.material as THREE.MeshBasicMaterial).opacity = Math.max(0, (p.floor ? 0.38 : 0.9) * (1 - k));
+      (p.mesh.material as THREE.MeshBasicMaterial).opacity = Math.max(0, (p.peakOpacity ?? 0.9) * (1 - k));
       if (p.age >= p.ttl) {
         this.ctx.scene.remove(p.mesh);
         p.mesh.geometry.dispose();

@@ -18,6 +18,7 @@ import type {
   ArenaVolume,
 } from "./arenaLayout";
 import { GROUND_LEVEL_ID, ROOT_ROOM_ID, SYNTH_PLAYER_SPAWN_ID } from "./arenaLayout";
+import type { ArenaStructure } from "./structures";
 
 /** Authoring-side input: a v1 flat map, a v2 map, anything in between — or an
  *  already-normalized ArenaLayout. Structural: scourge's ArenaMap satisfies it
@@ -33,6 +34,7 @@ export interface ArenaLayoutSource<TObstacle extends ArenaVolume = ArenaObstacle
   ramps?: ArenaRamp[];
   platforms?: ArenaPlatform[];
   anchors?: ArenaAnchor[];
+  structures?: ArenaStructure[];
 }
 
 export interface NormalizeArenaLayoutOptions {
@@ -58,8 +60,9 @@ export interface NormalizeArenaLayoutOptions {
  *    `spawn` is appended only when none is authored. breachSpawn/objective/
  *    extraction are NEVER invented — an empty breachSpawn set IS the typed
  *    encoding of v1 procedural scatter spawning.
- *  - ramps/platforms: passed through, defaulting to []. Dangling levelId
- *    references are not rejected — geometry validation is #81's contract.
+ *  - ramps/platforms/structures: passed through, defaulting to []. Dangling
+ *    levelId references are not rejected — geometry validation is #81's
+ *    contract.
  *  Never mutates src (safe on Object.frozen input); idempotent
  *  (normalize(layout) deep-equals layout). */
 export function normalizeArenaLayout<TObstacle extends ArenaVolume = ArenaObstacle>(
@@ -134,6 +137,7 @@ export function normalizeArenaLayout<TObstacle extends ArenaVolume = ArenaObstac
     ramps: [...(src.ramps ?? [])],
     platforms: [...(src.platforms ?? [])],
     anchors,
+    structures: [...(src.structures ?? [])],
   };
 }
 

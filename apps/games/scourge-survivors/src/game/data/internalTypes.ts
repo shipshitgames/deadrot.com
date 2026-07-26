@@ -34,7 +34,11 @@ export interface Pop {
   spin?: THREE.Vector3;
   baseScale?: number;
   growth?: number;
-  floor?: boolean;
+  /** Opacity at spawn, faded to 0 across `ttl`. Defaults to 0.9 — the value for
+   *  an additive spark read against the sky. Ground decals and smoke want less,
+   *  and they set it here rather than on the material: updateEffects rewrites
+   *  `material.opacity` every frame, so a constructor value would never survive. */
+  peakOpacity?: number;
 }
 export interface Pickup {
   group: THREE.Group;

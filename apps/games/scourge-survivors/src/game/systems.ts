@@ -6,6 +6,7 @@ import type { FxSystem } from "./entities/FxSystem";
 import type { PickupsSystem } from "./entities/PickupsSystem";
 import type { PlayerSystem } from "./entities/PlayerSystem";
 import type { ProjectilesSystem } from "./entities/ProjectilesSystem";
+import type { StructureSystem } from "./entities/StructureSystem";
 import type { WeaponSystem } from "./entities/WeaponSystem";
 import type { GameOverSystem } from "./modes/GameOverSystem";
 import type { MissionSystem } from "./modes/MissionSystem";
@@ -25,6 +26,7 @@ export interface GameSystems {
   weapon: WeaponSystem;
   projectiles: ProjectilesSystem;
   pickups: PickupsSystem;
+  structures: StructureSystem;
   fx: FxSystem;
   pve: PveDirectorSystem;
   mission: MissionSystem;

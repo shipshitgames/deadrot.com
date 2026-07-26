@@ -27,7 +27,6 @@ const ENEMY_SPRITE_KINDS = ["melee", "ranged", "flying", "hound", "boss"] as con
 const ENEMY_SPRITE_VIEWS = ["front", "side", "back"] as const;
 const ENEMY_ANIMATION_STATES = ["move", "attack", "death"] as const;
 const WEAPON_IDS = ["pistol", "smg", "shotgun", "cannon", "sniper"] as const satisfies readonly WeaponId[];
-const DUAL_WEAPON_IDS = ["pistol", "smg", "shotgun", "sniper"] as const satisfies readonly WeaponId[];
 
 type EnemyTextureRecord = Record<EnemySpriteKind, Record<EnemySpriteView, THREE.Texture>>;
 type EnemyAnimationTextureRecord = Record<
@@ -38,9 +37,6 @@ type EnemyAnimationTextureRecord = Record<
 interface CombatAssetSnapshot {
   enemyTextures: EnemyTextureRecord;
   enemyAnimations: EnemyAnimationTextureRecord;
-  weaponTextures: Record<WeaponId, THREE.Texture>;
-  weaponDualTextures: Partial<Record<WeaponId, THREE.Texture>>;
-  weaponAdsTextures: Partial<Record<WeaponId, THREE.Texture>>;
   weaponLootTextures: Record<WeaponId, THREE.Texture>;
   muzzleFlashTexture: THREE.Texture;
   projectileTextures: Record<"enemy" | "boss" | "bolt" | "orb", THREE.Texture>;
@@ -238,40 +234,10 @@ async function loadEnemyAnimations(): Promise<EnemyAnimationTextureRecord> {
   });
 }
 
-async function loadAdsSpriteTexture(id: WeaponId): Promise<THREE.Texture> {
-  const entry = spriteEntry(weaponSpriteAssetId(id));
-  if (!entry.adsSprite) throw new Error(`Weapon sprite ${id} is missing scoped ADS metadata`);
-  const texture = await new THREE.TextureLoader().loadAsync(await assetUrl(entry.adsSprite.path));
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.minFilter = entry.filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
-  texture.magFilter = entry.filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
-  texture.generateMipmaps = entry.filter !== "nearest";
-  texture.premultiplyAlpha = false;
-  return texture;
-}
-
-async function loadWeaponTexture(id: WeaponId): Promise<THREE.Texture> {
-  const texture = await loadSpriteTexture(weaponSpriteAssetId(id));
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.needsUpdate = true;
-  return texture;
-}
-
-async function loadDualWeaponTexture(id: WeaponId): Promise<THREE.Texture> {
-  const spriteId = weaponDualSpriteAssetId(id);
-  if (!spriteId) throw new Error(`Dual-compatible weapon ${id} is missing its dedicated dual sprite`);
-  const texture = await loadSpriteTexture(spriteId);
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.needsUpdate = true;
-  return texture;
-}
-
 async function buildCombatAssetSnapshot(): Promise<CombatAssetSnapshot> {
   const [
     enemyTextures,
     enemyAnimations,
-    weaponTextures,
-    weaponDualTextures,
     weaponLootTextures,
     muzzleFlashTexture,
     projectileTextures,
@@ -280,14 +246,11 @@ async function buildCombatAssetSnapshot(): Promise<CombatAssetSnapshot> {
     corpsePartTextures,
     playerAvatarTextures,
     arenaTextures,
-    sniperAdsTexture,
   ] = await Promise.all([
     asyncRecord(ENEMY_SPRITE_KINDS, (kind) =>
       asyncRecord(ENEMY_SPRITE_VIEWS, (view) => loadSpriteTexture(enemySpriteAssetId(kind), view)),
     ),
     loadEnemyAnimations(),
-    asyncRecord(WEAPON_IDS, loadWeaponTexture),
-    asyncRecord(DUAL_WEAPON_IDS, loadDualWeaponTexture),
     asyncRecord(WEAPON_IDS, (id) => loadSpriteTexture(weaponLootSpriteAssetId(id))),
     loadSpriteTexture(fxSpriteAssetId("muzzleFlash")),
     asyncRecord(["enemy", "boss", "bolt", "orb"] as const, (id) => loadSpriteTexture(projectileSpriteAssetId(id))),
@@ -298,18 +261,11 @@ async function buildCombatAssetSnapshot(): Promise<CombatAssetSnapshot> {
       asyncRecord(ENEMY_SPRITE_VIEWS, (view) => loadSpriteTexture(playerAvatarSpriteAssetId(id), view)),
     ),
     asyncRecord(Object.keys(ASSET_MANIFEST.textures), loadTexture),
-    loadAdsSpriteTexture("sniper"),
   ]);
-
-  sniperAdsTexture.wrapS = THREE.RepeatWrapping;
-  sniperAdsTexture.needsUpdate = true;
 
   return {
     enemyTextures,
     enemyAnimations,
-    weaponTextures,
-    weaponDualTextures,
-    weaponAdsTextures: { sniper: sniperAdsTexture },
     weaponLootTextures,
     muzzleFlashTexture,
     projectileTextures,
@@ -376,21 +332,6 @@ export const ENEMY_SPRITE_SCALES: Record<EnemySpriteKind, Record<EnemySpriteView
   boss: scaleViews(enemySpriteAssetId("boss")),
 };
 
-export const WEAPON_SPRITE_TEXTURES: Record<WeaponId, THREE.Texture> = liveRecord(
-  WEAPON_IDS,
-  (id) => requireCombatAssets().weaponTextures[id],
-);
-
-export const WEAPON_DUAL_SPRITE_TEXTURES: Partial<Record<WeaponId, THREE.Texture>> = liveRecord(
-  DUAL_WEAPON_IDS,
-  (id) => requireCombatAssets().weaponDualTextures[id] as THREE.Texture,
-);
-
-export const WEAPON_ADS_SPRITE_TEXTURES: Partial<Record<WeaponId, THREE.Texture>> = liveRecord(
-  ["sniper"] as const,
-  (id) => requireCombatAssets().weaponAdsTextures[id] as THREE.Texture,
-);
-
 export const WEAPON_LOOT_SPRITE_TEXTURES: Record<WeaponId, THREE.Texture> = liveRecord(
   WEAPON_IDS,
   (id) => requireCombatAssets().weaponLootTextures[id],
@@ -441,20 +382,6 @@ export const WEAPON_DUAL_SPRITE_CONFIG: Partial<Record<WeaponId, DualWeaponSprit
   shotgun: dualWeaponConfig("shotgun"),
   sniper: dualWeaponConfig("sniper"),
 };
-
-export function weaponSpriteTexture(id: WeaponId): THREE.Texture {
-  return WEAPON_SPRITE_TEXTURES[id];
-}
-
-export function weaponAdsSpriteTexture(id: WeaponId): THREE.Texture {
-  return WEAPON_ADS_SPRITE_TEXTURES[id] ?? WEAPON_SPRITE_TEXTURES[id];
-}
-
-export function weaponDualSpriteTexture(id: WeaponId): THREE.Texture {
-  const texture = WEAPON_DUAL_SPRITE_TEXTURES[id];
-  if (!texture) throw new Error(`Weapon ${id} has no dedicated dual sprite texture`);
-  return texture;
-}
 
 export function weaponHasAdsSprite(id: WeaponId): boolean {
   return WEAPON_ADS_SPRITE_CONFIG[id] !== undefined;

@@ -73,6 +73,7 @@ const INITIAL_STATE: HudState = {
   reserve: START_RESERVE,
   reloading: false,
   reloadProgress: 0,
+  interactPrompt: "",
   score: 0,
   kills: 0,
   headshots: 0,

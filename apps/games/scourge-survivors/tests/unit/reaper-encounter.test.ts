@@ -140,7 +140,7 @@ function survivorsHarness(shopTiers: Record<string, number> = {}) {
       hitstop: () => calls.push("fx:hitstop"),
       spawnEnemyDeath: () => calls.push("fx:spawnEnemyDeath"),
     },
-    player: { walkableSurfaceHeight: () => 0 },
+    player: { walkableSurfaceHeight: () => 0, walkableSurfaceHeightNear: () => 0 },
     gameOver: { gameOver: (outcome: "win" | "dead") => calls.push(`gameover:${outcome}`) },
     projectiles: { clearProjectiles: () => calls.push("projectiles:clear") },
     arena: {
@@ -193,7 +193,7 @@ function directorHarness() {
   };
   const sys = {
     survivors,
-    player: { walkableSurfaceHeight: () => 0 },
+    player: { walkableSurfaceHeight: () => 0, walkableSurfaceHeightNear: () => 0 },
     projectiles: { removeProjectilesFrom: () => calls.push("projectiles:removeFrom") },
     fx: {
       registerKill: () => 1,

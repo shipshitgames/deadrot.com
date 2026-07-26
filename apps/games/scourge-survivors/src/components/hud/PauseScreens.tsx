@@ -231,6 +231,12 @@ export function PauseScreens({
               </div>
               <div>
                 <span>
+                  <kbd>E</kbd>
+                </span>{" "}
+                Doors / stairs
+              </div>
+              <div>
+                <span>
                   <kbd>Esc</kbd>
                 </span>{" "}
                 Pause / Resume

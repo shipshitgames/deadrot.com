@@ -11,12 +11,13 @@ import type { GameContext } from "../context";
 import type { GameSystems } from "../systems";
 import type { GameStatus } from "../types";
 
-export type FpsAction = "reload" | "melee" | "weapon1" | "weapon2" | "weapon3" | "weapon4" | "weapon5";
+export type FpsAction = "reload" | "melee" | "interact" | "weapon1" | "weapon2" | "weapon3" | "weapon4" | "weapon5";
 
 export const fpsActionMap = {
   KeyR: "reload",
   KeyF: "melee",
   KeyV: "melee",
+  KeyE: "interact",
   Digit1: "weapon1",
   Digit2: "weapon2",
   Digit3: "weapon3",
@@ -33,7 +34,7 @@ const weaponSlot: Record<Extract<FpsAction, `weapon${number}`>, number> = {
 };
 
 export class FpsActionHandler implements InputActionHandler<FpsAction> {
-  constructor(private readonly sys: Pick<GameSystems, "weapon">) {}
+  constructor(private readonly sys: Pick<GameSystems, "weapon" | "structures">) {}
 
   handleAction(action: FpsAction): void {
     switch (action) {
@@ -42,6 +43,9 @@ export class FpsActionHandler implements InputActionHandler<FpsAction> {
         break;
       case "melee":
         this.sys.weapon.tryMelee();
+        break;
+      case "interact":
+        this.sys.structures.interact();
         break;
       case "weapon1":
       case "weapon2":

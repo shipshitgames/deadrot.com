@@ -78,6 +78,7 @@ export class HudSystem extends HudCoreSystem<ScourgeHudExt> {
           reserve: ctx.reserve,
           reloading: ctx.reloading,
           reloadProgress: ctx.reloading ? Math.min(1, 1 - ctx.reloadTimer / RELOAD_TIME) : 0,
+          interactPrompt: sys.structures.prompt(),
           score: ctx.score,
           kills: ctx.kills,
           headshots: ctx.headshots,

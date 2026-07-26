@@ -181,8 +181,10 @@ export class PveDirectorSystem {
     }
     if (wasBoss) {
       this.ctx.bossKills++;
-      this.sys.fx.addShake(0.45);
-      this.sys.fx.hitstop(0.06);
+      // A boss death has always played the explosion cue with nothing on screen
+      // to match it. The blast is scaled off the corpse rather than fixed, so a
+      // bigger boss detonates bigger.
+      this.sys.fx.spawnExplosion(deathPos, { radius: 2.6 * deathScale, shake: 0.45, hitstop: 0.06 });
       audio.sfx("explosion");
     }
 
@@ -334,7 +336,9 @@ export class PveDirectorSystem {
         attackDamage: Math.max(4, childDef.attackDamage - 1),
         flying: childDef.flying,
         hoverHeight: childDef.hoverHeight,
-        groundHeight: this.sys.player.walkableSurfaceHeight(x, z),
+        // Splits inherit the parent's storey: resolve against where it died so a
+        // swarm bursting out of a corpse on a building's first floor stays there.
+        groundHeight: this.sys.player.walkableSurfaceHeightNear(x, z, parent.position.y),
       });
       if (this.ctx.survivors) {
         this.sys.survivors.enemyXp.set(child, 1);
@@ -349,8 +353,14 @@ export class PveDirectorSystem {
     const billboardQuat = this.ctx.camera.quaternion;
     for (const enemy of this.ctx.enemies) {
       if (!enemy.alive) continue;
-      const tick = enemy.update(delta, elapsed, playerPos, this.ctx.enemies, billboardQuat, this.ctx.bounds, (x, z) =>
-        this.sys.player.walkableSurfaceHeight(x, z),
+      const tick = enemy.update(
+        delta,
+        elapsed,
+        playerPos,
+        this.ctx.enemies,
+        billboardQuat,
+        this.ctx.bounds,
+        (x, z, fromY) => this.sys.player.walkableSurfaceHeightNear(x, z, fromY),
       );
       damageToPlayer += tick.melee;
       if (this.ctx.survivors && tick.melee > 0) {

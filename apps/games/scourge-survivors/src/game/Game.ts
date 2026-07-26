@@ -32,6 +32,7 @@ import { FxSystem } from "./entities/FxSystem";
 import { PickupsSystem } from "./entities/PickupsSystem";
 import { PlayerSystem } from "./entities/PlayerSystem";
 import { ProjectilesSystem } from "./entities/ProjectilesSystem";
+import { StructureSystem } from "./entities/StructureSystem";
 import { WeaponSystem } from "./entities/WeaponSystem";
 import { GameOverSystem } from "./modes/GameOverSystem";
 import { MissionSystem } from "./modes/MissionSystem";
@@ -75,6 +76,7 @@ export class Game {
     sys.weapon = new WeaponSystem(ctx, sys);
     sys.projectiles = new ProjectilesSystem(ctx, sys);
     sys.pickups = new PickupsSystem(ctx, sys);
+    sys.structures = new StructureSystem(ctx, sys);
     sys.fx = new FxSystem(ctx, sys);
     sys.pve = new PveDirectorSystem(ctx, sys);
     sys.mission = new MissionSystem(ctx, sys);
@@ -135,6 +137,9 @@ export class Game {
     this.sys.weapon.tickMeleeTimers(delta);
 
     this.sys.player.updatePlayerMovement(delta);
+    // Doors move before collision resolves, so a swinging panel's collider is
+    // current for this frame's push-out rather than one frame stale.
+    this.sys.structures.update(delta);
     this.sys.player.resolveCollisions();
     this.sys.weapon.updateWeapon(delta);
     this.sys.fx.updateEffects(delta);

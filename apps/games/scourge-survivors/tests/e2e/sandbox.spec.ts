@@ -35,32 +35,20 @@ type HudSnapshot = {
 
 type AnimationSample = {
   kind: "boss" | "flying" | "melee" | "ranged";
+  groupScale: number;
   groupY: number;
   hitbox: {
-    bounds: { minX: number; maxX: number; minY: number; maxY: number };
-    count: number;
+    activeCount: number;
+    ids: string[];
     parts: string[];
-    spriteIsHitTarget: boolean;
+    totalCount: number;
   };
+  hasSprite: boolean;
   hoverHeight: number;
+  meshCount: number;
+  poseEnergy: number;
   screen: { x: number; y: number; z: number };
-  src: string;
   state: string;
-  sprite: {
-    height: number;
-    imageHeight: number;
-    imageWidth: number;
-    positionY: number;
-    visible: boolean;
-    width: number;
-  };
-  animation?: {
-    entity: string;
-    action: string;
-    view: "front" | "side" | "back";
-    frame: number;
-    source: "atlas" | "frame";
-  };
 };
 
 type ArenaDebugSnapshot = {
@@ -980,7 +968,7 @@ test.describe("dev sandbox smoke", () => {
     await expect.poll(() => snapshot(page).then((state) => state.berserk)).toBe(0);
   });
 
-  test("cycles readable enemy frames with loaded art and aligned hitboxes", async ({ page }, testInfo) => {
+  test("animates readable articulated enemy rigs with stable hit meshes", async ({ page }, testInfo) => {
     const consoleErrors: string[] = [];
     page.on("console", (msg) => {
       if (msg.type() === "error" && !msg.text().includes("PointerLockControls: Unable to use Pointer Lock API")) {
@@ -1002,50 +990,33 @@ test.describe("dev sandbox smoke", () => {
         project: (camera: unknown) => DevVector;
       };
       type DevHitMesh = {
-        geometry: {
-          boundingBox: {
-            min: { x: number; y: number };
-            max: { x: number; y: number };
-          } | null;
-          computeBoundingBox: () => void;
-        };
-        position: { x: number; y: number };
-        scale: { x: number; y: number };
+        layers: { mask: number };
+        parent: {
+          rotation: { x: number; y: number; z: number };
+        } | null;
         userData: { part?: string };
+        uuid: string;
+        visible: boolean;
+      };
+      type DevObject = {
+        isMesh?: boolean;
+        isSprite?: boolean;
+        visible: boolean;
       };
       type DevEnemy = {
         alive: boolean;
+        animationState: string;
         flying: boolean;
         group: {
           position: DevVector;
+          scale: { x: number };
+          traverse: (visit: (object: DevObject) => void) => void;
         };
         hitMeshes: DevHitMesh[];
         hoverHeight: number;
         isBoss: boolean;
         ranged: boolean;
-        sprite: {
-          position: { y: number };
-          scale: { x: number; y: number };
-          visible: boolean;
-        };
-        spriteAnimationState: string;
-        spriteMat: {
-          map?: {
-            image?: {
-              currentSrc?: string;
-              height?: number;
-              naturalHeight?: number;
-              naturalWidth?: number;
-              src?: string;
-              width?: number;
-            };
-            userData?: {
-              scourgeAnimation?: AnimationSample["animation"];
-            };
-          };
-        };
-        attackAnimationDuration: () => number;
-        triggerSpriteAnimation: (animation: "attack", duration: number) => void;
+        triggerAttackAnimation: () => void;
       };
       type DevGame = {
         clearSandboxActors: () => void;
@@ -1067,54 +1038,39 @@ test.describe("dev sandbox smoke", () => {
       const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
       const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
       const hitboxSample = (enemy: DevEnemy) => {
-        const bounds = {
-          minX: Number.POSITIVE_INFINITY,
-          maxX: Number.NEGATIVE_INFINITY,
-          minY: Number.POSITIVE_INFINITY,
-          maxY: Number.NEGATIVE_INFINITY,
-        };
-        for (const mesh of enemy.hitMeshes) {
-          mesh.geometry.computeBoundingBox();
-          const box = mesh.geometry.boundingBox;
-          if (!box) continue;
-          const x0 = mesh.position.x + box.min.x * mesh.scale.x;
-          const x1 = mesh.position.x + box.max.x * mesh.scale.x;
-          const y0 = mesh.position.y + box.min.y * mesh.scale.y;
-          const y1 = mesh.position.y + box.max.y * mesh.scale.y;
-          bounds.minX = Math.min(bounds.minX, x0, x1);
-          bounds.maxX = Math.max(bounds.maxX, x0, x1);
-          bounds.minY = Math.min(bounds.minY, y0, y1);
-          bounds.maxY = Math.max(bounds.maxY, y0, y1);
-        }
+        const active = enemy.hitMeshes.filter((mesh) => mesh.visible && mesh.layers.mask !== 0);
         return {
-          bounds,
-          count: enemy.hitMeshes.length,
-          parts: enemy.hitMeshes.map((mesh) => mesh.userData.part ?? ""),
-          spriteIsHitTarget: enemy.hitMeshes.includes(enemy.sprite as unknown as DevHitMesh),
+          activeCount: active.length,
+          ids: enemy.hitMeshes.map((mesh) => mesh.uuid),
+          parts: active.map((mesh) => mesh.userData.part ?? ""),
+          totalCount: enemy.hitMeshes.length,
         };
       };
       const sample = (): AnimationSample[] =>
         game.ctx.enemies
           .filter((enemy) => enemy.alive)
           .map((enemy) => {
-            const image = enemy.spriteMat.map?.image;
+            let hasSprite = false;
+            let meshCount = 0;
+            enemy.group.traverse((object) => {
+              if (object.isSprite) hasSprite = true;
+              if (object.isMesh && object.visible) meshCount++;
+            });
+            const poseEnergy = enemy.hitMeshes.reduce((sum, mesh) => {
+              const rotation = mesh.parent?.rotation;
+              return sum + Math.abs(rotation?.x ?? 0) + Math.abs(rotation?.y ?? 0) + Math.abs(rotation?.z ?? 0);
+            }, 0);
             return {
               kind: enemy.isBoss ? "boss" : enemy.flying ? "flying" : enemy.ranged ? "ranged" : "melee",
+              groupScale: enemy.group.scale.x,
               groupY: enemy.group.position.y,
               hitbox: hitboxSample(enemy),
+              hasSprite,
               hoverHeight: enemy.hoverHeight,
+              meshCount,
+              poseEnergy,
               screen: enemy.group.position.clone().project(game.ctx.camera),
-              src: image?.currentSrc || image?.src || "",
-              state: enemy.spriteAnimationState,
-              sprite: {
-                height: Math.abs(enemy.sprite.scale.y),
-                imageHeight: image?.naturalHeight || image?.height || 0,
-                imageWidth: image?.naturalWidth || image?.width || 0,
-                positionY: enemy.sprite.position.y,
-                visible: enemy.sprite.visible,
-                width: Math.abs(enemy.sprite.scale.x),
-              },
-              animation: enemy.spriteMat.map?.userData?.scourgeAnimation,
+              state: enemy.animationState,
             };
           })
           .sort((a, b) => a.kind.localeCompare(b.kind));
@@ -1152,7 +1108,7 @@ test.describe("dev sandbox smoke", () => {
       const moveA = moveSamples[0] ?? [];
       const moveB = moveSamples[moveSamples.length - 1] ?? [];
       for (const enemy of game.ctx.enemies.filter((enemy) => enemy.alive)) {
-        enemy.triggerSpriteAnimation("attack", enemy.attackAnimationDuration());
+        enemy.triggerAttackAnimation();
       }
       await wait(320);
       const attacking = sample();
@@ -1184,34 +1140,18 @@ test.describe("dev sandbox smoke", () => {
     expect(result.moveB.map((sample) => sample.kind)).toEqual(["boss", "flying", "melee", "ranged"]);
 
     for (const sample of result.moveB) {
-      expect(sample.src).toContain("/animations/scourge/scourge.atlas0.webp");
-      expect(sample.sprite.visible).toBe(true);
-      expect(sample.sprite.imageWidth).toBeGreaterThan(0);
-      expect(sample.sprite.imageHeight).toBeGreaterThan(0);
-      expect(sample.sprite.width).toBeGreaterThan(0);
-      expect(sample.sprite.height).toBeGreaterThan(0);
+      expect(sample.hasSprite).toBe(false);
+      expect(sample.meshCount).toBeGreaterThan(10);
+      expect(sample.poseEnergy).toBeGreaterThan(0);
       expect(sample.screen.x).toBeGreaterThan(-0.95);
       expect(sample.screen.x).toBeLessThan(0.95);
       expect(sample.screen.y).toBeGreaterThan(-0.95);
       expect(sample.screen.y).toBeLessThan(0.95);
       expect(sample.screen.z).toBeGreaterThan(-1);
       expect(sample.screen.z).toBeLessThan(1);
-      expect(sample.animation?.source).toBe("atlas");
-      expect(sample.animation?.frame).toBeGreaterThanOrEqual(0);
-      expect(sample.animation?.frame).toBeLessThan(6);
-      expect(["front", "side", "back"]).toContain(sample.animation?.view);
-
-      expect(sample.hitbox.count).toBe(3);
-      expect(sample.hitbox.parts).toEqual(["body", "body", "head"]);
-      expect(sample.hitbox.spriteIsHitTarget).toBe(false);
-      const spriteLeft = -sample.sprite.width / 2;
-      const spriteRight = sample.sprite.width / 2;
-      const spriteBottom = sample.sprite.positionY;
-      const spriteTop = sample.sprite.positionY + sample.sprite.height;
-      expect(sample.hitbox.bounds.minX).toBeGreaterThanOrEqual(spriteLeft - 0.05);
-      expect(sample.hitbox.bounds.maxX).toBeLessThanOrEqual(spriteRight + 0.05);
-      expect(sample.hitbox.bounds.minY).toBeGreaterThanOrEqual(spriteBottom - 0.05);
-      expect(sample.hitbox.bounds.maxY).toBeLessThanOrEqual(spriteTop + 0.05);
+      expect(sample.hitbox.totalCount).toBe(25);
+      expect(sample.hitbox.parts.filter((part) => part === "head")).toHaveLength(1);
+      expect(sample.hitbox.parts.every((part) => part === "body" || part === "head")).toBe(true);
     }
 
     const samplesByKind = Object.fromEntries(result.moveB.map((sample) => [sample.kind, sample])) as Record<
@@ -1224,47 +1164,23 @@ test.describe("dev sandbox smoke", () => {
       expect(samplesByKind[kind].hoverHeight).toBe(0);
       expect(samplesByKind[kind].groupY).toBeLessThan(0.25);
     }
-    expect(samplesByKind.boss.sprite.height).toBeGreaterThan(samplesByKind.melee.sprite.height);
-
-    expect(Object.fromEntries(result.moveB.map((sample) => [sample.kind, sample.animation?.entity]))).toMatchObject({
-      boss: "breach-boss",
-      flying: "winged-host",
-      melee: "host-grunt",
-      ranged: "spitter-host",
+    expect(samplesByKind.boss.groupScale).toBeGreaterThan(samplesByKind.melee.groupScale);
+    expect(Object.fromEntries(result.moveB.map((sample) => [sample.kind, sample.hitbox.activeCount]))).toEqual({
+      boss: 17,
+      flying: 11,
+      melee: 15,
+      ranged: 15,
     });
+
     for (const kind of ["boss", "flying", "melee", "ranged"] as const) {
       const kindSamples = result.moveSamples.flat().filter((sample) => sample.kind === kind);
-      expect(kindSamples.some((sample) => sample.state === "move")).toBe(true);
-      const frames = new Set(kindSamples.map((sample) => sample.animation?.frame));
-      expect(frames.size).toBeGreaterThan(1);
+      expect(kindSamples.every((sample) => sample.hitbox.ids.join("|") === kindSamples[0]?.hitbox.ids.join("|"))).toBe(
+        true,
+      );
+      expect(new Set(kindSamples.map((sample) => sample.poseEnergy.toFixed(3))).size).toBeGreaterThan(1);
     }
-
-    const movingActionByKind = Object.fromEntries(
-      (["boss", "flying", "melee", "ranged"] as const).map((kind) => [
-        kind,
-        result.moveSamples.flat().find((sample) => sample.kind === kind && sample.state === "move")?.animation?.action,
-      ]),
-    );
-    expect(movingActionByKind).toMatchObject({
-      boss: "lurch",
-      flying: "fly",
-      melee: "walk",
-      ranged: "walk",
-    });
-
-    expect(Object.fromEntries(result.attacking.map((sample) => [sample.kind, sample.animation?.action]))).toMatchObject(
-      {
-        boss: "barrage",
-        flying: "attack",
-        melee: "slash",
-        ranged: "spit",
-      },
-    );
     expect(result.attacking.every((sample) => sample.state === "attack")).toBe(true);
-    expect(result.attacking.every((sample) => sample.animation?.source === "atlas")).toBe(true);
-    expect(result.attacking.every((sample) => sample.src.includes("/animations/scourge/scourge.atlas0.webp"))).toBe(
-      true,
-    );
+    expect(result.attacking.every((sample) => sample.poseEnergy > 0)).toBe(true);
     expect(consoleErrors).toEqual([]);
   });
 
