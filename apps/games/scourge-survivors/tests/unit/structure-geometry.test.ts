@@ -74,6 +74,13 @@ function contains(box: SolidBox, x: number, z: number): boolean {
   return x > box.x - box.w / 2 && x < box.x + box.w / 2 && z > box.z - box.d / 2 && z < box.z + box.d / 2;
 }
 
+/** Solid at a point in 3D. An opening is a hole in elevation, not in plan — a
+ *  lintel sits directly over the doorway, so `contains` alone can never tell
+ *  "you can walk through here" from "there is a header above your hat". */
+function occupies(box: SolidBox, x: number, y: number, z: number): boolean {
+  return contains(box, x, z) && y > box.y - box.h / 2 && y < box.y + box.h / 2;
+}
+
 describe("structureWallBoxes", () => {
   it("leaves a solid slab when nothing pierces the wall", () => {
     const [box, ...rest] = wallsOf(building(), "south");
@@ -101,8 +108,13 @@ describe("structureWallBoxes", () => {
     expect(lintel.y - lintel.h / 2).toBeCloseTo(2.2); // starts at the door head
     expect(lintel.y + lintel.h / 2).toBeCloseTo(DEFAULT_STOREY_HEIGHT); // meets the ceiling
 
-    // the doorway itself is empty at head height, all the way through the wall
-    for (const box of boxes) expect(contains(box, 0, 4.8)).toBe(false);
+    // the doorway is clear from the floor to the door head, right through the
+    // wall — a 1.8m player walks in without clipping anything
+    for (const y of [0.1, 1.1, 2.1]) {
+      for (const box of boxes) expect(occupies(box, 0, y, 4.8)).toBe(false);
+    }
+    // and the only thing over the opening is the lintel that closes it off
+    expect(occupies(lintel, 0, 2.8, 4.8)).toBe(true);
   });
 
   it("splits a window into a spandrel and a lintel as well as the jambs", () => {

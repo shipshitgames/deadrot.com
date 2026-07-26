@@ -46,6 +46,7 @@ type Mode = "sandbox" | "survivors" | "campaign";
 function directorHarness(mode: Mode) {
   const calls: string[] = [];
   const headshotKillCalls: { x: number; z: number; scale?: number; boss?: boolean }[] = [];
+  const explosionCalls: { radius?: number }[] = [];
   const spawnDeathCalls: { headshot?: boolean; elite?: boolean; scale?: number }[] = [];
   const survivors = {
     reaper: null as Enemy | null,
@@ -87,6 +88,10 @@ function directorHarness(mode: Mode) {
         calls.push("fx:headshotKill");
         headshotKillCalls.push({ x: pos.x, z: pos.z, scale: opts.scale, boss: opts.boss });
       },
+      spawnExplosion: (_pos: THREE.Vector3, opts: { radius?: number } = {}) => {
+        calls.push("fx:spawnExplosion");
+        explosionCalls.push({ radius: opts.radius });
+      },
     },
     hud: {
       killSeq: 0,
@@ -98,7 +103,7 @@ function directorHarness(mode: Mode) {
     mission: { onBossDefeated: () => calls.push("mission:onBossDefeated") },
   };
   const director = new PveDirectorSystem(ctx as unknown as GameContext, sys as unknown as GameSystems);
-  return { calls, headshotKillCalls, spawnDeathCalls, ctx, sys, survivors, director };
+  return { calls, explosionCalls, headshotKillCalls, spawnDeathCalls, ctx, sys, survivors, director };
 }
 
 /** A dying standard foe exactly as onEnemyDeath sees it (kill() already ran: y=-100). */
@@ -181,6 +186,8 @@ describe("onEnemyDeath headshot-kill hook", () => {
     expect(h.calls).toContain("fx:shake");
     expect(h.calls).toContain("fx:hitstop");
     expect(sfxLog).toContain("explosion");
+    // the blast is sized off the corpse, so a bigger boss detonates bigger
+    expect(h.explosionCalls).toEqual([{ radius: 2.6 * 2.4 }]);
     expect(h.calls).toContain("mission:onBossDefeated");
     expect(h.director.bossActive).toBe(false);
     expect(h.director.bossEnemy).toBeNull();

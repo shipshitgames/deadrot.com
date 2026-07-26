@@ -134,23 +134,26 @@ describe("FxSystem.spawnExplosion — crowd scaling", () => {
   });
 
   it("thins out gradually rather than falling off a cliff at the budget", () => {
-    const quiet = harness();
-    quiet.fx.spawnExplosion(new THREE.Vector3(), { radius: 4 });
+    // detail = max(MIN_DETAIL, 1 - (live - BUDGET)/BUDGET). The ramp therefore
+    // runs from the budget up to 1.75x it, where MIN_DETAIL takes over — sample
+    // INSIDE the ramp to see the slope, not past its floor.
+    const addedAt = (parked: number) => {
+      const { fx } = harness();
+      floodPops(fx, parked);
+      const before = fx.pops.length;
+      fx.spawnExplosion(new THREE.Vector3(), { radius: 4 });
+      return fx.pops.length - before;
+    };
 
-    const busy = harness();
-    floodPops(busy.fx, POP_BUDGET * 2); // crowding 1 → detail 0.5, between the two ends
-    const before = busy.fx.pops.length;
-    busy.fx.spawnExplosion(new THREE.Vector3(), { radius: 4 });
-    const mid = busy.fx.pops.length - before;
+    const full = addedAt(0);
+    const mid = addedAt(POP_BUDGET * 1.5); // crowding 0.5 → half detail
+    const floored = addedAt(POP_BUDGET * 4); // far past the ramp → MIN_DETAIL
 
-    const packed = harness();
-    floodPops(packed.fx, POP_BUDGET * 4);
-    const packedBefore = packed.fx.pops.length;
-    packed.fx.spawnExplosion(new THREE.Vector3(), { radius: 4 });
-    const least = packed.fx.pops.length - packedBefore;
-
-    expect(mid).toBeLessThan(quiet.fx.pops.length);
-    expect(mid).toBeGreaterThan(least);
+    expect(full).toBe(STRUCTURAL + EMBERS + PUFFS);
+    expect(mid).toBeLessThan(full);
+    expect(mid).toBeGreaterThan(floored);
+    // however crowded the frame gets, the silhouette the player reads survives
+    expect(floored).toBeGreaterThanOrEqual(STRUCTURAL);
   });
 
   it("leaves the pool alone — an explosion adds, it never culls live FX", () => {

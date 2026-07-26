@@ -200,6 +200,7 @@ function directorHarness() {
       addShake: () => calls.push("fx:shake"),
       hitstop: () => calls.push("fx:hitstop"),
       spawnEnemyDeath: () => calls.push("fx:spawnEnemyDeath"),
+      spawnExplosion: () => calls.push("fx:spawnExplosion"),
     },
     hud: {
       killSeq: 0,
@@ -340,6 +341,8 @@ describe("reaper victory (PveDirectorSystem.onEnemyDeath)", () => {
     expect(survivors.reaper).toBeNull();
     expect(calls).toContain("hud:toast:BREACH SEALED");
     expect(calls).toContain("gameover:win");
+    // the boss cue is a blast, not just a sound: the reaper detonates on death
+    expect(calls).toContain("fx:spawnExplosion");
     // the victory IS the reward: the elite drop/XP economy is skipped entirely
     expect(calls).not.toContain("survivors:dropXpGem");
     expect(calls).not.toContain("survivors:onEliteKilled");
