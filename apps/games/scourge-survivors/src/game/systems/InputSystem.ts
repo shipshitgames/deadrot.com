@@ -6,6 +6,7 @@ import {
   InputSystem as InputBinder,
   type InputHooks,
 } from "@shipshitgames/engine";
+import { audio } from "../../audio/AudioEngine";
 import { JUMP_VELOCITY, WEAPON_ORDER, type WeaponId } from "../constants";
 import type { GameContext } from "../context";
 import type { GameSystems } from "../systems";
@@ -301,6 +302,9 @@ export class InputSystem {
     if (!this.ctx.canJump) return;
     this.ctx.velocity.y = JUMP_VELOCITY;
     this.ctx.canJump = false;
+    // Cued here rather than at either call site so the spacebar and the on-screen
+    // button stay identical, and so a jump refused by the ground check is silent.
+    audio.sfx("jump");
   }
 
   /**

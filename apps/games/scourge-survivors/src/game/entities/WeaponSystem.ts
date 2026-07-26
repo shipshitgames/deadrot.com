@@ -8,6 +8,7 @@ import {
   CANNON_SPLASH_DAMAGE,
   CANNON_SPLASH_RADIUS,
   DAMAGE_BOOST_MULT,
+  DRY_FIRE_INTERVAL,
   HEADSHOT_MULTIPLIER,
   MELEE_ARC_DOT,
   MELEE_COOLDOWN,
@@ -510,16 +511,24 @@ export class WeaponSystem {
     audio.sfx("explosion");
   }
 
-  startReload() {
+  /**
+   * Begin a reload, reporting whether one actually started.
+   *
+   * The boolean matters to {@link tickFireReload}: a refusal on an empty
+   * magazine is the dry-fire moment, and the caller can only tell the
+   * difference between "reloading now" and "nothing left to load" from here.
+   */
+  startReload(): boolean {
     const spec = WEAPONS[this.ctx.activeWeapon];
-    if (this.ctx.reloading || this.ctx.ammo >= spec.magazineSize) return;
-    if (!this.ctx.survivors && this.ctx.reserve <= 0) return; // Survivors: reserve is infinite
+    if (this.ctx.reloading || this.ctx.ammo >= spec.magazineSize) return false;
+    if (!this.ctx.survivors && this.ctx.reserve <= 0) return false; // Survivors: reserve is infinite
     this.ctx.aimingDownSights = false;
     this.ctx.reloading = true;
     this.ctx.reloadTimer = RELOAD_TIME;
     this.ctx.firing = false;
     audio.sfx("reload");
     this.sys.hud.emit();
+    return true;
   }
 
   finishReload() {
@@ -557,7 +566,15 @@ export class WeaponSystem {
       }
     } else if (this.ctx.firing || this.ctx.triggerQueued) {
       this.ctx.triggerQueued = false;
-      this.startReload();
+      // The magazine is empty. `startReload` refuses once the reserve is gone,
+      // and that refusal used to be silent: the player held the trigger on a
+      // dead gun and the game answered with nothing at all, which reads as
+      // broken input rather than an empty pouch. Click instead, paced by the
+      // fire cooldown so holding the trigger cannot machine-gun the cue.
+      if (!this.startReload() && this.ctx.fireCooldown <= 0) {
+        audio.sfx("dryfire");
+        this.ctx.fireCooldown = DRY_FIRE_INTERVAL;
+      }
     }
   }
 
@@ -709,6 +726,10 @@ export class WeaponSystem {
     if (!this.previousGrounded && grounded && this.previousVerticalVelocity < -0.5) {
       this.landingVelocity = this.previousVerticalVelocity;
       this.landingAge = 0;
+      // Same edge that drives the view-model dip, so the thud lands on the frame
+      // the boots do. The -0.5 gate above keeps stair lips and kerbs silent; gain
+      // tracks the drop so a hop off a crate is not the same weight as a rooftop.
+      audio.sfx("land", { gain: Math.min(1, 0.28 + Math.abs(this.previousVerticalVelocity) / 22) });
     } else {
       this.landingAge = Math.min(999, this.landingAge + Math.max(0, delta));
     }

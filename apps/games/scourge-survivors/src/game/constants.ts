@@ -31,6 +31,9 @@ export const MAGAZINE_SIZE = 15;
 export const START_RESERVE = 75;
 export const RELOAD_TIME = 1.2; // seconds
 export const HEADSHOT_MULTIPLIER = 2.2;
+// Gap between dry-fire clicks while the trigger is held on a dead gun. Slower
+// than any weapon's cadence so an empty gun sounds empty, not like it is firing.
+export const DRY_FIRE_INTERVAL = 0.35; // seconds
 
 // Cautery Cleaver — always available (no ammo), the guaranteed fallback so you
 // can never be locked out of fighting when ammo runs dry. Works in every mode.
