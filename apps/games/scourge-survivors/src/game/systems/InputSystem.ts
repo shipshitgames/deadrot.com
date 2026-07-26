@@ -289,7 +289,26 @@ export class InputSystem {
     this.sys.weapon.switchWeapon(next);
   };
 
+  /**
+   * Hand control back to the player.
+   *
+   * The device policy lives at this seam, not at the call sites, because every
+   * mode that resumes play funnels through this one method. A coarse pointer has
+   * no lock to acquire, and asking for one anyway is not harmless: a *granted*
+   * lock makes the browser retarget every pointer event to the locked canvas, so
+   * the on-screen pad stops receiving gestures and each `setPointerCapture` it
+   * attempts throws `InvalidStateError`. Whether a request is granted at all is
+   * platform-dependent, which is how a stray request hides on one machine and
+   * breaks every touch gesture on another.
+   */
   requestLock() {
+    if (this.sys.touch.enabled) {
+      // A no-op when the run is already live (a level-up draft closing, a co-op
+      // resume): there is no lock to skip and no state to rebuild, so an ADS
+      // toggle survives the overlay exactly as it does on a mouse.
+      this.enterPlayFromTouch();
+      return;
+    }
     this.captureRig?.requestCapture();
   }
 
@@ -313,7 +332,8 @@ export class InputSystem {
    * Mirrors {@link resumeFromPauseWithoutCapture}, but from the initial
    * `pointerlock-needed` state as well as from a pause: a phone has no pointer
    * lock to acquire, so the prompt is a plain tap-to-start and the game goes
-   * straight to `playing`.
+   * straight to `playing`. This is the touch branch of {@link requestLock},
+   * which is why it returns quietly from any other status.
    */
   enterPlayFromTouch(): void {
     if (this.ctx.status !== "pointerlock-needed" && this.ctx.status !== "paused") return;

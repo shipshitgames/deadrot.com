@@ -19,6 +19,12 @@ import { expect, type Page, test } from "@playwright/test";
 // the pad rendering at all) is proven by the Pixel 7 device profile itself:
 // `touch.enabled` is false on any desktop project, and every assertion below
 // depends on it being true.
+//
+// That equivalence holds only while no pointer lock is held, because a lock makes
+// the browser retarget every pointer event to the locked element. `bootTouchRun`
+// asserts the absence, and it is not a test detail: a real thumb on a real phone
+// is retargeted the same way. Any coarse-pointer device where a lock is grantable
+// — an emulated device profile, a touchscreen laptop — loses the whole pad.
 
 type HudSnapshot = {
   status: string;
@@ -167,6 +173,15 @@ async function bootTouchRun(page: Page): Promise<void> {
   await expect(intro).toBeHidden({ timeout: 15_000 });
 
   await expect.poll(() => status(page), { timeout: 30_000 }).toBe("playing");
+
+  // Asserted here rather than in one test because every gesture below depends on
+  // it. A held pointer lock makes the browser retarget every pointer event to
+  // the locked canvas, so the pad's buttons stop receiving taps at all and its
+  // setPointerCapture calls throw — a phone pad that is rendered, live, and
+  // completely deaf. Reaching `playing` does not prove no lock was requested on
+  // the way: whether the browser grants one is platform-dependent, so this is
+  // the only assertion that fails on the machine where it is granted.
+  expect(await page.evaluate(() => document.pointerLockElement !== null)).toBe(false);
 }
 
 let consoleErrors: string[] = [];
