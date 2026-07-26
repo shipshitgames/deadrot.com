@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { MELEE_WEAPON_NAME } from "../../game/constants";
-import { markPrimerSeen, primerSeen } from "../../game/storage";
+import { primerSeen } from "../../game/storage";
 import type { HudState } from "../../game/types";
 
 /**
@@ -14,8 +14,13 @@ import type { HudState } from "../../game/types";
  * (see {@link primerSeen}).
  */
 
-/** Seconds of live run time the card stays up before it fades itself out. */
-const PRIMER_SECONDS = 14;
+/**
+ * Seconds of live run time the card stays up before it fades itself out.
+ *
+ * Exported because `App` spends the saved flag at the same threshold, where the
+ * engine pushes the run clock — one number, not a mirrored constant.
+ */
+export const PRIMER_SECONDS = 14;
 /** Seconds of that budget spent fading, so it leaves rather than blinks out. */
 const FADE_SECONDS = 3;
 
@@ -49,15 +54,12 @@ export function FirstDropPrimer({ state }: { state: HudState }) {
   // Latch rather than derive. Restarting rewinds the run clock, and the second
   // drop is not a first drop — so once the opening seconds are spent they stay
   // spent for as long as this HUD is mounted.
+  //
+  // Purely a render decision: spending the saved flag is the game's business
+  // and happens in `App`'s snapshot handler, because the clock crossing is an
+  // event the engine raises, not a state for a component to sit and watch.
   const [expired, setExpired] = useState(false);
   if (!expired && time >= PRIMER_SECONDS) setExpired(true);
-
-  // The flag is only spent once the card has actually had its time on screen,
-  // so a reload that never reaches the drop cannot burn it. A returning player
-  // skips the write entirely; theirs was spent runs ago.
-  useEffect(() => {
-    if (expired && !seenBefore) markPrimerSeen();
-  }, [expired, seenBefore]);
 
   if (seenBefore || expired || status !== "playing") return null;
 

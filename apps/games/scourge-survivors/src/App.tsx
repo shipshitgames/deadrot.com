@@ -4,6 +4,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import { audio } from "./audio/AudioEngine";
 import { HUD } from "./components/HUD";
 import { CinematicOverlay } from "./components/hud/CinematicOverlay";
+import { PRIMER_SECONDS } from "./components/hud/FirstDropPrimer";
 import { TouchPad } from "./components/hud/TouchPad";
 import {
   MAGAZINE_SIZE,
@@ -40,6 +41,8 @@ import {
   clearScores,
   loadScores,
   loadShop,
+  markPrimerSeen,
+  primerSeen,
   type ScoreEntry,
   type ShopState,
   saveScore,
@@ -178,6 +181,10 @@ export default function App() {
   const [combatAssetLoading, setCombatAssetLoading] = useState(false);
   const [combatAssetError, setCombatAssetError] = useState<string>();
   const [activeCinematic, setActiveCinematic] = useState<CinematicBeat | null>(null);
+  // Whether the first-drop primer's saved flag is already spent. Lazily read on
+  // the first snapshot rather than at mount, so a returning player costs one
+  // localStorage read per session and no writes at all.
+  const primerSpentRef = useRef<boolean | null>(null);
   const activeArenaIdRef = useRef(DEFAULT_MAP_ID);
   const cinematicChapterRef = useRef(INITIAL_STATE.survivorChapter);
   const cinematicCompletionRef = useRef<() => void>(() => {});
@@ -245,6 +252,16 @@ export default function App() {
     (next: HudState) => {
       const previous = hudRef.current;
       hudRef.current = next;
+      // The first drop's opening seconds are spent here, for the same reason the
+      // leaderboard write is: the run clock crossing the primer's welcome is an
+      // event the engine raises on this snapshot. Gating on the clock rather
+      // than on mount means a reload that never reaches a drop cannot burn the
+      // flag — the card only stops being owed once it has had its time on screen.
+      if (primerSpentRef.current === null) primerSpentRef.current = primerSeen();
+      if (!primerSpentRef.current && next.time >= PRIMER_SECONDS) {
+        primerSpentRef.current = true;
+        markPrimerSeen();
+      }
       if (next.status === "gameover" && next.outcome && !next.sandbox && !savedRef.current) {
         savedRef.current = true;
         if (next.outcome === "win") audio.setMusicMode("victory");
