@@ -20,11 +20,28 @@ import { MAIN_WEAPON_VISUAL_TIERS, type MainWeaponVisualTier } from "./data/surv
 
 export type EnemySpriteKind = "melee" | "ranged" | "flying" | "hound" | "boss";
 export type EnemySpriteView = SpriteView;
-export type EnemySpriteAnimationState = "move" | "attack" | "death";
 
 const ENEMY_SPRITE_KINDS = ["melee", "ranged", "flying", "hound", "boss"] as const;
 const ENEMY_SPRITE_VIEWS = ["front", "side", "back"] as const;
-const ENEMY_ANIMATION_STATES = ["move", "attack", "death"] as const;
+
+/**
+ * Sprite animation states the combat preload actually pulls off the wire.
+ *
+ * Living enemies are articulated {@link ../render/models/enemyRig | rigs}, so
+ * the flat `move` and `attack` sheets that predate them have no renderer — the
+ * only consumer left is the death puff in `FxSystem`. Loading them anyway built
+ * 144 texture clones per combat load that nothing ever sampled: in the default
+ * lane that is clone + frame-resolve work off one shared atlas page rather than
+ * extra bandwidth, and in the comic lane (`VITE_DEADROT_COMIC_ASSETS=1`, whose
+ * frames are individual files) it is 144 real fetches and ~1.2 MB of decode.
+ *
+ * The sheets stay on disk in `packages/assets` — authored art outlives the
+ * renderer that first used it, and the atlas packs every action regardless.
+ */
+const ENEMY_ANIMATION_STATES = ["death"] as const;
+
+/** Derived from the tuple above so the loaded set and the type cannot drift. */
+export type EnemySpriteAnimationState = (typeof ENEMY_ANIMATION_STATES)[number];
 const WEAPON_IDS = ["pistol", "smg", "shotgun", "cannon", "sniper"] as const satisfies readonly WeaponId[];
 
 type EnemyTextureRecord = Record<EnemySpriteKind, Record<EnemySpriteView, THREE.Texture>>;

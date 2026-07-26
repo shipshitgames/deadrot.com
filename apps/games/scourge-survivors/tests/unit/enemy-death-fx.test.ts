@@ -17,7 +17,9 @@ type EnemyModule = typeof import("../../src/game/entities/Enemy");
 
 const ENEMY_SPRITE_KINDS = ["melee", "ranged", "flying", "hound", "boss"] as const;
 const SPRITE_VIEWS = ["front", "side", "back"] as const;
-const ANIMATION_STATES = ["move", "attack", "death"] as const;
+// Living enemies are articulated rigs, so `death` is the only sprite animation
+// state the combat preload pulls (see spriteAssets ENEMY_ANIMATION_STATES).
+const ANIMATION_STATES = ["death"] as const;
 const EXPECTED_GIB_IDS = [
   "gib-meat-chunk",
   "gib-skull-shard",
@@ -48,7 +50,7 @@ beforeAll(async () => {
 });
 
 describe("enemy death animation textures (#23 death FX)", () => {
-  it("exposes every enemy kind with move/attack/death animation states", () => {
+  it("exposes every enemy kind with exactly the rendered animation states", () => {
     const { ENEMY_SPRITE_ANIMATION_TEXTURES } = spriteAssets;
     expect(Object.keys(ENEMY_SPRITE_ANIMATION_TEXTURES).sort()).toEqual([...ENEMY_SPRITE_KINDS].sort());
 
@@ -88,12 +90,12 @@ describe("enemy death animation textures (#23 death FX)", () => {
     );
     expect(new Set(allFrames.map((texture) => texture.source)).size).toBe(1);
 
-    const first = ENEMY_SPRITE_ANIMATION_TEXTURES.melee.move.front[0];
-    const last = ENEMY_SPRITE_ANIMATION_TEXTURES.melee.move.front[FRAMES_PER_ACTION - 1];
+    const first = ENEMY_SPRITE_ANIMATION_TEXTURES.melee.death.front[0];
+    const last = ENEMY_SPRITE_ANIMATION_TEXTURES.melee.death.front[FRAMES_PER_ACTION - 1];
     expect(first.source).toBe(last.source);
     expect(first.userData.scourgeAnimation).toEqual({
       entity: "host-grunt",
-      action: "walk",
+      action: "death",
       view: "front",
       frame: 0,
       source: "atlas",
@@ -105,8 +107,8 @@ describe("enemy death animation textures (#23 death FX)", () => {
 
   it("keeps rank-and-file atlas frames crisp while smoothing the comic Breach-Boss", () => {
     const { ENEMY_SPRITE_ANIMATION_TEXTURES } = spriteAssets;
-    const grunt = ENEMY_SPRITE_ANIMATION_TEXTURES.melee.move.front[0];
-    const boss = ENEMY_SPRITE_ANIMATION_TEXTURES.boss.move.front[0];
+    const grunt = ENEMY_SPRITE_ANIMATION_TEXTURES.melee.death.front[0];
+    const boss = ENEMY_SPRITE_ANIMATION_TEXTURES.boss.death.front[0];
 
     expect(grunt.minFilter).toBe(THREE.NearestFilter);
     expect(grunt.magFilter).toBe(THREE.NearestFilter);
