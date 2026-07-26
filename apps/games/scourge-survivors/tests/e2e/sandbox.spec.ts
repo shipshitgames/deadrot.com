@@ -671,7 +671,12 @@ test.describe("dev sandbox smoke", () => {
     page.on("pageerror", (error) => consoleErrors.push(String(error)));
 
     await page.goto("/?sandbox=1");
-    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
+    // `?sandbox=1` means the run is already launching. Wait for the combat rig
+    // rather than the bare handle: the key presses below need the sandbox
+    // arsenal, which unlocks in the same continuation that builds it.
+    await page.waitForFunction(
+      () => (window as unknown as { __fpsGame?: { combatReady?: boolean } }).__fpsGame?.combatReady === true,
+    );
     await page.evaluate(() => {
       type DevGame = {
         ctx: {

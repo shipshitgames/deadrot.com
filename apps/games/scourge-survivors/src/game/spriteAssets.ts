@@ -6,15 +6,14 @@ import {
   animationFrameSource,
   assetUrl,
   audioUrl,
-  bootSpriteUrl,
-  loadSpriteTexture,
-  loadTexture,
   type SpriteView,
   spriteEntry,
   spriteScale,
   textureEntry,
   uiUrl,
 } from "../assets/catalog";
+import { playerAvatarSpriteAssetId } from "../assets/menuArt";
+import { loadSpriteTexture, loadTexture } from "../assets/textures";
 import type { PlayerAvatarId } from "../net/playerAvatars";
 import type { WeaponId } from "./constants";
 import { MAIN_WEAPON_VISUAL_TIERS, type MainWeaponVisualTier } from "./data/survivors";
@@ -52,10 +51,6 @@ let combatAssetPreloadPromise: Promise<void> | undefined;
 
 export function enemySpriteAssetId(id: EnemySpriteKind): string {
   return ASSET_CATALOG.enemy(id).sprite;
-}
-
-export function playerAvatarSpriteAssetId(id: PlayerAvatarId): string {
-  return ASSET_CATALOG.player(id).sprite;
 }
 
 export function weaponSpriteAssetId(id: WeaponId): string {
@@ -468,15 +463,8 @@ export const PLAYER_AVATAR_SCALES: Record<PlayerAvatarId, Record<SpriteView, [nu
 };
 
 // Front-facing avatar portraits and menu art are the intentionally small,
-// synchronous boot surface. They do not instantiate THREE textures.
-export const PLAYER_AVATAR_PREVIEW_URLS: Record<PlayerAvatarId, string> = {
-  ranger: bootSpriteUrl(playerAvatarSpriteAssetId("ranger"), "front"),
-  heavy: bootSpriteUrl(playerAvatarSpriteAssetId("heavy"), "front"),
-  scout: bootSpriteUrl(playerAvatarSpriteAssetId("scout"), "front"),
-  medic: bootSpriteUrl(playerAvatarSpriteAssetId("medic"), "front"),
-};
-
-export const MENU_HERO_URL = ASSET_CATALOG.runtimeUiUrl("menuTitle");
+// synchronous boot surface, so they live in `assets/menuArt` — the shell must
+// be able to paint them without importing this module and its renderer.
 
 export const ARENA_TEXTURES = liveRecord(
   ["floor", "wall", "column", "block"] as const,

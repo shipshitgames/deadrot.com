@@ -90,6 +90,21 @@ export class Game {
     sys.gameOver = new GameOverSystem(ctx, sys);
   }
 
+  /**
+   * Whether the combat rig actually exists yet.
+   *
+   * `status` is a HUD concept and says nothing about the renderer: the weapon
+   * group, its muzzle flash sprites and the survivor systems are only built
+   * once {@link prepareCombat} has streamed its assets in. Every legitimate
+   * entry point flips `status` from inside that continuation, so this is true
+   * before any real run simulates — it exists so that a `status` written from
+   * outside (the sandbox harness forces it to skip pointer lock) cannot drive
+   * `update` into a half-built rig.
+   */
+  get combatReady(): boolean {
+    return this.weaponInitialized && this.survivorsInitialized;
+  }
+
   // ---------------------------------------------------------------- lifecycle
 
   start() {
@@ -117,7 +132,7 @@ export class Game {
       delta = realDelta * 0.05;
     }
 
-    if (this.ctx.status === "playing") this.update(delta, elapsed);
+    if (this.ctx.status === "playing" && this.combatReady) this.update(delta, elapsed);
     else if (this.ctx.status !== "paused") this.sys.fx.updateEffects(realDelta);
     // When paused, nothing simulates — the frame is just re-rendered as-is.
 

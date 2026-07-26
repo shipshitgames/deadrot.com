@@ -11,7 +11,7 @@ type DevGame = {
   clearSandboxActors: () => void;
   damageSandboxEnemies: (amount: number, headshot?: boolean, all?: boolean) => void;
   spawnSandboxEnemy: (kind: "melee" | "boss", count?: number) => void;
-  startSandbox: () => void;
+  startSandbox: () => Promise<void>;
   ctx: {
     body: { position: { x: number; z: number } };
     enemies: Array<{ alive: boolean; group: { position: { x: number; z: number } } }>;
@@ -58,7 +58,7 @@ test.describe("headshot kill feedback", () => {
         clearSandboxActors: () => void;
         damageSandboxEnemies: (amount: number, headshot?: boolean, all?: boolean) => void;
         spawnSandboxEnemy: (kind: "melee", count?: number) => void;
-        startSandbox: () => void;
+        startSandbox: () => Promise<void>;
         ctx: {
           body: { position: { x: number; z: number } };
           enemies: Array<{ alive: boolean; group: { position: { x: number; z: number } } }>;
@@ -86,7 +86,7 @@ test.describe("headshot kill feedback", () => {
         }
       };
 
-      game.startSandbox();
+      await game.startSandbox();
       game.ctx.status = "playing";
       game.clearSandboxActors();
       const seq0 = game.sys.fx.headshotKillSeq;
@@ -158,14 +158,14 @@ test.describe("headshot kill feedback", () => {
     const consoleErrors = collectConsoleErrors(page);
     await bootSandbox(page);
 
-    const result = await page.evaluate(() => {
+    const result = await page.evaluate(async () => {
       const game = (
         window as unknown as {
           __fpsGame: {
             clearSandboxActors: () => void;
             damageSandboxEnemies: (amount: number, headshot?: boolean, all?: boolean) => void;
             spawnSandboxEnemy: (kind: "boss", count?: number) => void;
-            startSandbox: () => void;
+            startSandbox: () => Promise<void>;
             ctx: { status: string };
             sys: {
               fx: {
@@ -177,7 +177,7 @@ test.describe("headshot kill feedback", () => {
         }
       ).__fpsGame;
 
-      game.startSandbox();
+      await game.startSandbox();
       game.ctx.status = "playing";
       game.clearSandboxActors();
       // Spawn and kill in the same synchronous block: no frame runs in between,
@@ -201,9 +201,9 @@ test.describe("headshot kill feedback", () => {
     const consoleErrors = collectConsoleErrors(page);
     await bootSandbox(page);
 
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
       const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
-      game.startSandbox();
+      await game.startSandbox();
       game.ctx.status = "playing";
       game.sys.hud.emit();
     });

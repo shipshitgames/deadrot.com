@@ -32,7 +32,6 @@ import {
   type Vec2,
   type Vec3,
 } from "@shipshitgames/assets/scourge-survivors";
-import * as THREE from "three";
 import { ASSETS, type AssetId } from "../assets.generated";
 
 export type {
@@ -257,39 +256,6 @@ export function spriteScale(id: string, view?: SpriteView): Vec2 {
   return ASSET_CATALOG.spriteScale(id, view);
 }
 
-const TEXTURE_PROMISES = new Map<string, Promise<THREE.Texture>>();
-
-function cachedTexture(key: string, load: () => Promise<THREE.Texture>): Promise<THREE.Texture> {
-  const cached = TEXTURE_PROMISES.get(key);
-  if (cached) return cached;
-  const promise = load().catch((error) => {
-    TEXTURE_PROMISES.delete(key);
-    throw error;
-  });
-  TEXTURE_PROMISES.set(key, promise);
-  return promise;
-}
-
-export function loadSpriteTexture(id: string, view?: SpriteView): Promise<THREE.Texture> {
-  const entry = spriteEntry(id);
-  return cachedTexture(`sprite:${id}:${view ?? "direct"}`, async () => {
-    const texture = await new THREE.TextureLoader().loadAsync(await spriteUrl(id, view));
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.minFilter = entry.filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
-    texture.magFilter = entry.filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
-    texture.generateMipmaps = entry.filter !== "nearest";
-    texture.premultiplyAlpha = false;
-    return texture;
-  });
-}
-
-export function loadTexture(id: string): Promise<THREE.Texture> {
-  const entry = textureEntry(id);
-  return cachedTexture(`texture:${id}`, async () => {
-    const texture = await new THREE.TextureLoader().loadAsync(await assetUrl(entry.path));
-    texture.colorSpace = entry.colorSpace === "srgb" ? THREE.SRGBColorSpace : THREE.NoColorSpace;
-    texture.minFilter = THREE.LinearMipmapLinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    return texture;
-  });
-}
+// GPU texture loading lives in `./textures`, so that importing the catalog for
+// manifest lookup — as the audio engine and the menus do — does not pull
+// Three.js into the boot bundle.

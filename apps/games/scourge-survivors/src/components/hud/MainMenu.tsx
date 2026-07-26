@@ -21,6 +21,7 @@ import {
   useEnterToReveal,
 } from "@shipshitgames/ui";
 import { useRef, useState } from "react";
+import { MENU_HERO_URL, PLAYER_AVATAR_PREVIEW_URLS } from "../../assets/menuArt";
 import { MAP_PICKER, normalizeMapId } from "../../game/data/maps";
 import { OPERATION_LINE, OPERATION_NAME } from "../../game/data/operation";
 import {
@@ -35,7 +36,6 @@ import {
   shopTiersOwned,
 } from "../../game/data/survivors";
 import { WEAPON_IDENTITIES } from "../../game/data/weaponIdentity";
-import { MENU_HERO_URL, PLAYER_AVATAR_PREVIEW_URLS } from "../../game/spriteAssets";
 import type { ScoreEntry, ShopState } from "../../game/storage";
 import type { HudState } from "../../game/types";
 import { normalizePlayerAvatar, PLAYER_AVATAR_OPTIONS, type PlayerAvatarId } from "../../net/playerAvatars";

@@ -1,8 +1,8 @@
 import { Button, GameAudioSettingsScreen, GamePauseMenu, type PauseMenuAction } from "@shipshitgames/ui";
 import { type ReactNode, useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
+import { MENU_HERO_URL } from "../../assets/menuArt";
 import { MELEE_WEAPON_NAME } from "../../game/constants";
 import { SCOURGE_THREAT_TIERS } from "../../game/data/enemies";
-import { MENU_HERO_URL } from "../../game/spriteAssets";
 import type { HudState } from "../../game/types";
 import { IconText, OVERLAY } from "./shared";
 
