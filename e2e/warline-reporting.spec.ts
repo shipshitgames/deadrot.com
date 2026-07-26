@@ -96,7 +96,7 @@ test.describe("Warline cross-game operation reporting", () => {
 async function boot(page: Page) {
   await page.goto("/");
   await expect(page.getByText("ROTHULK")).toBeVisible();
-  await page.getByText("Press Enter to continue").click();
+  await page.getByTestId("main-menu-enter-prompt").click();
   await page.getByRole("button", { name: /^Breach\b/i }).click();
   await page.waitForFunction(() => {
     const game = (window as unknown as { __rothulkGame?: { debugSnapshot: () => { mode: string } } }).__rothulkGame;

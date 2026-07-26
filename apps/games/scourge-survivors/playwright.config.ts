@@ -33,10 +33,22 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },
+  // Two projects, disjoint by file, not a matrix. Every spec but one drives the
+  // keyboard and pointer lock, which a phone profile has neither of; the touch
+  // spec drives the on-screen pad, which only renders for a coarse pointer. So
+  // each file runs exactly once, on the device that can actually play it —
+  // running the full suite twice would double a job that already takes minutes
+  // and fail half of what it doubled.
   projects: [
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
+      testIgnore: /touch-controls\.spec\.ts/,
+    },
+    {
+      name: "mobile",
+      use: { ...devices["Pixel 7"] },
+      testMatch: /touch-controls\.spec\.ts/,
     },
   ],
 });

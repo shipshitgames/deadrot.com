@@ -50,23 +50,14 @@ function clamp(v: number, lo: number, hi: number): number {
 }
 
 /**
- * True when the primary pointer cannot hover or click precisely — phones and
- * tablets. `matchMedia` is the authoritative signal; `maxTouchPoints` is the
- * fallback for engines that do not implement the pointer media query, and both
- * are guarded because this runs under jsdom and SSR too.
+ * Whether this device gets the pad at all.
+ *
+ * Re-exported rather than defined here: the menu chrome in `@shipshitgames/ui`
+ * asks the same question to word its own prompts, and two copies of a media
+ * query drift. The `/pointer` subpath carries no React, so importing it does not
+ * pull a component tree into the combat bundle.
  */
-export function isCoarsePointer(win: Window | undefined = typeof window === "undefined" ? undefined : window): boolean {
-  if (!win) return false;
-  try {
-    if (typeof win.matchMedia === "function") {
-      const query = win.matchMedia("(pointer: coarse)");
-      if (query && typeof query.matches === "boolean") return query.matches;
-    }
-  } catch {
-    // matchMedia can throw on a malformed query in older engines; fall through.
-  }
-  return (win.navigator?.maxTouchPoints ?? 0) > 0;
-}
+export { isCoarsePointer } from "@shipshitgames/ui/pointer";
 
 /** A finger's deflection from where it first landed, in stick-radius units. */
 export interface StickVector {
