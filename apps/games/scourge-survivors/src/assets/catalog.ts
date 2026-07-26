@@ -1,22 +1,16 @@
 import {
-  type AnimationActionEntry,
-  type AnimationEntityEntry,
   type AudioEntry,
   type LicenseRecord,
   type RuntimeEnemyRef,
   type RuntimeSpriteRef,
   type RuntimeUiRef,
   type RuntimeWeaponRef,
-  SCOURGE_SURVIVORS_ANIMATION_MANIFEST,
   SCOURGE_SURVIVORS_ASSET_MANIFEST,
-  type ScourgeSurvivorsAnimationFrameSource,
-  type ScourgeSurvivorsAnimationManifest,
   type ScourgeSurvivorsAssetManifest,
   type SpriteEntry,
   type SpriteFilter,
   type SpriteView,
   type SpriteViewEntry,
-  scourgeSurvivorsAnimationFrameSource,
   scourgeSurvivorsAudioEntry,
   scourgeSurvivorsAudioUrl,
   scourgeSurvivorsBootSpriteUrl,
@@ -35,16 +29,12 @@ import {
 import { ASSETS, type AssetId } from "../assets.generated";
 
 export type {
-  AnimationActionEntry,
-  AnimationEntityEntry,
   AudioEntry,
   LicenseRecord,
   RuntimeEnemyRef,
   RuntimeSpriteRef,
   RuntimeUiRef,
   RuntimeWeaponRef,
-  ScourgeSurvivorsAnimationFrameSource as AnimationFrameSource,
-  ScourgeSurvivorsAnimationManifest as AnimationManifest,
   ScourgeSurvivorsAssetManifest as AssetManifest,
   SpriteEntry,
   SpriteFilter,
@@ -57,7 +47,6 @@ export type {
 };
 
 export const ASSET_MANIFEST = SCOURGE_SURVIVORS_ASSET_MANIFEST;
-export const ANIMATION_MANIFEST = SCOURGE_SURVIVORS_ANIMATION_MANIFEST;
 
 const GENERATED_ASSET_ID_BY_PATH = new Map<string, AssetId>(
   (Object.keys(ASSETS) as AssetId[]).map((id) => [ASSETS[id].path, id]),
@@ -88,10 +77,7 @@ type RuntimeDomain = keyof ScourgeSurvivorsAssetManifest["runtime"];
 type RuntimeSpriteDomain = Exclude<RuntimeDomain, "ui" | "bonusIcons" | "enemies" | "weapons">;
 
 export class AssetCatalog {
-  constructor(
-    readonly manifest: ScourgeSurvivorsAssetManifest = SCOURGE_SURVIVORS_ASSET_MANIFEST,
-    readonly animations: ScourgeSurvivorsAnimationManifest = SCOURGE_SURVIVORS_ANIMATION_MANIFEST,
-  ) {}
+  constructor(readonly manifest: ScourgeSurvivorsAssetManifest = SCOURGE_SURVIVORS_ASSET_MANIFEST) {}
 
   assetUrl(path: string): Promise<string> {
     generatedAssetId(path);
@@ -131,19 +117,6 @@ export class AssetCatalog {
   spriteUrl(id: string, view?: SpriteView): Promise<string> {
     generatedAssetId(spritePath(id, view));
     return scourgeSurvivorsSpriteUrl(id, view);
-  }
-
-  animationFrameSource(
-    entity: string,
-    action: string,
-    view: SpriteView,
-    frame: number,
-  ): Promise<ScourgeSurvivorsAnimationFrameSource> {
-    return scourgeSurvivorsAnimationFrameSource(entity, action, view, frame);
-  }
-
-  async animationFrameUrl(entity: string, action: string, view: SpriteView, frame: number): Promise<string> {
-    return (await this.animationFrameSource(entity, action, view, frame)).url;
   }
 
   spriteScale(id: string, view?: SpriteView): Vec2 {
@@ -237,19 +210,6 @@ export function bootSpriteUrl(id: string, view: SpriteView): string {
 
 export function spriteUrl(id: string, view?: SpriteView): Promise<string> {
   return ASSET_CATALOG.spriteUrl(id, view);
-}
-
-export function animationFrameSource(
-  entity: string,
-  action: string,
-  view: SpriteView,
-  frame: number,
-): Promise<ScourgeSurvivorsAnimationFrameSource> {
-  return ASSET_CATALOG.animationFrameSource(entity, action, view, frame);
-}
-
-export function animationFrameUrl(entity: string, action: string, view: SpriteView, frame: number): Promise<string> {
-  return ASSET_CATALOG.animationFrameUrl(entity, action, view, frame);
 }
 
 export function spriteScale(id: string, view?: SpriteView): Vec2 {

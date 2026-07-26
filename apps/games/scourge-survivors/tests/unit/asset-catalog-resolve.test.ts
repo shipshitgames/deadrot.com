@@ -32,9 +32,6 @@ describe("asset catalog resolution (#76)", () => {
       const sprite = ASSET_CATALOG.spriteEntry(ref.sprite);
       expect(sprite.type).toBe("sprite");
       expect(sprite.views).toBeTruthy();
-      // enemies carry an animation reference.
-      expect(ref.animation.entity).toBe("host-grunt");
-      expect(ref.animation.actions.move).toBe("walk");
     });
 
     it("throws a descriptive error for an unknown enemy id", () => {

@@ -42,8 +42,6 @@ const ALLOWED_COMBAT_STREAMING_MEDIA_BASENAMES = [/^ash-reactor-[^.]+\.webm$/, /
 // Vite retains each source basename before its content hash. None of these
 // combat-only payload families belongs on the title splash.
 const FORBIDDEN_BOOT_COMBAT_BASENAMES = [
-  /^frame-\d{2}-/,
-  /^scourge\.atlas\d*-/,
   /^(?:pistol|smg|shotgun|cannon|sniper)(?:-ads)?-tiers-/,
   /^(?:pistol|smg|shotgun|cannon|sniper)-loot-/,
   /^(?:floor|wall|column|block)-/,

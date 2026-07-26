@@ -2768,59 +2768,19 @@
   "runtime": {
     "enemies": {
       "melee": {
-        "sprite": "enemy-melee",
-        "animation": {
-          "entity": "host-grunt",
-          "actions": {
-            "move": "walk",
-            "attack": "slash",
-            "death": "death"
-          }
-        }
+        "sprite": "enemy-melee"
       },
       "ranged": {
-        "sprite": "enemy-ranged",
-        "animation": {
-          "entity": "spitter-host",
-          "actions": {
-            "move": "walk",
-            "attack": "spit",
-            "death": "death"
-          }
-        }
+        "sprite": "enemy-ranged"
       },
       "flying": {
-        "sprite": "enemy-flying",
-        "animation": {
-          "entity": "winged-host",
-          "actions": {
-            "move": "fly",
-            "attack": "attack",
-            "death": "death"
-          }
-        }
+        "sprite": "enemy-flying"
       },
       "boss": {
-        "sprite": "boss",
-        "animation": {
-          "entity": "breach-boss",
-          "actions": {
-            "move": "lurch",
-            "attack": "barrage",
-            "death": "death"
-          }
-        }
+        "sprite": "boss"
       },
       "hound": {
-        "sprite": "enemy-hound",
-        "animation": {
-          "entity": "wound-hound",
-          "actions": {
-            "move": "run",
-            "attack": "mark",
-            "death": "death"
-          }
-        }
+        "sprite": "enemy-hound"
       }
     },
     "players": {
