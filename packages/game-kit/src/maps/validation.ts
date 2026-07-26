@@ -567,13 +567,14 @@ export function validateArenaLayout<TObstacle extends ArenaVolume = ArenaVolume>
     }
 
     const storeys = structureStoreys(structure, levelY);
-    if (storeys.length > 0) {
-      const top = storeys[storeys.length - 1];
+    const ground = storeys[0];
+    const top = storeys[storeys.length - 1];
+    if (ground && top) {
       if (top.ceilingY > maxHeight) {
         add("structure.levels.invalid", `${path}.levelIds`, `Structure roof must stay at or below ${maxHeight}m.`);
       }
       if (outerRect) {
-        structureSpans.push({ path, rect: outerRect, minY: storeys[0].floorY, maxY: top.ceilingY });
+        structureSpans.push({ path, rect: outerRect, minY: ground.floorY, maxY: top.ceilingY });
       }
     }
 
@@ -684,6 +685,8 @@ export function validateArenaLayout<TObstacle extends ArenaVolume = ArenaVolume>
       const a = structureSpans[i];
       const b = structureSpans[j];
       if (
+        a &&
+        b &&
         rangesOverlap(a.rect.minX, a.rect.maxX, b.rect.minX, b.rect.maxX, epsilon) &&
         rangesOverlap(a.rect.minZ, a.rect.maxZ, b.rect.minZ, b.rect.maxZ, epsilon) &&
         rangesOverlap(a.minY, a.maxY, b.minY, b.maxY, epsilon)
