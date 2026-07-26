@@ -46,7 +46,7 @@ type Mode = "sandbox" | "survivors" | "campaign";
 function directorHarness(mode: Mode) {
   const calls: string[] = [];
   const headshotKillCalls: { x: number; z: number; scale?: number; boss?: boolean }[] = [];
-  const explosionCalls: { radius?: number }[] = [];
+  const explosionCalls: { radius?: number; shake?: number; hitstop?: number }[] = [];
   const spawnDeathCalls: { headshot?: boolean; elite?: boolean; scale?: number }[] = [];
   const survivors = {
     reaper: null as Enemy | null,
@@ -88,9 +88,9 @@ function directorHarness(mode: Mode) {
         calls.push("fx:headshotKill");
         headshotKillCalls.push({ x: pos.x, z: pos.z, scale: opts.scale, boss: opts.boss });
       },
-      spawnExplosion: (_pos: THREE.Vector3, opts: { radius?: number } = {}) => {
+      spawnExplosion: (_pos: THREE.Vector3, opts: (typeof explosionCalls)[number] = {}) => {
         calls.push("fx:spawnExplosion");
-        explosionCalls.push({ radius: opts.radius });
+        explosionCalls.push({ radius: opts.radius, shake: opts.shake, hitstop: opts.hitstop });
       },
     },
     hud: {
@@ -182,12 +182,13 @@ describe("onEnemyDeath headshot-kill hook", () => {
     h.director.onEnemyDeath(boss, true);
 
     expect(h.headshotKillCalls).toEqual([{ x: 3, z: -4, scale: 2.4, boss: true }]);
-    // boss extras stay authoritative: shake + hitstop + explosion + defeat flow
-    expect(h.calls).toContain("fx:shake");
-    expect(h.calls).toContain("fx:hitstop");
+    // boss extras stay authoritative: shake + hitstop + explosion + defeat flow.
+    // The camera juice now rides in on the blast's own options rather than two
+    // separate fx calls — spawnExplosion applies both, so the kick a boss death
+    // gives the camera is unchanged, it just arrives through one verb.
     expect(sfxLog).toContain("explosion");
     // the blast is sized off the corpse, so a bigger boss detonates bigger
-    expect(h.explosionCalls).toEqual([{ radius: 2.6 * 2.4 }]);
+    expect(h.explosionCalls).toEqual([{ radius: 2.6 * 2.4, shake: 0.45, hitstop: 0.06 }]);
     expect(h.calls).toContain("mission:onBossDefeated");
     expect(h.director.bossActive).toBe(false);
     expect(h.director.bossEnemy).toBeNull();
