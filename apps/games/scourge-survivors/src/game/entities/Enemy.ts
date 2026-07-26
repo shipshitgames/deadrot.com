@@ -358,8 +358,6 @@ export class Enemy extends Agent {
   deathFx() {
     return {
       kind: this.enemyKind(),
-      view: "front" as const,
-      flip: 1,
       /** Captured by {@link kill} — by now the group is already parked underground. */
       corpse: this.deathSnapshot,
     };

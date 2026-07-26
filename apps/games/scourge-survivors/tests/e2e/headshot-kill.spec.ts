@@ -25,7 +25,6 @@ type DevGame = {
       headshotKillSeq: number;
       lastHeadshotKill: LastHeadshotKill;
       pops: unknown[];
-      deathSprites: Array<{ material: unknown }>;
     };
     pve: { bossActive: boolean };
     hud: { emit: () => void };
@@ -72,7 +71,6 @@ test.describe("headshot kill feedback", () => {
             headshotKillSeq: number;
             lastHeadshotKill: { x: number; z: number; scale: number; boss: boolean; at: number } | null;
             pops: unknown[];
-            deathSprites: unknown[];
           };
         };
       };

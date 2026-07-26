@@ -8,9 +8,15 @@ import type { GameSystems } from "../../src/game/systems";
 
 /**
  * HUD cleanup + death FX (#23). The integrity/shield math lives in HUD.tsx (JSX),
- * so this file instead locks down the death-animation/gib sprite data that #124
- * authored and we wired into the runtime catalog, plus the pure death-FX
- * selection on the Enemy entity.
+ * so this file instead locks down the gib sprite data that #124 authored and we
+ * wired into the runtime catalog, the pure death-FX selection on the Enemy
+ * entity, and the pooled corpse rig FxSystem stands up in its place.
+ *
+ * A host's own death is fully 3D: kill() snapshots the rig and FxSystem replays
+ * the authored ragdoll on a pooled copy of it. The flat painted death puff that
+ * used to be composited over that body is gone, and with it the whole 2D enemy
+ * sprite lane — the assertions below hold that line so the atlas cannot creep
+ * back into the combat payload.
  *
  * The sprite module must remain safe to import in node and at the title menu.
  * Combat preload is explicit; TextureLoader is stubbed only for that boundary.
@@ -20,10 +26,6 @@ type SpriteAssetsModule = typeof import("../../src/game/spriteAssets");
 type EnemyModule = typeof import("../../src/game/entities/Enemy");
 
 const ENEMY_SPRITE_KINDS = ["melee", "ranged", "flying", "hound", "boss"] as const;
-const SPRITE_VIEWS = ["front", "side", "back"] as const;
-// Living enemies are articulated rigs, so `death` is the only sprite animation
-// state the combat preload pulls (see spriteAssets ENEMY_ANIMATION_STATES).
-const ANIMATION_STATES = ["death"] as const;
 const EXPECTED_GIB_IDS = [
   "gib-meat-chunk",
   "gib-skull-shard",
@@ -32,16 +34,13 @@ const EXPECTED_GIB_IDS = [
   "gib-acid-sac",
   "gib-wing-membrane",
 ] as const;
-// The animation pack authors 6 frames per action (animation-pack.json framesPerAction).
-const FRAMES_PER_ACTION = 6;
-/** Mirrors CORPSE_BODY_* and DEATH_SPRITE_FADE_SECONDS in FxSystem. */
+/** Mirrors the CORPSE_BODY_* constants in FxSystem. */
 const CORPSE_SETTLE = 0.85;
 const CORPSE_LINGER = 5.5;
 const CORPSE_FADE = 1.1;
 const CORPSE_TTL = CORPSE_SETTLE + CORPSE_LINGER + CORPSE_FADE;
 const CORPSE_SOFT_CAP = 8;
 const CORPSE_HARD_CAP = 12;
-const DEATH_SPRITE_FADE = 0.12;
 /** writeDeath's end-of-clip root tilt (enemyAnimation.ts): the hound face-plants
  *  shallower than a biped, so the corpse pose must be kind-aware. */
 const DEATH_ROOT_TILT = { biped: 1.34, hound: 0.72 };
@@ -51,10 +50,12 @@ const UNDERGROUND_Y = -100;
 let spriteAssets: SpriteAssetsModule;
 let Enemy: EnemyModule["Enemy"];
 let textureLoadCalls = 0;
+const loadedTextureUrls: string[] = [];
 
 beforeAll(async () => {
   vi.spyOn(THREE.TextureLoader.prototype, "loadAsync").mockImplementation(async (url) => {
     textureLoadCalls++;
+    loadedTextureUrls.push(String(url));
     const texture = new THREE.Texture();
     texture.name = String(url);
     return texture;
@@ -66,119 +67,35 @@ beforeAll(async () => {
   Enemy = (await import("../../src/game/entities/Enemy")).Enemy;
 });
 
-describe("enemy death animation textures (#23 death FX)", () => {
-  it("exposes every enemy kind with exactly the rendered animation states", () => {
-    const { ENEMY_SPRITE_ANIMATION_TEXTURES } = spriteAssets;
-    expect(Object.keys(ENEMY_SPRITE_ANIMATION_TEXTURES).sort()).toEqual([...ENEMY_SPRITE_KINDS].sort());
-
-    for (const kind of ENEMY_SPRITE_KINDS) {
-      const states = ENEMY_SPRITE_ANIMATION_TEXTURES[kind];
-      expect(Object.keys(states).sort(), kind).toEqual([...ANIMATION_STATES].sort());
-    }
-  });
-
-  it("gives every enemy kind a death state with a full frame strip per view", () => {
-    const { ENEMY_SPRITE_ANIMATION_TEXTURES } = spriteAssets;
-
-    for (const kind of ENEMY_SPRITE_KINDS) {
-      const death = ENEMY_SPRITE_ANIMATION_TEXTURES[kind].death;
-      expect(Object.keys(death).sort(), `${kind} death views`).toEqual([...SPRITE_VIEWS].sort());
-
-      for (const view of SPRITE_VIEWS) {
-        const frames = death[view];
-        expect(Array.isArray(frames), `${kind}/${view} death frames is array`).toBe(true);
-        expect(frames.length, `${kind}/${view} death frame count`).toBe(FRAMES_PER_ACTION);
-        for (const [frame, texture] of frames.entries()) {
-          // Each frame is a real THREE.Texture instance with the catalog's
-          // per-entity manifest filter applied at load time.
-          expect(texture, `${kind}/${view} death frame ${frame}`).toBeTruthy();
-          expect(texture.isTexture, `${kind}/${view} death frame ${frame} is THREE.Texture`).toBe(true);
-        }
-      }
-    }
-  });
-
-  it("samples one shared atlas source with stable per-frame debug metadata", () => {
-    const { ENEMY_SPRITE_ANIMATION_TEXTURES } = spriteAssets;
-    const allFrames = ENEMY_SPRITE_KINDS.flatMap((kind) =>
-      ANIMATION_STATES.flatMap((state) =>
-        SPRITE_VIEWS.flatMap((view) => ENEMY_SPRITE_ANIMATION_TEXTURES[kind][state][view]),
-      ),
-    );
-    expect(new Set(allFrames.map((texture) => texture.source)).size).toBe(1);
-
-    const first = ENEMY_SPRITE_ANIMATION_TEXTURES.melee.death.front[0];
-    const last = ENEMY_SPRITE_ANIMATION_TEXTURES.melee.death.front[FRAMES_PER_ACTION - 1];
-    expect(first.source).toBe(last.source);
-    expect(first.userData.scourgeAnimation).toEqual({
-      entity: "host-grunt",
-      action: "death",
-      view: "front",
-      frame: 0,
-      source: "atlas",
-    });
-    expect(last.userData.scourgeAnimation.frame).toBe(FRAMES_PER_ACTION - 1);
-    expect(first.repeat.x).toBeLessThan(1);
-    expect(first.repeat.y).toBeLessThan(1);
-  });
-
-  it("keeps rank-and-file atlas frames crisp while smoothing the comic Breach-Boss", () => {
-    const { ENEMY_SPRITE_ANIMATION_TEXTURES } = spriteAssets;
-    const grunt = ENEMY_SPRITE_ANIMATION_TEXTURES.melee.death.front[0];
-    const boss = ENEMY_SPRITE_ANIMATION_TEXTURES.boss.death.front[0];
-
-    expect(grunt.minFilter).toBe(THREE.NearestFilter);
-    expect(grunt.magFilter).toBe(THREE.NearestFilter);
-    expect(boss.minFilter).toBe(THREE.LinearFilter);
-    expect(boss.magFilter).toBe(THREE.LinearFilter);
-    expect(boss.source).toBe(grunt.source);
-  });
-
+describe("combat preload boundary (#18 retired 2D enemy lane)", () => {
   it("caches the completed combat preload", async () => {
     const callsAfterFirstPreload = textureLoadCalls;
     await Promise.all([spriteAssets.preloadCombatAssets(), spriteAssets.preloadCombatAssets()]);
     expect(textureLoadCalls).toBe(callsAfterFirstPreload);
   });
-});
 
-describe("enemy death animation meta (#23 death FX)", () => {
-  it("describes a death clip for every kind with fps/loop/frameCount", () => {
-    const { ENEMY_SPRITE_ANIMATION_META } = spriteAssets;
-    expect(Object.keys(ENEMY_SPRITE_ANIMATION_META).sort()).toEqual([...ENEMY_SPRITE_KINDS].sort());
+  it("never fetches an enemy sheet or the death-frame atlas", () => {
+    // Guard against a vacuous assertion: the preload really did pull textures.
+    expect(loadedTextureUrls.length).toBeGreaterThan(0);
 
-    for (const kind of ENEMY_SPRITE_KINDS) {
-      const death = ENEMY_SPRITE_ANIMATION_META[kind].death;
-      expect(death, `${kind} death meta`).toMatchObject({
-        fps: expect.any(Number),
-        loop: expect.any(Boolean),
-        frameCount: expect.any(Number),
-      });
-      expect(death.fps, `${kind} death fps`).toBeGreaterThan(0);
-      expect(death.frameCount, `${kind} death frameCount`).toBe(FRAMES_PER_ACTION);
-    }
+    // Every host is an articulated rig now, alive and dead alike, so nothing in
+    // combat has a use for the flat enemy sheets or the 4092x1556 death atlas
+    // they share. Those pages are the single largest WebP the game ships; if a
+    // loader ever reaches for one again it belongs in a rig, not a billboard.
+    const enemyLane = loadedTextureUrls.filter((url) => /atlas|animations\//.test(url));
+    expect(enemyLane).toEqual([]);
   });
 
-  it("keeps the death clip frameCount in lockstep with the actual frame textures", () => {
-    const { ENEMY_SPRITE_ANIMATION_META, ENEMY_SPRITE_ANIMATION_TEXTURES } = spriteAssets;
-
-    for (const kind of ENEMY_SPRITE_KINDS) {
-      const meta = ENEMY_SPRITE_ANIMATION_META[kind].death;
-      for (const view of SPRITE_VIEWS) {
-        expect(
-          ENEMY_SPRITE_ANIMATION_TEXTURES[kind].death[view].length,
-          `${kind}/${view} death strip length matches meta.frameCount`,
-        ).toBe(meta.frameCount);
-      }
-    }
-  });
-
-  it("treats every kind's death clip as a one-shot (non-looping) animation", () => {
-    const { ENEMY_SPRITE_ANIMATION_META } = spriteAssets;
-    // A death animation that looped would never settle on a corpse frame; the
-    // runtime clamps to the final frame, which only reads correctly when loop is
-    // false. Guard that intent here.
-    for (const kind of ENEMY_SPRITE_KINDS) {
-      expect(ENEMY_SPRITE_ANIMATION_META[kind].death.loop, `${kind} death loop`).toBe(false);
+  it("exposes no enemy sprite or animation records to the renderer", () => {
+    // The exports are gone, not merely unread — a re-added getter would show up
+    // here before it could quietly re-enter the combat payload.
+    for (const symbol of [
+      "ENEMY_SPRITE_TEXTURES",
+      "ENEMY_SPRITE_ANIMATION_TEXTURES",
+      "ENEMY_SPRITE_ANIMATION_META",
+      "ENEMY_SPRITE_SCALES",
+    ]) {
+      expect(spriteAssets, symbol).not.toHaveProperty(symbol);
     }
   });
 });
@@ -249,16 +166,17 @@ describe("Enemy.deathFx() selection (#23 death FX)", () => {
     expect(spawnKind({}).deathFx().kind).toBe("melee");
   });
 
-  it("returns a death-FX descriptor whose kind is a real animated sprite kind", () => {
-    const { ENEMY_SPRITE_ANIMATION_META } = spriteAssets;
-    const fx = spawnKind({}).deathFx();
+  it("returns only what the 3D death FX consumes", () => {
+    const enemy = spawnKind({});
+    enemy.kill();
+    const fx = enemy.deathFx();
 
-    // The selected kind must have a death clip to play; this ties the entity's
-    // death-FX selection back to the sprite catalog the FX consumes.
+    // The descriptor is exactly the kind (which picks the gib profile) and the
+    // corpse snapshot. It used to also carry a billboard `view` and `flip`; those
+    // are gone with the puff, and a stray re-add would silently ship a sprite.
+    expect(Object.keys(fx).sort()).toEqual(["corpse", "kind"]);
     expect(ENEMY_SPRITE_KINDS).toContain(fx.kind);
-    expect(ENEMY_SPRITE_ANIMATION_META[fx.kind].death.frameCount).toBe(FRAMES_PER_ACTION);
-    expect(SPRITE_VIEWS).toContain(fx.view);
-    expect(typeof fx.flip).toBe("number");
+    expect(CORPSE_PART_IDS_BY_ENEMY_KIND[fx.kind].length).toBeGreaterThan(0);
   });
 });
 
@@ -499,49 +417,40 @@ describe("FxSystem corpse lifecycle (#19 death animation)", () => {
   });
 });
 
-describe("death sprite playback (#19 death animation)", () => {
-  it("plays the flat death puff over the clip length the manifest authored", () => {
-    const { ENEMY_SPRITE_ANIMATION_META } = spriteAssets;
-    const { fx } = harness();
+describe("enemy death FX composition (#18 retired 2D enemy lane)", () => {
+  it("puts a 3D body and its gibs on the floor and nothing flat over them", () => {
+    const { ctx, fx } = harness();
+    fx.spawnEnemyDeath(new THREE.Vector3(), { spriteKind: "melee", corpse: snapshot() });
 
-    for (const kind of ENEMY_SPRITE_KINDS) {
-      fx.spawnEnemyDeath(new THREE.Vector3(), { spriteKind: kind });
-      const death = fx.deathSprites[fx.deathSprites.length - 1];
-      const meta = ENEMY_SPRITE_ANIMATION_META[kind].death;
-      const authored = meta.frameCount / meta.fps;
+    expect(fx.corpses).toHaveLength(1);
+    expect(fx.corpseParts.length).toBeGreaterThan(0);
 
-      // The old fixed 0.16s blew all six frames in a subliminal flicker; the clip
-      // length has to come from the manifest so a re-timed pack retimes the FX.
-      expect(death.playback, `${kind} playback`).toBeCloseTo(authored);
-      expect(death.holdStart, `${kind} hold`).toBeCloseTo(authored);
-      expect(death.ttl, `${kind} ttl`).toBeCloseTo(authored + DEATH_SPRITE_FADE);
-    }
+    // Debris is authored 2D on purpose — small bone and meat shards read fine as
+    // billboards. A full-body painted puff does not, and every sprite in the
+    // scene now has to be one of those shards.
+    const sprites: THREE.Sprite[] = [];
+    ctx.scene.traverse((node) => {
+      if ((node as THREE.Sprite).isSprite) sprites.push(node as THREE.Sprite);
+    });
+    expect(sprites.length).toBe(fx.corpseParts.length);
+    for (const part of fx.corpseParts) expect(sprites).toContain(part.mesh);
   });
 
-  it("gives the breach boss the slower clip its pack authors", () => {
-    const { ENEMY_SPRITE_ANIMATION_META } = spriteAssets;
-    const boss = ENEMY_SPRITE_ANIMATION_META.boss.death;
-    const grunt = ENEMY_SPRITE_ANIMATION_META.melee.death;
-
-    expect(grunt.frameCount / grunt.fps).toBeCloseTo(0.6);
-    expect(boss.frameCount / boss.fps).toBeCloseTo(0.75);
-  });
-
-  it("walks every authored frame in order instead of flickering past them", () => {
+  it("keeps the body on the floor long after the blast pop has gone", () => {
     const { fx } = harness();
-    fx.spawnEnemyDeath(new THREE.Vector3(), { spriteKind: "melee" });
-    const death = fx.deathSprites[0];
-    const seen: number[] = [];
+    fx.spawnEnemyDeath(new THREE.Vector3(), { spriteKind: "boss", elite: true, corpse: snapshot() });
 
-    // Sample three times per authored frame across the hold window.
-    const step = death.playback / (FRAMES_PER_ACTION * 3);
-    for (let i = 0; i < FRAMES_PER_ACTION * 3; i++) {
-      fx.updateEffects(step);
-      const frame = death.material.map?.userData.scourgeAnimation.frame as number;
-      if (seen[seen.length - 1] !== frame) seen.push(frame);
-    }
+    // The old flat puff expired in 0.72s, which is what made a kill feel like it
+    // vanished. A second in, every airborne burst particle has drained (the
+    // longest-lived one is 0.83s) and all that is left of the blast is the flat
+    // floor splatter. The body is the readable feedback now.
+    tick(fx, 1);
+    expect(fx.pops.length).toBeGreaterThan(0);
+    for (const pop of fx.pops) expect(pop.mesh.rotation.x).toBeCloseTo(-Math.PI / 2);
+    expect(fx.corpses).toHaveLength(1);
+    expect(fx.corpses[0].settled).toBe(true);
 
-    // Every frame, once, ascending — the old 0.16s window skipped most of them.
-    expect(seen).toEqual([...Array(FRAMES_PER_ACTION).keys()]);
+    tick(fx, CORPSE_TTL);
+    expect(fx.corpses).toHaveLength(0);
   });
 });

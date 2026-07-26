@@ -24,19 +24,11 @@ vi.mock("../../src/audio/AudioEngine", () => ({
 vi.mock("../../src/game/spriteAssets", async () => {
   const { Texture } = await import("three");
   const tex = () => new Texture();
-  const views = () => ({ front: tex(), side: tex(), back: tex() });
-  const frameViews = () => ({ front: [tex()], side: [tex()], back: [tex()] });
-  const states = <T>(make: () => T) => ({ move: make(), attack: make(), death: make() });
-  const kinds = <T>(make: () => T) => ({ melee: make(), ranged: make(), flying: make(), boss: make() });
   return {
     PROJECTILE_SPRITE_TEXTURES: { enemy: tex(), boss: tex(), bolt: tex(), orb: tex() },
     XP_BLOOD_TEXTURE: tex(),
     XP_BLOOD_SCALE: [0.62, 0.62] as [number, number],
     CORPSE_PART_SPRITES: Array.from({ length: 6 }, () => ({ texture: tex(), scale: [0.5, 0.5] as [number, number] })),
-    ENEMY_SPRITE_TEXTURES: kinds(views),
-    ENEMY_SPRITE_ANIMATION_TEXTURES: kinds(() => states(frameViews)),
-    ENEMY_SPRITE_ANIMATION_META: kinds(() => states(() => ({ fps: 8, loop: true, frameCount: 1 }))),
-    ENEMY_SPRITE_SCALES: kinds(() => ({ front: [1, 1], side: [1, 1], back: [1, 1] })),
   };
 });
 

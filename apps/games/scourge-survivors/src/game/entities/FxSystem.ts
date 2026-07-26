@@ -10,15 +10,7 @@ import {
   disposeEnemyRig,
   type EnemyRig,
 } from "../render/models/enemyRig";
-import {
-  CORPSE_PART_SPRITES,
-  type CorpsePartSpriteId,
-  ENEMY_SPRITE_ANIMATION_META,
-  ENEMY_SPRITE_ANIMATION_TEXTURES,
-  ENEMY_SPRITE_SCALES,
-  type EnemySpriteKind,
-  type EnemySpriteView,
-} from "../spriteAssets";
+import { CORPSE_PART_SPRITES, type CorpsePartSpriteId, type EnemySpriteKind } from "../spriteAssets";
 import type { GameSystems } from "../systems";
 import type { EnemyDeathSnapshot } from "./Enemy";
 
@@ -39,10 +31,6 @@ const CORPSE_BODY_SOFT_CAP = 8;
 const CORPSE_BODY_HARD_CAP = 12;
 /** Written and consumed inside one synchronous corpse tick, so one is safe. */
 const CORPSE_POSE: EnemyPose = createEnemyPose();
-// The death sprite is the flat puff layered over the settling body; it holds for
-// the authored clip length, then fades. The death-pop ring and particle burst
-// carry the "explosion" punch once it is gone.
-const DEATH_SPRITE_FADE_SECONDS = 0.12;
 // Live pops an explosion is willing to add detail on top of. Past this the
 // ember/smoke counts scale down rather than the whole effect being dropped: a
 // detonation the player cannot see is worse than a cheap one, so the core
@@ -62,20 +50,6 @@ const IMPACT_T1 = new THREE.Vector3();
 const IMPACT_T2 = new THREE.Vector3();
 const IMPACT_AXIS_X = new THREE.Vector3(1, 0, 0);
 const IMPACT_AXIS_Y = new THREE.Vector3(0, 1, 0);
-type DeathSpriteKind = EnemySpriteKind;
-type DeathSpriteView = EnemySpriteView;
-
-/**
- * How long the authored death clip actually runs.
- *
- * The manifest packs six death frames at 10fps (8 for the breach boss), so the
- * clip is 0.6s — the old fixed 0.16s blew through all six in a subliminal
- * flicker. First runtime consumer of `ENEMY_SPRITE_ANIMATION_META`.
- */
-function deathSpritePlaybackSeconds(kind: DeathSpriteKind) {
-  const meta = ENEMY_SPRITE_ANIMATION_META[kind].death;
-  return meta.frameCount / meta.fps;
-}
 
 /** Semantic debris profiles keep each host family readable after the kill. */
 export const CORPSE_PART_IDS_BY_ENEMY_KIND = {
@@ -93,19 +67,6 @@ interface CorpsePart {
   vel: THREE.Vector3;
   spin: THREE.Vector3;
   baseOpacity: number;
-}
-
-interface DeathSprite {
-  sprite: THREE.Sprite;
-  material: THREE.SpriteMaterial;
-  kind: DeathSpriteKind;
-  view: DeathSpriteView;
-  age: number;
-  ttl: number;
-  holdStart: number;
-  baseOpacity: number;
-  /** Authored clip length for this kind — the boss runs slower than the rest. */
-  playback: number;
 }
 
 interface CorpseRig {
@@ -130,7 +91,6 @@ export class FxSystem {
   tracers: Tracer[] = [];
   pops: Pop[] = [];
   corpseParts: CorpsePart[] = [];
-  deathSprites: DeathSprite[] = [];
   corpses: EnemyCorpse[] = [];
   /** Freed corpse rigs, kept rather than rebuilt: a run kills hundreds of hosts. */
   private corpseRigs: CorpseRig[] = [];
@@ -228,22 +188,13 @@ export class FxSystem {
       elite?: boolean;
       scale?: number;
       color?: number;
-      spriteKind?: DeathSpriteKind;
-      spriteView?: DeathSpriteView;
-      spriteFlip?: number;
+      spriteKind?: EnemySpriteKind;
       corpse?: EnemyDeathSnapshot;
     } = {},
   ) {
     const scale = opts.scale ?? (opts.elite ? 1.8 : 1);
     const color = opts.color ?? (opts.elite ? 0xff2d55 : 0xc1121f);
     if (opts.corpse) this.spawnEnemyCorpse(opts.corpse);
-    this.spawnEnemyDeathSprite(pos, {
-      kind: opts.spriteKind,
-      view: opts.spriteView,
-      flip: opts.spriteFlip,
-      scale,
-      elite: opts.elite,
-    });
     this.spawnDeathPop(pos, color, opts.elite ? scale * 1.15 : scale);
     this.spawnCorpseParts(pos, {
       headshot: opts.headshot,
@@ -399,7 +350,7 @@ export class FxSystem {
 
   private spawnCorpseParts(
     pos: THREE.Vector3,
-    opts: { headshot?: boolean; elite?: boolean; scale: number; spriteKind?: DeathSpriteKind },
+    opts: { headshot?: boolean; elite?: boolean; scale: number; spriteKind?: EnemySpriteKind },
   ) {
     const scale = Math.max(0.72, opts.scale);
     const count = opts.elite ? 14 : opts.headshot ? 6 : 4;
@@ -449,7 +400,7 @@ export class FxSystem {
   }
 
   private pickCorpsePartSprite(
-    opts: { headshot?: boolean; elite?: boolean; spriteKind?: DeathSpriteKind },
+    opts: { headshot?: boolean; elite?: boolean; spriteKind?: EnemySpriteKind },
     index: number,
   ) {
     const kind = opts.spriteKind ?? (opts.elite ? "boss" : "melee");
@@ -461,56 +412,6 @@ export class FxSystem {
     const sprite = CORPSE_PART_SPRITES.find((part) => part.id === id);
     if (!sprite) throw new Error(`Missing corpse-part sprite ${id} for ${kind} death FX`);
     return sprite;
-  }
-
-  private spawnEnemyDeathSprite(
-    pos: THREE.Vector3,
-    opts: { kind?: DeathSpriteKind; view?: DeathSpriteView; flip?: number; scale: number; elite?: boolean },
-  ) {
-    const kind = opts.kind ?? (opts.elite ? "boss" : "melee");
-    const view = opts.view ?? "front";
-    const frames = ENEMY_SPRITE_ANIMATION_TEXTURES[kind].death[view];
-    const firstFrame = frames[0];
-    if (!firstFrame) return;
-
-    const material = new THREE.SpriteMaterial({
-      map: firstFrame,
-      color: 0xffffff,
-      transparent: true,
-      opacity: opts.elite ? 0.94 : 0.88,
-      alphaTest: 0.06,
-      depthWrite: true,
-      toneMapped: false,
-    });
-    const sprite = new THREE.Sprite(material);
-    sprite.center.set(0.5, 0);
-    const [baseW, baseH] = ENEMY_SPRITE_SCALES[kind][view];
-    const flip = opts.flip && opts.flip < 0 ? -1 : 1;
-    sprite.scale.set(baseW * opts.scale * flip, baseH * opts.scale, 1);
-    sprite.position.set(pos.x, 0.03, pos.z);
-    sprite.renderOrder = 6;
-    this.ctx.scene.add(sprite);
-    const duration = deathSpritePlaybackSeconds(kind);
-    const baseOpacity = opts.elite ? 0.94 : 0.88;
-    this.deathSprites.push({
-      sprite,
-      material,
-      kind,
-      view,
-      age: 0,
-      ttl: duration + DEATH_SPRITE_FADE_SECONDS,
-      holdStart: duration,
-      baseOpacity,
-      playback: duration,
-    });
-  }
-
-  private removeDeathSprite(index: number) {
-    const death = this.deathSprites[index];
-    if (!death) return;
-    this.ctx.scene.remove(death.sprite);
-    death.material.dispose();
-    this.deathSprites.splice(index, 1);
   }
 
   private createCorpseRig(): CorpseRig {
@@ -1021,21 +922,6 @@ export class FxSystem {
         this.pops.splice(i, 1);
       }
     }
-    for (let i = this.deathSprites.length - 1; i >= 0; i--) {
-      const death = this.deathSprites[i];
-      death.age += delta;
-      const frames = ENEMY_SPRITE_ANIMATION_TEXTURES[death.kind].death[death.view];
-      const frameIndex = Math.floor((death.age / death.playback) * frames.length);
-      const frame = frames[Math.min(frames.length - 1, frameIndex)];
-      if (frame && death.material.map !== frame) {
-        death.material.map = frame;
-        death.material.needsUpdate = true;
-      }
-
-      const fade = Math.max(0, Math.min(1, (death.age - death.holdStart) / DEATH_SPRITE_FADE_SECONDS));
-      death.material.opacity = death.baseOpacity * (1 - fade);
-      if (death.age >= death.ttl) this.removeDeathSprite(i);
-    }
     for (let i = this.corpseParts.length - 1; i >= 0; i--) {
       const part = this.corpseParts[i];
       part.age += delta;
@@ -1102,7 +988,6 @@ export class FxSystem {
       (p.mesh.material as THREE.Material).dispose();
     }
     this.pops = [];
-    while (this.deathSprites.length) this.removeDeathSprite(this.deathSprites.length - 1);
     while (this.corpseParts.length) this.removeCorpsePart(this.corpseParts.length - 1);
     while (this.corpses.length) this.releaseCorpse(this.corpses.length - 1);
     this.sys.projectiles.clearProjectiles();

@@ -14,56 +14,15 @@ vi.mock("../../src/game/spriteAssets", async () => {
     side: texture(`${prefix}-side`),
     back: texture(`${prefix}-back`),
   });
-  const animationViews = (prefix: string, state: string) => ({
-    front: [texture(`${prefix}-${state}-front`)],
-    side: [texture(`${prefix}-${state}-side`)],
-    back: [texture(`${prefix}-${state}-back`)],
-  });
-  const animations = (prefix: string) => ({
-    move: animationViews(prefix, "move"),
-    attack: animationViews(prefix, "attack"),
-    death: animationViews(prefix, "death"),
-  });
-  const animationMeta = () => ({
-    move: { fps: 8, loop: true, frameCount: 1 },
-    attack: { fps: 8, loop: true, frameCount: 1 },
-    death: { fps: 8, loop: false, frameCount: 1 },
-  });
   const scales = () => ({
     front: [1, 2] as [number, number],
     side: [1.2, 2] as [number, number],
     back: [1, 2] as [number, number],
   });
 
+  // Enemies are articulated rigs with no texture lane of their own, so the only
+  // directional sprite left in the scene is the remote player's billboard.
   return {
-    ENEMY_SPRITE_TEXTURES: {
-      melee: views("enemy-melee"),
-      ranged: views("enemy-ranged"),
-      flying: views("enemy-flying"),
-      hound: views("enemy-hound"),
-      boss: views("enemy-boss"),
-    },
-    ENEMY_SPRITE_ANIMATION_TEXTURES: {
-      melee: animations("enemy-melee"),
-      ranged: animations("enemy-ranged"),
-      flying: animations("enemy-flying"),
-      hound: animations("enemy-hound"),
-      boss: animations("enemy-boss"),
-    },
-    ENEMY_SPRITE_ANIMATION_META: {
-      melee: animationMeta(),
-      ranged: animationMeta(),
-      flying: animationMeta(),
-      hound: animationMeta(),
-      boss: animationMeta(),
-    },
-    ENEMY_SPRITE_SCALES: {
-      melee: scales(),
-      ranged: scales(),
-      flying: scales(),
-      hound: scales(),
-      boss: scales(),
-    },
     PLAYER_AVATAR_SPRITES: {
       ranger: views("player-ranger"),
       heavy: views("player-heavy"),

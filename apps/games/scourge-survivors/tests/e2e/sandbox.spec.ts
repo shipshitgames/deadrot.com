@@ -1189,7 +1189,7 @@ test.describe("dev sandbox smoke", () => {
     expect(consoleErrors).toEqual([]);
   });
 
-  test("uses death animation frames and sprite gibs for enemy kills", async ({ page }) => {
+  test("uses sprite gibs and no flat billboard for enemy kills", async ({ page }) => {
     await page.goto("/?sandbox=1");
     await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
 
@@ -1199,15 +1199,6 @@ test.describe("dev sandbox smoke", () => {
           image?: {
             currentSrc?: string;
             src?: string;
-          };
-          userData?: {
-            scourgeAnimation?: {
-              entity: string;
-              action: string;
-              view: "front" | "side" | "back";
-              frame: number;
-              source: "atlas" | "frame";
-            };
           };
         };
       };
@@ -1232,15 +1223,17 @@ test.describe("dev sandbox smoke", () => {
               };
             };
           }>;
+          scene: { traverse: (visit: (node: DevSceneNode) => void) => void };
           status: string;
         };
         sys: {
           fx: {
             corpseParts: Array<{ mesh: { type: string; material: DevSpriteMaterial } }>;
-            deathSprites: Array<{ material: DevSpriteMaterial }>;
+            corpses: unknown[];
           };
         };
       };
+      type DevSceneNode = { isSprite?: boolean; material?: DevSpriteMaterial };
 
       const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
       const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
@@ -1259,28 +1252,31 @@ test.describe("dev sandbox smoke", () => {
       game.damageSandboxEnemies(-1, true);
       await wait(80);
 
+      const sceneSprites: string[] = [];
+      game.ctx.scene.traverse((node) => {
+        if (node.isSprite) sceneSprites.push(srcOf(node.material));
+      });
+
       return {
         corpseCount: game.sys.fx.corpseParts.length,
         corpseSources: game.sys.fx.corpseParts.map((part) => srcOf(part.mesh.material)),
         corpseTypes: game.sys.fx.corpseParts.map((part) => part.mesh.type),
-        deathCount: game.sys.fx.deathSprites.length,
-        deathSrc: srcOf(game.sys.fx.deathSprites[0]?.material),
-        deathAnimation: game.sys.fx.deathSprites[0]?.material.map?.userData?.scourgeAnimation,
+        bodyCount: game.sys.fx.corpses.length,
+        sceneSprites,
       };
     });
 
-    expect(result.deathCount).toBeGreaterThan(0);
-    expect(result.deathSrc).toContain("/animations/scourge/scourge.atlas0.webp");
-    expect(result.deathAnimation).toMatchObject({
-      entity: "host-grunt",
-      action: "death",
-      source: "atlas",
-    });
-    expect(["front", "side", "back"]).toContain(result.deathAnimation?.view);
-    expect(result.deathAnimation?.frame).toBeGreaterThanOrEqual(0);
+    // The death itself is the articulated rig replaying its authored clip; the only
+    // billboards a kill is allowed to add are the small gib shards.
+    expect(result.bodyCount).toBe(1);
     expect(result.corpseCount).toBeGreaterThan(0);
     expect(result.corpseTypes.every((type) => type === "Sprite")).toBe(true);
     expect(result.corpseSources.every((src) => src.includes("/fx/gibs/"))).toBe(true);
+
+    // Nothing anywhere in the scene may pull a frame off the enemy death atlas —
+    // that flat puff used to be composited over the 3D body it contradicted.
+    expect(result.sceneSprites.length).toBeGreaterThan(0);
+    expect(result.sceneSprites.filter((src) => src.includes("/animations/"))).toEqual([]);
   });
 
   test("settles a 3D body through the authored death clip after a kill", async ({ page }) => {
@@ -1308,7 +1304,6 @@ test.describe("dev sandbox smoke", () => {
               rig: { root: { rotation: { x: number } }; materials: Array<{ opacity: number }> };
               settled: boolean;
             }>;
-            deathSprites: Array<{ playback: number; holdStart: number }>;
           };
         };
       };
@@ -1340,16 +1335,12 @@ test.describe("dev sandbox smoke", () => {
 
       await frame();
       const early = sample();
-      // Read the puff now: it outlives the kill by well under a second, while the
-      // body settles over 0.85s and then lies there.
-      const playback = game.sys.fx.deathSprites[0]?.playback ?? 0;
       await wait(1200);
       const settled = sample();
 
       return {
         early,
         settled,
-        playback,
         // The pooled enemy is parked underground, so the body on screen has to be
         // a separate rig — the corpse — not the one that just died.
         enemyY: enemy?.group.position.y ?? 0,
@@ -1374,7 +1365,5 @@ test.describe("dev sandbox smoke", () => {
 
     expect(result.enemyY).toBe(-100);
     expect(result.enemyVisible).toBe(false);
-    // The flat death puff runs the manifest's 6 frames at 10fps, not the old 0.16s.
-    expect(result.playback).toBeCloseTo(0.6, 2);
   });
 });

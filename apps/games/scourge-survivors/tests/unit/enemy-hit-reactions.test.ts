@@ -1,49 +1,11 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import type { SpawnConfig } from "../../src/game/entities/Enemy";
 
 type EnemyModule = typeof import("../../src/game/entities/Enemy");
 type EnemyInstance = InstanceType<EnemyModule["Enemy"]>;
 
-vi.mock("../../src/game/spriteAssets", async () => {
-  const THREE = await import("three");
-  const kinds = ["melee", "ranged", "flying", "hound", "boss"] as const;
-  const views = ["front", "side", "back"] as const;
-  const animations = ["move", "attack", "death"] as const;
-
-  const textures = Object.fromEntries(
-    kinds.map((kind) => [kind, Object.fromEntries(views.map((view) => [view, new THREE.Texture()]))]),
-  );
-  const animationTextures = Object.fromEntries(
-    kinds.map((kind) => [
-      kind,
-      Object.fromEntries(
-        animations.map((animation) => [
-          animation,
-          Object.fromEntries(views.map((view) => [view, [new THREE.Texture()]])),
-        ]),
-      ),
-    ]),
-  );
-  const animationMeta = Object.fromEntries(
-    kinds.map((kind) => [
-      kind,
-      Object.fromEntries(
-        animations.map((animation) => [animation, { fps: 8, loop: animation === "move", frameCount: 1 }]),
-      ),
-    ]),
-  );
-  const scales = Object.fromEntries(
-    kinds.map((kind) => [kind, Object.fromEntries(views.map((view) => [view, [1, 2]]))]),
-  );
-
-  return {
-    ENEMY_SPRITE_TEXTURES: textures,
-    ENEMY_SPRITE_ANIMATION_TEXTURES: animationTextures,
-    ENEMY_SPRITE_ANIMATION_META: animationMeta,
-    ENEMY_SPRITE_SCALES: scales,
-  };
-});
-
+// No spriteAssets mock: an enemy is geometry and a pose evaluator now, so its
+// import graph never touches the texture lane and loads as-is under node.
 let Enemy: EnemyModule["Enemy"];
 const spawned: EnemyInstance[] = [];
 

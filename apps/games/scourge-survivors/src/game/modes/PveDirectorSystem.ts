@@ -202,8 +202,6 @@ export class PveDirectorSystem {
         scale: wasBoss ? 1.8 : deathScale,
         color: wasBoss ? 0xff2d55 : 0xc1121f,
         spriteKind: deathFx.kind,
-        spriteView: deathFx.view,
-        spriteFlip: deathFx.flip,
         corpse: deathFx.corpse,
       });
       if (wasBoss) {
@@ -234,8 +232,6 @@ export class PveDirectorSystem {
           scale: 2.5,
           color: 0xff2d55,
           spriteKind: deathFx.kind,
-          spriteView: deathFx.view,
-          spriteFlip: deathFx.flip,
           corpse: deathFx.corpse,
         });
         // Player-death-first ordering: if the run already ended this frame the
@@ -254,8 +250,6 @@ export class PveDirectorSystem {
         scale: wasBoss ? 1.8 : deathScale,
         color: wasBoss ? 0xff2d55 : enemy.eliteAffix ? ELITE_AFFIXES[enemy.eliteAffix].tint : 0xc1121f,
         spriteKind: deathFx.kind,
-        spriteView: deathFx.view,
-        spriteFlip: deathFx.flip,
         corpse: deathFx.corpse,
       });
       this.sys.survivors.dropXpGem(deathPos.clone(), this.sys.survivors.enemyXp.get(enemy) ?? SURV_XP_GEM_VALUE);
@@ -277,8 +271,6 @@ export class PveDirectorSystem {
         scale: 2.5,
         color: 0xff2d55,
         spriteKind: deathFx.kind,
-        spriteView: deathFx.view,
-        spriteFlip: deathFx.flip,
         corpse: deathFx.corpse,
       });
       this.bossActive = false;
@@ -292,8 +284,6 @@ export class PveDirectorSystem {
         scale: deathScale,
         color: headshot ? 0xff415f : 0xc1121f,
         spriteKind: deathFx.kind,
-        spriteView: deathFx.view,
-        spriteFlip: deathFx.flip,
         corpse: deathFx.corpse,
       });
       // a campaign kill counts toward clearing the active wave
