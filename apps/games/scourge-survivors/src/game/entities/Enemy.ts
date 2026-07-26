@@ -22,6 +22,7 @@ import {
   ENEMY_SEPARATION,
   ENEMY_SPEED_MAX,
   ENEMY_SPEED_MIN,
+  ENEMY_STOOP_RATIO,
 } from "../constants";
 import { ENEMY_ARCHETYPES, type EnemyArchetypeId } from "../data/enemies";
 import {
@@ -151,6 +152,17 @@ export class Enemy extends Agent {
    * body a bullet can actually hit, and no number drifts from the models.
    */
   bodyHeight = MIN_BODY_HEIGHT;
+
+  /**
+   * Height to test against overhead colliders while pathing — the ducked body,
+   * not the standing silhouette. {@link bodyHeight} stays the honest measured
+   * height a bullet can hit; this is the one collision reads, so a walker taller
+   * than a doorway ducks through it instead of being shoved back out into the
+   * street. See {@link ENEMY_STOOP_RATIO} for why walls are unaffected.
+   */
+  get traversalHeight() {
+    return this.bodyHeight * ENEMY_STOOP_RATIO;
+  }
 
   maxHealth = ENEMY_MAX_HEALTH;
   health = ENEMY_MAX_HEALTH;

@@ -388,7 +388,7 @@ export class PveDirectorSystem {
         this.sys.telemetry?.recordIncomingPressure("melee", enemy.archetype, tick.melee);
       }
       for (const shot of tick.shots) this.sys.projectiles.spawnProjectile(shot, enemy);
-      this.sys.player.pushOutOfObstacles(enemy.position, enemy.radius, enemy.bodyHeight);
+      this.sys.player.pushOutOfObstacles(enemy.position, enemy.radius, enemy.traversalHeight);
     }
     if (damageToPlayer > 0) this.sys.player.damagePlayer(damageToPlayer);
   }

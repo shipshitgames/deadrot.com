@@ -189,10 +189,10 @@ export class Game {
   // ------------------------------------------------------ public API (App.tsx)
 
   requestLock() {
-    // The start prompt is one button on both devices; only what it does differs.
-    // A phone has no pointer lock to request, so the tap begins play directly.
-    if (this.sys.touch.enabled) this.sys.input.enterPlayFromTouch();
-    else this.sys.input.requestLock();
+    // The start prompt is one button on both devices; only what it does differs,
+    // and that split lives in `InputSystem.requestLock` so the six mode call
+    // sites get the same device policy this one does.
+    this.sys.input.requestLock();
   }
 
   /** The on-screen pad, for the React overlay. Inert on desktop. */
@@ -347,7 +347,7 @@ export class Game {
         });
       }
       this.ctx.bounds.clampXZ(enemy.position, 1.5);
-      this.sys.player.pushOutOfObstacles(enemy.position, enemy.radius, enemy.bodyHeight);
+      this.sys.player.pushOutOfObstacles(enemy.position, enemy.radius, enemy.traversalHeight);
     }
     this.sys.hud.showToast(`LAB SPAWN: ${kind.toUpperCase()} ×${n}`);
     this.sys.hud.emit();
@@ -399,7 +399,10 @@ export class Game {
   spawnSandboxPickup(kind: PickupKind) {
     if (!this.ctx.sandbox) return;
     const pos = this.pointInFront(5);
-    this.sys.pickups.spawnPickup(kind, pos.x, pos.z);
+    // Drop it on the player's own floor: the collection gate checks vertical reach
+    // as well as distance, so a lab pickup left on the arena plane is unreachable
+    // from a building's upper storey.
+    this.sys.pickups.spawnPickup(kind, pos.x, pos.z, pos.y);
     const last = this.sys.pickups.pickups[this.sys.pickups.pickups.length - 1];
     if (last) last.age = Math.min(last.age, PICKUP_TTL - 3);
     this.sys.hud.showToast(`LAB PICKUP: ${kind.toUpperCase()}`);
@@ -503,13 +506,20 @@ export class Game {
     this.sys.weapon.applyWeaponModel(active);
   }
 
+  /**
+   * A spot on the floor the player is standing on, `distance` metres ahead of
+   * them. `body` is the camera, so its Y is the eye — the floor is a stance below
+   * it, and a storey up when the lab is run inside a building. Returning the
+   * arena plane instead would drop lab spawns through the deck the player is on.
+   */
   private pointInFront(distance: number): THREE.Vector3 {
     const origin = this.ctx.body.position;
     const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(this.ctx.rig.facing);
     fwd.y = 0;
     if (fwd.lengthSq() < 0.001) fwd.set(0, 0, -1);
     fwd.normalize();
-    const pos = new THREE.Vector3(origin.x + fwd.x * distance, 0, origin.z + fwd.z * distance);
+    const floorY = origin.y - this.ctx.stanceHeight;
+    const pos = new THREE.Vector3(origin.x + fwd.x * distance, floorY, origin.z + fwd.z * distance);
     this.ctx.bounds.clampXZ(pos, 1.5);
     return pos;
   }
