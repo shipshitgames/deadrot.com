@@ -122,6 +122,31 @@ function createPalette(): EnemyRigPalette {
   };
 }
 
+/** Kept next to {@link createPalette} so a fifth slot cannot be added to one and
+ *  missed in the other. */
+const PALETTE_KEYS = ["body", "dark", "accent", "eye"] as const satisfies readonly (keyof EnemyRigPalette)[];
+
+/**
+ * Copy one palette's look onto another rig's own materials.
+ *
+ * For the corpse path: a body has to keep the elite tint / boss gold / ranged
+ * cyan its enemy died wearing, but it must not *share* that enemy's materials.
+ * The pool hands the dead enemy's rig straight to the next spawn, which restyles
+ * it in place (`Enemy.applyStyle`) — a shared reference would recolour every
+ * corpse still on the floor.
+ */
+export function copyEnemyRigPalette(source: EnemyRigPalette, target: EnemyRigPalette) {
+  for (const key of PALETTE_KEYS) {
+    const from = source[key];
+    const to = target[key];
+    to.color.copy(from.color);
+    to.emissive.copy(from.emissive);
+    to.emissiveIntensity = from.emissiveIntensity;
+    to.roughness = from.roughness;
+    to.metalness = from.metalness;
+  }
+}
+
 /** Mesh keys that cast into the sun's shadow map.
  *
  *  Deliberately just the trunk. A rig is 28 meshes and a surge tops out at

@@ -204,6 +204,7 @@ export class PveDirectorSystem {
         spriteKind: deathFx.kind,
         spriteView: deathFx.view,
         spriteFlip: deathFx.flip,
+        corpse: deathFx.corpse,
       });
       if (wasBoss) {
         this.bossActive = false;
@@ -235,6 +236,7 @@ export class PveDirectorSystem {
           spriteKind: deathFx.kind,
           spriteView: deathFx.view,
           spriteFlip: deathFx.flip,
+          corpse: deathFx.corpse,
         });
         // Player-death-first ordering: if the run already ended this frame the
         // victory beat must not fire over the death screen.
@@ -254,6 +256,7 @@ export class PveDirectorSystem {
         spriteKind: deathFx.kind,
         spriteView: deathFx.view,
         spriteFlip: deathFx.flip,
+        corpse: deathFx.corpse,
       });
       this.sys.survivors.dropXpGem(deathPos.clone(), this.sys.survivors.enemyXp.get(enemy) ?? SURV_XP_GEM_VALUE);
       if (wasBoss) this.sys.survivors.onEliteKilled(deathPos.clone()); // Scourge elites also drop health + damage
@@ -276,6 +279,7 @@ export class PveDirectorSystem {
         spriteKind: deathFx.kind,
         spriteView: deathFx.view,
         spriteFlip: deathFx.flip,
+        corpse: deathFx.corpse,
       });
       this.bossActive = false;
       this.bossEnemy = null;
@@ -290,6 +294,7 @@ export class PveDirectorSystem {
         spriteKind: deathFx.kind,
         spriteView: deathFx.view,
         spriteFlip: deathFx.flip,
+        corpse: deathFx.corpse,
       });
       // a campaign kill counts toward clearing the active wave
       this.director.notifyProgress();

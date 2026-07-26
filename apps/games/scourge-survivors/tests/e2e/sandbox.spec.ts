@@ -1282,4 +1282,99 @@ test.describe("dev sandbox smoke", () => {
     expect(result.corpseTypes.every((type) => type === "Sprite")).toBe(true);
     expect(result.corpseSources.every((src) => src.includes("/fx/gibs/"))).toBe(true);
   });
+
+  test("settles a 3D body through the authored death clip after a kill", async ({ page }) => {
+    await page.goto("/?sandbox=1");
+    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
+
+    const result = await page.evaluate(async () => {
+      type DevGame = {
+        clearSandboxActors: () => void;
+        damageSandboxEnemies: (amount: number, headshot?: boolean, all?: boolean) => void;
+        spawnSandboxEnemy: (kind: "melee", count?: number) => void;
+        startSandbox: () => void;
+        ctx: {
+          body: { position: { x: number; z: number } };
+          enemies: Array<{
+            alive: boolean;
+            group: { position: { x: number; y: number; z: number }; visible: boolean };
+          }>;
+          status: string;
+        };
+        sys: {
+          fx: {
+            corpses: Array<{
+              holder: { parent: unknown; position: { y: number } };
+              rig: { root: { rotation: { x: number } }; materials: Array<{ opacity: number }> };
+              settled: boolean;
+            }>;
+            deathSprites: Array<{ playback: number; holdStart: number }>;
+          };
+        };
+      };
+
+      const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
+      const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+      const frame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const sample = () => {
+        const corpse = game.sys.fx.corpses[0];
+        return {
+          count: game.sys.fx.corpses.length,
+          attached: !!corpse?.holder.parent,
+          tilt: corpse?.rig.root.rotation.x ?? -1,
+          settled: corpse?.settled ?? false,
+          opacity: corpse?.rig.materials[0]?.opacity ?? -1,
+        };
+      };
+
+      await game.startSandbox();
+      game.ctx.status = "playing";
+      game.clearSandboxActors();
+      game.spawnSandboxEnemy("melee", 1);
+      const enemy = game.ctx.enemies.find((candidate) => candidate.alive);
+      if (enemy) {
+        enemy.group.position.x = game.ctx.body.position.x;
+        enemy.group.position.z = game.ctx.body.position.z - 8;
+      }
+      game.damageSandboxEnemies(-1, true);
+
+      await frame();
+      const early = sample();
+      // Read the puff now: it outlives the kill by well under a second, while the
+      // body settles over 0.85s and then lies there.
+      const playback = game.sys.fx.deathSprites[0]?.playback ?? 0;
+      await wait(1200);
+      const settled = sample();
+
+      return {
+        early,
+        settled,
+        playback,
+        // The pooled enemy is parked underground, so the body on screen has to be
+        // a separate rig — the corpse — not the one that just died.
+        enemyY: enemy?.group.position.y ?? 0,
+        enemyVisible: enemy?.group.visible ?? true,
+      };
+    });
+
+    // A body is standing in the scene the frame after the kill, barely into its fall.
+    expect(result.early.count).toBe(1);
+    expect(result.early.attached).toBe(true);
+    expect(result.early.settled).toBe(false);
+    expect(result.early.opacity).toBeCloseTo(1, 1);
+    expect(result.early.tilt).toBeLessThan(0.6);
+
+    // …and a second later it has ridden the authored ragdoll to its end pose,
+    // which is the whole point: before this the rig vanished on the kill frame.
+    expect(result.settled.count).toBe(1);
+    expect(result.settled.settled).toBe(true);
+    expect(result.settled.tilt).toBeGreaterThan(result.early.tilt);
+    expect(result.settled.tilt).toBeCloseTo(1.34, 1);
+    expect(result.settled.opacity).toBeCloseTo(1, 1);
+
+    expect(result.enemyY).toBe(-100);
+    expect(result.enemyVisible).toBe(false);
+    // The flat death puff runs the manifest's 6 frames at 10fps, not the old 0.16s.
+    expect(result.playback).toBeCloseTo(0.6, 2);
+  });
 });

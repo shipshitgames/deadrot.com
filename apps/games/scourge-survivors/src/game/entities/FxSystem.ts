@@ -1,24 +1,47 @@
 import * as THREE from "three";
 import type { GameContext } from "../context";
 import type { Pop, Tracer } from "../data/internalTypes";
+import { createEnemyPose, type EnemyPose, evaluateEnemyPose } from "../render/models/enemyAnimation";
+import {
+  applyEnemyRigPose,
+  buildEnemyRig,
+  configureEnemyRig,
+  copyEnemyRigPalette,
+  disposeEnemyRig,
+  type EnemyRig,
+} from "../render/models/enemyRig";
 import {
   CORPSE_PART_SPRITES,
   type CorpsePartSpriteId,
+  ENEMY_SPRITE_ANIMATION_META,
   ENEMY_SPRITE_ANIMATION_TEXTURES,
   ENEMY_SPRITE_SCALES,
   type EnemySpriteKind,
   type EnemySpriteView,
 } from "../spriteAssets";
 import type { GameSystems } from "../systems";
+import type { EnemyDeathSnapshot } from "./Enemy";
 
 const CORPSE_PART_SOFT_CAP = 72;
 const CORPSE_PART_HARD_CAP = 96;
 const CORPSE_PART_FADE_SECONDS = 1.35;
 const CORPSE_PART_GRAVITY = 18;
-// Death reads as a quick explosion, not a slow ragdoll: blow through all death
-// frames in PLAYBACK seconds, then a short FADE — the death-pop ring + particle
-// burst carry the "explosion" punch once the corpse sprite is gone.
-const DEATH_SPRITE_PLAYBACK_SECONDS = 0.16;
+// A dead host settles into the authored ragdoll over SETTLE, lies there for
+// LINGER, then fades over FADE. A body is the most expensive leftover in the game
+// — one rig is 28 meshes against a gib's single sprite — so it leaves in seconds
+// where gibs linger ~20s, and the caps below are correspondingly tight.
+const CORPSE_BODY_SETTLE_SECONDS = 0.85;
+const CORPSE_BODY_LINGER_SECONDS = 5.5;
+const CORPSE_BODY_FADE_SECONDS = 1.1;
+/** Past this, the oldest bodies are pushed into their fade early. */
+const CORPSE_BODY_SOFT_CAP = 8;
+/** Hard ceiling: a swell that outruns the soft cap drops the oldest outright. */
+const CORPSE_BODY_HARD_CAP = 12;
+/** Written and consumed inside one synchronous corpse tick, so one is safe. */
+const CORPSE_POSE: EnemyPose = createEnemyPose();
+// The death sprite is the flat puff layered over the settling body; it holds for
+// the authored clip length, then fades. The death-pop ring and particle burst
+// carry the "explosion" punch once it is gone.
 const DEATH_SPRITE_FADE_SECONDS = 0.12;
 // Live pops an explosion is willing to add detail on top of. Past this the
 // ember/smoke counts scale down rather than the whole effect being dropped: a
@@ -41,6 +64,18 @@ const IMPACT_AXIS_X = new THREE.Vector3(1, 0, 0);
 const IMPACT_AXIS_Y = new THREE.Vector3(0, 1, 0);
 type DeathSpriteKind = EnemySpriteKind;
 type DeathSpriteView = EnemySpriteView;
+
+/**
+ * How long the authored death clip actually runs.
+ *
+ * The manifest packs six death frames at 10fps (8 for the breach boss), so the
+ * clip is 0.6s — the old fixed 0.16s blew through all six in a subliminal
+ * flicker. First runtime consumer of `ENEMY_SPRITE_ANIMATION_META`.
+ */
+function deathSpritePlaybackSeconds(kind: DeathSpriteKind) {
+  const meta = ENEMY_SPRITE_ANIMATION_META[kind].death;
+  return meta.frameCount / meta.fps;
+}
 
 /** Semantic debris profiles keep each host family readable after the kill. */
 export const CORPSE_PART_IDS_BY_ENEMY_KIND = {
@@ -69,6 +104,25 @@ interface DeathSprite {
   ttl: number;
   holdStart: number;
   baseOpacity: number;
+  /** Authored clip length for this kind — the boss runs slower than the rest. */
+  playback: number;
+}
+
+interface CorpseRig {
+  /** Holder, because rig.root's transform belongs to the pose — writeDeath drives
+   *  root offset and rotation — so world placement sits one level above it. */
+  holder: THREE.Group;
+  rig: EnemyRig;
+}
+
+interface EnemyCorpse extends CorpseRig {
+  age: number;
+  ttl: number;
+  /** Height it died at, and the floor it falls to (a winged host dies airborne). */
+  startY: number;
+  groundY: number;
+  /** Once the ragdoll reaches its end pose there is nothing left to re-apply. */
+  settled: boolean;
 }
 
 /** Transient visual FX: bullet tracers, death pops, muzzle-flash decay, teardown. */
@@ -77,6 +131,9 @@ export class FxSystem {
   pops: Pop[] = [];
   corpseParts: CorpsePart[] = [];
   deathSprites: DeathSprite[] = [];
+  corpses: EnemyCorpse[] = [];
+  /** Freed corpse rigs, kept rather than rebuilt: a run kills hundreds of hosts. */
+  private corpseRigs: CorpseRig[] = [];
   /** Monotonic count of lethal-headshot kill beats. Test/debug seam — never reset
    *  (clearTransientFx drains the meshes, not this). */
   headshotKillSeq = 0;
@@ -174,10 +231,12 @@ export class FxSystem {
       spriteKind?: DeathSpriteKind;
       spriteView?: DeathSpriteView;
       spriteFlip?: number;
+      corpse?: EnemyDeathSnapshot;
     } = {},
   ) {
     const scale = opts.scale ?? (opts.elite ? 1.8 : 1);
     const color = opts.color ?? (opts.elite ? 0xff2d55 : 0xc1121f);
+    if (opts.corpse) this.spawnEnemyCorpse(opts.corpse);
     this.spawnEnemyDeathSprite(pos, {
       kind: opts.spriteKind,
       view: opts.spriteView,
@@ -431,7 +490,7 @@ export class FxSystem {
     sprite.position.set(pos.x, 0.03, pos.z);
     sprite.renderOrder = 6;
     this.ctx.scene.add(sprite);
-    const duration = DEATH_SPRITE_PLAYBACK_SECONDS;
+    const duration = deathSpritePlaybackSeconds(kind);
     const baseOpacity = opts.elite ? 0.94 : 0.88;
     this.deathSprites.push({
       sprite,
@@ -442,6 +501,7 @@ export class FxSystem {
       ttl: duration + DEATH_SPRITE_FADE_SECONDS,
       holdStart: duration,
       baseOpacity,
+      playback: duration,
     });
   }
 
@@ -451,6 +511,59 @@ export class FxSystem {
     this.ctx.scene.remove(death.sprite);
     death.material.dispose();
     this.deathSprites.splice(index, 1);
+  }
+
+  private createCorpseRig(): CorpseRig {
+    const rig = buildEnemyRig("melee");
+    // transparent once, at build time — a body always fades out, and flipping the
+    // flag per corpse would recompile the shader on every kill.
+    for (const material of rig.materials) material.transparent = true;
+    const holder = new THREE.Group();
+    holder.add(rig.root);
+    return { holder, rig };
+  }
+
+  /** Stand a settling body where the enemy fell (see {@link EnemyDeathSnapshot}). */
+  spawnEnemyCorpse(snapshot: EnemyDeathSnapshot) {
+    const entry = this.corpseRigs.pop() ?? this.createCorpseRig();
+    configureEnemyRig(entry.rig, snapshot.kind);
+    // Copy, never share: the pool is about to restyle the dead enemy's own
+    // materials for the next spawn, which would recolour every corpse on the floor.
+    copyEnemyRigPalette(snapshot.palette, entry.rig.palette);
+    for (const material of entry.rig.materials) material.opacity = 1;
+    entry.holder.position.set(snapshot.x, snapshot.y, snapshot.z);
+    entry.holder.rotation.set(0, snapshot.yaw, 0);
+    entry.holder.scale.setScalar(Math.max(0.001, snapshot.scale));
+    this.ctx.scene.add(entry.holder);
+    this.corpses.push({
+      ...entry,
+      age: 0,
+      ttl: CORPSE_BODY_SETTLE_SECONDS + CORPSE_BODY_LINGER_SECONDS + CORPSE_BODY_FADE_SECONDS,
+      startY: snapshot.y,
+      groundY: snapshot.groundY,
+      settled: false,
+    });
+    this.enforceCorpseBudget();
+  }
+
+  private enforceCorpseBudget() {
+    while (this.corpses.length > CORPSE_BODY_HARD_CAP) this.releaseCorpse(0);
+    const overflow = this.corpses.length - CORPSE_BODY_SOFT_CAP;
+    if (overflow <= 0) return;
+
+    for (let i = 0; i < overflow; i++) {
+      const corpse = this.corpses[i];
+      corpse.age = Math.max(corpse.age, corpse.ttl - CORPSE_BODY_FADE_SECONDS);
+    }
+  }
+
+  private releaseCorpse(index: number) {
+    const corpse = this.corpses[index];
+    if (!corpse) return;
+    this.ctx.scene.remove(corpse.holder);
+    this.corpses.splice(index, 1);
+    if (this.corpseRigs.length < CORPSE_BODY_HARD_CAP) this.corpseRigs.push({ holder: corpse.holder, rig: corpse.rig });
+    else disposeEnemyRig(corpse.rig);
   }
 
   private enforceCorpsePartBudget() {
@@ -912,7 +1025,7 @@ export class FxSystem {
       const death = this.deathSprites[i];
       death.age += delta;
       const frames = ENEMY_SPRITE_ANIMATION_TEXTURES[death.kind].death[death.view];
-      const frameIndex = Math.floor((death.age / DEATH_SPRITE_PLAYBACK_SECONDS) * frames.length);
+      const frameIndex = Math.floor((death.age / death.playback) * frames.length);
       const frame = frames[Math.min(frames.length - 1, frameIndex)];
       if (frame && death.material.map !== frame) {
         death.material.map = frame;
@@ -956,6 +1069,24 @@ export class FxSystem {
       } else material.opacity = part.baseOpacity * (1 - fade);
       if (part.age >= part.ttl) this.removeCorpsePart(i);
     }
+    for (let i = this.corpses.length - 1; i >= 0; i--) {
+      const corpse = this.corpses[i];
+      corpse.age += delta;
+      if (!corpse.settled) {
+        const settle = Math.min(1, corpse.age / CORPSE_BODY_SETTLE_SECONDS);
+        // Linear t — writeDeath eases it internally.
+        evaluateEnemyPose("death", corpse.rig.kind, settle, 0, 1, undefined, CORPSE_POSE);
+        applyEnemyRigPose(corpse.rig, CORPSE_POSE);
+        // A winged host dies in the air; ease it down to the floor it fell toward.
+        corpse.holder.position.y = corpse.startY + (corpse.groundY - corpse.startY) * settle;
+        if (settle >= 1) corpse.settled = true;
+      }
+
+      const fadeStart = corpse.ttl - CORPSE_BODY_FADE_SECONDS;
+      const fade = Math.max(0, Math.min(1, (corpse.age - fadeStart) / CORPSE_BODY_FADE_SECONDS));
+      for (const material of corpse.rig.materials) material.opacity = 1 - fade;
+      if (corpse.age >= corpse.ttl) this.releaseCorpse(i);
+    }
   }
 
   clearTransientFx() {
@@ -973,6 +1104,7 @@ export class FxSystem {
     this.pops = [];
     while (this.deathSprites.length) this.removeDeathSprite(this.deathSprites.length - 1);
     while (this.corpseParts.length) this.removeCorpsePart(this.corpseParts.length - 1);
+    while (this.corpses.length) this.releaseCorpse(this.corpses.length - 1);
     this.sys.projectiles.clearProjectiles();
     while (this.sys.pickups.pickups.length) this.sys.pickups.removePickup(this.sys.pickups.pickups.length - 1);
   }

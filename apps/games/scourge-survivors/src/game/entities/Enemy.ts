@@ -37,6 +37,7 @@ import {
   disposeEnemyRig,
   type EnemyRig,
   type EnemyRigKind,
+  type EnemyRigPalette,
   resetEnemyRigPose,
 } from "../render/models/enemyRig";
 import { chasePlayerStrategy, redirectBlockedRangedRetreat } from "./ChasePlayerStrategy";
@@ -56,6 +57,32 @@ export interface DamageResult {
   died: boolean;
   headshot: boolean;
   blocked: boolean;
+}
+
+/**
+ * Everything a corpse needs to stand where its enemy fell, captured at the
+ * moment of death because none of it survives the frame.
+ *
+ * `kill()` has to hide the dying enemy immediately: the pool hands the first
+ * `!alive` enemy to the very next spawn (`PveDirectorSystem.getFreeEnemy`), and
+ * a dead enemy's hit meshes stay registered in `ctx.raycastTargets` for the
+ * lifetime of the pool while THREE's raycaster ignores `visible` — so parking
+ * the group underground is what stops a body soaking bullets. The rig therefore
+ * cannot play its own death clip, and `FxSystem` stands a separate pooled rig up
+ * from this snapshot instead.
+ */
+export interface EnemyDeathSnapshot {
+  kind: EnemyRigKind;
+  x: number;
+  /** Height it died at — a winged host dies in the air. */
+  y: number;
+  z: number;
+  /** Floor beneath that spot, so the fall has somewhere to land. */
+  groundY: number;
+  yaw: number;
+  scale: number;
+  /** The look to copy, never to share: this rig is about to be restyled. */
+  palette: EnemyRigPalette;
 }
 
 /** A single shot the enemy wants to fire this frame. */
@@ -181,10 +208,13 @@ export class Enemy extends Agent {
   private styleColor = 0xff5a3c;
   private flashApplied = false;
   private muzzle = new THREE.Vector3();
+  /** Replaced wholesale by {@link kill}; read by {@link deathFx} right after. */
+  private deathSnapshot: EnemyDeathSnapshot;
 
   constructor() {
     super();
     this.rig = buildEnemyRig("melee");
+    this.deathSnapshot = { kind: "melee", x: 0, y: 0, z: 0, groundY: 0, yaw: 0, scale: 1, palette: this.rig.palette };
     this.eyeMat = this.rig.palette.eye;
     for (const mesh of this.rig.hitMeshes) {
       mesh.userData.enemy = this;
@@ -330,6 +360,8 @@ export class Enemy extends Agent {
       kind: this.enemyKind(),
       view: "front" as const,
       flip: 1,
+      /** Captured by {@link kill} — by now the group is already parked underground. */
+      corpse: this.deathSnapshot,
     };
   }
 
@@ -742,14 +774,36 @@ export class Enemy extends Agent {
     // isBoss left intact so death handlers can detect a boss kill; reset on next spawn.
     this.alive = false;
     this.animationState = "death";
-    this.animationStateTime = 1;
+    this.animationStateTime = 0;
     this.animationBlend = 1;
-    evaluateEnemyPose("death", this.enemyKind(), 1, 0, 1, undefined, this.currentPose);
-    applyEnemyRigPose(this.rig, this.currentPose);
-    this.rig.root.scale.setScalar(1);
+    // Drop the impact flash before snapshotting. takeDamage sets hitFlash on the
+    // lethal hit too, and updateRigReaction writes white-hot RGB straight into the
+    // palette — so on any multi-hit kill the palette here holds the flash, not the
+    // enemy's styling, and the corpse would settle glowing white.
+    this.hitFlash = 0;
+    if (this.flashApplied) {
+      this.flashApplied = false;
+      this.applyStyle(this.styleColor);
+    }
+    this.deathSnapshot = {
+      kind: this.enemyKind(),
+      x: this.group.position.x,
+      y: this.group.position.y,
+      z: this.group.position.z,
+      groundY: this.groundHeight,
+      yaw: this.group.rotation.y,
+      scale: this.group.scale.x,
+      palette: this.rig.palette,
+    };
     this.shielded = false;
     this.shieldMesh.visible = false;
     this.tellMesh.visible = false;
+    // The rig never plays the death clip itself: update() returns early once
+    // `alive` is false, and the pool hands this enemy straight to the next spawn.
+    // FxSystem stands a separate corpse rig up from the snapshot above and drives
+    // the ragdoll there; this body goes underground so its hit meshes — which stay
+    // in ctx.raycastTargets for the pool's lifetime, and which THREE's raycaster
+    // tests regardless of `visible` — stop catching bullets.
     this.group.visible = false;
     this.group.position.y = -100;
   }
