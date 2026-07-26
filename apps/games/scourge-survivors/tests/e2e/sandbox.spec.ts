@@ -1309,7 +1309,6 @@ test.describe("dev sandbox smoke", () => {
       };
 
       const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
-      const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
       const frame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       const sample = () => {
         const corpse = game.sys.fx.corpses[0];
@@ -1320,6 +1319,22 @@ test.describe("dev sandbox smoke", () => {
           settled: corpse?.settled ?? false,
           opacity: corpse?.rig.materials[0]?.opacity ?? -1,
         };
+      };
+      /**
+       * The settle takes 0.85s of *simulated* time, and the sim clock is not the
+       * wall clock: the frame loop clamps each delta to 0.1s and scales it to 5%
+       * while hitstop runs — and a headshot kill is precisely what starts hitstop.
+       * A throttled runner therefore advances the corpse well behind real time, so
+       * wait for the flag itself and keep wall clock only as a ceiling. Returning
+       * on the flag also keeps this far short of the ~6.35s at which the corpse
+       * begins to fade, which is what the opacity assertion below relies on.
+       */
+      const waitForSettle = async () => {
+        const deadline = performance.now() + 10_000;
+        while (performance.now() < deadline) {
+          if (game.sys.fx.corpses[0]?.settled) return;
+          await frame();
+        }
       };
 
       await game.startSandbox();
@@ -1335,7 +1350,7 @@ test.describe("dev sandbox smoke", () => {
 
       await frame();
       const early = sample();
-      await wait(1200);
+      await waitForSettle();
       const settled = sample();
 
       return {
@@ -1355,8 +1370,10 @@ test.describe("dev sandbox smoke", () => {
     expect(result.early.opacity).toBeCloseTo(1, 1);
     expect(result.early.tilt).toBeLessThan(0.6);
 
-    // …and a second later it has ridden the authored ragdoll to its end pose,
-    // which is the whole point: before this the rig vanished on the kill frame.
+    // …and by the end of the clip it has ridden the authored ragdoll to its end
+    // pose, which is the whole point: before this the rig vanished on the kill
+    // frame. The opacity is still full, so the pose is the settle and not the
+    // start of the fade five seconds later.
     expect(result.settled.count).toBe(1);
     expect(result.settled.settled).toBe(true);
     expect(result.settled.tilt).toBeGreaterThan(result.early.tilt);

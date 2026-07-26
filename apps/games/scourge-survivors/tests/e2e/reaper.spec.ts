@@ -4,9 +4,9 @@ import { SURVIVOR_RUN_CHAPTERS } from "../../src/game/data/survivors";
 
 // The Toll (#278): at the 10:00 mark of a structured Survivors run the breach
 // sends its named reaper, which ends the run one way or the other. These specs
-// fast-forward the run clock to the final second (house style: direct state
-// surgery on __fpsGame), let real frames deliver the arrival, then force each
-// ending deterministically.
+// fast-forward the run clock to each of the arrival's thresholds (house style:
+// direct state surgery on __fpsGame), let real frames deliver every beat, then
+// force each ending deterministically.
 //
 // The run holds its pre-picked arena for the whole descent (#276), and the
 // reaper wears that arena's lore-sourced climax boss. These specs clear
@@ -43,6 +43,7 @@ type DevGame = {
     hud: { emit: () => void };
     survivors: {
       survClock: number;
+      reaperWarned: boolean;
       reaper: DevEnemy | null;
       autoDamageEnemy: (enemy: DevEnemy, dmg: number) => void;
     };
@@ -88,15 +89,35 @@ async function startStructuredRun(page: Page) {
   await expect.poll(() => snapshot(page).then((state) => state.survivors)).toBe(true);
 }
 
-/** Jump the run clock to one second before SURVIVOR_RUN_GOAL_TIME (600s — read
- *  live from ctx.survivorGoalTime), then let real frames cross the threshold:
- *  the final chapter advance first, the warning toast, then the arrival. */
-async function fastForwardToFinalSecond(page: Page) {
+/**
+ * Walk the run to the toll's arrival, one authored beat at a time: the final
+ * chapter advance, the warning inside its lead window, then the arrival itself.
+ *
+ * Each beat waits on a real frame, never on the run clock *accruing*. That clock
+ * is simulated, and the frame loop clamps every delta to 0.1s, so a loaded runner
+ * advances the sim well behind wall time — waiting for a whole simulated second
+ * to elapse is a race the poll can lose while the director is working perfectly.
+ * Writing the clock to each threshold the director tests, rather than to just
+ * under it, makes every beat land on the next frame.
+ */
+async function fastForwardToTheToll(page: Page) {
+  // Inside the warning's lead window but before the arrival: the chapter advance
+  // early-returns on its own frame, then the warning latches on the next.
   await page.evaluate(() => {
     const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
     game.sys.survivors.survClock = game.ctx.survivorGoalTime - 1;
   });
-  await expect.poll(() => snapshot(page).then((state) => state.bossActive), { timeout: 20_000 }).toBe(true);
+  await expect.poll(() => snapshot(page).then((state) => state.runDepth)).toBe(SURVIVOR_RUN_CHAPTERS.length);
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as { __fpsGame: DevGame }).__fpsGame.sys.survivors.reaperWarned))
+    .toBe(true);
+
+  // On the arrival threshold, so the spawn lands on the very next frame.
+  await page.evaluate(() => {
+    const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
+    game.sys.survivors.survClock = game.ctx.survivorGoalTime;
+  });
+  await expect.poll(() => snapshot(page).then((state) => state.bossActive)).toBe(true);
 }
 
 test.describe("the 10:00 reaper (The Toll)", () => {
@@ -118,7 +139,7 @@ test.describe("the 10:00 reaper (The Toll)", () => {
     await boot(page);
     const goldBefore = await shopGold(page);
     await startStructuredRun(page);
-    await fastForwardToFinalSecond(page);
+    await fastForwardToTheToll(page);
 
     // The arrival lands on the final chapter and carries the arena's
     // lore-sourced boss name — never a hardcoded generic boss banner.
@@ -164,7 +185,7 @@ test.describe("the 10:00 reaper (The Toll)", () => {
   test("felling the toll seals the breach", async ({ page }) => {
     await boot(page);
     await startStructuredRun(page);
-    await fastForwardToFinalSecond(page);
+    await fastForwardToTheToll(page);
 
     // Kill the reaper through the house damage path (autoDamageEnemy routes the
     // death through the director's victory branch). One overwhelming hit kills
