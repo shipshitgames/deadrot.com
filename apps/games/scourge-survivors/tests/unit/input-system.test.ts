@@ -183,8 +183,11 @@ function makePointerLockHarness() {
   } as unknown as GameContext;
   const sys = {
     hud: { emit: vi.fn() },
+    // A desktop harness: the touch system exists but reports itself off, which
+    // is what keeps these assertions on the pointer-lock path.
+    touch: { enabled: false, releaseAll: vi.fn() },
     weapon: { stopAds: vi.fn() },
-  } as unknown as Pick<GameSystems, "hud" | "weapon">;
+  } as unknown as Pick<GameSystems, "hud" | "touch" | "weapon">;
 
   return {
     capture: new PointerLockRig(ctx, sys),

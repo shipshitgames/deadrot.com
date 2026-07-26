@@ -4,6 +4,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import { audio } from "./audio/AudioEngine";
 import { HUD } from "./components/HUD";
 import { CinematicOverlay } from "./components/hud/CinematicOverlay";
+import { TouchPad } from "./components/hud/TouchPad";
 import {
   MAGAZINE_SIZE,
   type PickupKind,
@@ -546,6 +547,7 @@ export default function App() {
         suppressMenu={sandboxActive}
       />
       <WarEffortBadge gameRef={gameRef} />
+      <TouchPad gameRef={gameRef} state={hud} />
       {activeCinematic && (
         <CinematicOverlay
           beat={activeCinematic}

@@ -18,6 +18,7 @@ import type { RenderSystem } from "./render/RenderSystem";
 import type { HudSystem } from "./systems/HudSystem";
 import type { InputSystem } from "./systems/InputSystem";
 import type { SurvivorsTelemetrySystem } from "./systems/SurvivorsTelemetrySystem";
+import type { TouchControlSystem } from "./systems/TouchControlSystem";
 
 export interface GameSystems {
   render: RenderSystem;
@@ -33,6 +34,7 @@ export interface GameSystems {
   survivors: SurvivorsSystem;
   multiplayer: MultiplayerSystem;
   input: InputSystem;
+  touch: TouchControlSystem;
   hud: HudSystem;
   telemetry: SurvivorsTelemetrySystem;
   gameOver: GameOverSystem;

@@ -194,12 +194,7 @@ export class InputSystem {
       actionHandler,
       isActive: () => this.ctx.status === "playing",
 
-      onJump: () => {
-        if (this.ctx.canJump) {
-          this.ctx.velocity.y = JUMP_VELOCITY;
-          this.ctx.canJump = false;
-        }
-      },
+      onJump: () => this.tryJump(),
 
       onResumeKey: () => {
         if (this.ctx.status === "paused") this.resumeFromPauseWithoutCapture();
@@ -213,6 +208,10 @@ export class InputSystem {
       },
 
       onPointerDown: (button, event) => {
+        // On a phone the canvas is the look surface and the on-screen pad owns
+        // fire/ADS, so this handler stands down entirely — otherwise a drag to
+        // aim would also pull the trigger.
+        if (this.sys.touch.enabled) return;
         if (this.ctx.status === "playing" && !this.ctx.rig.captured) {
           if (event.target === this.ctx.renderer.domElement) this.requestLock();
           return;
@@ -228,6 +227,7 @@ export class InputSystem {
       },
 
       onPointerUp: (button) => {
+        if (this.sys.touch.enabled) return;
         if (button === 0) this.ctx.firing = false;
         else if (button === 2) this.sys.weapon.stopAds();
       },
@@ -292,6 +292,36 @@ export class InputSystem {
     this.captureRig?.requestCapture();
   }
 
+  /**
+   * The one jump implementation. Reached from the spacebar via the engine
+   * binder's `onJump` hook and from the on-screen button via the touch system,
+   * so both devices share the same ground check and impulse.
+   */
+  tryJump(): void {
+    if (!this.ctx.canJump) return;
+    this.ctx.velocity.y = JUMP_VELOCITY;
+    this.ctx.canJump = false;
+  }
+
+  /**
+   * Start play on a touch device.
+   *
+   * Mirrors {@link resumeFromPauseWithoutCapture}, but from the initial
+   * `pointerlock-needed` state as well as from a pause: a phone has no pointer
+   * lock to acquire, so the prompt is a plain tap-to-start and the game goes
+   * straight to `playing`.
+   */
+  enterPlayFromTouch(): void {
+    if (this.ctx.status !== "pointerlock-needed" && this.ctx.status !== "paused") return;
+    this.ctx.status = "playing";
+    this.ctx.firing = false;
+    this.sys.weapon.stopAds();
+    clearMoveIntent(this.ctx.move);
+    this.clearLocomotionModifiers();
+    this.captureRig?.cancelLockRetry();
+    this.sys.hud.emit();
+  }
+
   resumeFromPauseWithoutCapture(): void {
     if (this.ctx.status !== "paused") return;
     this.ctx.status = "playing";
@@ -321,6 +351,13 @@ export class InputSystem {
     this.cinematicReturnStatus = null;
     if (returnStatus === null) return;
     if (returnStatus === "playing") {
+      // A phone has no lock to re-acquire, so a cutscene hands control straight
+      // back rather than stranding the player on a "click to play" prompt.
+      if (this.sys.touch.enabled) {
+        this.ctx.status = "playing";
+        this.sys.hud.emit();
+        return;
+      }
       this.ctx.status = "pointerlock-needed";
       this.sys.hud.emit();
       this.requestLock();
@@ -344,5 +381,9 @@ export class InputSystem {
   private clearLocomotionModifiers(): void {
     this.ctx.wantsSprint = false;
     this.ctx.wantsCrouch = false;
+    // Every pause and resume path funnels through here, which is also where a
+    // half-finished touch gesture must be dropped — a finger held across a pause
+    // would otherwise resume as a phantom walk or a stuck trigger.
+    this.sys.touch.releaseAll();
   }
 }

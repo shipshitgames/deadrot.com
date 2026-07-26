@@ -46,6 +46,7 @@ import type { GameSystems } from "./systems";
 import { HudSystem } from "./systems/HudSystem";
 import { InputSystem } from "./systems/InputSystem";
 import { SurvivorsTelemetrySystem } from "./systems/SurvivorsTelemetrySystem";
+import { TouchControlSystem } from "./systems/TouchControlSystem";
 import type { StateListener } from "./types";
 
 export type SandboxEnemyKind = "melee" | "ranged" | "flying" | "boss";
@@ -83,6 +84,7 @@ export class Game {
     sys.survivors = new SurvivorsSystem(ctx, sys);
     sys.multiplayer = new MultiplayerSystem(ctx, sys);
     sys.input = new InputSystem(ctx, sys);
+    sys.touch = new TouchControlSystem(ctx, sys);
     sys.hud = new HudSystem(ctx, sys);
     sys.telemetry = new SurvivorsTelemetrySystem(ctx, sys);
     sys.gameOver = new GameOverSystem(ctx, sys);
@@ -94,6 +96,7 @@ export class Game {
     this.sys.render.setupRenderer();
     this.sys.render.setupScene();
     this.sys.input.bindEvents();
+    this.sys.touch.bind();
     this.ctx.clock.start();
     this.sys.hud.emit();
     this.loop();
@@ -136,6 +139,11 @@ export class Game {
     if (this.ctx.dualWeaponTimer > 0) this.ctx.dualWeaponTimer = Math.max(0, this.ctx.dualWeaponTimer - delta);
     this.sys.weapon.tickMeleeTimers(delta);
 
+    // Touch gestures fold into `ctx.move` and the rig's facing first, so the
+    // stick and the look drag land on the same frame the player made them.
+    // No-op on desktop, where pointer lock has already written both.
+    this.sys.touch.update();
+
     this.sys.player.updatePlayerMovement(delta);
     // Doors move before collision resolves, so a swinging panel's collider is
     // current for this frame's push-out rather than one frame stale.
@@ -166,7 +174,15 @@ export class Game {
   // ------------------------------------------------------ public API (App.tsx)
 
   requestLock() {
-    this.sys.input.requestLock();
+    // The start prompt is one button on both devices; only what it does differs.
+    // A phone has no pointer lock to request, so the tap begins play directly.
+    if (this.sys.touch.enabled) this.sys.input.enterPlayFromTouch();
+    else this.sys.input.requestLock();
+  }
+
+  /** The on-screen pad, for the React overlay. Inert on desktop. */
+  get touch(): TouchControlSystem {
+    return this.sys.touch;
   }
 
   resumeFromPauseWithoutCapture() {
@@ -495,6 +511,7 @@ export class Game {
     this.sys.multiplayer.leaveMultiplayer(false);
     this.sys.telemetry?.endRun("abandoned");
     this.sys.input.removeListeners();
+    this.sys.touch.unbind();
 
     this.ctx.rig.dispose();
 
