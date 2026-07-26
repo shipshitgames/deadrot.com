@@ -1,4 +1,6 @@
-// Scratch repro for the claimed reentrant-removal bug. DO NOT COMMIT.
+// Regression coverage for the live chain:
+// resolveHit -> damagePlayer -> onPlayerDamaged (retaliate) -> onEnemyDeath
+// -> sys.projectiles.removeProjectilesFrom(owner), re-entrant during updateProjectiles.
 import * as THREE from "three";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import type { GameContext } from "../../src/game/context";
@@ -27,7 +29,7 @@ beforeAll(async () => {
 
 function makeShot(overrides: Partial<EnemyShot> = {}): EnemyShot {
   return {
-    origin: new THREE.Vector3(0, 1.8, 0),
+    origin: new THREE.Vector3(0, 1.8, 0), // on the player => immediate hit
     dir: new THREE.Vector3(0, 0, 1),
     damage: 8,
     speed: 0.001,
@@ -36,60 +38,63 @@ function makeShot(overrides: Partial<EnemyShot> = {}): EnemyShot {
   };
 }
 
-describe("reentrant removal via damagePlayer (simulated retaliate kill of the owner)", () => {
-  it("single projectile: removeProjectile(i) after reentrant splice", () => {
+describe("re-entrant removeProjectilesFrom during resolveHit", () => {
+  it("single projectile: damagePlayer killing the shooter (retaliate) does not crash the frame", () => {
     const scene = new THREE.Scene();
     const body = new THREE.Object3D();
     body.position.set(0, 1.8, 0);
-    const owner = {} as Enemy;
     const ctx = {
       scene,
       body,
       bounds: { containsXZ: () => true },
       obstacleBoxes: [],
     } as unknown as GameContext;
-    // damagePlayer reenters exactly like the real chain:
-    // damagePlayer -> survivors.onPlayerDamaged -> retaliate kill -> pve.onEnemyDeath
-    // -> projectiles.removeProjectilesFrom(owner)
+    const shooter = {} as Enemy;
+    // damagePlayer does what the live path does: retaliate kills the shooter,
+    // onEnemyDeath fizzles the dead mob's in-flight projectiles.
     const sys = {
       player: {
-        damagePlayer: vi.fn(() => {
-          system.removeProjectilesFrom(owner);
-        }),
+        damagePlayer: () => {
+          system.removeProjectilesFrom(shooter); // PveDirectorSystem.ts:172
+        },
       },
     } as unknown as GameSystems;
     const system = new ProjectilesSystem(ctx, sys);
-    system.spawnProjectile(makeShot(), owner); // spawned at the player -> immediate hit
+    system.spawnProjectile(makeShot(), shooter); // PveDirectorSystem.ts:314
     expect(() => system.updateProjectiles(0.016)).not.toThrow();
   });
 
-  it("several projectiles: wrong projectile removed after reentrant splice", () => {
+  it("two projectiles: re-entrant removal preserves an unrelated live projectile", () => {
     const scene = new THREE.Scene();
     const body = new THREE.Object3D();
     body.position.set(0, 1.8, 0);
-    const ownerA = {} as Enemy; // shoots the hitting projectile
-    const ownerB = {} as Enemy; // innocent bystander projectile
     const ctx = {
       scene,
       body,
       bounds: { containsXZ: () => true },
       obstacleBoxes: [],
     } as unknown as GameContext;
+    const shooter = {} as Enemy;
+    const bystander = {} as Enemy;
     const sys = {
       player: {
-        damagePlayer: vi.fn(() => {
-          system.removeProjectilesFrom(ownerA);
-        }),
+        damagePlayer: () => {
+          system.removeProjectilesFrom(shooter);
+        },
       },
     } as unknown as GameSystems;
     const system = new ProjectilesSystem(ctx, sys);
-    // index 0: ownerA's projectile AT the player (will hit, processed last in the backwards loop)
-    system.spawnProjectile(makeShot(), ownerA);
-    // index 1: ownerB's projectile far away (should keep flying)
-    system.spawnProjectile(makeShot({ origin: new THREE.Vector3(50, 1.8, 0) }), ownerB);
+    // index 0: bystander's projectile far away (no hit, plenty of TTL)
+    system.spawnProjectile(makeShot({ origin: new THREE.Vector3(40, 1.8, 0) }), bystander);
+    // index 1: shooter's projectile on the player (hit). Reverse loop visits it first at i=1.
+    system.spawnProjectile(makeShot(), shooter);
+    const bystanderDispose = vi.spyOn(system.projectiles[0].mesh.material, "dispose");
     system.updateProjectiles(0.016);
-    // ownerB's projectile must survive the frame
+    // The bystander's projectile is nowhere near the player and has plenty of
+    // TTL left, so it has to survive the frame. Losing it is the signature of
+    // the re-entrant splice shifting indices under the reverse loop.
     expect(system.projectiles).toHaveLength(1);
-    expect(system.projectiles[0]?.owner).toBe(ownerB);
+    expect(system.projectiles[0]?.owner).toBe(bystander);
+    expect(bystanderDispose).not.toHaveBeenCalled();
   });
 });
