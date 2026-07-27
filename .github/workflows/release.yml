@@ -327,9 +327,9 @@ jobs:
               ;;
           esac
       # Co-located deploy: ship ONLY deadrot's compose + deploy script (never the
-      # api.shipshit.dev toolkit), then bring up the `deadrot-api` container on the
+      # api.shipshit.dev toolkit), then bring up the `api-deadrot-com` container on the
       # shared `shipshit` docker network — the host's Caddy proxies api.deadrot.com
-      # -> deadrot-api:3004 by name. deploy-deadrot.sh hydrates deadrot's OWN env
+      # -> api-deadrot-com:3004 by name. deploy-deadrot.sh hydrates deadrot's OWN env
       # from the /shipshit/production/deadrot SSM subtree (in AWS_REGION, default
       # us-east-1) -> the deadrot-api RDS; it does NOT reuse the host's shared
       # .env.production.

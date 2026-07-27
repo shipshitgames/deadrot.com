@@ -2,14 +2,14 @@
 # Runs ON the us-west-1 EC2 host that serves api.deadrot.com (52.8.153.188 /
 # i-00e74422e719396c3), co-located with api.shipshit.dev. CI scps this +
 # docker-compose.deadrot.yml to ~/cloud/docker and invokes it over Tailscale SSH.
-# Deploys ONLY the deadrot-api container and hydrates deadrot's OWN env from its
+# Deploys ONLY the api-deadrot-com container and hydrates deadrot's OWN env from its
 # dedicated SSM subtree — it never touches the api.shipshit.dev compose, scripts,
 # container, or its shared .env.production.
 #
-# The container is named `deadrot-api` and joins the shared external `shipshit`
-# docker network; the host's Caddy proxies api.deadrot.com -> deadrot-api:3004 by
+# The container is named `api-deadrot-com` and joins the shared external `shipshit`
+# docker network; the host's Caddy proxies api.deadrot.com -> api-deadrot-com:3004 by
 # name. The first run of this cuts the box over from its legacy ECR bootstrap
-# container to the ghcr image (it removes + recreates the `deadrot-api` container).
+# container to the ghcr image (it removes + recreates the `api-deadrot-com` container).
 #
 # Required env (exported by the CI deploy step):
 #   IMAGE_TAG   — image tag to run (github.sha)
@@ -29,7 +29,7 @@ cd "$(dirname "$0")" # ~/cloud/docker
 
 COMPOSE="docker-compose.deadrot.yml"
 ENV_FILE=".env.deadrot.production"
-CONTAINER="deadrot-api"
+CONTAINER="api-deadrot-com"
 NETWORK="shipshit"
 AWS_REGION="${AWS_REGION:-us-east-1}"
 export AWS_REGION
@@ -110,7 +110,7 @@ prev_image="$(docker inspect --format '{{.Config.Image}}' "${CONTAINER}" 2>/dev/
 [ -n "${prev_image}" ] && echo "==> current ${CONTAINER} image: ${prev_image}"
 
 # Restore the previously-running image so a bad release does not leave
-# api.deadrot.com (Caddy -> deadrot-api:3004) serving 502s. Best-effort but loud;
+# api.deadrot.com (Caddy -> api-deadrot-com:3004) serving 502s. Best-effort but loud;
 # invoked on BOTH the start-failure and health-failure paths. ghcr login is still
 # active here (logout is deferred to the verdict) so a re-pull can authenticate.
 rollback() {
@@ -129,7 +129,7 @@ rollback() {
   return 1
 }
 
-# The live `deadrot-api` container may not be owned by this compose project (the
+# The live `api-deadrot-com` container may not be owned by this compose project (the
 # legacy bootstrap created it with `docker run`), so `compose up` would hit a name
 # conflict. Remove it first, then recreate from the compose definition. From here
 # the old container is gone, so any failure must ATTEMPT ROLLBACK rather than abort
