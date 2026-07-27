@@ -1,6 +1,6 @@
 # Deadrot API — production deploy
 
-The Deadrot API (a Bun + Postgres service) runs as the **`deadrot-api`** Docker
+The Deadrot API (a Bun + Postgres service) runs as the **`api-deadrot-com`** Docker
 container on the **us-west-1** EC2 host that serves `api.deadrot.com`
 (**`52.8.153.188`** / instance `i-00e74422e719396c3`), **co-located alongside
 `api.shipshit.dev`** (its `shipshit-api` container) — one box for both, since
@@ -15,11 +15,11 @@ The host runs a shared **`shipshit-caddy`** reverse proxy and a shared external
 over that network:
 
 ```
-api.deadrot.com   -> deadrot-api:3004   (this service)
-api.shipshit.dev  -> shipshit-api:3003  (sibling, deployed by shipshit.games)
+api.deadrot.com    -> api-deadrot-com:3004     (this service)
+api.shipshit.games -> api-shipshit-games:3005  (sibling, deployed by shipshit.games)
 ```
 
-So `container_name: deadrot-api` and joining the `shipshit` network are
+So `container_name: api-deadrot-com` and joining the `shipshit` network are
 **load-bearing** — Caddy finds the upstream by that exact name. The container also
 publishes `127.0.0.1:3004` purely so the host-side deploy health check can curl it;
 public traffic always arrives via Caddy.
@@ -27,9 +27,9 @@ public traffic always arrives via Caddy.
 > **Historical drift this corrects.** (1) The deploy used to SSH to the tailnet
 > node `shipshit-api` (`100.73.69.120` → the **old us-east-1 box** `98.93.179.83`,
 > no deadrot DB, decommission-bound); it now targets the us-west-1 host via the
-> `TAILSCALE_INSTANCE_API_IP` repo variable. (2) The committed compose named the
-> container `api-deadrot-com` with no shared network — Caddy would never have found
-> it; it is now `deadrot-api` on the `shipshit` network. (3) The box's live
+> `TAILSCALE_INSTANCE_API_IP` repo variable. (2) The container now follows the
+> hostname-derived `api-deadrot-com` convention on the shared `shipshit` network.
+> (3) The box's original live
 > container was a legacy **ECR** bootstrap image; the first release cuts it over to
 > the repo's **ghcr** image.
 
@@ -48,7 +48,7 @@ public traffic always arrives via Caddy.
    renders deadrot's **own** `.env.deadrot.production` from the
    `/shipshit/production/deadrot` SSM subtree (in `AWS_REGION`, default `us-east-1`),
    ensures the `shipshit` network exists, pulls the image, removes the pre-existing
-   `deadrot-api` container, `compose up -d` the new one, and waits on
+   `api-deadrot-com` container, `compose up -d` the new one, and waits on
    `http://127.0.0.1:3004/health/ready` — **rolling back to the previous image** if
    it does not become healthy.
 
@@ -69,7 +69,7 @@ public traffic always arrives via Caddy.
 
 ### Isolation from `api.shipshit.dev`
 
-- Separate container (`deadrot-api` vs `shipshit-api`) and port (`3004` vs `3003`),
+- Separate container (`api-deadrot-com` vs `api-shipshit-games`) and port (`3004` vs `3005`),
   sharing only the `shipshit` network + Caddy. The deploy **never writes the
   api.shipshit.dev toolkit files** (`docker-compose.production.yml`,
   `deploy-production.sh`, `render-ssm-env.sh`, the shared `~/cloud/.env.production`,
@@ -79,7 +79,7 @@ public traffic always arrives via Caddy.
 
 ## First release = ECR → ghcr cutover
 
-`api.deadrot.com` serves today from the legacy ECR `deadrot-api` container. The
+`api.deadrot.com` originally served from the legacy ECR `deadrot-api` container. The
 first `v*` tag **removes and recreates** that container from the ghcr image.
 Because the container name is reused (Caddy routes by name), this is a
 remove-then-recreate, so there is a **brief 502 blip** between `rm` and the new
@@ -110,7 +110,7 @@ deploy** (same single-container pattern api.shipshit.dev uses). Safeguards:
   host's instance role (`shipshit-api-ssm-role`) reads it **with decryption** (8
   params). ✅
 - **DNS / fronting:** `api.deadrot.com` → `52.8.153.188`, fronted by Caddy →
-  `deadrot-api:3004`. No DNS change in this deploy.
+  `api-deadrot-com:3004`. No DNS change in this deploy.
 
 The remaining step is to **merge this PR** so master's `release.yml` carries the
 repoint + gates; then a `vX.Y.Z` tag performs the ECR → ghcr cutover.
