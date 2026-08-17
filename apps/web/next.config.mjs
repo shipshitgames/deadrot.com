@@ -37,7 +37,11 @@ const nextConfig = {
   trailingSlash: true,
   // The lore data layer (@shipshitgames/assets/lore) ships as workspace TS source.
   transpilePackages: ["@shipshitgames/assets"],
-  images: { remotePatterns: assetRemotePatterns },
+  images: {
+    // Assets are already delivered by the configured CDN/origin.
+    unoptimized: true,
+    remotePatterns: assetRemotePatterns,
+  },
   async rewrites() {
     if (useLocalGames) return [];
     return Object.entries(GAME_DEPLOYS).flatMap(([slug, url]) => [
