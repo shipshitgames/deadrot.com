@@ -32,6 +32,7 @@ import { FxSystem } from "./entities/FxSystem";
 import { PickupsSystem } from "./entities/PickupsSystem";
 import { PlayerSystem } from "./entities/PlayerSystem";
 import { ProjectilesSystem } from "./entities/ProjectilesSystem";
+import { StructureSystem } from "./entities/StructureSystem";
 import { WeaponSystem } from "./entities/WeaponSystem";
 import { GameOverSystem } from "./modes/GameOverSystem";
 import { MissionSystem } from "./modes/MissionSystem";
@@ -45,6 +46,7 @@ import type { GameSystems } from "./systems";
 import { HudSystem } from "./systems/HudSystem";
 import { InputSystem } from "./systems/InputSystem";
 import { SurvivorsTelemetrySystem } from "./systems/SurvivorsTelemetrySystem";
+import { TouchControlSystem } from "./systems/TouchControlSystem";
 import type { StateListener } from "./types";
 
 export type SandboxEnemyKind = "melee" | "ranged" | "flying" | "boss";
@@ -75,15 +77,32 @@ export class Game {
     sys.weapon = new WeaponSystem(ctx, sys);
     sys.projectiles = new ProjectilesSystem(ctx, sys);
     sys.pickups = new PickupsSystem(ctx, sys);
+    sys.structures = new StructureSystem(ctx, sys);
     sys.fx = new FxSystem(ctx, sys);
     sys.pve = new PveDirectorSystem(ctx, sys);
     sys.mission = new MissionSystem(ctx, sys);
     sys.survivors = new SurvivorsSystem(ctx, sys);
     sys.multiplayer = new MultiplayerSystem(ctx, sys);
     sys.input = new InputSystem(ctx, sys);
+    sys.touch = new TouchControlSystem(ctx, sys);
     sys.hud = new HudSystem(ctx, sys);
     sys.telemetry = new SurvivorsTelemetrySystem(ctx, sys);
     sys.gameOver = new GameOverSystem(ctx, sys);
+  }
+
+  /**
+   * Whether the combat rig actually exists yet.
+   *
+   * `status` is a HUD concept and says nothing about the renderer: the weapon
+   * group, its muzzle flash sprites and the survivor systems are only built
+   * once {@link prepareCombat} has streamed its assets in. Every legitimate
+   * entry point flips `status` from inside that continuation, so this is true
+   * before any real run simulates — it exists so that a `status` written from
+   * outside (the sandbox harness forces it to skip pointer lock) cannot drive
+   * `update` into a half-built rig.
+   */
+  get combatReady(): boolean {
+    return this.weaponInitialized && this.survivorsInitialized;
   }
 
   // ---------------------------------------------------------------- lifecycle
@@ -92,6 +111,7 @@ export class Game {
     this.sys.render.setupRenderer();
     this.sys.render.setupScene();
     this.sys.input.bindEvents();
+    this.sys.touch.bind();
     this.ctx.clock.start();
     this.sys.hud.emit();
     this.loop();
@@ -112,7 +132,7 @@ export class Game {
       delta = realDelta * 0.05;
     }
 
-    if (this.ctx.status === "playing") this.update(delta, elapsed);
+    if (this.ctx.status === "playing" && this.combatReady) this.update(delta, elapsed);
     else if (this.ctx.status !== "paused") this.sys.fx.updateEffects(realDelta);
     // When paused, nothing simulates — the frame is just re-rendered as-is.
 
@@ -134,7 +154,15 @@ export class Game {
     if (this.ctx.dualWeaponTimer > 0) this.ctx.dualWeaponTimer = Math.max(0, this.ctx.dualWeaponTimer - delta);
     this.sys.weapon.tickMeleeTimers(delta);
 
+    // Touch gestures fold into `ctx.move` and the rig's facing first, so the
+    // stick and the look drag land on the same frame the player made them.
+    // No-op on desktop, where pointer lock has already written both.
+    this.sys.touch.update();
+
     this.sys.player.updatePlayerMovement(delta);
+    // Doors move before collision resolves, so a swinging panel's collider is
+    // current for this frame's push-out rather than one frame stale.
+    this.sys.structures.update(delta);
     this.sys.player.resolveCollisions();
     this.sys.weapon.updateWeapon(delta);
     this.sys.fx.updateEffects(delta);
@@ -161,7 +189,15 @@ export class Game {
   // ------------------------------------------------------ public API (App.tsx)
 
   requestLock() {
+    // The start prompt is one button on both devices; only what it does differs,
+    // and that split lives in `InputSystem.requestLock` so the six mode call
+    // sites get the same device policy this one does.
     this.sys.input.requestLock();
+  }
+
+  /** The on-screen pad, for the React overlay. Inert on desktop. */
+  get touch(): TouchControlSystem {
+    return this.sys.touch;
   }
 
   resumeFromPauseWithoutCapture() {
@@ -311,7 +347,7 @@ export class Game {
         });
       }
       this.ctx.bounds.clampXZ(enemy.position, 1.5);
-      this.sys.player.pushOutOfObstacles(enemy.position, enemy.radius);
+      this.sys.player.pushOutOfObstacles(enemy.position, enemy.radius, enemy.traversalHeight);
     }
     this.sys.hud.showToast(`LAB SPAWN: ${kind.toUpperCase()} ×${n}`);
     this.sys.hud.emit();
@@ -329,17 +365,13 @@ export class Game {
       const dz = enemy.position.z - player.z;
       const len = Math.hypot(dx, dz) || 1;
       const dmg = amount < 0 ? enemy.health + 1 : amount;
+      // Captured before the hit lands: a lethal one parks the body underground.
+      const numberAt = enemy.bodyPoint(headshot ? 1.85 : 1.35);
+      const sparkAt = enemy.bodyPoint(headshot ? 1.8 : 1.25);
       const res = enemy.takeDamage(dmg, headshot, 6, dx / len, dz / len);
       if (!res.blocked) {
-        this.sys.hud.addDamageNumber(
-          enemy.position.clone().setY(headshot ? 1.85 : 1.35),
-          dmg,
-          headshot ? "head" : "normal",
-        );
-        this.sys.fx.spawnImpactSpark(
-          enemy.position.clone().setY(headshot ? 1.8 : 1.25),
-          headshot ? 0xffffff : 0xffd166,
-        );
+        this.sys.hud.addDamageNumber(numberAt, dmg, headshot ? "head" : "normal");
+        this.sys.fx.spawnImpactSpark(sparkAt, headshot ? 0xffffff : 0xffd166);
       }
       if (res.died) {
         if (headshot) this.ctx.headshots++;
@@ -367,7 +399,10 @@ export class Game {
   spawnSandboxPickup(kind: PickupKind) {
     if (!this.ctx.sandbox) return;
     const pos = this.pointInFront(5);
-    this.sys.pickups.spawnPickup(kind, pos.x, pos.z);
+    // Drop it on the player's own floor: the collection gate checks vertical reach
+    // as well as distance, so a lab pickup left on the arena plane is unreachable
+    // from a building's upper storey.
+    this.sys.pickups.spawnPickup(kind, pos.x, pos.z, pos.y);
     const last = this.sys.pickups.pickups[this.sys.pickups.pickups.length - 1];
     if (last) last.age = Math.min(last.age, PICKUP_TTL - 3);
     this.sys.hud.showToast(`LAB PICKUP: ${kind.toUpperCase()}`);
@@ -471,13 +506,20 @@ export class Game {
     this.sys.weapon.applyWeaponModel(active);
   }
 
+  /**
+   * A spot on the floor the player is standing on, `distance` metres ahead of
+   * them. `body` is the camera, so its Y is the eye — the floor is a stance below
+   * it, and a storey up when the lab is run inside a building. Returning the
+   * arena plane instead would drop lab spawns through the deck the player is on.
+   */
   private pointInFront(distance: number): THREE.Vector3 {
     const origin = this.ctx.body.position;
     const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(this.ctx.rig.facing);
     fwd.y = 0;
     if (fwd.lengthSq() < 0.001) fwd.set(0, 0, -1);
     fwd.normalize();
-    const pos = new THREE.Vector3(origin.x + fwd.x * distance, 0, origin.z + fwd.z * distance);
+    const floorY = origin.y - this.ctx.stanceHeight;
+    const pos = new THREE.Vector3(origin.x + fwd.x * distance, floorY, origin.z + fwd.z * distance);
     this.ctx.bounds.clampXZ(pos, 1.5);
     return pos;
   }
@@ -490,6 +532,7 @@ export class Game {
     this.sys.multiplayer.leaveMultiplayer(false);
     this.sys.telemetry?.endRun("abandoned");
     this.sys.input.removeListeners();
+    this.sys.touch.unbind();
 
     this.ctx.rig.dispose();
 

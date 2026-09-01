@@ -31,6 +31,9 @@ export const MAGAZINE_SIZE = 15;
 export const START_RESERVE = 75;
 export const RELOAD_TIME = 1.2; // seconds
 export const HEADSHOT_MULTIPLIER = 2.2;
+// Gap between dry-fire clicks while the trigger is held on a dead gun. Slower
+// than any weapon's cadence so an empty gun sounds empty, not like it is firing.
+export const DRY_FIRE_INTERVAL = 0.35; // seconds
 
 // Cautery Cleaver — always available (no ammo), the guaranteed fallback so you
 // can never be locked out of fighting when ammo runs dry. Works in every mode.
@@ -51,6 +54,27 @@ export const ENEMY_ATTACK_DAMAGE = 9;
 export const ENEMY_ATTACK_INTERVAL = 0.9; // seconds between an enemy's hits
 export const ENEMY_SCORE = 100;
 export const ENEMY_SEPARATION = 1.4; // soft push so they don't perfectly stack
+/**
+ * Fraction of its standing height an enemy occupies while ducking through a low
+ * opening. The player already has this affordance — crouch — so the horde gets it
+ * at the same ratio, and a doorway sized for a crouching player also admits a
+ * walker whose head is above the lintel.
+ *
+ * Without it the *art silhouette* is what gets tested against a doorway: a ranged
+ * walker stands 2.5m tall against an authored 2.4m lintel, so it never enters a
+ * building, and every elite (×1.25) is locked out of all of them. The storeys
+ * can't be stretched to fit instead — a 3.4m storey has no room for the ~3.2m
+ * door an elite would need.
+ *
+ * Only overhead colliders are affected. `PlayerSystem.pushOutOfObstacles` skips a
+ * box solely when the body stands on top of it or passes entirely beneath it, and
+ * a wall sitting on the floor has `min.y === 0`, so a shorter traversal height can
+ * never leak an enemy through one. Window openings still turn the horde away on
+ * their sill. The tallest silhouettes — a breach boss, the reaper, a hovering
+ * flyer — stay far too tall to duck under an authored door, which is the intent:
+ * they break in through the walls instead.
+ */
+export const ENEMY_STOOP_RATIO = PLAYER_CROUCH_HEIGHT / PLAYER_HEIGHT;
 
 // ---- Waves ----------------------------------------------------------------
 export interface WaveConfig {
@@ -275,6 +299,12 @@ export const WEAPON_ORDER: WeaponId[] = ["pistol", "smg", "shotgun", "cannon", "
 export type PickupKind = "health" | "ammo" | "damage" | "dual" | WeaponId;
 export const PICKUP_DROP_CHANCE = 0.5; // chance a normal kill drops something
 export const PICKUP_RADIUS = 1.7; // walk within this to collect
+/**
+ * How far above or below the player's feet a drop can still be reached. Generous
+ * enough to cover a stair tread or the lip of a ramp, tight enough that a drop on
+ * a building's upper storey cannot be collected from the floor below it.
+ */
+export const PICKUP_VERTICAL_REACH = 1.6;
 export const PICKUP_TTL = 16; // seconds before a drop despawns
 export const HEALTH_PICKUP_AMOUNT = 35;
 const BERSERK_DAMAGE_MULT = 2;

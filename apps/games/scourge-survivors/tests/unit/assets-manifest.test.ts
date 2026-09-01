@@ -2,8 +2,6 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import animationManifest from "@shipshitgames/assets/games/scourge-survivors/animations/scourge/animation-pack.json";
-import comicAnimationManifest from "@shipshitgames/assets/games/scourge-survivors/animations/scourge-comic/animation-pack.json";
 import manifest from "@shipshitgames/assets/games/scourge-survivors/assets.json";
 import { describe, expect, it } from "vitest";
 import { ASSET_CATALOG } from "../../src/assets/catalog";
@@ -62,23 +60,6 @@ function scourgeEnemySpritePaths() {
     for (const view of Object.values(manifest.sprites[id].views)) paths.push(view.path);
   }
 
-  for (const entity of Object.values(animationManifest.entities) as Array<{
-    actions: Record<string, { pathTemplate: string }>;
-  }>) {
-    for (const action of Object.values(entity.actions)) {
-      for (const view of animationManifest.views) {
-        for (let frame = 0; frame < animationManifest.framesPerAction; frame += 1) {
-          const frameId = String(frame).padStart(2, "0");
-          paths.push(
-            `games/scourge-survivors/${action.pathTemplate.replace("{view}", view).replace("{frame}", frameId)}`,
-          );
-        }
-      }
-    }
-  }
-
-  for (const page of animationManifest.runtimeAtlas.pages) paths.push(page.path);
-
   return paths.sort();
 }
 
@@ -127,12 +108,6 @@ describe("asset manifest", () => {
   it("resolves runtime catalog aliases to real manifest entries", () => {
     for (const [kind, ref] of Object.entries(manifest.runtime.enemies)) {
       expect(manifest.sprites[ref.sprite as keyof typeof manifest.sprites], `${kind} sprite`).toBeTruthy();
-
-      const entity = animationManifest.entities[ref.animation.entity as keyof typeof animationManifest.entities];
-      expect(entity, `${kind} animation entity`).toBeTruthy();
-      for (const [state, action] of Object.entries(ref.animation.actions)) {
-        expect(entity.actions[action as keyof typeof entity.actions], `${kind} ${state} animation`).toBeTruthy();
-      }
     }
 
     for (const [domain, refs] of Object.entries({
@@ -263,35 +238,13 @@ describe("asset manifest", () => {
       expect(entry.dimensions, `${view} padded runtime plate`).toEqual([128, 180]);
       expect(entry.scale, `${view} low-wide world scale`).toEqual([3.3, 3.5]);
     }
-
-    for (const [pack, spriteId] of [
-      [animationManifest, "boss"],
-      [comicAnimationManifest, "comic-boss"],
-    ] as const) {
-      const entity = pack.entities["breach-boss"];
-      expect(entity.status).toBe("placeholder-static");
-      expect(entity.placeholder).toBe(true);
-
-      for (const [view, entry] of Object.entries(manifest.sprites[spriteId].views)) {
-        const staticBytes = readFileSync(join(assetsRoot, entry.path));
-        for (const action of Object.values(entity.actions)) {
-          for (let frame = 0; frame < pack.framesPerAction; frame += 1) {
-            const frameId = String(frame).padStart(2, "0");
-            const framePath = `games/scourge-survivors/${action.pathTemplate
-              .replace("{view}", view)
-              .replace("{frame}", frameId)}`;
-            expect(readFileSync(join(assetsRoot, framePath)), framePath).toEqual(staticBytes);
-          }
-        }
-      }
-    }
-  }, 15_000);
+  });
 
   it("keeps Scourge enemy sprite cutouts on the cleaned alpha baseline", () => {
     const hash = createHash("sha256");
     const paths = scourgeEnemySpritePaths();
 
-    expect(paths).toHaveLength(286);
+    expect(paths).toHaveLength(15);
 
     for (const path of paths) {
       hash.update(path);
@@ -300,7 +253,7 @@ describe("asset manifest", () => {
       hash.update("\0");
     }
 
-    expect(hash.digest("hex")).toBe("8b88f51140887b56bfffd5d26576c5b63964ce595138d300b84dc0705360565f");
+    expect(hash.digest("hex")).toBe("c4a847d868d3cf501192d6229aa7cab892831c9e9fc23b3a9249bdd0e7f05b97");
   });
 
   it("defines weapon sprite metadata needed for first-person runtime placement", () => {

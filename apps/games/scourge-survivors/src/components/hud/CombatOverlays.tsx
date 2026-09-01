@@ -1,4 +1,5 @@
 import { SCOURGE_THREAT_TIERS } from "../../game/data/enemies";
+import { isCoarsePointer } from "../../game/touchControls";
 import type { HudState } from "../../game/types";
 import { PixelIcon } from "../PixelIcon";
 import {
@@ -184,6 +185,7 @@ export function CombatOverlays({ state }: { state: HudState }) {
     reserve,
     reloading,
     reloadProgress,
+    interactPrompt,
     score,
     kills,
     headshots,
@@ -247,6 +249,21 @@ export function CombatOverlays({ state }: { state: HudState }) {
   return (
     <>
       {playing && <Crosshair berserk={berserkActive} />}
+      {playing && interactPrompt && (
+        <div
+          className={`absolute top-[calc(50%+34px)] left-1/2 -translate-x-1/2 rounded-[3px] border bg-black/55 px-3 py-[5px] font-mono text-[12px] font-bold uppercase tracking-[0.14em] ${
+            interactPrompt.includes("LOCKED")
+              ? "border-[rgba(255,77,109,0.45)] text-danger [text-shadow:0_0_10px_rgba(255,77,109,0.55)]"
+              : "border-[rgba(255,178,107,0.45)] text-[#ffd166] [text-shadow:0_0_10px_rgba(255,209,102,0.55)]"
+          }`}
+          data-testid="interact-prompt"
+          aria-hidden
+        >
+          {/* The key hint belongs to the keyboard only: a phone player interacts
+              through TouchPad's own button and has no `E` to press. */}
+          {isCoarsePointer() || interactPrompt.includes("LOCKED") ? interactPrompt : `[E] ${interactPrompt}`}
+        </div>
+      )}
       {playing && (
         <div
           className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-[4px] border border-white/12 bg-black/45 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/55"

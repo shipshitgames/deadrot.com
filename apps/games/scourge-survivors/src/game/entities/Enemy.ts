@@ -22,31 +22,73 @@ import {
   ENEMY_SEPARATION,
   ENEMY_SPEED_MAX,
   ENEMY_SPEED_MIN,
+  ENEMY_STOOP_RATIO,
 } from "../constants";
 import { ENEMY_ARCHETYPES, type EnemyArchetypeId } from "../data/enemies";
-import { chooseMovementDirectionalSpriteFrame, type DirectionalSpriteView } from "../directionalSprites";
 import {
-  ENEMY_SPRITE_ANIMATION_META,
-  ENEMY_SPRITE_ANIMATION_TEXTURES,
-  ENEMY_SPRITE_SCALES,
-  ENEMY_SPRITE_TEXTURES,
-  type EnemySpriteAnimationState,
-} from "../spriteAssets";
+  copyEnemyPose,
+  createEnemyPose,
+  type EnemyAnimState,
+  evaluateEnemyPose,
+} from "../render/models/enemyAnimation";
+import {
+  applyEnemyRigPose,
+  buildEnemyRig,
+  configureEnemyRig,
+  disposeEnemyRig,
+  type EnemyRig,
+  type EnemyRigKind,
+  type EnemyRigPalette,
+  resetEnemyRigPose,
+} from "../render/models/enemyRig";
 import { chasePlayerStrategy, redirectBlockedRangedRetreat } from "./ChasePlayerStrategy";
 
 const HEALTHBAR_WIDTH = 0.95;
-const BOSS_HIT_RADIUS_TO_SPRITE_WIDTH = 0.3;
+const BOSS_HIT_RADIUS_TO_VISUAL_WIDTH = 0.3;
+const BOSS_BASE_VISUAL_WIDTH = 3.3;
 // Keep oversized boss variants navigable in crowded arenas; the clamp is still
 // wider than the legacy boss radius while preventing Reaper-scale body blocking.
 const BOSS_HIT_RADIUS_MAX = 3;
 const BOSS_SHIELD_RADIUS = 1.5;
-type EnemySpriteKind = "melee" | "ranged" | "flying" | "hound" | "boss";
-type EnemySpriteView = DirectionalSpriteView;
+const ANIMATION_CROSSFADE_DURATION = 0.12;
+const ATTACK_ANIMATION_DURATION = 0.72;
+const HIT_ANIMATION_DURATION = 0.24;
+/** Written and consumed inside one synchronous spawnAt, so one is safe. */
+const BODY_BOUNDS = new THREE.Box3();
+/** Floor on the measured body height — a rig that somehow measures flat still
+ *  has to collide as a body, not as a puddle. */
+const MIN_BODY_HEIGHT = 0.6;
 
 export interface DamageResult {
   died: boolean;
   headshot: boolean;
   blocked: boolean;
+}
+
+/**
+ * Everything a corpse needs to stand where its enemy fell, captured at the
+ * moment of death because none of it survives the frame.
+ *
+ * `kill()` has to hide the dying enemy immediately: the pool hands the first
+ * `!alive` enemy to the very next spawn (`PveDirectorSystem.getFreeEnemy`), and
+ * a dead enemy's hit meshes stay registered in `ctx.raycastTargets` for the
+ * lifetime of the pool while THREE's raycaster ignores `visible` — so parking
+ * the group underground is what stops a body soaking bullets. The rig therefore
+ * cannot play its own death clip, and `FxSystem` stands a separate pooled rig up
+ * from this snapshot instead.
+ */
+export interface EnemyDeathSnapshot {
+  kind: EnemyRigKind;
+  x: number;
+  /** Height it died at — a winged host dies in the air. */
+  y: number;
+  z: number;
+  /** Floor beneath that spot, so the fall has somewhere to land. */
+  groundY: number;
+  yaw: number;
+  scale: number;
+  /** The look to copy, never to share: this rig is about to be restyled. */
+  palette: EnemyRigPalette;
 }
 
 /** A single shot the enemy wants to fire this frame. */
@@ -76,7 +118,7 @@ export interface SpawnConfig {
   /** Authored walkable surface beneath this spawn (zero for flat arenas). */
   groundHeight?: number;
   splitCount?: number;
-  /** Elite wave affix: tints the sprite and drives affix behaviour (Survivors). */
+  /** Elite wave affix: tints the rig and drives affix behaviour (Survivors). */
   eliteAffix?: EliteAffixId | null;
   /** Damage absorbed before health (the "shielded" elite affix). */
   overshield?: number;
@@ -98,6 +140,29 @@ export interface SpawnConfig {
 export class Enemy extends Agent {
   readonly group = new THREE.Group();
   readonly hitMeshes: THREE.Mesh[] = [];
+
+  /**
+   * Standing height of the configured rig above {@link position}, in world units
+   * with scale already applied. Collision needs this: without a vertical extent
+   * every obstacle is an infinite column, and the lintel over a doorway shoves
+   * the horde back out of the building (see `PlayerSystem.pushOutOfObstacles`).
+   *
+   * Measured off the rig's own hit meshes at spawn rather than declared as a
+   * constant, so each kind — and the boss's much taller silhouette — reports the
+   * body a bullet can actually hit, and no number drifts from the models.
+   */
+  bodyHeight = MIN_BODY_HEIGHT;
+
+  /**
+   * Height to test against overhead colliders while pathing — the ducked body,
+   * not the standing silhouette. {@link bodyHeight} stays the honest measured
+   * height a bullet can hit; this is the one collision reads, so a walker taller
+   * than a doorway ducks through it instead of being shoved back out into the
+   * street. See {@link ENEMY_STOOP_RATIO} for why walls are unaffected.
+   */
+  get traversalHeight() {
+    return this.bodyHeight * ENEMY_STOOP_RATIO;
+  }
 
   maxHealth = ENEMY_MAX_HEALTH;
   health = ENEMY_MAX_HEALTH;
@@ -156,71 +221,35 @@ export class Enemy extends Agent {
   /** Read by the steering strategy: which way a ranged bot strafes. */
   strafeSign = 1;
 
-  private bodyMat: THREE.MeshStandardMaterial;
+  private rig: EnemyRig;
   private eyeMat: THREE.MeshStandardMaterial;
   private healthFill: THREE.Mesh;
   private healthBarGroup = new THREE.Group();
   private shieldMesh: THREE.Mesh;
   private tellMesh: THREE.Mesh;
-  private spriteMat: THREE.SpriteMaterial;
-  private sprite: THREE.Sprite;
-  private spriteView: EnemySpriteView = "front";
-  private spriteFlip = 1;
-  private spriteAnimationState: EnemySpriteAnimationState | "static" = "static";
-  private spriteAnimationFrame = 0;
-  private spriteAnimationTime = 0;
-  private forcedSpriteAnimation: EnemySpriteAnimationState | null = null;
-  private forcedSpriteAnimationTimer = 0;
+  private animationState: EnemyAnimState = "idle";
+  private animationStateTime = 0;
+  private animationBlend = 1;
+  private animationGaitPhase = 0;
+  private attackAnimationTimer = 0;
+  private currentPose = createEnemyPose();
+  private transitionPose = createEnemyPose();
+  private styleColor = 0xff5a3c;
+  private flashApplied = false;
   private muzzle = new THREE.Vector3();
+  /** Replaced wholesale by {@link kill}; read by {@link deathFx} right after. */
+  private deathSnapshot: EnemyDeathSnapshot;
 
   constructor() {
     super();
-    this.bodyMat = new THREE.MeshStandardMaterial({
-      color: 0xff5a3c,
-      emissive: 0x000000,
-      roughness: 0.55,
-      metalness: 0.25,
-    });
-
-    const legs = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.7, 0.55), this.bodyMat);
-    legs.position.y = 0.35;
-    legs.castShadow = true;
-    legs.userData = { enemy: this, part: "body" };
-
-    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.75, 0.6), this.bodyMat);
-    torso.position.y = 1.08;
-    torso.castShadow = true;
-    torso.userData = { enemy: this, part: "body" };
-
-    const headMat = new THREE.MeshStandardMaterial({ color: 0x222831, roughness: 0.4, metalness: 0.5 });
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.55), headMat);
-    head.position.y = 1.78;
-    head.castShadow = true;
-    head.userData = { enemy: this, part: "head" };
-
-    this.eyeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xff3b30, emissiveIntensity: 2.2 });
-    const eyeGeo = new THREE.BoxGeometry(0.12, 0.1, 0.06);
-    const eyeL = new THREE.Mesh(eyeGeo, this.eyeMat);
-    eyeL.position.set(-0.13, 1.82, 0.3);
-    const eyeR = new THREE.Mesh(eyeGeo, this.eyeMat);
-    eyeR.position.set(0.13, 1.82, 0.3);
-
-    for (const part of [legs, torso, head, eyeL, eyeR]) part.visible = false;
-    this.group.add(legs, torso, head, eyeL, eyeR);
-    this.hitMeshes.push(legs, torso, head);
-
-    this.spriteMat = new THREE.SpriteMaterial({
-      map: ENEMY_SPRITE_TEXTURES.melee.front,
-      color: 0xffffff,
-      transparent: true,
-      alphaTest: 0.06,
-      depthWrite: true,
-      toneMapped: false,
-    });
-    this.sprite = new THREE.Sprite(this.spriteMat);
-    this.sprite.center.set(0.5, 0);
-    this.sprite.position.y = 0;
-    this.group.add(this.sprite);
+    this.rig = buildEnemyRig("melee");
+    this.deathSnapshot = { kind: "melee", x: 0, y: 0, z: 0, groundY: 0, yaw: 0, scale: 1, palette: this.rig.palette };
+    this.eyeMat = this.rig.palette.eye;
+    for (const mesh of this.rig.hitMeshes) {
+      mesh.userData.enemy = this;
+    }
+    this.hitMeshes.push(...this.rig.hitMeshes);
+    this.group.add(this.rig.root);
 
     const barBg = new THREE.Mesh(
       new THREE.PlaneGeometry(HEALTHBAR_WIDTH + 0.08, 0.16),
@@ -317,168 +346,180 @@ export class Enemy extends Agent {
     this.chargeWindup = 0;
     this.chargeTimer = 0;
     this.chargeCooldown = 1.1 + Math.random() * 1.2;
-    this.spriteAnimationState = "static";
-    this.spriteAnimationFrame = 0;
-    this.spriteAnimationTime = 0;
-    this.forcedSpriteAnimation = null;
-    this.forcedSpriteAnimationTimer = 0;
+    this.animationState = this.flying ? "hover" : "idle";
+    this.animationStateTime = 0;
+    this.animationBlend = 1;
+    this.animationGaitPhase = this.bobPhase;
+    this.attackAnimationTimer = 0;
+    this.flashApplied = false;
     this.knockX = 0;
     this.knockZ = 0;
     this.tellMesh.visible = false;
 
     const scale = cfg.scale ?? 1;
+    configureEnemyRig(this.rig, this.enemyKind());
+    resetEnemyRigPose(this.rig);
     this.group.scale.setScalar(scale);
     this.radius = this.isBoss
-      ? Math.min(ENEMY_SPRITE_SCALES.boss.front[0] * scale * BOSS_HIT_RADIUS_TO_SPRITE_WIDTH, BOSS_HIT_RADIUS_MAX)
+      ? Math.min(BOSS_BASE_VISUAL_WIDTH * scale * BOSS_HIT_RADIUS_TO_VISUAL_WIDTH, BOSS_HIT_RADIUS_MAX)
       : ENEMY_RADIUS * (this.flying ? scale * 0.72 : 1);
-    const bossShieldScale = ENEMY_SPRITE_SCALES.boss.front[0] / (BOSS_SHIELD_RADIUS * 2);
+    const bossShieldScale = BOSS_BASE_VISUAL_WIDTH / (BOSS_SHIELD_RADIUS * 2);
     this.shieldMesh.scale.set(this.isBoss ? bossShieldScale : 1, 1, this.isBoss ? bossShieldScale : 1);
 
     this.applyStyle(cfg.color ?? 0xff5a3c);
-    this.applySprite();
     this.group.position.set(x, this.groundHeight + this.hoverHeight, z);
+    this.group.rotation.set(0, 0, 0);
     this.group.visible = true;
+    evaluateEnemyPose(this.animationState, this.enemyKind(), 0, 0, 1, undefined, this.currentPose);
+    copyEnemyPose(this.currentPose, this.transitionPose);
+    applyEnemyRigPose(this.rig, this.currentPose);
+    this.rig.muzzle.getWorldPosition(this.muzzle);
+    this.measureBodyHeight();
     this.updateHealthBar();
   }
 
-  private spriteKind(): EnemySpriteKind {
+  /** Refresh {@link bodyHeight} from the posed rig. Only the hit meshes are
+   *  measured: the health bar floats above the head and the telegraph ring flares
+   *  wider than the body, and neither is something the world should collide with.
+   *  Spawn-time only — a pose swing moves limbs, not the silhouette collision
+   *  cares about. */
+  private measureBodyHeight() {
+    this.group.updateMatrixWorld(true);
+    BODY_BOUNDS.makeEmpty();
+    for (const mesh of this.rig.hitMeshes) BODY_BOUNDS.expandByObject(mesh);
+    const measured = BODY_BOUNDS.isEmpty() ? 0 : BODY_BOUNDS.max.y - this.group.position.y;
+    this.bodyHeight = Math.max(MIN_BODY_HEIGHT, measured);
+  }
+
+  private enemyKind(): EnemyRigKind {
     if (this.isBoss) return "boss";
     if (this.flying) return "flying";
     if (this.archetype === "hound") return "hound";
     return this.ranged ? "ranged" : "melee";
   }
 
-  private applySprite(view: EnemySpriteView = "front", flip = 1, elapsed = 0, moving = false, delta = 0) {
-    const kind = this.spriteKind();
-    const animation = this.resolveSpriteAnimation(moving);
-    const texture = this.spriteTexture(kind, view, animation, delta);
-
-    if (this.spriteMat.map !== texture) {
-      this.spriteMat.map = texture;
-      this.spriteMat.needsUpdate = true;
-    }
-    this.spriteView = view;
-    this.spriteFlip = flip;
-
-    const [baseW, baseH] = ENEMY_SPRITE_SCALES[kind][view];
-    const step = moving ? Math.sin(elapsed * (this.speed * 2.8) + this.bobPhase) : 0;
-    const squash = Math.abs(step);
-    // hit-flash: blow the sprite white-hot and punch its scale up briefly
-    const flash = this.hitFlash > 0 ? this.hitFlash / 0.08 : 0;
-    if (flash > 0) this.spriteMat.color.setRGB(1 + flash * 1.5, 1 + flash * 1.15, 1 + flash * 0.9);
-    else this.spriteMat.color.setHex(0xffffff);
-    const punch = 1 + flash * 0.26;
-    if (flash <= 0 && (this.telegraphTimer > 0 || this.chargeWindup > 0)) {
-      this.spriteMat.color.setHex(this.archetype === "shooter" ? 0xbdefff : 0xffd166);
-    } else if (flash <= 0 && this.staggerTimer > 0) {
-      this.spriteMat.color.setRGB(1.2, 0.78, 0.78);
-    } else if (flash <= 0 && this.eliteAffix) {
-      // elite affix tint (boosted past 1 in spawnAt so it reads emissive)
-      this.spriteMat.color.copy(this.eliteTint);
-    }
-    this.spriteMat.rotation = moving ? step * 0.035 * flip : 0;
-    this.sprite.scale.set(baseW * (1 + squash * 0.025) * flip * punch, baseH * (1 - squash * 0.035) * punch, 1);
-    this.sprite.position.y = moving ? squash * 0.035 : 0;
-  }
-
-  private resolveSpriteAnimation(moving: boolean): EnemySpriteAnimationState | "static" {
-    if (this.forcedSpriteAnimation && this.forcedSpriteAnimationTimer > 0) return this.forcedSpriteAnimation;
-    const kind = this.spriteKind();
-    if (kind === "boss" || kind === "flying") return "move";
-    return moving ? "move" : "static";
-  }
-
-  private spriteTexture(
-    kind: EnemySpriteKind,
-    view: EnemySpriteView,
-    animation: EnemySpriteAnimationState | "static",
-    delta: number,
-  ): THREE.Texture {
-    if (animation === "static") {
-      this.spriteAnimationState = "static";
-      this.spriteAnimationFrame = 0;
-      this.spriteAnimationTime = 0;
-      return ENEMY_SPRITE_TEXTURES[kind][view];
-    }
-
-    const meta = ENEMY_SPRITE_ANIMATION_META[kind][animation];
-    const frames = ENEMY_SPRITE_ANIMATION_TEXTURES[kind][animation][view];
-    if (this.spriteAnimationState !== animation) {
-      this.spriteAnimationState = animation;
-      this.spriteAnimationFrame = 0;
-      this.spriteAnimationTime = 0;
-    } else {
-      this.spriteAnimationTime += delta;
-      const frameTime = 1 / meta.fps;
-      while (this.spriteAnimationTime >= frameTime) {
-        this.spriteAnimationTime -= frameTime;
-        this.spriteAnimationFrame = meta.loop
-          ? (this.spriteAnimationFrame + 1) % meta.frameCount
-          : Math.min(meta.frameCount - 1, this.spriteAnimationFrame + 1);
-      }
-    }
-    return frames[Math.min(this.spriteAnimationFrame, frames.length - 1)] ?? ENEMY_SPRITE_TEXTURES[kind][view];
-  }
-
-  private triggerSpriteAnimation(animation: EnemySpriteAnimationState, duration: number) {
-    if (this.forcedSpriteAnimation !== animation || this.forcedSpriteAnimationTimer <= 0) {
-      this.spriteAnimationState = "static";
-      this.spriteAnimationFrame = 0;
-      this.spriteAnimationTime = 0;
-    }
-    this.forcedSpriteAnimation = animation;
-    this.forcedSpriteAnimationTimer = Math.max(this.forcedSpriteAnimationTimer, duration);
-  }
-
-  private attackAnimationDuration(): number {
-    const meta = ENEMY_SPRITE_ANIMATION_META[this.spriteKind()].attack;
-    return meta.frameCount / meta.fps;
-  }
-
   deathFx() {
     return {
-      kind: this.spriteKind(),
-      view: this.spriteView,
-      flip: this.spriteFlip,
+      kind: this.enemyKind(),
+      /** Captured by {@link kill} — by now the group is already parked underground. */
+      corpse: this.deathSnapshot,
     };
   }
 
-  private chooseSpriteFrame(
-    moveX: number,
-    moveZ: number,
-    dirX: number,
-    dirZ: number,
-  ): { view: EnemySpriteView; flip: number } {
-    return chooseMovementDirectionalSpriteFrame(moveX, moveZ, dirX, dirZ, {
-      fallback: {
-        sector: this.spriteView === "side" ? (this.spriteFlip >= 0 ? "right" : "left") : this.spriteView,
-        view: this.spriteView,
-        flip: this.spriteFlip,
-      },
-      minLength: 0.05,
-      mirrorBasis: "viewer",
-    });
-  }
-
   private applyStyle(color: number) {
+    this.styleColor = color;
+    const { body, dark, accent, eye } = this.rig.palette;
     if (this.isBoss) {
-      this.bodyMat.color.setHex(color);
-      this.bodyMat.emissive.setHex(color);
-      this.bodyMat.emissiveIntensity = 0.9;
-      this.bodyMat.metalness = 0.1;
-      this.bodyMat.roughness = 0.45;
-      this.eyeMat.emissive.setHex(0xffe000);
-      this.eyeMat.emissiveIntensity = 4;
+      body.color.setHex(color);
+      body.emissive.setHex(color);
+      body.emissiveIntensity = 0.9;
+      body.metalness = 0.1;
+      body.roughness = 0.45;
+      dark.color.setHex(0x17151b);
+      dark.emissive.setHex(0x2d0710);
+      dark.emissiveIntensity = 0.8;
+      accent.color.setHex(0xb6e61d);
+      accent.emissive.setHex(0x6d990b);
+      accent.emissiveIntensity = 1.8;
+      eye.color.setHex(0xffffff);
+      eye.emissive.setHex(0xffe000);
+      eye.emissiveIntensity = 4;
       (this.healthFill.material as THREE.MeshBasicMaterial).color.setHex(0xff2d55);
     } else {
-      const c = new THREE.Color(color);
-      this.bodyMat.color.setHex(color);
-      this.bodyMat.emissive.copy(c).multiplyScalar(this.ranged ? 0.45 : 0.22);
-      this.bodyMat.emissiveIntensity = 1;
-      this.bodyMat.metalness = 0.25;
-      this.bodyMat.roughness = 0.55;
-      this.eyeMat.emissive.setHex(this.ranged ? 0x35e0ff : 0xff3b30);
-      this.eyeMat.emissiveIntensity = this.ranged ? 3 : 2.2;
+      body.color.setHex(color);
+      body.emissive.copy(body.color).multiplyScalar(this.ranged ? 0.45 : 0.22);
+      body.emissiveIntensity = 1;
+      body.metalness = 0.25;
+      body.roughness = 0.55;
+      dark.color.setHex(this.flying ? 0x202615 : 0x181b22);
+      dark.emissive.copy(body.emissive).multiplyScalar(0.22);
+      dark.emissiveIntensity = 0.65;
+      accent.color.setHex(this.ranged ? 0x35e0ff : 0x8bdc1f);
+      accent.emissive.copy(accent.color).multiplyScalar(0.62);
+      accent.emissiveIntensity = 1.45;
+      eye.color.setHex(0xffffff);
+      eye.emissive.setHex(this.ranged ? 0x35e0ff : 0xff3b30);
+      eye.emissiveIntensity = this.ranged ? 3 : 2.2;
+
+      if (this.eliteAffix) {
+        body.color.lerp(this.eliteTint, 0.58);
+        body.emissive.copy(this.eliteTint).multiplyScalar(0.42);
+        dark.color.lerp(this.eliteTint, 0.28);
+        accent.color.copy(this.eliteTint);
+        accent.emissive.copy(this.eliteTint).multiplyScalar(0.72);
+      }
+    }
+  }
+
+  private triggerAttackAnimation() {
+    this.attackAnimationTimer = Math.max(this.attackAnimationTimer, ATTACK_ANIMATION_DURATION);
+  }
+
+  private transitionAnimation(next: EnemyAnimState) {
+    if (this.animationState === next) return;
+    copyEnemyPose(this.currentPose, this.transitionPose);
+    this.animationState = next;
+    this.animationStateTime = 0;
+    this.animationBlend = 0;
+  }
+
+  private updateRigAnimation(delta: number, moveSpeed: number) {
+    const speed01 = Math.min(1, moveSpeed / Math.max(0.001, this.speed));
+    this.animationGaitPhase += delta * (4.2 + speed01 * 5.8);
+    if (this.attackAnimationTimer > 0) {
+      this.attackAnimationTimer = Math.max(0, this.attackAnimationTimer - delta);
+    }
+
+    let next: EnemyAnimState;
+    if (this.staggerTimer > 0) next = "hit";
+    else if (this.attackAnimationTimer > 0 || this.telegraphTimer > 0 || this.chargeWindup > 0) next = "attack";
+    else if (this.flying) next = "hover";
+    else if (speed01 > 0.72) next = "run";
+    else if (speed01 > 0.04) next = "walk";
+    else next = "idle";
+    this.transitionAnimation(next);
+
+    this.animationStateTime += delta;
+    this.animationBlend = Math.min(1, this.animationBlend + delta / ANIMATION_CROSSFADE_DURATION);
+    let sampleTime = this.animationStateTime;
+    if (this.animationState === "walk" || this.animationState === "run" || this.animationState === "hover") {
+      sampleTime = this.animationGaitPhase;
+    } else if (this.animationState === "attack") {
+      sampleTime = Math.min(1, this.animationStateTime / ATTACK_ANIMATION_DURATION);
+    } else if (this.animationState === "hit") {
+      sampleTime = Math.min(1, this.animationStateTime / HIT_ANIMATION_DURATION);
+    }
+    evaluateEnemyPose(
+      this.animationState,
+      this.enemyKind(),
+      sampleTime,
+      speed01,
+      this.animationBlend,
+      this.transitionPose,
+      this.currentPose,
+    );
+    applyEnemyRigPose(this.rig, this.currentPose);
+  }
+
+  private updateRigReaction() {
+    const flash = this.hitFlash > 0 ? this.hitFlash / 0.08 : 0;
+    if (flash <= 0) {
+      this.rig.root.scale.setScalar(1);
+      if (this.flashApplied) {
+        this.flashApplied = false;
+        this.applyStyle(this.styleColor);
+      }
+      return;
+    }
+
+    this.flashApplied = true;
+    const punch = 1 + flash * 0.26;
+    this.rig.root.scale.setScalar(punch);
+    for (const material of this.rig.materials) {
+      if (!(material instanceof THREE.MeshStandardMaterial)) continue;
+      material.color.setRGB(1 + flash * 1.5, 1 + flash * 1.15, 1 + flash * 0.9);
+      material.emissive.setRGB(1.2 * flash, 0.72 * flash, 0.42 * flash);
+      material.emissiveIntensity = 1.4;
     }
   }
 
@@ -490,7 +531,10 @@ export class Enemy extends Agent {
     peers: Enemy[],
     cameraQuat: THREE.Quaternion,
     bounds: WorldBounds,
-    groundHeightAt?: (x: number, z: number) => number,
+    /** Walkable height at (x,z). `fromY` is the storey the enemy is currently
+     *  standing on, so the resolver can keep it under a building deck instead of
+     *  teleporting it to the roof. */
+    groundHeightAt?: (x: number, z: number, fromY: number) => number,
   ): EnemyTick {
     const tick: EnemyTick = { melee: 0, shots: [] };
     if (!this.alive) return tick;
@@ -570,22 +614,21 @@ export class Enemy extends Agent {
       const m = this.shieldMesh.material as THREE.MeshBasicMaterial;
       if (m.opacity > 0.25) m.opacity = Math.max(0.25, m.opacity - delta * 1.4);
     }
-    if (this.forcedSpriteAnimationTimer > 0) {
-      this.forcedSpriteAnimationTimer = Math.max(0, this.forcedSpriteAnimationTimer - delta);
-      if (this.forcedSpriteAnimationTimer <= 0) this.forcedSpriteAnimation = null;
-    }
 
     bounds.clampXZ(pos, 1.5);
-    if (groundHeightAt) this.groundHeight = groundHeightAt(pos.x, pos.z);
+    if (groundHeightAt) this.groundHeight = groundHeightAt(pos.x, pos.z, this.groundHeight);
 
-    this.group.rotation.y = Math.atan2(dirX, dirZ);
+    const moveSpeed = Math.hypot(move.x, move.z);
+    const facesTarget = this.ranged || this.isBoss || this.telegraphTimer > 0 || moveSpeed <= 0.05;
+    this.group.rotation.y = facesTarget ? Math.atan2(dirX, dirZ) : Math.atan2(move.x, move.z);
     pos.y =
       this.groundHeight +
       (this.flying
         ? this.hoverHeight + Math.sin(elapsed * (this.speed * 1.25) + this.bobPhase) * 0.18
         : Math.abs(Math.sin(elapsed * (this.speed * 1.6) + this.bobPhase)) * 0.07);
-    const frame = this.chooseSpriteFrame(move.x, move.z, dirX, dirZ);
-    this.applySprite(frame.view, frame.flip, elapsed, Math.hypot(move.x, move.z) > 0.05, delta);
+    this.updateRigAnimation(delta, moveSpeed);
+    this.updateRigReaction();
+    this.rig.muzzle.getWorldPosition(this.muzzle);
     this.healthBarGroup.quaternion.copy(cameraQuat);
     this.updateTell(delta);
 
@@ -599,7 +642,7 @@ export class Enemy extends Agent {
       if (this.attackTimer <= 0) {
         tick.melee += this.attackDamage;
         this.attackTimer = this.attackInterval;
-        this.triggerSpriteAnimation("attack", this.attackAnimationDuration());
+        this.triggerAttackAnimation();
         this.eyeMat.emissiveIntensity = this.isBoss ? 7 : 4.5;
       }
     }
@@ -620,7 +663,7 @@ export class Enemy extends Agent {
         this.fireTimer -= delta;
         if (this.fireTimer <= 0) {
           this.telegraphTimer = this.isBoss ? 0.16 : 0.34;
-          this.triggerSpriteAnimation("attack", this.attackAnimationDuration());
+          this.triggerAttackAnimation();
           this.eyeMat.emissiveIntensity = this.isBoss ? 7 : 5.6;
         }
       }
@@ -689,7 +732,7 @@ export class Enemy extends Agent {
         this.shieldMesh.visible = true;
       } else {
         // projectile barrage fanned around the player direction
-        this.triggerSpriteAnimation("attack", this.attackAnimationDuration());
+        this.triggerAttackAnimation();
         const base = Math.atan2(dirX, dirZ);
         const denom = Math.max(1, BOSS_BARRAGE_COUNT - 1);
         for (let i = 0; i < BOSS_BARRAGE_COUNT; i++) {
@@ -704,8 +747,7 @@ export class Enemy extends Agent {
   }
 
   private chestOrigin(): THREE.Vector3 {
-    const s = this.group.scale.y;
-    return this.muzzle.set(this.group.position.x, this.group.position.y + 1.25 * s, this.group.position.z);
+    return this.rig.muzzle.getWorldPosition(this.muzzle);
   }
 
   private makeShot(playerPos: THREE.Vector3, jitter: number): EnemyShot {
@@ -772,15 +814,58 @@ export class Enemy extends Agent {
   kill() {
     // isBoss left intact so death handlers can detect a boss kill; reset on next spawn.
     this.alive = false;
+    this.animationState = "death";
+    this.animationStateTime = 0;
+    this.animationBlend = 1;
+    // Drop the impact flash before snapshotting. takeDamage sets hitFlash on the
+    // lethal hit too, and updateRigReaction writes white-hot RGB straight into the
+    // palette — so on any multi-hit kill the palette here holds the flash, not the
+    // enemy's styling, and the corpse would settle glowing white.
+    this.hitFlash = 0;
+    if (this.flashApplied) {
+      this.flashApplied = false;
+      this.applyStyle(this.styleColor);
+    }
+    this.deathSnapshot = {
+      kind: this.enemyKind(),
+      x: this.group.position.x,
+      y: this.group.position.y,
+      z: this.group.position.z,
+      groundY: this.groundHeight,
+      yaw: this.group.rotation.y,
+      scale: this.group.scale.x,
+      palette: this.rig.palette,
+    };
     this.shielded = false;
     this.shieldMesh.visible = false;
     this.tellMesh.visible = false;
+    // The rig never plays the death clip itself: update() returns early once
+    // `alive` is false, and the pool hands this enemy straight to the next spawn.
+    // FxSystem stands a separate corpse rig up from the snapshot above and drives
+    // the ragdoll there; this body goes underground so its hit meshes — which stay
+    // in ctx.raycastTargets for the pool's lifetime, and which THREE's raycaster
+    // tests regardless of `visible` — stop catching bullets.
     this.group.visible = false;
     this.group.position.y = -100;
   }
 
   get position(): THREE.Vector3 {
     return this.group.position;
+  }
+
+  /**
+   * A fresh world point `height` above this enemy's feet — where hit feedback
+   * (damage numbers, blood, impact sparks) belongs.
+   *
+   * Two reasons this exists rather than `enemy.position.clone().setY(1.4)`:
+   * `position.y` is the deck the enemy stands on (plus any hover), so an absolute
+   * Y drags a second-storey hit's feedback down to the arena plane; and a lethal
+   * hit has already run {@link kill}, which parks the group at y = -100 (see
+   * {@link EnemyDeathSnapshot}), so callers must read this *before* calling
+   * {@link takeDamage} and the returned vector has to be a detached copy.
+   */
+  bodyPoint(height: number): THREE.Vector3 {
+    return new THREE.Vector3(this.group.position.x, this.group.position.y + height, this.group.position.z);
   }
 
   private updateHealthBar() {
@@ -794,6 +879,7 @@ export class Enemy extends Agent {
   }
 
   dispose() {
+    disposeEnemyRig(this.rig);
     this.group.traverse((obj) => {
       if (obj instanceof THREE.Mesh) {
         obj.geometry.dispose();

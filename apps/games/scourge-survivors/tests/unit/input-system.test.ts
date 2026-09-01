@@ -118,6 +118,46 @@ describe("Scourge Survivors FPS input policy", () => {
     expect(sys.hud.emit).toHaveBeenCalledTimes(1);
   });
 
+  it("requests pointer lock when the player has a mouse", () => {
+    const { ctx, sys } = makePointerLockHarness();
+    const { captureRig, input } = makeInputWithStubbedRig(ctx, sys);
+
+    input.requestLock();
+
+    expect(captureRig.requestCapture).toHaveBeenCalledTimes(1);
+  });
+
+  it("never requests pointer lock on a coarse pointer, and starts play instead", () => {
+    const { ctx, sys } = makePointerLockHarness({ touch: true });
+    const { captureRig, input } = makeInputWithStubbedRig(ctx, sys);
+
+    input.requestLock();
+
+    // A *granted* lock retargets every pointer event to the locked canvas, which
+    // starves the on-screen pad: gestures land on the canvas instead of the pad,
+    // and the pad's own setPointerCapture calls throw InvalidStateError. Whether
+    // the browser grants the request varies by platform, so the request itself
+    // has to not happen — every mode call site reaches play through here.
+    expect(captureRig.requestCapture).not.toHaveBeenCalled();
+    expect(ctx.status).toBe("playing");
+  });
+
+  it("leaves an already-live touch run untouched when a mode closes an overlay", () => {
+    const { ctx, sys } = makePointerLockHarness({ touch: true });
+    ctx.status = "playing";
+    const { captureRig, input } = makeInputWithStubbedRig(ctx, sys);
+
+    // Closing a level-up draft sets `playing` and then asks for the lock back.
+    input.requestLock();
+
+    expect(captureRig.requestCapture).not.toHaveBeenCalled();
+    expect(ctx.status).toBe("playing");
+    // Nothing to rebuild, so a held ADS toggle survives the draft on a phone
+    // exactly as the held mouse button does on a desktop.
+    expect(sys.weapon.stopAds).not.toHaveBeenCalled();
+    expect(sys.hud.emit).not.toHaveBeenCalled();
+  });
+
   it("suspends live input for a cinematic and restores the capture boundary", () => {
     const { ctx, sys } = makePointerLockHarness();
     ctx.status = "playing";
@@ -160,7 +200,22 @@ describe("Scourge Survivors FPS input policy", () => {
   });
 });
 
-function makePointerLockHarness() {
+/**
+ * An `InputSystem` with a stubbed capture rig. `bindEvents()` is what normally
+ * builds the rig, and it needs a live DOM, so the field is injected instead —
+ * the assertions here are about *whether* capture is requested, not about the
+ * pointer-lock plumbing itself, which {@link PointerLockRig} covers above.
+ */
+function makeInputWithStubbedRig(ctx: GameContext, sys: HarnessSystems) {
+  const captureRig = { cancelLockRetry: vi.fn(), requestCapture: vi.fn() };
+  const input = new InputSystem(ctx, sys as unknown as GameSystems);
+  (input as unknown as { captureRig: typeof captureRig }).captureRig = captureRig;
+  return { captureRig, input };
+}
+
+type HarnessSystems = Pick<GameSystems, "hud" | "touch" | "weapon">;
+
+function makePointerLockHarness({ touch = false }: { touch?: boolean } = {}) {
   const listeners: Partial<Record<"capture" | "release", () => void>> = {};
   const rig = {
     captured: false,
@@ -183,8 +238,11 @@ function makePointerLockHarness() {
   } as unknown as GameContext;
   const sys = {
     hud: { emit: vi.fn() },
+    // Desktop by default: the touch system exists but reports itself off, which
+    // is what keeps most of these assertions on the pointer-lock path.
+    touch: { enabled: touch, releaseAll: vi.fn() },
     weapon: { stopAds: vi.fn() },
-  } as unknown as Pick<GameSystems, "hud" | "weapon">;
+  } as unknown as HarnessSystems;
 
   return {
     capture: new PointerLockRig(ctx, sys),

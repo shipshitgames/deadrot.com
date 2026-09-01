@@ -6,6 +6,7 @@ import type { FxSystem } from "./entities/FxSystem";
 import type { PickupsSystem } from "./entities/PickupsSystem";
 import type { PlayerSystem } from "./entities/PlayerSystem";
 import type { ProjectilesSystem } from "./entities/ProjectilesSystem";
+import type { StructureSystem } from "./entities/StructureSystem";
 import type { WeaponSystem } from "./entities/WeaponSystem";
 import type { GameOverSystem } from "./modes/GameOverSystem";
 import type { MissionSystem } from "./modes/MissionSystem";
@@ -17,6 +18,7 @@ import type { RenderSystem } from "./render/RenderSystem";
 import type { HudSystem } from "./systems/HudSystem";
 import type { InputSystem } from "./systems/InputSystem";
 import type { SurvivorsTelemetrySystem } from "./systems/SurvivorsTelemetrySystem";
+import type { TouchControlSystem } from "./systems/TouchControlSystem";
 
 export interface GameSystems {
   render: RenderSystem;
@@ -25,12 +27,14 @@ export interface GameSystems {
   weapon: WeaponSystem;
   projectiles: ProjectilesSystem;
   pickups: PickupsSystem;
+  structures: StructureSystem;
   fx: FxSystem;
   pve: PveDirectorSystem;
   mission: MissionSystem;
   survivors: SurvivorsSystem;
   multiplayer: MultiplayerSystem;
   input: InputSystem;
+  touch: TouchControlSystem;
   hud: HudSystem;
   telemetry: SurvivorsTelemetrySystem;
   gameOver: GameOverSystem;

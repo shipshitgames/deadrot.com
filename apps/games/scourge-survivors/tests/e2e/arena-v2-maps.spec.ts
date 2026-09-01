@@ -20,6 +20,8 @@ type ArenaDebugSnapshot = {
   obstacleBoxes: number;
   /** Raised walkable AABBs (v2 room floors + platforms + ramp steps); 0 for flat maps. */
   surfaceBoxes: number;
+  /** Building floor decks + roofs; 0 for maps that author no structures. */
+  deckBoxes: number;
   /** Populated only when the current map carries a normalized v2 layout — the
    *  honest proof that MAPS routed the map through normalizeArenaLayout. */
   layout: {
@@ -27,6 +29,7 @@ type ArenaDebugSnapshot = {
     levels: number;
     ramps: number;
     platforms: number;
+    structures: number;
     flattenedObstacles: number;
     anchors: { playerSpawn: number; breachSpawn: number; objective: number; extraction: number };
   } | null;
@@ -115,6 +118,7 @@ test.describe("arena v2 map layouts", () => {
         levels: 1,
         ramps: 0,
         platforms: 0,
+        structures: 0,
         flattenedObstacles: result.solidMeshes - 4,
         anchors: { playerSpawn: 1, breachSpawn: 0, objective: 0, extraction: 0 },
       });
@@ -126,6 +130,7 @@ test.describe("arena v2 map layouts", () => {
       // walkable geometry. Colliders are the non-elevated obstacles, so they never
       // exceed the flattened obstacle count (some maps mark decals as `elevated`).
       expect(result.surfaceBoxes, `${result.mapId} surfaceBoxes`).toBe(0);
+      expect(result.deckBoxes, `${result.mapId} deckBoxes`).toBe(0);
       expect(result.obstacleBoxes, `${result.mapId} obstacleBoxes`).toBeLessThanOrEqual(result.solidMeshes - 4);
       expect(result.obstacleBoxes, `${result.mapId} obstacleBoxes`).toBeGreaterThan(0);
     }
@@ -173,6 +178,7 @@ test.describe("arena v2 map layouts", () => {
       levels: 2,
       ramps: 1,
       platforms: 2,
+      structures: 0,
       flattenedObstacles: 8,
       anchors: { playerSpawn: 1, breachSpawn: 3, objective: 1, extraction: 0 },
     });
@@ -186,8 +192,11 @@ test.describe("arena v2 map layouts", () => {
     expect(result.obstacleBoxes).toBe(result.layout?.flattenedObstacles);
     expect(result.solidMeshes).toBeGreaterThan(result.layout!.flattenedObstacles + 4);
     // Every solid mesh beyond the 4 walls and the obstacle meshes is a raised
-    // walkable surface: solidMeshes = 4 walls + obstacles + surfaces.
-    expect(result.surfaceBoxes).toBe(result.solidMeshes - 4 - result.layout!.flattenedObstacles);
+    // walkable surface: solidMeshes = 4 walls + obstacles + surfaces + decks.
+    // Gantry authors no buildings, so the deck term is 0 here — spelled out so
+    // the invariant stays honest on maps that do.
+    expect(result.deckBoxes).toBe(0);
+    expect(result.surfaceBoxes + result.deckBoxes).toBe(result.solidMeshes - 4 - result.layout!.flattenedObstacles);
     // All geometry is still shootable.
     expect(result.raycastTargets).toBe(result.solidMeshes);
 
@@ -234,9 +243,105 @@ test.describe("arena v2 map layouts", () => {
       levels: 1,
       ramps: 0,
       platforms: 0,
+      structures: 0,
       flattenedObstacles: 11,
       anchors: { playerSpawn: 1, breachSpawn: 2, objective: 1, extraction: 0 },
     });
     expect(consoleErrors).toEqual([]);
   });
+
+  // The two building maps are the first shipped layouts that author `structures`,
+  // so they are the only place the deck/surface split is exercised end to end:
+  // every map above asserts `deckBoxes === 0`.
+  const buildingMaps = [
+    {
+      id: "warren-blocks",
+      name: "Warren Blocks",
+      bounds: { minX: -56, maxX: 56, minZ: -48, maxZ: 48 },
+      layout: {
+        rooms: 3,
+        levels: 2,
+        ramps: 3,
+        platforms: 0,
+        structures: 3,
+        flattenedObstacles: 15,
+        anchors: { playerSpawn: 1, breachSpawn: 3, objective: 1, extraction: 0 },
+      },
+    },
+    {
+      id: "cinder-stacks",
+      name: "Cinder Stacks",
+      bounds: { minX: -48, maxX: 48, minZ: -44, maxZ: 44 },
+      layout: {
+        rooms: 2,
+        levels: 3,
+        ramps: 4,
+        platforms: 0,
+        structures: 3,
+        flattenedObstacles: 10,
+        anchors: { playerSpawn: 1, breachSpawn: 3, objective: 1, extraction: 0 },
+      },
+    },
+  ] as const;
+
+  for (const map of buildingMaps) {
+    test(`boots ${map.name} with enterable, multi-storey buildings`, async ({ page }) => {
+      const consoleErrors: string[] = [];
+      page.on("console", (msg) => {
+        if (msg.type() === "error") consoleErrors.push(msg.text());
+      });
+      page.on("pageerror", (error) => consoleErrors.push(String(error)));
+
+      await page.goto("/?sandbox=1");
+      await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
+      await expect(page.getByTestId("game-canvas")).toBeVisible();
+
+      await page.evaluate((id) => {
+        (window as unknown as { __fpsGame: { startSandbox: (mapId: string) => void } }).__fpsGame.startSandbox(id);
+      }, map.id);
+
+      await expect.poll(() => arenaSnapshot(page).then((state) => state.mapId)).toBe(map.id);
+      await expect.poll(() => snapshot(page).then((state) => state.mapName)).toBe(map.name);
+
+      await page.evaluate(() => {
+        type DevGame = { ctx: { status: string }; sys: { hud: { emit: () => void } } };
+        const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
+        game.ctx.status = "playing";
+        game.sys.hud.emit();
+      });
+      await expect.poll(() => snapshot(page).then((state) => state.status)).toBe("playing");
+      await expect.poll(() => gameTime(page)).toBeGreaterThan(0);
+
+      const result = await arenaSnapshot(page);
+      expect(result.layout).toEqual(map.layout);
+      expect(result.bounds).toEqual(map.bounds);
+
+      // Buildings were actually expanded into geometry: floor decks and roofs
+      // land in the deck set (step-clamped, multi-valued per x/z) rather than the
+      // surface set, stair treads in the walkable surface set, and the wall
+      // segments in the player-blocking set — which therefore has to exceed the
+      // authored obstacle count, since those walls plus the closed door and
+      // window panes are all colliders no room ever declared.
+      expect(result.deckBoxes).toBeGreaterThan(0);
+      expect(result.surfaceBoxes).toBeGreaterThan(0);
+      expect(result.obstacleBoxes).toBeGreaterThan(result.layout!.flattenedObstacles);
+
+      // solidMeshes = 4 boundary walls + obstacle meshes + surfaces + decks +
+      // building wall segments. The gantry pins that identity exactly because it
+      // builds no walls; here the inequality is strict, and the slack IS the
+      // wall count.
+      expect(result.solidMeshes).toBeGreaterThan(
+        4 + result.layout!.flattenedObstacles + result.surfaceBoxes + result.deckBoxes,
+      );
+
+      // Door and window panes are shootable but are NOT arena solids — they move
+      // as the panel swings, so they go straight to raycastTargets and stay out
+      // of solidMeshes (which feeds the camera-boom colliders). The excess here
+      // is exactly the openable leaf count, and it proves the shatter path in
+      // WeaponSystem has something to hit.
+      expect(result.raycastTargets).toBeGreaterThan(result.solidMeshes);
+
+      expect(consoleErrors).toEqual([]);
+    });
+  }
 });

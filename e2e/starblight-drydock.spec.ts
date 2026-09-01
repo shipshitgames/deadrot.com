@@ -29,7 +29,7 @@ async function bootToMenu(page: Page) {
   await expect(page.getByText("STARBLIGHT")).toBeVisible();
   await expect(page.locator("#int-text")).toContainText("100/100");
 
-  const enterPrompt = page.getByText("Press Enter to continue");
+  const enterPrompt = page.getByTestId("main-menu-enter-prompt");
   await expect(enterPrompt).toBeVisible();
   await enterPrompt.click();
   await expect(enterPrompt).toBeHidden();
@@ -167,10 +167,10 @@ test.describe("starblight deep lifecycle", () => {
     // The splash GATE returns too: useEnterToReveal (packages/ui/src/
     // MainMenuEnter.tsx) resets `revealed` to false whenever `active` goes false
     // — and `active` (onTitle) went false the moment the run started. So exiting
-    // to title puts us back at the "Press Enter to continue" splash with the
-    // menu nav hidden, NOT at the revealed menu. Dismiss it again by CLICKING
+    // to title puts us back at the press-to-continue splash with the menu nav
+    // hidden, NOT at the revealed menu. Dismiss it again by CLICKING
     // (never a keypress — see bootToMenu) to re-mount the ENGAGE nav.
-    const splashPrompt = page.getByText("Press Enter to continue");
+    const splashPrompt = page.getByTestId("main-menu-enter-prompt");
     await expect(splashPrompt).toBeVisible();
     await splashPrompt.click();
     await expect(splashPrompt).toBeHidden();

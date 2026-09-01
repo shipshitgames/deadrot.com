@@ -4,6 +4,8 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import { audio } from "./audio/AudioEngine";
 import { HUD } from "./components/HUD";
 import { CinematicOverlay } from "./components/hud/CinematicOverlay";
+import { PRIMER_SECONDS } from "./components/hud/FirstDropPrimer";
+import { TouchPad } from "./components/hud/TouchPad";
 import {
   MAGAZINE_SIZE,
   type PickupKind,
@@ -34,12 +36,13 @@ import {
   xpForLevel,
 } from "./game/data/survivors";
 import { weaponIdentityFor } from "./game/data/weaponIdentity";
-import type { SandboxEnemyKind } from "./game/Game";
-import { Game } from "./game/Game";
+import type { Game, SandboxEnemyKind } from "./game/Game";
 import {
   clearScores,
   loadScores,
   loadShop,
+  markPrimerSeen,
+  primerSeen,
   type ScoreEntry,
   type ShopState,
   saveScore,
@@ -73,6 +76,7 @@ const INITIAL_STATE: HudState = {
   reserve: START_RESERVE,
   reloading: false,
   reloadProgress: 0,
+  interactPrompt: "",
   score: 0,
   kills: 0,
   headshots: 0,
@@ -168,6 +172,8 @@ const INITIAL_STATE: HudState = {
 export default function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Game | null>(null);
+  const gameLoadRef = useRef<Promise<Game | null> | null>(null);
+  const mountTokenRef = useRef<object | null>(null);
   const hudRef = useRef<HudState>(INITIAL_STATE);
   const combatLaunchGenerationRef = useRef(0);
   const combatRetryRef = useRef<CombatLaunchRequest | undefined>(undefined);
@@ -175,6 +181,10 @@ export default function App() {
   const [combatAssetLoading, setCombatAssetLoading] = useState(false);
   const [combatAssetError, setCombatAssetError] = useState<string>();
   const [activeCinematic, setActiveCinematic] = useState<CinematicBeat | null>(null);
+  // Whether the first-drop primer's saved flag is already spent. Lazily read on
+  // the first snapshot rather than at mount, so a returning player costs one
+  // localStorage read per session and no writes at all.
+  const primerSpentRef = useRef<boolean | null>(null);
   const activeArenaIdRef = useRef(DEFAULT_MAP_ID);
   const cinematicChapterRef = useRef(INITIAL_STATE.survivorChapter);
   const cinematicCompletionRef = useRef<() => void>(() => {});
@@ -242,6 +252,16 @@ export default function App() {
     (next: HudState) => {
       const previous = hudRef.current;
       hudRef.current = next;
+      // The first drop's opening seconds are spent here, for the same reason the
+      // leaderboard write is: the run clock crossing the primer's welcome is an
+      // event the engine raises on this snapshot. Gating on the clock rather
+      // than on mount means a reload that never reaches a drop cannot burn the
+      // flag — the card only stops being owed once it has had its time on screen.
+      if (primerSpentRef.current === null) primerSpentRef.current = primerSeen();
+      if (!primerSpentRef.current && next.time >= PRIMER_SECONDS) {
+        primerSpentRef.current = true;
+        markPrimerSeen();
+      }
       if (next.status === "gameover" && next.outcome && !next.sandbox && !savedRef.current) {
         savedRef.current = true;
         if (next.outcome === "win") audio.setMusicMode("victory");
@@ -295,27 +315,75 @@ export default function App() {
     [currentRunNonce, showCinematic],
   );
 
-  const runCombatLaunch = useCallback(async (request: CombatLaunchRequest): Promise<void> => {
-    const game = gameRef.current;
-    if (!game) return;
-    const generation = ++combatLaunchGenerationRef.current;
-    combatRetryRef.current = request;
-    setCombatAssetError(undefined);
-    setCombatAssetLoading(true);
-    try {
-      await request.start(game);
-    } catch (error: unknown) {
-      if (generation !== combatLaunchGenerationRef.current || gameRef.current !== game) return;
-      audio.setMusicMode("menu");
-      setCombatAssetLoading(false);
-      setCombatAssetError(error instanceof Error ? error.message : String(error));
-      return;
+  /**
+   * Bring the combat runtime up, once.
+   *
+   * Three.js, the render systems and every weapon/enemy rig are the bulk of
+   * this app's JavaScript, and none of it draws the title, hub, loadout or
+   * breach-site screens — `INITIAL_STATE` carries those on its own. So the
+   * module is fetched at the run transition rather than at mount, which keeps
+   * it out of the boot chunk entirely. The wait is spent under the "Preparing
+   * breach" overlay {@link runCombatLaunch} already shows for asset streaming.
+   *
+   * Resolves `null` only when the shell unmounted while the chunk was in
+   * flight; a failed import rejects, so the retry path can re-attempt it.
+   */
+  const ensureGame = useCallback(async (): Promise<Game | null> => {
+    if (gameRef.current) return gameRef.current;
+    const container = containerRef.current;
+    const token = mountTokenRef.current;
+    if (!container || !token) return null;
+    if (!gameLoadRef.current) {
+      const load = import("./game/Game").then(({ Game }) => {
+        if (mountTokenRef.current !== token) return null;
+        const game = new Game(container, setHud);
+        game.setShopUpgrades(shopTiersRef.current);
+        game.start();
+        gameRef.current = game;
+        if (import.meta.env.DEV) {
+          (window as unknown as { __fpsGame?: Game }).__fpsGame = game;
+        }
+        return game;
+      });
+      // A rejected import must not be cached, or every retry replays the same
+      // failure instead of re-fetching the chunk.
+      load.catch(() => {
+        if (gameLoadRef.current === load) gameLoadRef.current = null;
+      });
+      gameLoadRef.current = load;
     }
-    if (generation !== combatLaunchGenerationRef.current || gameRef.current !== game) return;
-    combatRetryRef.current = undefined;
-    setCombatAssetLoading(false);
-    request.onSuccess?.();
-  }, []);
+    return gameLoadRef.current;
+  }, [setHud]);
+
+  const runCombatLaunch = useCallback(
+    async (request: CombatLaunchRequest): Promise<void> => {
+      const generation = ++combatLaunchGenerationRef.current;
+      combatRetryRef.current = request;
+      setCombatAssetError(undefined);
+      setCombatAssetLoading(true);
+      let game: Game | null;
+      try {
+        game = await ensureGame();
+        if (generation !== combatLaunchGenerationRef.current) return;
+        if (!game) {
+          setCombatAssetLoading(false);
+          return;
+        }
+        await request.start(game);
+      } catch (error: unknown) {
+        if (generation !== combatLaunchGenerationRef.current) return;
+        audio.setMusicMode("menu");
+        setCombatAssetLoading(false);
+        setCombatAssetError(error instanceof Error ? error.message : String(error));
+        return;
+      }
+      if (generation !== combatLaunchGenerationRef.current || gameRef.current !== game) return;
+      combatRetryRef.current = undefined;
+      setCombatAssetLoading(false);
+      request.onSuccess?.();
+    },
+    [ensureGame],
+  );
 
   // Mirror the global music/SFX sliders + mute (the shared GlobalGameSettingsPanel)
   // into the AudioEngine bus gains. subscribe fires once immediately with the
@@ -329,12 +397,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const game = new Game(container, setHud);
-    gameRef.current = game;
-    game.setShopUpgrades(shopTiersRef.current);
-    game.start();
+    const token = {};
+    mountTokenRef.current = token;
     if (initialSandbox) {
       void runCombatLaunch({
         start: (current) => current.startSandbox(),
@@ -345,17 +409,21 @@ export default function App() {
       });
     }
     if (import.meta.env.DEV) {
-      (window as unknown as { __fpsGame?: Game; __fpsAudio?: typeof audio; __hudSnapshot?: () => HudState }).__fpsGame =
-        game;
-      (window as unknown as { __fpsAudio?: typeof audio; __hudSnapshot?: () => HudState }).__fpsAudio = audio;
+      (window as unknown as { __fpsAudio?: typeof audio }).__fpsAudio = audio;
       (window as unknown as { __hudSnapshot?: () => HudState }).__hudSnapshot = () => hudRef.current;
+      // Browser specs reach for `window.__fpsGame` the moment the page settles,
+      // so dev keeps the runtime eager. `import.meta.env.DEV` is a build-time
+      // constant, so production drops this branch and its import with it.
+      void ensureGame();
     }
     return () => {
       combatLaunchGenerationRef.current++;
-      game.dispose();
+      if (mountTokenRef.current === token) mountTokenRef.current = null;
+      gameLoadRef.current = null;
+      gameRef.current?.dispose();
       gameRef.current = null;
     };
-  }, [initialSandbox, runCombatLaunch, setHud, setSandboxInUrl]);
+  }, [ensureGame, initialSandbox, runCombatLaunch, setSandboxInUrl]);
 
   useEffect(() => {
     if (!hud.survivors || hud.status === "gameover") {
@@ -545,6 +613,7 @@ export default function App() {
         suppressMenu={sandboxActive}
       />
       <WarEffortBadge gameRef={gameRef} />
+      <TouchPad gameRef={gameRef} state={hud} />
       {activeCinematic && (
         <CinematicOverlay
           beat={activeCinematic}

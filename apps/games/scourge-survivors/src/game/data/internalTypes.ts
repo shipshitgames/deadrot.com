@@ -34,7 +34,15 @@ export interface Pop {
   spin?: THREE.Vector3;
   baseScale?: number;
   growth?: number;
-  floor?: boolean;
+  /** Opacity at spawn, faded to 0 across `ttl`. Defaults to 0.9 — the value for
+   *  an additive spark read against the sky. Ground decals and smoke want less,
+   *  and they set it here rather than on the material: updateEffects rewrites
+   *  `material.opacity` every frame, so a constructor value would never survive. */
+  peakOpacity?: number;
+  /** Surface this particle settles on. Defaults to 0 — the arena floor — but a
+   *  spark thrown off a kill on a building's second storey has to stop on that
+   *  storey's deck, not fall through it to the ground plane. */
+  groundY?: number;
 }
 export interface Pickup {
   group: THREE.Group;

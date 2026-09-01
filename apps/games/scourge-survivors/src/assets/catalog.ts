@@ -1,22 +1,16 @@
 import {
-  type AnimationActionEntry,
-  type AnimationEntityEntry,
   type AudioEntry,
   type LicenseRecord,
   type RuntimeEnemyRef,
   type RuntimeSpriteRef,
   type RuntimeUiRef,
   type RuntimeWeaponRef,
-  SCOURGE_SURVIVORS_ANIMATION_MANIFEST,
   SCOURGE_SURVIVORS_ASSET_MANIFEST,
-  type ScourgeSurvivorsAnimationFrameSource,
-  type ScourgeSurvivorsAnimationManifest,
   type ScourgeSurvivorsAssetManifest,
   type SpriteEntry,
   type SpriteFilter,
   type SpriteView,
   type SpriteViewEntry,
-  scourgeSurvivorsAnimationFrameSource,
   scourgeSurvivorsAudioEntry,
   scourgeSurvivorsAudioUrl,
   scourgeSurvivorsBootSpriteUrl,
@@ -32,20 +26,15 @@ import {
   type Vec2,
   type Vec3,
 } from "@shipshitgames/assets/scourge-survivors";
-import * as THREE from "three";
 import { ASSETS, type AssetId } from "../assets.generated";
 
 export type {
-  AnimationActionEntry,
-  AnimationEntityEntry,
   AudioEntry,
   LicenseRecord,
   RuntimeEnemyRef,
   RuntimeSpriteRef,
   RuntimeUiRef,
   RuntimeWeaponRef,
-  ScourgeSurvivorsAnimationFrameSource as AnimationFrameSource,
-  ScourgeSurvivorsAnimationManifest as AnimationManifest,
   ScourgeSurvivorsAssetManifest as AssetManifest,
   SpriteEntry,
   SpriteFilter,
@@ -58,7 +47,6 @@ export type {
 };
 
 export const ASSET_MANIFEST = SCOURGE_SURVIVORS_ASSET_MANIFEST;
-export const ANIMATION_MANIFEST = SCOURGE_SURVIVORS_ANIMATION_MANIFEST;
 
 const GENERATED_ASSET_ID_BY_PATH = new Map<string, AssetId>(
   (Object.keys(ASSETS) as AssetId[]).map((id) => [ASSETS[id].path, id]),
@@ -89,10 +77,7 @@ type RuntimeDomain = keyof ScourgeSurvivorsAssetManifest["runtime"];
 type RuntimeSpriteDomain = Exclude<RuntimeDomain, "ui" | "bonusIcons" | "enemies" | "weapons">;
 
 export class AssetCatalog {
-  constructor(
-    readonly manifest: ScourgeSurvivorsAssetManifest = SCOURGE_SURVIVORS_ASSET_MANIFEST,
-    readonly animations: ScourgeSurvivorsAnimationManifest = SCOURGE_SURVIVORS_ANIMATION_MANIFEST,
-  ) {}
+  constructor(readonly manifest: ScourgeSurvivorsAssetManifest = SCOURGE_SURVIVORS_ASSET_MANIFEST) {}
 
   assetUrl(path: string): Promise<string> {
     generatedAssetId(path);
@@ -132,19 +117,6 @@ export class AssetCatalog {
   spriteUrl(id: string, view?: SpriteView): Promise<string> {
     generatedAssetId(spritePath(id, view));
     return scourgeSurvivorsSpriteUrl(id, view);
-  }
-
-  animationFrameSource(
-    entity: string,
-    action: string,
-    view: SpriteView,
-    frame: number,
-  ): Promise<ScourgeSurvivorsAnimationFrameSource> {
-    return scourgeSurvivorsAnimationFrameSource(entity, action, view, frame);
-  }
-
-  async animationFrameUrl(entity: string, action: string, view: SpriteView, frame: number): Promise<string> {
-    return (await this.animationFrameSource(entity, action, view, frame)).url;
   }
 
   spriteScale(id: string, view?: SpriteView): Vec2 {
@@ -240,56 +212,10 @@ export function spriteUrl(id: string, view?: SpriteView): Promise<string> {
   return ASSET_CATALOG.spriteUrl(id, view);
 }
 
-export function animationFrameSource(
-  entity: string,
-  action: string,
-  view: SpriteView,
-  frame: number,
-): Promise<ScourgeSurvivorsAnimationFrameSource> {
-  return ASSET_CATALOG.animationFrameSource(entity, action, view, frame);
-}
-
-export function animationFrameUrl(entity: string, action: string, view: SpriteView, frame: number): Promise<string> {
-  return ASSET_CATALOG.animationFrameUrl(entity, action, view, frame);
-}
-
 export function spriteScale(id: string, view?: SpriteView): Vec2 {
   return ASSET_CATALOG.spriteScale(id, view);
 }
 
-const TEXTURE_PROMISES = new Map<string, Promise<THREE.Texture>>();
-
-function cachedTexture(key: string, load: () => Promise<THREE.Texture>): Promise<THREE.Texture> {
-  const cached = TEXTURE_PROMISES.get(key);
-  if (cached) return cached;
-  const promise = load().catch((error) => {
-    TEXTURE_PROMISES.delete(key);
-    throw error;
-  });
-  TEXTURE_PROMISES.set(key, promise);
-  return promise;
-}
-
-export function loadSpriteTexture(id: string, view?: SpriteView): Promise<THREE.Texture> {
-  const entry = spriteEntry(id);
-  return cachedTexture(`sprite:${id}:${view ?? "direct"}`, async () => {
-    const texture = await new THREE.TextureLoader().loadAsync(await spriteUrl(id, view));
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.minFilter = entry.filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
-    texture.magFilter = entry.filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
-    texture.generateMipmaps = entry.filter !== "nearest";
-    texture.premultiplyAlpha = false;
-    return texture;
-  });
-}
-
-export function loadTexture(id: string): Promise<THREE.Texture> {
-  const entry = textureEntry(id);
-  return cachedTexture(`texture:${id}`, async () => {
-    const texture = await new THREE.TextureLoader().loadAsync(await assetUrl(entry.path));
-    texture.colorSpace = entry.colorSpace === "srgb" ? THREE.SRGBColorSpace : THREE.NoColorSpace;
-    texture.minFilter = THREE.LinearMipmapLinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    return texture;
-  });
-}
+// GPU texture loading lives in `./textures`, so that importing the catalog for
+// manifest lookup — as the audio engine and the menus do — does not pull
+// Three.js into the boot bundle.

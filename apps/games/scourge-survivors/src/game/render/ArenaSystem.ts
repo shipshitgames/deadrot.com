@@ -19,7 +19,17 @@ import {
 } from "../data/maps";
 import { arenaTexture, arenaTextureRepeat } from "../spriteAssets";
 import type { GameSystems } from "../systems";
-import { levelYById, platformBox, rampStepBoxes, roomFloorSlab, roomLevelY, type SolidBox } from "./arenaGeometry";
+import {
+  levelYById,
+  platformBox,
+  rampStepBoxes,
+  roomFloorSlab,
+  roomLevelY,
+  type SolidBox,
+  type StructureLeaf,
+  structureGeometry,
+  structureLeaves,
+} from "./arenaGeometry";
 import {
   isInCorePlayArea,
   type LiveReadabilityReport,
@@ -64,6 +74,8 @@ export interface ArenaDebugSnapshot {
   obstacleBoxes: number;
   /** Raised walkable AABBs (v2 room floors + platforms + ramp steps); 0 for flat maps. */
   surfaceBoxes: number;
+  /** Building floor decks + roofs; 0 for maps that author no structures. */
+  deckBoxes: number;
   /** Live theme readback — null until buildArena has dressed a scene (and after
    *  clearArena tears one down without a rebuild). */
   theme: ArenaThemeSnapshot | null;
@@ -80,6 +92,8 @@ export interface ArenaDebugSnapshot {
     levels: number;
     ramps: number;
     platforms: number;
+    /** Enterable buildings on the current map; 0 for maps with none. */
+    structures: number;
     flattenedObstacles: number;
     anchors: { playerSpawn: number; breachSpawn: number; objective: number; extraction: number };
   } | null;
@@ -107,12 +121,15 @@ export class ArenaSystem {
 
   constructor(
     private ctx: GameContext,
-    _sys: GameSystems,
+    private sys: GameSystems,
   ) {}
 
   /** Tear down the current arena (meshes, materials, textures) so a new map can
    *  be built in its place. Leaves enemies, pickups, and the player untouched. */
   clearArena() {
+    // Panels first: the system splices its own colliders out of obstacleBoxes,
+    // and it must do so before the array below is replaced wholesale.
+    this.sys.structures.clear();
     for (const o of this.arenaObjects) {
       this.ctx.scene.remove(o);
       if (o instanceof THREE.Mesh) o.geometry.dispose();
@@ -141,6 +158,7 @@ export class ArenaSystem {
     this.ctx.solidMeshes = [];
     this.ctx.obstacleBoxes = [];
     this.ctx.surfaceBoxes = [];
+    this.ctx.deckBoxes = [];
     this.ctx.rig.setColliders([]);
   }
 
@@ -308,6 +326,18 @@ export class ArenaSystem {
       }
     }
 
+    // Enterable buildings: perimeter walls (push-out), upper floor slabs + roof
+    // (walkable), and the movable door/window panels handed to StructureSystem.
+    // Stairs inside a building are ordinary ramps, already built above.
+    const leaves: StructureLeaf[] = [];
+    for (const structure of layout.structures) {
+      const geometry = structureGeometry(structure, levelY);
+      for (const wall of geometry.walls) this.addWallBox(wall, wallMat);
+      for (const deck of geometry.decks) this.addDeckBox(deck, floorMat);
+      leaves.push(...structureLeaves(structure, levelY));
+    }
+    this.sys.structures.build(leaves, wallMat);
+
     this.buildFloorDecals(map);
     this.buildArenaProps(map);
 
@@ -329,6 +359,43 @@ export class ArenaSystem {
     this.ctx.solidMeshes.push(mesh);
     this.arenaObjects.push(mesh);
     this.ctx.surfaceBoxes.push(new THREE.Box3().setFromObject(mesh));
+  }
+
+  /** Render a building floor deck or roof: identical mesh treatment to a
+   *  structural box, but registered in ctx.deckBoxes rather than surfaceBoxes.
+   *  A building stacks a walkable top over every storey of the same footprint,
+   *  so "highest surface at (x,z)" — the query spawn placement uses — would put
+   *  anything spawned inside the shell on the roof. Decks are reachable only via
+   *  the step-clamped queries, which is exactly how a storey is meant to be
+   *  entered: through a door, then up the stairs. */
+  private addDeckBox(box: SolidBox, material: THREE.Material) {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(box.w, box.h, box.d), material);
+    mesh.position.set(box.x, box.y, box.z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.userData = { solid: true };
+    this.ctx.scene.add(mesh);
+    this.ctx.solidMeshes.push(mesh);
+    this.arenaObjects.push(mesh);
+    this.ctx.deckBoxes.push(new THREE.Box3().setFromObject(mesh));
+  }
+
+  /** Render a building wall segment: same mesh treatment as a structural box,
+   *  but registered as a push-out collider instead of a walkable top. Walls are
+   *  the one piece of arena geometry the player must never pass through, and
+   *  ctx.rig colliders only shorten the camera boom — obstacleBoxes is what
+   *  actually stops them. Multi-storey stacking is safe: the push-out skips any
+   *  box the player is standing on top of or has already passed under. */
+  private addWallBox(box: SolidBox, material: THREE.Material) {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(box.w, box.h, box.d), material);
+    mesh.position.set(box.x, box.y, box.z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.userData = { solid: true };
+    this.ctx.scene.add(mesh);
+    this.ctx.solidMeshes.push(mesh);
+    this.arenaObjects.push(mesh);
+    this.ctx.obstacleBoxes.push(new THREE.Box3().setFromObject(mesh));
   }
 
   /** Position the player at the current map's playerSpawn anchor (the v2 source
@@ -376,6 +443,7 @@ export class ArenaSystem {
       raycastTargets: this.ctx.raycastTargets.length,
       obstacleBoxes: this.ctx.obstacleBoxes.length,
       surfaceBoxes: this.ctx.surfaceBoxes.length,
+      deckBoxes: this.ctx.deckBoxes.length,
       theme: this.liveThemeSnapshot(),
       readability: this.liveReadabilitySnapshot(),
       layout: layout
@@ -384,6 +452,7 @@ export class ArenaSystem {
             levels: layout.levels.length,
             ramps: layout.ramps.length,
             platforms: layout.platforms.length,
+            structures: layout.structures.length,
             flattenedObstacles: flattenObstacles(layout).length,
             anchors: {
               playerSpawn: anchorsOfKind(layout, "playerSpawn").length,

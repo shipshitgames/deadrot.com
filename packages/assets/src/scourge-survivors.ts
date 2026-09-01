@@ -1,10 +1,3 @@
-import animationManifestData from "../games/scourge-survivors/animations/scourge/animation-pack.json" with {
-  type: "json",
-};
-import animationAtlasData from "../games/scourge-survivors/animations/scourge/scourge.atlas.json" with { type: "json" };
-import comicAnimationManifestData from "../games/scourge-survivors/animations/scourge-comic/animation-pack.json" with {
-  type: "json",
-};
 import manifestData from "../games/scourge-survivors/assets.json" with { type: "json" };
 import { ScourgeSurvivorsAssetUrlCache } from "./scourge-survivors-url-cache";
 
@@ -98,11 +91,6 @@ export interface UiEntry {
   license: LicenseRecord;
 }
 
-export interface RuntimeAnimationRef {
-  entity: string;
-  actions: Record<string, string>;
-}
-
 export interface RuntimeSpriteRef {
   sprite: string;
 }
@@ -112,9 +100,7 @@ export interface RuntimeWeaponRef extends RuntimeSpriteRef {
   dualSprite?: string;
 }
 
-export interface RuntimeEnemyRef extends RuntimeSpriteRef {
-  animation: RuntimeAnimationRef;
-}
+export type RuntimeEnemyRef = RuntimeSpriteRef;
 
 export interface RuntimeUiRef {
   asset: string;
@@ -139,86 +125,7 @@ export interface ScourgeSurvivorsAssetManifest {
   runtime: ScourgeSurvivorsRuntimeManifest;
 }
 
-export interface AnimationActionEntry {
-  loop: boolean;
-  fps: number;
-  pathTemplate: string;
-}
-
-export interface AnimationEntityEntry {
-  frameDimensions: Vec2;
-  colorLane: string;
-  physicsLane: string;
-  actions: Record<string, AnimationActionEntry>;
-}
-
-export interface AnimationAtlasPageEntry {
-  path: string;
-  width: number;
-  height: number;
-}
-
-export interface AnimationRuntimeAtlasEntry {
-  tool: string;
-  mapPath: string;
-  padding: number;
-  frameCount: number;
-  note: string;
-  license: string;
-  pages: AnimationAtlasPageEntry[];
-}
-
-export interface ScourgeSurvivorsAnimationManifest {
-  version: string;
-  status: string;
-  tool: string;
-  model: string;
-  promptHistory: string;
-  framesPerAction: number;
-  views: SpriteView[];
-  runtimeAtlas?: AnimationRuntimeAtlasEntry;
-  entities: Record<string, AnimationEntityEntry>;
-}
-
-interface GeneratedAnimationAtlasPage {
-  image: string;
-  width: number;
-  height: number;
-}
-
-interface GeneratedAnimationAtlasFrame {
-  id: string;
-  page: number;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-
-interface GeneratedAnimationAtlas {
-  version: number;
-  padding: number;
-  frameCount: number;
-  pages: GeneratedAnimationAtlasPage[];
-  frames: GeneratedAnimationAtlasFrame[];
-}
-
-export interface ScourgeSurvivorsAnimationFrameSource {
-  url: string;
-  atlas?: {
-    pageWidth: number;
-    pageHeight: number;
-    x: number;
-    y: number;
-    w: number;
-    h: number;
-  };
-}
-
 export const SCOURGE_SURVIVORS_ASSET_MANIFEST = manifestData as unknown as ScourgeSurvivorsAssetManifest;
-
-export const SCOURGE_SURVIVORS_ANIMATION_MANIFEST =
-  animationManifestData as unknown as ScourgeSurvivorsAnimationManifest;
 
 /**
  * Boot URLs stay synchronous for the title/menu shell. Importing URL modules
@@ -239,15 +146,9 @@ const scourgeSurvivorsBootAssetModules = import.meta.glob<string>(
   },
 );
 
-/**
- * Combat media is represented by lazy URL modules. The authored default split
- * frames are deliberately absent: default animation playback uses the generated
- * atlas page, while the opt-in comic pack remains split and lazy.
- */
+/** Combat media is represented by lazy URL modules. */
 const scourgeSurvivorsLazyAssetModules = import.meta.glob<string>(
   [
-    "../games/scourge-survivors/animations/scourge/scourge.atlas*.webp",
-    "../games/scourge-survivors/animations/scourge-comic/**/*.webp",
     "../games/scourge-survivors/players/**/side.webp",
     "../games/scourge-survivors/players/**/back.webp",
     "../games/scourge-survivors/enemies/**/*.webp",
@@ -265,10 +166,6 @@ const scourgeSurvivorsLazyAssetModules = import.meta.glob<string>(
 );
 
 const scourgeSurvivorsAssetUrlCache = new ScourgeSurvivorsAssetUrlCache();
-const generatedAnimationAtlas = animationAtlasData as unknown as GeneratedAnimationAtlas;
-const generatedAnimationAtlasFrames = new Map(
-  generatedAnimationAtlas.frames.map((frame) => [frame.id, frame] as const),
-);
 
 const COMIC_STYLE_ENV_KEY = "VITE_DEADROT_COMIC_ASSETS";
 
@@ -311,18 +208,6 @@ const COMIC_WEAPON_PATHS: Partial<Record<string, string>> = {};
 // Disabled until image-model generated material sheets are promoted. Cropping
 // combat/key art into wall/floor textures is not a valid material asset.
 const COMIC_TEXTURE_PATHS: Partial<Record<string, string>> = {};
-
-const DEFAULT_ANIMATION_ROOT = "animations/scourge/";
-const COMIC_ANIMATION_ROOT = "animations/scourge-comic/";
-
-// Entities that actually ship comic animation frames. The comic pack is a
-// SUBSET of the default pack (e.g. wound-hound has no comic frames), so the
-// path-root rewrite below must be scoped to these — a blanket swap would point a
-// comic-less entity at a non-existent path and throw at module load, crashing
-// the whole game in comic mode rather than just falling back for that entity.
-const COMIC_ANIMATION_ENTITIES = new Set(
-  Object.keys((comicAnimationManifestData as { entities?: Record<string, unknown> }).entities ?? {}),
-);
 
 function comicArenaTexturePath(id: string): string | undefined {
   const direct = COMIC_TEXTURE_PATHS[id];
@@ -481,82 +366,6 @@ export function scourgeSurvivorsSpriteScale(id: string, view?: SpriteView): Vec2
   }
   if (!entry.scale) throw new Error(`Scourge Survivors sprite asset ${id} has no direct scale`);
   return entry.scale;
-}
-
-export async function scourgeSurvivorsAnimationFrameSource(
-  entity: string,
-  action: string,
-  view: SpriteView,
-  frame: number,
-): Promise<ScourgeSurvivorsAnimationFrameSource> {
-  const entityEntry = SCOURGE_SURVIVORS_ANIMATION_MANIFEST.entities[entity];
-  if (!entityEntry) throw new Error(`Unknown Scourge Survivors animation entity: ${entity}`);
-  const actionEntry = entityEntry.actions[action];
-  if (!actionEntry) throw new Error(`Unknown Scourge Survivors animation action: ${entity}/${action}`);
-  if (!Number.isInteger(frame) || frame < 0 || frame >= SCOURGE_SURVIVORS_ANIMATION_MANIFEST.framesPerAction) {
-    throw new Error(
-      `Scourge Survivors animation frame is out of range: ${entity}/${action}/${view}/${frame} (expected 0-${SCOURGE_SURVIVORS_ANIMATION_MANIFEST.framesPerAction - 1})`,
-    );
-  }
-
-  const frameId = String(frame).padStart(2, "0");
-  const defaultPath = actionEntry.pathTemplate.replace("{view}", view).replace("{frame}", frameId);
-
-  // Comic selection is atomic per entity. The four comic entities use their
-  // split frames; wound-hound and any future comic-less entity stay on the
-  // default atlas rather than mixing styles or resolving a missing file.
-  if (comicAssetsEnabled() && COMIC_ANIMATION_ENTITIES.has(entity)) {
-    const comicPath = defaultPath.replace(DEFAULT_ANIMATION_ROOT, COMIC_ANIMATION_ROOT);
-    const url = await scourgeSurvivorsLoadAssetUrl(`games/scourge-survivors/${comicPath}`);
-    return { url };
-  }
-
-  if (!defaultPath.startsWith(DEFAULT_ANIMATION_ROOT)) {
-    throw new Error(
-      `Scourge Survivors default animation path leaves ${DEFAULT_ANIMATION_ROOT}: ${entity}/${action} -> ${defaultPath}`,
-    );
-  }
-  const atlasFrameId = defaultPath.slice(DEFAULT_ANIMATION_ROOT.length);
-  const atlasFrame = generatedAnimationAtlasFrames.get(atlasFrameId);
-  if (!atlasFrame) {
-    throw new Error(`Scourge Survivors animation atlas is missing frame: ${entity}/${action}/${view}/${frameId}`);
-  }
-
-  const runtimeAtlas = SCOURGE_SURVIVORS_ANIMATION_MANIFEST.runtimeAtlas;
-  if (!runtimeAtlas) throw new Error("Scourge Survivors default animation manifest is missing runtimeAtlas metadata");
-  const generatedPage = generatedAnimationAtlas.pages[atlasFrame.page];
-  const manifestPage = runtimeAtlas.pages[atlasFrame.page];
-  if (!generatedPage || !manifestPage) {
-    throw new Error(
-      `Scourge Survivors animation atlas frame ${atlasFrameId} references missing page ${atlasFrame.page}`,
-    );
-  }
-  if (manifestPage.width !== generatedPage.width || manifestPage.height !== generatedPage.height) {
-    throw new Error(
-      `Scourge Survivors animation atlas page metadata drift: manifest ${manifestPage.width}x${manifestPage.height}, generated ${generatedPage.width}x${generatedPage.height}`,
-    );
-  }
-
-  return {
-    url: await scourgeSurvivorsLoadAssetUrl(manifestPage.path),
-    atlas: {
-      pageWidth: manifestPage.width,
-      pageHeight: manifestPage.height,
-      x: atlasFrame.x,
-      y: atlasFrame.y,
-      w: atlasFrame.w,
-      h: atlasFrame.h,
-    },
-  };
-}
-
-export async function scourgeSurvivorsAnimationFrameUrl(
-  entity: string,
-  action: string,
-  view: SpriteView,
-  frame: number,
-): Promise<string> {
-  return (await scourgeSurvivorsAnimationFrameSource(entity, action, view, frame)).url;
 }
 
 export const SCOURGE_SURVIVORS_BONUS_ICON_IDS = Object.keys(manifestData.runtime.bonusIcons) as Array<

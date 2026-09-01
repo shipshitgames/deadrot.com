@@ -87,6 +87,8 @@ export const ARENA_CINEMATICS: Record<string, ArenaCinematicAssignment> = {
   "breach-primus": { ...DEFAULT_ASSIGNMENT, site: "Breach Primus" },
   "reactor-verge": { ...DEFAULT_ASSIGNMENT, site: "Reactor Verge" },
   "choir-node": { ...DEFAULT_ASSIGNMENT, site: "Choir Node" },
+  "warren-blocks": { ...DEFAULT_ASSIGNMENT, site: "Warren Blocks" },
+  "cinder-stacks": { ...DEFAULT_ASSIGNMENT, site: "Cinder Stacks" },
 };
 
 export function resolveCinematicBeat(id: string | null | undefined): CinematicBeat | null {

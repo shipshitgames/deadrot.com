@@ -6,17 +6,19 @@ import {
   InputSystem as InputBinder,
   type InputHooks,
 } from "@shipshitgames/engine";
+import { audio } from "../../audio/AudioEngine";
 import { JUMP_VELOCITY, WEAPON_ORDER, type WeaponId } from "../constants";
 import type { GameContext } from "../context";
 import type { GameSystems } from "../systems";
 import type { GameStatus } from "../types";
 
-export type FpsAction = "reload" | "melee" | "weapon1" | "weapon2" | "weapon3" | "weapon4" | "weapon5";
+export type FpsAction = "reload" | "melee" | "interact" | "weapon1" | "weapon2" | "weapon3" | "weapon4" | "weapon5";
 
 export const fpsActionMap = {
   KeyR: "reload",
   KeyF: "melee",
   KeyV: "melee",
+  KeyE: "interact",
   Digit1: "weapon1",
   Digit2: "weapon2",
   Digit3: "weapon3",
@@ -33,7 +35,7 @@ const weaponSlot: Record<Extract<FpsAction, `weapon${number}`>, number> = {
 };
 
 export class FpsActionHandler implements InputActionHandler<FpsAction> {
-  constructor(private readonly sys: Pick<GameSystems, "weapon">) {}
+  constructor(private readonly sys: Pick<GameSystems, "weapon" | "structures">) {}
 
   handleAction(action: FpsAction): void {
     switch (action) {
@@ -42,6 +44,9 @@ export class FpsActionHandler implements InputActionHandler<FpsAction> {
         break;
       case "melee":
         this.sys.weapon.tryMelee();
+        break;
+      case "interact":
+        this.sys.structures.interact();
         break;
       case "weapon1":
       case "weapon2":
@@ -190,12 +195,7 @@ export class InputSystem {
       actionHandler,
       isActive: () => this.ctx.status === "playing",
 
-      onJump: () => {
-        if (this.ctx.canJump) {
-          this.ctx.velocity.y = JUMP_VELOCITY;
-          this.ctx.canJump = false;
-        }
-      },
+      onJump: () => this.tryJump(),
 
       onResumeKey: () => {
         if (this.ctx.status === "paused") this.resumeFromPauseWithoutCapture();
@@ -209,6 +209,10 @@ export class InputSystem {
       },
 
       onPointerDown: (button, event) => {
+        // On a phone the canvas is the look surface and the on-screen pad owns
+        // fire/ADS, so this handler stands down entirely — otherwise a drag to
+        // aim would also pull the trigger.
+        if (this.sys.touch.enabled) return;
         if (this.ctx.status === "playing" && !this.ctx.rig.captured) {
           if (event.target === this.ctx.renderer.domElement) this.requestLock();
           return;
@@ -224,6 +228,7 @@ export class InputSystem {
       },
 
       onPointerUp: (button) => {
+        if (this.sys.touch.enabled) return;
         if (button === 0) this.ctx.firing = false;
         else if (button === 2) this.sys.weapon.stopAds();
       },
@@ -284,8 +289,61 @@ export class InputSystem {
     this.sys.weapon.switchWeapon(next);
   };
 
+  /**
+   * Hand control back to the player.
+   *
+   * The device policy lives at this seam, not at the call sites, because every
+   * mode that resumes play funnels through this one method. A coarse pointer has
+   * no lock to acquire, and asking for one anyway is not harmless: a *granted*
+   * lock makes the browser retarget every pointer event to the locked canvas, so
+   * the on-screen pad stops receiving gestures and each `setPointerCapture` it
+   * attempts throws `InvalidStateError`. Whether a request is granted at all is
+   * platform-dependent, which is how a stray request hides on one machine and
+   * breaks every touch gesture on another.
+   */
   requestLock() {
+    if (this.sys.touch.enabled) {
+      // A no-op when the run is already live (a level-up draft closing, a co-op
+      // resume): there is no lock to skip and no state to rebuild, so an ADS
+      // toggle survives the overlay exactly as it does on a mouse.
+      this.enterPlayFromTouch();
+      return;
+    }
     this.captureRig?.requestCapture();
+  }
+
+  /**
+   * The one jump implementation. Reached from the spacebar via the engine
+   * binder's `onJump` hook and from the on-screen button via the touch system,
+   * so both devices share the same ground check and impulse.
+   */
+  tryJump(): void {
+    if (!this.ctx.canJump) return;
+    this.ctx.velocity.y = JUMP_VELOCITY;
+    this.ctx.canJump = false;
+    // Cued here rather than at either call site so the spacebar and the on-screen
+    // button stay identical, and so a jump refused by the ground check is silent.
+    audio.sfx("jump");
+  }
+
+  /**
+   * Start play on a touch device.
+   *
+   * Mirrors {@link resumeFromPauseWithoutCapture}, but from the initial
+   * `pointerlock-needed` state as well as from a pause: a phone has no pointer
+   * lock to acquire, so the prompt is a plain tap-to-start and the game goes
+   * straight to `playing`. This is the touch branch of {@link requestLock},
+   * which is why it returns quietly from any other status.
+   */
+  enterPlayFromTouch(): void {
+    if (this.ctx.status !== "pointerlock-needed" && this.ctx.status !== "paused") return;
+    this.ctx.status = "playing";
+    this.ctx.firing = false;
+    this.sys.weapon.stopAds();
+    clearMoveIntent(this.ctx.move);
+    this.clearLocomotionModifiers();
+    this.captureRig?.cancelLockRetry();
+    this.sys.hud.emit();
   }
 
   resumeFromPauseWithoutCapture(): void {
@@ -317,6 +375,13 @@ export class InputSystem {
     this.cinematicReturnStatus = null;
     if (returnStatus === null) return;
     if (returnStatus === "playing") {
+      // A phone has no lock to re-acquire, so a cutscene hands control straight
+      // back rather than stranding the player on a "click to play" prompt.
+      if (this.sys.touch.enabled) {
+        this.ctx.status = "playing";
+        this.sys.hud.emit();
+        return;
+      }
       this.ctx.status = "pointerlock-needed";
       this.sys.hud.emit();
       this.requestLock();
@@ -340,5 +405,9 @@ export class InputSystem {
   private clearLocomotionModifiers(): void {
     this.ctx.wantsSprint = false;
     this.ctx.wantsCrouch = false;
+    // Every pause and resume path funnels through here, which is also where a
+    // half-finished touch gesture must be dropped — a finger held across a pause
+    // would otherwise resume as a phantom walk or a stuck trigger.
+    this.sys.touch.releaseAll();
   }
 }

@@ -156,6 +156,45 @@ describe("PlayerTargetCombat (default combat)", () => {
     expect(h.scene.children).toHaveLength(0);
     expect(h.damagePlayer).not.toHaveBeenCalled();
   });
+
+  // Buildings put colliders above and below the firing line for the first time.
+  // The obstacle test is a full six-face AABB check, so a shot only dies on a box
+  // it actually flies into — a lintel over a doorway is not a wall to a bolt
+  // travelling through the opening beneath it.
+  describe("vertical extent of obstacle blocking", () => {
+    /** A door lintel: the wall span ABOVE a 2.1m clear cut. */
+    const lintel = new THREE.Box3(new THREE.Vector3(19, 2.1, -1), new THREE.Vector3(21, 3.4, 1));
+    /** Waist-high cover the shot clears. */
+    const crate = new THREE.Box3(new THREE.Vector3(19, 0, -1), new THREE.Vector3(21, 1, 1));
+
+    it("flies through a doorway under its lintel", () => {
+      const h = makeHarness({ boxes: [lintel] });
+      h.system.spawnProjectile(makeShot({ origin: new THREE.Vector3(20, 1.2, 0) }));
+      h.system.updateProjectiles(0.016);
+      expect(h.system.projectiles).toHaveLength(1);
+    });
+
+    it("flies over waist-high cover", () => {
+      const h = makeHarness({ boxes: [crate] });
+      h.system.spawnProjectile(makeShot({ origin: new THREE.Vector3(20, 1.8, 0) }));
+      h.system.updateProjectiles(0.016);
+      expect(h.system.projectiles).toHaveLength(1);
+    });
+
+    it("still dies on the lintel itself, so the gate is a span and not a bypass", () => {
+      const h = makeHarness({ boxes: [lintel] });
+      h.system.spawnProjectile(makeShot({ origin: new THREE.Vector3(20, 2.7, 0) }));
+      h.system.updateProjectiles(0.016);
+      expect(h.system.projectiles).toHaveLength(0);
+    });
+
+    it("still dies on cover it is level with", () => {
+      const h = makeHarness({ boxes: [crate] });
+      h.system.spawnProjectile(makeShot({ origin: new THREE.Vector3(20, 0.6, 0) }));
+      h.system.updateProjectiles(0.016);
+      expect(h.system.projectiles).toHaveLength(0);
+    });
+  });
 });
 
 describe("injected combat (seam)", () => {

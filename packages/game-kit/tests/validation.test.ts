@@ -53,6 +53,9 @@ function validLayout(): ArenaLayout {
       },
     ],
     platforms: [{ id: "overlook", x: 10, z: 0, w: 5, d: 4, y: 4, thickness: 0.5, levelId: "mezzanine" }],
+    // Buildings are opt-in; this baseline stays a bare arena so the room,
+    // ramp, and anchor rules are exercised without a shell in the way.
+    structures: [],
     anchors: [
       { kind: "playerSpawn", id: "player", x: -6, z: 0, levelId: GROUND_LEVEL_ID, roomId: "west" },
       { kind: "breachSpawn", id: "east-breach", x: 18, z: 0, levelId: GROUND_LEVEL_ID, roomId: "east" },

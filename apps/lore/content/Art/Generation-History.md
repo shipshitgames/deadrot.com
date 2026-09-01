@@ -325,17 +325,16 @@ reviewed outside runtime paths under `packages/assets/_archive/`.
 - Tool: built-in `image_gen` / `gpt-image-2`.
 - Plan: Codex built-in.
 - Kind: ai-2d-animation-sprite-sheet.
-- Workspace final:
-  - `packages/assets/games/scourge-survivors/animations/scourge/host-grunt/`
-  - `packages/assets/games/scourge-survivors/animations/scourge/spitter-host/`
-  - `packages/assets/games/scourge-survivors/animations/scourge/winged-host/`
-  - `packages/assets/games/scourge-survivors/animations/scourge/breach-boss/`
+- Workspace final: retired on 2026-07-26 after enemies moved to articulated 3D
+  rigs; the promoted static spitter and winged-host plates remain.
 - Prompt source: `Art/Prompt-Batches/2026-06-05-scourge-animation-pack.md`.
 - Post-processing: generated 3x6 action sheets; archived originals outside the
   runtime package; split into six frames per view; removed `#ff00ff` chroma key;
   nearest-neighbor downscaled; alpha padded; encoded lossless WebP.
 - Notes: The pack establishes enemy readability lanes: blood-red heavy melee, chartreuse acid ranged, purple-wing lightweight flyer, and deep crimson-black massive boss.
-- Decision: keep as an animation asset pack and wire into the renderer in a follow-up implementation pass. First spitter walk frames and first winged fly frames were also promoted into the current runtime static sprites so the color lanes are immediately visible in-game.
+- Decision: the 2D animation pack was later retired without a runtime consumer.
+  First spitter walk frames and first winged fly frames remain promoted into the
+  current runtime static sprites so the color lanes are still visible in-game.
 
 ## 2026-07-17 - scourge-dual-held-weapons - v01
 

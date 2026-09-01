@@ -41,6 +41,34 @@ export function walkableSurfaceHeight(surfaceBoxes: readonly THREE.Box3[], x: nu
   return height;
 }
 
+/**
+ * Terrain height at (x,z), plus any building deck within one step of `fromY`.
+ *
+ * Terrain (room floors, platforms, ramp steps) is a height field — one walkable
+ * top per point — so the plain maximum is the right answer. Building decks are
+ * not: a two-storey shell has a walkable top at the ground floor, the first
+ * floor and the roof over the same footprint. Clamping decks to `fromY + climb`
+ * keeps whoever is walking the ground floor on the ground floor, and lets them
+ * rise a storey only by climbing the stairs one tread at a time.
+ */
+export function walkableSurfaceHeightNear(
+  surfaceBoxes: readonly THREE.Box3[],
+  deckBoxes: readonly THREE.Box3[],
+  x: number,
+  z: number,
+  fromY: number,
+  climb: number,
+): number {
+  let height = walkableSurfaceHeight(surfaceBoxes, x, z);
+  const ceiling = fromY + climb;
+  for (const box of deckBoxes) {
+    const top = box.max.y;
+    if (top <= height || top > ceiling) continue;
+    if (x >= box.min.x && x <= box.max.x && z >= box.min.z && z <= box.max.z) height = top;
+  }
+  return height;
+}
+
 export class PlayerSystem {
   constructor(
     private ctx: GameContext,
@@ -172,27 +200,49 @@ export class PlayerSystem {
     // flat v1 maps, so their step-up behavior is unchanged.
     for (const box of this.ctx.obstacleBoxes) lift(box);
     for (const box of this.ctx.surfaceBoxes) lift(box);
+    // Building decks need no special case here: `lift` is already step-clamped,
+    // so standing on the ground floor never snaps the player up to the roof.
+    for (const box of this.ctx.deckBoxes) lift(box);
     return groundY;
   }
 
   /** Highest authored walkable surface at an arbitrary arena point. Enemy
    *  grounding uses this seam so raised rooms and ramp steps are playable by
-   *  the whole horde, without treating crates as navigable floors. */
+   *  the whole horde, without treating crates as navigable floors. Terrain only
+   *  — see {@link walkableSurfaceHeightNear} for the building-aware query. */
   walkableSurfaceHeight(x: number, z: number): number {
     return walkableSurfaceHeight(this.ctx.surfaceBoxes, x, z);
   }
 
-  private pushPlayerOutOfObstacles(pos: THREE.Vector3, radius: number) {
-    const footY = pos.y - this.ctx.stanceHeight;
-    const headY = pos.y;
-    for (const box of this.ctx.obstacleBoxes) {
-      if (footY >= box.max.y - 0.12 || headY <= box.min.y + 0.05) continue;
-      this.pushOutOfBoxXZ(pos, box, radius);
-    }
+  /** Terrain height plus any building deck reachable in a single step up from
+   *  `fromY`. This is the per-frame enemy grounding query: it lets the horde
+   *  follow the player through a door and up a stairwell, while a walker on the
+   *  ground floor stays under the deck instead of popping onto the roof. */
+  walkableSurfaceHeightNear(x: number, z: number, fromY: number): number {
+    return walkableSurfaceHeightNear(this.ctx.surfaceBoxes, this.ctx.deckBoxes, x, z, fromY, PLAYER_STEP_HEIGHT);
   }
 
-  pushOutOfObstacles(pos: THREE.Vector3, radius: number) {
+  private pushPlayerOutOfObstacles(pos: THREE.Vector3, radius: number) {
+    // `pos` is the camera/eye, so the head is at pos.y and the feet a stance below.
+    this.pushOutOfObstaclesInRange(pos, radius, pos.y - this.ctx.stanceHeight, pos.y);
+  }
+
+  /**
+   * Push-out for the horde. `pos` is an actor's foot and `height` its standing
+   * extent — both are required because an obstacle only blocks a body it actually
+   * overlaps vertically. Flattening every collider into an infinite column is what
+   * makes a doorway impassable: the lintel above the opening still overlaps the
+   * enemy in X/Z, so the walker is shoved back out of the building it was walking
+   * into. With the extent, the enemy passes under the lintel and over the sill.
+   */
+  pushOutOfObstacles(pos: THREE.Vector3, radius: number, height: number) {
+    this.pushOutOfObstaclesInRange(pos, radius, pos.y, pos.y + height);
+  }
+
+  private pushOutOfObstaclesInRange(pos: THREE.Vector3, radius: number, footY: number, headY: number) {
     for (const box of this.ctx.obstacleBoxes) {
+      // Standing on top of it, or entirely underneath it: not a wall to this body.
+      if (footY >= box.max.y - 0.12 || headY <= box.min.y + 0.05) continue;
       this.pushOutOfBoxXZ(pos, box, radius);
     }
   }

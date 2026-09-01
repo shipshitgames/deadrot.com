@@ -1,7 +1,6 @@
-import { RectBounds, type SteeringStrategy } from "@shipshitgames/engine";
+import { RectBounds } from "@shipshitgames/engine";
 import * as THREE from "three";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import type { Enemy as EnemyType } from "../../src/game/entities/Enemy";
 
 vi.mock("../../src/game/spriteAssets", async () => {
   const { Texture } = await import("three");
@@ -15,56 +14,15 @@ vi.mock("../../src/game/spriteAssets", async () => {
     side: texture(`${prefix}-side`),
     back: texture(`${prefix}-back`),
   });
-  const animationViews = (prefix: string, state: string) => ({
-    front: [texture(`${prefix}-${state}-front`)],
-    side: [texture(`${prefix}-${state}-side`)],
-    back: [texture(`${prefix}-${state}-back`)],
-  });
-  const animations = (prefix: string) => ({
-    move: animationViews(prefix, "move"),
-    attack: animationViews(prefix, "attack"),
-    death: animationViews(prefix, "death"),
-  });
-  const animationMeta = () => ({
-    move: { fps: 8, loop: true, frameCount: 1 },
-    attack: { fps: 8, loop: true, frameCount: 1 },
-    death: { fps: 8, loop: false, frameCount: 1 },
-  });
   const scales = () => ({
     front: [1, 2] as [number, number],
     side: [1.2, 2] as [number, number],
     back: [1, 2] as [number, number],
   });
 
+  // Enemies are articulated rigs with no texture lane of their own, so the only
+  // directional sprite left in the scene is the remote player's billboard.
   return {
-    ENEMY_SPRITE_TEXTURES: {
-      melee: views("enemy-melee"),
-      ranged: views("enemy-ranged"),
-      flying: views("enemy-flying"),
-      hound: views("enemy-hound"),
-      boss: views("enemy-boss"),
-    },
-    ENEMY_SPRITE_ANIMATION_TEXTURES: {
-      melee: animations("enemy-melee"),
-      ranged: animations("enemy-ranged"),
-      flying: animations("enemy-flying"),
-      hound: animations("enemy-hound"),
-      boss: animations("enemy-boss"),
-    },
-    ENEMY_SPRITE_ANIMATION_META: {
-      melee: animationMeta(),
-      ranged: animationMeta(),
-      flying: animationMeta(),
-      hound: animationMeta(),
-      boss: animationMeta(),
-    },
-    ENEMY_SPRITE_SCALES: {
-      melee: scales(),
-      ranged: scales(),
-      flying: scales(),
-      hound: scales(),
-      boss: scales(),
-    },
     PLAYER_AVATAR_SPRITES: {
       ranger: views("player-ranger"),
       heavy: views("player-heavy"),
@@ -116,53 +74,32 @@ afterAll(() => {
   vi.unstubAllGlobals();
 });
 
-describe("directional sprite runtime integration", () => {
-  it("changes enemy movement and attack art without changing raycast targets", () => {
+describe("enemy rig and remote directional sprite integration", () => {
+  it("articulates enemy movement and attacks without changing raycast targets", () => {
     const enemy = new Enemy();
     enemy.spawnAt(0, 0, { speed: 4 });
-    const internals = enemy as unknown as {
-      sprite: THREE.Sprite;
-      spriteMat: THREE.SpriteMaterial;
-      spriteAnimationState: string;
-      steering: SteeringStrategy<EnemyType>;
-    };
     const hitMeshes = [...enemy.hitMeshes];
     const hitGeometry = hitMeshes.map((mesh) => mesh.geometry);
     const hitScales = hitMeshes.map((mesh) => mesh.scale.clone());
+    const bindRotations = hitMeshes.map((mesh) => mesh.parent?.rotation.x ?? 0);
     const bounds = RectBounds.square(50);
     const cameraQuat = new THREE.Quaternion();
     const player = new THREE.Vector3(0, 0, 10);
 
-    internals.steering = {
-      desiredVelocity: (_enemy, _target, move) => {
-        move.x += 4;
-      },
-    };
-    enemy.update(1 / 60, 1, player, [], cameraQuat, bounds);
+    enemy.update(0.12, 1, player, [], cameraQuat, bounds);
+    expect(enemy.group.rotation.y).toBeCloseTo(0);
+    expect(hitMeshes.some((mesh, index) => (mesh.parent?.rotation.x ?? 0) !== bindRotations[index])).toBe(true);
 
-    expect(internals.spriteMat.map?.name).toBe("enemy-melee-move-side");
-    expect(internals.sprite.scale.x).toBeLessThan(0);
-
-    internals.steering = {
-      desiredVelocity: (_enemy, _target, move) => {
-        move.x -= 4;
-      },
-    };
-    enemy.update(1 / 60, 2, player, [], cameraQuat, bounds);
-
-    expect(internals.spriteMat.map?.name).toBe("enemy-melee-move-side");
-    expect(internals.sprite.scale.x).toBeGreaterThan(0);
-
-    internals.steering = { desiredVelocity: () => {} };
-    enemy.group.position.set(0, 0, 0);
     const closePlayer = new THREE.Vector3(0, 0, 1);
     enemy.update(2, 3, closePlayer, [], cameraQuat, bounds);
     enemy.update(1 / 60, 4, closePlayer, [], cameraQuat, bounds);
 
-    expect(internals.spriteAnimationState).toBe("attack");
-    expect(internals.spriteMat.map?.name).toBe("enemy-melee-attack-front");
+    let containsSprite = false;
+    enemy.group.traverse((object) => {
+      if (object instanceof THREE.Sprite) containsSprite = true;
+    });
+    expect(containsSprite).toBe(false);
     expect(enemy.hitMeshes).toHaveLength(hitMeshes.length);
-    expect(enemy.hitMeshes).not.toContain(internals.sprite);
     for (const [index, mesh] of enemy.hitMeshes.entries()) {
       expect(mesh).toBe(hitMeshes[index]);
       expect(mesh.geometry).toBe(hitGeometry[index]);
@@ -170,6 +107,13 @@ describe("directional sprite runtime integration", () => {
       expect(mesh.userData.enemy).toBe(enemy);
       expect(["body", "head"]).toContain(mesh.userData.part);
     }
+
+    enemy.spawnAt(0, 0, { archetype: "hound", speed: 4 });
+    for (const [index, mesh] of enemy.hitMeshes.entries()) {
+      expect(mesh).toBe(hitMeshes[index]);
+      expect(mesh.geometry).toBe(hitGeometry[index]);
+    }
+    enemy.dispose();
   });
 
   it("selects remote-player frames from camera-relative yaw while hitboxes stay independent", () => {

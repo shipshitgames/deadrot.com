@@ -1,46 +1,39 @@
-import * as THREE from "three";
+import type * as THREE from "three";
 import {
-  ANIMATION_MANIFEST,
   ASSET_CATALOG,
   ASSET_MANIFEST,
-  animationFrameSource,
   assetUrl,
   audioUrl,
-  bootSpriteUrl,
-  loadSpriteTexture,
-  loadTexture,
   type SpriteView,
   spriteEntry,
   spriteScale,
   textureEntry,
   uiUrl,
 } from "../assets/catalog";
+import { playerAvatarSpriteAssetId } from "../assets/menuArt";
+import { loadSpriteTexture, loadTexture } from "../assets/textures";
 import type { PlayerAvatarId } from "../net/playerAvatars";
 import type { WeaponId } from "./constants";
 import { MAIN_WEAPON_VISUAL_TIERS, type MainWeaponVisualTier } from "./data/survivors";
 
 export type EnemySpriteKind = "melee" | "ranged" | "flying" | "hound" | "boss";
 export type EnemySpriteView = SpriteView;
-export type EnemySpriteAnimationState = "move" | "attack" | "death";
 
-const ENEMY_SPRITE_KINDS = ["melee", "ranged", "flying", "hound", "boss"] as const;
+/**
+ * Views every directional sprite lane ships. Enemies are no longer among them —
+ * living hosts are articulated {@link ../render/models/enemyRig | rigs} and
+ * their corpses are pooled copies of the same rig, so the flat enemy sheets and
+ * the death-frame atlas have no renderer left. The remaining consumer is the
+ * player avatar, which is still billboarded for remote players.
+ *
+ * The authored sheets stay on disk in `packages/assets` — art outlives the
+ * renderer that first used it — they are simply never fetched at runtime.
+ */
 const ENEMY_SPRITE_VIEWS = ["front", "side", "back"] as const;
-const ENEMY_ANIMATION_STATES = ["move", "attack", "death"] as const;
-const WEAPON_IDS = ["pistol", "smg", "shotgun", "cannon", "sniper"] as const satisfies readonly WeaponId[];
-const DUAL_WEAPON_IDS = ["pistol", "smg", "shotgun", "sniper"] as const satisfies readonly WeaponId[];
 
-type EnemyTextureRecord = Record<EnemySpriteKind, Record<EnemySpriteView, THREE.Texture>>;
-type EnemyAnimationTextureRecord = Record<
-  EnemySpriteKind,
-  Record<EnemySpriteAnimationState, Record<EnemySpriteView, THREE.Texture[]>>
->;
+const WEAPON_IDS = ["pistol", "smg", "shotgun", "cannon", "sniper"] as const satisfies readonly WeaponId[];
 
 interface CombatAssetSnapshot {
-  enemyTextures: EnemyTextureRecord;
-  enemyAnimations: EnemyAnimationTextureRecord;
-  weaponTextures: Record<WeaponId, THREE.Texture>;
-  weaponDualTextures: Partial<Record<WeaponId, THREE.Texture>>;
-  weaponAdsTextures: Partial<Record<WeaponId, THREE.Texture>>;
   weaponLootTextures: Record<WeaponId, THREE.Texture>;
   muzzleFlashTexture: THREE.Texture;
   projectileTextures: Record<"enemy" | "boss" | "bolt" | "orb", THREE.Texture>;
@@ -53,14 +46,6 @@ interface CombatAssetSnapshot {
 
 let combatAssetSnapshot: CombatAssetSnapshot | undefined;
 let combatAssetPreloadPromise: Promise<void> | undefined;
-
-export function enemySpriteAssetId(id: EnemySpriteKind): string {
-  return ASSET_CATALOG.enemy(id).sprite;
-}
-
-export function playerAvatarSpriteAssetId(id: PlayerAvatarId): string {
-  return ASSET_CATALOG.player(id).sprite;
-}
 
 export function weaponSpriteAssetId(id: WeaponId): string {
   return ASSET_CATALOG.weapon(id).sprite;
@@ -86,16 +71,6 @@ function fxSpriteAssetId(id: "muzzleFlash"): string {
   return ASSET_CATALOG.fx(id).sprite;
 }
 
-function enemyAnimationEntity(kind: EnemySpriteKind): string {
-  return ASSET_CATALOG.enemy(kind).animation.entity;
-}
-
-function enemyAnimationAction(kind: EnemySpriteKind, state: EnemySpriteAnimationState): string {
-  const action = ASSET_CATALOG.enemy(kind).animation.actions[state];
-  if (!action) throw new Error(`Scourge Survivors enemy ${kind} has no ${state} animation action`);
-  return action;
-}
-
 // Each weapon ships one horizontal tier sheet. The runtime UV-samples a cell;
 // loading and wrapping the sheet happens once during combat preload.
 export function weaponSheetColumns(id: WeaponId): number {
@@ -112,32 +87,13 @@ export function weaponTierCellIndex(id: WeaponId, tier: MainWeaponVisualTier): n
   return 0;
 }
 
-function scaleViews(id: string): Record<EnemySpriteView, [number, number]> {
+/** Authored world scale for each view of a directional sprite. */
+function scaleViews(id: string): Record<SpriteView, [number, number]> {
   return {
     front: spriteScale(id, "front"),
     side: spriteScale(id, "side"),
     back: spriteScale(id, "back"),
   };
-}
-
-function animationStateMeta(
-  kind: EnemySpriteKind,
-): Record<EnemySpriteAnimationState, { fps: number; loop: boolean; frameCount: number }> {
-  const entityId = enemyAnimationEntity(kind);
-  const entity = ANIMATION_MANIFEST.entities[entityId];
-  if (!entity) throw new Error(`Scourge Survivors animation manifest has no entity ${entityId}`);
-  const meta = {} as Record<EnemySpriteAnimationState, { fps: number; loop: boolean; frameCount: number }>;
-  for (const state of ENEMY_ANIMATION_STATES) {
-    const actionId = enemyAnimationAction(kind, state);
-    const action = entity.actions[actionId];
-    if (!action) throw new Error(`Scourge Survivors animation manifest has no action ${entityId}/${actionId}`);
-    meta[state] = {
-      fps: action.fps,
-      loop: action.loop,
-      frameCount: ANIMATION_MANIFEST.framesPerAction,
-    };
-  }
-  return meta;
 }
 
 async function asyncRecord<K extends string, V>(
@@ -166,112 +122,8 @@ function liveRecord<K extends string, V>(keys: readonly K[], read: (key: K) => V
   return record;
 }
 
-const ANIMATION_BASE_TEXTURE_PROMISES = new Map<string, Promise<THREE.Texture>>();
-
-function animationBaseTexture(url: string): Promise<THREE.Texture> {
-  const cached = ANIMATION_BASE_TEXTURE_PROMISES.get(url);
-  if (cached) return cached;
-  const promise = new THREE.TextureLoader()
-    .loadAsync(url)
-    .then((texture) => {
-      texture.colorSpace = THREE.SRGBColorSpace;
-      texture.generateMipmaps = false;
-      texture.premultiplyAlpha = false;
-      return texture;
-    })
-    .catch((error) => {
-      ANIMATION_BASE_TEXTURE_PROMISES.delete(url);
-      throw error;
-    });
-  ANIMATION_BASE_TEXTURE_PROMISES.set(url, promise);
-  return promise;
-}
-
-async function loadEnemyAnimationTexture(
-  kind: EnemySpriteKind,
-  entity: string,
-  action: string,
-  view: EnemySpriteView,
-  frame: number,
-): Promise<THREE.Texture> {
-  const frameSource = await animationFrameSource(entity, action, view, frame);
-  const sourceKind = frameSource.atlas ? "atlas" : "frame";
-  const base = await animationBaseTexture(frameSource.url);
-  const texture = base.clone();
-  // Clones share one decoded atlas source. Different filters intentionally
-  // create separate GPU textures (and duplicate the atlas upload) so the comic
-  // boss stays smooth without blurring the rank-and-file pixel-art lanes.
-  const filter = spriteEntry(enemySpriteAssetId(kind)).filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
-  texture.minFilter = filter;
-  texture.magFilter = filter;
-  texture.userData.scourgeAnimation = { entity, action, view, frame, source: sourceKind };
-  texture.name = `scourge-animation:${entity}/${action}/${view}/${frame}`;
-
-  if (frameSource.atlas) {
-    const { pageWidth, pageHeight, x, y, w, h } = frameSource.atlas;
-    texture.wrapS = THREE.ClampToEdgeWrapping;
-    texture.wrapT = THREE.ClampToEdgeWrapping;
-    texture.repeat.set(w / pageWidth, h / pageHeight);
-    // Atlas metadata uses top-left pixel coordinates; THREE's texture offset is bottom-left.
-    texture.offset.set(x / pageWidth, 1 - (y + h) / pageHeight);
-    texture.matrixAutoUpdate = true;
-    texture.updateMatrix();
-  }
-
-  texture.needsUpdate = true;
-  return texture;
-}
-
-async function loadEnemyAnimations(): Promise<EnemyAnimationTextureRecord> {
-  return asyncRecord(ENEMY_SPRITE_KINDS, async (kind) => {
-    const entity = enemyAnimationEntity(kind);
-    return asyncRecord(ENEMY_ANIMATION_STATES, async (state) => {
-      const action = enemyAnimationAction(kind, state);
-      return asyncRecord(ENEMY_SPRITE_VIEWS, (view) =>
-        Promise.all(
-          Array.from({ length: ANIMATION_MANIFEST.framesPerAction }, (_, frame) =>
-            loadEnemyAnimationTexture(kind, entity, action, view, frame),
-          ),
-        ),
-      );
-    });
-  });
-}
-
-async function loadAdsSpriteTexture(id: WeaponId): Promise<THREE.Texture> {
-  const entry = spriteEntry(weaponSpriteAssetId(id));
-  if (!entry.adsSprite) throw new Error(`Weapon sprite ${id} is missing scoped ADS metadata`);
-  const texture = await new THREE.TextureLoader().loadAsync(await assetUrl(entry.adsSprite.path));
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.minFilter = entry.filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
-  texture.magFilter = entry.filter === "nearest" ? THREE.NearestFilter : THREE.LinearFilter;
-  texture.generateMipmaps = entry.filter !== "nearest";
-  texture.premultiplyAlpha = false;
-  return texture;
-}
-
-async function loadWeaponTexture(id: WeaponId): Promise<THREE.Texture> {
-  const texture = await loadSpriteTexture(weaponSpriteAssetId(id));
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.needsUpdate = true;
-  return texture;
-}
-
-async function loadDualWeaponTexture(id: WeaponId): Promise<THREE.Texture> {
-  const spriteId = weaponDualSpriteAssetId(id);
-  if (!spriteId) throw new Error(`Dual-compatible weapon ${id} is missing its dedicated dual sprite`);
-  const texture = await loadSpriteTexture(spriteId);
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.needsUpdate = true;
-  return texture;
-}
-
 async function buildCombatAssetSnapshot(): Promise<CombatAssetSnapshot> {
   const [
-    enemyTextures,
-    enemyAnimations,
-    weaponTextures,
-    weaponDualTextures,
     weaponLootTextures,
     muzzleFlashTexture,
     projectileTextures,
@@ -280,14 +132,7 @@ async function buildCombatAssetSnapshot(): Promise<CombatAssetSnapshot> {
     corpsePartTextures,
     playerAvatarTextures,
     arenaTextures,
-    sniperAdsTexture,
   ] = await Promise.all([
-    asyncRecord(ENEMY_SPRITE_KINDS, (kind) =>
-      asyncRecord(ENEMY_SPRITE_VIEWS, (view) => loadSpriteTexture(enemySpriteAssetId(kind), view)),
-    ),
-    loadEnemyAnimations(),
-    asyncRecord(WEAPON_IDS, loadWeaponTexture),
-    asyncRecord(DUAL_WEAPON_IDS, loadDualWeaponTexture),
     asyncRecord(WEAPON_IDS, (id) => loadSpriteTexture(weaponLootSpriteAssetId(id))),
     loadSpriteTexture(fxSpriteAssetId("muzzleFlash")),
     asyncRecord(["enemy", "boss", "bolt", "orb"] as const, (id) => loadSpriteTexture(projectileSpriteAssetId(id))),
@@ -298,18 +143,9 @@ async function buildCombatAssetSnapshot(): Promise<CombatAssetSnapshot> {
       asyncRecord(ENEMY_SPRITE_VIEWS, (view) => loadSpriteTexture(playerAvatarSpriteAssetId(id), view)),
     ),
     asyncRecord(Object.keys(ASSET_MANIFEST.textures), loadTexture),
-    loadAdsSpriteTexture("sniper"),
   ]);
 
-  sniperAdsTexture.wrapS = THREE.RepeatWrapping;
-  sniperAdsTexture.needsUpdate = true;
-
   return {
-    enemyTextures,
-    enemyAnimations,
-    weaponTextures,
-    weaponDualTextures,
-    weaponAdsTextures: { sniper: sniperAdsTexture },
     weaponLootTextures,
     muzzleFlashTexture,
     projectileTextures,
@@ -346,50 +182,6 @@ export function preloadCombatAssets(): Promise<void> {
 export function combatAssetsReady(): boolean {
   return combatAssetSnapshot !== undefined;
 }
-
-export const ENEMY_SPRITE_TEXTURES: EnemyTextureRecord = liveRecord(
-  ENEMY_SPRITE_KINDS,
-  (kind) => requireCombatAssets().enemyTextures[kind],
-);
-
-export const ENEMY_SPRITE_ANIMATION_TEXTURES: EnemyAnimationTextureRecord = liveRecord(
-  ENEMY_SPRITE_KINDS,
-  (kind) => requireCombatAssets().enemyAnimations[kind],
-);
-
-export const ENEMY_SPRITE_ANIMATION_META: Record<
-  EnemySpriteKind,
-  Record<EnemySpriteAnimationState, { fps: number; loop: boolean; frameCount: number }>
-> = {
-  melee: animationStateMeta("melee"),
-  ranged: animationStateMeta("ranged"),
-  flying: animationStateMeta("flying"),
-  hound: animationStateMeta("hound"),
-  boss: animationStateMeta("boss"),
-};
-
-export const ENEMY_SPRITE_SCALES: Record<EnemySpriteKind, Record<EnemySpriteView, [number, number]>> = {
-  melee: scaleViews(enemySpriteAssetId("melee")),
-  ranged: scaleViews(enemySpriteAssetId("ranged")),
-  flying: scaleViews(enemySpriteAssetId("flying")),
-  hound: scaleViews(enemySpriteAssetId("hound")),
-  boss: scaleViews(enemySpriteAssetId("boss")),
-};
-
-export const WEAPON_SPRITE_TEXTURES: Record<WeaponId, THREE.Texture> = liveRecord(
-  WEAPON_IDS,
-  (id) => requireCombatAssets().weaponTextures[id],
-);
-
-export const WEAPON_DUAL_SPRITE_TEXTURES: Partial<Record<WeaponId, THREE.Texture>> = liveRecord(
-  DUAL_WEAPON_IDS,
-  (id) => requireCombatAssets().weaponDualTextures[id] as THREE.Texture,
-);
-
-export const WEAPON_ADS_SPRITE_TEXTURES: Partial<Record<WeaponId, THREE.Texture>> = liveRecord(
-  ["sniper"] as const,
-  (id) => requireCombatAssets().weaponAdsTextures[id] as THREE.Texture,
-);
 
 export const WEAPON_LOOT_SPRITE_TEXTURES: Record<WeaponId, THREE.Texture> = liveRecord(
   WEAPON_IDS,
@@ -441,20 +233,6 @@ export const WEAPON_DUAL_SPRITE_CONFIG: Partial<Record<WeaponId, DualWeaponSprit
   shotgun: dualWeaponConfig("shotgun"),
   sniper: dualWeaponConfig("sniper"),
 };
-
-export function weaponSpriteTexture(id: WeaponId): THREE.Texture {
-  return WEAPON_SPRITE_TEXTURES[id];
-}
-
-export function weaponAdsSpriteTexture(id: WeaponId): THREE.Texture {
-  return WEAPON_ADS_SPRITE_TEXTURES[id] ?? WEAPON_SPRITE_TEXTURES[id];
-}
-
-export function weaponDualSpriteTexture(id: WeaponId): THREE.Texture {
-  const texture = WEAPON_DUAL_SPRITE_TEXTURES[id];
-  if (!texture) throw new Error(`Weapon ${id} has no dedicated dual sprite texture`);
-  return texture;
-}
 
 export function weaponHasAdsSprite(id: WeaponId): boolean {
   return WEAPON_ADS_SPRITE_CONFIG[id] !== undefined;
@@ -541,15 +319,8 @@ export const PLAYER_AVATAR_SCALES: Record<PlayerAvatarId, Record<SpriteView, [nu
 };
 
 // Front-facing avatar portraits and menu art are the intentionally small,
-// synchronous boot surface. They do not instantiate THREE textures.
-export const PLAYER_AVATAR_PREVIEW_URLS: Record<PlayerAvatarId, string> = {
-  ranger: bootSpriteUrl(playerAvatarSpriteAssetId("ranger"), "front"),
-  heavy: bootSpriteUrl(playerAvatarSpriteAssetId("heavy"), "front"),
-  scout: bootSpriteUrl(playerAvatarSpriteAssetId("scout"), "front"),
-  medic: bootSpriteUrl(playerAvatarSpriteAssetId("medic"), "front"),
-};
-
-export const MENU_HERO_URL = ASSET_CATALOG.runtimeUiUrl("menuTitle");
+// synchronous boot surface, so they live in `assets/menuArt` — the shell must
+// be able to paint them without importing this module and its renderer.
 
 export const ARENA_TEXTURES = liveRecord(
   ["floor", "wall", "column", "block"] as const,

@@ -20,35 +20,69 @@ fi
 # secret-scan hook end
 
 # react-doctor hook start
-react_doctor_scan_staged_files() {
+# Report React regressions without blocking the commit (severity: warning).
+#
+# Scans the diff against the default branch rather than `--staged`. Staged mode
+# materializes the git index into a temp directory carrying this workspace
+# root's package.json, and the root has no `react` — react is a dependency of
+# each app, not of the Bun workspace root. So it aborts with "No React
+# dependency found" before scanning a single file and exits non-zero every time.
+# Diffing covers the staged files and actually reports findings.
+react_doctor_base_ref() {
+  for candidate in origin/master origin/main master main; do
+    if git rev-parse --verify --quiet "$candidate" >/dev/null 2>&1; then
+      printf '%s' "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
+react_doctor_scan_changed_files() {
+  react_doctor_base=$(react_doctor_base_ref) || {
+    printf '%s\n' "react-doctor: no default branch to diff against; skipping scan."
+    return 0
+  }
+
+  # --yes picks every workspace project instead of prompting; --no-score keeps a
+  # pre-commit hook off the network; --verbose is what makes the report name the
+  # rule, the file and the line, so the printed output is the whole answer rather
+  # than a prompt to run a second command.
+  set -- --diff "$react_doctor_base" --blocking warning --no-score --yes --verbose
+
   if [ -x "./node_modules/.bin/react-doctor" ]; then
-    "./node_modules/.bin/react-doctor" --staged --blocking warning
+    "./node_modules/.bin/react-doctor" "$@"
     return
   fi
 
   if command -v react-doctor >/dev/null 2>&1; then
-    react-doctor --staged --blocking warning
+    react-doctor "$@"
     return
   fi
 
   if command -v pnpm >/dev/null 2>&1; then
-    pnpm dlx react-doctor@latest --staged --blocking warning
+    pnpm dlx react-doctor@latest "$@"
     return
   fi
 
   if command -v npx >/dev/null 2>&1; then
-    npx --yes react-doctor@latest --staged --blocking warning
+    npx --yes react-doctor@latest "$@"
     return
   fi
 
-  printf '%s\n' "react-doctor: command not found; skipping staged scan."
+  printf '%s\n' "react-doctor: command not found; skipping scan."
 }
 
 react_doctor_output=$(mktemp "${TMPDIR:-/tmp}/react-doctor-hook.XXXXXX")
-if react_doctor_scan_staged_files > "$react_doctor_output" 2>&1; then
+if react_doctor_scan_changed_files > "$react_doctor_output" 2>&1; then
   rm -f "$react_doctor_output"
 else
+  # Print what the tool said. The report names the rule, the file and the line;
+  # a canned "found regressions" line that discards it cannot distinguish a real
+  # finding from the scan failing to start, and an alarm that always fires is an
+  # alarm nobody reads.
+  printf '%s\n' "React Doctor findings on this branch (commit not blocked):" >&2
+  cat "$react_doctor_output" >&2
   rm -f "$react_doctor_output"
-  printf '%s\n' "React Doctor found staged regressions." "Run react-doctor --staged --blocking warning to inspect." "Want them fixed? Ask your agent to run that command and resolve the findings." >&2
 fi
 # react-doctor hook end

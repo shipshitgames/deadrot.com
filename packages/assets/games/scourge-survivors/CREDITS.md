@@ -78,9 +78,10 @@
   `packages/assets/scripts/lib/alpha-fringe.mjs`, and `cwebp`.
 - Plan: Codex local cleanup for deadrot.com#17.
 - Kind: alpha-preserving magenta/purple chroma-key edge rematte.
-- Source assets: existing committed runtime WebPs under
-  `enemies/scourge/` and `animations/scourge/`.
-- Final assets: the same runtime paths, including `scourge.atlas0.webp`.
+- Source assets: the retained static enemy plates and the since-retired 2D
+  animation lane.
+- Final assets: the static enemy plates remain; the split frames and runtime
+  atlas were removed after the game moved to articulated 3D enemy rigs.
 - Post-processing: replaced low-green magenta edge pixels from nearby
   non-magenta subject color, then rebuilt the atlas page from all authoritative
   split frames and its committed extrusion map; alpha, dimensions, anchors,
@@ -137,9 +138,8 @@
 - Tool: local re-extraction with `ffmpeg`, a deterministic Node pixel pass, and `cwebp`.
 - Plan: Codex local cleanup.
 - Kind: alpha/matte cleanup of existing generated 2D enemy sprite sheets.
-- Source sheets: archived under
-  `packages/assets/_archive/assets-cleanup-2026-06-11/packages/assets/games/scourge-survivors/animations/scourge/*/*/source/sheet.png`.
-- Final assets: `enemies/scourge/**/{front,side,back}.webp` and `animations/scourge/**/frame-*.webp`.
+- Source sheets: retired with the 2D animation lane.
+- Final assets: `enemies/scourge/**/{front,side,back}.webp`.
 - Post-processing: split preserved 6-frame by 3-view sheets, keyed magenta/green matte pixels and white-pink grid fringe to hard alpha, cleared the outer alpha border, resized with nearest-neighbor, and encoded lossless WebP with exact alpha.
 - Notes: No new raster art was generated. This refresh removes visible magenta/purple matte rectangles and keeps the runtime sprites aligned with the existing animation source sheets.
 
@@ -321,14 +321,14 @@
 
 ## 2026-06-05 - Scourge enemy animation pack v01
 
-- Status: generated and wired into runtime.
+- Status: retired from runtime on 2026-07-26.
 - Game: Scourge Survivors.
 - Faction / role: Scourge host-grunt, spitter-host, winged-host, and breach-boss animation frames.
 - Tool: `gpt-image-2` via built-in `image_gen`.
 - Plan: Codex built-in.
 - Kind: generated 2D animation sprite sheets and extracted WebP frames.
 - Prompt source: `apps/lore/content/Art/Prompt-Batches/2026-06-05-scourge-animation-pack.md`.
-- Workspace assets: `animations/scourge/`.
+- Workspace assets: removed after enemies moved to articulated 3D rigs.
 - Actions:
   - `host-grunt`: `walk`, `slash`, `death`.
   - `spitter-host`: `walk`, `spit`, `death`.
@@ -344,7 +344,7 @@
 
 ## 2026-06-06 - Winged host green-key regeneration
 
-- Status: promoted into runtime.
+- Status: static plates retained; 2D animation lane retired on 2026-07-26.
 - Game: Scourge Survivors.
 - Faction / role: Scourge winged-host static and animation frames.
 - Tool: `gpt-image-2` via built-in `image_gen`.
@@ -353,9 +353,8 @@
   - `~/.codex/generated_images/019e9c96-23f7-7883-a5d9-fa73fe4ca167/ig_0b32ccf368593783016a2408866ae08191b69a47a9f1b4a2b3.png`
   - `~/.codex/generated_images/019e9c96-23f7-7883-a5d9-fa73fe4ca167/ig_0b32ccf368593783016a2409e1f880819180319ad68be9d57a.png`
   - `~/.codex/generated_images/019e9c96-23f7-7883-a5d9-fa73fe4ca167/ig_0b32ccf368593783016a240a39531881919a7bca0fb13e96ec.png`
-- Workspace source sheets: archived under
-  `packages/assets/_archive/assets-cleanup-2026-06-11/packages/assets/games/scourge-survivors/animations/scourge/winged-host/{fly,attack,death}/source/sheet.png`.
-- Final assets: `enemies/scourge/winged-host/{front,side,back}.webp`, `animations/scourge/winged-host/**/frame-*.webp`.
+- Workspace source sheets: retired with the 2D animation lane.
+- Final assets: `enemies/scourge/winged-host/{front,side,back}.webp`.
 - Post-processing: split 3x6 sheets, square-padded each cell, keyed only the green background, hardened alpha, removed visible green key pixels, filled transparent RGB from neighboring foreground pixels, and encoded lossless WebP with `cwebp -lossless -exact`.
 - Runtime note: winged-host frames stay as 128x128 transparent square plates so animation anchors, billboard scale, and wing-motion negative space remain stable. Bruised purple is retained as the flyer wing readability lane; purple, white, and green are not retained as rectangular matte/borders.
 
