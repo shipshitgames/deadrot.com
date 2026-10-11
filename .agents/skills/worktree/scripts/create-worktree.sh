@@ -17,7 +17,11 @@
 #   - Resolves the issue/PR title via the GitHub API and slugifies it.
 #   - Branch name:  <type>/<number>-<slug>     e.g. feat/65-add-login-screen
 #   - Base branch:  master -> main -> develop  (first that exists wins)
-#   - Worktree dir: <repo-root>/.worktrees/<branch-with-slashes-as-dashes>
+#   - Worktree dir: <worktree home>/<owner-repo>/<branch-with-slashes-as-dashes>
+#                   NEVER inside the repository. The home is chosen by the global
+#                   `git wt` helper (~/.claude/worktrees, ~/.codex/worktrees,
+#                   ~/.grok/worktrees, else ~/worktrees); GIT_WT_HOME overrides it.
+#                   Without `git wt`, this script applies the same layout itself.
 #   - Prints WORKTREE_PATH=<abs-path> and BRANCH=<name> on the last lines.
 #
 # Requires: git, gh (authenticated).
@@ -68,7 +72,31 @@ SLUG="$(printf '%s' "$TITLE" \
 [ -n "$SLUG" ] || SLUG="issue"
 
 BRANCH="$TYPE/$NUMBER-$SLUG"
-WTDIR="$TOPLEVEL/.worktrees/${BRANCH//\//-}"
+WT_NAME="${BRANCH//\//-}"
+
+# --- Resolve the worktree directory (always outside the repository) --------
+# Prefer the global `git wt` helper: it picks the calling agent's shared home,
+# enforces the per-repo worktree cap, and syncs .worktreeinclude files.
+USE_GIT_WT=0
+if WTDIR="$(git wt --path "$WT_NAME" 2>/dev/null)" && [ -n "$WTDIR" ]; then
+  USE_GIT_WT=1
+else
+  # Same layout as git wt: <home>/<owner-repo>/<name>, home = $GIT_WT_HOME or ~/worktrees.
+  ORIGIN_URL="$(git remote get-url origin 2>/dev/null || true)"
+  ORIGIN_URL="${ORIGIN_URL%/}"
+  ORIGIN_URL="${ORIGIN_URL%.git}"
+  if [[ "$ORIGIN_URL" =~ ([^/:]+)/([^/:]+)$ ]]; then
+    REPO_SLUG="${BASH_REMATCH[1]}-${BASH_REMATCH[2]}"
+  else
+    REPO_SLUG="$(basename "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")")"
+  fi
+  REPO_SLUG="$(printf '%s' "$REPO_SLUG" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9._-' '-')"
+  WTDIR="${GIT_WT_HOME:-$HOME/worktrees}/$REPO_SLUG/$WT_NAME"
+fi
+
+case "$WTDIR/" in
+  "$TOPLEVEL"/*) die "refusing to create a worktree inside the repository: $WTDIR" ;;
+esac
 
 # --- Determine the base branch (master -> main -> develop) ----------------
 if git remote get-url origin >/dev/null 2>&1; then
@@ -84,15 +112,19 @@ done
 [ -n "$BASE_REF" ] || die "no develop/master/main branch found to base the worktree on"
 
 # --- Create the worktree --------------------------------------------------
-mkdir -p "$TOPLEVEL/.worktrees"
-
 if [ -e "$WTDIR" ]; then
   printf 'worktree: %s already exists — reusing it.\n' "$WTDIR" >&2
-elif git show-ref --verify --quiet "refs/heads/$BRANCH"; then
-  # Branch already exists: attach a worktree to it without re-creating.
-  git worktree add "$WTDIR" "$BRANCH"
 else
-  git worktree add -b "$BRANCH" "$WTDIR" "$BASE_REF"
+  # git wt takes the worktree name and derives the directory; raw git takes the path.
+  if [ "$USE_GIT_WT" -eq 1 ]; then ADD=(git wt); TARGET="$WT_NAME"
+  else mkdir -p "$(dirname "$WTDIR")"; ADD=(git worktree add); TARGET="$WTDIR"
+  fi
+  if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
+    # Branch already exists: attach a worktree to it without re-creating.
+    "${ADD[@]}" "$TARGET" "$BRANCH"
+  else
+    "${ADD[@]}" -b "$BRANCH" "$TARGET" "$BASE_REF"
+  fi
 fi
 
 # --- Report ---------------------------------------------------------------

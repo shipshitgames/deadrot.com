@@ -1,6 +1,6 @@
 ---
 name: worktree
-description: Create a git worktree for a GitHub issue or PR, branched off master (falling back to main, then develop). Use when picking up a ticket — e.g. "/worktree https://github.com/owner/repo/issues/65" creates branch feat/65-<slug> in .worktrees/ and switches into it.
+description: Create a git worktree for a GitHub issue or PR, branched off master (falling back to main, then develop). Use when picking up a ticket — e.g. "/worktree https://github.com/owner/repo/issues/65" creates branch feat/65-<slug> in the agent's worktree home (outside the repo) and switches into it.
 license: MIT
 compatibility: Requires git and an authenticated gh CLI.
 metadata:
@@ -34,7 +34,7 @@ Outputs:
 Creates/Modifies:
 
 - A new branch `<type>/<number>-<slug>`.
-- A worktree at `<repo-root>/.worktrees/<branch-with-slashes-as-dashes>` (gitignored).
+- A worktree at `<worktree home>/<owner-repo>/<branch-with-slashes-as-dashes>`, never inside the repository.
 
 External Side Effects:
 
@@ -57,8 +57,15 @@ Delegates To:
 - **Base branch**: the first of `master`, `main`, `develop` that exists wins
   (remote-tracking preferred over local). Deadrot is trunk-based on `master`;
   `main`/`develop` are fallbacks for older or adjacent repos.
-- **Location**: `.worktrees/` under the repo root, kept out of version control. This
-  sits outside the `apps/*` / `packages/*` workspace globs, so Bun and Turbo ignore it.
+- **Location**: outside the repository, never under the repo root. Each agent has one
+  shared home for all its accounts: `~/.claude/worktrees`, `~/.codex/worktrees`,
+  `~/.grok/worktrees`, `~/.t3/worktrees`; manual worktrees go to `~/worktrees`.
+  The worktree is `<home>/<owner-repo>/<branch-with-slashes-as-dashes>` (owner-repo
+  from the origin remote, lowercased). The global `git wt` helper picks the home from
+  the nearest agent process above the shell; `GIT_WT_HOME` overrides it. The script
+  delegates to `git wt` when available and applies the same layout itself otherwise,
+  and refuses any target inside the repository. Soft cap 5 / hard cap 25 linked
+  worktrees per repo.
 
 ## Workflow
 
@@ -95,10 +102,9 @@ install dependencies in the new worktree:
 bun install
 ```
 
-Codex app managed worktrees copy ignored local setup files listed in the repo
-root `.worktreeinclude` (for this repo, `.env.local` and
-`apps/web/.env.local`). That is a Codex app feature; command-line worktrees
-created by this helper do not automatically copy ignored env files.
+Ignored local setup files listed in the repo root `.worktreeinclude` (for this repo,
+`.env.local` and `apps/web/.env.local`) are copied by `git wt` and by Codex app managed
+worktrees. When this helper falls back to raw `git worktree add`, copy them by hand.
 
 ### 4. Load context
 
@@ -107,13 +113,16 @@ session notes before beginning the feature.
 
 ## Cleanup
 
-When the feature is merged or abandoned, remove the worktree from the repo root:
+Remove the worktree once its PR merges (or the work is abandoned), using the
+`WORKTREE_PATH` the script printed:
 
 ```bash
-git worktree remove .worktrees/<branch-with-slashes-as-dashes>
+git worktree remove "<WORKTREE_PATH>"
 ```
 
 Add `--force` only if the worktree has uncommitted changes you intend to discard.
+The `.worktrees/` and `.claude/worktrees/` entries in `.gitignore` stay only so legacy
+in-repo checkouts are never staged.
 
 ## Notes
 

@@ -17,7 +17,7 @@ tmp/
 .env.*
 !.env.example
 
-# git worktrees created by the /worktree skill
+# legacy in-repo git worktrees (worktrees now live outside the repo; see the /worktree skill)
 .worktrees/
 .claude/
 .claude/worktrees/
