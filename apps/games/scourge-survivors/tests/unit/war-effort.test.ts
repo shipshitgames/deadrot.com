@@ -58,6 +58,7 @@ function recordingEnemy() {
     alive: true,
     radius: 0.5,
     position: new THREE.Vector3(0, 1, 0),
+    bodyPoint: (height: number) => new THREE.Vector3(0, 1 + height, 0),
     takeDamage: (amount: number) => {
       dealt.push(amount);
       return { died: false, headshot: false, blocked: false };

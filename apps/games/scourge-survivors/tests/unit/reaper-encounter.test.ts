@@ -41,18 +41,10 @@ vi.mock("../../src/audio/AudioEngine", () => ({
 vi.mock("../../src/game/spriteAssets", async () => {
   const { Texture } = await import("three");
   const tex = () => new Texture();
-  const views = () => ({ front: tex(), side: tex(), back: tex() });
-  const frameViews = () => ({ front: [tex()], side: [tex()], back: [tex()] });
-  const states = <T>(make: () => T) => ({ move: make(), attack: make(), death: make() });
-  const kinds = <T>(make: () => T) => ({ melee: make(), ranged: make(), flying: make(), boss: make() });
   return {
     PROJECTILE_SPRITE_TEXTURES: { enemy: tex(), boss: tex(), bolt: tex(), orb: tex() },
     XP_BLOOD_TEXTURE: tex(),
     XP_BLOOD_SCALE: [0.62, 0.62] as [number, number],
-    ENEMY_SPRITE_TEXTURES: kinds(views),
-    ENEMY_SPRITE_ANIMATION_TEXTURES: kinds(() => states(frameViews)),
-    ENEMY_SPRITE_ANIMATION_META: kinds(() => states(() => ({ fps: 8, loop: true, frameCount: 1 }))),
-    ENEMY_SPRITE_SCALES: kinds(() => ({ front: [1, 1], side: [1, 1], back: [1, 1] })),
   };
 });
 
@@ -140,7 +132,7 @@ function survivorsHarness(shopTiers: Record<string, number> = {}) {
       hitstop: () => calls.push("fx:hitstop"),
       spawnEnemyDeath: () => calls.push("fx:spawnEnemyDeath"),
     },
-    player: { walkableSurfaceHeight: () => 0 },
+    player: { walkableSurfaceHeight: () => 0, walkableSurfaceHeightNear: () => 0 },
     gameOver: { gameOver: (outcome: "win" | "dead") => calls.push(`gameover:${outcome}`) },
     projectiles: { clearProjectiles: () => calls.push("projectiles:clear") },
     arena: {
@@ -193,13 +185,14 @@ function directorHarness() {
   };
   const sys = {
     survivors,
-    player: { walkableSurfaceHeight: () => 0 },
+    player: { walkableSurfaceHeight: () => 0, walkableSurfaceHeightNear: () => 0 },
     projectiles: { removeProjectilesFrom: () => calls.push("projectiles:removeFrom") },
     fx: {
       registerKill: () => 1,
       addShake: () => calls.push("fx:shake"),
       hitstop: () => calls.push("fx:hitstop"),
       spawnEnemyDeath: () => calls.push("fx:spawnEnemyDeath"),
+      spawnExplosion: () => calls.push("fx:spawnExplosion"),
     },
     hud: {
       killSeq: 0,
@@ -227,7 +220,12 @@ function fakeDeadBoss(): Enemy {
     splitCount: 0,
     archetype: "tank",
     eliteAffix: null,
-    deathFx: () => ({ kind: "boss", view: "front", flip: false }),
+    // `kill()` parks the live group underground, so the snapshot is the only
+    // record of where the reaper actually fell.
+    deathFx: () => ({
+      kind: "boss",
+      corpse: { kind: "boss", x: 3, y: 0, z: -4, groundY: 0, yaw: 0, scale: REAPER_SCALE, palette: {} },
+    }),
   } as unknown as Enemy;
 }
 
@@ -340,6 +338,8 @@ describe("reaper victory (PveDirectorSystem.onEnemyDeath)", () => {
     expect(survivors.reaper).toBeNull();
     expect(calls).toContain("hud:toast:BREACH SEALED");
     expect(calls).toContain("gameover:win");
+    // the boss cue is a blast, not just a sound: the reaper detonates on death
+    expect(calls).toContain("fx:spawnExplosion");
     // the victory IS the reward: the elite drop/XP economy is skipped entirely
     expect(calls).not.toContain("survivors:dropXpGem");
     expect(calls).not.toContain("survivors:onEliteKilled");

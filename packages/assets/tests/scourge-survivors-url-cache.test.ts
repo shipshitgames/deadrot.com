@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { ScourgeSurvivorsAssetUrlCache } from "../src/scourge-survivors-url-cache";
 
@@ -43,4 +45,22 @@ test("Scourge asset URL cache evicts failures and maps retry errors descriptivel
   await assert.rejects(cache.load("retry.webp", load, mapError), /Scourge URL failed: chunk unavailable/);
   assert.equal(await cache.load("retry.webp", load, mapError), "/assets/retry.webp");
   assert.equal(calls, 2, "a rejected URL module can be retried");
+});
+
+test("Scourge Vite globs keep boot media targeted and combat media lazy", () => {
+  const sourcePath = fileURLToPath(new URL("../src/scourge-survivors.ts", import.meta.url));
+  const source = readFileSync(sourcePath, "utf8");
+  const bootStart = source.indexOf("const scourgeSurvivorsBootAssetModules");
+  const lazyStart = source.indexOf("const scourgeSurvivorsLazyAssetModules");
+  const cacheStart = source.indexOf("const scourgeSurvivorsAssetUrlCache");
+  assert.ok(bootStart >= 0 && lazyStart > bootStart && cacheStart > lazyStart);
+
+  const bootGlob = source.slice(bootStart, lazyStart);
+  assert.match(bootGlob, /players\/\*\*\/front\.webp/);
+  assert.match(bootGlob, /ui\/\*\*\/\*\.webp/);
+  assert.doesNotMatch(bootGlob, /weapons/);
+  assert.doesNotMatch(bootGlob, /textures/);
+
+  const lazyGlob = source.slice(lazyStart, cacheStart);
+  assert.match(lazyGlob, /eager: false/);
 });

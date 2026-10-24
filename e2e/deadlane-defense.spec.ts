@@ -185,7 +185,7 @@ async function boot(page: Page): Promise<CapturedErrors> {
   await page.waitForFunction(() => Boolean((window as unknown as Partial<DeadlaneWindow>).__deadlaneGame));
 
   // Reveal the menu nav (DEPLOY lives inside <MainMenuNav hidden={!revealed}>).
-  const enterPrompt = page.getByText("Press Enter to continue");
+  const enterPrompt = page.getByTestId("main-menu-enter-prompt");
   await expect(enterPrompt).toBeVisible();
   await enterPrompt.click();
   await expect(enterPrompt).toBeHidden();

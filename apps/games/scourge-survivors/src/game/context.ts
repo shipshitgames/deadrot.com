@@ -62,6 +62,13 @@ export class GameContext {
   // deliberately NOT pushed against (no push-out/headroom) so ramps stay climbable.
   // Flat v1 maps produce zero surface boxes, so their collision is byte-identical.
   surfaceBoxes: THREE.Box3[] = [];
+  // Building floor decks + roofs. Walkable like surfaceBoxes, but kept apart because
+  // they break the height-field assumption: a building footprint has a walkable top at
+  // every storey, so "the highest surface here" is the wrong answer for anyone standing
+  // on the ground floor. Decks are therefore only ever reachable through a step-clamped
+  // query (PlayerSystem.groundUnder / walkableSurfaceHeightNear), never through the
+  // naive max used for spawn placement — which is what keeps spawns off the roof.
+  deckBoxes: THREE.Box3[] = [];
   raycastTargets: THREE.Object3D[] = []; // arena solids + enemy + remote-avatar hit meshes
   enemies: Enemy[] = []; // shared pooled enemy array (contains dead entries)
 

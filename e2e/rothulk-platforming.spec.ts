@@ -55,7 +55,7 @@ test("Rothulk fatal falls show recovery feedback", async ({ page }, testInfo) =>
 async function boot(page: Page) {
   await page.goto("/");
   await expect(page.getByText("ROTHULK")).toBeVisible();
-  await page.getByText("Press Enter to continue").click();
+  await page.getByTestId("main-menu-enter-prompt").click();
   await page.getByRole("button", { name: /^Breach\b/i }).click();
   await expect(page.getByTestId("cinematic-intro")).toBeVisible();
   await page.keyboard.press("Enter");

@@ -64,7 +64,7 @@ async function bootIntoCommandTable(page: Page): Promise<{ consoleErrors: string
   await expect(page.getByText("Strategic Command")).toBeVisible();
 
   // Reveal the menu nav by clicking the prompt.
-  const enterPrompt = page.getByText("Press Enter to continue");
+  const enterPrompt = page.getByTestId("main-menu-enter-prompt");
   await expect(enterPrompt).toBeVisible();
   await enterPrompt.click();
   await expect(enterPrompt).toBeHidden();

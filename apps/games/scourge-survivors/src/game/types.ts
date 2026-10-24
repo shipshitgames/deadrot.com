@@ -54,6 +54,9 @@ export interface ScourgeHudExt {
   reserve: number; // rounds in reserve
   reloading: boolean;
   reloadProgress: number; // 0..1 while reloading, else 0
+  /** Door/window prompt for whatever the crosshair is on, "" when nothing is in
+   *  reach. Pre-formatted by StructureSystem so the overlay just renders it. */
+  interactPrompt: string;
   score: number;
   kills: number;
   headshots: number;

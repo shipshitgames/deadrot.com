@@ -35,32 +35,20 @@ type HudSnapshot = {
 
 type AnimationSample = {
   kind: "boss" | "flying" | "melee" | "ranged";
+  groupScale: number;
   groupY: number;
   hitbox: {
-    bounds: { minX: number; maxX: number; minY: number; maxY: number };
-    count: number;
+    activeCount: number;
+    ids: string[];
     parts: string[];
-    spriteIsHitTarget: boolean;
+    totalCount: number;
   };
+  hasSprite: boolean;
   hoverHeight: number;
+  meshCount: number;
+  poseEnergy: number;
   screen: { x: number; y: number; z: number };
-  src: string;
   state: string;
-  sprite: {
-    height: number;
-    imageHeight: number;
-    imageWidth: number;
-    positionY: number;
-    visible: boolean;
-    width: number;
-  };
-  animation?: {
-    entity: string;
-    action: string;
-    view: "front" | "side" | "back";
-    frame: number;
-    source: "atlas" | "frame";
-  };
 };
 
 type ArenaDebugSnapshot = {
@@ -683,7 +671,12 @@ test.describe("dev sandbox smoke", () => {
     page.on("pageerror", (error) => consoleErrors.push(String(error)));
 
     await page.goto("/?sandbox=1");
-    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
+    // `?sandbox=1` means the run is already launching. Wait for the combat rig
+    // rather than the bare handle: the key presses below need the sandbox
+    // arsenal, which unlocks in the same continuation that builds it.
+    await page.waitForFunction(
+      () => (window as unknown as { __fpsGame?: { combatReady?: boolean } }).__fpsGame?.combatReady === true,
+    );
     await page.evaluate(() => {
       type DevGame = {
         ctx: {
@@ -980,7 +973,7 @@ test.describe("dev sandbox smoke", () => {
     await expect.poll(() => snapshot(page).then((state) => state.berserk)).toBe(0);
   });
 
-  test("cycles readable enemy frames with loaded art and aligned hitboxes", async ({ page }, testInfo) => {
+  test("animates readable articulated enemy rigs with stable hit meshes", async ({ page }, testInfo) => {
     const consoleErrors: string[] = [];
     page.on("console", (msg) => {
       if (msg.type() === "error" && !msg.text().includes("PointerLockControls: Unable to use Pointer Lock API")) {
@@ -1002,50 +995,33 @@ test.describe("dev sandbox smoke", () => {
         project: (camera: unknown) => DevVector;
       };
       type DevHitMesh = {
-        geometry: {
-          boundingBox: {
-            min: { x: number; y: number };
-            max: { x: number; y: number };
-          } | null;
-          computeBoundingBox: () => void;
-        };
-        position: { x: number; y: number };
-        scale: { x: number; y: number };
+        layers: { mask: number };
+        parent: {
+          rotation: { x: number; y: number; z: number };
+        } | null;
         userData: { part?: string };
+        uuid: string;
+        visible: boolean;
+      };
+      type DevObject = {
+        isMesh?: boolean;
+        isSprite?: boolean;
+        visible: boolean;
       };
       type DevEnemy = {
         alive: boolean;
+        animationState: string;
         flying: boolean;
         group: {
           position: DevVector;
+          scale: { x: number };
+          traverse: (visit: (object: DevObject) => void) => void;
         };
         hitMeshes: DevHitMesh[];
         hoverHeight: number;
         isBoss: boolean;
         ranged: boolean;
-        sprite: {
-          position: { y: number };
-          scale: { x: number; y: number };
-          visible: boolean;
-        };
-        spriteAnimationState: string;
-        spriteMat: {
-          map?: {
-            image?: {
-              currentSrc?: string;
-              height?: number;
-              naturalHeight?: number;
-              naturalWidth?: number;
-              src?: string;
-              width?: number;
-            };
-            userData?: {
-              scourgeAnimation?: AnimationSample["animation"];
-            };
-          };
-        };
-        attackAnimationDuration: () => number;
-        triggerSpriteAnimation: (animation: "attack", duration: number) => void;
+        triggerAttackAnimation: () => void;
       };
       type DevGame = {
         clearSandboxActors: () => void;
@@ -1067,54 +1043,39 @@ test.describe("dev sandbox smoke", () => {
       const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
       const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
       const hitboxSample = (enemy: DevEnemy) => {
-        const bounds = {
-          minX: Number.POSITIVE_INFINITY,
-          maxX: Number.NEGATIVE_INFINITY,
-          minY: Number.POSITIVE_INFINITY,
-          maxY: Number.NEGATIVE_INFINITY,
-        };
-        for (const mesh of enemy.hitMeshes) {
-          mesh.geometry.computeBoundingBox();
-          const box = mesh.geometry.boundingBox;
-          if (!box) continue;
-          const x0 = mesh.position.x + box.min.x * mesh.scale.x;
-          const x1 = mesh.position.x + box.max.x * mesh.scale.x;
-          const y0 = mesh.position.y + box.min.y * mesh.scale.y;
-          const y1 = mesh.position.y + box.max.y * mesh.scale.y;
-          bounds.minX = Math.min(bounds.minX, x0, x1);
-          bounds.maxX = Math.max(bounds.maxX, x0, x1);
-          bounds.minY = Math.min(bounds.minY, y0, y1);
-          bounds.maxY = Math.max(bounds.maxY, y0, y1);
-        }
+        const active = enemy.hitMeshes.filter((mesh) => mesh.visible && mesh.layers.mask !== 0);
         return {
-          bounds,
-          count: enemy.hitMeshes.length,
-          parts: enemy.hitMeshes.map((mesh) => mesh.userData.part ?? ""),
-          spriteIsHitTarget: enemy.hitMeshes.includes(enemy.sprite as unknown as DevHitMesh),
+          activeCount: active.length,
+          ids: enemy.hitMeshes.map((mesh) => mesh.uuid),
+          parts: active.map((mesh) => mesh.userData.part ?? ""),
+          totalCount: enemy.hitMeshes.length,
         };
       };
       const sample = (): AnimationSample[] =>
         game.ctx.enemies
           .filter((enemy) => enemy.alive)
           .map((enemy) => {
-            const image = enemy.spriteMat.map?.image;
+            let hasSprite = false;
+            let meshCount = 0;
+            enemy.group.traverse((object) => {
+              if (object.isSprite) hasSprite = true;
+              if (object.isMesh && object.visible) meshCount++;
+            });
+            const poseEnergy = enemy.hitMeshes.reduce((sum, mesh) => {
+              const rotation = mesh.parent?.rotation;
+              return sum + Math.abs(rotation?.x ?? 0) + Math.abs(rotation?.y ?? 0) + Math.abs(rotation?.z ?? 0);
+            }, 0);
             return {
               kind: enemy.isBoss ? "boss" : enemy.flying ? "flying" : enemy.ranged ? "ranged" : "melee",
+              groupScale: enemy.group.scale.x,
               groupY: enemy.group.position.y,
               hitbox: hitboxSample(enemy),
+              hasSprite,
               hoverHeight: enemy.hoverHeight,
+              meshCount,
+              poseEnergy,
               screen: enemy.group.position.clone().project(game.ctx.camera),
-              src: image?.currentSrc || image?.src || "",
-              state: enemy.spriteAnimationState,
-              sprite: {
-                height: Math.abs(enemy.sprite.scale.y),
-                imageHeight: image?.naturalHeight || image?.height || 0,
-                imageWidth: image?.naturalWidth || image?.width || 0,
-                positionY: enemy.sprite.position.y,
-                visible: enemy.sprite.visible,
-                width: Math.abs(enemy.sprite.scale.x),
-              },
-              animation: enemy.spriteMat.map?.userData?.scourgeAnimation,
+              state: enemy.animationState,
             };
           })
           .sort((a, b) => a.kind.localeCompare(b.kind));
@@ -1152,7 +1113,7 @@ test.describe("dev sandbox smoke", () => {
       const moveA = moveSamples[0] ?? [];
       const moveB = moveSamples[moveSamples.length - 1] ?? [];
       for (const enemy of game.ctx.enemies.filter((enemy) => enemy.alive)) {
-        enemy.triggerSpriteAnimation("attack", enemy.attackAnimationDuration());
+        enemy.triggerAttackAnimation();
       }
       await wait(320);
       const attacking = sample();
@@ -1184,34 +1145,18 @@ test.describe("dev sandbox smoke", () => {
     expect(result.moveB.map((sample) => sample.kind)).toEqual(["boss", "flying", "melee", "ranged"]);
 
     for (const sample of result.moveB) {
-      expect(sample.src).toContain("/animations/scourge/scourge.atlas0.webp");
-      expect(sample.sprite.visible).toBe(true);
-      expect(sample.sprite.imageWidth).toBeGreaterThan(0);
-      expect(sample.sprite.imageHeight).toBeGreaterThan(0);
-      expect(sample.sprite.width).toBeGreaterThan(0);
-      expect(sample.sprite.height).toBeGreaterThan(0);
+      expect(sample.hasSprite).toBe(false);
+      expect(sample.meshCount).toBeGreaterThan(10);
+      expect(sample.poseEnergy).toBeGreaterThan(0);
       expect(sample.screen.x).toBeGreaterThan(-0.95);
       expect(sample.screen.x).toBeLessThan(0.95);
       expect(sample.screen.y).toBeGreaterThan(-0.95);
       expect(sample.screen.y).toBeLessThan(0.95);
       expect(sample.screen.z).toBeGreaterThan(-1);
       expect(sample.screen.z).toBeLessThan(1);
-      expect(sample.animation?.source).toBe("atlas");
-      expect(sample.animation?.frame).toBeGreaterThanOrEqual(0);
-      expect(sample.animation?.frame).toBeLessThan(6);
-      expect(["front", "side", "back"]).toContain(sample.animation?.view);
-
-      expect(sample.hitbox.count).toBe(3);
-      expect(sample.hitbox.parts).toEqual(["body", "body", "head"]);
-      expect(sample.hitbox.spriteIsHitTarget).toBe(false);
-      const spriteLeft = -sample.sprite.width / 2;
-      const spriteRight = sample.sprite.width / 2;
-      const spriteBottom = sample.sprite.positionY;
-      const spriteTop = sample.sprite.positionY + sample.sprite.height;
-      expect(sample.hitbox.bounds.minX).toBeGreaterThanOrEqual(spriteLeft - 0.05);
-      expect(sample.hitbox.bounds.maxX).toBeLessThanOrEqual(spriteRight + 0.05);
-      expect(sample.hitbox.bounds.minY).toBeGreaterThanOrEqual(spriteBottom - 0.05);
-      expect(sample.hitbox.bounds.maxY).toBeLessThanOrEqual(spriteTop + 0.05);
+      expect(sample.hitbox.totalCount).toBe(25);
+      expect(sample.hitbox.parts.filter((part) => part === "head")).toHaveLength(1);
+      expect(sample.hitbox.parts.every((part) => part === "body" || part === "head")).toBe(true);
     }
 
     const samplesByKind = Object.fromEntries(result.moveB.map((sample) => [sample.kind, sample])) as Record<
@@ -1224,51 +1169,27 @@ test.describe("dev sandbox smoke", () => {
       expect(samplesByKind[kind].hoverHeight).toBe(0);
       expect(samplesByKind[kind].groupY).toBeLessThan(0.25);
     }
-    expect(samplesByKind.boss.sprite.height).toBeGreaterThan(samplesByKind.melee.sprite.height);
-
-    expect(Object.fromEntries(result.moveB.map((sample) => [sample.kind, sample.animation?.entity]))).toMatchObject({
-      boss: "breach-boss",
-      flying: "winged-host",
-      melee: "host-grunt",
-      ranged: "spitter-host",
+    expect(samplesByKind.boss.groupScale).toBeGreaterThan(samplesByKind.melee.groupScale);
+    expect(Object.fromEntries(result.moveB.map((sample) => [sample.kind, sample.hitbox.activeCount]))).toEqual({
+      boss: 17,
+      flying: 11,
+      melee: 15,
+      ranged: 15,
     });
+
     for (const kind of ["boss", "flying", "melee", "ranged"] as const) {
       const kindSamples = result.moveSamples.flat().filter((sample) => sample.kind === kind);
-      expect(kindSamples.some((sample) => sample.state === "move")).toBe(true);
-      const frames = new Set(kindSamples.map((sample) => sample.animation?.frame));
-      expect(frames.size).toBeGreaterThan(1);
+      expect(kindSamples.every((sample) => sample.hitbox.ids.join("|") === kindSamples[0]?.hitbox.ids.join("|"))).toBe(
+        true,
+      );
+      expect(new Set(kindSamples.map((sample) => sample.poseEnergy.toFixed(3))).size).toBeGreaterThan(1);
     }
-
-    const movingActionByKind = Object.fromEntries(
-      (["boss", "flying", "melee", "ranged"] as const).map((kind) => [
-        kind,
-        result.moveSamples.flat().find((sample) => sample.kind === kind && sample.state === "move")?.animation?.action,
-      ]),
-    );
-    expect(movingActionByKind).toMatchObject({
-      boss: "lurch",
-      flying: "fly",
-      melee: "walk",
-      ranged: "walk",
-    });
-
-    expect(Object.fromEntries(result.attacking.map((sample) => [sample.kind, sample.animation?.action]))).toMatchObject(
-      {
-        boss: "barrage",
-        flying: "attack",
-        melee: "slash",
-        ranged: "spit",
-      },
-    );
     expect(result.attacking.every((sample) => sample.state === "attack")).toBe(true);
-    expect(result.attacking.every((sample) => sample.animation?.source === "atlas")).toBe(true);
-    expect(result.attacking.every((sample) => sample.src.includes("/animations/scourge/scourge.atlas0.webp"))).toBe(
-      true,
-    );
+    expect(result.attacking.every((sample) => sample.poseEnergy > 0)).toBe(true);
     expect(consoleErrors).toEqual([]);
   });
 
-  test("uses death animation frames and sprite gibs for enemy kills", async ({ page }) => {
+  test("uses sprite gibs and no flat billboard for enemy kills", async ({ page }) => {
     await page.goto("/?sandbox=1");
     await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
 
@@ -1278,15 +1199,6 @@ test.describe("dev sandbox smoke", () => {
           image?: {
             currentSrc?: string;
             src?: string;
-          };
-          userData?: {
-            scourgeAnimation?: {
-              entity: string;
-              action: string;
-              view: "front" | "side" | "back";
-              frame: number;
-              source: "atlas" | "frame";
-            };
           };
         };
       };
@@ -1311,15 +1223,17 @@ test.describe("dev sandbox smoke", () => {
               };
             };
           }>;
+          scene: { traverse: (visit: (node: DevSceneNode) => void) => void };
           status: string;
         };
         sys: {
           fx: {
             corpseParts: Array<{ mesh: { type: string; material: DevSpriteMaterial } }>;
-            deathSprites: Array<{ material: DevSpriteMaterial }>;
+            corpses: unknown[];
           };
         };
       };
+      type DevSceneNode = { isSprite?: boolean; material?: DevSpriteMaterial };
 
       const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
       const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
@@ -1338,27 +1252,135 @@ test.describe("dev sandbox smoke", () => {
       game.damageSandboxEnemies(-1, true);
       await wait(80);
 
+      const sceneSprites: string[] = [];
+      game.ctx.scene.traverse((node) => {
+        if (node.isSprite) sceneSprites.push(srcOf(node.material));
+      });
+
       return {
         corpseCount: game.sys.fx.corpseParts.length,
         corpseSources: game.sys.fx.corpseParts.map((part) => srcOf(part.mesh.material)),
         corpseTypes: game.sys.fx.corpseParts.map((part) => part.mesh.type),
-        deathCount: game.sys.fx.deathSprites.length,
-        deathSrc: srcOf(game.sys.fx.deathSprites[0]?.material),
-        deathAnimation: game.sys.fx.deathSprites[0]?.material.map?.userData?.scourgeAnimation,
+        bodyCount: game.sys.fx.corpses.length,
+        sceneSprites,
       };
     });
 
-    expect(result.deathCount).toBeGreaterThan(0);
-    expect(result.deathSrc).toContain("/animations/scourge/scourge.atlas0.webp");
-    expect(result.deathAnimation).toMatchObject({
-      entity: "host-grunt",
-      action: "death",
-      source: "atlas",
-    });
-    expect(["front", "side", "back"]).toContain(result.deathAnimation?.view);
-    expect(result.deathAnimation?.frame).toBeGreaterThanOrEqual(0);
+    // The death itself is the articulated rig replaying its authored clip; the only
+    // billboards a kill is allowed to add are the small gib shards.
+    expect(result.bodyCount).toBe(1);
     expect(result.corpseCount).toBeGreaterThan(0);
     expect(result.corpseTypes.every((type) => type === "Sprite")).toBe(true);
     expect(result.corpseSources.every((src) => src.includes("/fx/gibs/"))).toBe(true);
+
+    // Nothing anywhere in the scene may pull a frame off the enemy death atlas —
+    // that flat puff used to be composited over the 3D body it contradicted.
+    expect(result.sceneSprites.length).toBeGreaterThan(0);
+    expect(result.sceneSprites.filter((src) => src.includes("/animations/"))).toEqual([]);
+  });
+
+  test("settles a 3D body through the authored death clip after a kill", async ({ page }) => {
+    await page.goto("/?sandbox=1");
+    await page.waitForFunction(() => !!(window as unknown as { __fpsGame?: unknown }).__fpsGame);
+
+    const result = await page.evaluate(async () => {
+      type DevGame = {
+        clearSandboxActors: () => void;
+        damageSandboxEnemies: (amount: number, headshot?: boolean, all?: boolean) => void;
+        spawnSandboxEnemy: (kind: "melee", count?: number) => void;
+        startSandbox: () => void;
+        ctx: {
+          body: { position: { x: number; z: number } };
+          enemies: Array<{
+            alive: boolean;
+            group: { position: { x: number; y: number; z: number }; visible: boolean };
+          }>;
+          status: string;
+        };
+        sys: {
+          fx: {
+            corpses: Array<{
+              holder: { parent: unknown; position: { y: number } };
+              rig: { root: { rotation: { x: number } }; materials: Array<{ opacity: number }> };
+              settled: boolean;
+            }>;
+          };
+        };
+      };
+
+      const game = (window as unknown as { __fpsGame: DevGame }).__fpsGame;
+      const frame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const sample = () => {
+        const corpse = game.sys.fx.corpses[0];
+        return {
+          count: game.sys.fx.corpses.length,
+          attached: !!corpse?.holder.parent,
+          tilt: corpse?.rig.root.rotation.x ?? -1,
+          settled: corpse?.settled ?? false,
+          opacity: corpse?.rig.materials[0]?.opacity ?? -1,
+        };
+      };
+      /**
+       * The settle takes 0.85s of *simulated* time, and the sim clock is not the
+       * wall clock: the frame loop clamps each delta to 0.1s and scales it to 5%
+       * while hitstop runs — and a headshot kill is precisely what starts hitstop.
+       * A throttled runner therefore advances the corpse well behind real time, so
+       * wait for the flag itself and keep wall clock only as a ceiling. Returning
+       * on the flag also keeps this far short of the ~6.35s at which the corpse
+       * begins to fade, which is what the opacity assertion below relies on.
+       */
+      const waitForSettle = async () => {
+        const deadline = performance.now() + 10_000;
+        while (performance.now() < deadline) {
+          if (game.sys.fx.corpses[0]?.settled) return;
+          await frame();
+        }
+      };
+
+      await game.startSandbox();
+      game.ctx.status = "playing";
+      game.clearSandboxActors();
+      game.spawnSandboxEnemy("melee", 1);
+      const enemy = game.ctx.enemies.find((candidate) => candidate.alive);
+      if (enemy) {
+        enemy.group.position.x = game.ctx.body.position.x;
+        enemy.group.position.z = game.ctx.body.position.z - 8;
+      }
+      game.damageSandboxEnemies(-1, true);
+
+      await frame();
+      const early = sample();
+      await waitForSettle();
+      const settled = sample();
+
+      return {
+        early,
+        settled,
+        // The pooled enemy is parked underground, so the body on screen has to be
+        // a separate rig — the corpse — not the one that just died.
+        enemyY: enemy?.group.position.y ?? 0,
+        enemyVisible: enemy?.group.visible ?? true,
+      };
+    });
+
+    // A body is standing in the scene the frame after the kill, barely into its fall.
+    expect(result.early.count).toBe(1);
+    expect(result.early.attached).toBe(true);
+    expect(result.early.settled).toBe(false);
+    expect(result.early.opacity).toBeCloseTo(1, 1);
+    expect(result.early.tilt).toBeLessThan(0.6);
+
+    // …and by the end of the clip it has ridden the authored ragdoll to its end
+    // pose, which is the whole point: before this the rig vanished on the kill
+    // frame. The opacity is still full, so the pose is the settle and not the
+    // start of the fade five seconds later.
+    expect(result.settled.count).toBe(1);
+    expect(result.settled.settled).toBe(true);
+    expect(result.settled.tilt).toBeGreaterThan(result.early.tilt);
+    expect(result.settled.tilt).toBeCloseTo(1.34, 1);
+    expect(result.settled.opacity).toBeCloseTo(1, 1);
+
+    expect(result.enemyY).toBe(-100);
+    expect(result.enemyVisible).toBe(false);
   });
 });

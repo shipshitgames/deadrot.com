@@ -51,7 +51,11 @@ export type DeadrotSfx =
   | "build"
   | "powerup"
   | "berserk"
-  | "laser";
+  | "laser"
+  | "doorOpen"
+  | "doorClose"
+  | "doorLocked"
+  | "glassBreak";
 
 export const DEADROT_SFX_PALETTE: Record<DeadrotSfx, SfxCue> = {
   shoot: (s, t) => {
@@ -194,5 +198,30 @@ export const DEADROT_SFX_PALETTE: Record<DeadrotSfx, SfxCue> = {
   laser: (s, t, p) => {
     s.zap(t, "sawtooth", 1200 * p, 300 * p, 0.12, 0.18); // descending pew
     s.zap(t, "square", 2400 * p, 600 * p, 0.08, 0.08);
+  },
+  doorOpen: (s, t) => {
+    s.zap(t, "square", 240, 190, 0.05, 0.16); // latch releasing
+    s.noise(t + 0.04, 0.34, 0.09, 900); // hinge drag under the swing
+    s.zap(t + 0.05, "sine", 110, 82, 0.3, 0.12);
+  },
+  doorClose: (s, t) => {
+    s.noise(t, 0.22, 0.08, 900); // the swing back...
+    s.zap(t + 0.24, "sine", 140, 52, 0.16, 0.28); // ...then the jamb takes it
+    s.noise(t + 0.24, 0.06, 0.18, 1300);
+    s.zap(t + 0.28, "square", 260, 210, 0.03, 0.12); // latch catching
+  },
+  doorLocked: (s, t) => {
+    s.zap(t, "square", 190, 175, 0.03, 0.2); // handle hits the stop
+    s.noise(t, 0.03, 0.14, 2200);
+    s.zap(t + 0.09, "square", 175, 165, 0.03, 0.14); // and again — it isn't opening
+  },
+  glassBreak: (s, t) => {
+    s.zap(t, "triangle", 2600, 1900, 0.05, 0.18); // the crack
+    s.noise(t, 0.09, 0.26, 5200);
+    // Shards landing: three bright, unevenly-spaced tinkles.
+    [0.06, 0.13, 0.24].forEach((d, i) => {
+      s.noise(t + d, 0.07, 0.14 - i * 0.03, 6400 - i * 900);
+      s.zap(t + d, "triangle", 3200 - i * 620, 2400 - i * 500, 0.05, 0.09);
+    });
   },
 };

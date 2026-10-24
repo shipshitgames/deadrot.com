@@ -235,7 +235,8 @@ test("retry from a finished run re-arms a fresh courier run", async ({ page }, t
   await expect.poll(() => phase(page)).toBe("running");
 
   // Finish the run via a beacon win, then re-deploy from the win card.
-  await setRunnerX(page, (await beaconX(page)) + 1);
+  const finishX = (await beaconX(page)) + 1;
+  await setRunnerX(page, finishX);
   await expect.poll(() => phase(page)).toBe("won");
   await page
     .getByTestId("cinematic-delivered")
@@ -249,15 +250,26 @@ test("retry from a finished run re-arms a fresh courier run", async ({ page }, t
   await expect(page.locator("#overlay")).toHaveClass(/is-hidden/);
   await expect(page.getByTestId("cinematic-intro")).toBeVisible();
   await expect.poll(async () => Number(await page.locator("#hud-time").textContent())).toBeLessThan(2);
+
+  // runner.reset() put us back at the spawn (WORLD.startX=4) at baseSpeed (6),
+  // and the fresh run timer reset inside the live intro window.
+  //
+  // Measured against where the win left us rather than against a fixed spawn
+  // threshold, and measured before the brief is dismissed. startRun() leaves the
+  // run live while the intro plays on purpose (see game.ts: "the intro never
+  // stalls Redline's flow"), so x climbs at base speed from the moment RUN AGAIN
+  // is pressed — an absolute `x < 10` only holds for the first second of that,
+  // which is a budget a mobile CI runner spends on the click alone. Travelling
+  // backwards past the beacon is the part that proves a reset happened.
+  expect(await runnerField(page, "x")).toBeLessThan(finishX);
+  await expect.poll(() => runnerField(page, "vx")).toBeCloseTo(BASE_SPEED, 0);
+
+  // The brief still has to be dismissable, and dismissing it must not fault.
   await page
     .getByTestId("cinematic-intro")
     .getByRole("button", { name: /^Run the lane/ })
     .click();
-
-  // runner.reset() put us back at the spawn (WORLD.startX=4) at baseSpeed (6),
-  // and the fresh run timer reset inside the live intro window.
-  await expect.poll(() => runnerField(page, "x")).toBeLessThan(10);
-  await expect.poll(() => runnerField(page, "vx")).toBeCloseTo(BASE_SPEED, 0);
+  await expect(page.getByTestId("cinematic-intro")).toBeHidden();
 
   expectNoErrors(errors);
 });

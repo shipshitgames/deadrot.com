@@ -47,6 +47,7 @@ import {
   type ArenaPlatform,
   type ArenaRamp,
   type ArenaRoom,
+  type ArenaStructure,
   type BiomeAccentLight,
   type BiomeId,
   type BiomeTheme,
@@ -237,6 +238,11 @@ export interface ArenaMap {
   ramps?: ArenaRamp[];
   /** Raised walkable slabs. Data only until #82. */
   platforms?: ArenaPlatform[];
+  /** Enterable buildings: a wall shell per storey, floor decks with optional holes for
+   *  stairwells, and door/window openings the player can open, shoot through, or shatter.
+   *  `ArenaSystem` expands these into wall obstacles + walkable decks; `StructureSystem`
+   *  owns the swinging/sliding leaves. Omit for open-field maps. */
+  structures?: ArenaStructure[];
   /** Typed points (playerSpawn/breachSpawn/objective/extraction). Until #82 the runtime
    *  reads `spawn` for placement (placeAtSpawn) and scatter-spawns enemies procedurally;
    *  keep an authored playerSpawn consistent with `spawn`. No breachSpawns = procedural
@@ -1003,6 +1009,856 @@ const CHOIR_NODE: ArenaMap = {
 
 // ----------------------------------------------------------------------------
 
+/**
+ * Warren Blocks — the first arena built around ENTERABLE buildings.
+ *
+ * The `warren-upper` level carries no outdoor terrain: it exists only as the
+ * second storey of the three habitat blocks. That is legal because
+ * `validateArenaLayout` asks a level for a unique id and a height in range, not
+ * for a room — so the room graph stays a single flat ground plane (three rooms
+ * touching at matching `levelY`) while the vertical play is entirely interior.
+ *
+ * Each block therefore owns the same three-piece kit:
+ *   - a `floorHoles` entry punching the upper deck open over the stairwell,
+ *   - a `kind: "stairs"` ramp whose step footprint sits INSIDE that hole, so the
+ *     climb emerges through the shaft instead of into the deck underside,
+ *   - doors on at least two different sides. There is no navmesh — enemies steer
+ *     straight at the player and get pushed out of walls — so a single entrance
+ *     would just pile the horde against a blank facade.
+ *
+ * Obstacles are hand-kept clear of every building footprint: structure walls are
+ * emitted as game-side geometry rather than `ArenaObstacle`s, so the validator's
+ * obstacle-overlap pass never sees them.
+ */
+const WARREN_BLOCKS: ArenaMap = {
+  id: "warren-blocks",
+  loreId: "hollowlanes",
+  front: "lane",
+  name: "Warren Blocks",
+  subtitle: "Hollow Lanes housing stacks — clear them floor by floor",
+  icon: "bone",
+  accent: "#cdbfae",
+  biomeId: "bone",
+  bounds: { kind: "rect", minX: -56, maxX: 56, minZ: -48, maxZ: 48 },
+  themeOverrides: {
+    // 112x96 puts the corner-to-corner sightline at ~147.5m, which the bone
+    // preset's 150m fogFar clears by only 2.5m. Push it out so the far wall
+    // reads as distance rather than as the edge of the fog volume.
+    fogFar: 168,
+    accentA: { x: -38, z: -32 },
+    accentB: { x: 38, z: 32 },
+  },
+  materials: HOLLOWLANES.materials,
+  environment: {
+    skyTop: 0x0b0b0c,
+    skyHorizon: 0x241f1b,
+    horizonHaze: 0xcdbfae,
+    horizonOpacity: 0.14,
+    // Silhouettes sit wholly outside +-56 / +-48; any overlap with the play
+    // rect is an opaque wall standing across the fight (#35).
+    silhouettes: [
+      { x: -70, z: -20, w: 8, h: 20, d: 6, color: 0x1d1b19, emissive: 0x2a2622, opacity: 0.88 },
+      { x: -72, z: 24, w: 10, h: 16, d: 6, color: 0x191817, emissive: 0x232019, opacity: 0.9 },
+      { x: 70, z: -26, w: 8, h: 22, d: 6, color: 0x1c1a18, emissive: 0x2b2723, opacity: 0.88 },
+      { x: 72, z: 22, w: 12, h: 14, d: 6, color: 0x1a1917, emissive: 0x262220, opacity: 0.86 },
+      { x: 0, z: -60, w: 30, h: 12, d: 6, color: 0x181716, emissive: 0x211e1b, opacity: 0.84 },
+      { x: -12, z: 62, w: 26, h: 10, d: 6, color: 0x191816, emissive: 0x231f1c, opacity: 0.82 },
+    ],
+    decals: [
+      { x: 0, z: 10, w: 14, d: 12, texture: "arena-hollowlanes-decal", color: 0xe9e3d6, opacity: 0.24 },
+      {
+        x: -30,
+        z: -8,
+        w: 10,
+        d: 14,
+        texture: "arena-hollowlanes-decal",
+        color: 0xcdbfae,
+        opacity: 0.22,
+        rotation: 1.57,
+      },
+      { x: 28, z: 24, w: 12, d: 10, texture: "arena-hollowlanes-decal", color: 0xb9ab98, opacity: 0.2, rotation: -0.4 },
+      { x: -6, z: -46, w: 18, d: 8, texture: "arena-hollowlanes-decal", color: 0xe9e3d6, opacity: 0.18 },
+      {
+        x: 44,
+        z: -32,
+        w: 10,
+        d: 10,
+        texture: "arena-hollowlanes-decal",
+        color: 0xcdbfae,
+        opacity: 0.22,
+        rotation: 0.6,
+      },
+    ],
+    props: [
+      { x: -48, z: -40, w: 4.6, h: 7.4, texture: "arena-hollowlanes-prop", color: 0xf6efe2, opacity: 0.84 },
+      { x: 48, z: 40, w: 4.6, h: 7.4, texture: "arena-hollowlanes-prop", color: 0xcdbfae, opacity: 0.84 },
+      { x: -50, z: 14, w: 4.3, h: 7, texture: "arena-hollowlanes-prop", color: 0xb9ab98, opacity: 0.82 },
+      { x: 50, z: -14, w: 4.3, h: 7, texture: "arena-hollowlanes-prop", color: 0xf6efe2, opacity: 0.82 },
+      { x: 6, z: -12, w: 4.1, h: 6.8, texture: "arena-hollowlanes-prop", color: 0xcdbfae, opacity: 0.8 },
+    ],
+  },
+  spawn: { x: 4, z: 42 },
+  obstacles: [],
+  levels: [{ id: "warren-upper", y: 3.4, name: "Warren Upper Floors" }],
+  rooms: [
+    {
+      id: "north-warren",
+      name: "North Warren",
+      bounds: { kind: "rect", minX: -56, maxX: 56, minZ: -48, maxZ: -12 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        { x: 20, z: -34, w: 5, h: 3, d: 5, mat: "crate" },
+        { x: 34, z: -40, w: 4, h: 3, d: 4, mat: "crate" },
+        { x: -46, z: -30, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: 2, z: -24, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: -18, z: -16, w: 14, h: 1.2, d: 2.4, mat: "wall" },
+      ],
+    },
+    {
+      id: "warren-plaza",
+      name: "Warren Plaza",
+      bounds: { kind: "rect", minX: -56, maxX: 56, minZ: -12, maxZ: 16 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        { x: -30, z: 0, w: 6, h: 1.2, d: 2.4, mat: "wall" },
+        { x: -8, z: 8, w: 4, h: 3, d: 4, mat: "crate" },
+        { x: 4, z: -6, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: 46, z: 10, w: 5, h: 3, d: 5, mat: "crate" },
+        { x: 30, z: 12, w: 12, h: 1.2, d: 2.4, mat: "wall" },
+      ],
+    },
+    {
+      id: "south-warren",
+      name: "South Warren",
+      bounds: { kind: "rect", minX: -56, maxX: 56, minZ: 16, maxZ: 48 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        { x: 16, z: 30, w: 5, h: 3, d: 5, mat: "crate" },
+        { x: 34, z: 38, w: 4, h: 3, d: 4, mat: "crate" },
+        { x: -44, z: 28, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: 8, z: 20, w: 14, h: 1.2, d: 2.4, mat: "wall" },
+        { x: -14, z: 46, w: 10, h: 1.2, d: 2.4, mat: "wall" },
+      ],
+    },
+  ],
+  // One flight per block. Each `from`/`to` pair runs 9m for the 3.4m storey
+  // rise and its stepped footprint is contained by that block's floor hole.
+  ramps: [
+    {
+      id: "hab-north-stairs",
+      kind: "stairs",
+      from: { x: -31.6, z: -26.5 },
+      to: { x: -31.6, z: -35.5 },
+      width: 3,
+      steps: 12,
+      fromLevelId: GROUND_LEVEL_ID,
+      toLevelId: "warren-upper",
+    },
+    {
+      id: "hab-east-stairs",
+      kind: "stairs",
+      from: { x: 37.2, z: -3.5 },
+      to: { x: 37.2, z: -12.5 },
+      width: 3,
+      steps: 12,
+      fromLevelId: GROUND_LEVEL_ID,
+      toLevelId: "warren-upper",
+    },
+    {
+      id: "hab-south-stairs",
+      kind: "stairs",
+      from: { x: -23.6, z: 36.5 },
+      to: { x: -23.6, z: 27.5 },
+      width: 3,
+      steps: 12,
+      fromLevelId: GROUND_LEVEL_ID,
+      toLevelId: "warren-upper",
+    },
+  ],
+  structures: [
+    {
+      id: "hab-north",
+      name: "North Habitat Block",
+      bounds: { kind: "rect", minX: -34, maxX: -10, minZ: -40, maxZ: -22 },
+      levelIds: [GROUND_LEVEL_ID, "warren-upper"],
+      roof: true,
+      floorHoles: [{ id: "hab-north-shaft", x: -31.6, z: -31, w: 3.2, d: 10, levelId: "warren-upper" }],
+      openings: [
+        { id: "hab-north-door-s", kind: "door", side: "south", offset: 6, width: 2.2, height: 2.4 },
+        { id: "hab-north-door-n", kind: "door", side: "north", offset: -6, width: 2.2, height: 2.4 },
+        { id: "hab-north-door-e", kind: "door", side: "east", offset: -4, width: 2.2, height: 2.4 },
+        { id: "hab-north-win-s", kind: "window", side: "south", offset: -7, width: 1.8, height: 1.3, glazed: true },
+        { id: "hab-north-win-w", kind: "window", side: "west", offset: 5, width: 1.8, height: 1.3, glazed: true },
+        // Upper-storey glass is placed off the stairwell footprint so every pane
+        // has deck under it to vault onto.
+        {
+          id: "hab-north-up-s1",
+          kind: "window",
+          side: "south",
+          levelId: "warren-upper",
+          offset: 6,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "hab-north-up-s2",
+          kind: "window",
+          side: "south",
+          levelId: "warren-upper",
+          offset: -6,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "hab-north-up-e",
+          kind: "window",
+          side: "east",
+          levelId: "warren-upper",
+          offset: -6,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "hab-north-up-n",
+          kind: "window",
+          side: "north",
+          levelId: "warren-upper",
+          offset: 0,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "hab-north-up-w",
+          kind: "window",
+          side: "west",
+          levelId: "warren-upper",
+          offset: 7,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+      ],
+    },
+    {
+      id: "hab-east",
+      name: "East Habitat Block",
+      bounds: { kind: "rect", minX: 14, maxX: 40, minZ: -18, maxZ: 2 },
+      levelIds: [GROUND_LEVEL_ID, "warren-upper"],
+      roof: true,
+      floorHoles: [{ id: "hab-east-shaft", x: 37.2, z: -8, w: 3.2, d: 10, levelId: "warren-upper" }],
+      openings: [
+        { id: "hab-east-door-w", kind: "door", side: "west", offset: 4, width: 2.2, height: 2.4 },
+        { id: "hab-east-door-n", kind: "door", side: "north", offset: -6, width: 2.2, height: 2.4 },
+        { id: "hab-east-door-s", kind: "door", side: "south", offset: 7, width: 2.2, height: 2.4 },
+        { id: "hab-east-win-w", kind: "window", side: "west", offset: -5, width: 1.8, height: 1.3, glazed: true },
+        { id: "hab-east-win-n", kind: "window", side: "north", offset: 7, width: 1.8, height: 1.3, glazed: true },
+        {
+          id: "hab-east-up-w1",
+          kind: "window",
+          side: "west",
+          levelId: "warren-upper",
+          offset: 0,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "hab-east-up-w2",
+          kind: "window",
+          side: "west",
+          levelId: "warren-upper",
+          offset: 7,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "hab-east-up-n",
+          kind: "window",
+          side: "north",
+          levelId: "warren-upper",
+          offset: -8,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "hab-east-up-s1",
+          kind: "window",
+          side: "south",
+          levelId: "warren-upper",
+          offset: -8,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "hab-east-up-s2",
+          kind: "window",
+          side: "south",
+          levelId: "warren-upper",
+          offset: 6,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "hab-east-up-e",
+          kind: "window",
+          side: "east",
+          levelId: "warren-upper",
+          offset: 6,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+      ],
+    },
+    {
+      id: "hab-south",
+      name: "South Habitat Block",
+      bounds: { kind: "rect", minX: -26, maxX: -2, minZ: 22, maxZ: 42 },
+      levelIds: [GROUND_LEVEL_ID, "warren-upper"],
+      roof: true,
+      floorHoles: [{ id: "hab-south-shaft", x: -23.6, z: 32, w: 3.2, d: 10, levelId: "warren-upper" }],
+      openings: [
+        { id: "hab-south-door-n", kind: "door", side: "north", offset: 5, width: 2.2, height: 2.4 },
+        { id: "hab-south-door-e", kind: "door", side: "east", offset: -6, width: 2.2, height: 2.4 },
+        { id: "hab-south-door-w", kind: "door", side: "west", offset: 6, width: 2.2, height: 2.4 },
+        { id: "hab-south-win-n", kind: "window", side: "north", offset: -7, width: 1.8, height: 1.3, glazed: true },
+        { id: "hab-south-win-e", kind: "window", side: "east", offset: 6, width: 1.8, height: 1.3, glazed: true },
+        {
+          id: "hab-south-up-n1",
+          kind: "window",
+          side: "north",
+          levelId: "warren-upper",
+          offset: 0,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "hab-south-up-n2",
+          kind: "window",
+          side: "north",
+          levelId: "warren-upper",
+          offset: 8,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "hab-south-up-s",
+          kind: "window",
+          side: "south",
+          levelId: "warren-upper",
+          offset: -6,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "hab-south-up-e",
+          kind: "window",
+          side: "east",
+          levelId: "warren-upper",
+          offset: -6,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "hab-south-up-w",
+          kind: "window",
+          side: "west",
+          levelId: "warren-upper",
+          offset: -7,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+      ],
+    },
+  ],
+  anchors: [
+    { kind: "playerSpawn", id: "warren-spawn", x: 4, z: 42, levelId: GROUND_LEVEL_ID, roomId: "south-warren" },
+    {
+      kind: "breachSpawn",
+      id: "warren-north-breach",
+      x: 0,
+      z: -44,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "north-warren",
+      laneId: "north",
+    },
+    {
+      kind: "breachSpawn",
+      id: "warren-east-breach",
+      x: 50,
+      z: -6,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "warren-plaza",
+      laneId: "east",
+    },
+    {
+      kind: "breachSpawn",
+      id: "warren-west-breach",
+      x: -50,
+      z: 4,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "warren-plaza",
+      laneId: "west",
+    },
+    // Held in the open plaza on purpose: an objective sealed inside a block
+    // would let the player camp a doorway the horde cannot open.
+    { kind: "objective", id: "warren-node", x: 0, z: -8, levelId: GROUND_LEVEL_ID, roomId: "warren-plaza" },
+  ],
+};
+
+// ----------------------------------------------------------------------------
+
+/**
+ * Cinder Stacks — the three-storey climb.
+ *
+ * Same interior-vertical idea as {@link WARREN_BLOCKS}, taken one level higher:
+ * the central tower stacks ground -> `stack-mid` -> `stack-top`, and the two
+ * annexes stop at `stack-mid`. The tower's two shafts sit on OPPOSITE corners,
+ * so reaching the top floor means crossing the mid deck under fire rather than
+ * running a single stairwell straight up.
+ *
+ * `storeyHeight: 3.6` matches the authored level spacing on every structure —
+ * `structureStoreys` derives each storey's height from the gap to the next
+ * level and only falls back to this value for the topmost one, so leaving it at
+ * the 3.4m default would give the tower's top floor a shorter ceiling than the
+ * two below it.
+ */
+const CINDER_STACKS: ArenaMap = {
+  id: "cinder-stacks",
+  loreId: "ashgate",
+  front: "holdout",
+  name: "Cinder Stacks",
+  subtitle: "Ashgate tenement spine — take the tower or lose the yard",
+  icon: "foundry",
+  accent: "#ff6a00",
+  biomeId: "foundry",
+  bounds: { kind: "rect", minX: -48, maxX: 48, minZ: -44, maxZ: 44 },
+  themeOverrides: {
+    // 96x88 -> ~130.2m diagonal, inside the foundry preset's 165m fogFar.
+    // Only the accent lights move, out to the yard corners the tower shadows.
+    accentA: { x: -34, z: -28 },
+    accentB: { x: 34, z: 28 },
+  },
+  materials: ASHGATE.materials,
+  environment: {
+    skyTop: 0x0a0605,
+    skyHorizon: 0x2a1309,
+    horizonHaze: 0xff6a00,
+    horizonOpacity: 0.18,
+    silhouettes: [
+      { x: -62, z: -18, w: 8, h: 24, d: 6, color: 0x241713, emissive: 0x3a1507, opacity: 0.88 },
+      { x: -64, z: 22, w: 10, h: 18, d: 6, color: 0x1b1513, emissive: 0x281006, opacity: 0.9 },
+      { x: 62, z: -24, w: 8, h: 22, d: 6, color: 0x201614, emissive: 0x351307, opacity: 0.88 },
+      { x: 64, z: 20, w: 12, h: 16, d: 6, color: 0x241610, emissive: 0x4a1b08, opacity: 0.86 },
+      { x: -6, z: -56, w: 28, h: 14, d: 6, color: 0x1d1310, emissive: 0x2a0f06, opacity: 0.84 },
+      { x: 10, z: 58, w: 24, h: 12, d: 6, color: 0x1f1411, emissive: 0x2f1207, opacity: 0.82 },
+    ],
+    decals: [
+      { x: 0, z: 22, w: 12, d: 10, texture: "arena-ashgate-decal", color: 0xff8a3c, opacity: 0.26, rotation: 0.3 },
+      { x: -26, z: -6, w: 10, d: 12, texture: "arena-ashgate-decal", color: 0xff6a00, opacity: 0.22, rotation: -0.5 },
+      { x: 32, z: 6, w: 12, d: 9, texture: "arena-ashgate-decal", color: 0xb89274, opacity: 0.2, rotation: 0.9 },
+      { x: -4, z: -38, w: 16, d: 8, texture: "arena-ashgate-decal", color: 0xff8a3c, opacity: 0.18 },
+      { x: 36, z: -38, w: 9, d: 9, texture: "arena-ashgate-decal", color: 0xc1121f, opacity: 0.22, rotation: -0.8 },
+    ],
+    props: [
+      { x: -44, z: -30, w: 5.2, h: 8.4, texture: "arena-ashgate-prop", color: 0xff8a3c, opacity: 0.85 },
+      { x: 44, z: 32, w: 5.2, h: 8.4, texture: "arena-ashgate-prop", color: 0xff6a00, opacity: 0.85 },
+      { x: -46, z: 40, w: 4.3, h: 7, texture: "arena-ashgate-prop", color: 0xb89274, opacity: 0.82 },
+      { x: 46, z: -40, w: 4.3, h: 7, texture: "arena-ashgate-prop", color: 0xff8a3c, opacity: 0.82 },
+      { x: 16, z: -6, w: 4.1, h: 6.8, texture: "arena-ashgate-prop", color: 0xb89274, opacity: 0.8 },
+    ],
+  },
+  spawn: { x: -38, z: -38 },
+  obstacles: [],
+  levels: [
+    { id: "stack-mid", y: 3.6, name: "Stack Mid Deck" },
+    { id: "stack-top", y: 7.2, name: "Stack Top Deck" },
+  ],
+  rooms: [
+    {
+      id: "stack-west",
+      name: "West Stacks",
+      bounds: { kind: "rect", minX: -48, maxX: 0, minZ: -44, maxZ: 44 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        { x: -30, z: -32, w: 5, h: 3, d: 5, mat: "crate" },
+        { x: -42, z: -10, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: -20, z: 34, w: 14, h: 1.2, d: 2.4, mat: "wall" },
+        { x: -8, z: -34, w: 4, h: 3, d: 4, mat: "crate" },
+        { x: -44, z: 34, w: 4, h: 3, d: 4, mat: "crate" },
+      ],
+    },
+    {
+      id: "stack-east",
+      name: "East Stacks",
+      bounds: { kind: "rect", minX: 0, maxX: 48, minZ: -44, maxZ: 44 },
+      levelId: GROUND_LEVEL_ID,
+      obstacles: [
+        { x: 30, z: 8, w: 5, h: 3, d: 5, mat: "crate" },
+        { x: 42, z: -2, w: 2.4, h: 6, d: 2.4, mat: "pillar" },
+        { x: 18, z: 30, w: 14, h: 1.2, d: 2.4, mat: "wall" },
+        { x: 8, z: -36, w: 4, h: 3, d: 4, mat: "crate" },
+        { x: 40, z: 30, w: 5, h: 3, d: 5, mat: "crate" },
+      ],
+    },
+  ],
+  ramps: [
+    // Tower: ground -> mid on the north-west shaft, mid -> top on the
+    // south-east one. Both step footprints are contained by their floor hole.
+    {
+      id: "tower-stairs-lower",
+      kind: "stairs",
+      from: { x: -11.2, z: -3.9 },
+      to: { x: -11.2, z: -12.9 },
+      width: 3,
+      steps: 12,
+      fromLevelId: GROUND_LEVEL_ID,
+      toLevelId: "stack-mid",
+    },
+    {
+      id: "tower-stairs-upper",
+      kind: "stairs",
+      from: { x: 11.2, z: 1.5 },
+      to: { x: 11.2, z: 10.5 },
+      width: 3,
+      steps: 12,
+      fromLevelId: "stack-mid",
+      toLevelId: "stack-top",
+    },
+    {
+      id: "annex-west-stairs",
+      kind: "stairs",
+      from: { x: -37.4, z: 20.5 },
+      to: { x: -37.4, z: 11.5 },
+      width: 3,
+      steps: 12,
+      fromLevelId: GROUND_LEVEL_ID,
+      toLevelId: "stack-mid",
+    },
+    {
+      id: "annex-east-stairs",
+      kind: "stairs",
+      from: { x: 24.6, z: -16.5 },
+      to: { x: 24.6, z: -25.5 },
+      width: 3,
+      steps: 12,
+      fromLevelId: GROUND_LEVEL_ID,
+      toLevelId: "stack-mid",
+    },
+  ],
+  structures: [
+    {
+      id: "cinder-tower",
+      name: "Cinder Tower",
+      bounds: { kind: "rect", minX: -14, maxX: 14, minZ: -14, maxZ: 12 },
+      levelIds: [GROUND_LEVEL_ID, "stack-mid", "stack-top"],
+      storeyHeight: 3.6,
+      roof: true,
+      floorHoles: [
+        { id: "tower-shaft-mid", x: -11.2, z: -8.4, w: 3.2, d: 10, levelId: "stack-mid" },
+        { id: "tower-shaft-top", x: 11.2, z: 6, w: 3.2, d: 10, levelId: "stack-top" },
+      ],
+      openings: [
+        { id: "tower-door-s", kind: "door", side: "south", offset: 0, width: 2.4, height: 2.6 },
+        { id: "tower-door-n", kind: "door", side: "north", offset: -5, width: 2.2, height: 2.6 },
+        { id: "tower-door-e", kind: "door", side: "east", offset: 4, width: 2.2, height: 2.6 },
+        { id: "tower-door-w", kind: "door", side: "west", offset: 6, width: 2.2, height: 2.6 },
+        { id: "tower-win-s1", kind: "window", side: "south", offset: -9, width: 1.8, height: 1.4, glazed: true },
+        { id: "tower-win-s2", kind: "window", side: "south", offset: 9, width: 1.8, height: 1.4, glazed: true },
+        { id: "tower-win-n", kind: "window", side: "north", offset: 7, width: 1.8, height: 1.4, glazed: true },
+        {
+          id: "tower-mid-n1",
+          kind: "window",
+          side: "north",
+          levelId: "stack-mid",
+          offset: 0,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "tower-mid-n2",
+          kind: "window",
+          side: "north",
+          levelId: "stack-mid",
+          offset: -8,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "tower-mid-s",
+          kind: "window",
+          side: "south",
+          levelId: "stack-mid",
+          offset: 6,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "tower-mid-e1",
+          kind: "window",
+          side: "east",
+          levelId: "stack-mid",
+          offset: -6,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "tower-mid-e2",
+          kind: "window",
+          side: "east",
+          levelId: "stack-mid",
+          offset: 5,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "tower-mid-w",
+          kind: "window",
+          side: "west",
+          levelId: "stack-mid",
+          offset: 5,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "tower-top-s1",
+          kind: "window",
+          side: "south",
+          levelId: "stack-top",
+          offset: -4,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "tower-top-s2",
+          kind: "window",
+          side: "south",
+          levelId: "stack-top",
+          offset: 4,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "tower-top-n",
+          kind: "window",
+          side: "north",
+          levelId: "stack-top",
+          offset: 0,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "tower-top-w",
+          kind: "window",
+          side: "west",
+          levelId: "stack-top",
+          offset: -4,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "tower-top-e",
+          kind: "window",
+          side: "east",
+          levelId: "stack-top",
+          offset: -8,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+      ],
+    },
+    {
+      id: "cinder-annex-west",
+      name: "West Annex",
+      bounds: { kind: "rect", minX: -40, maxX: -22, minZ: 6, maxZ: 26 },
+      levelIds: [GROUND_LEVEL_ID, "stack-mid"],
+      storeyHeight: 3.6,
+      roof: true,
+      floorHoles: [{ id: "annex-west-shaft", x: -37.4, z: 16, w: 3.2, d: 10, levelId: "stack-mid" }],
+      openings: [
+        { id: "annex-w-door-e", kind: "door", side: "east", offset: -4, width: 2.2, height: 2.6 },
+        { id: "annex-w-door-s", kind: "door", side: "south", offset: 5, width: 2.2, height: 2.6 },
+        { id: "annex-w-door-n", kind: "door", side: "north", offset: -4, width: 2.2, height: 2.6 },
+        { id: "annex-w-win-e", kind: "window", side: "east", offset: 6, width: 1.8, height: 1.4, glazed: true },
+        { id: "annex-w-win-s", kind: "window", side: "south", offset: -5, width: 1.8, height: 1.4, glazed: true },
+        {
+          id: "annex-w-mid-e1",
+          kind: "window",
+          side: "east",
+          levelId: "stack-mid",
+          offset: 0,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "annex-w-mid-e2",
+          kind: "window",
+          side: "east",
+          levelId: "stack-mid",
+          offset: -7,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "annex-w-mid-s",
+          kind: "window",
+          side: "south",
+          levelId: "stack-mid",
+          offset: 4,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "annex-w-mid-n",
+          kind: "window",
+          side: "north",
+          levelId: "stack-mid",
+          offset: 4,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "annex-w-mid-w",
+          kind: "window",
+          side: "west",
+          levelId: "stack-mid",
+          offset: -6,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+      ],
+    },
+    {
+      id: "cinder-annex-east",
+      name: "East Annex",
+      bounds: { kind: "rect", minX: 22, maxX: 42, minZ: -30, maxZ: -12 },
+      levelIds: [GROUND_LEVEL_ID, "stack-mid"],
+      storeyHeight: 3.6,
+      roof: true,
+      floorHoles: [{ id: "annex-east-shaft", x: 24.6, z: -21, w: 3.2, d: 10, levelId: "stack-mid" }],
+      openings: [
+        { id: "annex-e-door-s", kind: "door", side: "south", offset: -4, width: 2.2, height: 2.6 },
+        { id: "annex-e-door-w", kind: "door", side: "west", offset: 5, width: 2.2, height: 2.6 },
+        { id: "annex-e-door-e", kind: "door", side: "east", offset: -5, width: 2.2, height: 2.6 },
+        { id: "annex-e-win-n", kind: "window", side: "north", offset: 6, width: 1.8, height: 1.4, glazed: true },
+        { id: "annex-e-win-s", kind: "window", side: "south", offset: 7, width: 1.8, height: 1.4, glazed: true },
+        {
+          id: "annex-e-mid-s1",
+          kind: "window",
+          side: "south",
+          levelId: "stack-mid",
+          offset: 0,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "annex-e-mid-s2",
+          kind: "window",
+          side: "south",
+          levelId: "stack-mid",
+          offset: 7,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "annex-e-mid-n",
+          kind: "window",
+          side: "north",
+          levelId: "stack-mid",
+          offset: 4,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "annex-e-mid-e",
+          kind: "window",
+          side: "east",
+          levelId: "stack-mid",
+          offset: 0,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+        {
+          id: "annex-e-mid-w",
+          kind: "window",
+          side: "west",
+          levelId: "stack-mid",
+          offset: 7,
+          width: 1.8,
+          height: 1.4,
+          glazed: true,
+        },
+      ],
+    },
+  ],
+  anchors: [
+    { kind: "playerSpawn", id: "stacks-spawn", x: -38, z: -38, levelId: GROUND_LEVEL_ID, roomId: "stack-west" },
+    {
+      kind: "breachSpawn",
+      id: "stacks-north-breach",
+      x: -4,
+      z: -40,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "stack-west",
+      laneId: "north",
+    },
+    {
+      kind: "breachSpawn",
+      id: "stacks-east-breach",
+      x: 42,
+      z: 18,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "stack-east",
+      laneId: "east",
+    },
+    {
+      kind: "breachSpawn",
+      id: "stacks-west-breach",
+      x: -44,
+      z: 16,
+      levelId: GROUND_LEVEL_ID,
+      roomId: "stack-west",
+      laneId: "west",
+    },
+    { kind: "objective", id: "stacks-node", x: 4, z: 26, levelId: GROUND_LEVEL_ID, roomId: "stack-east" },
+  ],
+};
+
+// ----------------------------------------------------------------------------
+
 /** Registry normalization entry point: attaches the normalized structural
  *  layout and resolves optional environment/biome authoring into a complete,
  *  non-empty presentation contract. */
@@ -1091,6 +1947,8 @@ export const SURVIVOR_MAPS: Record<string, NormalizedArenaMap> = {
   "breach-primus": normalizeMap(BREACH_PRIMUS),
   "reactor-verge": normalizeMap(REACTOR_VERGE),
   "choir-node": normalizeMap(CHOIR_NODE),
+  "warren-blocks": normalizeMap(WARREN_BLOCKS),
+  "cinder-stacks": normalizeMap(CINDER_STACKS),
 };
 
 /**
@@ -1115,6 +1973,8 @@ export const SURVIVOR_MAP_ORDER: string[] = [
   "breach-primus",
   "reactor-verge",
   "choir-node",
+  "warren-blocks",
+  "cinder-stacks",
 ];
 
 /** Default arena for non-structured modes (Survivors / PvP preview / menu). */

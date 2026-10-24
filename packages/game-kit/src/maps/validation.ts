@@ -6,6 +6,14 @@
 
 import type { ArenaAnchor, ArenaBounds, ArenaLayout, ArenaRect, ArenaRoom, ArenaVolume } from "./arenaLayout";
 import { GROUND_LEVEL_ID } from "./arenaLayout";
+import {
+  openingSill,
+  structureInteriorRect,
+  structureOpeningPlacement,
+  structureStoreys,
+  structureWallAxis,
+  structureWallThickness,
+} from "./structures";
 
 export type ArenaValidationCode =
   | "anchor.blocked"
@@ -23,6 +31,11 @@ export type ArenaValidationCode =
   | "obstacle.out-of-bounds"
   | "obstacle.overlap"
   | "obstacle.sliver"
+  | "opening.dimension.invalid"
+  | "opening.id.duplicate"
+  | "opening.level.missing"
+  | "opening.out-of-storey"
+  | "opening.out-of-wall"
   | "platform.dimension.invalid"
   | "platform.height.invalid"
   | "platform.level.missing"
@@ -36,7 +49,14 @@ export type ArenaValidationCode =
   | "room.disconnected"
   | "room.id.duplicate"
   | "room.level.missing"
-  | "room.out-of-bounds";
+  | "room.out-of-bounds"
+  | "structure.bounds.invalid"
+  | "structure.hole.invalid"
+  | "structure.id.duplicate"
+  | "structure.level.missing"
+  | "structure.levels.invalid"
+  | "structure.out-of-bounds"
+  | "structure.overlap";
 
 /** One deterministic, machine-readable validation failure. `path` uses a
  * JSON-like source path so generators can attach the error to their editor UI. */
@@ -479,6 +499,199 @@ export function validateArenaLayout<TObstacle extends ArenaVolume = ArenaVolume>
     if (fromY !== undefined && toY !== undefined) {
       if (Math.abs(fromY - toY) <= epsilon || Math.max(fromY, toY) > maxHeight) {
         add("ramp.slope.invalid", path, "Ramp must connect two distinct, sane level heights.");
+      }
+    }
+  }
+
+  // Structures: shell sanity, stacked storeys, and openings that actually fit
+  // the wall they pierce. Structure walls are emitted as game-side geometry
+  // rather than ArenaObstacles, so they never reach the obstacle-overlap pass
+  // above — every containment guarantee they have is the one made here.
+  const structureIds = new Map<string, string>();
+  const structureSpans: { path: string; rect: ArenaRect; minY: number; maxY: number }[] = [];
+  for (const [index, structure] of layout.structures.entries()) {
+    const path = `structures[${index}]`;
+    if (structureIds.has(structure.id)) {
+      add(
+        "structure.id.duplicate",
+        `${path}.id`,
+        `Duplicate structure id "${structure.id}".`,
+        `${structureIds.get(structure.id)}.id`,
+      );
+    } else {
+      structureIds.set(structure.id, path);
+    }
+
+    const wallThickness = structureWallThickness(structure);
+    const outerRect = validRect(structure.bounds);
+    const interior = outerRect ? structureInteriorRect(structure.bounds, wallThickness) : null;
+    if (!interior) {
+      add("structure.bounds.invalid", `${path}.bounds`, "Structure bounds must describe a positive-area rectangle.");
+    } else if (interior.maxX - interior.minX < minPassageWidth || interior.maxZ - interior.minZ < minPassageWidth) {
+      add(
+        "structure.bounds.invalid",
+        `${path}.bounds`,
+        `Structure interior must be at least ${minPassageWidth}m across after removing ${wallThickness}m walls.`,
+      );
+    }
+    if (outerRect && mapRect && !rectContains(mapRect, outerRect, epsilon)) {
+      add("structure.out-of-bounds", path, "Structure extends outside the map bounds.");
+    }
+
+    // Storeys: every referenced level must exist and elevations must strictly
+    // ascend, otherwise the derived floor-to-ceiling heights are meaningless.
+    if (structure.levelIds.length === 0) {
+      add("structure.levels.invalid", `${path}.levelIds`, "Structure must span at least one floor level.");
+    }
+    let previousY: number | null = null;
+    let ascending = true;
+    for (const [levelIndex, levelId] of structure.levelIds.entries()) {
+      const y = levelY.get(levelId);
+      if (y === undefined) {
+        add(
+          "structure.level.missing",
+          `${path}.levelIds[${levelIndex}]`,
+          `Structure references missing level "${levelId}".`,
+        );
+        continue;
+      }
+      if (previousY !== null && y <= previousY + epsilon) ascending = false;
+      previousY = y;
+    }
+    if (!ascending) {
+      add(
+        "structure.levels.invalid",
+        `${path}.levelIds`,
+        "Structure levelIds must be ordered ground-most first with strictly increasing elevations.",
+      );
+    }
+
+    const storeys = structureStoreys(structure, levelY);
+    const ground = storeys[0];
+    const top = storeys[storeys.length - 1];
+    if (ground && top) {
+      if (top.ceilingY > maxHeight) {
+        add("structure.levels.invalid", `${path}.levelIds`, `Structure roof must stay at or below ${maxHeight}m.`);
+      }
+      if (outerRect) {
+        structureSpans.push({ path, rect: outerRect, minY: ground.floorY, maxY: top.ceilingY });
+      }
+    }
+
+    // Floor holes: must be resolvable and stay inside the interior, otherwise
+    // they would cut through a wall footing.
+    for (const [holeIndex, hole] of (structure.floorHoles ?? []).entries()) {
+      const holePath = `${path}.floorHoles[${holeIndex}]`;
+      if (hole.levelId !== undefined && !levelY.has(hole.levelId)) {
+        add("structure.level.missing", `${holePath}.levelId`, `Floor hole references missing level "${hole.levelId}".`);
+      }
+      if (
+        !finite(hole.x) ||
+        !finite(hole.z) ||
+        !finite(hole.w) ||
+        !finite(hole.d) ||
+        hole.w < minExtent ||
+        hole.d < minExtent
+      ) {
+        add(
+          "structure.hole.invalid",
+          holePath,
+          `Floor hole position must be finite and at least ${minExtent}m across.`,
+        );
+        continue;
+      }
+      if (interior && !rectContains(interior, volumeRect({ ...hole, h: 1 }), epsilon)) {
+        add("structure.hole.invalid", holePath, "Floor hole must stay inside the structure's interior footprint.");
+      }
+    }
+
+    // Openings.
+    const openingIds = new Map<string, string>();
+    for (const [openingIndex, opening] of structure.openings.entries()) {
+      const openingPath = `${path}.openings[${openingIndex}]`;
+      if (openingIds.has(opening.id)) {
+        add(
+          "opening.id.duplicate",
+          `${openingPath}.id`,
+          `Duplicate opening id "${opening.id}" in structure "${structure.id}".`,
+          `${openingIds.get(opening.id)}.id`,
+        );
+      } else {
+        openingIds.set(opening.id, openingPath);
+      }
+
+      // Doors are walked through, so they inherit the passage-width floor;
+      // windows are vaulted and only need to be non-degenerate.
+      const minWidth = opening.kind === "door" ? minPassageWidth : minExtent;
+      const minHeight = opening.kind === "door" ? minPassageWidth : minExtent;
+      const sill = openingSill(opening);
+      if (
+        !finite(opening.width) ||
+        !finite(opening.height) ||
+        !finite(sill) ||
+        sill < -epsilon ||
+        opening.width < minWidth ||
+        opening.height < minHeight ||
+        (opening.offset !== undefined && !finite(opening.offset))
+      ) {
+        add(
+          "opening.dimension.invalid",
+          openingPath,
+          `${opening.kind === "door" ? "Door" : "Window"} must be at least ${minWidth}m wide, ${minHeight}m tall, with a non-negative sill.`,
+        );
+        continue;
+      }
+
+      const storeyId = opening.levelId ?? structure.levelIds[0];
+      const storey = storeys.find((candidate) => candidate.levelId === storeyId);
+      if (!storey) {
+        add(
+          "opening.level.missing",
+          `${openingPath}.levelId`,
+          `Opening references level "${storeyId}", which is not a storey of structure "${structure.id}".`,
+        );
+        continue;
+      }
+      if (!outerRect) continue; // bounds already reported; placement would be noise
+
+      const placement = structureOpeningPlacement(structure, opening, storey);
+      const axis = structureWallAxis(structure.bounds, opening.side, wallThickness);
+      // The corner cells are shared with the two perpendicular walls, so the
+      // usable span stops one wall thickness short of each end — cutting into a
+      // corner would punch a hole through the neighbouring wall too.
+      const usableMin = axis.mid - axis.length / 2 + wallThickness;
+      const usableMax = axis.mid + axis.length / 2 - wallThickness;
+      if (placement.min < usableMin - epsilon || placement.max > usableMax + epsilon) {
+        add(
+          "opening.out-of-wall",
+          openingPath,
+          `Opening must stay within the ${opening.side} wall, clear of its ${wallThickness}m corners.`,
+        );
+      }
+      if (placement.bottom < storey.floorY - epsilon || placement.top > storey.ceilingY + epsilon) {
+        add(
+          "opening.out-of-storey",
+          openingPath,
+          `Opening must fit between the storey floor and its ${storey.height}m ceiling.`,
+        );
+      }
+    }
+  }
+
+  // Two shells sharing space produce interpenetrating walls and unreachable
+  // interiors; catch it here rather than in the renderer.
+  for (let i = 0; i < structureSpans.length; i++) {
+    for (let j = i + 1; j < structureSpans.length; j++) {
+      const a = structureSpans[i];
+      const b = structureSpans[j];
+      if (
+        a &&
+        b &&
+        rangesOverlap(a.rect.minX, a.rect.maxX, b.rect.minX, b.rect.maxX, epsilon) &&
+        rangesOverlap(a.rect.minZ, a.rect.maxZ, b.rect.minZ, b.rect.maxZ, epsilon) &&
+        rangesOverlap(a.minY, a.maxY, b.minY, b.maxY, epsilon)
+      ) {
+        add("structure.overlap", a.path, "Structures overlap in three dimensions.", b.path);
       }
     }
   }

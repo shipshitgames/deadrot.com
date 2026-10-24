@@ -14,7 +14,7 @@ const ROTHULK_PROJECT = "rothulk:";
 async function revealMenu(page: Page) {
   await page.goto("/");
   await expect(page.getByText("ROTHULK")).toBeVisible();
-  await page.getByText("Press Enter to continue").click();
+  await page.getByTestId("main-menu-enter-prompt").click();
   // The Breach action proves the nav revealed; the briefing reveals alongside it.
   await expect(page.getByRole("button", { name: /^Breach\b/i })).toBeVisible();
 }

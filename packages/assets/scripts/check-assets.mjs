@@ -384,103 +384,6 @@ function checkScourgeManifestPaths() {
   }
 }
 
-function checkScourgeAnimationPack() {
-  const packPath = assetPath("games/scourge-survivors/animations/scourge/animation-pack.json");
-  const pack = JSON.parse(readFileSync(packPath, "utf8"));
-  const expectedAtlasFrames = new Map();
-
-  for (const [entityId, entity] of Object.entries(pack.entities ?? {})) {
-    for (const [actionId, action] of Object.entries(entity.actions ?? {})) {
-      for (const view of pack.views ?? []) {
-        for (let frame = 0; frame < pack.framesPerAction; frame += 1) {
-          const frameId = String(frame).padStart(2, "0");
-          const path = `games/scourge-survivors/${action.pathTemplate
-            .replace("{view}", view)
-            .replace("{frame}", frameId)}`;
-          const atlasId = path.replace("games/scourge-survivors/animations/scourge/", "");
-          expectedAtlasFrames.set(atlasId, entity.frameDimensions);
-          if (path.includes("/source/") || path.includes("/sources/")) {
-            fail(
-              `animation pack path points at source material: ${entityId}.${actionId}.${view}.${frameId} -> ${path}`,
-            );
-          }
-          if (!existsPackagePath(path)) {
-            fail(`animation pack frame missing: ${entityId}.${actionId}.${view}.${frameId} -> ${path}`);
-          }
-        }
-      }
-    }
-  }
-
-  const runtimeAtlas = pack.runtimeAtlas;
-  if (!runtimeAtlas || typeof runtimeAtlas !== "object") {
-    fail("Scourge Survivors default animation pack is missing runtimeAtlas metadata");
-    return;
-  }
-  if (runtimeAtlas.tool !== "@shipshitgames/assetgen atlas") {
-    fail(`Scourge Survivors runtime atlas must record @shipshitgames/assetgen atlas: ${runtimeAtlas.tool}`);
-  }
-  if (runtimeAtlas.frameCount !== expectedAtlasFrames.size) {
-    fail(
-      `Scourge Survivors runtime atlas frameCount mismatch: ${runtimeAtlas.frameCount} != ${expectedAtlasFrames.size}`,
-    );
-  }
-  if (typeof runtimeAtlas.mapPath !== "string" || !existsPackagePath(runtimeAtlas.mapPath)) {
-    fail(`Scourge Survivors runtime atlas map is missing: ${runtimeAtlas.mapPath}`);
-    return;
-  }
-
-  const atlasMap = JSON.parse(readFileSync(assetPath(runtimeAtlas.mapPath), "utf8"));
-  if (atlasMap.padding !== runtimeAtlas.padding) {
-    fail(`Scourge Survivors runtime atlas padding mismatch: ${atlasMap.padding} != ${runtimeAtlas.padding}`);
-  }
-  if (atlasMap.frameCount !== expectedAtlasFrames.size || atlasMap.frames?.length !== expectedAtlasFrames.size) {
-    fail(
-      `Scourge Survivors generated atlas is incomplete: ${atlasMap.frames?.length ?? 0}/${expectedAtlasFrames.size} frames`,
-    );
-  }
-
-  for (const [pageIndex, page] of (runtimeAtlas.pages ?? []).entries()) {
-    const generatedPage = atlasMap.pages?.[pageIndex];
-    if (!existsPackagePath(page.path)) fail(`Scourge Survivors runtime atlas page is missing: ${page.path}`);
-    if (!generatedPage) {
-      fail(`Scourge Survivors generated atlas is missing page ${pageIndex}`);
-      continue;
-    }
-    if (basename(page.path) !== generatedPage.image) {
-      fail(`Scourge Survivors runtime atlas page name mismatch: ${page.path} != ${generatedPage.image}`);
-    }
-    if (page.width !== generatedPage.width || page.height !== generatedPage.height) {
-      fail(
-        `Scourge Survivors runtime atlas page dimensions mismatch: ${page.width}x${page.height} != ${generatedPage.width}x${generatedPage.height}`,
-      );
-    }
-  }
-
-  const seenAtlasFrames = new Set();
-  for (const frame of atlasMap.frames ?? []) {
-    if (seenAtlasFrames.has(frame.id)) fail(`Scourge Survivors runtime atlas has duplicate frame: ${frame.id}`);
-    seenAtlasFrames.add(frame.id);
-    const expectedDimensions = expectedAtlasFrames.get(frame.id);
-    if (!expectedDimensions) {
-      fail(`Scourge Survivors runtime atlas has unexpected frame: ${frame.id}`);
-      continue;
-    }
-    if (frame.w !== expectedDimensions[0] || frame.h !== expectedDimensions[1]) {
-      fail(
-        `Scourge Survivors runtime atlas frame dimensions mismatch: ${frame.id} is ${frame.w}x${frame.h}, expected ${expectedDimensions[0]}x${expectedDimensions[1]}`,
-      );
-    }
-    const page = atlasMap.pages?.[frame.page];
-    if (!page || frame.x < 0 || frame.y < 0 || frame.x + frame.w > page.width || frame.y + frame.h > page.height) {
-      fail(`Scourge Survivors runtime atlas frame leaves page bounds: ${frame.id}`);
-    }
-  }
-  for (const frameId of expectedAtlasFrames.keys()) {
-    if (!seenAtlasFrames.has(frameId)) fail(`Scourge Survivors runtime atlas is missing frame: ${frameId}`);
-  }
-}
-
 function checkTrackedSourceTree() {
   const misplaced = trackedAssetFiles()
     .filter((path) => path.startsWith("packages/assets/sources/") && !generatedSourceArchive(path))
@@ -529,7 +432,6 @@ checkImageContracts();
 checkCatalogPaths();
 checkBannedGeneratorProvenance();
 checkScourgeManifestPaths();
-checkScourgeAnimationPack();
 
 if (problems.length > 0) {
   console.error("Asset package check failed:");

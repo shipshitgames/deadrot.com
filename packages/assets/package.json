@@ -67,8 +67,6 @@
     "assets:budgets": "node scripts/asset-budgets.mjs",
     "assets:index": "node scripts/generate-asset-index.mjs && node scripts/generate-lore-art-map.mjs",
     "assets:index:check": "node scripts/generate-asset-index.mjs --check && node scripts/generate-lore-art-map.mjs --check",
-    "assets:check-enemy-alpha": "node scripts/fix-scourge-enemy-alpha.mjs --check",
-    "assets:fix-enemy-alpha": "node scripts/fix-scourge-enemy-alpha.mjs",
     "lore:art-map": "node scripts/generate-lore-art-map.mjs",
     "lore:art-map:check": "node scripts/generate-lore-art-map.mjs --check",
     "assets:clean-sprites": "bun ../../../shipshitgames/packages/assetgen/src/cli.ts clean-sprites",

@@ -127,3 +127,26 @@ export function saveShop(s: ShopState) {
     /* ignore */
   }
 }
+
+// ---- First-run onboarding ----
+// The controls primer shows on a player's first drop and never again. Stored
+// separately from the shop so clearing progression does not re-teach a veteran,
+// and so a private-mode player (where the write throws) simply sees it again
+// rather than losing the run.
+const PRIMER_KEY = "scourge-survivors.primer.v1";
+
+export function primerSeen(): boolean {
+  try {
+    return localStorage.getItem(PRIMER_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function markPrimerSeen() {
+  try {
+    localStorage.setItem(PRIMER_KEY, "1");
+  } catch {
+    /* ignore */
+  }
+}

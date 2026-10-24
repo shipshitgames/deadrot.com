@@ -236,7 +236,7 @@ test("boots and responds to core controls", async ({ page }, testInfo) => {
   // stopPropagation, so an Enter/Space keypress also reaches game input systems
   // that treat it as "confirm/start" and would auto-launch the run.
   if (spec.entersFromSplash) {
-    const enterPrompt = page.getByText("Press Enter to continue");
+    const enterPrompt = page.getByTestId("main-menu-enter-prompt");
     await expect(enterPrompt).toBeVisible();
     await enterPrompt.click();
     await expect(enterPrompt).toBeHidden();

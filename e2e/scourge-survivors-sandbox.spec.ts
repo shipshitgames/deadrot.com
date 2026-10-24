@@ -148,44 +148,51 @@ test("the weapon view-model dials the evolved size back and selects the matching
   await boot(page);
 
   // Drive the REAL WeaponSystem through the sandbox tier preview and read the live three.js
-  // sprite + texture state straight back — proving the #265 polish reaches rendered output,
-  // not just the pure helpers. Weapon-agnostic: we assert the ratio/relationships, not a
-  // specific weapon's cell, so it holds for whatever STARTING_WEAPON the sandbox arms.
+  // view-model state straight back — proving the #265 polish reaches rendered output, not just
+  // the pure helpers. The view model is procedural GEOMETRY now, so the tier ramp lands on the
+  // root group's scale and the identity markers `buildWeaponViewModel` stamps into userData.
+  // A dual-compatible weapon is armed explicitly so the akimbo half is never STARTING_WEAPON-dependent.
   const read = await page.evaluate(() => {
+    type ViewModel = {
+      group: { scale: { x: number }; userData: { weaponId: string; visualTier: string } };
+    };
     type WeaponDevGame = {
+      setSandboxWeapon: (id: string) => void;
       setSandboxWeaponTier: (tier: string) => void;
-      sys: {
-        weapon: {
-          weaponSprite: { scale: { x: number } };
-          weaponSpriteMat: { map: { repeat: { x: number }; offset: { x: number } } };
-          weaponSpriteDualMat: { map: { repeat: { x: number }; offset: { x: number } } };
-        };
-      };
+      sys: { weapon: { primaryModel: ViewModel | null; dualModel: ViewModel | null } };
     };
     const game = (window as unknown as { __fpsGame: WeaponDevGame }).__fpsGame;
-    game.setSandboxWeaponTier("base");
-    const baseScaleX = game.sys.weapon.weaponSprite.scale.x;
-    game.setSandboxWeaponTier("evolved");
-    const w = game.sys.weapon;
-    return {
-      baseScaleX,
-      evolvedScaleX: w.weaponSprite.scale.x,
-      mainRepeat: w.weaponSpriteMat.map.repeat.x,
-      mainOffset: w.weaponSpriteMat.map.offset.x,
-      dualRepeat: w.weaponSpriteDualMat.map.repeat.x,
-      dualOffset: w.weaponSpriteDualMat.map.offset.x,
+    game.setSandboxWeapon("pistol");
+
+    // Rebuild at a tier and photograph both halves of the view model.
+    const snap = (tier: string) => {
+      game.setSandboxWeaponTier(tier);
+      const { primaryModel, dualModel } = game.sys.weapon;
+      return {
+        scale: primaryModel?.group.scale.x ?? 0,
+        weaponId: primaryModel?.group.userData.weaponId ?? "",
+        tier: primaryModel?.group.userData.visualTier ?? "",
+        dualScale: dualModel?.group.scale.x ?? 0,
+        dualWeaponId: dualModel?.group.userData.weaponId ?? "",
+        dualTier: dualModel?.group.userData.visualTier ?? "",
+      };
     };
+    return { base: snap("base"), evolved: snap("evolved") };
   });
 
   // The evolved view-model renders at the dialed-back 1.16× of base — not the old, oversized
   // 1.24× that crowded the viewport (#265).
-  expect(read.baseScaleX).toBeGreaterThan(0);
-  expect(read.evolvedScaleX / read.baseScaleX).toBeCloseTo(1.16, 4);
+  expect(read.base.scale).toBeGreaterThan(0);
+  expect(read.base.tier).toBe("base");
+  expect(read.evolved.tier).toBe("evolved");
+  expect(read.evolved.scale / read.base.scale).toBeCloseTo(1.16, 4);
 
-  // The purpose-built dual-wield sheet selects the SAME tier cell as the primary sheet.
-  // Both repeats stay positive because the dual pose is authored directly, not mirrored.
-  expect(read.dualRepeat).toBeCloseTo(read.mainRepeat, 6);
-  expect(read.dualOffset).toBeCloseTo(read.mainOffset, 6);
+  // The purpose-built dual-wield model is built from the SAME weapon at the SAME tier as the
+  // primary — it tracks the tier ramp instead of freezing at whatever tier it was first built at.
+  expect(read.evolved.dualWeaponId).toBe(read.evolved.weaponId);
+  expect(read.evolved.dualTier).toBe(read.evolved.tier);
+  expect(read.evolved.dualScale).toBeCloseTo(read.evolved.scale, 6);
+  expect(read.base.dualTier).toBe("base");
 });
 
 test("the dual-weapon pickup reveals the purpose-built dual view only for compatible weapons", async ({
@@ -198,40 +205,59 @@ test("the dual-weapon pickup reveals the purpose-built dual view only for compat
   // Drive the live akimbo VISIBILITY gating (#265 item 3: "once a dual-weapon pickup is
   // active"). updateWeapon() is poked directly with a fixed delta so the toggle is read
   // deterministically — no real-time pickup, no frame-throttle dependency (mobile-safe).
+  // A weapon that cannot akimbo has NO second model at all, which reads as "not visible".
   const read = await page.evaluate(() => {
     type DualDevGame = {
       setSandboxWeapon: (id: string) => void;
-      ctx: { status: string; reloading: boolean; dualWeaponTimer: number };
+      ctx: { status: string; reloading: boolean; dualWeaponTimer: number; aimingDownSights: boolean; adsT: number };
       sys: {
-        weapon: { updateWeapon: (delta: number) => void; meleeAnim: number; weaponSpriteDual: { visible: boolean } };
+        weapon: {
+          updateWeapon: (delta: number) => void;
+          primaryModel: { group: { position: { x: number } } } | null;
+          dualModel: { group: { visible: boolean } } | null;
+        };
       };
     };
     const game = (window as unknown as { __fpsGame: DualDevGame }).__fpsGame;
     const w = game.sys.weapon;
-    // Tick once with the given weapon + dual timer, clearing the melee/reload poses that
-    // would early-return before the akimbo block, and read the resulting visibility.
-    const tick = (weapon: string, dualTimer: number): boolean => {
+    // Tick once with the given weapon, dual timer and aim state, then read back both the
+    // akimbo visibility and where the primary sat — the pair IS the two-handed pose.
+    const tick = (weapon: string, dualTimer: number, ads = false) => {
       game.setSandboxWeapon(weapon);
       game.ctx.status = "playing";
       game.ctx.reloading = false;
-      w.meleeAnim = 0;
+      // Aim is a settled state, not a pose flag: hold the intent AND its converged blend so
+      // updateAds() re-derives the same value instead of easing back out from under the read.
+      game.ctx.aimingDownSights = ads;
+      game.ctx.adsT = ads ? 1 : 0;
       game.ctx.dualWeaponTimer = dualTimer;
       w.updateWeapon(0.016);
-      return w.weaponSpriteDual.visible;
+      return {
+        dualVisible: w.dualModel?.group.visible ?? false,
+        primaryX: w.primaryModel?.group.position.x ?? 0,
+      };
     };
     return {
       pistolNoPickup: tick("pistol", 0), // dual-compatible, no bonus -> hidden
       pistolPickup: tick("pistol", 5), // dual-compatible, bonus live -> shown
-      cannonPickup: tick("cannon", 5), // NOT dual-compatible, bonus live -> stays hidden
+      pistolAds: tick("pistol", 5, true), // bonus live but aiming -> single sight picture
+      cannonPickup: tick("cannon", 5), // NOT dual-compatible, no dual model at all
       pistolLapsed: tick("pistol", 0), // bonus expired -> hidden again
     };
   });
 
-  // The purpose-built dual view appears only while the pickup is live AND the weapon can akimbo.
-  expect(read.pistolNoPickup).toBe(false);
-  expect(read.pistolPickup).toBe(true);
-  expect(read.cannonPickup).toBe(false);
-  expect(read.pistolLapsed).toBe(false);
+  // The purpose-built dual view appears only while the pickup is live AND the weapon can
+  // akimbo AND the player is not aiming down sights.
+  expect(read.pistolNoPickup.dualVisible).toBe(false);
+  expect(read.pistolPickup.dualVisible).toBe(true);
+  expect(read.pistolAds.dualVisible).toBe(false);
+  expect(read.cannonPickup.dualVisible).toBe(false);
+  expect(read.pistolLapsed.dualVisible).toBe(false);
+
+  // Going akimbo also slides the primary off-centre to make room for its twin, and hands the
+  // centre back the moment the bonus lapses — the visibility flag is not the whole pose.
+  expect(read.pistolPickup.primaryX).toBeLessThan(0);
+  expect(read.pistolLapsed.primaryX).toBeCloseTo(0, 6);
 });
 
 // ---- helpers ----------------------------------------------------------------

@@ -2,9 +2,11 @@ import { PixelConfetti, UpgradeCard } from "@shipshitgames/ui";
 import { type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, useRef } from "react";
 import type { SurvivorClassId } from "../game/data/survivors";
 import type { ScoreEntry, ShopState } from "../game/storage";
+import { isCoarsePointer } from "../game/touchControls";
 import type { HudState } from "../game/types";
 import type { PlayerAvatarId } from "../net/playerAvatars";
 import { CombatOverlays } from "./hud/CombatOverlays";
+import { FirstDropPrimer } from "./hud/FirstDropPrimer";
 import { GameOverScreen } from "./hud/GameOverScreen";
 import { MainMenu } from "./hud/MainMenu";
 import { PauseScreens } from "./hud/PauseScreens";
@@ -157,6 +159,7 @@ export function HUD({
     // `hud-paused` freezes every in-flight HUD animation except the pause overlay's own UI (see styles.css).
     <div className={`absolute inset-0 pointer-events-none z-10${status === "paused" ? " hud-paused" : ""}`}>
       <CombatOverlays state={state} />
+      <FirstDropPrimer state={state} />
 
       {/* Overlays */}
       {status === "levelup" && (
@@ -165,7 +168,8 @@ export function HUD({
 
       {showLockPrompt && (
         <button type="button" className="ssg-lock-prompt" onClick={onLock}>
-          Click to play
+          {/* A phone has no pointer to lock — the same button just starts play. */}
+          {isCoarsePointer() ? "Tap to play" : "Click to play"}
         </button>
       )}
 

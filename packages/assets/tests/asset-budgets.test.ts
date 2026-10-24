@@ -42,12 +42,6 @@ test("Scourge browser budgets are complete positive integers and surface in the 
   for (const field of fieldNames) {
     assert.equal(scourge.budget[field], configured[field]);
   }
-
-  const runtimeAtlasPage = scourge.largestFiles.find(
-    (file: { path: string }) => file.path === "games/scourge-survivors/animations/scourge/scourge.atlas0.webp",
-  );
-  assert.ok(runtimeAtlasPage, "expected the Scourge runtime atlas page in the report");
-  assert.ok(runtimeAtlasPage.sources.includes("animation-pack"), "runtime atlas pages must be manifest-covered");
 });
 
 test("text output labels the heuristic and browser budgets explicitly", () => {

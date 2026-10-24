@@ -7,6 +7,7 @@ import {
   PICKUP_DROP_CHANCE,
   PICKUP_RADIUS,
   PICKUP_TTL,
+  PICKUP_VERTICAL_REACH,
   type PickupKind,
   STARTING_WEAPON,
   WEAPON_ORDER,
@@ -36,7 +37,7 @@ export class PickupsSystem {
     private sys: GameSystems,
   ) {}
 
-  maybeDropPickup(pos: THREE.Vector3) {
+  maybeDropPickup(pos: THREE.Vector3, groundY = 0) {
     if (Math.random() > PICKUP_DROP_CHANCE) return;
     // weighted bag; locked weapons are extra appealing
     const bag: PickupKind[] = ["health", "health", "ammo", "ammo", "damage", "dual"];
@@ -44,11 +45,16 @@ export class PickupsSystem {
       if (id !== STARTING_WEAPON && !this.ctx.unlocked.has(id)) bag.push(id, id);
     }
     const kind = bag[Math.floor(Math.random() * bag.length)];
-    this.spawnPickup(kind, pos.x, pos.z);
+    this.spawnPickup(kind, pos.x, pos.z, groundY);
   }
 
-  /** Public-ish so the death path and tests can drop a known pickup. */
-  spawnPickup(kind: PickupKind, x: number, z: number) {
+  /**
+   * Public-ish so the death path and tests can drop a known pickup. `groundY` is
+   * the floor the drop rests on — every child offset below is relative to the
+   * group, so a drop on a building's upper storey stays on that storey instead of
+   * hanging in the air above the ground floor. Defaults to 0 for the flat arena.
+   */
+  spawnPickup(kind: PickupKind, x: number, z: number, groundY = 0) {
     const color = PICKUP_COLORS[kind];
     const group = new THREE.Group();
     const isWeapon = isWeaponPickup(kind);
@@ -128,7 +134,7 @@ export class PickupsSystem {
     beam.position.y = 0.8;
 
     group.add(icon, ring, beam);
-    group.position.set(x, 0, z);
+    group.position.set(x, groundY, z);
     this.ctx.scene.add(group);
     this.pickups.push({ group, kind, age: 0 });
   }
@@ -136,6 +142,7 @@ export class PickupsSystem {
   updatePickups(delta: number) {
     const px = this.ctx.body.position.x;
     const pz = this.ctx.body.position.z;
+    const pFootY = this.ctx.body.position.y - this.ctx.stanceHeight;
     for (let i = this.pickups.length - 1; i >= 0; i--) {
       const p = this.pickups[i];
       p.age += delta;
@@ -153,7 +160,10 @@ export class PickupsSystem {
       }
 
       const d = Math.hypot(p.group.position.x - px, p.group.position.z - pz);
-      if (d < PICKUP_RADIUS) {
+      // Vertical gate as well as horizontal: on a flat arena both feet share a
+      // plane and this never fires, but once buildings stack storeys a drop one
+      // floor up must not be vacuumed through the ceiling.
+      if (d < PICKUP_RADIUS && Math.abs(p.group.position.y - pFootY) < PICKUP_VERTICAL_REACH) {
         this.collectPickup(p.kind);
         this.removePickup(i);
         continue;
