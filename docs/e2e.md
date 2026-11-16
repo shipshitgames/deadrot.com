@@ -54,7 +54,8 @@ cancelled.
 
 `scripts/changed-e2e-games.mjs` detects which games a change can affect (the
 full set on push to a release branch's first commit or manual dispatch) and
-emits them as a JSON array. The `Playwright (<game>:<view>)` job fans that array onto one runner per affected game × viewport via a matrix —
+emits them as a JSON array. The `Playwright (<game>:<view>)`
+job fans that array onto one runner per affected game × viewport via a matrix —
 both `desktop` and `mobile` run per game, not a single `<game>` axis — caching
 the Bun install and Playwright browser downloads. The `Dockerized game E2E` job
 runs only on non-pull-request events — it keeps the pinned local-repro image
