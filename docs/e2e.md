@@ -47,14 +47,13 @@ servers yourself:
 E2E_REUSE_SERVERS=1 bun run e2e
 ```
 
-CI runs cross-game E2E on pull requests, pushes to `master`, manual dispatch,
-and a weekly schedule. Docs-only commits (`**/*.md`, `docs/**`, `.agents/**`,
+CI runs cross-game E2E on pull requests, pushes to `master`, and manual
+dispatch. Docs-only commits (`**/*.md`, `docs/**`, `.agents/**`,
 `.claude/**`, `skills/**`) are skipped, and superseded runs on the same ref are
 cancelled.
 
 `scripts/changed-e2e-games.mjs` detects which games a change can affect (the
-full set on push to a release branch's first commit, manual dispatch, or the
-weekly cron) and emits them as a JSON array. The `Playwright (<game>:<view>)`
+full set on push to a release branch's first commit or manual dispatch) and emits them as a JSON array. The `Playwright (<game>:<view>)`
 job fans that array onto one runner per affected game × viewport via a matrix —
 both `desktop` and `mobile` run per game, not a single `<game>` axis — caching
 the Bun install and Playwright browser downloads. The `Dockerized game E2E` job
