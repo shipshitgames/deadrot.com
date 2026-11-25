@@ -40,7 +40,7 @@ Status convention:
 
 - `Backlog`: default for unpicked/unassigned open work.
 - `In Progress`: work picked up by automation/human, including PR-backed work.
-- `Human Review`: only for actual human action/review, not for automation
+- `Review`: only for actual human action/review, not for automation
   handoff.
 - `Done`: complete/closed work.
 - `Deferred`: explicitly parked.
